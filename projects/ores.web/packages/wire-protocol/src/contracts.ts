@@ -162,8 +162,11 @@ export type LoginResult = z.infer<typeof loginResultSchema>;
  * facts say whether the setup job is finished: whether the deployment has a
  * tenant of its own, and whether the system provisioner wizard recorded that it
  * finished. A first-run installation may keep only the system tenant, so the
- * tenant answer alone would hold it on the setup screen forever. The message is
- * the server's; the interface may state the situation in its own words.
+ * tenant answer alone would hold it on the setup screen forever. A third fact
+ * answers the tenant's own question: whether the tenant the caller signed in to
+ * finished its own setup run, which is what releases that tenant's
+ * administrator. The message is the server's; the interface may state the
+ * situation in its own words.
  */
 export const bootstrapStatusSchema = z.object({
     isInBootstrapMode: z.boolean(),
@@ -171,11 +174,28 @@ export const bootstrapStatusSchema = z.object({
     hasTenant: z.boolean(),
     /** Whether the system provisioner wizard recorded that it finished. */
     onboardingComplete: z.boolean(),
+    /** Whether the caller's tenant finished its own setup run. */
+    onboardingTenantComplete: z.boolean(),
     message: z.string(),
     /** The build the deployment runs, as the deployment states it. */
     version: z.string(),
 });
 export type BootstrapStatus = z.infer<typeof bootstrapStatusSchema>;
+
+/**
+ * The tenant's own setup run, as the tenant administrator's screen follows it.
+ *
+ * A provisioned tenant's setup is a run the new tenant owns, so only that
+ * tenant's administrator may read it and the answer names the run rather than
+ * the tenant. An empty instance id says the tenant has no run to follow, which
+ * is the state a tenant is in before the deployment's first run starts one.
+ */
+export const tenantSetupRunSchema = z.object({
+    instanceId: z.string(),
+    status: z.string(),
+    error: z.string(),
+});
+export type TenantSetupRun = z.infer<typeof tenantSetupRunSchema>;
 
 /**
  * Creating the first administrator.

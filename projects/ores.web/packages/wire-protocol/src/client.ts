@@ -239,6 +239,9 @@ interface SessionState {
 /** The setting a completed first-run installation states. */
 const ONBOARDING_SYSTEM_SETTING = 'onboarding.system';
 
+/** The setting a provisioned tenant states once its own setup run finished. */
+const ONBOARDING_TENANT_SETTING = 'onboarding.tenant';
+
 const completeSystemOnboardingReplySchema = z.object({
     result: resultEnvelopeSchema,
 });
@@ -408,6 +411,26 @@ export class OresClient {
         const reply = await this.#authenticatedCall(
             systemSettingSubjects.get_system_setting_request,
             { key: { name: ONBOARDING_SYSTEM_SETTING } },
+            systemSettingReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        return reply.system_setting?.value === 'true';
+    }
+
+    /**
+     * Whether the tenant's own setup wizard has completed, read from the
+     * settings the tenant holds.
+     *
+     * A provisioned tenant starts its own setup run after the deployment's
+     * first run finished, and that run clears the tenant's flag when it ends. A
+     * missing flag reads as false, which is the state a tenant is in until its
+     * run clears it, and a read that cannot be made at all throws so the caller
+     * decides what a refusal means.
+     */
+    async onboardingTenantComplete(): Promise<boolean> {
+        const reply = await this.#authenticatedCall(
+            systemSettingSubjects.get_system_setting_request,
+            { key: { name: ONBOARDING_TENANT_SETTING } },
             systemSettingReplySchema,
             { timeoutMs: this.#timeouts.fastMs },
         );

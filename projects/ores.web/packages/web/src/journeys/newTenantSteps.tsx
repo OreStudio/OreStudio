@@ -22,24 +22,29 @@
 /**
  * The steps every tenant journey runs.
  *
- * A tenant is chosen, described, reviewed, provisioned and handed over, and
- * both the first run and the new tenant journey do those five things. They are
- * written once here and placed on each rail, so a change to the way a tenant is
- * described reaches both journeys; the first run inlines them rather than
- * nesting a journey, so the person sees one rail. A first run that keeps the
- * system tenant alone runs only the first of them, because it creates no
- * tenant to describe.
+ * A tenant is chosen, described, reviewed and provisioned, and both the first
+ * run and the new tenant journey do those four things. They are written once
+ * here and placed on each rail, so a change to the way a tenant is described
+ * reaches both journeys; the first run inlines them rather than nesting a
+ * journey, so the person sees one rail. A first run that keeps the system
+ * tenant alone runs only the first of them, because it creates no tenant to
+ * describe.
+ *
+ * A journey that owns the browser when the run ends appends its own finish
+ * step, which signs the administrator out: the tenant's administrator finishes
+ * the tenant's own setup when they first sign in, so nobody stays in the tenant
+ * the run just made. The first run does not pass one, because the deployment's
+ * own rail has its own final step.
  *
  * The steps are data, which is why this is a function and not a component: the
  * page joins this list with its own steps and hands the result to the runtime.
  */
 
-import { useState, type ReactNode } from 'react';
-import { Button, Notice } from '../ui/Primitives.js';
+import type { ReactNode } from 'react';
 import { isProfileTaken, RunProgress, ProfileCards, TenantForm, TenantSummary } from './parts.js';
 import type { JourneyStep } from './runtime.js';
 import type { JourneyServer } from './server.js';
-import { provisionRequest, tenantPrincipal, type NewTenant } from './state.js';
+import { provisionRequest, type NewTenant } from './state.js';
 import type { Translator } from '../i18n/translate.js';
 import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
 
@@ -51,8 +56,15 @@ export interface NewTenantStepsInput {
     readonly state: NewTenant;
     /** The password the creating administrator typed, which a profile may reuse. */
     readonly creatingPassword: string;
-    /** Signs the creating administrator out, and into the tenant when asked. */
-    readonly onHandOff: (continueAsAdmin: boolean) => Promise<void>;
+    /**
+     * Ends the journey, where the journey owns the browser at the run's end.
+     *
+     * Only the new tenant journey passes this. The step signs the creating
+     * administrator out, because the tenant's own administrator finishes the
+     * tenant's setup when they first sign in. A first run leaves it out: its
+     * own final step is the one that ends the deployment's rail.
+     */
+    readonly onFinished?: () => Promise<void>;
     /**
      * The tenant codes the deployment already holds. A first run holds none,
      * so it passes nothing.
@@ -84,77 +96,6 @@ export interface StartingPointChoice {
     readonly chooseNoTenant: () => void;
 }
 
-/**
- * The hand-over, which is the last step the two journeys share.
- *
- * The person either becomes the tenant's administrator or passes the account
- * on; either way the creating administrator's session ends here, because the
- * next thing this browser does is sign in as somebody else.
- */
-function HandOff({
-    t,
-    principal,
-    mustChange,
-    onContinue,
-    onElsewhere,
-}: {
-    readonly t: Translator['t'];
-    readonly principal: string;
-    readonly mustChange: boolean;
-    readonly onContinue: () => Promise<void>;
-    readonly onElsewhere: () => Promise<void>;
-}): ReactNode {
-    const [busy, setBusy] = useState(false);
-    const [failure, setFailure] = useState<string>();
-
-    const choose = async (action: () => Promise<void>): Promise<void> => {
-        setFailure(undefined);
-        setBusy(true);
-        try {
-            await action();
-        } catch (error) {
-            setFailure(error instanceof Error ? error.message : String(error));
-        } finally {
-            setBusy(false);
-        }
-    };
-
-    return (
-        <div className="space-y-4">
-            <p className="text-sm text-ink-muted">
-                {t('journey.handOff.administrator', { principal })}
-            </p>
-            {failure !== undefined && <Notice tone="error">{failure}</Notice>}
-            <div className="grid gap-3 sm:grid-cols-2">
-                <button
-                    type="button"
-                    disabled={busy}
-                    className="card p-4 text-left hover:border-accent"
-                    onClick={() => void choose(onContinue)}
-                >
-                    <span className="font-semibold">{t('journey.handOff.continue')}</span>
-                    <p className="mt-1 text-sm text-ink-muted">
-                        {t('journey.handOff.continueHint', { principal })}
-                    </p>
-                </button>
-                <button
-                    type="button"
-                    disabled={busy}
-                    className="card p-4 text-left hover:border-line-strong"
-                    onClick={() => void choose(onElsewhere)}
-                >
-                    <span className="font-semibold">{t('journey.handOff.elsewhere')}</span>
-                    <p className="mt-1 text-sm text-ink-muted">
-                        {mustChange
-                            ? t('journey.handOff.elsewhereHintForced')
-                            : t('journey.handOff.elsewhereHint')}
-                    </p>
-                </button>
-            </div>
-        </div>
-    );
-}
-
 export function newTenantSteps(input: NewTenantStepsInput): readonly JourneyStep<ReactNode>[] {
     const { t, server, policy, profiles, state, creatingPassword } = input;
     const takenCodes = input.takenCodes ?? new Set<string>();
@@ -173,7 +114,7 @@ export function newTenantSteps(input: NewTenantStepsInput): readonly JourneyStep
     /*
      * The four stages that build the tenant. A first run that keeps the system
      * tenant alone stops at the starting point, because there is no tenant to
-     * describe, review, provision or hand over.
+     * describe, review or provision.
      */
     const tenantStages: readonly JourneyStep<ReactNode>[] = noTenant
         ? []
@@ -246,23 +187,31 @@ export function newTenantSteps(input: NewTenantStepsInput): readonly JourneyStep
                       enabled: state.runComplete,
                   },
               },
-              {
-                  id: 'handOff',
-                  title: t('journey.handOff.title'),
-                  lead: t('journey.handOff.lead'),
-                  final: true,
-                  body:
-                      details !== undefined ? (
-                          <HandOff
-                              t={t}
-                              principal={tenantPrincipal(details)}
-                              mustChange={profile?.forcePasswordChange ?? false}
-                              onContinue={() => input.onHandOff(true)}
-                              onElsewhere={() => input.onHandOff(false)}
-                          />
-                      ) : null,
-              },
           ];
+
+    /*
+     * The finish step is the journey's own ending, and only a journey that
+     * owns the browser passes one. Its action is the sign-out: the tenant's
+     * administrator is the one who finishes the tenant's setup, when they
+     * first sign in.
+     */
+    const finish: readonly JourneyStep<ReactNode>[] =
+        input.onFinished === undefined
+            ? []
+            : [
+                  {
+                      id: 'finish',
+                      title: t('journey.finish.title'),
+                      lead: t('journey.finish.lead'),
+                      final: true,
+                      body: null,
+                      next: {
+                          label: t('journey.finish.signOut'),
+                          enabled: true,
+                          run: async () => input.onFinished?.(),
+                      },
+                  },
+              ];
 
     return [
         {
@@ -293,5 +242,6 @@ export function newTenantSteps(input: NewTenantStepsInput): readonly JourneyStep
             },
         },
         ...tenantStages,
+        ...finish,
     ];
 }

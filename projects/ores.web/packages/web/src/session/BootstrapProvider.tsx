@@ -59,6 +59,14 @@ export type BootstrapState =
            * would hold it there forever.
            */
           readonly onboardingComplete: boolean;
+          /**
+           * Whether the tenant the caller signed in to finished its own setup.
+           *
+           * A provisioned tenant's setup is a run the tenant owns, and the run
+           * clears its flag when it ends. A session in a tenant whose flag is
+           * unset is held on the tenant setup screen.
+           */
+          readonly onboardingTenantComplete: boolean;
           readonly message: string;
           /** The build the deployment answered with, which every shell states. */
           readonly version: string;
@@ -118,6 +126,7 @@ export function BootstrapProvider({ children }: { readonly children: ReactNode }
                 inBootstrapMode: data.isInBootstrapMode,
                 hasTenant: data.hasTenant,
                 onboardingComplete: data.onboardingComplete,
+                onboardingTenantComplete: data.onboardingTenantComplete,
                 message: data.message,
                 version: data.version,
             },

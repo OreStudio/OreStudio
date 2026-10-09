@@ -102,6 +102,7 @@ import {
     readTenant,
     readPartiesPage,
     readProvisioningRuns,
+    readTenantSetupRun,
     readTenantSetups,
     listTenantsPage,
     retryWorkflowInstanceResultSchema,
@@ -114,6 +115,7 @@ import {
     partyPageSchema,
     tenantDetailResponseSchema,
     tenantPageSchema,
+    tenantSetupRunSchema,
     deploymentOverviewSchema,
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
@@ -357,6 +359,28 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
     }
 
+    /**
+     * Whether the caller's tenant recorded that its own setup run finished.
+     *
+     * The tenant setting is read through the session the caller presents, and a
+     * browser with no session answers false: a visitor is not a tenant
+     * administrator, and a tenant whose flag cannot be read is held on its setup
+     * screen rather than let through. The read is refused for a session that is
+     * not the tenant's, which the refusal already covers.
+     */
+    async function onboardingTenantComplete(request: FastifyRequest): Promise<boolean> {
+        const id = readSessionId(request);
+        const session = id === undefined ? undefined : sessions.get(id);
+        if (session === undefined) {
+            return false;
+        }
+        try {
+            return await session.client.onboardingTenantComplete();
+        } catch {
+            return false;
+        }
+    }
+
     function sessionResponse(session: LiveSession): unknown {
         return sessionViewSchema.parse({
             username: session.username,
@@ -472,6 +496,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 isInBootstrapMode: status.isInBootstrapMode,
                 hasTenant: status.hasTenant,
                 onboardingComplete: await onboardingComplete(request),
+                onboardingTenantComplete: await onboardingTenantComplete(request),
                 message: status.message,
                 version: status.version,
             });
@@ -534,6 +559,20 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         const session = requireSession(request);
         await session.client.completeSystemOnboarding();
         return { success: true };
+    });
+
+    /**
+     * The tenant administrator's own setup run.
+     *
+     * The session names the tenant, so the request carries nothing and the run
+     * cannot be another tenant's: the read is answered as this tenant's
+     * administrator, and the engine returns only the runs that tenant owns. An
+     * empty instance id is an answer rather than a failure, because a tenant
+     * whose setup has not been started is a state the screen states plainly.
+     */
+    server.get('/api/tenant-setup', async (request) => {
+        const session = requireSession(request);
+        return tenantSetupRunSchema.parse(await readTenantSetupRun(session.client));
     });
 
     /**

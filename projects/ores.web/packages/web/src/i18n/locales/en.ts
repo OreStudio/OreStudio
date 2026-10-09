@@ -1533,18 +1533,18 @@ export const en: SourceCatalogue = {
                 'The run rolled back the steps it had completed, so it left nothing behind.',
         },
 
-        handOff: {
-            title: 'Hand off',
-            lead: 'The tenant is ready. Its administrator signs in next.',
-            administrator: 'Its administrator is {principal}.',
-            continue: 'Continue as tenant admin',
-            continueHint: 'Sign in as {principal} now.',
-            elsewhere: 'Hand off to someone else',
-            elsewhereHint: 'Sign out and pass the username and the password on.',
-            elsewhereHintForced:
-                'Sign out and pass the username on. They set their own password at first sign-in.',
-            partyChoice:
-                'The tenant administrator works in more than one party, so the one to open cannot be chosen here. Sign in as them and choose one.',
+        finish: {
+            title: 'Tenant created',
+            lead: "The tenant is created. Its administrator finishes the tenant's own setup when they first sign in.",
+            signOut: 'Sign out',
+        },
+
+        tenantSetup: {
+            title: 'Finish setting up your tenant',
+            lead: "Your tenant's setup runs on the server. You can leave this page and come back.",
+            readFailed: 'The setup run could not be read. {message}',
+            noRun: "This tenant's setup has not been started. The deployment administrator has to start it.",
+            enter: 'Go to the application',
         },
 
         signIn: {
@@ -1571,7 +1571,7 @@ export const en: SourceCatalogue = {
 
         ready: {
             title: 'Ready',
-            lead: 'The installation is set up, and {principal} is signed in.',
+            lead: "The deployment is set up. The tenant's administrator finishes the tenant's own setup when they first sign in.",
             home: 'Go home',
         },
 
@@ -1657,6 +1657,9 @@ export const en: SourceCatalogue = {
         'Start the market feeds': 'Start the market feeds',
         "Starts the synthetic market data the tenant's curves and prices are built from.":
             "Starts the synthetic market data the tenant's curves and prices are built from.",
+        'Hand the tenant to its administrator': 'Hand the tenant to its administrator',
+        "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
+            "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.",
         Finish: 'Finish',
         'Marks the tenant ready: it stops bootstrapping and becomes active.':
             'Marks the tenant ready: it stops bootstrapping and becomes active.',

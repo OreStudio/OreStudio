@@ -29,7 +29,6 @@ import { firstRunSteps, type FirstRunChoice } from './firstRunSteps.js';
 import { newTenantSteps } from './newTenantSteps.js';
 import { canGoBack, indexOfStep } from './runtime.js';
 import { detailsFor, type NewTenant } from './state.js';
-import type { TenantEntry } from './FirstSignIn.js';
 import type { JourneyServer } from './server.js';
 import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
 
@@ -71,6 +70,7 @@ function fakeServer(): JourneyServer {
         createAdministrator: vi.fn(async () => undefined),
         recheckBootstrap: vi.fn(async () => undefined),
         completeSystemOnboarding: vi.fn(async () => undefined),
+        tenantSetupRun: vi.fn(async () => ({ instanceId: '', status: '', error: '' })),
         signIn: vi.fn(async () => ({ outcome: 'active', passwordResetRequired: false }) as const),
         chooseParty: vi.fn(async () => undefined),
         signOut: vi.fn(async () => undefined),
@@ -133,15 +133,10 @@ function steps(
         readonly choice?: FirstRunChoice;
         /** Records the starting point the person chose. */
         readonly onChoose?: (choice: FirstRunChoice) => void;
-        /** Whether the tenant administrator's sign-in has finished. */
-        readonly tenantSignInComplete?: boolean;
-        readonly entry?: TenantEntry;
         readonly onCreateAdministrator?: () => Promise<void>;
         readonly onAdministratorEntered?: () => Promise<void>;
-        readonly onAdministratorSignIn?: () => Promise<void>;
         readonly onCompleteSystemOnboarding?: () => Promise<void>;
         readonly onSignOutAfterBootstrap?: () => Promise<void>;
-        readonly goTo?: (id: string) => void;
     } = {},
 ) {
     return firstRunSteps({
@@ -160,24 +155,17 @@ function steps(
             acceptable: overrides.acceptable ?? true,
         },
         creatingPassword: overrides.creatingPassword ?? 'Issued-Password-1',
-        entry: overrides.entry,
-        tenantSignInComplete: overrides.tenantSignInComplete ?? false,
         welcome: 'Welcome body',
         administratorForm: 'Administrator body',
         administratorExists: overrides.administratorExists ?? false,
         administratorSignIn: 'Administrator sign-in body',
-        administratorArrival: 'Administrator arrival body',
         choice: overrides.choice ?? 'first-tenant',
         onChoose: overrides.onChoose ?? vi.fn(),
-        goTo: overrides.goTo ?? vi.fn(),
         onCreateAdministrator: overrides.onCreateAdministrator ?? vi.fn(async () => undefined),
         onAdministratorEntered: overrides.onAdministratorEntered ?? vi.fn(async () => undefined),
-        onAdministratorSignIn: overrides.onAdministratorSignIn ?? vi.fn(async () => undefined),
-        onHandOff: vi.fn(async () => undefined),
         onCompleteSystemOnboarding:
             overrides.onCompleteSystemOnboarding ?? vi.fn(async () => undefined),
-        onSignOutAfterBootstrap:
-            overrides.onSignOutAfterBootstrap ?? vi.fn(async () => undefined),
+        onSignOutAfterBootstrap: overrides.onSignOutAfterBootstrap ?? vi.fn(async () => undefined),
     });
 }
 
@@ -190,8 +178,6 @@ describe('the first run rail', () => {
             'details',
             'review',
             'provisioning',
-            'handOff',
-            'signIn',
             'ready',
         ]);
     });
@@ -204,8 +190,6 @@ describe('the first run rail', () => {
             'Describe the tenant',
             'Review',
             'Provisioning',
-            'Hand off',
-            'First sign-in',
             'Ready',
         ]);
     });
@@ -215,7 +199,7 @@ describe('the first run rail', () => {
             .filter((step) => step.final === true)
             .map((step) => step.id);
 
-        expect(final).toEqual(['provisioning', 'handOff', 'signIn']);
+        expect(final).toEqual(['provisioning']);
     });
 
     it('opens on the welcome, which asks the server nothing', () => {
@@ -270,9 +254,9 @@ describe('the first run rail', () => {
     });
 });
 
-/** The five steps both tenant journeys run, which this rail carries inline. */
+/** The four steps both tenant journeys run, which this rail carries inline. */
 function newTenantStepsIds(): readonly string[] {
-    return ['profile', 'details', 'review', 'provisioning', 'handOff'];
+    return ['profile', 'details', 'review', 'provisioning'];
 }
 
 describe('a step with no state behind it', () => {
@@ -316,7 +300,7 @@ describe('the starting point', () => {
             profiles: [profile],
             state: tenantState(),
             creatingPassword: 'Issued-Password-1',
-            onHandOff: vi.fn(async () => undefined),
+            onFinished: vi.fn(async () => undefined),
         }).find((step) => step.id === 'profile');
         const html = renderBody(profileStep?.body);
 
@@ -328,12 +312,11 @@ describe('the starting point', () => {
 describe('an installation that keeps the system tenant alone', () => {
     const systemOnly = () => steps({ choice: 'system-only' });
 
-    it('keeps the starting point and drops the four tenant stages', () => {
+    it('keeps the starting point and drops the tenant stages', () => {
         expect(systemOnly().map((step) => step.id)).toEqual([
             'welcome',
             'administrator',
             'profile',
-            'signIn',
             'ready',
         ]);
     });
@@ -342,12 +325,11 @@ describe('an installation that keeps the system tenant alone', () => {
         const tenant = steps({ choice: 'first-tenant' }).map((step) => step.id);
         const system = systemOnly().map((step) => step.id);
 
-        expect(tenant).toHaveLength(9);
+        expect(tenant).toHaveLength(7);
         expect(tenant.filter((id) => !system.includes(id))).toEqual([
             'details',
             'review',
             'provisioning',
-            'handOff',
         ]);
     });
 
@@ -360,33 +342,20 @@ describe('an installation that keeps the system tenant alone', () => {
         expect(indexOfStep(system, 'profile')).toBe(indexOfStep(tenant, 'profile'));
     });
 
-    it('marks the administrator sign-in as the one-way door', () => {
+    it('has no one-way door, because no step wrote anything', () => {
         const final = systemOnly()
             .filter((step) => step.final === true)
             .map((step) => step.id);
 
-        expect(final).toEqual(['signIn']);
+        expect(final).toEqual([]);
     });
 
-    it('signs in as the administrator the journey created', async () => {
-        const entered = vi.fn(async () => undefined);
-        const signIn = steps({ choice: 'system-only', onAdministratorSignIn: entered }).find(
-            (step) => step.id === 'signIn',
-        );
-
-        expect(signIn?.body).toBe('Administrator arrival body');
-        expect(signIn?.lead).toBe(
-            'The installation administrator signs in, and the installation is ready.',
-        );
-        expect(signIn?.next?.enabled).toBe(true);
-        await signIn?.next?.run?.();
-        expect(entered).toHaveBeenCalledTimes(1);
-    });
-
-    it('names the administrator it created once the installation is ready', () => {
+    it('states what the deployment is left with once it is ready', () => {
         const ready = systemOnly().find((step) => step.id === 'ready');
 
-        expect(ready?.lead).toBe('The installation is set up, and super_admin is signed in.');
+        expect(ready?.lead).toBe(
+            "The deployment is set up. The tenant's administrator finishes the tenant's own setup when they first sign in.",
+        );
     });
 
     it('records the finished wizard before it hands the browser over, on both rails', async () => {
@@ -432,66 +401,10 @@ describe('an installation that keeps the system tenant alone', () => {
         expect(canGoBack(system, indexOfStep(system, 'welcome'))).toBe(false);
     });
 
-    it('allows a step back from the sign-in, because no hand-over stands behind it', () => {
+    it('allows a step back from the ready step, because nothing wrote behind it', () => {
         const system = systemOnly();
-        const tenant = steps({ choice: 'first-tenant' });
 
-        expect(canGoBack(system, indexOfStep(system, 'signIn'))).toBe(true);
-        /*
-         * The tenant rail's sign-in has the hand-over behind it, and that step
-         * changed server state, so the person may not walk back into it.
-         */
-        expect(canGoBack(tenant, indexOfStep(tenant, 'signIn'))).toBe(false);
-    });
-});
-
-describe('the tenant rail the choice leaves alone', () => {
-    it('keeps the tenant sign-in waiting for the tenant administrator', () => {
-        const entry: TenantEntry = {
-            kind: 'active',
-            principal: 'northwind_admin@northwind',
-            password: 'Typed-Password-1',
-            resetRequired: false,
-        };
-        const signIn = steps({ entry, tenantSignInComplete: false }).find(
-            (step) => step.id === 'signIn',
-        );
-
-        expect(signIn?.body).not.toBe('Administrator arrival body');
-        expect(signIn?.body).not.toBeNull();
-        expect(signIn?.next?.enabled).toBe(false);
-        expect(signIn?.lead).toBe('The tenant administrator signs in for the first time.');
-    });
-
-    it('carries on as before once the tenant administrator has signed in', async () => {
-        const entry: TenantEntry = {
-            kind: 'active',
-            principal: 'northwind_admin@northwind',
-            password: 'Typed-Password-1',
-            resetRequired: false,
-        };
-        const goTo = vi.fn();
-        const signIn = steps({ entry, tenantSignInComplete: true, goTo }).find(
-            (step) => step.id === 'signIn',
-        );
-
-        expect(signIn?.next?.enabled).toBe(true);
-        await signIn?.next?.run?.();
-        expect(goTo).toHaveBeenCalledWith('ready');
-    });
-
-    it('names the tenant administrator when the installation is ready', () => {
-        const entry: TenantEntry = {
-            kind: 'active',
-            principal: 'northwind_admin@northwind',
-            password: 'Typed-Password-1',
-            resetRequired: false,
-        };
-        const ready = steps({ entry }).find((step) => step.id === 'ready');
-
-        expect(ready?.lead).toBe(
-            'The installation is set up, and northwind_admin@northwind is signed in.',
-        );
+        expect(canGoBack(system, indexOfStep(system, 'ready'))).toBe(true);
     });
 });
 

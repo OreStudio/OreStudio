@@ -23,22 +23,22 @@
  * The first run journey's rail.
  *
  * It is the steps that belong to the first run alone — the welcome, the
- * administrator and the arrival — with the five tenant steps placed between
+ * administrator and the final ready — with the tenant stages placed between
  * them. Building the list here rather than inside the page is what makes the
  * rail assertable without a browser: the list is data, and the page is the
  * state that fills it in.
  *
  * The person chooses on the starting point whether the installation ends with
- * a tenant of its own. That choice decides whether the four tenant stages
- * follow the starting point at all, so it is an input here rather than a flag
- * read somewhere else: the rail that is built is the rail the person was
- * promised.
+ * a tenant of its own. That choice decides whether the tenant stages follow the
+ * starting point at all, so it is an input here rather than a flag read
+ * somewhere else: the rail that is built is the rail the person was promised.
+ * The tenant's own setup is not a step here: the tenant owns that run, and its
+ * administrator finishes it when they first sign in.
  */
 
 import type { ReactNode } from 'react';
-import { FirstSignIn, type TenantEntry } from './FirstSignIn.js';
 import { newTenantSteps } from './newTenantSteps.js';
-import { defineJourney, type JourneyStep, type StepId } from './runtime.js';
+import { defineJourney, type JourneyStep } from './runtime.js';
 import type { JourneyServer } from './server.js';
 import type { NewTenant } from './state.js';
 import type { Translator } from '../i18n/translate.js';
@@ -56,10 +56,11 @@ export interface AdministratorDraft {
 /**
  * What the installation is left with when the journey finishes.
  *
- * `first-tenant` is the journey's ordinary ending: the administrator, a tenant
- * built from a starting point, and the tenant administrator's first sign-in.
- * `system-only` creates no tenant, so the installation keeps the system tenant
- * alone, which is the state a test installation wants.
+ * `first-tenant` is the journey's ordinary ending: the administrator and a
+ * tenant built from a starting point, left bootstrapping for its own
+ * administrator to finish. `system-only` creates no tenant, so the
+ * installation keeps the system tenant alone, which is the state a test
+ * installation wants.
  */
 export type FirstRunChoice = 'first-tenant' | 'system-only';
 
@@ -72,11 +73,6 @@ export interface FirstRunStepsInput {
     readonly administrator: AdministratorDraft;
     /** The password typed when the administrator was created. */
     readonly creatingPassword: string;
-    readonly entry: TenantEntry | undefined;
-    /** Whether the tenant administrator's first sign-in has finished. */
-    readonly tenantSignInComplete: boolean;
-    /** Called when that sign-in finishes, so the footer's action can open. */
-    readonly onTenantSignInComplete: () => void;
     /** Whether the installation ends with a tenant of its own, or without one. */
     readonly choice: FirstRunChoice;
     /** Records the starting point the person chose on the profile step. */
@@ -89,45 +85,35 @@ export interface FirstRunStepsInput {
     readonly administratorForm: ReactNode;
     /** The form that signs back in as an administrator the deployment holds. */
     readonly administratorSignIn: ReactNode;
-    /**
-     * What the system-only rail's sign-in shows above its action.
-     *
-     * No tenant administrator exists there, so the account that signs in is the
-     * administrator the journey just created.
-     */
-    readonly administratorArrival: ReactNode;
-    readonly goTo: (id: StepId) => void;
     /** Creates the administrator and enters the deployment as it. */
     readonly onCreateAdministrator: () => Promise<void>;
     /** Signs in as the administrator the deployment already has. */
     readonly onAdministratorEntered: () => Promise<void>;
-    /** Signs in as the administrator the journey created, on a system-only run. */
-    readonly onAdministratorSignIn: () => Promise<void>;
-    readonly onHandOff: (continueAsAdmin: boolean) => Promise<void>;
     /**
      * Records that the wizard finished, so the deployment can leave its setup
      * screen even when it keeps no tenant of its own.
      */
     readonly onCompleteSystemOnboarding: () => Promise<void>;
     /**
-     * Ends a bootstrap: signs the browser out and hands it the sign-in screen.
+     * Ends the run: signs the browser out and hands it the sign-in screen.
      *
      * Bootstrap runs as the system party because the settings it writes are
-     * tenant-wide, which is a party nobody should be left sitting in. Both
-     * rails end here, the tenant one included, so the installation's own
-     * administrator signs in again as itself once the deployment is set up.
+     * tenant-wide, which is a party nobody should be left sitting in. The
+     * tenant's administrator finishes the tenant's own setup when they first
+     * sign in, so the deployment's administrator is signed out rather than
+     * left inside the tenant it just made.
      */
     readonly onSignOutAfterBootstrap: () => Promise<void>;
 }
 
 export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<ReactNode>[] {
-    const { t, server, policy, administrator, entry, choice } = input;
+    const { t, server, policy, administrator, choice } = input;
     const known = input.administratorExists;
     /*
      * The starting point offers the profiles and the installation that keeps
-     * no tenant, and what it chooses is the rail: a profile runs the four
-     * tenant stages after it, and no tenant goes straight to the sign-in. The
-     * step is on both rails because it is where the choice is made.
+     * no tenant, and what it chooses is the rail: a profile runs the tenant
+     * stages after it, and no tenant goes straight to the ready step. The step
+     * is on both rails because it is where the choice is made.
      */
     const tenantSteps = newTenantSteps({
         t,
@@ -136,20 +122,12 @@ export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<R
         profiles: input.profiles,
         state: input.tenant,
         creatingPassword: input.creatingPassword,
-        onHandOff: input.onHandOff,
         startingPoint: {
             noTenant: choice === 'system-only',
             chooseTenant: () => input.onChoose('first-tenant'),
             chooseNoTenant: () => input.onChoose('system-only'),
         },
     });
-    /*
-     * The arrival names the account that is signed in when the journey ends:
-     * the tenant's administrator on the tenant rail, and the administrator the
-     * journey created on the system-only one.
-     */
-    const principal =
-        choice === 'first-tenant' ? (entry?.principal ?? '') : administrator.principal;
 
     return defineJourney([
         {
@@ -188,40 +166,6 @@ export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<R
         },
         ...tenantSteps,
         {
-            id: 'signIn',
-            title: t('journey.signIn.title'),
-            lead:
-                choice === 'first-tenant'
-                    ? t('journey.signIn.lead')
-                    : t('journey.signIn.systemLead'),
-            final: true,
-            body:
-                choice === 'first-tenant' ? (
-                    entry !== undefined ? (
-                        <FirstSignIn
-                            server={server}
-                            policy={policy}
-                            entry={entry}
-                            onReady={input.onTenantSignInComplete}
-                        />
-                    ) : null
-                ) : (
-                    input.administratorArrival
-                ),
-            next:
-                choice === 'first-tenant'
-                    ? {
-                          label: t('common.continue'),
-                          enabled: input.tenantSignInComplete,
-                          run: async () => input.goTo('ready'),
-                      }
-                    : {
-                          label: t('common.continue'),
-                          enabled: true,
-                          run: async () => input.onAdministratorSignIn(),
-                      },
-        },
-        {
             id: 'ready',
             title: t('journey.ready.title'),
             /*
@@ -229,15 +173,14 @@ export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<R
              * A notice repeating it under the same title was the same statement
              * three times on one screen.
              */
-            lead: t('journey.ready.lead', { principal }),
+            lead: t('journey.ready.lead'),
             body: null,
             next: {
                 label: t('journey.ready.home'),
                 enabled: true,
                 run: async () => {
-                    // The flag is what releases the gate on an installation
-                    // that kept the system tenant alone, so it is written
-                    // before the browser is handed over, on both rails.
+                    // The flag is what releases the gate, so it is written
+                    // before the browser is handed over.
                     await input.onCompleteSystemOnboarding();
                     await input.onSignOutAfterBootstrap();
                 },

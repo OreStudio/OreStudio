@@ -47,6 +47,7 @@ import type {
     SeedProfileChoice,
     SignupRequest,
     SignupResult,
+    TenantSetupRun,
     WorkflowProgress,
 } from '@ores/wire-protocol/browser';
 
@@ -59,6 +60,13 @@ export interface JourneyServer {
      * only the system tenant can leave the setup screen.
      */
     readonly completeSystemOnboarding: () => Promise<void>;
+    /**
+     * The signed-in tenant's own setup run, as the setup screen follows it.
+     *
+     * An empty instance id says the tenant has no run, which the screen states
+     * rather than following.
+     */
+    readonly tenantSetupRun: () => Promise<TenantSetupRun>;
     readonly signIn: (credentials: {
         readonly username: string;
         readonly password: string;
@@ -99,6 +107,7 @@ export function useJourneyServer(): JourneyServer {
             },
             recheckBootstrap: recheck,
             completeSystemOnboarding: api.completeSystemOnboarding,
+            tenantSetupRun: api.tenantSetupRun,
             signIn,
             chooseParty,
             switchParty,

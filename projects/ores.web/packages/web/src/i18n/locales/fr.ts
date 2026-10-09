@@ -1552,19 +1552,18 @@ const fr: SourceCatalogue = {
                 "L'exécution a annulé les étapes qu'elle avait terminées, elle ne laisse donc rien derrière elle.",
         },
 
-        handOff: {
-            title: 'Passation',
-            lead: 'Le locataire est prêt. Son administrateur se connecte ensuite.',
-            administrator: 'Son administrateur est {principal}.',
-            continue: "Continuer en tant qu'administrateur du locataire",
-            continueHint: 'Connectez-vous en tant que {principal} maintenant.',
-            elsewhere: 'Passer la main à quelqu’un d’autre',
-            elsewhereHint:
-                "Déconnectez-vous et transmettez le nom d'utilisateur et le mot de passe.",
-            elsewhereHintForced:
-                "Déconnectez-vous et transmettez le nom d'utilisateur. La personne définit son propre mot de passe à la première connexion.",
-            partyChoice:
-                "L'administrateur du locataire travaille dans plusieurs parties ; celle à ouvrir ne peut pas être choisie ici. Connectez-vous en tant que lui et choisissez-en une.",
+        finish: {
+            title: 'Locataire créé',
+            lead: 'Le locataire est créé. Son administrateur termine la configuration du locataire lors de sa première connexion.',
+            signOut: 'Se déconnecter',
+        },
+
+        tenantSetup: {
+            title: 'Terminer la configuration de votre locataire',
+            lead: "La configuration de votre locataire s'exécute sur le serveur. Vous pouvez quitter cette page et revenir.",
+            readFailed: "L'exécution de configuration n'a pas pu être lue. {message}",
+            noRun: "La configuration de ce locataire n'a pas été lancée. L'administrateur du déploiement doit la lancer.",
+            enter: "Accéder à l'application",
         },
 
         signIn: {
@@ -1592,7 +1591,7 @@ const fr: SourceCatalogue = {
 
         ready: {
             title: 'Prêt',
-            lead: "L'installation est configurée et {principal} est connecté.",
+            lead: "Le déploiement est configuré. L'administrateur du locataire termine la configuration de son locataire lors de sa première connexion.",
             home: "Aller à l'accueil",
         },
 
@@ -1679,6 +1678,9 @@ const fr: SourceCatalogue = {
         'Start the market feeds': 'Démarrer les flux de marché',
         "Starts the synthetic market data the tenant's curves and prices are built from.":
             'Démarre les données de marché synthétiques à partir desquelles les courbes et les prix du locataire sont construits.',
+        'Hand the tenant to its administrator': 'Remettre le locataire à son administrateur',
+        "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
+            "Démarre la propre exécution de configuration du locataire, qui s'exécute en tant qu'administrateur du locataire et termine le locataire.",
         Finish: 'Terminer',
         'Marks the tenant ready: it stops bootstrapping and becomes active.':
             'Marque le locataire comme prêt : il quitte le mode amorçage et devient actif.',

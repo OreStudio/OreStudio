@@ -30,13 +30,16 @@ import type { SessionState } from './SessionProvider.js';
 import type { SessionView } from '@ores/wire-protocol/browser';
 
 /**
- * The gate, pinned to the persona that holds the rail.
+ * The gate, pinned to the persona that holds each rail.
  *
  * A first-run installation that keeps only the system tenant finishes with no
  * tenant of its own, and the wizard signs the person out as its last act. The
  * flag that says the wizard finished can only be read through a session, so a
  * browser with none reads it as false. That must not return the setup rail: the
- * rail is the login screen's, and this file pins each branch of that rule.
+ * rail is the login screen's. Once the deployment is set up, a tenant that has
+ * not finished its own run holds that tenant's administrator on the tenant
+ * setup screen, and a flag read as finished releases them. This file pins each
+ * branch of both rules.
  */
 
 const party = {
@@ -69,8 +72,16 @@ const afterBareSystem: BootstrapState = {
     inBootstrapMode: false,
     hasTenant: false,
     onboardingComplete: false,
+    onboardingTenantComplete: false,
     message: '',
     version: 'v0.0.25 (test)',
+};
+
+/** What the deployment answers once the first run finished and made a tenant. */
+const afterFirstRun: BootstrapState = {
+    ...afterBareSystem,
+    hasTenant: true,
+    onboardingComplete: true,
 };
 
 const anonymous: SessionState = { status: 'anonymous' };
@@ -85,6 +96,7 @@ function render(path: string, gate: BootstrapState, session: SessionState): stri
                         gate={gate}
                         session={session}
                         journey={<p>First run journey</p>}
+                        tenantSetupJourney={<p>Tenant setup screen</p>}
                         newTenantJourney={<p>New tenant journey</p>}
                         newPartyJourney={<p>New party journey</p>}
                         signUpJourney={<p>Registration door</p>}
@@ -100,7 +112,7 @@ function render(path: string, gate: BootstrapState, session: SessionState): stri
     );
 }
 
-describe('the bootstrap rail after a Bare-system run', () => {
+describe('the bootstrap rail the deployment answers with', () => {
     it('does not return for a browser with no session, and the login screen shows', () => {
         const html = render('/login', afterBareSystem, anonymous);
 
@@ -115,14 +127,30 @@ describe('the bootstrap rail after a Bare-system run', () => {
         });
 
         expect(html).toContain('First run journey');
+        expect(html).not.toContain('Tenant setup screen');
     });
 
-    it('does not hold a session in an ordinary tenant', () => {
-        const html = render('/login', afterBareSystem, {
+    it('holds a tenant administrator whose tenant setup has not finished', () => {
+        const html = render('/login', afterFirstRun, {
             status: 'authenticated',
             session: sessionIn('application'),
         });
 
+        expect(html).toContain('Tenant setup screen');
+        expect(html).not.toContain('First run journey');
+    });
+
+    it('releases a tenant administrator once the tenant setup recorded its finish', () => {
+        const html = render(
+            '/',
+            { ...afterFirstRun, onboardingTenantComplete: true },
+            {
+                status: 'authenticated',
+                session: sessionIn('application'),
+            },
+        );
+
+        expect(html).not.toContain('Tenant setup screen');
         expect(html).not.toContain('First run journey');
     });
 });

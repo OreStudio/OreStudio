@@ -25,16 +25,18 @@
  * An installation with no administrator and no tenant is brought to life on one
  * rail. The person chooses at the starting point what the installation is left
  * with: the ordinary ending creates the first tenant, whose stages run inline,
- * and its administrator takes over and signs in; the other creates no tenant, so
- * the installation keeps the system tenant alone. The five tenant steps are the
- * shared library, so the new tenant journey runs the same ones rather than a
- * copy of them.
+ * and leaves it bootstrapping for its own administrator; the other creates no
+ * tenant, so the installation keeps the system tenant alone. The four tenant
+ * stages are the shared library, so the new tenant journey runs the same ones
+ * rather than a copy of them. The tenant's own setup is its administrator's
+ * run, not a step here, so this rail ends once the tenant exists and the
+ * system flag is recorded.
  *
  * Two things the journey does are worth stating where they happen. The browser
  * signs in as the administrator it just created, because the starting-point
  * read and the provisioning request belong to an account; and it holds that
  * administrator's password in memory for no longer than the journey, because a
- * profile may hand the password to the tenant's administrator and nothing may
+ * profile may give the password to the tenant's administrator and nothing may
  * write it down.
  */
 
@@ -46,9 +48,8 @@ import { JourneyPage } from './JourneyPage.js';
 import { JourneyHeader } from './parts.js';
 import { indexOfStep } from './runtime.js';
 import { firstRunSteps, type AdministratorDraft, type FirstRunChoice } from './firstRunSteps.js';
-import type { TenantEntry } from './FirstSignIn.js';
 import type { JourneyServer } from './server.js';
-import { administratorPassword, tenantPrincipal, useNewTenant } from './state.js';
+import { useNewTenant } from './state.js';
 import type { PasswordPolicy, PartySummary, SeedProfileChoice } from '@ores/wire-protocol/browser';
 
 /** What a fresh installation's administrator is almost always called. */
@@ -121,21 +122,6 @@ export function WelcomeIntro(): ReactNode {
                 </li>
             ))}
         </ul>
-    );
-}
-
-/**
- * What the system-only rail's sign-in shows.
- *
- * No tenant was created, so there is no tenant administrator to hand over to:
- * the account that signs in is the administrator the journey just made. The
- * journey holds that password, so the step signs in with it rather than asking
- * for it a second time.
- */
-export function AdministratorArrival({ principal }: { readonly principal: string }): ReactNode {
-    const { t } = useTranslation();
-    return (
-        <p className="text-sm text-ink-muted">{t('journey.signIn.administrator', { principal })}</p>
     );
 }
 
@@ -267,17 +253,15 @@ export function FirstRunJourney({
         acceptable: false,
     });
     const [creatingPassword, setCreatingPassword] = useState('');
-    const [entry, setEntry] = useState<TenantEntry>();
-    const [tenantSignInComplete, setTenantSignInComplete] = useState(false);
     /*
      * What the installation is left with. The ordinary ending is the default,
      * and the choice lives here rather than on the server because it is the
      * person's, made in front of them on the starting point.
      *
-     * The choice changes the rail's shape: the four tenant stages and the
-     * tenant sign-in come and go. The control that makes it is on the starting
-     * point, which is the last step both rails share, so only steps after the
-     * one the person stands on change and the position stays inside both rails.
+     * The choice changes the rail's shape: the four tenant stages come and go.
+     * The control that makes it is on the starting point, which is the last step
+     * both rails share, so only steps after the one the person stands on change
+     * and the position stays inside both rails.
      */
     const [choice, setChoice] = useState<FirstRunChoice>('first-tenant');
     /*
@@ -322,40 +306,6 @@ export function FirstRunJourney({
             onStarted();
         }
     }, [onStarted]);
-
-    const handOff = async (continueAsAdmin: boolean): Promise<void> => {
-        if (tenant.profile === undefined || tenant.details === undefined) {
-            return;
-        }
-        const tenantPassword = administratorPassword(tenant.details, creatingPassword);
-        const tenantUser = tenantPrincipal(tenant.details);
-        await server.signOut();
-        if (!continueAsAdmin) {
-            setEntry({ kind: 'sign-in', principal: tenantUser, password: '' });
-        } else {
-            const outcome = await server.signIn({
-                username: tenantUser,
-                password: tenantPassword,
-            });
-            setEntry(
-                outcome.outcome === 'party-required'
-                    ? {
-                          kind: 'party',
-                          principal: tenantUser,
-                          password: tenantPassword,
-                          parties: outcome.parties,
-                          resetRequired: outcome.passwordResetRequired,
-                      }
-                    : {
-                          kind: 'active',
-                          principal: tenantUser,
-                          password: tenantPassword,
-                          resetRequired: outcome.passwordResetRequired,
-                      },
-            );
-        }
-        setAt(indexOfStep(steps, 'signIn'));
-    };
 
     /**
      * Signing in as the deployment's administrator.
@@ -443,13 +393,9 @@ export function FirstRunJourney({
         tenant,
         administrator: draft,
         creatingPassword,
-        entry,
-        tenantSignInComplete,
-        onTenantSignInComplete: () => setTenantSignInComplete(true),
         choice,
         onChoose: setChoice,
         welcome: <WelcomeIntro />,
-        administratorArrival: <AdministratorArrival principal={draft.principal} />,
         administratorForm: (
             <AdministratorForm
                 policy={policy}
@@ -461,7 +407,6 @@ export function FirstRunJourney({
                 }
             />
         ),
-        goTo: (id) => setAt(indexOfStep(steps, id)),
         administratorExists: !inBootstrapMode,
         administratorSignIn: (
             <AdministratorSignIn
@@ -472,8 +417,6 @@ export function FirstRunJourney({
         ),
         onCreateAdministrator: createAdministrator,
         onAdministratorEntered: () => enterAsAdministrator(draft.password),
-        onAdministratorSignIn: () => signInAsAdministrator(creatingPassword),
-        onHandOff: handOff,
         onCompleteSystemOnboarding: () => server.completeSystemOnboarding(),
         onSignOutAfterBootstrap: async () => {
             await server.signOut();

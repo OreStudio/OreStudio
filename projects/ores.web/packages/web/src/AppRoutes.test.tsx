@@ -57,6 +57,7 @@ const inBootstrap: BootstrapState = {
     inBootstrapMode: true,
     hasTenant: false,
     onboardingComplete: false,
+    onboardingTenantComplete: false,
     message: 'This deployment has not been provisioned.',
     version: 'v0.0.25 (test)',
 };
@@ -65,6 +66,7 @@ const ready: BootstrapState = {
     inBootstrapMode: false,
     hasTenant: true,
     onboardingComplete: true,
+    onboardingTenantComplete: true,
     message: '',
     version: 'v0.0.25 (test)',
 };
@@ -93,6 +95,7 @@ const environment: EnvironmentView = {
  * The journey's own screens are asserted in its own file.
  */
 const journey = <p>First run journey</p>;
+const tenantSetupJourney = <p>Tenant setup screen</p>;
 const newTenantJourney = <p>New tenant journey</p>;
 const newPartyJourney = <p>New party journey</p>;
 const signUpJourney = <p>Registration door</p>;
@@ -131,6 +134,7 @@ function render(
                         gate={gate}
                         session={sessionState}
                         journey={journey}
+                        tenantSetupJourney={tenantSetupJourney}
                         newTenantJourney={newTenantJourney}
                         newPartyJourney={newPartyJourney}
                         signUpJourney={signUpJourney}

@@ -86,6 +86,7 @@ interface Harness {
 function buildTestServer(
     overrides: {
         readonly setting?: () => Promise<boolean>;
+        readonly tenantSetting?: () => Promise<boolean>;
         readonly complete?: () => Promise<void>;
     } = {},
 ): Harness {
@@ -98,6 +99,10 @@ function buildTestServer(
         async onboardingSystemComplete(): Promise<boolean> {
             calls.push('onboardingSystemComplete');
             return overrides.setting === undefined ? false : overrides.setting();
+        },
+        async onboardingTenantComplete(): Promise<boolean> {
+            calls.push('onboardingTenantComplete');
+            return overrides.tenantSetting === undefined ? false : overrides.tenantSetting();
         },
         async completeSystemOnboarding(): Promise<void> {
             calls.push('completeSystemOnboarding');
@@ -152,7 +157,10 @@ function buildTestServer(
 
 describe('GET /api/bootstrap', () => {
     it('carries the wizard flag beside the IAM facts, so a system-only run can leave the rail', async () => {
-        const { server, sessionId } = buildTestServer({ setting: async () => true });
+        const { server, sessionId } = buildTestServer({
+            setting: async () => true,
+            tenantSetting: async () => true,
+        });
 
         const response = await server.inject({
             method: 'GET',
@@ -165,9 +173,29 @@ describe('GET /api/bootstrap', () => {
             isInBootstrapMode: false,
             hasTenant: false,
             onboardingComplete: true,
+            onboardingTenantComplete: true,
             message: 'This deployment has no tenant of its own.',
             version: 'v0.0.25 (test)',
         });
+
+        await server.close();
+    });
+
+    it('answers the tenant flag false when its setting read fails', async () => {
+        const { server, sessionId } = buildTestServer({
+            tenantSetting: async () => {
+                throw new Error('the settings read was refused');
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/bootstrap',
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ onboardingTenantComplete: false });
 
         await server.close();
     });

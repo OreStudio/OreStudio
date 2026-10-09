@@ -77,6 +77,7 @@ import {
     partyPageSchema,
     tenantDetailResponseSchema,
     tenantPageSchema,
+    tenantSetupRunSchema,
     deploymentOverviewSchema,
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
@@ -113,6 +114,7 @@ import {
     type PartyPage,
     type TenantDetailResponse,
     type TenantPage,
+    type TenantSetupRun,
     type DeploymentOverview,
     type TenantStatus,
     type TenantType,
@@ -276,6 +278,17 @@ export const api = {
             headers: JSON_HEADERS,
             body: JSON.stringify({}),
         });
+    },
+
+    /**
+     * The signed-in tenant's own setup run.
+     *
+     * The session names the tenant, so the request carries nothing. An empty
+     * instance id is the answer when the tenant has no run to follow, which the
+     * setup screen states rather than treating as a failure.
+     */
+    async tenantSetupRun(): Promise<TenantSetupRun> {
+        return tenantSetupRunSchema.parse(await request('/api/tenant-setup', { method: 'GET' }));
     },
 
     async login(credentials: Credentials): Promise<LoginResult> {

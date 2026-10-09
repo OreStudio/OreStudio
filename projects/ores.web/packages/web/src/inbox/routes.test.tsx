@@ -84,6 +84,7 @@ const gate: BootstrapState = {
     inBootstrapMode: false,
     hasTenant: true,
     onboardingComplete: true,
+    onboardingTenantComplete: true,
     message: '',
     version: 'v0.0.25 (test)',
 };

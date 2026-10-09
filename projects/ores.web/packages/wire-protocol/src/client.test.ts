@@ -215,6 +215,43 @@ describe('OresClient system onboarding', () => {
 
         expect(await client.onboardingSystemComplete()).toBe(false);
     });
+
+    it('reads the tenant wizard flag by name through the same settings read', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'variability.v1.system_settings.get': [
+                {
+                    body: {
+                        result: { outcome: 'ok', code: '', message: '' },
+                        system_setting: { value: 'true' },
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        expect(await client.onboardingTenantComplete()).toBe(true);
+        expect(transport.decodeCall(1)).toEqual({ key: { name: 'onboarding.tenant' } });
+    });
+
+    it('reads a tenant that never ran its setup as unfinished rather than as an error', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'variability.v1.system_settings.get': [
+                {
+                    body: {
+                        result: { outcome: 'missing', code: 'not_found', message: '' },
+                        system_setting: null,
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        expect(await client.onboardingTenantComplete()).toBe(false);
+    });
 });
 
 describe('OresClient login', () => {

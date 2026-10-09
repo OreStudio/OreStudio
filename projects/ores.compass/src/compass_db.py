@@ -486,6 +486,22 @@ def cmd_recreate(project_root, env, args):
     if rc:
         return rc
 
+    # The JetStream store outlives the database, so the workflow service
+    # still holds start messages that name the tenants the recreate just
+    # deleted. The database is already wiped here, so a purge that cannot
+    # run is a warning, not a failure: returning non-zero would report the
+    # completed wipe as the thing that broke.
+    print("\n--- Clearing this environment's JetStream ---")
+    try:
+        import nats_purge
+        rc = nats_purge.run([], project_root)
+        if rc != 0:
+            print("Warning: JetStream was not cleared; stale work may be "
+                  "replayed into the new database.", file=sys.stderr)
+    except (ImportError, OSError) as e:
+        print(f"Warning: JetStream was not cleared ({e}); stale work may be "
+              f"replayed into the new database.", file=sys.stderr)
+
     mins, secs = divmod(int(time.time() - start), 60)
     print("\n=== Database recreation complete ===")
     print(f"Duration: {mins}m {secs:02d}s")

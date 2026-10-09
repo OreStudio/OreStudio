@@ -5142,8 +5142,11 @@ def cmd_nats(argv):
     if argv and argv[0] == "ensure":
         import nats_ensure
         return nats_ensure.run(argv[1:], PROJECT_ROOT)
+    if argv and argv[0] == "purge":
+        import nats_purge
+        return nats_purge.run(argv[1:], PROJECT_ROOT)
     print("Usage: compass nats <subcommand>", file=sys.stderr)
-    print("Subcommands: init, certs, ensure", file=sys.stderr)
+    print("Subcommands: init, certs, ensure, purge", file=sys.stderr)
     return 1
 
 

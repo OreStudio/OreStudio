@@ -8,7 +8,7 @@
 #+filetags: :show_who_did_it_in_audit:sprint_27:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2976
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2976][#2976]] | [web] Name the account in every audit row |
 
 * Review
 

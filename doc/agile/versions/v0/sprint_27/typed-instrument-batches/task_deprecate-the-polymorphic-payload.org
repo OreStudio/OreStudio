@@ -95,8 +95,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The polymorphic-payload pattern is deprecated and the replacement is recorded.
 
 - =polymorphic_types_over_nats.org= now opens with a deprecation notice, states

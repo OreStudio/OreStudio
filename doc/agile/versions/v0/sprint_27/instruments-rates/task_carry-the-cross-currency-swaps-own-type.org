@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/carry-the-cross-currency-swaps-own-type
-#+pr: 2951
+#+pr: 2952
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -106,6 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2952][#2952]] | [agile] Remove the duplicated sections three task pages carry |
 | [[https://github.com/OreStudio/OreStudio/pull/2951][#2951]] | [ore] Carry the cross-currency swap's own type |
 
 * Review
@@ -122,43 +123,3 @@ export. The importer stores =CrossCurrencySwap= where the document used
 writes the element and the trade type the row names. The case that covers it
 imports and exports a document holding one of each, and the two come out
 apart.
-* Measurements
-
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
-
-* Notes
-
-* Test Scenarios
-
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
-
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
-
-* PRs
-
-| PR | Title |
-|----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/2951][#2951]] | [ore] Carry the cross-currency swap's own type |
-
-* Review
-
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
-* Result

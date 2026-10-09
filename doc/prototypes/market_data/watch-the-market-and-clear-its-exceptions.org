@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: AA3173B2-5959-4CE1-A75A-467E7CCFBA2C
+:END:
+#+title: Watch the market and clear its exceptions prototype
+#+description: The market watch screen three ways and three mock markets, arguing that the market's exceptions are cleared where they are seen, so the quotes and the fallbacks belong on one screen.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:market_watch:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:watch-the-market-and-clear-its-exceptions/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The market watch prototype argues that the market's exceptions are cleared where
+they are seen, so the quotes and the fallbacks belong on one screen. It draws the
+trader's watch screen three ways — beside the quotes, below them, and queue-first
+— against three mock markets.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data. It exists because the
+[[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][journey]] settles what watching and
+clearing do — the scope, the three kinds of failure, the fallback — and records
+that no exception entity, no exception subject and no resolution subject exist
+yet. It opens on variant *a* and market =clean=.
+
+* Detail
+
+** The question
+
+The journey makes the watch and the clearing one act: a separate list and a
+separate decision form would split one act across two pages. The raw points are
+the evidence — time, oresmd URI, value, source and age — and the exceptions are
+the points that fail, in three kinds at once: missing, stale and crossed. The
+journey records the defects the screen is written against: an observation carries
+no quality or rejection, no subject lists or resolves an exception, the scope is
+not typed, and a fallback has no subject. The prototype asks how quotes, failure
+and fallback sit together when none is stored.
+
+** The variants
+
+Switch with the *Exception list* buttons in the bottom bar, or =?variant=. The
+variant is where the exception list sits, which is the screen's central design
+question.
+
+| Variant | Name              | The structural argument |
+|---------+-------------------+-------------------------|
+| =a=     | beside the quotes | The raw points and the exceptions share the width in two columns, with the session's resolutions across the foot. The exceptions stand where the offending values are. |
+| =b=     | below the quotes  | One column: the scope, the raw points, the exceptions, the resolutions. The reading order the journey's wireframe draws, and the one that pushes the fallbacks below the fold. |
+| =c=     | queue-first       | The exceptions and their fallbacks come first, the resolutions next, and the raw points sit behind a caption at the foot. The clearing leads and the evidence supports it. |
+
+The variants disagree about structure, not colour: *A* gives the quotes and the
+exceptions equal standing, *B* keeps the journey's order, and *C* leads with the
+failures.
+
+** The states
+
+Switch with the *Market* buttons in the bottom bar, or =?state=. The state is the
+mock market the page reads.
+
+| State     | What it shows |
+|-----------+---------------|
+| =clean=   | Eight points, all fresh and present. The exceptions panel says *clean* and that every point in the scope is fresh, present and consistent with its neighbours. |
+| =crossed= | A missing =2Y= point, a crossed =10Y= value at 4.612 above the =20Y= point at 4.022, and a stale =30Y= point six hours old from =vendor.x.feed=. All three kinds at once. |
+| =stale=   | Two stale points, =1Y= at 1h 12m and =10Y= at 48m, against the threshold of 15m. |
+
+The =crossed= state is the argument in one screen: all three kinds the journey
+names, each with its detail in words. The =clean= state is the counter-case: with
+nothing to clear, the screen says so rather than leaving a blank.
+
+** Driving it
+
+The scope, the raw points and the exceptions are live to read. A *Refresh* button
+reports that it refreshed at 11:30:04 with the same scope and nothing written.
+Every exception offers the three fallbacks — *carry forward*, *proxy*,
+*escalate* — and choosing one records it in *Resolutions this session*, with the
+actor and the reason the page holds for each. Any combination of variant and
+market is a URL, because every button rewrites the query string. Each oresmd URI
+opens the oresmd URL editor in an overlay. No other click writes.
+
+** What is fake
+
+Everything. The feed binding =synthetic.v1.ir_curve=, the eight points and their
+times, values, sources and ages; the three kinds and their details; the three
+fallbacks, their actors and their reasons; the threshold of 15m; and the 84-row
+count are constants in the page. There is no server, no session and no build
+step, and nothing is stored: a resolution lives on the page for the session only.
+
+** Where the code lives
+
+=doc/prototypes/market_data/watch-the-market-and-clear-its-exceptions/=. One
+file, =index.html=, holding its markup, styles and script, with no framework and
+no build step. The site copies the directory as it stands and adds nothing to it.
+The URI button opens =../oresmd-url-editor/index.html= in an overlay, so the page
+borrows the editor prototype beside it and embeds no copy of its own.
+
+** The verdict
+
+The group accepted the argument rather than a layout: the market's exceptions are
+cleared where they are seen, so the quotes and the fallbacks belong on one screen,
+and watching and clearing read as one act. The screen carries the scope, the raw
+points with their source and age, and the exceptions with the fallback a person
+chooses, offered on the exception itself rather than on a form of its own.
+
+What stayed on the page as the record: the three variants and the three markets,
+kept because the argument holds whether the list is beside, below or before the
+quotes, and in a clean market as well as a broken one; the session-only
+resolutions panel, kept as the record that a choice has no subject and no fields;
+and the oresmd URL editor overlay.
+
+** What it does not settle
+
+Which variant wins. Beside, below and queue-first are all drawn and none is
+chosen; the choice belongs to the operations the server will carry.
+
+The exception. No subject raises, lists or resolves an exception, and no entity
+holds one, so the three kinds are computed in the page and shown read-only.
+
+Where a resolution is recorded. A fallback has no subject and no fields, so it
+lives on the page for the session. A carried-forward value can be written through
+=market_observations.put=, but that write carries no actor, no reason and no link
+to the exception, so a cleared point reads as a market point.
+
+The thresholds and the scope. Nothing stores the age at which a point is stale or
+what counts as crossed, so the page holds one threshold of 15m for every scope,
+and nothing names a set of quotes the server resolves.
+
+The quality mark. An observation carries no quality and no rejection, so the
+screen marks what it can compute from the values and the ages.
+
+* See also
+
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — the journey this prototype answers.
+- [[id:6C44C1D0-B257-4B4A-9580-98845BEA9AFC][Market data prototypes]] — the group page, and the table this prototype sits in.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — why a consumer must know where a point came from before it can read the who and the why.

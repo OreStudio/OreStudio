@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 45F5E06E-B1FD-404F-8B41-7744960EAB2D
+:END:
+#+title: Manage yield curve process types prototype
+#+description: Two runtime-managed catalogues, the short-rate models and their parameter definitions, drawn as the screens the IR curve editor's Process tab reads, in three variants and four states
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:manage-yield-curve-process-types/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The manage yield curve process types prototype argues what the two
+runtime-managed catalogues behind the IR curve editor's Process tab should look
+like: the short-rate models the editor offers, and the parameter definitions each
+model takes.
+
+Three variants and four mock states are carried, so the layout is judged
+against rows. It argues the group page's row: the models and their parameters
+are data, not code, so a new model appears with no change to the editor.
+
+It is throwaway. It reads no service, and it is not production code. Open the
+[[file:manage-yield-curve-process-types/][process type catalogue]].
+
+* Detail
+
+** The question
+
+The Process tab chooses one of the seeded short-rate models and renders one row
+per parameter the catalogue defines for it, with its symbol, default, minimum and
+maximum. The open question is what a catalogue-managed form looks like when the
+model is a row and not a branch: what the two catalogues show, and whether the
+parameters the types share are declared once or repeated in every type. The
+one-factor engines share four names, the two-factor engine replaces two of them
+with a pair per factor, and the log-normal engine adds a lattice step count.
+
+** The variants
+
+Switch with the bar at the bottom, or =?variant=. The default is =a=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | Process type catalogue | One row per type: order, code, name, description and parameter count, with Edit, Delete and New Process Type. The catalogue the editor's picker reads. |
+| =B= | Parameter definitions | One row per parameter of the selected type: parameter, display name, symbol, short label, data type, default, minimum, maximum and order, with Edit and New Definition, and a bar chart of the defaults. The form the editor renders, drawn as a catalogue. |
+| =C= | Parameter defaults across types | A heat map of types by parameter name, shaded by the default value and empty where a type does not define the parameter, beside the argument for one shared parameter set. |
+
+The variants disagree about structure, not colour. *A* edits the catalogue the
+picker reads, *B* edits the rows the form renders, and *C* compares the types.
+
+** The states
+
+Switch with the bar at the bottom, or =?state=. The default is =vasicek=.
+
+| State | What it shows |
+|-------+---------------|
+| =vasicek= | The four shared definitions: =kappa=, =theta=, =sigma= and =initial_rate=. |
+| =cir= | The same four, plus =market_price_of_risk=, a row this type alone carries; =initial_rate= is tightened to a non-negative minimum, because the square-root volatility needs a non-negative rate. |
+| =hull_white= | The four shared definitions, with =kappa= described as the speed of reversion to the time-dependent target. |
+| =empty= | A catalogue with no types: each panel states that there is nothing to show. |
+
+The type picker in variant *B* also offers Two-Factor Gaussian and
+Black-Karasinski, whose extra rows are mocked. The empty state is part of the
+argument: the Process tab would offer no model, and every IR curve feed fails.
+
+** Driving it
+
+The bottom bar switches variant and state, and both are query parameters too, so
+=?variant=c&state=cir= opens one screen directly. In variant *A* the buttons are
+Edit, Delete and New Process Type; in variant *B* they are the type picker, Edit
+and New Definition. Every write button rewrites only the prototype note at the
+top of the page, and nothing on the page changes.
+
+The two =oresmd://= URLs open the oresmd URL editor prototype in an overlay, and
+a URL it returns is written back into the button. Every control is prototype
+chrome, drawn to look unlike the design being judged.
+
+** What is fake
+
+Everything on the page is mock data. The five types are the service seed, but the
+catalogue is runtime-managed, so no row is authoritative. The four parameters of
+Vasicek, CIR and Hull-White are seeded; the Two-Factor Gaussian and
+Black-Karasinski sets, and the =market_price_of_risk= row CIR carries, are mocked.
+There is no server, no session and no build step. Nothing is read or stored, and
+a reload returns the page to its seed.
+
+** Where the code lives
+
+=doc/prototypes/market_data/manage-yield-curve-process-types/=. One file,
+=index.html=, with its CSS and its JavaScript inline: no framework, no
+=prototype.css= or =prototype.js=, and no build step. The page opens by
+double-clicking the file. The site build copies the directory through
+=ores-deploy-web-app= as it stands and adds nothing to it.
+
+** The verdict
+
+The group accepted the argument and recorded it as the row this note answers to:
+the short-rate models and their parameters are data, not code, so a new model
+appears in the editor with no change to the editor. The two catalogues are the
+editor's only source, and it draws whatever they hold.
+
+The comparison of *C*, and its argument that the shared parameters should be
+declared once, stayed on the page as the record. The three variants and the four
+states stayed with it, and a panel from any of them may still be borrowed.
+
+** What it does not settle
+
+The shared set. Variant *C* argues that the shared names should be declared once,
+so the editor renders one base form and adds only the model-specific rows.
+Whether the catalogue repeats them, as it does now, or declares them once, is
+open.
+
+The code paths and the names. Two factories disagree about the five types the
+page draws: the parameter mapping layer constructs all five, and the quant
+process factory constructs three and throws for the rest. The mapping layer also
+expects =kappa_x= and =sigma_x=, where the page mocks the numbered pair.
+
+The bounds. A definition carries a data type, a default, a minimum and a maximum,
+and a null bound is open rather than zero. Whether the editor validates a typed
+value against those bounds is not drawn. Whether the catalogue also marks a
+solver setting, such as =lattice_steps=, apart from a shape parameter is open.
+
+Writing. Edit, Delete, New Process Type and New Definition are drawn and none is
+wired. Whether these catalogues are edited in the shell under the system tenant,
+or only by seed and migration, is not settled here.
+
+* See also
+
+- The journey that answers to this prototype, *Manage yield curve process types*,
+  has no document yet.
+- [[file:index.org][Market data prototypes]] — the group page, and the row that records what this prototype argues.
+- [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]] — the reference-data table, the parameter names each engine accepts, and the two factories that disagree about them.
+- [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]] — the IR curve editor whose Process tab reads the two catalogues.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.

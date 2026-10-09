@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: CDDB1207-3453-4147-8288-06CCAB8C304B
+:END:
+#+title: Publish the approved set prototype
+#+description: The trader's publish screen before it is built: three variants of the confirmation and three states of one approved set, with mock data, no publish operation and no server behind the act
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:publish:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                             |
+|---------------+---------------------------------------------------|
+| Prototype     | [[file:publish-the-approved-set/][the prototype]] |
+| Gemini review | none                                              |
+| Group         | [[file:index.org][Market data prototypes]]        |
+
+* Summary
+
+The publish the approved set prototype argues that publishing is the moment the
+candidate becomes what pricing uses, and the approval count decides whether a
+person stands in it. It carries three variants of the confirmation and three
+states of one approved set, so the moment can be judged concretely.
+
+It is throwaway. It reads no service, and every value on it is mock data. The
+[[id:53F31919-86FA-4E35-8594-9E72197C4A3B][journey]] settles what a publish
+*does*; this page settles what the trader *sees* while applying one. Open the
+[[file:publish-the-approved-set/][publish the approved set screen]].
+
+* Detail
+
+** The question
+
+The journey gives the trader one reading and one act: the approval at the top,
+the points it covers beneath it, the publish act with its publisher, and the
+consumers that will see the new version. The open question is where the
+publishing control sits relative to what it publishes, so nothing becomes live
+before the trader has read what will.
+
+The second half of the question is the approval count. The kind's
+=approvals_required= is zero or more: when it is n, a person stands between the
+candidate and the published curve, and when it is zero the raise is the publish
+and nobody decides. One screen has to read both.
+
+** The variants
+
+Switch with the bottom bar, or with =?variant=a=, =?variant=b= or =?variant=c=.
+The default is =a=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | Set summary | The set confirmed as a whole: its curves, its points, its currencies, its as-of, its recipe and its source, then the individual points, the act, the consumers and the notices. The shape of the set first, at the cost of hiding the rows behind its count. |
+| =B= | Per curve | One row per curve, with its currency, its points, its tenors, its last value and its approval, then the points, the act, the consumers and the notices. The set as the curves it will move. |
+| =C= | Publish & notify | The act leads, the notice list follows it, then the points and the consumers. Closest to the journey's ordering, and it draws a notification that no kind yet describes. |
+
+The variants disagree about where the act and the notices belong, not about the
+set; all three render the same approval header, points table, act and consumers
+panel.
+
+** The states
+
+Switch with the bottom bar, or with =?state=zero=, =?state=one= or
+=?state=failed=. The default is =one=.
+
+| State | What it shows |
+|-------+---------------|
+| =zero= | The kind requires no approval, so the raise is the publish. The header reads =approved at raise — 0 required=, the approver field is empty, the act counts =0 — satisfied by the raise=, and the button reads *Publish now (no approval required)*. |
+| =one= | One approval stands, given by =m.oduya= at 2026-10-06 16:31. The header reads =approved 1 of 1= and the button reads *Publish approved set*. |
+| =failed= | A publish that did not apply. The header reads =publish failed=, the note records that the candidate set is unchanged and the previous curve is still in use, and the button reads *Retry publish approved set*. |
+
+The state decides the kind's count as well as the request: =zero= sets
+=approvals_required= to 0 and nobody stands in the publish; the other two set it
+to 1 and a person does. The count is the kind's rule, as the header says.
+
+** Driving it
+
+The bottom bar switches the variant and the state, and every change is written
+to the query string through =URLSearchParams=, so any pair can be linked. Press
+the publish button and the note records the mock publish by =a.reyes= at
+2026-10-06 16:00 UTC, then the button disables; in =failed= the retry fails too.
+Every control is prototype chrome, and the banner states the variant and state.
+
+** What is fake
+
+Everything on the page is mock data: the approved points and their values, the
+curves, the recipes, the request, the kind and its terms, the three people, the
+approval and the consumers are hard-coded literals.
+
+There is no server, no session and no build step. The publish calls nothing: it
+writes a sentence into the note. No curve is published, no marker is written, no
+consumer is told, and nothing is stored. Reload and it is as it was.
+
+** Where the code lives
+
+=doc/prototypes/market_data/publish-the-approved-set/=. The directory holds one
+file, =index.html=, with its CSS and its JavaScript inline: no framework, no
+=prototype.css=, no =prototype.js=, and no build step. The site build copies the
+directory through =ores-deploy-web-app= as it stands and adds nothing to it, and
+nothing in it is compiled, generated or rewritten.
+
+** The verdict
+
+The group accepted the argument and recorded it as the row this note answers to:
+publishing is the moment the candidate becomes what pricing uses, and the
+approval count decides whether a person stands in it.
+
+What the group took is the reading before the act: the approval and its count at
+the top, the points it covers beneath it, the act with its publisher and its
+as-of, and the consumers after it, so nothing becomes live before the trader has
+read what will.
+
+The three variants and the three states stayed on the page as the record of the
+question, so a later screen can borrow a panel from any of them.
+
+** What it does not settle
+
+The publish operation. No operation applies an approved set, so the act is a
+sentence in the page and the button exists only here. Whether publishing writes
+a marker, moves the curve, or both, is open; the journey's /What is missing/
+records the same gap, and the zero count follows from it.
+
+The marker and the baseline. Nothing marks a curve published, so a consumer
+cannot tell a candidate from the live curve, and the page only asserts that
+pricing reads the published version from the act's moment.
+
+The notices and the record. No market-data notification kind says what a publish
+notice is, so variant =C= draws three recipients and tells none of them. Whether
+the act is kept with the publisher and the moment is open;
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] argues the general shape.
+
+* See also
+
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — the journey this prototype renders.
+- [[file:index.org][Market data prototypes]] — the group page, and the row that records what this prototype argues.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record the approval is held in, and the four-eyes rule the count obeys.

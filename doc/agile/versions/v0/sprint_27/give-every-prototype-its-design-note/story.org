@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: BA876F60-B926-46C5-8F29-6A75B58893DB
+:END:
+#+title: Story: Give every prototype its design note
+#+description: Fifty prototypes sit in the tree and eleven carry a design note. Market data's twenty-one have none, so the group is one table where the convention wants a page per prototype.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every prototype has a page beside it that argues what the prototype is, and the group page links it instead of carrying the argument in a cell.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FD266B72-1EFC-43D5-A550-65FC7D49E06D][Write the 21 market data design notes]] | DONE | 2026-10-09 | 2026-10-09 | Give each of the market data prototypes the design record the convention asks for, and link it from the group page. |
+| [[id:06E8C139-92B7-4D36-8742-BECF4A0C399C][Bring the other groups their design notes]] | BACKLOG | | | Eighteen prototypes across eight groups still have no design note, and their group pages still describe the note as optional. |
+
+* Decisions
+
+* Out of scope
+
+-

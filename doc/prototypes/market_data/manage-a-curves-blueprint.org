@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 376B1546-B83E-4F87-95B9-BF39510C899D
+:END:
+#+title: Manage a curve's blueprint prototype
+#+description: Three pillar-editor variants and three mock blueprints for the trader's Manage a curve's blueprint screen
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:curves:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:manage-a-curves-blueprint/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The blueprint prototype argues what the trader's *Manage a curve's blueprint*
+screen holds before any of it is built. It carries three shapes for the pillar
+editor and three mock blueprints, so the list, its order and the method that
+reads it are judged with something concrete in front of you.
+
+The argument is the group page's. A curve's blueprint is its pillars and the
+method that joins them, and the pillar editor is where the design question
+sits. The conventions below the editor are that method; the identity above it
+names the output series the pillars will build.
+
+It is throwaway: not production code, reads no service, mock data only. It
+exists because the journey settles what a blueprint *is* and nothing yet
+settles how a person shapes one. Open the
+[[file:manage-a-curves-blueprint/][blueprint]]. The flat pillared table,
+variant *A*, is accepted.
+
+* Detail
+
+** The question
+
+The journey's Goal is that every bootstrap of a curve reads the same pillars
+and the same conventions. It fixes the pillar row as a sequence, a start
+tenor, an end tenor and a curve role, and it makes the order meaningful: the
+bootstrap reads the list from the top down.
+
+The open question is the editor. A blueprint has no name, so the screen titles
+it by the oresmd URI of its output series. The person must read cause above
+effect, and each candidate shape hides a different part of that.
+
+** The variants
+
+Switch with the bottom bar, or =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | One flat list | Every pillar in one table, in blueprint sequence order, with the sequence, the tenors, the curve role, the instrument and the market beside them. Closest to the journey, which describes one row per pillar. |
+| =B= | Grouped by instrument kind | Deposits, then FRAs, then swaps, each group its own table with a count. The segment boundary, the split tenor, is stated rather than drawn. |
+| =C= | Drag-ordered list | One row per pillar as a card, moved with the handle or the arrows. The list is the sequence, and the order is what the bootstrap reads. |
+
+A is a table whose order is a column. B reads the same rows by kind, so it
+spends a heading on the structure a desk recognises and loses the single
+sequence. C makes order the whole interaction, the most work for the least
+certainty. None of them prices an instrument.
+
+** The states
+
+Switch with the bottom bar, or =?state=.
+
+| State | What it shows |
+|-------+---------------|
+| =funding= | A USD =FUNDING= blueprint at version 4, nine SOFR pillars from 1M to 30Y, and no discount curve, which is what a funding blueprint is. |
+| =projection= | A USD =PROJECTION= blueprint at version 1 with no discount curve chosen. The screen marks the omission and the save is refused. |
+| =empty= | A new blueprint: the role is unset, the series is minted on the first save, and no pillars exist, so the chart panel explains the empty state instead of drawing it. |
+
+The projection state carries the rule. A projection that discounts off nothing
+cannot be built, so the page marks the discount curve required and refuses the
+save. The deposit quotes are lifted by 0.0100 so the two states read apart at a
+glance. That lift is mock arithmetic and nothing else.
+
+** Driving it
+
+The page is live. Add a pillar, remove one, move one up or down in variant
+*C*, and switch the family role from the select. *Save blueprint* answers with
+what would be written: a config version and a count of pillar rows, or the
+refusal when a projection has no discount curve. The output series opens the
+oresmd URL editor in a frame, and the edited URI returns to the field.
+
+Under the editor sit two charts that read the blueprint's own shape: a ladder
+with one point per pillar at its end tenor, coloured by curve role, and a bar
+for each segment, the interval from the previous tenor to this one in months.
+A pillar without a quote is marked at a nominal level. Every control is
+prototype chrome.
+
+** What is fake
+
+Everything. The currency, the family roles, the instruments, the quotes, the
+version numbers, the writers in the history and the refusal are hard-coded.
+There is no server, no session, no build step, nothing is stored, and the save
+writes nothing. A new pillar arrives with a placeholder instrument and no quote.
+
+** Where the code lives
+
+=doc/prototypes/market_data/manage-a-curves-blueprint/=. One file,
+=index.html=, plain HTML, CSS and JavaScript, no framework and no build step.
+The site copies the directory as it stands and adds nothing to it.
+
+** The verdict
+
+The flat pillared table, variant *A*, is accepted, because the pillar row is a
+sequence row and one table shows the sequence, the curve role and the
+instrument in the order the bootstrap reads them. The ladder and the segment
+chart under it are accepted with it: they make the shape the blueprint
+declares readable before any curve exists.
+
+*B* and *C* stay on the page as the record. B remains the reading a desk wants
+when it asks which segment a pillar belongs to, and C remains the argument
+that order is worth an interaction of its own. Neither is adopted.
+
+** What it does not settle
+
+The discount-curve picker. The projection state draws the refusal but not the
+picker that offers this currency's funding blueprints.
+
+Where the oresmd URL editor opens. The page borrows the editor prototype in a
+frame, and whether the real screen opens that dialog or an inline field is open.
+
+The soft reference on a tenor. The page marks a code the list does not hold.
+Whether the real screen refuses the save or carries a warning is open.
+
+The two writes. Saving writes the config and then the pillar rows, and a
+failure between them leaves a partly updated list. The page draws one save
+button and does not settle the recovery.
+
+Approval. The page writes that no approval kind covers a blueprint change yet.
+Whether a change of pillars should need approval is not answered here.
+
+* See also
+
+- [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][User Journey: Manage a curve's blueprint]] — the journey this prototype answers.
+- [[file:index.org][Market data prototypes]] — the group page, and the row for this prototype.
+- [[id:FA45D3D1-C3D9-4FDB-B03B-8AB724D71092][Interest Rate Curves]] — how a curve is built from its pillars.

@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 0E6FBBEB-8330-451B-9C24-776E313E262A
+:END:
+#+title: Watch a curve or surface evolve prototype
+#+description: The evolution of one curve or surface as one view at two zooms, an instant and a range, with the aligned grid of instants by nodes and the nodes that appeared or dropped, on three layouts and three mock markets
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:evolution:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:watch-a-curve-or-surface-evolve/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The evolution prototype argues that one instant and a range are the same view at
+different zoom. The object and its time control sit at the top, the aligned grid
+of instants by nodes in the middle, and the added, dropped and two-instant
+comparison at the bottom.
+
+It is throwaway: not production code, reading no service, every value mock. It
+exists because the [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][journey]] settles
+what the evolution view reads but not how it is shown. The alignment is the view,
+and the nodes an instant added or dropped are what the range adds to the instant.
+
+Open the [[file:watch-a-curve-or-surface-evolve/][evolution view]]; it opens on
+variant *A*, market =churn= and the range zoom.
+
+* Detail
+
+** The question
+
+The journey's Goal is to see how a curve or surface moved, to read one instant
+and a range at the zoom the person needs, and to name the nodes that appeared or
+dropped between two instants, and it leaves open whether those readings are two
+screens or one. A term structure is drawn from points that rarely share one
+observation instant, so a curve stitched across market horizons draws as the same
+shape as a curve read from one, and the ages are what tell them apart.
+
+** The variants
+
+Switch with the *Layout* buttons in the bottom bar, or =?variant=. The variant is
+the reading, which the journey records as the central design question.
+
+| Variant | Name       | The structural argument |
+|---------+------------+-------------------------|
+| =a=     | matrix     | The matrix of instants by nodes: one row per node, one column per instant, the value and the age of its point in every cell. The alignment drawn at its plainest, and the shortest read of what changed where. |
+| =b=     | sparklines | A per-node row with a sparkline of the range, its first and last value, its move, its gaps and its age at the read. Reads one node's shape, and gives the node set only as gaps. |
+| =c=     | compare    | Two chosen instants side by side, with the signed difference per node and the node set labelled *added*, *dropped* or *both*. The journey's comparison step, and the narrowest of the three. |
+
+The variants disagree about the reading, not colour: *A* reads the whole grid,
+*B* one node across the range, *C* two columns and their difference.
+
+** The states
+
+Switch with the *Market* buttons, or =?state=. The state is the mock market the
+page reads.
+
+| State     | What it shows |
+|-----------+---------------|
+| =stable=  | The same six tenors at every instant, each published within two minutes of its instant. Read from one instant, the spread stays under the threshold, and the screen says *one market state*. |
+| =churn=   | The 9M tenor is carried only by the first instant and the 2Y only from the third, with publication lags from 20 seconds to two and a half hours. Nodes appear and drop across the range, and the spread crosses the threshold, so the screen says *stitched across market horizons*. |
+| =surface= | A swaption surface keyed by expiry and delta and built horizon by horizon, with the 2Y ATM appearing at the third instant and the 30Y ATM carried only at the first. Draws the change from the first instant to the last as a heat map of the grid, not as a line. |
+
+The threshold is the argument in one number: the half hour of spread the journey
+states, at or over which the panel is flagged stale and the curve is called
+stitched across market horizons, and under which it is called one market state.
+
+The zoom is the second switch, =?show=: =instant= draws one column and =range= all
+five, the same grid at one column or five, which is the prototype's whole claim.
+
+** Driving it
+
+The bottom bar switches layout, zoom and market, and every button rewrites the
+query string rather than hiding panels in place, so any combination is a URL. The
+compared instants are =?a= and =?b=, set by the two selects in the compare variant,
+and the series URI opens the oresmd URL editor in an overlay. *Apply* is inert: it
+names the missing subject, that the range always ends at now.
+
+** What is fake
+
+Everything. The series URI, its subclass, its asset classes and its derivation;
+the five instants; the six tenors of the curve markets and the seven expiries
+and deltas of the surface; every value; every node's publication lag and
+therefore every age; and the read's own instant, the mock's last column. There is
+no server, no session and no build step, and nothing is stored. The three plots
+are drawn on the page by a dependency-free SVG helper in the same file, and the
+half-hour threshold is the journey's own number.
+
+** Where the code lives
+
+=doc/prototypes/market_data/watch-a-curve-or-surface-evolve/=. One file,
+=index.html=, holding its markup, styles and script, with a plotting helper =PC=
+in the same file, and no framework and no build step; there is no =prototype.css=
+and no =prototype.js=. The site copies the directory as it stands through
+=ores-deploy-web-app= and adds nothing to it. The URI button opens
+=../oresmd-url-editor/index.html= in an overlay, borrowing the editor prototype
+beside it.
+
+** The verdict
+
+The group accepted the argument rather than one layout: one instant and a range
+are the same view at different zoom, the alignment is the view, and the nodes an
+instant added or dropped are what the range adds. It accepted the readings the
+page insists on: every value carries the age of the point behind it, the read
+states the instant the ages are relative to, and a spread at or over half an hour
+is drawn as a stitched curve.
+
+What stayed on the page as the record: the three layouts and the three markets,
+because the churn and surface cases are what produce the added and dropped nodes
+and the warning; the two zooms; and the surface heat map. No Gemini review was
+raised.
+
+** What it does not settle
+
+Which layout wins. The matrix, the sparkline list and the compare are all drawn
+and none is chosen; the choice belongs to the reads the server will answer.
+
+The as-of read and the range. =marketdata.v1.curve_snapshot.get= answers for now
+and carries no time, and =marketdata.v1.ops.get_curve_snapshot_buckets= ends at
+now, so the range always ends at the read's own instant and the past is not shown.
+
+The set of instants and the difference. No request names two or more instants and
+returns one snapshot per instant, so the comparison and its difference are
+computed on the page from two reads.
+
+The alignment and the shape. The reply is unaligned with text values, so the grid
+is aligned in the browser on the =oresmd_uri= and a hole in a bucket is a gap,
+not a typed null; and with no declared node set, a node that should be there and
+is not cannot be told from a node not part of the curve at all.
+
+* See also
+
+- [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — the journey this prototype answers.
+- [[id:6C44C1D0-B257-4B4A-9580-98845BEA9AFC][Market data prototypes]] — the group page, and the table this prototype sits in.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — why a term structure's points rarely share one instant, and why the age belongs beside the value.

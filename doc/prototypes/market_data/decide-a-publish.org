@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 213FE9F1-9189-4C36-965E-EFA6F589482D
+:END:
+#+title: Decide a publish prototype
+#+description: The checker's decision screen before it is built: the tenant's queue, the delta against the last published values, the QA checks, the decisions so far, and one answer that must carry a comment
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:approval:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:decide-a-publish/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The decide a publish prototype argues what the checker's screen should look
+like before any of it is built: three variants of the queue and four states of
+one request, so the shape of the decision can be judged concretely.
+
+The argument it makes is the row the group accepted: the checker decides from
+the delta and the checks, with a comment, and the kind may ask for more than one
+pair of eyes. The delta is what would change, the checks are whether the change
+is sound, the comment is what the decision carries, and the kind's count is how
+many distinct people must say yes.
+
+It is throwaway, it reads no service, and every value on it is mock data. It
+exists because the [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][journey]] settles
+what a decision *does*; nothing yet settles what the checker *sees* while
+weighing one. Open the [[file:decide-a-publish/][decide a publish screen]].
+
+* Detail
+
+** The question
+
+The journey gives the checker one reading and one answer: the request's header,
+the proposed change against the last published values, the checks run over the
+candidates, the rule that decides the request, and the decisions already taken.
+
+The open question is how that reading and the answer that follows it belong on
+one screen. The checker must see what the request would change before the
+controls that change it, and the screen must say when the request needs more than
+one pair of eyes and that the checker is one of them.
+
+** The variants
+
+Switch with the bottom bar, or with =?variant=a=, =?variant=b= or =?variant=c=.
+The default is =a=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | list beside | The queue and the request header share the top as two columns, with the delta, the checks, the decisions and the answer beneath them. The queue stays visible while the checker reads, at the cost of width for the delta. |
+| =B= | request first | The request, its delta, its checks, its decisions and the answer come first, in the order they are read, and the queue follows as a compact strip. The reading is undisturbed and the queue is pushed out of sight. |
+| =C= | group inbox | A group inbox leads: each deciding group with its open and held counts, its oldest request, and whether the checker may decide it. Then the queue, then the request. The tenant's whole waiting work is visible, and the checker's own queue is one row among several. |
+
+The variants disagree about where the queue belongs, not about the request. All
+three render the same header, delta, checks, decisions and answer, in that order.
+
+** The states
+
+Switch with the bottom bar, or with =?state=waiting=, =?state=held=,
+=?state=decided= or =?state=multi=. The default is =waiting=.
+
+| State | What it shows |
+|-------+---------------|
+| =waiting= | One approval is required and none stands. The answer offers Approve, Refuse and Hold, and the comment field is filled with 2026-10-06's quotes. |
+| =held= | The request is parked by a hold from =m.oduya=, with the reason "Waiting on the 4pm fixing". The decision panel still offers the three answers, and the decisions panel shows the one already taken. |
+| =decided= | The request is approved by =m.oduya= with the comment "Checked against the 16:00 quotes", and the decision panel says it can no longer be decided. |
+| =multi= | The kind requires two approvals and one stands, given by =j.silva=. The request is still waiting, and the panel says the checker is one of several. |
+
+The state decides the kind's count as well as the request: in =multi= the header
+reads =approvals_required=, and two distinct people must approve.
+
+** Driving it
+
+The bottom bar switches the variant and the state, and every change is written
+to the query string through =URLSearchParams=, so any pair can be linked. The
+decision buttons are live: press *Approve*, *Refuse* or *Hold* and the note
+records the answer by =m.oduya= with a comment. Clear the comment first and the
+press is refused with "A comment is required", because a refusal always needs one
+and this kind also asks for one on approval. Every control is prototype chrome,
+and the banner states the variant and the state in hand.
+
+** What is fake
+
+Everything on the page is mock data: the curves, the tenors, the candidate and
+last published values, the checks, the queue, the people, the kind, its deciding
+group, its permission and its seven-day life are hard-coded literals. There is
+no server, no session and no build step. A decision writes a sentence into the
+note and the page is unchanged on reload. The "no marker" in the delta and the
+"unknown" beside each check state what the server cannot yet answer.
+
+** Where the code lives
+
+=doc/prototypes/market_data/decide-a-publish/=. The directory holds one file,
+=index.html=, with its CSS and its JavaScript inline: no framework, no
+=prototype.css=, no =prototype.js=, and no build step. The site build copies the
+directory through =ores-deploy-web-app= as it stands and adds nothing to it. No
+build file names the prototype, and nothing in the directory is compiled,
+generated or rewritten.
+
+** The verdict
+
+The group accepted the argument and recorded it as the row this note answers to:
+the checker decides from the delta and the checks, with a comment, and the kind
+may ask for more than one pair of eyes. What the group took is the reading
+before the answer, a comment bound to the decision, and a request whose count is
+read from its kind.
+
+The three variants and the four states stayed on the page as the record of the
+question, so a later screen can borrow a panel from any of them. The group kept
+the request's own shape, not a particular arrangement of the queue: the header,
+the delta, the checks, the decisions so far, then the answer.
+
+** What it does not settle
+
+The baseline. Nothing marks a curve published, so there is no delta to read and
+the panel shows the candidate values against "no marker". Whether the system
+holds the last published set, or the screen builds the difference, is open.
+
+The checks. No operation runs the three checks over a candidate set and returns
+a result, so each reads =unknown=: not checked, not passed.
+
+The deciding group. The model names a decide permission and not a group, so
+"Market data approvers" is a candidate the page shows beside the permission code
+rather than a name it trusts.
+
+The record around the decision. Whether the reason is kept, whether expiry is
+enforced, whether a hold takes a reason from a list, and how the maker is told
+what was decided are open; [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]
+argues the general shape.
+
+* See also
+
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the journey this prototype renders.
+- [[file:index.org][Market data prototypes]] — the group page, and the row that records what this prototype argues.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record a decision is written to, its lifecycle and the four-eyes rule.

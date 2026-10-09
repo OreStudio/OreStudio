@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: CF90F53A-654D-4DC4-98A4-D9560C6F24E5
+:END:
+#+title: Adjust a curve or surface by hand prototype
+#+description: A trader corrects a candidate by hand, and the screen's argument is that the hand point must read as one the market did not send
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:adjustment:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:adjust-a-curve-or-surface-by-hand/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The hand adjustment prototype argues that a hand adjustment is a
+first-class point with an actor and a reason, and that it must read as a
+point the market did not send. It draws the candidate, the forms that
+apply a correction, and the state of every correction at the foot, so the
+distinction can be judged on the screen that has to make it.
+
+It is throwaway. It is not production code, it reads no service, and every
+value on it is mock data. It exists because the
+[[id:478EFA03-AB47-4286-A3CE-583C7438632D][journey]] settles what a correction
+does and why it carries a reason; nothing yet settles how a person, reading
+the candidate, tells a hand point from a point the feed sent.
+
+Open the [[file:adjust-a-curve-or-surface-by-hand/][hand adjustment]].
+
+* Detail
+
+** The question
+
+The journey gives one screen: the candidate and its points at the top, the
+correction forms in the middle, the state of every correction at the foot.
+The open question is what a hand point *is* on that screen. The journey
+records the defect it is written against: a point carries no actor and no
+marker that a person wrote it, so a feed write is indistinguishable from a
+hand value. The prototype asks whether a point can carry that fact — who
+keyed it, why, and when — and what survives when the feed ticks again.
+
+The group's answer, and the one this page argues, is that the adjustment is
+a point in its own right, not a shadow of the observation it replaces: it
+has an actor, a reason and a time, and it stands until it is cleared.
+
+** The variants
+
+Switch with the *Apply* buttons in the bottom bar, or =?variant=. The
+variant is how the adjustment is applied, which is the journey's central
+design question.
+
+| Variant | Name      | The structural argument |
+|---------+-----------+-------------------------|
+| =a=     | one node  | *Set manual point — edit one node*: one tenor, one value, one reason. The candidate table reads each point as *as fed* or *override*. The narrowest act, and the one the journey names first. |
+| =b=     | spread    | *Apply spread overlay — over a segment*: a kind (*Parallel* or *Twist*), the segment it applies to (=2Y-10Y=, =5Y-30Y=, or all nodes), a shift and a reason. The candidate table gains an *Overlay* column, and the curve chart bands the segment. One act moves many points without touching their levels. |
+| =c=     | paste     | *Paste a set of nodes*: a block of =tenor value= lines, and one reason for the whole block. The candidate table gains a *Pasted* column, and the chart bands =1Y-10Y=. Several manual points in one act. |
+
+The variants disagree about the unit of correction, not about colour. A
+corrects one coordinate. B corrects a segment by a delta, so the feed
+levels survive. C brings levels from outside the screen.
+
+** The states
+
+Switch with the *Corrections* buttons, or =?state=. The state is the mock
+market the screen reads against.
+
+| State       | What it shows |
+|-------------+---------------|
+| =none=      | No manual point. The feed values stand and nothing is published. |
+| =some=      | =5Y= and =10Y= keyed by =a.reyes= (*Desk mark*, *Thin market*), and a *Twist* overlay over =2Y-10Y= keyed by =m.oduya=. |
+| =overwrite= | The =5Y= manual point, and a feed tick at =14:07= that tried to write =3.8825= over it. The point shows the feed's attempt beside it, marked as the feed's write, and the corrections table states that the hand value is held. |
+
+The *Survives a feed write* column is the argument in one cell. In =none=
+and =some= it reads *no precedence rule*, because none exists and the
+screen will not invent one. In =overwrite= it reads *held, hand wins until
+cleared*, the candidate the journey states.
+
+** Driving it
+
+The forms are live, but no button writes. Each correction button reports
+that it is inert, with the subject it is missing, in the strip at the top.
+The variant and state buttons rewrite the query string, so any combination
+is a URL. The curve chart is drawn only for *b* and *c*.
+
+** What is fake
+
+Everything. The eight feed pillars, their values, roles, sources and times;
+the manual points; the overlay; the actors, reasons and clocks are
+constants in the page, and the candidate's derivation is a hard-coded
+config id and version. There is no server, no session and no build step,
+and nothing is published or stored.
+
+** Where the code lives
+
+=doc/prototypes/market_data/adjust-a-curve-or-surface-by-hand/=. One file,
+=index.html=, holding its markup, styles and script, with its plotting
+helper =PC=, and no framework and no build step. The site copies the
+directory as it stands and adds nothing to it.
+
+** The verdict
+
+The group accepted the argument rather than a layout: a hand adjustment is
+a first-class point with an actor and a reason, and the screen must mark it
+so no reader mistakes it for a point the market sent. The point carries a
+kind, an actor, a reason and a time, and it is drawn apart from the feed's
+points — the amber marker in the chart, the *manual* tag in the table. A
+feed write against it reads as the feed's attempt, not a replacement.
+
+What stayed on the page as the record: the three variants and the three
+states, kept because the argument must hold in all six, and the surface
+panel, kept as the record that a surface was asked about but unanswered.
+
+** What it does not settle
+
+Which variant applies a correction. One node, spread and paste are drawn
+and none is chosen; the choice belongs to the operations the server will
+carry.
+
+The precedence rule. The page states the candidate — a manual point wins
+for its coordinate until it is cleared — and the overwrite state beside it,
+but no rule is agreed.
+
+How a surface point is addressed. There is no strike vocabulary and no
+surface coordinate, so the strike picker is disabled and the mock surface
+holds one value.
+
+Where the actor, reason and time live, and what a clear leaves behind. The
+journey leaves open whether they sit on =market_observation= or an
+override entity of its own; there is no clear operation and no history
+provider, so a removed correction leaves no trail.
+
+* See also
+
+- [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — the journey this prototype answers.
+- [[id:6C44C1D0-B257-4B4A-9580-98845BEA9AFC][Market data prototypes]] — the group page, and the table this prototype sits in.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — why a consumer must know a point was manually overridden before it reads the who and the why.

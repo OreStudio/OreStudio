@@ -183,11 +183,17 @@ UNPREFIXED_LONG_BASE = "entity_table_that_has_no_product_component_prefix"
 
 
 def test_long_rls_policy_names_are_truncated_on_their_own_budget(tmp_path):
+    # Party isolation reads a party_id column, so the entity declares one.
     body = REQUIRED_FLAGS.replace(
         ":tablename: ores_testcomp_compound_key_entities_tbl\n",
         ":tablename: " + UNPREFIXED_LONG_BASE + "_tbl\n"
         ":rls_tenant_isolation: true\n"
         ":rls_party_isolation: true\n",
+    ).replace(
+        "* SQL",
+        "** party_id\n:PROPERTIES:\n:type:        uuid\n"
+        ":cpp_type:    boost::uuids::uuid\n:nullable:    false\n:END:\n\n"
+        "The party the row is isolated by.\n\n* SQL",
     )
     sql = _generate_sql(tmp_path, body=body)
     names = _base_family_names(sql)

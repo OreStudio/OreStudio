@@ -186,6 +186,7 @@ def test_the_flag_without_tenant_isolation_is_refused(tmp_path):
 def test_the_flag_and_the_widening_are_mutually_exclusive():
     domain_entity = {
         'entity_singular': 'installation_sample',
+        'has_tenant_id': True,
         'sql': {
             'rls_tenant_isolation': True,
             'rls_own_or_system_tenant_rows': True,
@@ -200,10 +201,13 @@ def test_the_flag_and_the_widening_are_mutually_exclusive():
 
 
 def test_the_flag_with_tenant_isolation_is_valid():
-    validate_rls_isolation({'sql': {
-        'rls_tenant_isolation': True,
-        'rls_own_or_system_tenant_rows': True,
-    }})
+    validate_rls_isolation({
+        'has_tenant_id': True,
+        'sql': {
+            'rls_tenant_isolation': True,
+            'rls_own_or_system_tenant_rows': True,
+        },
+    })
 
 
 def test_plain_tenant_isolation_still_emits_no_system_rows(tmp_path):

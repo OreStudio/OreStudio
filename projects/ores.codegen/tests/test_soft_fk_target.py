@@ -42,7 +42,25 @@ def _check(sql, column):
     return match.group(1), match.group(2)
 
 
-def test_a_check_against_an_immutable_target_reads_its_row_as_it_is(tmp_path):
+def test_a_check_against_an_immutable_target_reads_its_row_as_it_is(
+        tmp_path, monkeypatch):
+    """The trade target this case named became a versioned table, and no
+    soft FK left in the tree points at an immutable entity, so the
+    table-to-org lookup is pointed at the one model that declares
+    :immutable:. The check the template renders is the one under test."""
+    from codegen import org_loader
+
+    real = org_loader._entity_org_by_table
+
+    def with_immutable_target(projects_dir):
+        mapping = real(projects_dir)
+        mapping["ores_trading_trades_tbl"] = dict(
+            mapping["ores_inbox_delivery_outcome_types_tbl"])
+        return mapping
+
+    monkeypatch.setattr(
+        org_loader, "_entity_org_by_table", with_immutable_target)
+
     sql = _create_sql(tmp_path, TRADING / "ores.trading.fra_instrument.org")
 
     table, body = _check(sql, "trade_id")

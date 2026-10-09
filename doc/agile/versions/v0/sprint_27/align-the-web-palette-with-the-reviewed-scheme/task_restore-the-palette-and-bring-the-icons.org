@@ -8,7 +8,7 @@
 #+filetags: :align-the-web-palette-with-the-reviewed-scheme:sprint_27:v0:
 #+owner: marco
 #+branch: fix/keep-the-project-site-palette
-#+pr:
+#+pr: 3012
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3012][#3012]] | [web] Put the project site's palette back and give the tiles their glyphs |
 
 * Review
 

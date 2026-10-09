@@ -52,11 +52,12 @@ begin
     insert into ores_dq_books_artefact_tbl (
         dataset_id, tenant_id, id, version, name,
         parent_portfolio_id, functional_currency, gl_account_ref, cost_center,
-        book_status, regulatory_book_type, is_sweepable, rates_centre_code
+        book_status, regulatory_book_type, is_sweepable, rates_centre_code,
+        book_purpose_type, ledger_feed_type
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '903faedb-3469-582b-88b9-348985ec7b01', 0, 'USD Rates Book', 'f2463388-54ed-599a-989c-68771cb69657', 'USD', null, null, 'Active', 'Trading', false, null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd3903f8f-725c-53b0-a7fa-178053c668f8', 0, 'CAD Rates Book', '35341151-b72b-521f-b317-d52f7d6af62b', 'USD', null, null, 'Active', 'Trading', false, null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f7d3eb2e-1b8e-5ceb-abc8-b8b8f252120c', 0, 'IG Credit Americas Book', '51f0bcc5-2491-5218-80eb-3ceda562f5f7', 'USD', null, null, 'Active', 'Trading', false, null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e22051d0-3099-5c8f-ac49-3f0d2cc83a9c', 0, 'G10 FX Americas Book', '0a89e240-4d74-5275-b74b-bef6776e712c', 'USD', null, null, 'Active', 'Trading', false, null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '903faedb-3469-582b-88b9-348985ec7b01', 0, 'USD Rates Book', 'f2463388-54ed-599a-989c-68771cb69657', 'USD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd3903f8f-725c-53b0-a7fa-178053c668f8', 0, 'CAD Rates Book', '35341151-b72b-521f-b317-d52f7d6af62b', 'USD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f7d3eb2e-1b8e-5ceb-abc8-b8b8f252120c', 0, 'IG Credit Americas Book', '51f0bcc5-2491-5218-80eb-3ceda562f5f7', 'USD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e22051d0-3099-5c8f-ac49-3f0d2cc83a9c', 0, 'G10 FX Americas Book', '0a89e240-4d74-5275-b74b-bef6776e712c', 'USD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None');
 end $$;

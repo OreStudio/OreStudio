@@ -52,10 +52,11 @@ begin
     insert into ores_dq_books_artefact_tbl (
         dataset_id, tenant_id, id, version, name,
         parent_portfolio_id, functional_currency, gl_account_ref, cost_center,
-        book_status, regulatory_book_type, is_sweepable, rates_centre_code
+        book_status, regulatory_book_type, is_sweepable, rates_centre_code,
+        book_purpose_type, ledger_feed_type
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '10da1d97-1e96-53db-a3cc-6f6bf96b1cda', 0, 'JPY Rates Book', '9baf7c4a-7745-5271-8893-86db933a393c', 'HKD', null, null, 'Active', 'Trading', false, null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '3ee05afa-0fb2-5d9a-9bce-88a8b46777e7', 0, 'IG Credit APAC Book', '23a0b5ee-ee06-59aa-9bc6-e081187248aa', 'HKD', null, null, 'Active', 'Trading', false, null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '92fb437d-12f9-5112-8d48-dd0c6a6ccfa5', 0, 'G10 FX APAC Book', '62ef27bf-b2a1-5802-98c8-d1d867087a56', 'HKD', null, null, 'Active', 'Trading', false, null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '10da1d97-1e96-53db-a3cc-6f6bf96b1cda', 0, 'JPY Rates Book', '9baf7c4a-7745-5271-8893-86db933a393c', 'HKD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '3ee05afa-0fb2-5d9a-9bce-88a8b46777e7', 0, 'IG Credit APAC Book', '23a0b5ee-ee06-59aa-9bc6-e081187248aa', 'HKD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '92fb437d-12f9-5112-8d48-dd0c6a6ccfa5', 0, 'G10 FX APAC Book', '62ef27bf-b2a1-5802-98c8-d1d867087a56', 'HKD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None');
 end $$;

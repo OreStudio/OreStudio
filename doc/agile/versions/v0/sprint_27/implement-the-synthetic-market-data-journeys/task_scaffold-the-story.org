@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: AF124B71-1F0B-4899-8707-F85B81FD51C3
+:END:
+#+title: Task: Scaffold the synthetic implementation story
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR.
+#+type: task
+#+level: s1
+#+filetags: :implement-the-synthetic-market-data-journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/scaffold-the-story
+#+pr: 2988
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story is wired into the sprint and its tasks are filed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2988][#2988]] | [agile] Scaffold the synthetic implementation story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story is filed and wired into Sprint 27, and its nine tasks are in
+dependency order. Nothing is built yet, and the ordering is the whole
+point of the scaffold: the screens cannot come first.
+
+ores.web cannot speak the component. Seventeen components have a
+committed TypeScript protocol and synthetic is not one of them, because
+its nine models carry no =* Physical space= section: no address is
+declared, so there is nothing for the TypeScript facet to project. The
+BFF reaches the bus only through those generated modules, so a screen
+built now would have nothing to call.
+
+The order is therefore the models onto the address mechanism, then the
+protocol twin, then the BFF routes, then the screens. The twin cannot be
+done for two entities at a time either: once =generated/synthetic/protocol/=
+exists, =check_protocol_twin_coverage.py= demands a twin for every
+synthetic header.

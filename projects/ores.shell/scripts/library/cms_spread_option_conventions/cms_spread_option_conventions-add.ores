@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/cms_spread_option_conventions/cms_spread_option_convention.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-cms_spread_option_conventions add __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+cms_spread_option_conventions add __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ - system.new_record generated_script

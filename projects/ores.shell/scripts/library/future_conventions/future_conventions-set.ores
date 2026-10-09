@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/future_conventions/future_convention.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-future_conventions set __none__ __none__ - - - - system.new_record generated_script
+future_conventions set __none__ __none__ - - - - - system.new_record generated_script

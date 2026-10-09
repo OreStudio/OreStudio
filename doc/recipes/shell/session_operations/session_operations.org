@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :recipe:shell:session_operations:
 
-This file documents declared operations at the shell. Its one command is =ores-shell> session_operations get-active-sessions=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =session_operations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
 
 * Commands
 
@@ -31,5 +31,26 @@ It is addressed at =iam.v1.ops.get_active_sessions=.
 #+name: session_operations-get-active-sessions
 #+begin_src ores-shell :tangle session_operations-get-active-sessions.ores :exports none
 session_operations get-active-sessions
+#+end_src
+
+** =end-session=
+:PROPERTIES:
+:ID: 0B5F72DD-2913-5233-96FE-CC0C5126687A
+:END:
+
+Sends =end_session_request= and prints =end_session_response=, so the shape is the protocol's and the meaning is the service's. It reads =session_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+session_operations end-session <session_id>
+#+end_example
+
+It is addressed at =iam.v1.ops.end_session=.
+
+#+name: session_operations-end-session
+#+begin_src ores-shell :tangle session_operations-end-session.ores :exports none
+session_operations end-session 00000000-0000-0000-0000-000000000000
 #+end_src
 

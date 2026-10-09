@@ -1493,3 +1493,15 @@ tangled into the runnable script library
 * Rate Instruments
 
 - [[id:328EE706-8152-5080-B0F3-5D9F66551372][How do I run the rate_instruments commands from the shell?]]
+
+* Auth Event Operations
+
+- [[id:73A40B85-A485-5673-BB44-944926EAB983][How do I run the auth_event_operations commands from the shell?]]
+
+* Geo Operations
+
+- [[id:410249DE-A21C-5A11-A3D4-89ACB21A0DF7][How do I run the geo_operations commands from the shell?]]
+
+* Session Statistics Operations
+
+- [[id:D16E5E5E-8232-5B61-85B9-3D9D49EF5EF6][How do I run the session_statistics_operations commands from the shell?]]

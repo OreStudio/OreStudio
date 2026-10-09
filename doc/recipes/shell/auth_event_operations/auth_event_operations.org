@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 73A40B85-A485-5673-BB44-944926EAB983
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the auth_event_operations commands from the shell?
+#+description: Every command the auth_event_operations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:auth_event_operations:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> auth_event_operations list-auth-events=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =list-auth-events=
+:PROPERTIES:
+:ID: 124C724A-9F89-59CF-A86E-F79B0AC2EC51
+:END:
+
+Sends =list_auth_events_request= and prints =list_auth_events_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, =event_type=, =from_time=, =to_time=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+auth_event_operations list-auth-events <account_id> <event_type> <from_time> <to_time> [--limit <v>] [--offset <v>]
+#+end_example
+
+It is addressed at =iam.v1.auth_events.list=.
+
+#+name: auth_event_operations-list-auth-events
+#+begin_src ores-shell :tangle auth_event_operations-list-auth-events.ores :exports none
+auth_event_operations list-auth-events __none__ __none__ __none__ __none__
+#+end_src
+

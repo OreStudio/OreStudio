@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :recipe:http:session_operations:
 
-This file documents the session_operations resource over HTTP. Its one endpoint is =POST /api/v1/iam/ops/get_active_sessions=, and the section below exports it as a Hurl file into =projects/ores.http/scripts/library/=, which the harness runs.
+This file documents the session_operations resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
 
 * Endpoints
 
@@ -30,6 +30,29 @@ POST /api/v1/iam/ops/get_active_sessions
 #+name: session_operations-get-active-sessions
 #+begin_src hurl :tangle session_operations-get-active-sessions.hurl :exports none
 POST {{base_url}}/api/v1/iam/ops/get_active_sessions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/ops/end_session=
+:PROPERTIES:
+:ID: 0B5F72DD-2913-5233-96FE-CC0C5126687A
+:END:
+
+End session. It needs a session.
+
+It forwards to =iam.v1.ops.end_session=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/ops/end_session
+#+end_example
+
+#+name: session_operations-end-session
+#+begin_src hurl :tangle session_operations-end-session.hurl :exports none
+POST {{base_url}}/api/v1/iam/ops/end_session
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200

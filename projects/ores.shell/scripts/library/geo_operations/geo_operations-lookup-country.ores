@@ -1,0 +1,6 @@
+# =lookup-country=
+#
+# GENERATED from doc/recipes/shell/geo_operations/geo_operations.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+geo_operations lookup-country __none__

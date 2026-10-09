@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: D16E5E5E-8232-5B61-85B9-3D9D49EF5EF6
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the session_statistics_operations commands from the shell?
+#+description: Every command the session_statistics_operations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:session_statistics_operations:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> session_statistics_operations get-session-statistics=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =get-session-statistics=
+:PROPERTIES:
+:ID: 43C71DDC-FBD1-57BB-A772-C59556CF68F0
+:END:
+
+Sends =get_session_statistics_request= and prints =get_session_statistics_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, =from_time=, =to_time=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+session_statistics_operations get-session-statistics <account_id> <from_time> <to_time> [--limit <v>] [--offset <v>]
+#+end_example
+
+It is addressed at =iam.v1.ops.get_session_statistics=.
+
+#+name: session_statistics_operations-get-session-statistics
+#+begin_src ores-shell :tangle session_statistics_operations-get-session-statistics.ores :exports none
+session_statistics_operations get-session-statistics __none__ __none__ __none__
+#+end_src
+

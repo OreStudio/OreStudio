@@ -270,6 +270,18 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
 # regeneration is byte-identical across every address now, and its CMake
 # source lists are current.
 #
+# diff joins at the end of its clean-standard pass, and it needed a row in
+# component_catalogue.org before it could: it had models and generated
+# output but no catalogue entry, so no address regenerated it and none
+# could. Its output had drifted across six files by the time the row
+# existed. storage-cpp and history join with it.
+#
+# storage-cpp and history join at the end of their clean-standard pass.
+# Both generate C++ and neither was named here, so no address regenerated
+# them. Each regenerates byte-identical across every address today -- the
+# gap was never caught because nothing looked -- and their CMake source
+# lists are current.
+#
 # inbox-cpp joins at the end of its clean-standard pass. It had generated
 # C++ that no address regenerated, so 95 committed files had drifted from
 # the templates -- include lists across its core registrars -- while the
@@ -284,4 +296,4 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
 # documentation header for its outermost namespace, and every item that does
 # not apply to a component of kind All is recorded with its reason on
 # doc/agile/versions/v0/sprint_26/clean-shell/task_clean_shell.org.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "inbox-cpp", "marketdata", "ore", "refdata", "reporting", "scheduler-cpp", "shell", "synthetic", "telemetry-cpp", "trading-cpp", "variability-cpp", "workflow-cpp")
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "diff", "dq", "http-cpp", "inbox-cpp", "marketdata", "ore", "refdata", "reporting", "scheduler-cpp", "history", "shell", "storage-cpp", "synthetic", "telemetry-cpp", "trading-cpp", "variability-cpp", "workflow-cpp")

@@ -17,19 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_export.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DIFF_EXPORT_HPP
 #define ORES_DIFF_EXPORT_HPP
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-#    ifdef ORES_DIFF_LIBRARY
-#        define ORES_DIFF_EXPORT __declspec(dllexport)
-#    else
-#        define ORES_DIFF_EXPORT __declspec(dllimport)
-#    endif
-#elif defined(__GNUC__)
-#    define ORES_DIFF_EXPORT __attribute__((visibility("default")))
+#include <boost/config.hpp>
+
+#ifdef ORES_DIFF_LIBRARY
+#    define ORES_DIFF_EXPORT BOOST_SYMBOL_EXPORT
 #else
-#    define ORES_DIFF_EXPORT
+#    define ORES_DIFF_EXPORT BOOST_SYMBOL_IMPORT
 #endif
 
 #endif

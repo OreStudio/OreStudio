@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_tests.mustache
+# To modify, update the template and regenerate.
 set(name "ores.diff")
 set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
@@ -27,19 +30,26 @@ add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
-# ores.testing.lib / ores.logging.lib serve the logging listener in
-# main.cpp.
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.testing.lib
         ores.logging.lib
         Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
         Threads::Threads)
+
+# A component's suites may use facilities the profile cannot know about --
+# a scoped temporary file, a compression helper -- so the component declares
+# them here rather than the profile carrying every component's needs.
+
+
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM
-    COMMAND $<TARGET_FILE:${tests_binary_name}>
+    COMMAND ${ORES_TEST_ENV_CMD} $<TARGET_FILE:${tests_binary_name}> ${ORES_CATCH2_ARGS}
+        -r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     DEPENDS ${tests_target_name})
 
@@ -52,7 +62,8 @@ add_test(NAME ${tests_target_name}
 set_tests_properties(${tests_target_name} PROPERTIES
     PROCESSORS 1
     ENVIRONMENT "${ORES_TEST_ENV}"
-    ATTACHED_FILES_ON_FAIL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
+    ATTACHED_FILES_ON_FAIL
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
 )
 
 set_property(TEST ${tests_target_name} PROPERTY USES_XML_OUTPUT ON)

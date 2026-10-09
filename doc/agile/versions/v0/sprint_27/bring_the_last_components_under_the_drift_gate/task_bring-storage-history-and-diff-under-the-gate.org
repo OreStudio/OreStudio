@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: 8CD0E396-BEE3-4C77-B562-5F030FB909FA
+:END:
+#+title: Task: Bring storage, history and diff under the drift gate
+#+description: Task for: Bring the last components under the drift gate
+#+type: task
+#+level: s1
+#+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
+#+owner: marco
+#+branch: feature/bring-storage-history-and-diff-under-the-gate
+#+pr: 2966
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A census of every component that generates C++ found three still outside the drift gate. ores.storage and ores.history carry catalogue rows but were never named in COMPONENTS_UNDER_TEST, so no run regenerated them. ores.diff had no catalogue row at all: it declared itself a component and committed generated output, but the manifest reads components from component_catalogue.org, so codegen answered 'Unknown component' and no address ever rendered it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- storage-cpp, history and diff are named in COMPONENTS_UNDER_TEST.
+- diff carries a row in component_catalogue.org, so codegen can address it.
+- component-drift --all is green with all three under the gate.
+- The local suite reports no red check attributable to this branch.
+
+* Plan
+
+Two components before this task -- inbox and synthetic -- were each found by its
+own investigation, one full regeneration run apart. A third, scheduler, followed
+the same way. Each discovery paid for a sweep of every component to find one
+defect.
+
+This task takes a census first. The census asks three questions of every
+modeling directory:
+
+- Does it declare itself a component in its =component_overview.org=?
+- Does it carry a row in =component_catalogue.org=?
+- Is its name in =COMPONENTS_UNDER_TEST=?
+
+The answers separate three failure modes. A component can be registered but
+stale, clean but unregistered, or unaddressable. The third mode is invisible to
+every existing tool: the manifest reads components from the catalogue table, so
+a component without a row cannot be regenerated even by name.
+
+One change follows the census: add the missing row and registration, regenerate
+the component, and let the gate confirm it. The census also settles the story's
+acceptance criterion, so it needs no further task.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Components named in =COMPONENTS_UNDER_TEST= | 21, from 18 | =grep -n -A3 "COMPONENTS_UNDER_TEST = (" projects/ores.codegen/scripts/component_registry.py= | 8150272d97 |
+| Modeling directories with models and a catalogue row but no gate entry | 0 | census, see Notes | 8150272d97 |
+| Generated files this branch repairs | 140, of which 25 are new | =git show --name-status --format= 8150272d97 \| wc -l= | 8150272d97 |
+| Focused local checks | 10 of 10 pass | =./compass.sh check --only component-drift --only tangle-shell --only tangle-http --only recipe-inventories --only physical-inventory --only cmake-sources --only component-docs --only model-drift --only protocol-twins --only lint= | 8150272d97 |
+| Full local checks, heavy tier included | 4 of 53 red, all on trunk | =./compass.sh check --include-heavy= | cfc434857e |
+
+* Notes
+
+The census classifies each modeling directory by three greps:
+
+#+begin_example
+ls -d projects/*/modeling
+grep -l "ores.codegen.entity\|ores.codegen.operation\|ores.codegen.junction" projects/*/modeling/*.org
+grep -n "^| " projects/ores.codegen/library/component_catalogue.org
+grep -n -A3 "COMPONENTS_UNDER_TEST = (" projects/ores.codegen/scripts/component_registry.py
+#+end_example
+
+The three aliases were then checked by regenerating each one:
+=compass codegen regenerate --component trade=, =--component dq-cpp= and
+=--component iam-cpp= all produced an empty diff.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2966][#2966]] | [codegen] Bring storage, history and diff under the drift gate |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The census is done, and the gate is closed over the last three components.
+
+The census found no fourth gap. Every modeling directory that carries entity,
+operation or junction models either has a gate entry or is one of three aliases:
+=trade= points at the trading modeling directory, =dq-cpp= at =dq=, and
+=iam-cpp= at =iam=. Those directories are already covered under another name, so
+a second entry would render the same tree twice. Every other directory without a
+catalogue row carries no model of those kinds, so it generates nothing. Only
+=ores.diff= was reachable no other way.
+
+Three components now sit in =COMPONENTS_UNDER_TEST=, which takes the list from
+18 to 21. =ores.diff= gained the catalogue row that makes it addressable, and
+its six committed generated files had drifted. =ores.storage= and =ores.history=
+regenerated byte-identical, so neither had drifted yet.
+
+The gate also found two defects that arrived with main. The branch repairs both,
+because the gate cannot be green without them:
+
+- =component-drift=: the iam work that served the auth events, the geo lookup,
+  the session statistics and the signouts regenerated the C++ and the TypeScript
+  but committed a recipe for none of the six new operations. It also left
+  =session_operations= one endpoint behind.
+- =tangle-shell= and =tangle-http=: a market data link made a convention field
+  optional, which moved its sentinel from =__none__= to =-=. The recipes were
+  regenerated and the scripts were not, so 115 committed scripts carried the old
+  sentinel and the =rate_instruments= recipes had no script at all.
+
+Neither defect is this task's deliverable. Both went unseen because the chain
+from model to recipe to tangle to inventory has no single command that walks it,
+and because the per-component pass a pull request runs does not see the rest of
+the tree.
+
+The full suite, heavy tier included, reported 4 of 53 red. All four were on
+trunk. Two were already repaired on main by PR 2924 (=er-diagram= and
+=codegen-tests=) and one by PR 2916 (=ctest='s iam access read). The fourth,
+=pgtap=, is still red: the trading structure suites write rows without the audit
+columns the generated table requires, and one ownership-marks case finds no
+primary contact. Its fixtures are unchanged on main, so that repair belongs to a
+trading task, not to this one.

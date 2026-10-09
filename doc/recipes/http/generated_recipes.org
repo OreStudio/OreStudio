@@ -31,6 +31,10 @@ The hand-written recipes that predate the facet are catalogued separately in
 
 - [[id:5CE9A9DA-423C-55CD-A7CD-8CC84F89813E][How do I call the accounts endpoints over HTTP?]]
 
+* Auth Event Operations
+
+- [[id:73A40B85-A485-5673-BB44-944926EAB983][How do I call the auth_event_operations endpoints over HTTP?]]
+
 * Authorization
 
 - [[id:788B9C8F-08A8-5B70-9794-3447973C6090][How do I call the authorization endpoints over HTTP?]]
@@ -42,6 +46,10 @@ The hand-written recipes that predate the facet are catalogued separately in
 * Currencies
 
 - [[id:1C8E834C-6C3E-5655-9887-6CB58081498C][How do I call the currencies endpoints over HTTP?]]
+
+* Geo Operations
+
+- [[id:410249DE-A21C-5A11-A3D4-89ACB21A0DF7][How do I call the geo_operations endpoints over HTTP?]]
 
 * Image Tags
 
@@ -70,6 +78,10 @@ The hand-written recipes that predate the facet are catalogued separately in
 * Session Operations
 
 - [[id:84B782E8-D992-574E-8094-29E6454141D7][How do I call the session_operations endpoints over HTTP?]]
+
+* Session Statistics Operations
+
+- [[id:D16E5E5E-8232-5B61-85B9-3D9D49EF5EF6][How do I call the session_statistics_operations endpoints over HTTP?]]
 
 * Sessions
 

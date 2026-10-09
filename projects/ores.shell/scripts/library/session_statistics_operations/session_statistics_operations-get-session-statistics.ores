@@ -1,0 +1,6 @@
+# =get-session-statistics=
+#
+# GENERATED from doc/recipes/shell/session_statistics_operations/session_statistics_operations.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+session_statistics_operations get-session-statistics __none__ __none__ __none__

@@ -116,8 +116,7 @@ public:
         try {
             if (req->entries.empty())
                 throw std::invalid_argument("at least one Curve Template entry is required");
-            if (req->entries.size() >
-                static_cast<std::size_t>(max_preview_curve_entries))
+            if (req->entries.size() > static_cast<std::size_t>(max_preview_curve_entries))
                 throw std::invalid_argument("too many Curve Template entries");
 
             auto refctx = build_ir_curve_refdata_context(ctx, "RATES_SPOT_FORWARD");

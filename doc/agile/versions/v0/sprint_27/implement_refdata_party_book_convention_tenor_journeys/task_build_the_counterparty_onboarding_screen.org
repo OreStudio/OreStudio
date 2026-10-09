@@ -26,12 +26,12 @@ A tenant administrator onboards a counterparty in ores.web, and the screen match
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
 
 * Acceptance
 
@@ -123,3 +123,86 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Built journey 5, the counterparty onboarding screen, as a client-side
+composition over the journey runtime the other journeys use. The changes are in
+the working tree and uncommitted.
+
+** What was built
+
+| File | What it carries |
+|------+-----------------|
+| =journeys/counterpartyState.ts= | The draft and its reductions: identity, identifiers, contacts, agreements, sets, set identifiers, collateral terms and eligible currencies; the identifier and contact validation; and the one composite request the confirm builds from the draft. |
+| =journeys/counterpartySteps.tsx= | The eight rail steps and their panels: the landing list, Identity, Identifiers, Contacts, Legal agreements, Review, Outcome and History, plus the refusal panel and the write-count table. |
+| =journeys/CounterpartyJourney.tsx= | The page: the draft, the position, the pick lists and the parent counterparties, handed to =JourneyPage=. |
+| =journeys/counterpartyServer.ts= | The =CounterpartyServer= interface and the hook the route builds from. |
+| =api/counterparties.ts= | The browser reads and writes, each parsed against a schema that mirrors the generated wire shape. |
+| =journeys/counterpartyState.test.ts=, =counterpartySteps.test.tsx=, =CounterpartyJourney.test.tsx= | 27 tests over the reductions, the validation, the composite request, the step enablement, the confirm, the refusal and the page. |
+| =AppRoutes.tsx=, =AppRoutes.test.tsx= | The =/counterparties/onboard= route beside =/parties/new=, and its two route tests. |
+| =i18n/locales/en.ts=, =fr.ts=, =pt.ts= | The screen's catalogue, in all three languages. |
+
+Reuse: =JourneyPage= and the runtime carry the rail and the forward-only
+advance; =HistoryPanel= is the History step; the =Field=, =Input=, =Select=,
+=Tag=, =Notice= and =Button= primitives are the panels. Nothing was added to
+=parts.tsx=, because no panel journey 5 draws is shared with the tenant and
+party journeys.
+
+The rail is the journey document's steps: Counterparties, Identity, Identifiers,
+Contacts, Legal agreements, Review, Outcome, History. The refusal is the Review
+step's own panel, because the runtime advances a rail forward only: a refused
+write is recorded in the draft, the confirming action throws, the page states it
+above the rail, and the panel names the subject, the field failures, the record
+as unchanged and the step to walk back to.
+
+** Verification
+
+Run from =projects/ores.web=, after =npx prettier --write= on the files created.
+
+| Command | Result |
+|---------+--------|
+| =npm run typecheck= | exit 0 |
+| =npm run format:check= | exit 0 |
+| =npm test= | exit 0; =bff= 39 files, 318 tests passed; =contracts= no test files; =web= 49 files, 510 tests passed; =wire-protocol= 16 files, 163 tests passed |
+
+** What could not be built
+
+1. *The BFF half.* The browser client and the screen are complete, but the BFF
+   serves no counterparty routes. =api/counterparties.ts= calls
+   =/api/counterparties=, =/api/counterparties/children=,
+   =/api/counterparties/pick-lists= and the composite, centre and visibility
+   writes; none of those routes exists in =packages/bff/src=, so the screen
+   cannot yet run against the live fleet. Those routes are the one change the
+   screen still needs, and this task's write scope did not include
+   =packages/bff=.
+2. *An existing counterparty's agreements, sets and collateral terms are not
+   read.* Opening a row loads the identity, the identifiers, the contacts and
+   the business centres, and starts the agreements empty, which is what the
+   accepted prototype does. The confirm therefore stages no agreements for a
+   counterparty opened from the list. This is the composite-read gap the journey
+   document records.
+3. *The business-centre junction is not in the journey's coverage table.* Step
+   2 enters the centres, and the "Record every business centre a counterparty
+   deals through" task requires the junction, so the screen reads and writes
+   =refdata.v1.counterparty_business_centres= (those subjects exist in the
+   tree). The coverage table names only =business_centres.list= for this step,
+   so this is a subject the table does not list and the step text needs.
+4. *The visibility junction is a write after the composite, not inside it.*
+   =PutCounterpartyCompositeRequest= carries no party-counterparty rows, so the
+   confirm sends =refdata.v1.party_counterparties.put= as its own act after the
+   composite. A failure there leaves the counterparty written without its
+   visibility row.
+5. *History revert is not wired.* The History step reads the versions and the
+   field-level difference through =HistoryPanel= and offers no revert, because
+   reverting writes the old identity and children and that path through the
+   composite write was not built.
+
+** What contradicts the plan
+
+The plan's step 3 says the journey's coverage table was reconciled with the tree
+and every subject in it resolves. That holds. It does not say the table is
+exhaustive, and it is not: the business-centre and visibility writes above are
+missing from it while both sets of subjects exist. The two traps the Notes name
+were avoided: the composite read is
+=refdata.v1.ops.get_counterparty_composite_as_of=, and the landing list reads
+its identifiers and contacts with =counterparty_id_one_of=, one call per child
+type per page.

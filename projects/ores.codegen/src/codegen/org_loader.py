@@ -1515,6 +1515,9 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                     "unique": _parse_typed(r.get("unique", "false")),
                     "current_only": _parse_typed(r.get("current_only", "false")),
                     "where_extra": r.get("where_extra", "") or None,
+                    "nulls_not_distinct": _parse_typed(
+                        r.get("nulls_not_distinct", "false")
+                    ),
                 }
                 for r in rows if r.get("name")
             ]

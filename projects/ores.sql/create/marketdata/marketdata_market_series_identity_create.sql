@@ -29,19 +29,29 @@
  * the system writes and the codec stays the only thing that reads it; this table is
  * written from that parse, never read back to rebuild a URI.
  *
- * The column set is the identity fields ores.marketdata declares in its codec
- * schema, one column per field the schema marks field_role::identity, plus the
- * columns that say which kind of identity the row carries. A field the type's
- * schema row does not declare is empty, because the row holds only the columns its
- * own type fills. A column is text, not a typed relational form, because the codec
- * keeps every value as the key spelled it and a projection that reinterpreted it
- * would be a second spelling of the same identity.
+ * The column set is the identity fields the codec admits, one column per field
+ * the instrument schema marks field_role::identity, and one column per field the
+ * index grammar declares, because a fixing's whole ORE index name is its identity,
+ * plus the columns that say which kind of identity the row carries. A field the
+ * type's schema row, or the family's index row, does not declare is empty, because
+ * the row holds only the columns its own grammar fills. A column is text, not a
+ * typed relational form, because the codec keeps every value as the key spelled it
+ * and a projection that reinterpreted it would be a second spelling of the same
+ * identity.
  *
  * The table is a current state, not a history: the series row is already temporal
  * and the identity does not change under it, so one row per series is enough and
  * the primary key is the series. The column list is checked against the codec
  * schema by build/scripts/check_marketdata_identity_columns.py, so the two cannot
  * drift.
+ *
+ * The identity the decomposed columns spell is unique per party, as the series URI
+ * is. A fixing row states that at the table: a unique index over its context and
+ * its index-grammar columns, with nulls not distinct so an empty field counts as
+ * equal to an empty field, refuses two fixings that spell one identity. A series
+ * row cannot carry such an index, because its identity spans the whole instrument
+ * schema, more columns than an index may hold; the series table's own unique URI
+ * and the decomposition's injectivity are what keep it single.
  */
 
 create table if not exists "ores_marketdata_market_series_identity_tbl" (
@@ -61,9 +71,14 @@ create table if not exists "ores_marketdata_market_series_identity_tbl" (
     "contract_name" text null,
     "curve_id" text null,
     "day_counter" text null,
+    "delivery" text null,
+    "delivery_end" text null,
+    "delivery_start" text null,
     "doc_clause" text null,
     "dst" text null,
     "eq_name" text null,
+    "expiry" text null,
+    "family" text null,
     "fixed_ccy" text null,
     "fixed_tenor" text null,
     "flat_ccy" text null,
@@ -92,6 +107,7 @@ create table if not exists "ores_marketdata_market_series_identity_tbl" (
     "security_id" text null,
     "seniority" text null,
     "side" text null,
+    "source" text null,
     "tenor" text null,
     "term" text null,
     "time_unit" text null,
@@ -116,6 +132,10 @@ where ccy is not null;
 create index if not exists market_series_identity_unit_ccy_idx
 on "ores_marketdata_market_series_identity_tbl" (tenant_id, unit_ccy)
 where unit_ccy is not null;
+
+create unique index if not exists market_series_identity_fixing_identity_idx
+on "ores_marketdata_market_series_identity_tbl" (tenant_id, party_id, asset_class, index, ccy, index_name, tenor, quote_tag, unit_ccy, security_id, contract, source, family, expiry, delivery, delivery_start, delivery_end) nulls not distinct
+where identity_kind = 'index';
 
 create or replace function ores_marketdata_market_series_identity_insert_fn()
 returns trigger as $$

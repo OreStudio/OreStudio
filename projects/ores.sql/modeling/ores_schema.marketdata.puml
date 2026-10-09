@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-09T13:18:53.298820Z
+' Generated: 2026-10-09T21:33:32.801061Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -191,9 +191,14 @@ package "marketdata" #E3F2FD {
           contract_name : text
           curve_id : text <<FK>>
           day_counter : text
+          delivery : text
+          delivery_end : text
+          delivery_start : text
           doc_clause : text
           dst : text
           eq_name : text
+          expiry : text
+          family : text
           fixed_ccy : text
           fixed_tenor : text
           flat_ccy : text
@@ -222,6 +227,7 @@ package "marketdata" #E3F2FD {
           security_id : text <<FK>>
           seniority : text
           side : text
+          source : text
           tenor : text
           term : text
           time_unit : text
@@ -238,18 +244,27 @@ package "marketdata" #E3F2FD {
     join on the series and filter on a real column. The URI stays the only spelling
     the system writes and the codec stays the only thing that reads it; this table is
     written from that parse, never read back to rebuild a URI.
-    The column set is the identity fields ores.marketdata declares in its codec
-    schema, one column per field the schema marks field_role::identity, plus the
-    columns that say which kind of identity the row carries. A field the type's
-    schema row does not declare is empty, because the row holds only the columns its
-    own type fills. A column is text, not a typed relational form, because the codec
-    keeps every value as the key spelled it and a projection that reinterpreted it
-    would be a second spelling of the same identity.
+    The column set is the identity fields the codec admits, one column per field
+    the instrument schema marks field_role::identity, and one column per field the
+    index grammar declares, because a fixing's whole ORE index name is its identity,
+    plus the columns that say which kind of identity the row carries. A field the
+    type's schema row, or the family's index row, does not declare is empty, because
+    the row holds only the columns its own grammar fills. A column is text, not a
+    typed relational form, because the codec keeps every value as the key spelled it
+    and a projection that reinterpreted it would be a second spelling of the same
+    identity.
     The table is a current state, not a history: the series row is already temporal
     and the identity does not change under it, so one row per series is enough and
     the primary key is the series. The column list is checked against the codec
     schema by build/scripts/check_marketdata_identity_columns.py, so the two cannot
     drift.
+    The identity the decomposed columns spell is unique per party, as the series URI
+    is. A fixing row states that at the table: a unique index over its context and
+    its index-grammar columns, with nulls not distinct so an empty field counts as
+    equal to an empty field, refuses two fixings that spell one identity. A series
+    row cannot carry such an index, because its identity spans the whole instrument
+    schema, more columns than an index may hold; the series table's own unique URI
+    and the decomposition's injectivity are what keep it single.
     end note
 
     entity ores_marketdata_market_series_tbl <<temporal>> #C6F0D8 {

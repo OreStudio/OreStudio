@@ -219,7 +219,7 @@ on "{{domain_entity.sql_name_base}}_tbl" ({{column}})
 {{#domain_entity.indexes}}
 
 create{{#unique}} unique{{/unique}} index if not exists {{domain_entity.index_name_prefix}}_{{name}}_idx
-on "{{domain_entity.sql_name_base}}_tbl" ({{{columns}}}){{#current_only}}
+on "{{domain_entity.sql_name_base}}_tbl" ({{{columns}}}){{#nulls_not_distinct}} nulls not distinct{{/nulls_not_distinct}}{{#current_only}}
 where valid_to = ores_utility_infinity_timestamp_fn(){{#where_extra}}
   and {{{where_extra}}}{{/where_extra}}{{/current_only}}{{^current_only}}{{#where_extra}}
 where {{{where_extra}}}{{/where_extra}}{{/current_only}};

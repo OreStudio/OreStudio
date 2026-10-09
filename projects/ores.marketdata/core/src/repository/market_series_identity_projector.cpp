@@ -23,7 +23,6 @@
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
-#include <array>
 #include <boost/uuid/uuid_io.hpp>
 #include <map>
 #include <string>
@@ -47,7 +46,9 @@ constexpr std::string_view kind_unknown = "unknown";
  * checks it: the switch names every field the schema declares, so a field added
  * to the enum does not compile until it is placed. The coordinate cases assign
  * nothing because a series holds its identity fields only; a coordinate cannot
- * arrive here.
+ * arrive here. A fixing's own fields arrive through assign_index instead, which
+ * gives the index grammar's expiry a column even though the schema calls it a
+ * coordinate for a series.
  */
 void assign(domain::market_series_identity& row, field f, const std::string& text) {
     switch (f) {
@@ -231,14 +232,14 @@ void assign(domain::market_series_identity& row, field f, const std::string& tex
  * key and lands in the =index= column, so a convention's fixing URI decomposes
  * onto the same columns the row carries.
  *
- * Two names have no column and are not projected. The FX =source= is part of
- * the fixing's identity (FX-ECB-EUR-USD and FX-TR20H-EUR-USD are two rates)
- * and the CMB =family= is the subject, but the projection declares one column
- * per schema identity field and neither name is one; a row that carried them
- * would need a column of its own. The remaining names -- expiry, delivery,
- * start and end -- are points within the fixing, which the projection holds no
- * column for by design. unprojected_index_names lists all of them, so the
- * check that holds this mapping to the index grammar sees the whole set.
+ * Every name gets a column, expiry, delivery, start and end included. The four
+ * look like coordinates in the instrument schema, where a series drops them and
+ * keeps the quotes that differ by them, but ORE writes them into the index name
+ * itself: COMM-ICE:B-2024-12 and COMM-ICE:B-2025-01 are two ORE indices and so
+ * two series. Dropping one would let two fixings project alike and a join match
+ * both, which is a wrong answer, not a missing feature. The grammar's =end= is a
+ * PostgreSQL reserved word, so it lands in =delivery_end=, beside
+ * =delivery_start=.
  */
 void assign_index(domain::market_series_identity& row,
                   std::string_view name,
@@ -257,15 +258,19 @@ void assign_index(domain::market_series_identity& row,
         row.security_id = text;
     else if (name == "contract")
         row.contract = text;
+    else if (name == "source")
+        row.source = text;
+    else if (name == "family")
+        row.family = text;
+    else if (name == "expiry")
+        row.expiry = text;
+    else if (name == "delivery")
+        row.delivery = text;
+    else if (name == "start")
+        row.delivery_start = text;
+    else if (name == "end")
+        row.delivery_end = text;
 }
-
-/**
- * The index grammar's names the projection has no column for, beside every name
- * assign_index does place. The check reads both against the grammar, so a field
- * a family gains cannot be dropped without a failure.
- */
-[[maybe_unused]] constexpr std::array<std::string_view, 6> unprojected_index_names{
-    "source", "family", "expiry", "delivery", "start", "end"};
 
 /// The projection of one series, and whether the codec could state it at all.
 struct projection {

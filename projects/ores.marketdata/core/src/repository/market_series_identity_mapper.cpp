@@ -61,9 +61,14 @@ market_series_identity_mapper::map(const market_series_identity_entity& v) {
     r.contract_name = v.contract_name.value_or("");
     r.curve_id = v.curve_id.value_or("");
     r.day_counter = v.day_counter.value_or("");
+    r.delivery = v.delivery.value_or("");
+    r.delivery_end = v.delivery_end.value_or("");
+    r.delivery_start = v.delivery_start.value_or("");
     r.doc_clause = v.doc_clause.value_or("");
     r.dst = v.dst.value_or("");
     r.eq_name = v.eq_name.value_or("");
+    r.expiry = v.expiry.value_or("");
+    r.family = v.family.value_or("");
     r.fixed_ccy = v.fixed_ccy.value_or("");
     r.fixed_tenor = v.fixed_tenor.value_or("");
     r.flat_ccy = v.flat_ccy.value_or("");
@@ -92,6 +97,7 @@ market_series_identity_mapper::map(const market_series_identity_entity& v) {
     r.security_id = v.security_id.value_or("");
     r.seniority = v.seniority.value_or("");
     r.side = v.side.value_or("");
+    r.source = v.source.value_or("");
     r.tenor = v.tenor.value_or("");
     r.term = v.term.value_or("");
     r.time_unit = v.time_unit.value_or("");
@@ -123,9 +129,14 @@ market_series_identity_mapper::map(const domain::market_series_identity& v) {
     r.contract_name = v.contract_name.empty() ? std::nullopt : std::optional(v.contract_name);
     r.curve_id = v.curve_id.empty() ? std::nullopt : std::optional(v.curve_id);
     r.day_counter = v.day_counter.empty() ? std::nullopt : std::optional(v.day_counter);
+    r.delivery = v.delivery.empty() ? std::nullopt : std::optional(v.delivery);
+    r.delivery_end = v.delivery_end.empty() ? std::nullopt : std::optional(v.delivery_end);
+    r.delivery_start = v.delivery_start.empty() ? std::nullopt : std::optional(v.delivery_start);
     r.doc_clause = v.doc_clause.empty() ? std::nullopt : std::optional(v.doc_clause);
     r.dst = v.dst.empty() ? std::nullopt : std::optional(v.dst);
     r.eq_name = v.eq_name.empty() ? std::nullopt : std::optional(v.eq_name);
+    r.expiry = v.expiry.empty() ? std::nullopt : std::optional(v.expiry);
+    r.family = v.family.empty() ? std::nullopt : std::optional(v.family);
     r.fixed_ccy = v.fixed_ccy.empty() ? std::nullopt : std::optional(v.fixed_ccy);
     r.fixed_tenor = v.fixed_tenor.empty() ? std::nullopt : std::optional(v.fixed_tenor);
     r.flat_ccy = v.flat_ccy.empty() ? std::nullopt : std::optional(v.flat_ccy);
@@ -155,6 +166,7 @@ market_series_identity_mapper::map(const domain::market_series_identity& v) {
     r.security_id = v.security_id.empty() ? std::nullopt : std::optional(v.security_id);
     r.seniority = v.seniority.empty() ? std::nullopt : std::optional(v.seniority);
     r.side = v.side.empty() ? std::nullopt : std::optional(v.side);
+    r.source = v.source.empty() ? std::nullopt : std::optional(v.source);
     r.tenor = v.tenor.empty() ? std::nullopt : std::optional(v.tenor);
     r.term = v.term.empty() ? std::nullopt : std::optional(v.term);
     r.time_unit = v.time_unit.empty() ? std::nullopt : std::optional(v.time_unit);

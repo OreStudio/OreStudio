@@ -206,7 +206,7 @@ membership that closed, because the junction write bumps the party's version.
 | Correct the contacts | List the party's contacts | =refdata.v1.party_contact_informations.list_by_party_id= | exists |
 | Correct the contacts | Fill the contact type picker | =refdata.v1.contact_types.list= | exists |
 | Correct the contacts | Write a contact row | =refdata.v1.party_contact_informations.put= | exists |
-| Correct the contacts | Mark a contact primary | none | missing |
+| Correct the contacts | Mark a contact primary | =is_primary= on =refdata.v1.party_contact_informations.put= | exists |
 | Set the memberships | List the party's countries | =refdata.v1.party_countries.list_by_party_id= | exists |
 | Set the memberships | List the party's currencies | =refdata.v1.party_currencies.list_by_party_id= | exists |
 | Set the memberships | Fill the country picker | =refdata.v1.countries.list= | exists |
@@ -221,11 +221,11 @@ membership that closed, because the junction write bumps the party's version.
 | Set the structure | Fill the unit type picker | =refdata.v1.business_unit_types.list= | exists |
 | Set the structure | Reclassify a business unit | =refdata.v1.business_units.put= | exists |
 | Review | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
-| Confirm | Write every change as one unit | none | missing |
+| Confirm | Write every change as one unit | =refdata.v1.ops.put_party_composite= | exists |
 | Confirm | Read the party back | =refdata.v1.parties.get= | exists |
 | Check the history | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.party=) | exists |
-| Check the history | Read the party with its identifiers and contacts as of one version | =refdata.v1.parties.composite_as_of= | exists |
-| Check the history | Read one identifier's own field diff | none | missing |
+| Check the history | Read the party with its identifiers and contacts as of one version | =refdata.v1.ops.get_party_composite_as_of= | exists |
+| Check the history | Read a child row's own field diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.party_identifier=, =ores.refdata.party_contact_information=) | exists |
 | Revert | Write the old values as a new version | =refdata.v1.parties.put= | exists |
 
 =Partial= marks an operation the server carries and this journey cannot use
@@ -234,28 +234,23 @@ operation or a field the journey needs and the tree does not carry.
 
 The generic history request is the one =ores.history= defines: the subject is
 derived from the entity type, and the reply carries every version's full field
-render and the field-level diff from the version before. The per-entity
-=refdata.v1.parties_versions.list= and =.get= also exist and return the raw
-rows; the screen needs the diff, so it uses the generic request, and it uses
-=refdata.v1.parties.composite_as_of= for the children as they stood.
+render and the field-level diff from the version before. One request therefore
+serves the party and each of its children, under =ores.refdata.party=,
+=ores.refdata.party_identifier= and =ores.refdata.party_contact_information=.
+The per-entity =refdata.v1.parties_versions.list= and =.get= also exist and
+return the raw rows; the screen needs the diff, so it uses the generic request,
+and it uses =refdata.v1.ops.get_party_composite_as_of= for the children as they
+stood. The two membership junctions register no history provider, so their
+versions are item 1 below.
 
 * What is missing
 
-Items 1 to 5 are the missing rows of the coverage table above. Item 6 is the
-one =partial= row, the read the journey does not get whole. Item 7 is a gap the
-coverage table cannot carry, because the operation exists and the failure does
-not.
+Item 1 is the missing row of the coverage table above. Item 2 is the one
+=partial= row, the read the journey does not get whole. Items 3 and 4 are the
+gaps the coverage table cannot carry, because the operation exists and the
+failure does not.
 
-1. *A contact has no primary flag.* =party_contact_information= carries no
-   =is_primary= column. The model gives one row per =contact_type=, so the rows
-   are (Legal, Operations, Settlement, Billing) and nothing says which of them
-   is the primary contact. The prototype marks one row primary as a client
-   convention, and its review step records that choice with no operation behind
-   it, so the mark is lost on reload. The candidate is an =is_primary= column
-   with a one-per-party constraint, in the shape the party already has for
-   =is_registration_default=. Until it exists, the screen keeps the primary mark
-   in the session only and says so on the contacts step.
-2. *A membership leaves no readable version.* The =party_countries= and
+1. *A membership leaves no readable version.* The =party_countries= and
    =party_currencies= tables keep closed versions, but the generated protocol
    carries =list=, =.get=, =.put=, =.delete= and =.list_by_party_id= and no
    versions subject. A closed membership therefore leaves the panel with no
@@ -264,37 +259,23 @@ not.
    already have. Until it exists, the screen shows the memberships that are open,
    marks the one being closed in this session, and gives the party's own history
    as the only trail.
-3. *A refusal is the trigger's text, not a typed refusal.* When a unit type
-   breaks the level rule, the business-unit insert trigger raises its own
-   message, and the client can read it only as a string. It names no field and
-   no rule that a screen can act on, so the person cannot be told which unit or
-   identifier to correct without the message being parsed. The candidate is a
-   typed refusal from the server that carries the field, the rule and the value
-   it found. Until it exists, the screen shows the message with the unit and its
-   parent beside it, as the refused state draws.
-4. *An identifier row has no field diff of its own.* =refdata.v1.party_identifiers_versions.list=
-   and =.get= return raw rows, so they show that a value existed at a version
-   and not what about it changed. =refdata.v1.parties.composite_as_of= returns
-   the identifiers as they stood in one version window, which is enough to
-   compare two versions by hand, and that is what the history step does. The
-   candidate is a diff for the child rows, in the shape the generic history
-   request gives the party.
-5. *There is no unit that writes a party and its children together.* Each change
-   is its own operation, and the operations are independent: the party write,
-   the identifier pair, the contact write and the junction writes are separate
-   calls. The review step states each one, and a failure part-way leaves the
-   earlier rows written. The candidate is one composite change for a party with
-   its children, so a confirmed review is one transaction. Until it exists, the
-   screen writes the party first and the children after it, and reports which
-   calls landed.
-6. *The business unit is not filtered by party.* =business_units_filter= carries
+2. *The business unit is not filtered by party.* =business_units_filter= carries
    =id_one_of= and nothing else, and the protocol has no =list_by_party_id=, so
    listing one party's units means paging the tenant's units and grouping them
    on the client. The candidate is the party filter, in the shape the three
    junctions already have.
-7. *The business unit level rule has no refusal of its own.* The rule is real
-   and the screen draws it, but the only way to learn it is to break it, as item
-   3 says.
+3. *A refusal for the business unit level rule is still the trigger's text.* The
+   business-unit insert trigger raises the level rule with a bare =raise
+   exception= and its own sentence, and the client reads it only as a string. It
+   names no field that a screen can act on, so the person cannot be told which
+   unit or identifier to correct without the message being parsed. The store
+   outcomes on the same row, =already_exists= and =version_conflict=, do go
+   through =ores_outcome_raise_fn=, so the rule is the one refusal on that row
+   that does not. The candidate is a catalogue outcome for it, carrying the
+   field, the rule and the value it found. Until it exists, the screen shows the
+   message with the unit and its parent beside it, as the refused state draws.
+4. *The level rule has no outcome of its own.* The rule is real and the screen
+   draws it, but the only way to learn it is to break it, as item 3 says.
 
 * Related journeys
 

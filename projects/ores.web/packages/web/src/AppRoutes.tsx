@@ -790,10 +790,10 @@ export function ConnectedApp(): ReactNode {
     useEffect(() => {
         const step = setupAnswerStep({
             answerAccountId: gate.status === 'ready' ? gate.accountId : signedInAs,
+            answerSessionPresent: gate.status === 'ready' && gate.sessionPresent,
             signedInAs,
             reading,
             asked: askedFor.current === signedInAs,
-            authenticated: session.status === 'authenticated',
         });
         if (step === 'ask') {
             askedFor.current = signedInAs;

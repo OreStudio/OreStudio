@@ -23,9 +23,9 @@ The two Membership journeys run in ores.web against the real server. The member 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Both prototypes are built and accepted by the product owner on 2026-10-09: Where I work variant A, Reporting lines variant A. |
+| Now           | Both prototypes are accepted, and the seven build tasks are written from them: five server tasks and one screen task per journey. No build work has started. |
 | Waiting on    | Nothing.                               |
-| Next          | Write the build tasks from the accepted prototypes. |
+| Next          | Start [[id:B168458B-DAB9-4847-823F-2B75DBC3FA38][Read a member's parties with their names]]. |
 | Last touched  | 2026-10-09                               |
 
 * Acceptance
@@ -42,6 +42,13 @@ The two Membership journeys run in ores.web against the real server. The member 
 | [[id:4CEC2C02-B400-4B4D-B72C-27B0E8F5CED2][Scaffold story: Implement the membership journeys in ores.web]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:B3D7CFB5-753F-41E1-9545-89B271D5D1A6][Prototype Where I work]] | DONE | 2026-10-09 | 2026-10-09 | [wayfinder:prototype] The member's screen: the identity summary, the parties the account works in, the default party, the switch, and the gap where no client path exists. |
 | [[id:08E9CD97-DE62-4F88-95BB-E26A5703DD8D][Prototype Reporting lines]] | DONE | 2026-10-09 | 2026-10-09 | [wayfinder:prototype] The administrator's screen: the reporting tree, the selected account's line, the manager picker with a change reason, and the gap where no approval exists. |
+| [[id:B168458B-DAB9-4847-823F-2B75DBC3FA38][Read a member's parties with their names]] | BACKLOG | | | The member's own party list cannot be named: the association read carries party_id alone and the sign-in reply is the only read that returns a name. Give the member one composed self read of the parties their account works in, each with its name, code and category, plus the stored default. |
+| [[id:15DE5A7E-1FC8-4535-A374-A42ADD73242F][Let a member set and clear their default party]] | BACKLOG | | | iam.v1.ops.set_my_default_party exists on the server and no BFF route, client method or control reaches it, and the request cannot say 'no default'. Wire the write end to end and make clearing the default expressible. |
+| [[id:F94A08FD-E7EB-4793-9163-50E24AE2F94E][Refuse a reporting line that would make a loop]] | BACKLOG | | | Nothing refuses A reports to B when B already reports to A. The server accepts the pair and the result is a cycle with no root. Add the check where the write happens and test it. |
+| [[id:A14D41EC-1F1E-4B73-9BC0-838C4F9FB923][Give the reporting line its own write]] | BACKLOG | | | Setting one field means sending the whole update_account_request, so a concurrent edit to another field is silently overwritten by the stale copy the screen holds. Add a narrow write that carries the manager and the change reason, with the account version as a precondition. |
+| [[id:ACB6A715-22A1-4529-8F38-F29EF20BCDBB][Read the reporting tree]] | BACKLOG | | | The server answers one flat page of accounts with reports_to_account_id repeated per row, so the screen reads the whole roster and nests it in the browser. Give the tenant administrator a read of the reporting shape: each account's manager and depth, so a large tenant can page a branch. |
+| [[id:A74DE5A9-2B43-49FB-9F47-C6E33290F38A][Build the Where I work screen]] | BACKLOG | | | Build the accepted variant A of doc/prototypes/membership/where-i-work/: a card per party with the switch and the default on the card, the identity summary, and the account-menu entry point. Every gap the prototype states is either closed by this story's server tasks or stated on the screen. |
+| [[id:49D54B4B-4ACE-4EB7-B24A-349934DAF4A8][Build the Reporting lines screen]] | BACKLOG | | | Build the accepted variant A of doc/prototypes/membership/reporting-lines/: the indented tree with the selected person beside it, the manager picker that cannot offer a descendant, and the change reason. The absent approval is stated, not built. |
 
 * Plan
 
@@ -59,6 +66,8 @@ it.
 | 3 | Prototype Reporting lines | The administrator's tree, three variants on one static page, each stating the gaps the journey records. |
 | 4 | The product owner signs both off | The accepted variants, recorded on the two tasks and in this story's =* Decisions=. |
 | 5 | Write the build tasks from the accepted prototypes | One task per screen and one per server gap, each naming the accepted prototype as its design record. |
+| 6 | Build the five server gaps | A named party read for the member, a settable and clearable default party, a cycle guard on the reporting line, a reporting-line-only write, and a tree read. |
+| 7 | Build the two screens, accepted variant A | Where I work with its account-menu entry, and Reporting lines with the tree and the inspector. |
 
 * Decisions
 

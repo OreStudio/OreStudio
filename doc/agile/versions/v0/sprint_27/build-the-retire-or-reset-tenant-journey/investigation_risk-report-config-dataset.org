@@ -1,0 +1,704 @@
+:PROPERTIES:
+:ID: 7E1D37D0-D897-4C10-BE8F-15CEB22F9D4F
+:END:
+#+title: Investigation: the risk report config DQ dataset and the four ORE documents
+#+description: Why the risk report config publish skips all 27 rows, and what the corrected DQ dataset must carry.
+#+type: investigation
+#+level: s1
+#+filetags: :reporting:dq:ore:build-the-retire-or-reset-tenant-journey:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+A point-in-time record, written while [[id:8B276277-A49D-4813-A017-C0529C798DBB][Build the retire or reset tenant journey]] was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into why the risk report config DQ dataset publishes none of its 27 rows, and what the corrected design must carry.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+The findings were first recorded as a raw analysis of the defect PR #2863
+introduced ("[reporting,dq] Seed the risk report configurations as a dataset").
+This document is that analysis promoted into the story that owns the subject.
+
+* Context
+
+A report run is refused before it reads anything else. The run resolves a
+=risk report config= by report definition id, and no such row exists: at
+=projects/ores.reporting/core/src/messaging/report_execution_handler.cpp:213-218=
+the load fails with =risk_report_config not found for definition ...=.
+
+The DQ dataset =ore.risk_report_configs= stages 27 rows
+(=ores_dq_risk_report_configs_artefact_tbl=, populated at
+=projects/ores.sql/populate/reporting/reporting_risk_report_configs_populate.sql:108-168=),
+but its publish function refuses every one. The gate is
+=v_required := array['pricing_engines','todays_market','curve_configuration','conventions']=
+at =projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql:143=,
+applied at =:208-218=.
+
+The gate is unsatisfiable in a fresh ACME provision, and not because of an
+ordering bug. The four documents are produced only by =ore import-run=, which
+no provisioning path invokes. So the defect is a design defect, not a bug in
+the publish order, and the question this investigation had to answer is what
+the dataset should carry instead.
+
+The work bears directly on
+[[id:88A9FB9C-8F9D-4EEC-A57A-B5139F5F834C][Configure every report ACME seeds]],
+whose acceptance says every provisioned definition resolves a configuration;
+the live counts below show that acceptance is not met. It also sharpens the
+premise of
+[[id:823F2149-EB9B-45DF-B929-D74F75F194FF][Remove the invalid risk report config scaffold]],
+which is discussed under "Decisions the product owner has since taken".
+
+* Methodology
+
+Read-only analysis of the defect introduced by PR #2863. No code or SQL was
+changed.
+
+- Line citations were read from this checkout at =3fadcb00fe=, which is the
+  commit this document was written at.
+- The live row counts were read from the running provisioned database with
+  =compass sql=, the same database =compass db recreate -y -k= produces.
+- The schema facts (no header table for conventions, no foreign keys) were
+  read from =information_schema= and =pg_constraint=.
+- The ORE example data was read under =external/ore/examples/=.
+- The companion per-report mapping is
+  [[id:07FC58A2-A6AB-4444-8F96-ADCA9B2985C6][What each ACME report needs to run]],
+  which names the ORE files each of the 31 report definitions reads and which
+  of them can be stored today.
+
+* Paths taken
+
+** The failure and the gate
+
+The trace starts at the first thing a run does. At
+=report_execution_handler.cpp:213-218= the run loads a risk report config by
+definition id; the load fails before it reads any book, portfolio or document.
+
+The publish that should have written that row is
+=ores_reporting_publish_risk_report_configs_from_dq_fn=
+(=reporting_publish_from_dq_create.sql:132=). It resolves the report
+definition by name (=:186-193=), then requires four
+=ores_reporting_report_configurations_tbl= bindings for it:
+
+#+begin_example
+if (
+    select count(distinct b.configuration_type_code)
+    from ores_reporting_report_configurations_tbl b
+    where b.tenant_id = p_target_tenant_id
+      and b.report_definition_id = v_definition_id
+      and b.configuration_type_code = any(v_required)
+      and b.valid_to = ores_utility_infinity_timestamp_fn()
+) < array_length(v_required, 1) then
+    v_skipped := v_skipped + 1;
+    continue;
+end if;
+#+end_example
+
+=configuration_type_code = any(v_required)= is the only reason all 27 rows are
+skipped. The four bindings it demands are written only by =ore import-run=,
+which provisioning never runs, so the gate cannot be satisfied by a fresh
+ACME provision.
+
+** Live counts in a fresh provision
+
+Live counts confirm the whole chain is empty:
+
+| Table | Rows |
+|-------+------|
+| =ores_dq_risk_report_configs_artefact_tbl= | 27 |
+| =ores_reporting_report_definitions_tbl= | 155 |
+| =ores_reporting_report_run_setups_tbl= | 0 |
+| =ores_reporting_configurations_tbl= | 0 |
+| =ores_reporting_report_configurations_tbl= | 0 |
+| =ores_reporting_risk_report_configs_tbl= | 0 |
+| =ores_analytics_pricing_model_configs_tbl=, =..._products_tbl=, =..._product_parameters_tbl= | 0 |
+| =ores_analytics_todays_market_configs_tbl= and its four children | 0 |
+| =ores_refdata_curve_configurations_tbl=, =..._sections_tbl=, =..._definitions_tbl= | 0 |
+| 22 party-scoped convention tables (=ois=, =zero=, =deposit=, =swap=, ...) | 0 |
+| 4 world-data convention tables (=currency_pair= 179, =overnight_index= 17, =tenor= 8, =ibor_index= 7) | populated |
+
+The product owner's correction defines the intended design: the dataset should
+have carried the four documents' real data as copies of the owning components'
+tables, and the import step should not exist. The risk-settings half of the
+artefact table already follows that shape
+(=ores_dq_risk_report_configs_artefact_tbl= is a near-copy of
+=ores_reporting_risk_report_configs_tbl=, keyed by =report_name=); the defect is
+confined to the four document kinds.
+
+The party count explains the 155: =ore.report_definitions= carries 31
+definitions and publishes per party, and provisioning publishes to the system
+party and to each ACME company.
+
+** The two designs side by side
+
+*Design A, what PR #2863 built (pointer + gate + external import).*
+
+1. The dataset stages the run settings only
+   (=projects/ores.sql/create/dq/dq_risk_report_configs_artefact_create.sql:30-54=).
+2. The publish resolves the report definition by name
+   (=reporting_publish_from_dq_create.sql:186-193=), then requires four
+   =ores_reporting_report_configurations_tbl= bindings for it (=:208-218=).
+3. Those bindings are junction rows — =party_id, report_definition_id,
+   configuration_type_code, configuration_id=
+   (=projects/ores.reporting/modeling/ores.reporting.report_configuration.org:29=).
+   =configuration_id= points at =ores_reporting_configurations_tbl=
+   (=.../ores.reporting.configuration.org:29=), a registry row of identity and
+   owner: =name, configuration_type_code, owning_component=.
+4. The registry row is a pointer; content lives in the owning component's typed
+   rows, reached by a nullable =configuration_id= on each header table.
+5. The only writer of the chain is =ore import-run=
+   (=projects/ores.ore/core/src/store/run_store.cpp:228-282=; service twin at
+   =projects/ores.ore/service/src/messaging/run_configuration_operations.cpp:163-237=),
+   which reads XML files from a directory an operator names.
+
+Design A makes a run depend on a manual, out-of-band import that provisioning
+never performs, then makes the dataset's success conditional on that import.
+
+*Design B, the intended design (data-carrying dataset).*
+
+1. The dataset stages the real content as copies of the four owning components'
+   live tables, plus the registry rows and bindings if the run still needs them.
+2. The publish inserts the staged rows, generating ids and stamping the
+   bi-temporal audit columns the way
+   =ores_reporting_publish_report_definitions_from_dq_fn= does
+   (=reporting_publish_from_dq_create.sql:92-112=).
+3. No gate on a missing document, no import step. Values are inspired by ORE
+   example data (=external/ore/examples/...=) transcribed into populate SQL.
+
+** The four configuration types
+
+=ores_reporting_configuration_types_tbl= is seeded with 17 rows by
+=projects/ores.sql/populate/reporting/reporting_configuration_types_populate.sql:46-62=.
+The four in scope (=configuration_type.org:11=; verified live):
+
+| Code | =ore_root_element= | =owning_component= | =run_parameter= |
+|------+------------------+-------------------+-----------------|
+| =pricing_engines= | =PricingEngines= | =ores.analytics= | =pricingEnginesFile= |
+| =todays_market= | =TodaysMarket= | =ores.analytics= | =marketConfigFile= |
+| =curve_configuration= | =CurveConfiguration= | =ores.refdata= | =curveConfigFile= |
+| =conventions= | =Conventions= | =ores.refdata= | =conventionsFile= |
+
+Content is *typed rows* — not XML text, not an object-store key.
+=information_schema= has no =xml=/=bytea=/=json=/=jsonb=/storage-key column on
+the three header tables. Each header carries a nullable =configuration_id= with
+a declared =:skip_check: true= soft FK to the registry
+(=projects/ores.analytics/modeling/ores.analytics.pricing_model_config.org:135=,
+=.../ores.analytics.todays_market_config.org:143=,
+=.../ores.refdata.curve_configuration.org:113=).
+
+A second load-bearing schema fact: the live database declares no foreign keys
+at all over =ores_reporting%= (=pg_constraint= with =contype='f'= returns zero
+rows). Integrity is trigger-only, e.g. the =configuration_id= check at
+=projects/ores.sql/create/reporting/reporting_report_configurations_create.sql:101-110=.
+A DQ publish may therefore write the owning tables directly without a
+constraint-ordering problem, but it must create the registry row before the
+binding or the trigger refuses it.
+
+*** pricing_engines (ores.analytics)
+
+Header =ores_analytics_pricing_model_configs_tbl=
+(=ores_analytics.pricing_model_config.org:125=; =:18= says it corresponds to
+=pricingengine.xml=) plus =ores_analytics_pricing_model_products_tbl=
+(=pricing_model_config_id, pricing_engine_type_code, model, engine, position=)
+and =ores_analytics_pricing_model_product_parameters_tbl=
+(=pricing_model_config_id, pricing_model_product_id, parameter_scope,
+parameter_name, parameter_value, position=). Saver
+=projects/ores.analytics/core/src/service/pricing_engines_document_service.cpp:39-44=.
+*All 0 rows.*
+
+*** todays_market (ores.analytics)
+
+Header =ores_analytics_todays_market_configs_tbl=
+(=ores.analytics.todays_market_config.org:133=) plus =_configurations_tbl=
+(named configuration, =configuration_id= text), =_entries_tbl=
+(=todays_market_collection_id, key_value, key_value_2, target, discounting,
+position=), =_collections_tbl=, =_collection_kinds_tbl=,
+=_configuration_bindings_tbl=. Saver
+=projects/ores.analytics/core/src/service/todays_market_document_service.cpp=.
+*All 0 rows.*
+
+*** curve_configuration (ores.refdata)
+
+Header =ores_refdata_curve_configurations_tbl=
+(=ores.refdata.curve_configuration.org:124=; =:16= says "One curveconfig.xml
+document") plus =ores_refdata_curve_configuration_sections_tbl=
+(=curve_configuration_id, section_code=), =ores_refdata_curve_definitions_tbl=,
+a per-curve-kind family (=yield_curve_configs=, =inflation_curve_configs=,
+=commodity_curve_configs=, =equity_curve_configs=,
+=intraday_power_curve_configs=, =default_curve_configs=) and quote/segment
+tables. Saver
+=projects/ores.refdata/core/src/service/curve_configuration_document_service.cpp=.
+*Header, sections and definitions are 0 rows*, as are all children counted.
+
+*** conventions (ores.refdata)
+
+*No header entity and no header table* (=ores_refdata_conventions_tbl= does not
+exist). The document is a bag of 26 per-type tables in two groups:
+
+- *Party-scoped* (a =party_id= column, and *no =configuration_id= column*):
+  =ois=, =zero=, =deposit=, =swap=, =fra=, =future=, =bond_yield=, =cds=,
+  =cms_spread_option=, =commodity_forward=, =commodity_future=,
+  =cross_currency_basis=, =cross_currency_fix_float=, =fx_option=,
+  =inflation_swap=, =intraday_power_load=, =swap_index=, =tenor_basis_swap=,
+  =tenor_basis_two_swap=, =zero_inflation_index=, =average_ois=,
+  =bma_basis_swap=. That is 22 tables. Keyed by a *text* =id= (the ORE
+  convention id, e.g. =EUR-ZERO-CONVENTIONS=) with =party_id= in the primary
+  key — e.g. =ores_refdata_ois_conventions_tbl= PK is
+  =(tenant_id, id, party_id, valid_from, valid_to)=. *All 0 rows.*
+- *World data* (no =party_id=): =ores_refdata_currency_pair_conventions_tbl=
+  (179), =_overnight_index_conventions_tbl= (17), =_tenor_conventions_tbl= (8),
+  =_ibor_index_conventions_tbl= (7).
+
+The grouping is the operation message
+=projects/ores.refdata/modeling/ores.refdata.configuration_document_messages.org:121=.
+=conventions_document_service.cpp:20-51= enumerates the repositories it saves;
+=:140-144= shows the world/party split in the saver (=add_missing_world_rows_=,
+explicit =fx_skipped=); =:173-174= reads the world tables on load.
+
+Consequence: =conventions= is the odd slot. Because no convention table has a
+=configuration_id=, a conventions document cannot be linked to a registry row
+the way the other three can. A binding to the slot is a marker, and
+=load_document= treats it as "the conventions the session sees"
+(=projects/ores.ore/core/src/store/run_store.cpp:148-167=). The gate at
+=reporting_publish_from_dq_create.sql:143= still demands a binding for it.
+Because the world half is populated and the party half is not, a run that binds
+conventions today would export a Conventions document whose party-specific half
+(the OIS/zero/deposit/swap ids the examples use) is empty.
+
+** What =ore import-run= actually does
+
+Shell command =ore import-run <report_definition_id> <src_dir> [--name <name>]=,
+registered at
+=projects/ores.shell/application/src/app/commands/trading/ore_commands.cpp:172-192=,
+handler =process_import_run= at =:367-426=; documented at
+=projects/ores.shell/scripts/library/ore/how_do_i_import_a_run_configuration_into_a_report_definition.ores:9=.
+It reads every regular file into memory (=:389-395=), refuses inputs over
+=max_inline_run_input= because the files travel inline in one NATS message
+(=:398-406=), and dispatches =ore.v1.ops.import_run_configuration=
+(=projects/ores.ore/api/include/ores.ore.api/messaging/run_configuration_protocol.hpp:60-63=).
+
+Server side: =run_configuration_handler::import_run_configuration=
+(=projects/ores.ore/service/src/messaging/run_configuration_handler.cpp:76=) and
+=import_run= (=run_configuration_operations.cpp:163-237=). It parses the run
+document into setup/analytics/market bindings (=:172-177=), parses each
+configuration file the run names (=document_kinds=, =:59-68=: =conventions=,
+=curve_configuration=, =todays_market=, =pricing_engines=), refuses a
+named-but-absent file before the first write (=:179-193=), saves the run
+document (=:198-201=), then for each kind calls =bind_configuration_request=
+(=:209-213=), which writes an =ores_reporting_configurations_tbl= row and an
+=ores_reporting_report_configurations_tbl= binding
+(=projects/ores.reporting/core/src/service/run_document_service.cpp:169-196=)
+before handing the parsed document to the owning component's saver
+(=store_document=, =:126-159=). A failure undoes its writes (=undo_import=,
+=:239-258=).
+
+Source of the XML is whatever directory the operator names. The repository
+vendors the upstream ORE examples under =external/ore/examples= (provenance
+manifest =external/ore/examples/manifest.json=, sync tool
+=external/ore/tools/update_ore_samples.sh=); each runnable example directory
+carries exactly the four files, named by the run document's setup parameters.
+The DB-resident twin is =run_store.cpp:228-282= with =store_document= at
+=:115-136= and =load_document= at =:150-167=. Nothing invokes either
+automatically. *No import runs during provisioning.*
+
+** The DQ data-carrying archetype
+
+*How a publish function is chosen.* There is no =publish_fn= column. Dispatch
+is three hops. (1) =ores_dq_datasets_tbl.artefact_type= names a code. (2)
+=ores_dq_artefact_types_tbl= maps it to =target_subject=
+(=projects/ores.sql/create/dq/dq_artefact_types_create.sql:43=); the live row for
+this dataset is =risk_report_configs= → artefact table
+=dq_risk_report_configs_artefact_tbl= → target table
+=reporting_risk_report_configs_tbl= → subject
+=reporting.v1.ops.publish_risk_report_configs_from_dq=. (3) The bundle publish
+workflow builds one step per dataset whose =command_subject= is that
+=target_subject=
+(=projects/ores.dq/api/include/ores.dq.api/workflow/bundle_publish_workflow.hpp:93-105=).
+The receiving service derives the SQL function from the subject:
+=publish_from_dq_function=
+(=projects/ores.reporting/core/src/service/publish_subject_plan.cpp:26-40=) turns
+the subject into =ores_reporting_publish_risk_report_configs_from_dq_fn=; the
+DQ-internal variant is =subject_to_fn=
+(=projects/ores.dq/core/src/messaging/publish_from_dq_handler.cpp:53-68=) with an
+allow-list at =:82-91=. Handlers are registered per subject at
+=projects/ores.reporting/core/src/messaging/registrar.cpp:337-347=; the comment
+there says a new dataset needs "a subject here and a row in
+=ores_dq_artefact_types_tbl=, and nothing else". The function is invoked
+generically as =SELECT action, record_count FROM <fn>($1::uuid, $2::uuid,
+$3::text, $4::jsonb)= (=publish_from_dq_handler.cpp:125-131=), so every publish
+function shares the four-argument =returns table (action text, record_count
+bigint)= shape — as this one does at =reporting_publish_from_dq_create.sql:138-146=.
+
+*The archetype to copy: =ore.report_definitions=.* Closest sibling dataset,
+same component, same gate:
+
+- Staging table =projects/ores.sql/create/dq/dq_report_definitions_artefact_create.sql:30-41=
+  — =dataset_id, tenant_id, id, version, name, description, report_type,
+  schedule_expression, concurrency_policy, display_order=. A full copy of the
+  live table's data columns; the live =ores_reporting_report_definitions_tbl=
+  adds only =party_id=, =fsm_state_id=, =scheduler_job_id=, =run_grant_id=,
+  =prepared_input_key=, =is_official=, the audit and the bitemporal columns.
+- Populate =projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql:20-291=
+  registers the dataset and seeds 30 rows across four tiers.
+- Publish =ores_reporting_publish_report_definitions_from_dq_fn=
+  (=reporting_publish_from_dq_create.sql:46-118=) resolves only the *context*
+  (the target party, =:59-70=), then inserts the staged columns essentially
+  verbatim, generating =gen_random_uuid()= for =id= and stamping the audit
+  columns (=:92-112=). The one filter is the tier/jurisdiction parameter — a
+  data-selection choice, not a pointer resolution.
+
+Two supporting examples. =ore.sample_portfolios=
+(=projects/ores.sql/populate/ore/ore_sample_portfolios_dataset_populate.sql:59-96=)
+inserts rows into the shared =ores_dq_portfolios_artefact_tbl=; the publish
+=ores_refdata_publish_named_portfolios_from_dq_fn=
+(=projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql:2597=)
+inserts them verbatim. Its methodology text (=:34-57=) documents that the values
+were *inventoried from =external/ore/examples=* — the same sourcing technique
+the four documents need. =refdata.crm_topology_bundles=
+(=projects/ores.sql/populate/refdata/refdata_crm_topology_bundles_populate.sql=;
+publish =refdata_publish_from_dq_create.sql:3766-3910=) carries a =row_kind=
+discriminator so one flat staging table feeds two live tables — useful if one
+artefact table must stand in for a parent/child pair.
+
+=testdata.portfolios= is the counter-example: its publish
+(=refdata_publish_from_dq_create.sql:3436-3613=) walks =parent_portfolio_id= to
+build a depth-ordered temp map because the live ids must be regenerated. Use
+that pattern only if the four document tables cannot keep their staged ids.
+
+** The dependency mechanism
+
+Table =ores_dq_dataset_dependencies_tbl=
+(=projects/ores.sql/create/dq/dq_dataset_dependency_create.sql:38-57=). Columns:
+=dataset_code, tenant_id, dependency_code, role, modified_by,
+change_reason_code, change_commentary, valid_from, valid_to=; key
+=(tenant_id, dataset_code, dependency_code, valid_from)=. =dependency_code= is
+deliberately not a foreign key (=:28-32=), so a dependency may be declared before
+its dataset exists; =role= is free text naming why. The reporting rows are
+=projects/ores.sql/populate/reporting/reporting_dataset_dependency_populate.sql:40-47=:
+=ore.risk_report_configs= depends on =ore.report_definitions=
+(=report_definition_source=), =testdata.portfolios= (=root_portfolio_source=) and
+=testdata.books= (=book_population_source=).
+
+How the machinery uses it: =publish_service= loads all dependencies
+(=projects/ores.dq/core/src/service/publish_service.cpp:139=), adds missing
+dependency codes to the working set (=:149-160=), builds a =boost.graph= graph
+keyed by dataset code (=:170-188=) and topological-sorts it (=:190-198=),
+dependencies first. =list_bundle_publishable_datasets= (=:440-490=) reads bundle
+member ids in =display_order= (=ores_dq_bundle_datasets_list_fn=,
+=projects/ores.sql/create/dq/dq_bundle_publication_create.sql:111-145=), then
+delegates to the same dependency-resolving core (=publish_service.cpp:475=). The
+workflow serialises the resolved order one step after another via =consumes=
+(=bundle_publish_workflow.hpp:98-106=). =publish_service.hpp:104-127= records
+that before this the bundle path read only direct members and never consulted
+the graph, so a declared dependency now does take effect.
+
+=ores_dq_dataset_bundle_members_upsert_fn= writes
+=ores_dq_dataset_bundle_members_tbl=
+(=projects/ores.sql/create/dq/dq_dataset_bundle_member_create.sql:31-44=):
+=bundle_code, tenant_id, dataset_code, version, display_order, optional, ...=.
+=display_order= is the member's position within the bundle
+(=bundle_publication_create.sql:143=). The relationship: membership and
+=display_order= say which datasets a bundle contains and in what advisory order;
+=ores_dq_dataset_dependencies_tbl= says which must run *before* which, and the
+graph can pull in datasets that are not members at all. Live membership is
+=party_essentials= (report_definitions 10, risk_report_configs 15) and
+=risk_management= (40, 50) —
+=projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql:192-193,
+251-252=. The relative order is already right; the gate, not the order, is the
+defect.
+
+The dependency file's own comment states the rejected design:
+=reporting_dataset_dependency_populate.sql:30-33= says the four documents "come
+from =ore import-run=, not from a DQ dataset, so there is nothing to declare for
+them here". Under the corrected design that is wrong, and the document datasets
+need dependency rows of their own.
+
+* Conclusions
+
+** Root cause: the gate is unsatisfiable in a fresh ACME provision
+
+The publish function skips every one of the 27 staged rows because none of
+their report definitions carries the four
+=ores_reporting_report_configurations_tbl= bindings the gate demands. Those
+bindings are written only by =ore import-run=, which provisioning never invokes.
+The dataset therefore publishes nothing, and a run fails at
+=report_execution_handler.cpp:213-218= with =risk_report_config not found for
+definition ...=.
+
+The failure is one of design, not of ordering. The dataset was built to point at
+documents an out-of-band import must have written, rather than to carry the
+documents' data itself. Everything the corrected design needs is already
+modelled: the owning components have typed tables and savers, the DQ machinery
+has a data-carrying archetype, and the dependency graph already orders datasets
+before the publish that needs them.
+
+** What the corrected design requires
+
+*** Staging artefact tables
+
+For each document, a DQ artefact table mirroring the owning component's live
+tables:
+
+| Document | Staging table(s) to add | Mirrors |
+|----------+-------------------------+---------|
+| pricing_engines | =ores_dq_pricing_model_configs_artefact_tbl=, =..._products_artefact_tbl=, =..._product_parameters_artefact_tbl= | the three =ores_analytics_pricing_model_*= tables |
+| todays_market | =ores_dq_todays_market_configs_artefact_tbl= + configurations / collections / collection_kinds / entries / bindings artefact tables | the five =ores_analytics_todays_market_*= tables |
+| curve_configuration | =ores_dq_curve_configurations_artefact_tbl= + sections + definitions + the per-kind curve config tables actually needed | =ores_refdata_curve_configurations_tbl= and its children |
+| conventions | one artefact table per party-scoped convention kind the chosen example uses (likely =ois=, =zero=, =deposit=, =swap=, =fra=, =future=, =ibor_index=) | the corresponding =ores_refdata_*_conventions_tbl= |
+
+Whether to stage only the kinds the chosen example uses or all 22 party-scoped
+kinds, and whether the four already-populated world-data tables are in scope, is
+not resolved by anything found. The =crm_topology_bundles= =row_kind=
+discriminator (=refdata_publish_from_dq_create.sql:3838-3900=) is the
+established way to hold a heterogeneous document in one flat staging table if
+per-kind table count is judged too high.
+
+A registry/binding staging pair is also needed if the run keeps reading the
+junction (see blast radius): either
+=ores_dq_report_configurations_artefact_tbl= mirroring
+=ores_reporting_report_configurations_tbl=, or the publish function creates the
+registry row and the binding itself given the staged document. The latter is
+closer to the =ore.report_definitions= archetype, which generates identity
+during publish.
+
+*** Populate SQL
+
+One script per new dataset under =projects/ores.sql/populate/<component>=,
+registered with =ores_dq_datasets_upsert_fn= and wired into
+=projects/ores.sql/populate/populate.sql=. Ordering is conventions → curve
+configuration → today's market → pricing engines, because each layer references
+ids the previous layer holds (curve segments name conventions; today's market
+names curves; pricing engines name products/models).
+
+Row counts: 27 is the risk-config artefact count, not the document count. The
+model exists precisely so several reports share one document
+(=ores.reporting.configuration.org:15-17=), so the sensible target is one
+coherent document set shared by the runnable definitions: *4 registry rows (or
+3, if conventions stays a marker), up to 4 bindings per definition (4 × 27 =
+108), and one document body each.* The bodies are the bulk: reading the
+HistSimVar example, roughly 100+ convention rows, ~20 curve configs with
+segments, ~15 today's-market entries, ~10 pricing-engine product rows. These
+are estimates from the example files, not measured.
+
+*** Dependency rows
+
+Add =ore.risk_report_configs= → each new document dataset (one =role= per kind),
+replacing the comment at =reporting_dataset_dependency_populate.sql:30-33=.
+
+*** What must be deleted or rewritten
+
+1. *The four-document gate.* =v_required= and the
+   =count(distinct configuration_type_code) ... < array_length(...)= check at
+   =reporting_publish_from_dq_create.sql:143= and =:208-218=.
+   =configuration_type_code = any(v_required)= is the only reason all 27 rows
+   are skipped.
+2. *The import dependency in the publish.* The header comment at
+   =reporting_publish_from_dq_create.sql:125-134= and the function comment at
+   =:282-286= ("whose report definition the target party already carries with
+   all four required ORE configuration bindings").
+3. *The stale comments* at =reporting_risk_report_configs_populate.sql:36-41=
+   and =reporting_dataset_dependency_populate.sql:30-33=.
+4. *The dataset description string*, which encodes the gate:
+   =reporting_risk_report_configs_populate.sql:68= ("...gated on the definition
+   carrying all four ORE configuration documents the run reads").
+5. *Any =run_setup= coupling.* No coupling was found between the risk config
+   publish and =ores_reporting_report_run_setups_tbl=; the run setup is written
+   only by the import or =run_document_service=. Nothing to delete, but a run
+   that never imports also has no run setup, so packaging will fail for a second
+   reason unless the design populates the run document too (see blast radius).
+6. The comment at =reporting_risk_report_configs_populate.sql:31-35= (27 vs 31;
+   =historical_return= and =basel_traffic_light= have no saver) stays valid and
+   should survive the rewrite; it is not part of this defect.
+
+*** Source data under =external/ore/examples=
+
+The vendored examples are the right source, and are already the documented
+source for another dataset (=ore_sample_portfolios_dataset_populate.sql:27-57=
+inventories =PF1=/=PF2= from the examples' trade envelopes). All four files sit
+in one runnable directory, =external/ore/examples/MarketRisk/Input/HistSimVar/=
+(verified present):
+
+- =pricingengine.xml= — =<PricingEngines>=; =<Product type="...">= with
+  =<Model>=, =<Engine>=, =<EngineParameters><Parameter name="...">=.
+- =todaysmarket.xml= — =<TodaysMarket>=; =<Configuration id="default">= naming
+  =DiscountingCurvesId=/=YieldCurvesId=; =<DiscountingCurves id="...">= with
+  =<DiscountingCurve currency="...">=.
+- =curveconfig.xml= — =<CurveConfiguration>=; =<YieldCurves><YieldCurve>= with
+  =CurveId=, =Currency=, =DiscountCurve=, =<Segments><Simple><Type>= and
+  =<Quotes><Quote>=.
+- =conventions.xml= — =<Conventions>=; =<Zero><Id>EUR-ZERO-CONVENTIONS</Id>...=
+  and the other kinds, each id matching an =ores_refdata_*_conventions_tbl.id=.
+
+Other directories worth mining: =external/ore/examples/MinimalSetup/=,
+=external/ore/examples/CurveBuilding/=,
+=external/ore/examples/MarketRisk/Input/Curves/=. Which example has a run
+document whose four file names line up with the =document_kinds= list was not
+verified; that should be the selection criterion, and no mapping from report
+definition name to example directory was found.
+
+** Blast radius
+
+*Who else reads the pointer chain.*
+
+- *Packaging.* The export path reads the bindings and writes each document back
+  out as XML: =projects/ores.ore/core/src/store/run_store.cpp:311-324= and
+  =projects/ores.ore/service/src/messaging/run_configuration_operations.cpp:274-280=.
+  This is why the bindings cannot simply be dropped unless the documents become
+  reachable another way.
+- *Tenant reset.* =projects/ores.sql/create/iam/iam_tenant_reset_create.sql:108-120=
+  lists the whole chain in the wipe set, with a comment that says "re-running the
+  import rebuilds the rest" — the rejected design again.
+- *Soft-FK triggers.* =reporting_report_configurations_create.sql:101-110= and
+  =reporting_configuration_parameters_create.sql:83-90= refuse a child whose
+  registry row is missing.
+- *GUI and history.* Domain/repository/service/presentation layers for both
+  tables serve the reporting screens and audit history (e.g.
+  =projects/ores.reporting/core/src/presentation/report_configuration_history_field_mapper.cpp=).
+  Unaffected by deleting the gate.
+- *The run.* =report_execution_handler.cpp:213-229= loads the risk report config
+  by definition id, then resolves book ids through the config's scope. This is
+  the failure site the fix must satisfy.
+
+*Does the run still need the real ORE config files? Yes.* =prepare_ore_package=
+calls =ores::ore::service::messaging::export_run(owners, req.definition_id)=
+(=projects/ores.ore/service/src/messaging/report_package_handler.cpp:120=) and
+then =archive_layout(run_input)= (=:199-206=), writing each document into the
+tarball the engine reads. =export_run=
+(=run_configuration_operations.cpp:260-280=) calls =load_document= for each
+binding (=run_store.cpp:150-167=), which serialises the owning component's typed
+rows back to ORE XML through the reverse mappers. So the run needs the documents
+in the database *and* the bindings that name them; it does not need an import
+step if the DQ publish writes both. The engine needs XML files inside the
+package, and those are produced from the database at packaging time — the import
+was never the only way to get them there, only the only way that exists today.
+
+*What breaks if the gate alone is removed.* Nothing in the publish path, but the
+27 configs would then be inserted and the run would fail one step later at
+packaging: with zero bindings, =export_run= produces a run document naming no
+=pricingEnginesFile= / =marketConfigFile= / =curveConfigFile= / =conventionsFile=,
+and =run_store.cpp:317-322= throws "its run document names no file for it".
+Deleting the gate without supplying the documents converts a silent skip into a
+run-time failure. The staging tables and their populate data are the actual
+deliverable.
+
+** Decisions the product owner has since taken
+
+The four decisions below were taken by the product owner after the analysis was
+written. Each is quoted in their words, followed by the consequence for the
+design.
+
+1. /"ore.xml is generated on the fly by the system. it is just a XML file
+   pointing to other XML files plus config elements. the parts which are not XML
+   file pointers need to be part of the DQ dataset."/
+   Consequence: the run document is not an artefact to store or import; the
+   system generates it. The pointers it contains stay pointers, generated at
+   packaging time. Only the content that is not a pointer to another XML file —
+   the inline configuration elements — belongs in the DQ dataset. This is a
+   sharper statement of Design B: the dataset carries configuration content, not
+   a copy of =ore.xml=.
+2. /"conventions and other ref data will probably need an additional
+   'configuration' table to decide what is in scope. or perhaps maybe it makes
+   more sense to determine what ref data is needed depending on the trade
+   population."/
+   Consequence: the question of what ref data a run needs — and therefore what
+   the convention (and other ref-data) datasets must stage — is answered by
+   scoping, not by copying everything. Two candidate mechanisms are named: an
+   explicit scope configuration table, or deriving the needed ref data from the
+   trade population. Neither is chosen yet. This is new and unresolved.
+3. /"we should add the configurations needed for the report definitions that are
+   part of the ACME report set. if most reports share the same configuration
+   then we won't need many. this was part of the earlier analysis."/
+   Consequence: the dataset's scope is the ACME report set and the
+   configurations those definitions need, not one document set per definition.
+   Sharing is expected, so the count of document bodies should be small. The
+   "earlier analysis" is
+   [[id:07FC58A2-A6AB-4444-8F96-ADCA9B2985C6][What each ACME report needs to run]],
+   which found the four Setup documents are the same for all 31 definitions and
+   only nine reports need any extra analytics document. The target is therefore
+   one shared document set, not 27.
+4. /"the analysis of the earlier PR was supposed to determine what configurations
+   were needed for which reports. some reports were excluded because we do not
+   support the configuration needed."/
+   Consequence: the definitions missing from the dataset are missing because no
+   saver supports the configuration they need, and that is intended, not a gap
+   to close here. This confirms the four excluded definitions (Board Risk
+   Dashboard, Stressed VaR and Intraday Risk Monitor need =historical_return=;
+   P&L Attribution needs =basel_traffic_light=) stay out. It also makes the
+   companion per-report mapping the source of truth for which configurations the
+   dataset must carry.
+
+** Open questions
+
+Where a question above is answered by a decision, it is marked *resolved* and
+the decision is named. The rest carry forward, and the decisions raise new ones.
+
+1. *Whether the run document* (=ores_reporting_report_run_setups_tbl=, 0 rows,
+   plus the setup columns naming the four files) is expected to come from DQ. —
+   *Resolved (decision 1).* The run document is generated on the fly, so no
+   dataset stores it; the non-pointer parts are DQ data.
+2. *Whether the bindings are intended to survive at all.* — *Resolved in
+   direction (decisions 1 and 3).* The pointer chain stays and is generated; what
+   moves into DQ is the content the pointers resolve to. Dropping the pointers
+   entirely is not what was asked.
+3. *The exact row count.* — *Resolved (decision 3).* Configurations are added
+   for the report definitions in the ACME report set, shared where the reports
+   share them, so few document sets are expected, not one per definition.
+4. *Which example directory is canonical.* No mapping from report definition
+   name to example directory exists, and the earlier analysis mapped reports to
+   ORE files, not to directories. — *Still open.* The selection criterion should
+   be the example whose run document names the four =document_kinds= files, but
+   which directory that is remains undetermined.
+5. *Whether =historical_return= and =basel_traffic_light=* are in scope. —
+   *Resolved (decision 4).* The reports needing them are excluded because the
+   configuration is unsupported. They return only when a saver exists.
+6. *Two duplicate =ores_dq_artefact_types_tbl= rows* for =report_definitions= and
+   =risk_report_configs=. The live query returns each twice. — *Still open, and
+   corrected here.* Both rows have =valid_to = ores_utility_infinity_timestamp_fn()=,
+   so this is a duplicate current row, not a separate bitemporal version as first
+   guessed; the earlier row was not expired when a later populate inserted again.
+   The origin is untraced.
+
+New questions raised by the decisions:
+
+1. *What scoping mechanism decides which ref data (conventions above all) a run
+   needs* — an explicit =configuration= table, or derivation from the trade
+   population? Decision 2 names both and chooses neither.
+2. *Where the line falls between "XML file pointers" and "config elements"* in
+   =ore.xml=, since decision 1 sends only the latter to the DQ dataset. The
+   boundary is not drawn yet.
+3. *Which configurations the ACME report definitions actually share*, and what
+   the resulting minimal document set is. Decision 3 expects sharing; the exact
+   shared/bespoke split still needs to be restated as a dataset inventory.
+
+* Recommendations
+
+- Replace the pointer-and-gate design with a data-carrying dataset: stage the
+  four documents' content as copies of the owning components' tables, and delete
+  the four-document gate, the import dependency and the stale comments.
+- Fix the dataset's scope to the ACME report set, and share document sets
+  between definitions that need the same ones rather than creating one per
+  definition. Do not add the four unsupported definitions.
+- Decide the ref-data scoping mechanism before staging conventions, because it
+  decides how many convention tables the dataset must carry.
+- Add dependency rows for each new document dataset so the publish order is
+  declared rather than assumed.
+- Because an investigation is a point-in-time record, promote the durable design
+  statement — the dataset's shape, its scope rule and the "generated ore.xml,
+  data-only content" boundary — to the page that owns the risk report config
+  dataset, and cite that page from code and models rather than this one.
+- The two duplicate =ores_dq_artefact_types_tbl= rows should be examined and
+  resolved separately; they do not block this work.
+
+* See also
+
+- [[id:07FC58A2-A6AB-4444-8F96-ADCA9B2985C6][What each ACME report needs to run]]
+  is the companion investigation: the ORE files each of the 31 report
+  definitions reads, and which of them can be stored today.
+- [[id:88A9FB9C-8F9D-4EEC-A57A-B5139F5F834C][Configure every report ACME seeds]]
+  is the task this investigation informs; its acceptance that every definition
+  resolves a configuration is not met by the gated publish.
+- [[id:823F2149-EB9B-45DF-B929-D74F75F194FF][Remove the invalid risk report config scaffold]]
+  is the task whose premise is superseded: the model it proposed to delete
+  became load-bearing when PR #2863 built the artefact table on it.
+- [[id:0FC2B828-ED9C-4C8F-A8DD-84C1BB913A09][Investigation: the ORE report configuration documents]]
+  describes the XML documents themselves.
+- [[https://github.com/OreStudio/OreStudio/pull/2863][PR #2863]] — [reporting,dq]
+  Seed the risk report configurations as a dataset, the change this analysis is
+  about.

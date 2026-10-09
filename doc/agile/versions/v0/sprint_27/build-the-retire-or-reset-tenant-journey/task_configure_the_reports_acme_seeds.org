@@ -127,6 +127,11 @@ The per-report analysis is
 It names the ORE files each of the 31 reports reads and which of them can be
 stored today.
 
+The dataset design is
+[[id:7E1D37D0-D897-4C10-BE8F-15CEB22F9D4F][the risk report config DQ dataset and the four ORE documents]].
+It finds the publish skips all 27 rows because the four-document gate cannot be
+satisfied by provisioning, and records the corrected data-carrying design.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

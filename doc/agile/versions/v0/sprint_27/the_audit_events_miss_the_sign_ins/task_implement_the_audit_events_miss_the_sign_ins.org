@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: 6B6872B0-FB52-4D87-BD9C-A165CE8C2968
+:END:
+#+title: Task: Implement Hotfix: the audit events miss the sign-ins
+#+description: Initial task for: Hotfix: the audit events miss the sign-ins
+#+type: task
+#+level: s1
+#+filetags: :the_audit_events_miss_the_sign_ins:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDC770CE-E427-42CA-B634-FE57C408217A][Hotfix: the audit events miss the sign-ins]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the three audit-event defects right: record the sign-in where it
+actually completes, name the tenant and the bare username on a refusal, and
+cast the time bounds so the read can run.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DDC770CE-E427-42CA-B634-FE57C408217A][Hotfix: the audit events miss the sign-ins]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- A party-selecting sign-in writes one =login_success= row, with the party.
+- A refusal writes one =login_failure= row, with the reached tenant.
+- The read's time bounds compare against =event_time= without error.
+
+* Plan
+
+Two of the three are one edit each; the first is the interesting one.
+
+=select_party= and =switch_party= are deliberate near-duplicates, so the
+success record goes in =select_party= only. A re-scope of an already-open
+session is not a new sign-in, and recording one there would double-count
+every party switch.
+
+=record_auth_event= is private to the auth handler, and =select_party= lives
+in =account_operations_handler=, so the new site builds the repository
+itself and swallows a recording failure the same way the helper does. A
+telemetry write must never refuse a sign-in that already succeeded.
+
+The failure path could not reach the tenant context or the bare username,
+because both were resolved inside the =try= whose =catch= records the
+event. Hoisting them above the =try= is what makes the refusal recordable;
+the two catches (the typed =login_error= and the generic =std::exception=)
+share the fix.
+
+The read's cast goes through =nullif= rather than a bare =::timestamptz=,
+because the empty string is the filter turned off and =''::timestamptz=
+raises instead of yielding null.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Sign-ins this account recorded before the fix, of three attempted | 0 | =select event_type, count(*) from ores_iam_auth_events_tbl= | =5715b33194-dirty= |
+| Reads that failed with the operator error, of three windows tried | 3 | =journalctl --user -u ores.iam.service-solid_dirac= | =5715b33194-dirty= |
+| Events recorded after the fix, of one refusal and one sign-in | 2 | as above, one =login_failure= and one =login_success= | =5715b33194-dirty= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The audit screen has sign-ins to show. A refusal and a party-selecting
+sign-in now both record, against the right tenant and the bare username,
+and the events read answers for =day= and for =all= on the running
+installation.
+
+What made this hard to see is worth keeping: the read failed, the BFF turned
+the failure into an empty list, and the screen said there was nothing to
+show. An empty list and a broken read are the same picture, and the IAM
+service's log was the only place the difference was written down. A read
+that cannot run should not be allowed to read as an empty log.
+
+One gap is left, and it is not this task's. The browser's sign-out destroys
+the BFF's session and clears the cookie, but never calls the server's logout
+subject (=server.ts=, =DELETE /api/session=), so no =logout= event is
+recorded and the session row is left open. The server-side recording works;
+nothing reaches it. That wants its own story.

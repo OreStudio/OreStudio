@@ -658,7 +658,8 @@ TEST_CASE("read_as_of_records_carries_the_row_record_time", tags) {
     obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-3M", t0, 0.0410));
 
     const auto written_at = std::chrono::system_clock::now();
-    const auto records = obs_repo.read_as_of_records(h.context(), s.id, t0 + std::chrono::minutes(1));
+    const auto records =
+        obs_repo.read_as_of_records(h.context(), s.id, t0 + std::chrono::minutes(1));
     BOOST_LOG_SEV(lg, debug) << "Records: " << records.size();
 
     REQUIRE(records.size() == 2);
@@ -700,7 +701,8 @@ TEST_CASE("read_as_of_records_takes_the_record_time_of_the_manual_row", tags) {
                                 "operator over-key");
     const auto after_manual = std::chrono::system_clock::now();
 
-    const auto records = obs_repo.read_as_of_records(h.context(), s.id, t0 + std::chrono::minutes(1));
+    const auto records =
+        obs_repo.read_as_of_records(h.context(), s.id, t0 + std::chrono::minutes(1));
     REQUIRE(records.size() == 1);
 
     // The manual point owns the coordinate, and its record time is the manual

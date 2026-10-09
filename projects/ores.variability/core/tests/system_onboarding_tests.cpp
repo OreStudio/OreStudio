@@ -68,10 +68,9 @@ struct fixture {
         party = system_party(db);
         auto ops = std::make_shared<ores::variability::messaging::operations_handler>(
             nats, db.context(), std::optional(keys.verifier()));
-        subs.push_back(nats.queue_subscribe(
-            subject(),
-            "ores.test",
-            [ops](ores::nats::message m) { ops->complete_system_onboarding(std::move(m)); }));
+        subs.push_back(nats.queue_subscribe(subject(), "ores.test", [ops](ores::nats::message m) {
+            ops->complete_system_onboarding(std::move(m));
+        }));
     }
 };
 

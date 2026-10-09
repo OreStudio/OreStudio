@@ -258,9 +258,8 @@ private:
                                                       .applied_at = row.applied_at,
                                                       .applied_by = row.modified_by});
             }
-            std::ranges::sort(answer.roles, {}, [](const requested_role& r) {
-                return r.role.name;
-            });
+            std::ranges::sort(
+                answer.roles, {}, [](const requested_role& r) { return r.role.name; });
         }
         return answer;
     }

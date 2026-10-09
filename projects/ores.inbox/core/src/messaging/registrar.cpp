@@ -20,7 +20,6 @@
 #include "ores.inbox.core/messaging/registrar.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
 #include "ores.inbox.core/messaging/approval_decision_history_provider_registrar.hpp"
@@ -48,6 +47,7 @@
 #include "ores.inbox.core/messaging/notification_preference_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_recipient_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_registrar.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <memory>
 #include <string_view>
 #include <utility>
@@ -128,11 +128,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             get_approval_request::nats_subject, queue_group, [h](ores::nats::message msg) {
                 h->get_request(std::move(msg));
             }));
-        subs.push_back(nats.queue_subscribe(get_approval_history_request::nats_subject,
-                                            queue_group,
-                                            [h](ores::nats::message msg) {
-                                                h->get_history(std::move(msg));
-                                            }));
+        subs.push_back(nats.queue_subscribe(
+            get_approval_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->get_history(std::move(msg));
+            }));
         subs.push_back(
             nats.queue_subscribe(list_my_approval_requests_request::nats_subject,
                                  queue_group,

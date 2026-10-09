@@ -83,8 +83,8 @@ namespace {
  * leg it is asserting on rather than a column of the leg.
  */
 static double leg_rate(const ores::trading::domain::swap_instrument_data& data,
-                int leg_number,
-                const std::string& rate_role) {
+                       int leg_number,
+                       const std::string& rate_role) {
     for (const auto& r : data.leg_rates)
         if (r.leg_number == leg_number && r.rate_role == rate_role)
             return r.value;
@@ -118,7 +118,10 @@ TEST_CASE("mapper_roundtrip_swaption_european_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_swaption(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_swaption(
-        std::get<ores::trading::domain::swaption_instrument>(result.instrument), result.legs, result.leg_amounts, result.leg_rates);
+        std::get<ores::trading::domain::swaption_instrument>(result.instrument),
+        result.legs,
+        result.leg_amounts,
+        result.leg_rates);
 
     REQUIRE(reconstructed.SwaptionData.operator bool());
     const auto& sd = *reconstructed.SwaptionData;

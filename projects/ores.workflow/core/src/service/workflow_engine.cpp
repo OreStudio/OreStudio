@@ -34,8 +34,8 @@
 #include <cstddef>
 #include <format>
 #include <ranges>
-#include <set>
 #include <rfl/json.hpp>
+#include <set>
 #include <span>
 #include <string>
 #include <unordered_map>
@@ -132,10 +132,9 @@ nodes_of_chain(const std::vector<domain::workflow_plan_step>& chain,
  * to the system tenant is refused for every run started on behalf of anyone
  * else -- and the engine holds the system tenant while it starts all of them.
  */
-std::vector<domain::workflow_plan_step>
-plan_steps_of(const domain::workflow_instance& instance,
-              const std::vector<workflow_step_def>& steps,
-              const std::string& actor) {
+std::vector<domain::workflow_plan_step> plan_steps_of(const domain::workflow_instance& instance,
+                                                      const std::vector<workflow_step_def>& steps,
+                                                      const std::string& actor) {
     std::vector<domain::workflow_plan_step> rows;
     rows.reserve(steps.size());
     for (std::size_t i = 0; i < steps.size(); ++i) {

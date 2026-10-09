@@ -145,16 +145,16 @@ TEST_CASE("a profile's kinds become steps in order, with the completing step las
 
 TEST_CASE("a profile's steps declare which steps must answer first", tags) {
     const auto def = definition();
-    const auto steps = def.build_steps(
-        request_json({declared("system_provision"),
-                      declared("publish_bundle", R"({"bundles":["acme_group"]})"),
-                      declared("import_lei_hierarchy"),
-                      declared("provision_party"),
-                      declared("load_staff"),
-                      declared("attach_photos"),
-                      declared("start_market_feeds")}),
-        tenant_id,
-        correlation_id);
+    const auto steps =
+        def.build_steps(request_json({declared("system_provision"),
+                                      declared("publish_bundle", R"({"bundles":["acme_group"]})"),
+                                      declared("import_lei_hierarchy"),
+                                      declared("provision_party"),
+                                      declared("load_staff"),
+                                      declared("attach_photos"),
+                                      declared("start_market_feeds")}),
+                        tenant_id,
+                        correlation_id);
 
     const auto inputs_of = [&](const std::string& name) {
         for (const auto& step : steps)

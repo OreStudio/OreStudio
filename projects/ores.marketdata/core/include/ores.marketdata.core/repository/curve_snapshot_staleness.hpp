@@ -66,9 +66,8 @@ struct staleness_summary final {
  * @param records The snapshot's points, each with its record time.
  * @param as_of The instant the snapshot is read as of.
  */
-ORES_MARKETDATA_CORE_EXPORT staleness_summary
-summarise_staleness(const std::vector<observation_record>& records,
-                    std::chrono::system_clock::time_point as_of);
+ORES_MARKETDATA_CORE_EXPORT staleness_summary summarise_staleness(
+    const std::vector<observation_record>& records, std::chrono::system_clock::time_point as_of);
 
 }
 

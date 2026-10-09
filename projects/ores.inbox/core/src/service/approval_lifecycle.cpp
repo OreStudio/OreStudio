@@ -296,7 +296,8 @@ std::vector<expiring_request> approval_lifecycle::remind_expiring(std::chrono::s
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
         "select request_id::text, tenant_id::text, kind_code, requested_by::text,"
-        " expires_at::text from ores_inbox_remind_expiring_approval_requests_fn($1::double precision)",
+        " expires_at::text from ores_inbox_remind_expiring_approval_requests_fn($1::double "
+        "precision)",
         {std::to_string(window.count())},
         lg(),
         "Reading the approval requests close to their deadline");

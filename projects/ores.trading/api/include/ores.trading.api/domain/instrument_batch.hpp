@@ -54,6 +54,13 @@
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
+#include "ores.trading.api/domain/instrument_option.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
+#include "ores.trading.api/domain/instrument_option_payment_date.hpp"
+#include "ores.trading.api/domain/instrument_option_premium.hpp"
+#include "ores.trading.api/domain/instrument_schedule.hpp"
+#include "ores.trading.api/domain/instrument_schedule_date.hpp"
+#include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
@@ -204,6 +211,34 @@ struct instrument_batch {
      * @brief The inflation_swap_instrument rows, keyed by trade id.
      */
     std::vector<inflation_swap_instrument> inflation_swap_instruments;
+    /**
+     * @brief The instrument_option rows, keyed by trade id.
+     */
+    std::vector<instrument_option> instrument_options;
+    /**
+     * @brief The instrument_option_exercise_fee rows, keyed by trade id.
+     */
+    std::vector<instrument_option_exercise_fee> instrument_option_exercise_fees;
+    /**
+     * @brief The instrument_option_payment_date rows, keyed by trade id.
+     */
+    std::vector<instrument_option_payment_date> instrument_option_payment_dates;
+    /**
+     * @brief The instrument_option_premium rows, keyed by trade id.
+     */
+    std::vector<instrument_option_premium> instrument_option_premiums;
+    /**
+     * @brief The instrument_schedule rows, keyed by trade id.
+     */
+    std::vector<instrument_schedule> instrument_schedules;
+    /**
+     * @brief The instrument_schedule_date rows, keyed by trade id.
+     */
+    std::vector<instrument_schedule_date> instrument_schedule_dates;
+    /**
+     * @brief The instrument_strike rows, keyed by trade id.
+     */
+    std::vector<instrument_strike> instrument_strikes;
     /**
      * @brief The knock_out_swap_instrument rows, keyed by trade id.
      */
@@ -463,6 +498,55 @@ inline void append(instrument_batch& batch, fra_instrument v) {
  */
 inline void append(instrument_batch& batch, inflation_swap_instrument v) {
     batch.inflation_swap_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one instrument_option to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_option v) {
+    batch.instrument_options.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one instrument_option_exercise_fee to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_option_exercise_fee v) {
+    batch.instrument_option_exercise_fees.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one instrument_option_payment_date to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_option_payment_date v) {
+    batch.instrument_option_payment_dates.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one instrument_option_premium to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_option_premium v) {
+    batch.instrument_option_premiums.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one instrument_schedule to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_schedule v) {
+    batch.instrument_schedules.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one instrument_schedule_date to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_schedule_date v) {
+    batch.instrument_schedule_dates.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one instrument_strike to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_strike v) {
+    batch.instrument_strikes.push_back(std::move(v));
 }
 
 /**

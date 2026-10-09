@@ -213,6 +213,27 @@ returns void as $$
 begin
     -- Close every row this row owns, so one delete removes the family and
     -- not the header alone. The store enforces it, so every caller gets it.
+    delete from "ores_trading_instrument_strikes_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_schedules_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_schedule_dates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_options_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_option_premiums_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_option_exercise_fees_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_option_payment_dates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
     delete from "ores_trading_swap_legs_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;

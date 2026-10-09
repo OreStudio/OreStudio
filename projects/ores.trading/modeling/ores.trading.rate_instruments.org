@@ -206,9 +206,51 @@ The rows a rates instrument owns. Each is keyed by the instrument's own
 trade id, so the delete rule closes them all with one statement per table
 and the family does not outlive its header.
 
-The shared children the family writes — =instrument_strikes=,
-=instrument_schedules= and the option block — join here when the cap/floor
-and swaption conversions land.
+The shared children the family writes — the strikes, the schedules and the
+option block — are the shapes the bond pilot built, and the family writes to
+them rather than widening them.
+
+** instrument_strikes
+:PROPERTIES:
+:table:  ores_trading_instrument_strikes_tbl
+:column: trade_id
+:END:
+
+** instrument_schedules
+:PROPERTIES:
+:table:  ores_trading_instrument_schedules_tbl
+:column: trade_id
+:END:
+
+** instrument_schedule_dates
+:PROPERTIES:
+:table:  ores_trading_instrument_schedule_dates_tbl
+:column: trade_id
+:END:
+
+** instrument_options
+:PROPERTIES:
+:table:  ores_trading_instrument_options_tbl
+:column: trade_id
+:END:
+
+** instrument_option_premiums
+:PROPERTIES:
+:table:  ores_trading_instrument_option_premiums_tbl
+:column: trade_id
+:END:
+
+** instrument_option_exercise_fees
+:PROPERTIES:
+:table:  ores_trading_instrument_option_exercise_fees_tbl
+:column: trade_id
+:END:
+
+** instrument_option_payment_dates
+:PROPERTIES:
+:table:  ores_trading_instrument_option_payment_dates_tbl
+:column: trade_id
+:END:
 
 ** swap_legs
 :PROPERTIES:

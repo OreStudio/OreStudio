@@ -193,6 +193,14 @@ The child tables the export carries beside the instruments, one array each. A
 child's elements are keyed by the same trade id, so a reader gathers one
 trade's rows from the array with no second lookup structure.
 
+The rates family's product fact tables are here because the family routes to
+its header: the header is the routed instrument and a product's own fields
+are its facts. The family's legs, its leg amounts and rates, its call dates,
+its strikes, its schedules and its option block are here for the same reason,
+and the last three are shared shapes: the bond pilot built them and the rates
+family writes to them rather than widening them, so the array is the same
+shape whichever family states the rows.
+
 | child                             |
 |-----------------------------------|
 | balance_guaranteed_swap_instrument |
@@ -204,6 +212,13 @@ trade's rows from the array with no second lookup structure.
 | equity_position_option_underlying |
 | fra_instrument                    |
 | inflation_swap_instrument         |
+| instrument_option                 |
+| instrument_option_exercise_fee    |
+| instrument_option_payment_date    |
+| instrument_option_premium         |
+| instrument_schedule               |
+| instrument_schedule_date          |
+| instrument_strike                 |
 | knock_out_swap_instrument         |
 | swap_leg                          |
 | swap_leg_amount                   |

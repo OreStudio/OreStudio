@@ -405,7 +405,7 @@ is immutable.
 | expression                                                                     |
 |--------------------------------------------------------------------------------|
 | "schedule_kind" in ('rules', 'dates')                                          |
-| "owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs') |
+| "owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs', 'swap')  |
 | "owner_number" > 0                                                             |
 | "sequence_number" > 0                                                          |
 

@@ -165,10 +165,12 @@ begin
                   and valid_to = ores_utility_infinity_timestamp_fn();
 
                 if v_child_level <= v_parent_level then
-                    raise exception
-                        'Business unit type level % cannot be contained by a unit of the same or higher level %. Parent level must be strictly less than child level.',
-                        v_child_level, v_parent_level
-                        using errcode = '23514';
+                    perform ores_outcome_raise_fn(
+                        'level_violation',
+                        'business_unit',
+                        'unit_type_id',
+                        v_child_level::text,
+                        v_parent_level::text);
                 end if;
             end if;
         end;

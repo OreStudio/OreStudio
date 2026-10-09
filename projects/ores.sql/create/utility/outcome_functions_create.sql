@@ -83,6 +83,19 @@ create or replace function ores_outcome_missing_field_fn(
         array[coalesce(p_entity, '')]::text[]);
 $$;
 
+-- level_violation: A row states a position in a hierarchy whose rules place it at or above the position it must sit below. The write states the level in expected and the store holds the parent's level in current, as the version refusal states what the write believes and what the store holds. The message names the field, so a screen can point at the picker that caused the refusal, and it names both levels, so the person is told what to choose instead rather than only that the choice was wrong.
+create or replace function ores_outcome_level_violation_fn(
+    p_entity text,
+    p_field text,
+    p_expected text,
+    p_current text
+) returns text language sql immutable as $$
+    select ores_outcome_fill_fn(
+        'The {entity} states {field} at level {expected}, and its parent unit is at level {current}. A child level must be greater than its parent''s.',
+        array['entity','field','expected','current']::text[],
+        array[coalesce(p_entity, ''),coalesce(p_field, ''),coalesce(p_expected, ''),coalesce(p_current, '')]::text[]);
+$$;
+
 -- Raises the SQLSTATE the outcome catalogue binds to p_code, with the sentence
 -- that outcome's own function composes. A trigger calls this and nothing else.
 create or replace function ores_outcome_raise_fn(
@@ -103,6 +116,9 @@ begin
     when 'missing_field' then
         raise exception '%', ores_outcome_missing_field_fn(p_entity)
             using errcode = '23502';
+    when 'level_violation' then
+        raise exception '%', ores_outcome_level_violation_fn(p_entity,p_field,p_expected,p_current)
+            using errcode = '23514';
     else
         raise exception 'Unknown outcome code: %', p_code using errcode = 'XX000';
     end case;

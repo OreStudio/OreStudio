@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: 75FC1047-7339-442F-983C-083DB8BD8C5E
+:END:
+#+title: Task: Give the party memberships their versions
+#+description: Serve a versions read for the party_countries and party_currencies junctions, and settle whether the journey's membership history wants that read or the generic history route, which is blocked on a composite id.
+#+type: task
+#+level: s1
+#+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/give-the-party-memberships-their-versions
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Journey 6 shows when and by whom a membership was closed, and reads a membership's own versions without the client reconstructing them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The party_countries and party_currencies junctions serve a versions read keyed by the link the caller holds.
+- The codegen change is opt-in: a junction that does not ask for versions does not get one, and no other junction's protocol changes.
+- Whether the journey wants the versions read or the generic diff route is decided and recorded, with the reason.
+- Journey 6's membership-versions row is corrected to name the subject that serves it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Split out of [[id:A8C22E8A-E9BD-4539-BEC4-A55451B325AC][Give the party
+memberships their versions, and filter the business units]]. That task's other
+two parts — the business-unit party filter and the level-rule refusal — shipped
+on their own. This part is a codegen change, and it carries a design question
+the other two did not, so it is its own task.
+
+*The design question, which is unanswered.* Journey 6 says the screen shows
+"when and by whom a membership was closed". That reads like a history dialog,
+which is the generic diff route: =refdata.v1.history.get=, whose provider
+interface is =(const context&, const std::string& entity_id)=
+(=projects/ores.history.core/include/ores.history.core/service/dispatch_registry.hpp=).
+A junction has no single-string id — its identity is the pair — so a junction
+cannot be registered there without a composite-id representation decision. No
+=party_country_history_provider_registrar= exists, and the history-provider
+facet is =#+model_types: domain_entity=
+(=projects/ores.codegen/library/templates/ores.cpp.history-provider-registrar.org=),
+so junctions never render one. The versions sub-resource is *not* blocked on
+that decision, but if the journey wants a field-level diff rather than a list of
+versions, the sub-resource alone will not satisfy it. Settle this first.
+
+*The mechanical change, which is well understood.* A junction is an entity whose
+key spans the two sides it links, and its table already keeps the records: the
+DDL carries =version=, =modified_by=, =valid_from= and =valid_to=, the insert
+trigger does version management, and the delete rule closes =valid_to= rather
+than removing the row (=sql_schema_junction_create.mustache=). What is missing
+is the derivation. =junction_entity_shape()=, in
+=projects/ores.codegen/src/codegen/org_loader.py=, returns a fixed literal that
+sets =current_state: True= and never sets =has_audit_columns=. The versions
+sub-resource is gated on =has_audit_columns=, and the service's
+=get_<entity>_history= block sits inside ={{^current_state}}=. Its docstring
+claims a junction "carries no =valid_from=/=valid_to= axis", which the DDL
+contradicts.
+
+The recommended shape is an opt-in drawer flag, because the alternative of
+setting =has_audit_columns= in the shape would give the versions sub-resource to
+all 20 junction models and change 20 components' protocols:
+
+1. =junction_entity_shape()=: read =junction.get("list_versions", False)= into
+   =has_audit_columns=, and correct the docstring. A new =* Flags= key needs no
+   catalogue work — root Flags are copied to the junction dict verbatim
+   (=org_loader.py=, the junction loader), and =check_model_drift.py= only
+   compares features a bound profile fixes.
+2. =:list_versions: true= in the =* Flags= of
+   =ores.refdata.party_country_junction.org= and
+   =ores.refdata.party_currency_junction.org=.
+3. The tangled template sources, whose junction blocks have no versions bodies.
+   These are the real work: =ores.cpp.repository.repository_header.org=
+   (junction block), =ores.cpp.repository.repository_impl.org= (junction
+   block) and =ores.cpp.service.service_impl.org= (junction block). The junction
+   repository has no =read_all= and no =read_at_version=, and the junction
+   service block has no ={{#list_versions_operations}}=/={{#get_version_operations}}=
+   loop, so the header would declare methods the handler calls and nothing
+   would define them. There are no paste points inside those blocks, so the
+   templates themselves must change.
+4. Tangle with =./compass.sh build --direct codegen_templates=, then regenerate
+   refdata, then re-tangle the shell scripts and refresh the two inventories.
+
+Everything else is free: the protocol header, the TypeScript twin, the handler,
+the registrar, the shell commands and their tests, the shell recipe, the service
+header and the domain type all walk ={{#messages}}=/={{#operations}}=, and the
+shell plan already defines =list_versions= and =get_version=
+(=org_loader.py=, the shell operation map). =refdata::party_countries:read= is
+already seeded, so no new permission is needed. No CMake file changes, because
+no new file appears.
+
+The derived shapes are keyed by the link, which is the right key: the versions
+list by =party_country_key= (both sides), and get by
+=party_country_version_key { party_country; version }=. The =facet_stem= is the
+singular, so the subjects are exactly =refdata.v1.party_countries_versions.list=,
+=.get= and =refdata.v1.party_currencies_versions.list=, =.get=.
+
+Two pinned codegen tests would break only under the unconditional variant, not
+under the flag: =test_junction_protocol_verbs.py='s exact message-list assertion
+and its =offset=/=limit= counts. A new case asserting the flag yields the six
+version messages belongs beside them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

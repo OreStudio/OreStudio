@@ -180,6 +180,27 @@ It is addressed at =refdata.v1.business_units.delete_many=.
 business_units delete-many __none__ system.new_record generated_script
 #+end_src
 
+** =by-party-id=
+:PROPERTIES:
+:ID: 550DA032-1445-5E63-B70A-65B5301BF032
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_units by-party-id <party_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.business_units.list_by_party_id=.
+
+#+name: business_units-by-party-id
+#+begin_src ores-shell :tangle business_units-by-party-id.ores :exports none
+business_units by-party-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
 ** =versions=
 :PROPERTIES:
 :ID: 623479D0-5401-5172-A9D5-DE67342DD27A

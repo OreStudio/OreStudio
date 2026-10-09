@@ -128,6 +128,12 @@ business_unit_service::list_business_units(const messaging::list_business_units_
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->party_id_one_of &&
+        request.filter->party_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "party_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -142,6 +148,39 @@ business_unit_service::list_business_units(const messaging::list_business_units_
     response.business_units = repo_.read_latest(
         ctx_, request.offset, request.limit, request.order, request.filter, as_of);
     response.total = repo_.get_total_business_unit_count(ctx_, request.filter, as_of);
+    return response;
+}
+
+messaging::list_by_party_id_business_units_response
+business_unit_service::list_by_party_id_business_units(
+    const messaging::list_by_party_id_business_units_request& request) {
+    messaging::list_by_party_id_business_units_response response;
+    if (!request.order.field.empty() &&
+        !repository::business_unit_repository::is_sortable(request.order.field)) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "business units", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->party_id_one_of &&
+        request.filter->party_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "party_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result = refuse(outcome_code::scope_not_supported, {.entity = "business units"});
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.party_id);
+    response.business_units = repo_.read_latest_by_party_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_business_unit_count_by_party_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -416,6 +455,30 @@ std::vector<domain::business_unit> business_unit_service::list_business_units(st
 std::uint32_t business_unit_service::count_business_units() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total business units count";
     return repo_.get_total_business_unit_count(ctx_);
+}
+
+
+std::vector<domain::business_unit> business_unit_service::list_business_units_by_party_id(
+    const std::string& party_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing business units by party_id: " << party_id;
+    return repo_.read_latest_by_party_id(ctx_, party_id, offset, limit);
+}
+
+std::uint32_t business_unit_service::count_business_units_by_party_id(const std::string& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total business units count by party_id: " << party_id;
+    return repo_.get_total_business_unit_count_by_party_id(ctx_, party_id);
+}
+
+std::vector<domain::business_unit> business_unit_service::list_business_units_by_party_id(
+    const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing business units by party_id: " << party_id;
+    return repo_.read_latest_by_party_id(ctx_, boost::uuids::to_string(party_id), offset, limit);
+}
+
+std::uint32_t
+business_unit_service::count_business_units_by_party_id(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total business units count by party_id: " << party_id;
+    return repo_.get_total_business_unit_count_by_party_id(ctx_, boost::uuids::to_string(party_id));
 }
 
 

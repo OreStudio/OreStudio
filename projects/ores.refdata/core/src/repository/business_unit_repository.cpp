@@ -104,11 +104,19 @@ filter_condition(const std::optional<messaging::business_units_filter>& filter) 
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->party_id)
+        r.push_back(equals("party_id", filter_value(*filter->party_id)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->party_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->party_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("party_id", std::move(values)));
     }
     return all_of(std::move(r));
 }
@@ -301,6 +309,49 @@ std::optional<domain::business_unit> business_unit_repository::read_at_version(
     if (entities.empty())
         return std::nullopt;
     return entities.front();
+}
+
+std::vector<domain::business_unit> business_unit_repository::read_latest_by_party_id(
+    context ctx,
+    const std::string& party_id,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::business_units_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest business units. party_id: " << party_id
+                               << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<business_unit_entity>> |
+        where("tenant_id"_c == tid && "party_id"_c == party_id && "valid_to"_c == max.value()) |
+        sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_ordered_read_query<business_unit_entity, domain::business_unit>(
+        ctx,
+        query,
+        list_order(order, {"id"}, false),
+        filter_condition(filter),
+        [](const auto& entities) { return business_unit_mapper::map(entities); },
+        lg(),
+        "Reading latest business units by party_id.");
+}
+
+std::uint32_t business_unit_repository::get_total_business_unit_count_by_party_id(
+    context ctx,
+    const std::string& party_id,
+    const std::optional<messaging::business_units_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active business units count. party_id: "
+                               << party_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<business_unit_entity>> |
+        where("tenant_id"_c == tid && "party_id"_c == party_id && "valid_to"_c == max.value());
+
+    return execute_count_query<business_unit_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting business units by party_id");
 }
 
 

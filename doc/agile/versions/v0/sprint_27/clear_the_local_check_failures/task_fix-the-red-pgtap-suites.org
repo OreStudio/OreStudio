@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 28360CF0-B1BA-4D50-8EE3-1D1D72DE80CE
+:END:
+#+title: Task: Fix the red pgTAP suites
+#+description: Task for: Clear the local-check failures on main
+#+type: task
+#+level: s1
+#+filetags: :clear_the_local_check_failures:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/fix-the-red-pgtap-suites
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Running the local gate with the heavy tier on main reports pgtap red: ten of the thirty-two suites fail, and the story that cleared the gate's other failures left this one behind. Eight suites write trades, trade activities and structures without the audit columns their generated tables now require, so every insert dies on the not-null constraint and the suites that write a trade first report zero tests run. One suite reads a party's contacts without setting the party context that the table's own restrictive row level security policy demands, so it sees no row and reports the primary mark missing. One suite calls the LEI counterparty publish twice and the second call hits a temp table the function creates and never drops.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- Every pgTAP suite passes against a recreated database.
+- The LEI counterparty publish runs twice in one session without error.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

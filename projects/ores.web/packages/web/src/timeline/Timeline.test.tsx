@@ -110,21 +110,30 @@ describe('the timeline', () => {
         });
 
         expect(html).toContain('login_success');
-        expect(html).toContain('bg-line-strong');
+        expect(html).toContain('Signed in');
+        expect(html).toContain('opacity-90');
         expect(html).not.toContain('<mark');
     });
 
-    it('states what the stream does not carry', () => {
+    it('never names an internal entity or an unread source to the reader', () => {
         const html = render({
             subject: 'person',
             id: 'ana',
-            events: [],
-            gaps: [{ entity: 'ores.iam.account_party', reason: 'the junction has no history' }],
+            events: [event({ version: 1, kind: 'raised' })],
+            gaps: [
+                { entity: 'ores.iam.account_role', reason: 'the roles read refused this caller' },
+                { entity: 'ores.iam.auth_event', reason: 'the sign-in read refused this caller' },
+            ],
         });
 
-        expect(html).toContain('Nothing has happened to this yet.');
-        expect(html).toContain('What this stream does not carry');
-        expect(html).toContain('the junction has no history');
+        /*
+         * A gap is the server's honest record of what the stream could not
+         * draw, and it is not the reader's business: it names tables, reads and
+         * refusals. The screen tells the reader what happened, not which of the
+         * deployment's own reads were tried.
+         */
+        expect(html).not.toContain('ores.iam.');
+        expect(html).not.toContain('refused this caller');
     });
 
     it('separates the days the entries fall on', () => {

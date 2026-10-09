@@ -121,6 +121,7 @@ const fr: SourceCatalogue = {
             jobTitle: 'Fonction',
             title: 'Personnes',
             lead: 'Qui peut se connecter à ce locataire, et les rôles de chacun.',
+            leadNoRoles: 'Qui peut se connecter à ce locataire.',
             person: 'Personne',
             roles: 'Rôles',
             noRole: 'Aucun rôle',
@@ -1513,12 +1514,23 @@ const fr: SourceCatalogue = {
     },
 
     timeline: {
-        by: 'Par {who}',
         empty: 'Rien ne lui est encore arrivé.',
         field: 'Champ',
-        gapsTitle: 'Ce que ce flux ne porte pas',
         notRevertible: 'Cette entrée relate un fait, il n’y a donc rien à rétablir.',
         changeNotOffered: 'Rétablir un champ modifié n’est pas proposé ici.',
+        kind: {
+            raised: 'Créé',
+            changed: 'Modifié',
+            asked: 'Rôle demandé',
+            told: 'Notifié',
+            decided: 'Répondu',
+            granted: 'Accordé',
+            signed_in: 'Connexion',
+            sign_in_failed: 'Connexion refusée',
+            signed_out: 'Déconnexion',
+            refreshed: 'Session renouvelée',
+            noticed: 'Enregistré',
+        },
     },
 
     validation: {

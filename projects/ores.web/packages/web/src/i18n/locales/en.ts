@@ -127,6 +127,7 @@ export const en: SourceCatalogue = {
             jobTitle: 'Job title',
             title: 'People',
             lead: 'Who can sign in to this tenant, and the roles each one holds.',
+            leadNoRoles: 'Who can sign in to this tenant.',
             person: 'Person',
             roles: 'Roles',
             noRole: 'No role',
@@ -1496,12 +1497,23 @@ export const en: SourceCatalogue = {
     },
 
     timeline: {
-        by: 'By {who}',
         empty: 'Nothing has happened to this yet.',
         field: 'Field',
-        gapsTitle: 'What this stream does not carry',
         notRevertible: 'This entry records something that happened, so there is nothing to revert.',
         changeNotOffered: 'Putting a changed field back is not offered here.',
+        kind: {
+            raised: 'Created',
+            changed: 'Changed',
+            asked: 'Asked for a role',
+            told: 'Told',
+            decided: 'Answered',
+            granted: 'Granted',
+            signed_in: 'Signed in',
+            sign_in_failed: 'Sign-in refused',
+            signed_out: 'Signed out',
+            refreshed: 'Session renewed',
+            noticed: 'Recorded',
+        },
     },
 
     validation: {

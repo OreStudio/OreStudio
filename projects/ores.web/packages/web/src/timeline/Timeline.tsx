@@ -26,7 +26,6 @@ import {
     type Timeline as Stream,
     type TimelineEvent,
     type TimelineField,
-    type TimelineGap,
 } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { formatDateTime, parseTimestamp } from '../ui/Time.js';
@@ -34,16 +33,19 @@ import { DiffLines } from '../ui/Diff.js';
 import { Tag } from '../ui/Primitives.js';
 
 /**
- * One subject's story, drawn as one dated stream, newest first.
+ * One subject's story, drawn as a rail of dated entries, newest first.
  *
  * The stream is not the person's and not the request's: the same component
  * draws either, because an entry is an entry — a row that was written, by
  * somebody, at a moment. The subject's own header is the caller's, because a
  * person has a face and a request has a state, and neither belongs here.
  *
- * An entry that changed a field carries the green and red widget; an entry that
- * changed nothing says what happened in the same stream and is drawn quieter,
- * because a sign-in is a fact about the person rather than a field of a record.
+ * The shape is a pull request's conversation: a time down the left, a rail with
+ * a dot an entry, and the entry's own words beside it. An entry that changed a
+ * field carries the green and red widget; an entry that changed nothing says
+ * what happened in the same rail and is drawn quieter, because a sign-in is a
+ * fact about the person rather than a field of a record.
+ *
  * Deciding which is which needs the entry before it of the same entity, so the
  * entries are paired here rather than by the server: the server states what it
  * knows, and the pairing is a reading of the stream.
@@ -64,39 +66,25 @@ export function Timeline({
 }): ReactNode {
     const { t } = useTranslation();
     if (timeline.events.length === 0) {
-        /*
-         * An empty stream still carries its gaps. A subject whose every source
-         * refused has nothing to draw and everything to explain, and saying
-         * only that nothing happened would be the one lie the gaps exist to
-         * prevent.
-         */
-        return (
-            <section className="space-y-4">
-                <p className="text-sm text-ink-muted">{t('timeline.empty')}</p>
-                <Gaps gaps={timeline.gaps} />
-            </section>
-        );
+        return <p className="text-sm text-ink-muted">{t('timeline.empty')}</p>;
     }
     const previous = previousVersions(timeline.events);
     return (
-        <section className="space-y-4">
-            <ol className="list-none space-y-1 p-0">
-                {timeline.events.map((event, index) => (
-                    <li key={entryKey(event, index)}>
-                        {startsADay(event, timeline.events[index - 1]) && (
-                            <DayDivider at={event.at} />
-                        )}
-                        <Entry
-                            event={event}
-                            before={previous.get(earlier(event))}
-                            actions={renderActions?.(event)}
-                            head={renderHead?.(event)}
-                        />
-                    </li>
-                ))}
-            </ol>
-            <Gaps gaps={timeline.gaps} />
-        </section>
+        <ol className="grid list-none gap-0 p-0">
+            {timeline.events.map((event, index) => (
+                <Fragment key={entryKey(event, index)}>
+                    {startsADay(event, timeline.events[index - 1]) && (
+                        <DayDivider at={event.at} />
+                    )}
+                    <Entry
+                        event={event}
+                        before={previous.get(earlier(event))}
+                        actions={renderActions?.(event)}
+                        head={renderHead?.(event)}
+                    />
+                </Fragment>
+            ))}
+        </ol>
     );
 }
 
@@ -133,6 +121,9 @@ function startsADay(event: TimelineEvent, before: TimelineEvent | undefined): bo
     return before === undefined || dayOf(before.at) !== dayOf(event.at);
 }
 
+/** The column the rail sits in, which every row of the stream shares. */
+const ROW = 'grid grid-cols-[5.6rem_1.6rem_1fr]';
+
 function DayDivider({ at }: { readonly at: string }): ReactNode {
     const { language } = useTranslation();
     const date = parseTimestamp(at);
@@ -140,12 +131,26 @@ function DayDivider({ at }: { readonly at: string }): ReactNode {
         ? at
         : new Intl.DateTimeFormat(language, { dateStyle: 'full' }).format(date);
     return (
-        <div className="sticky top-0 z-10 mb-2 mt-4 bg-bg-primary/95 py-1 first:mt-0">
-            <span className="text-xs font-medium tracking-wide text-ink-faint uppercase">
+        <li className={`${ROW} mt-1.5`}>
+            <span className="col-start-2 col-end-4 border-b border-line-subtle px-0 pb-1 pl-1.5 pt-0.5 text-[0.72rem] tracking-[0.06em] text-ink-faint uppercase">
                 {label}
             </span>
-        </div>
+        </li>
     );
+}
+
+/** The time of day, which is what the rail's gutter carries. */
+function timeOf(at: string, language: string): string {
+    const date = parseTimestamp(at);
+    if (Number.isNaN(date.getTime())) {
+        return '';
+    }
+    return new Intl.DateTimeFormat(language, {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+    }).format(date);
 }
 
 /** The entity an entry came from, as a reader names it: the last part of its type. */
@@ -174,11 +179,14 @@ export function kindTone(kind: string): 'accent' | 'up' | 'warn' | 'muted' | 'ne
     return 'muted';
 }
 
-/** The dot's colour, which has no neutral: a dot that is there is a dot. */
-function toneOf(kind: string): 'accent' | 'up' | 'warn' | 'muted' {
-    const tone = kindTone(kind);
-    return tone === 'neutral' ? 'muted' : tone;
-}
+/** The dot's own colours, which carry a border as well as a fill. */
+const DOT: Readonly<Record<string, string>> = {
+    accent: 'border-accent bg-accent/15',
+    up: 'border-up bg-up/15',
+    warn: 'border-warn bg-warn/15',
+    muted: 'border-line bg-surface-overlay',
+    neutral: 'border-line bg-surface-overlay',
+};
 
 /** Whether an entry is a record of something that happened rather than of a row written. */
 function isAnAct(kind: string): boolean {
@@ -209,13 +217,23 @@ function Entry({
 }): ReactNode {
     const { t, language } = useTranslation();
     const changed = changedFields(event, before);
+    const quiet = isAnAct(event.kind);
     return (
-        <div className="grid grid-cols-[0.75rem_1fr] gap-3">
-            <Dot tone={toneOf(event.kind)} />
-            <article className="mb-2 rounded-[var(--radius-card)] border border-line bg-surface-raised px-3 py-2">
-                {head ?? <DefaultHead event={event} language={language} />}
+        <li className={ROW}>
+            <div className="pr-2.5 pt-[9px] text-right font-mono text-[0.72rem] text-ink-faint">
+                {timeOf(event.at, language)}
+            </div>
+            <div className="relative flex justify-center">
+                <span className="absolute inset-y-0 w-px bg-line" aria-hidden />
+                <span
+                    className={`relative z-10 mt-[9px] h-[9px] w-[9px] rounded-full border ${DOT[kindTone(event.kind)] ?? DOT['neutral']}`}
+                    aria-hidden
+                />
+            </div>
+            <div className={`grid min-w-0 gap-1.5 pb-3.5 pl-1.5 pt-1 ${quiet ? 'opacity-90' : ''}`}>
+                {head ?? <DefaultHead event={event} changed={changed} />}
                 {event.commentary !== '' && (
-                    <p className="mt-1 text-sm text-ink-muted italic">{event.commentary}</p>
+                    <p className="text-[0.8rem] text-ink-muted italic">{event.commentary}</p>
                 )}
                 {changed.length > 0 && before !== undefined ? (
                     <ChangeTable changed={changed} before={before} />
@@ -224,15 +242,17 @@ function Entry({
                 )}
                 {actions}
                 {actions === undefined && isAnAct(event.kind) && (
-                    <p className="mt-2 text-[11px] text-ink-faint">{t('timeline.notRevertible')}</p>
+                    <p className="text-[0.78rem] text-ink-faint">
+                        {t('timeline.notRevertible')}
+                    </p>
                 )}
                 {actions === undefined && isAChange(event.kind) && (
-                    <p className="mt-2 text-[11px] text-ink-faint">
+                    <p className="text-[0.78rem] text-ink-faint">
                         {t('timeline.changeNotOffered')}
                     </p>
                 )}
-            </article>
-        </div>
+            </div>
+        </li>
     );
 }
 
@@ -241,57 +261,61 @@ function Entry({
  *
  * A subject that names its own entries draws its own, because a request has a
  * kind and a person has a face and neither belongs in the other's header. What
- * stays here is what every entry has: the row it came from, when, who wrote it,
- * and the reason they gave.
+ * stays here is what every entry has: what it was, the row it came from, who
+ * wrote it, and the sentence that says what they did.
  */
 function DefaultHead({
     event,
-    language,
+    changed,
 }: {
     readonly event: TimelineEvent;
-    readonly language: string;
+    readonly changed: readonly TimelineField[];
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
+    const badge = [entityOf(event), event.entityId === '' ? '' : shortId(event.entityId)]
+        .filter((part) => part !== '')
+        .join(' ');
     return (
-        <header className="flex flex-wrap items-center gap-2">
-            <Tag tone={toneOf(event.kind)}>
-                <span className="font-mono">{entityOf(event)}</span>
-                {event.entityId !== '' && (
-                    <span className="ml-1 text-ink-faint">
-                        {shortId(event.entityId)}
-                        {event.version > 0 && ` v${String(event.version)}`}
-                    </span>
-                )}
-            </Tag>
-            <span className="font-mono text-[11px] text-ink-faint">
-                {formatDateTime(event.at, language)}
+        <div className="flex flex-wrap items-baseline gap-2">
+            <Tag tone={kindTone(event.kind)}>{t(`timeline.kind.${event.kind}`)}</Tag>
+            <span className="font-mono text-[0.72rem] text-ink-faint">
+                {badge}
+                {event.version > 0 && ` v${String(event.version)}`}
             </span>
-            {event.actor !== '' && (
-                <span className="text-xs text-ink-muted">
-                    {t('timeline.by', { who: event.actor })}
-                </span>
-            )}
             {event.reasonCode !== '' && (
-                <span className="rounded border border-warn/40 bg-warn/10 px-1.5 font-mono text-[11px] text-warn">
+                <span className="rounded border border-warn/40 bg-warn/10 px-1.5 font-mono text-[0.68rem] text-warn">
                     {event.reasonCode}
                 </span>
             )}
-        </header>
+            {event.actor !== '' && (
+                <span className="text-sm font-semibold text-ink">{event.actor}</span>
+            )}
+            <span className="text-sm text-ink-muted">{sentenceOf(event, changed)}</span>
+            <span className="ml-auto text-[0.72rem] text-ink-faint">
+                {formatDateTime(event.at, language)}
+            </span>
+        </div>
     );
 }
 
-function Dot({ tone }: { readonly tone: 'accent' | 'up' | 'warn' | 'muted' }): ReactNode {
-    const tones = {
-        accent: 'bg-accent',
-        up: 'bg-up',
-        warn: 'bg-warn',
-        muted: 'bg-line-strong',
-    } as const;
-    return (
-        <div className="flex justify-center pt-2">
-            <span className={`mt-1 block h-2.5 w-2.5 rounded-full ${tones[tone]}`} />
-        </div>
-    );
+/**
+ * What the entry did, in one phrase.
+ *
+ * A change names the fields that moved, because that is the one thing a reader
+ * scanning the rail wants and the diff table below says it again in full. Every
+ * other entry is its own kind's sentence.
+ */
+function sentenceOf(event: TimelineEvent, changed: readonly TimelineField[]): string {
+    if (changed.length > 0) {
+        return changed.map((field) => field.name).join(', ');
+    }
+    if (event.kind === 'granted' || event.kind === 'asked') {
+        return fieldValue(event.fields, 'Role');
+    }
+    if (event.kind === 'raised') {
+        return '';
+    }
+    return fieldValue(event.fields, 'Detail') || fieldValue(event.fields, 'Event');
 }
 
 /** The fields an entry changed from the version before it, in the order the record holds them. */
@@ -329,18 +353,24 @@ function ChangeTable({
 }): ReactNode {
     const { t } = useTranslation();
     return (
-        <table className="mt-2 w-full text-left text-sm">
+        <table className="w-full border-collapse text-left text-[0.84rem]">
             <thead>
-                <tr className="text-xs text-ink-faint">
-                    <th className="w-48 py-1 font-normal">{t('timeline.field')}</th>
-                    <th className="py-1 font-normal">{t('history.valueDiff')}</th>
+                <tr>
+                    <th className="border-b border-line-subtle px-2 py-[3px] text-[0.68rem] font-semibold tracking-[0.06em] text-ink-faint uppercase">
+                        {t('timeline.field')}
+                    </th>
+                    <th className="border-b border-line-subtle px-2 py-[3px] text-[0.68rem] font-semibold tracking-[0.06em] text-ink-faint uppercase">
+                        {t('history.valueDiff')}
+                    </th>
                 </tr>
             </thead>
             <tbody>
                 {changed.map((field) => (
-                    <tr key={field.name} className="border-t border-line-subtle align-top">
-                        <td className="py-1 pr-3 text-ink-muted">{field.name}</td>
-                        <td className="py-1">
+                    <tr key={field.name} className="align-top">
+                        <td className="border-b border-line-subtle py-[3px] pl-2.5 pr-2 shadow-[inset_3px_0_0] shadow-warn">
+                            {field.name}
+                        </td>
+                        <td className="border-b border-line-subtle px-2 py-[3px]">
                             <DiffLines
                                 before={fieldValue(before.fields, field.name)}
                                 after={field.value}
@@ -367,44 +397,20 @@ function Facts({
         return null;
     }
     return (
-        <dl className="mt-2 grid grid-cols-[12rem_1fr] gap-x-3 gap-y-0.5 text-sm">
+        <div className="ml-0.5 grid gap-0.5 border-l-2 border-line-subtle pl-2.5 text-[0.8rem]">
             {before === undefined && (
-                <div className="col-span-2 text-xs text-ink-faint">{t('history.initial')}</div>
+                <span className="text-[0.72rem] text-ink-faint">{t('history.initial')}</span>
             )}
-            {fields.map((field) => (
-                <Fragment key={field.name}>
-                    <dt className="text-ink-faint">{field.name}</dt>
-                    <dd className="break-words text-ink-muted">{field.value}</dd>
-                </Fragment>
-            ))}
-        </dl>
-    );
-}
-
-/**
- * What the stream cannot show, and why.
- *
- * A story that leaves out a chapter without saying so reads as though the
- * chapter never happened, so the omission is drawn as part of the answer.
- */
-function Gaps({ gaps }: { readonly gaps: readonly TimelineGap[] }): ReactNode {
-    const { t } = useTranslation();
-    if (gaps.length === 0) {
-        return null;
-    }
-    return (
-        <section className="rounded-[var(--radius-card)] border border-line-subtle bg-surface-overlay/40 px-3 py-2">
-            <h3 className="text-xs font-medium tracking-wide text-ink-faint uppercase">
-                {t('timeline.gapsTitle')}
-            </h3>
-            <ul className="mt-1 list-none space-y-0.5 p-0 text-xs text-ink-muted">
-                {gaps.map((gap) => (
-                    <li key={`${gap.entity}:${gap.reason}`}>
-                        <span className="font-mono text-ink-faint">{gap.entity}</span> —{' '}
-                        {gap.reason}
-                    </li>
+            <dl className="grid gap-0.5">
+                {fields.map((field) => (
+                    <div key={field.name} className="flex flex-wrap gap-2">
+                        <dt className="min-w-[15rem] font-mono text-[0.72rem] text-ink-faint">
+                            {field.name}
+                        </dt>
+                        <dd className="text-ink-muted">{field.value}</dd>
+                    </div>
                 ))}
-            </ul>
-        </section>
+            </dl>
+        </div>
     );
 }

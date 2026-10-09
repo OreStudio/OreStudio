@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:gate:sprint_27:v0:
 #+created: 2026-10-08
 #+updated: 2026-10-08
-#+environment: merry_newton
+#+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Put every component that generates C++ under the drift gate, one component per c
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
@@ -50,6 +50,7 @@ Put every component that generates C++ under the drift gate, one component per c
 | [[id:0BA03E10-9295-4243-B475-A0E0C721D243][Fail the reachability check on a dangling include]] | DONE | 2026-10-08 | 2026-10-08 | Task for: Bring the last components under the drift gate |
 | [[id:0BA03E10-9295-4243-B475-A0E0C721D243][Task: Fail the reachability check on a dangling include]] | DONE | 2026-10-08 | 2026-10-08 | The reachability check reports a file no aggregator includes, and an include that names no file, across create, populate and drop. |
 | [[id:7300F857-3E69-4AA8-9B93-5DE7E259C803][Fix what validation run 1 found]] | BACKLOG | | | The first hourly validation run, cut from dfd7880807, left two defects live that no other fix had reached: two tenant-scoped swap leg tables with no row level security, and a test locator that read the wrong translation group and reported sixteen phantom missing sentences. |
+| [[id:791A90F5-BA11-476A-9B54-0FFBB06C152D][Close the account access read every member held]] | STARTED | 2026-10-09 | | Task for: Bring the last components under the drift gate |
 
 * Decisions
 

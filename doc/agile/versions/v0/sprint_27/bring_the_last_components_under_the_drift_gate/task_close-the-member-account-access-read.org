@@ -63,6 +63,9 @@ task and name that file in the Command column.
 | ores.iam.core.tests | pass, 144 s | =compass test run -- -R '^ores\.iam\.core\.tests$'= | cde205b4c2 |
 | ores.trading.core.tests | pass, 98 s | =compass test run -- -R '^ores\.trading\.core\.tests$'= | cde205b4c2 |
 | Targeted checks | 4/4 | =compass check --only sql-hygiene --only populate-refs --only open-reads --only handler-permissions= | cde205b4c2 |
+| ores.iam.core.tests | pass, 206 s | =compass test run -- -R "^(ores\.iam\.core\.tests\|ores\.trading\.core\.tests)$"= | 7610f257ec |
+| ores.trading.core.tests | pass, 79 s | same run | 7610f257ec |
+| Trunk's four named checks | handler-permissions pass, entity-writes pass, codegen-tests 7 failed, er-diagram stale | =compass check --only handler-permissions --only entity-writes --only codegen-tests --only er-diagram= | 7610f257ec |
 
 * Notes
 
@@ -108,3 +111,28 @@ Failure 2, =write_trade_booking_publishes_an_event= aborting on an empty
 optional, was already repaired on main by =a08ce20beb= (the generated
 eventing tests seed a party). This branch is off current main, so no change
 was needed; the suite was run to confirm rather than assumed.
+
+* Collision with #2916
+
+Trunk landed =cfaa867ac1= (#2916, =eager_maxwell=) for the same failure, from
+the other side: it keeps the grant and takes Member back in the case before
+the call. That makes the case pass while a real member still reaches another
+account's access, so the guard no longer covers what it was written for.
+
+This branch keeps that case -- it still proves the gate refuses a caller with
+no role at all -- and restores the case that holds only Member as the guard
+for the grant. Both pass, which is only possible with the grant off Member.
+
+Verified before the merge that nothing a member reaches needs the code:
+=list_roles= and =get_role= carry no permission check, no client sends
+=iam.v1.roles.get_many= or the versions, and =get_role_permissions= is
+ungated.
+
+* Trunk's red checks
+
+Measured on the merged tree, whose only difference from trunk is this task:
+=handler-permissions= passes, =entity-writes= passes, =codegen-tests= fails 7
+cases (all in =test_rls_isolation.py=, =test_rls_own_or_system_tenant_rows.py=,
+=test_soft_fk_target.py=, =test_sql_name_base.py=), and =er-diagram= is stale
+by =output_storage_key : text=, added to the schema by =fd06ab945a= and never
+regenerated. Neither reads a path this task touches; both are pre-existing.

@@ -174,6 +174,10 @@ describe('GET /api/bootstrap', () => {
             hasTenant: false,
             onboardingComplete: true,
             onboardingTenantComplete: true,
+            // The flags were read through this session, so the answer says so,
+            // and the request presented the cookie that session came from.
+            accountId: '11111111-1111-1111-1111-111111111111',
+            sessionPresent: true,
             message: 'This deployment has no tenant of its own.',
             version: 'v0.0.25 (test)',
         });
@@ -225,7 +229,36 @@ describe('GET /api/bootstrap', () => {
         const response = await server.inject({ method: 'GET', url: '/api/bootstrap' });
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toMatchObject({ onboardingComplete: false });
+        expect(response.json()).toMatchObject({
+            onboardingComplete: false,
+            // A request with no cookie cannot have read the settings, and it
+            // names no account for that reason.
+            accountId: '',
+            sessionPresent: false,
+        });
+        expect(calls).toEqual([]);
+
+        await server.close();
+    });
+
+    it('names no account while saying a cookie was presented, for a session it does not know', async () => {
+        const { server, calls } = buildTestServer();
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/bootstrap',
+            cookies: { [SESSION_COOKIE]: '44444444-4444-4444-4444-444444444444' },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+            onboardingComplete: false,
+            accountId: '',
+            // The difference between presenting nothing and presenting a
+            // session the deployment has forgotten is the whole reason the
+            // answer states this beside the account.
+            sessionPresent: true,
+        });
         expect(calls).toEqual([]);
 
         await server.close();

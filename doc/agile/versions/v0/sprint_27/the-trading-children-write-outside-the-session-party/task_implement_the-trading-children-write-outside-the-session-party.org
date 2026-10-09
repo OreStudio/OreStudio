@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 9BD85E3B-750C-419F-BC4D-D884D59FA504
+:END:
+#+title: Task: Implement Hotfix: the trading children write outside the session party
+#+description: Let a model ask for a party-scoped integration-test session, and stop assuming that session implies a party_id column.
+#+type: task
+#+level: s1
+#+filetags: :the-trading-children-write-outside-the-session-party:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-trading-children-write-outside-the-session-party
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6D397A6C-F7AB-45F8-A6B4-0AADCA9FA0F5][Hotfix: the trading children write outside the session party]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give a model a way to say that its integration test writes under a
+party-scoped session when the codegen cannot derive that from the entity's own
+columns, and let the two trading children use it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6D397A6C-F7AB-45F8-A6B4-0AADCA9FA0F5][Hotfix: the trading children write outside the session party]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The two eventing tests scope their session to a seeded party.
+- =ores.trading.core.tests= passes.
+- No other component's generated output changes.
+
+* Plan
+
+Three changes:
+
+1. =core.py=: =party_scoped_writes= also honours a model-declared
+   =:party_scoped_writes: true= in the =* SQL ** Flags= drawer.
+2. The eventing-test template: the =v.party_id = *party_ctx.party_id()= line is
+   gated on =has_party_column= as well as =party_scoped_writes=, because a
+   party-scoped session no longer implies the entity carries the column.
+3. The two models set the flag.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| generated eventing tests that dereferenced an unset session party | 2 | =grep -rl "auto& party_ctx = h.context();" projects/*/*/tests/*eventing_integration_tests.cpp= filtered by =party_ctx.party_id()= | working tree before the fix |
+| files the regeneration changes | 2 | =git status --short= after =compass codegen entity generate= | working tree after the fix |
+| ores.trading.core.tests | 929 assertions in 140 test cases, all passed | =compass build test_ores.trading.core.tests= | working tree after the fix |
+
+* Notes
+
+The diagnosis took three steps, each proved against the running database:
+
+1. The test aborted dereferencing an empty optional -- =party_ctx.party_id()=
+   -- because =party_scoped_writes= had gone false for these two entities.
+2. Seeding a party and writing the parent with it worked, and the notification
+   chain proved out, so the writes themselves were sound.
+3. The CRUD round trip then failed with =already_exists=. The cause is the
+   replace claim: =trade_state_repository::replace_claim= reads the current row,
+   the row-level security policy hid it (the session had no visible party), the
+   read came back empty, and the claim therefore said "no row exists" for a row
+   that does. The insert trigger, which gives version zero the one meaning "no
+   current row exists", refused it.
+
+So the missing piece was the session party, not the seed.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=trade_state= and =trade_booking= gained =:party_scoped_writes: true=; the two
+tests now run under a party-scoped session and =ores.trading.core.tests= is
+green.

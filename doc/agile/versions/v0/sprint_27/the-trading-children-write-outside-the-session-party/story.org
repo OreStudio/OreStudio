@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 6D397A6C-F7AB-45F8-A6B4-0AADCA9FA0F5
+:END:
+#+title: Story: Hotfix: the trading children write outside the session party
+#+description: 178610c4e8 stopped the trade's children copying its party, which took the party_id column away from trade_booking and trade_state. Their eventing tests lost the party-scoped session with it, so every row they wrote was invisible to their own read: the replace claim built from that read said no row existed, and the insert trigger refused the write.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ores.trading:hotfix:ores.codegen:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let the trade booking and trade state eventing tests pass again, so the suite
+reports on the notification chain rather than on a row its own session cannot
+see.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- The two eventing tests run under a party-scoped session.
+- =ores.trading.core.tests= passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5E818C5D-1E9E-4CCF-9395-C1BEB899C16C][Scaffold story: Hotfix: the trading children write outside the session party]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9BD85E3B-750C-419F-BC4D-D884D59FA504][Implement Hotfix: the trading children write outside the session party]] | DONE | | 2026-10-09 | Initial task for: Hotfix: the trading children write outside the session party |
+
+* Decisions
+
+- *The model says its test needs a session party, rather than the codegen
+  guessing it.* The codegen decides `party_scoped_writes` from the entity's own
+  party_id column, and cannot see that a parent is party-isolated when the
+  parent is a hand-authored table with no modeling org -- which is exactly the
+  case for =ores_trading_trades_tbl=. A model flag,
+  =:party_scoped_writes: true=, lets the two children that need it say so.
+- *A party-scoped session does not imply a party column.* The template set
+  =v.party_id= from the session whenever the session was party-scoped. The flag
+  above breaks that implication, so the assignment is now gated on
+  =has_party_column= as well.
+
+* Out of scope
+
+- Whether =ores_trading_trades_tbl= should be modelled. If it were, the codegen
+  could derive the party isolation of this parent and the flag would not be
+  needed. That is a much larger change.
+
+* Result
+
+Done. =ores.trading.core.tests= passes: 929 assertions in 140 test cases. Only
+the two generated eventing tests changed, plus the template and the flag that
+produce them.

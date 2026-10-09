@@ -90,7 +90,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Build | exit 0, no errors, no warnings | =./compass.sh build --preset linux-clang-debug-make -j 2= | ceced2447a |
+| Codegen suite | 1301 passed, 0 failed | =pytest projects/ores.codegen/tests -q= | ceced2447a |
+| Drift, cmake, inventories, reachability | all clean, no writes | the four check scripts, run bare | ceced2447a |
+| Database recreate | exit 0, 348 s, fingerprint =041671e4685afdc7= | =./compass.sh db recreate -y -k= | ceced2447a |
+| =ores.trading.api.tests= | 370 assertions in 82 cases | the suite binary | ceced2447a |
+| =ores.trading.core.tests= | 954 assertions in 141 cases | the suite binary | ceced2447a |
+| =ores.ore.core.tests= | 482259 assertions in 627 cases | the suite binary | ceced2447a |
+| The unit's three cases | 66 assertions in 3 cases | =./ores.ore.core.tests "mapper_roundtrip_capfloor_shared_children,mapper_roundtrip_swaption_option_block,mapper_roundtrip_swaption_exercise_price_children"= | ceced2447a |
+| Branch shape | 3 commits, no merge commits | =git log --merges --oneline origin/main..HEAD= is empty | ceced2447a |
 
 * Notes
 
@@ -124,3 +132,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The rates family writes the shared children the bond pilot built, and they
+survive the round trip. The cap/floor states its strikes as
+=instrument_strikes= rows and its underlying swap's schedule as
+=instrument_schedules= and =instrument_schedule_dates= rows; the swaption
+states its option block as =instrument_options= and four keyed children,
+including =instrument_option_exercise_price=, the fourth child the design's
+entity table names and the models never had. The option block's text dates
+and its price list are typed: =premium_amount= is a decimal,
+=premium_pay_date= and both =settlement_fixing_date= columns are dates, and
+=exercise_prices= is the child rather than a string. The header's cascade
+names all eight children, and their registration sits in
+=registrar_rates.cpp= rather than the bond family's root (finding R11).
+
+Three residuals, all deliberate:
+
+- *The database-level end-to-end proof is unit 8's.* The acceptance's
+  "written by the import and read by the export" is proved by the mapper
+  round trips and by the wiring compiling, not by importing a rates trade
+  into the database and exporting it. The corpus round trip at the new shape
+  is already the task =Prove the rates round trip over the corpus=, which is
+  where that proof belongs, and duplicating it here would prove it twice.
+- *Bonds now carry their exercise prices through the fourth child.* The
+  =instrument_option= shape is shared with the bond family, so retyping the
+  option block and dropping =exercise_prices= would have silently dropped
+  bond prices; the bond writer and reader convert at the boundary and write
+  and read the child instead. This is a behaviour change for the bond family
+  and is called out in the PR. The price list pairs token *i* with exercise
+  date *i*, so a document stating more prices than dates loses the tail.
+- *=split_numbers= is duplicated* in the ORE mapper and the import handler,
+  in two components' anonymous namespaces. Not worth a shared API yet.
+
+An earlier attempt at this unit bundled a cherry-pick of a trunk hotfix and
+two merge commits; both are gone, and the branch is three commits on
+=ceced2447a= with a clean history. The first database recreate failed because
+the branch's base predated the trunk seed hotfix, which is what rebasing onto
+current trunk fixed; no trunk fix is carried in this unit.

@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 8BF5D575-D980-4086-B29F-A0689C3BA5EA
+:END:
+#+title: Task: Draw the tile glyphs from the icon reference and label the home runs
+#+description: Task for: Align the web palette with the reviewed scheme
+#+type: task
+#+level: s1
+#+filetags: :align-the-web-palette-with-the-reviewed-scheme:sprint_27:v0:
+#+owner: marco
+#+branch: fix/use-the-icon-reference-and-label-the-home-runs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A194593B-B37F-4E75-A667-A63CC3E9C042][Align the web palette with the reviewed scheme]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The tile glyphs were drawn from a second icon set while the application already has one: the Fluent assets behind ui/Icon.tsx, with an icon reference that every concept is supposed to be added to before a screen uses it. Draw them from the reference instead, and label the home screen's runs the way the review did, so the places a person can go and the places that are coming are two runs and not one grid.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A194593B-B37F-4E75-A667-A63CC3E9C042][Align the web palette with the reviewed scheme]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The tiles draw their glyphs from ui/Icon.tsx, and no second icon set is a dependency.
+- The home screen carries an Active Modules run and an Upcoming Modules / Roadmap Preview run, each under its own rule.
+- The web check passes.
+
+* Plan
+
+Look for the icon set before importing one. The application has a reference
+with 68 assets and a rule that says a concept is added to it before a screen
+uses it, and the review drew with a different set. The work is to map the
+concepts the tiles need onto the ones the reference already carries, which is
+twenty-three, and to add nothing.
+
+The run labels are the review's own words, so they are strings the review
+already settled rather than ones to invent.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Concepts the reference already carried unwired | 23 of 68 assets | =ls src/assets/icons= against =ui/Icon.tsx= | 64ab04adcb |
+| Icon sets in the application | 2 before, 1 after | =grep -rn lucide src/ package.json= | 64ab04adcb |
+| Glyphs the tiles carry | 26, at three call sites | =grep -c \"icon: '\" HomePage.tsx RefdataPage.tsx OperationsArea.tsx= | 64ab04adcb |
+| Web tests | 481 in 46 files, all pass | =npm test --workspace @ores/web= | 64ab04adcb |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The tiles draw from the reference, there is one icon set, and the home screen
+carries the two labelled runs the review drew.
+
+The glyphs came from the review's set first, and that was wrong. The
+application already has an icon system with a written rule — a concept goes
+into =ui/Icon.tsx= and into the icon reference before a screen uses it — and
+importing a second set quietly broke it. The correction cost less than the
+mistake: every concept the tiles needed already had an asset and a reference
+entry, so nothing was added and one dependency came out.
+
+The footer arrow the review drew is not carried over. There is no right arrow
+in the reference, and the guidelines say an icon that loses no meaning when
+removed should be removed: the whole tile is the link, and the hover already
+says so.
+
+The two runs are separated by the rule the review used, so a screen with tiles
+above and below it reads as two runs and not as one grid with a stray line
+through it.

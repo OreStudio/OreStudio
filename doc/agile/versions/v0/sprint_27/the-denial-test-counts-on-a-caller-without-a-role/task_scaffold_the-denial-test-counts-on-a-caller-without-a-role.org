@@ -8,7 +8,7 @@
 #+filetags: :the-denial-test-counts-on-a-caller-without-a-role:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-denial-test-counts-on-a-caller-without-a-role
-#+pr:
+#+pr: 2916
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2916][#2916]] | [iam] Give the denial case a caller that holds no role |
 
 * Review
 

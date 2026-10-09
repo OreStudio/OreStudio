@@ -8,7 +8,7 @@
 #+filetags: :implement_membership_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/set-and-clear-the-default-party
-#+pr:
+#+pr: 2981
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2981][#2981]] | [iam] Let a member clear the default party |
 
 * Review
 

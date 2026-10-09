@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: 48A57022-53C8-46E5-A159-323B85A4224C
+:END:
+#+title: One person's timeline prototype
+#+description: One person's whole story as one dated stream: the account, its contact details, its parties, its roles and its sign-ins, with the green and red widget for a field that changed, a revert at each point, and a quieter rendering for the events that changed nothing.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:directory:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                               |
+|---------------+-----------------------------------------------------|
+| Prototype     | [[file:the-people-timeline/][the prototype]] |
+| Gemini review | none                                                |
+| Group         | [[file:index.org][Directory prototypes]]             |
+
+* Summary
+
+There is no history screen for a person. The person screen answers what is true
+now, one tab at a time: Details, Contact, Roles, Sign-ins. Nothing answers how
+it got that way, and nothing shows the parts together.
+
+This prototype puts one person's whole story on one screen as a dated stream,
+newest first, in the shape a pull request's conversation has. It asks whether
+that is the right shape, and it asks the second half of the question at the same
+time: the owner wants one generalised screen for every entity that makes up a
+journey, and a role request is the second case.
+
+It is one file of mock HTML, CSS and JavaScript. It calls no service, needs no
+build and no session. Four states travel as query parameters
+(=?state=trail|revert|service|case=), with =?order= and =?entity= for the
+reading.
+
+* Detail
+
+** The question
+
+A person is one row of =account=, and its story is written by five tables: the
+account's own versions, its contact information, its party links, its role
+grants and its sign-ins. Each is versioned, or is an event log, and no screen
+reads them together. An administrator asking "why is this person like this"
+opens four tabs and keeps the order in their head.
+
+The prototype asks whether the order is the thing worth drawing, and whether
+one stream can carry a person's field changes, a role grant, a party link and a
+sign-in without any of them reading as something they are not.
+
+** What it argues
+
+| The journey today | This prototype | Why |
+|-------------------+----------------+-----|
+| Four tabs, one per record | One stream, newest first, every record in it | What happened next is the question, and only one view answers it |
+| A tab shows the current value | The change is drawn as a field difference, from one value to the next | The current value hides that anything happened |
+| Every entry has a revert | A revert is offered only where a write exists to serve it | A sign-in is a fact, a grant is closed rather than reverted, and a decision is undone by a further decision |
+| An activity's steps are spread across screens | The activity is one entry, and its own stream is the case file | A person's stream and a request's stream are the same component over a different subject |
+
+** Order
+
+The stream is newest first. The record screens already say "Every version of
+this record, newest first", and the request story was accepted on 2026-10-08
+with one merged stream, newest first. The person screen shows what is true now;
+the stream is read from now backwards, so the current state and the entry that
+produced it sit together at the top. Oldest first is kept as =?order=old= and
+reads as a case file, but it puts what is true now at the end of a long scroll.
+
+** The entities, and where each entry would come from
+
+| Entity badge | Table | Entry | Read today |
+|--------------+-------+-------+------------|
+| =account= | =ores_iam_accounts_tbl= | A field of the person: name, mail address, job title, state, reporting line, default party | Versioned, and IAM keeps the versions. The web serves no history for it: =/api/history?entityType=ores.iam.account= answers 404, because the BFF's =HISTORY_TYPES= holds the refdata records and the tenant, and no IAM entity besides |
+| =contact= | =ores_iam_account_contact_informations_tbl= | A field of the contact record: street, city, post code, country, phone, mail | Versioned, and IAM has the history provider. Not served to the web |
+| =parties= | =ores_iam_account_parties_tbl= | A party link opened or closed | A versioned row, but the protocol lists the junction as "no versions, no events", so a closed link has no read |
+| =roles= | =ores_iam_account_roles_tbl= | A grant given or taken away, with =assigned_by=, =assigned_at= and its reason | The grants held now are read, with who gave each and when. A grant closed by =valid_to= is read by nothing, so the duration is not on any screen |
+| =sign-ins= | =ores_iam_auth_events_tbl= | A sign-in, a failed sign-in, a sign-out, a token refresh | =/api/auth-events= serves them to Audit, filtered by period and event type only, never by account. 90-day retention, and no row-level security |
+| =notification= | =ores_inbox_notifications_tbl= | A notice raised on a request | Read by the inbox. Its audience is a permission code, not a list of people |
+
+The prototype's state =case= adds the six request tables the accepted request
+story reads: =approval_request=, =role_grant_request=,
+=role_grant_request_role=, =approval_decision=, =account_role= and
+=notification=. Every entity is named on the screen, in the "Where each entry
+comes from" table, rather than only in this note.
+
+** Which entity an entry belongs to
+
+Each entry carries a mono badge naming its entity, and its row and version where
+it has one (=account 7c1f0e5a v3=). A version number alone is ambiguous here: the
+account, its contact record and its party links each count from their own
+version 1, so the badge names the entity first. =?entity=<name>= narrows the
+stream to one entity, which is the "one tab per entity" reading kept as a state
+rather than as the only view.
+
+** What generalises, and what does not
+
+Generalises unchanged: the rail, the day dividers, the entity badge, the quiet
+rendering for an entry with no diff, the green and red widget for a field that
+changed, the rule that a revert appears only where a write exists, and the
+provenance table.
+
+Does not generalise, and is therefore outside the stream:
+
+- *The header.* A person has a name, a face, a party and a state. A request has
+  a kind, a state and an asker. The stream body is identical; the header is the
+  subject's own.
+- *Elapsed time.* A request has a beginning and an end, so a case file can
+  answer "how long did it take". A person's stream has neither, so it can carry
+  the elapsed time only of an activity inside it. That is what the
+  =2026-10-05= entry does: it states the ask, and the grant beside it states
+  that the answer took 22h 41m 2s.
+- *What a revert means.* On a person, a field change is reverted by writing its
+  older value back as a new version. On a request, a step is a decision, and
+  undoing it is a further decision: the seeded decision type =reverse= reads
+  "Undo an approval; the owning component undoes what it applied", and it
+  requires a comment. The widget is the same; the button, its permission and its
+  operation are not.
+- *Entitlement.* The request story found that the person who raised a request
+  may not read the decisions taken on it. A person's own timeline has the
+  opposite shape: the sign-ins and the grants are the administrator's to read in
+  full. So the reader axis belongs to the subject, not to the stream.
+
+** What the owner asks for that has no data behind it today
+
+- *A sign-in for one person.* =/api/auth-events= takes a period and an event
+  type, and no account. The prototype draws the sign-ins as though a per-account
+  read existed; it does not.
+- *A party link's history.* =ores_iam_account_parties_tbl= is versioned, and
+  has =valid_from= and =valid_to=, but the protocol declares the junction to
+  have no versions and no events. The prototype draws the link and says on the
+  entry that neither its closure nor its history is reachable.
+- *A revert of a person's own fields.* The account is read-only in the generated
+  surface and written by the hand-written =iam.v1.accounts.update=. No screen
+  offers a revert of an account, so the per-field revert is design intent.
+- *"Restore as of this point".* No operation writes one person's account, its
+  contact details and its party links back to one instant together. The button
+  is drawn and says so.
+- *The change reasons a person's edits would carry.* The seeded reasons have no
+  =profile= category. An edit to a person's name or job title must borrow
+  =system.update=, =system.new_record= or a =common.*= code, which is why the
+  prototype's entries carry those.
+- *Two strings the accepted request story uses that the data does not have.* The
+  notification kinds =notification.inbox.approval_held= and
+  =notification.inbox.approval_approved= are not seeded; the seeded keys are
+  =approval_waiting=, =approval_decided=, =approval_expiring= and
+  =approval_expired=. The change reason =access.approved_request= is not seeded
+  either, so the prototype writes the grant with =access.access_review=.
+- *A hold step on a role request.* The decision types =hold= and =resume= exist,
+  but the only seeded approval kind, =iam.role_grant=, sets
+  =allows_hold = false=. The case file therefore has no hold step, and says so.
+
+* See also
+
+- [[file:index.org][Directory prototypes]] — the group this prototype answers to.
+- [[file:../access/see-the-story-of-a-request.org][See the story of a request]] — the second case, accepted on 2026-10-08, whose stream this prototype generalises.
+- [[file:../../knowledge/journeys/directory/journey_see_who_has_access.org][See who has access]] — the journey that owns the roster and the person's page.

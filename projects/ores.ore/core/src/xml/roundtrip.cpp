@@ -23,6 +23,7 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/random_generator.hpp>
 #include <chrono>
 #include <stdexcept>
 #include <string>
@@ -63,13 +64,25 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
             std::vector<trading::messaging::trade_export_item> export_items;
             trading::domain::instrument_batch instruments;
             export_items.reserve(items.size());
+            boost::uuids::random_generator uuid_gen;
             for (const auto& item : items) {
+                // The importer leaves the trade id unset; the planner mints it
+                // on the import path. This walk has no planner, so it mints one
+                // here: the export joins an item to its instrument by that id,
+                // and with every id nil each trade would join to the batch's
+                // first instrument.
+                const auto trade_id = uuid_gen();
+                auto instrument = item.instrument;
+                if (!std::holds_alternative<std::monostate>(instrument))
+                    trading::domain::stamp_ids(instrument, trade_id);
+
                 trading::messaging::trade_export_item export_item;
                 export_item.anchor = item.anchor;
+                export_item.anchor.id = trade_id;
                 export_item.ore_id = item.ore_id;
                 export_item.envelope = item.envelope;
-                trading::domain::append_instrument(instruments, item.instrument);
-                if (std::holds_alternative<std::monostate>(item.instrument))
+                trading::domain::append_instrument(instruments, instrument);
+                if (std::holds_alternative<std::monostate>(instrument))
                     ++summary.trades_passthrough;
                 else
                     ++summary.trades_mapped;

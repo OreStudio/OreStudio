@@ -59,7 +59,11 @@ describe('the order of a timeline', () => {
     });
 
     it('reads the sign-in above the change it was made under', () => {
-        const signIn = event({ kind: 'signed_in', entityType: 'ores.iam.auth_event', entityId: 'e' });
+        const signIn = event({
+            kind: 'signed_in',
+            entityType: 'ores.iam.auth_event',
+            entityId: 'e',
+        });
         const change = event({ kind: 'changed' });
 
         expect(orderTimeline([change, signIn])).toEqual([signIn, change]);

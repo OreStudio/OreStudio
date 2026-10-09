@@ -158,9 +158,7 @@ function Person({
                              */
                             renderActions={(event) => {
                                 if (event.kind !== 'granted') return undefined;
-                                const held = roles.find(
-                                    (role) => role.roleId === event.entityId,
-                                );
+                                const held = roles.find((role) => role.roleId === event.entityId);
                                 if (held === undefined) return undefined;
                                 return (
                                     <div className="mt-2 flex justify-end">

@@ -130,10 +130,7 @@ export async function setMyDefaultParty(
         setMyDefaultPartyReplySchema,
     );
     if (!reply.success) {
-        throw new OperationFailedError(
-            accountSubjects.set_my_default_party_request,
-            reply.message,
-        );
+        throw new OperationFailedError(accountSubjects.set_my_default_party_request, reply.message);
     }
 }
 

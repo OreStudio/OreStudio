@@ -8,7 +8,7 @@
 #+filetags: :the_seeded_books_have_no_purpose:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-the-seeded-books-have-no-purpose
-#+pr:
+#+pr: 3003
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -120,7 +120,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3003][#3003]] | [refdata] Give the seeded books their purpose and their ledger feed |
 
 * Review
 

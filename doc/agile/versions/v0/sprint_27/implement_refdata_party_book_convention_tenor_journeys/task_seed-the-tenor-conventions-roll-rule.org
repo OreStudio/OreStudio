@@ -26,11 +26,11 @@ A fresh database build seeds all four tenor conventions, and provisioning a tena
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -40,9 +40,15 @@ A fresh database build seeds all four tenor conventions, and provisioning a tena
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The column is non-nullable and the insert trigger validates it, so every
+writer must state it. Two writers exist: the system seed and the tenant
+provisioner's copy. The seed states the rule per convention, because the
+knowledge doc gives the CDS roll as the first business day *following* the
+IMM roll date while the rates conventions take the market default; the
+provisioner copies the system tenant's value with the rest of the row. No
+model change, because the model already declares the column and the C++
+default, and a database default would let a writer drop the roll rule
+silently.
 
 * Measurements
 
@@ -56,7 +62,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Insert sites that omit a trigger-required column | 0 (was 2) | =python3 build/evidence/check_seed_columns.py= | =9ca4d504b0-dirty= |
+| Full database recreation | completes, RC 0, 6m16s | =compass db recreate -y -k= | =9ca4d504b0-dirty= |
+| Schema fingerprint written by that run | =01f8f1af97893b3c= | =compass db recreate -y -k= | =9ca4d504b0-dirty= |
 
 * Notes
 
@@ -84,3 +92,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both writers state the roll rule now, and a fresh database builds.
+
+- =refdata_tenor_conventions_populate.sql= names
+  =business_day_convention_type= in its column list and in every row:
+  =ModifiedFollowing= for =RATES_SPOT_FORWARD= and =FX_SWAP_NEAR_LEG=,
+  =Following= for =CREDIT_CDS_IMM= and =RATES_SPOT_FOMC=. The ON CONFLICT
+  branch updates the column, so re-running the seed corrects an existing row.
+- =iam_tenant_provisioner_create.sql= copies
+  =business_day_convention_type= from the system tenant's row with the rest
+  of the convention.
+
+Evidence.
+
+- Before: =compass db recreate -y -k= aborted in Phase 2 with
+  =psql:populate/refdata/refdata_tenor_conventions_populate.sql:66: ERROR:
+  Invalid business_day_convention_type: value cannot be null or empty.=
+  The abort was reproduced through =build/evidence/recreate_probe.py=, which
+  runs the same recreation with psql's stderr captured.
+- After: the same command completed in 6m16s with RC 0 and wrote schema
+  fingerprint =01f8f1af97893b3c=.
+- The scan is =build/evidence/check_seed_columns.py=. It walks every table's
+  generated create SQL, collects the columns whose insert trigger reads them
+  from the incoming row, and reports each =insert into= whose column list
+  misses one. Before the fix it named exactly the two sites above; after the
+  fix it reports 0. It skips columns whose validator answers an empty value
+  with a default (=change_reason_code= answers =system.new_record=) and
+  columns the trigger assigns itself (=version=, the audit actors).
+- =compass lint= passes.
+
+Limitation: the provisioner path was confirmed by reading the function and
+by the scan, not by provisioning a tenant; that happens in the screens'
+test run, and the same column would fail loudly there if it were still
+missing.
+

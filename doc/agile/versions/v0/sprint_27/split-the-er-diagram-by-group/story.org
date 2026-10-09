@@ -130,8 +130,9 @@ Two combinations look strongest:
   than from the stale =FK_TARGET_TABLES= map.
 - An index names the groups and what each holds, and the =er-diagram=
   check covers every generated diagram, not only the old single file.
-- The tracked artefact set is deliberate: whatever is committed can be
-  regenerated identically on any machine.
+- The tracked artefact set is deliberate: the =.puml= files carry what
+  the diagram says, the SVGs are the images the site renders, and both
+  come from the one script a build runs.
 
 * Tasks
 
@@ -161,6 +162,12 @@ searchable, and it has no fixed raster to overflow. It also ends a
 recurring cost: the PNG and cmapx carry layout coordinates from whatever
 PlantUML build is installed, so they differ between machines and every
 regeneration is noise.
+
+The drawn SVGs stay committed, though. The documentation site renders
+them: a =proj:= link to an image exports as an image tag pointing at the
+file in the repository, so an image outside the tree is a page that
+shows no schema. The PNG and the cmapx go because they are stale and
+unrenderable; the SVGs take their place.
 
 What was not taken, and why:
 

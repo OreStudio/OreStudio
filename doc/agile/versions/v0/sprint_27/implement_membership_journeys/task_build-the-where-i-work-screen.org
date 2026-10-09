@@ -8,7 +8,7 @@
 #+filetags: :implement_membership_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-where-i-work-screen
-#+pr:
+#+pr: 2995
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2995][#2995]] | [web] Build the Where I work screen |
 
 * Review
 

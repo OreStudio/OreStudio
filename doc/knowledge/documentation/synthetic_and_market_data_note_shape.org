@@ -152,7 +152,7 @@ Read this cluster to author and run a generator.
 
 | Title | Scope | Filetags | Anchor |
 |-------+-------+----------+--------|
-| Preview and simulate | What each operation returns, why a preview reads and a run writes, and how the path count and tick count are bounded | =synthetic=operations=preview=simulate= | =simulate_fx_spot_paths_protocol.hpp=, =preview_ir_curve_shape_protocol.hpp=, =simulate_handler.hpp=, =ir_curve_preview_handler.hpp= |
+| Preview and simulate | What each operation returns, why a preview reads and a run writes, and how the path count and tick count are bounded | =synthetic=operations=preview=simulate= | =simulate_fx_spot_paths_protocol.hpp=, =ir_curve_operations_protocol.hpp=, =simulate_handler.hpp=, =ir_curve_preview_handler.hpp= |
 | The shell operation surface | The =synthetic= command group, the folder and feed addressing rule, and the vintage check, all of it kind agnostic | =synthetic=shell=operations= | =ores.shell/app/commands/synthetic_commands.cpp=, =synthetic_commands::register_commands= |
 | The market simulator screens | The one composite window, the per-entity editors behind it, the cascade start and stop request per node, and the reference to each prototype | =synthetic=ui=qt= | [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][Synthetic data generation screens]], the =ores.qt= =synthetic/= menu |
 

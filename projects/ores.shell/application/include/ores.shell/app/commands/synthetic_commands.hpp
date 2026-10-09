@@ -33,7 +33,7 @@
 #include "ores.synthetic.api/domain/scope.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_type.hpp"
-#include "ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <array>
 #include <cstddef>

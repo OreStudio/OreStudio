@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-09T19:06:45.768312Z
+' Generated: 2026-10-09T22:30:40.685791Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -26,7 +26,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-464 tables in 21 groups.
+465 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -208,6 +208,7 @@ entity "refdata" as refdata {
   ores_refdata_sandbox_members_tbl
   ores_refdata_sandboxes_tbl
   ores_refdata_series_subclass_codes_tbl
+  ores_refdata_sub_periods_coupon_types_tbl
   ores_refdata_supervisory_bodies_tbl
   ores_refdata_swap_conventions_tbl
   ores_refdata_swap_index_conventions_tbl
@@ -229,7 +230,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-153 tables — ores_schema.refdata.puml
+154 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {

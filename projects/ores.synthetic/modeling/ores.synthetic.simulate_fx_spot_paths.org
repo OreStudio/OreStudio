@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: 16150ab3-4bcc-4336-b6ae-ab70a268673c
+:END:
+#+title: ores.synthetic.simulate_fx_spot_paths
+#+description: Codegen operation model for the FX spot sample-path simulation.
+#+type: ores.codegen.operation
+#+component: synthetic
+#+subcomponent: api
+#+entity_singular: simulate_fx_spot_paths
+#+namespace: ores::synthetic::messaging
+#+brief: FX spot sample-path simulation.
+#+filetags: :model:operation:synthetic:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+The dry-run preview an FX spot editor asks for before it saves or starts
+anything.
+
+The live feed streams ticks over time; this generates the whole batch in one
+response, through the real GMM price process, so a screen can contrast the
+configured price behaviour without persisting a config or starting a feed.
+Nothing is stored and nothing is published.
+
+The batch bounds are not part of this protocol. They are the service's clamp
+and a screen's spinner maxima, so they are declared once, in
+=simulate_paths_common.hpp=, beside the IR curve bounds they share.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** simulate_fx_spot_paths_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.simulate_fx_spot_paths
+:response: simulate_fx_spot_paths_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request a batch (dry-run) simulation of FX spot sample paths.
+ *
+ * Stateless: nothing is persisted or published, and the caller names the
+ * process parameters rather than a stored config, so an unsaved editor can
+ * preview what it is about to save.
+ */
+#+end_src
+
+*** gmm_means
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief GMM component means; means, stdevs and weights have equal size. */
+#+end_src
+
+*** gmm_stdevs
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief GMM component standard deviations. */
+#+end_src
+
+*** gmm_weights
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief GMM component weights. */
+#+end_src
+
+*** process_type
+:PROPERTIES:
+:cpp_type: std::string
+:default: "geometric"
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Price-process engine: "geometric" (GBM, log-returns) or
+ * "arithmetic" (arithmetic Brownian motion, absolute increments).
+ */
+#+end_src
+
+*** initial_price
+:PROPERTIES:
+:cpp_type: double
+:default: 1.0
+:END:
+#+begin_src cpp :name comment
+/** @brief Starting spot price for every path. */
+#+end_src
+
+*** num_ticks
+:PROPERTIES:
+:cpp_type: int
+:default: 100
+:END:
+#+begin_src cpp :name comment
+/** @brief Number of ticks (steps) to generate per path. */
+#+end_src
+
+*** num_paths
+:PROPERTIES:
+:cpp_type: int
+:default: 5
+:END:
+#+begin_src cpp :name comment
+/** @brief Number of independent sample paths to generate (for contrast). */
+#+end_src
+
+*** seed
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 1
+:END:
+#+begin_src cpp :name comment
+/** @brief Base RNG seed; path i uses seed + i. Change to reseed. */
+#+end_src
+
+** simulate_fx_spot_paths_response
+#+begin_src cpp :name comment
+/**
+ * @brief The generated batch, and why it is empty when it is.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** paths
+:PROPERTIES:
+:cpp_type: std::vector<std::vector<double>>
+:END:
+#+begin_src cpp :name comment
+/** @brief num_paths series, each of num_ticks prices. */
+#+end_src

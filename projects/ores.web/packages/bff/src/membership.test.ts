@@ -203,4 +203,64 @@ describe('membership routes', () => {
 
         expect(response.statusCode).toBe(401);
     });
+
+    it('sets the default party the member chose', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.set_my_default_party': { success: true, message: '' },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/me/default-party',
+            cookies,
+            payload: { partyId: US },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ defaultPartyId: US });
+        expect(calls).toEqual([
+            { subject: 'iam.v1.ops.set_my_default_party', body: { party_id: US } },
+        ]);
+    });
+
+    it('clears the default when the party is empty', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.set_my_default_party': { success: true, message: '' },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/me/default-party',
+            cookies,
+            payload: { partyId: '' },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ defaultPartyId: '' });
+        expect(calls).toEqual([
+            { subject: 'iam.v1.ops.set_my_default_party', body: { party_id: '' } },
+        ]);
+    });
+
+    it('reports the server\u2019s refusal when the party is not the member\u2019s', async () => {
+        const { server, cookies } = buildTestServer({
+            'iam.v1.ops.set_my_default_party': {
+                success: false,
+                message: 'User is not a member of requested party',
+            },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/me/default-party',
+            cookies,
+            payload: { partyId: UK },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBeGreaterThanOrEqual(400);
+        expect(response.body).toContain('not a member');
+    });
 });

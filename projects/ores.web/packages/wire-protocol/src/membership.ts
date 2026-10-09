@@ -95,3 +95,43 @@ export async function readMyParties(caller: AuthenticatedCaller): Promise<MyPart
         })),
     });
 }
+
+const setMyDefaultPartyReplySchema = z.object({
+    success: z.boolean(),
+    message: z.string().default(''),
+});
+
+/**
+ * The body of the default-party write, as the BFF takes it from the browser.
+ *
+ * An empty =partyId= clears the stored default, which is the only way the
+ * operation can say "no default".
+ */
+export const defaultPartyRequestSchema = z.object({
+    partyId: z.string(),
+});
+
+/**
+ * Sets or clears the party quick sign-in uses.
+ *
+ * An empty party clears the stored default, which is the only way this
+ * operation can say "no default". The server checks the party is one the
+ * account works in and refuses the write otherwise, so the screen cannot store
+ * a party the member cannot act for.
+ */
+export async function setMyDefaultParty(
+    caller: AuthenticatedCaller,
+    partyId: string,
+): Promise<void> {
+    const reply = await caller.callAuthenticated(
+        accountSubjects.set_my_default_party_request,
+        { party_id: partyId },
+        setMyDefaultPartyReplySchema,
+    );
+    if (!reply.success) {
+        throw new OperationFailedError(
+            accountSubjects.set_my_default_party_request,
+            reply.message,
+        );
+    }
+}

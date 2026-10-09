@@ -888,8 +888,8 @@ std::string account_operations_service::update_my_email(const boost::uuids::uuid
     return "";
 }
 
-std::string account_operations_service::set_my_default_party(const boost::uuids::uuid& account_id,
-                                                             const boost::uuids::uuid& party_id) {
+std::string account_operations_service::set_my_default_party(
+    const boost::uuids::uuid& account_id, const std::optional<boost::uuids::uuid>& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Setting default party for account: "
                                << boost::uuids::to_string(account_id);
 
@@ -904,7 +904,8 @@ std::string account_operations_service::set_my_default_party(const boost::uuids:
         // Idempotent no-op: re-running "set default to X" when X is already
         // the default should succeed silently, not fail — callers like
         // provisioning scripts and the shell command may legitimately repeat
-        // this call against an already-provisioned system.
+        // this call against an already-provisioned system. The same holds for
+        // clearing a default that is not set.
         BOOST_LOG_SEV(lg(), debug)
             << "Default party unchanged for account: " << boost::uuids::to_string(account_id);
         return "";
@@ -913,7 +914,7 @@ std::string account_operations_service::set_my_default_party(const boost::uuids:
     auto account = accounts[0];
     account.default_party_id = party_id;
     account.change_reason_code = std::string{reason::codes::non_material_update};
-    account.change_commentary = "Default party changed";
+    account.change_commentary = party_id ? "Default party changed" : "Default party cleared";
     // Note: version is NOT incremented here - the database trigger handles it
 
     account_repo_.write(ctx_, account);

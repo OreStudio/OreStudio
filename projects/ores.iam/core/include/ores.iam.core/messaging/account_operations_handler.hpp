@@ -671,17 +671,24 @@ public:
             boost::uuids::string_generator sg;
             auto account_id = sg(claims_result->subject);
 
+            // An empty party states "no default", which is the only way the
+            // request can say it: a party id is a UUID, so an empty string is
+            // unambiguous. Nothing is checked against the account's parties,
+            // because clearing names none.
+            const bool clearing = req->party_id.empty();
             boost::uuids::uuid party_id;
-            try {
-                party_id = sg(req->party_id);
-            } catch (const std::exception&) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
-                    << "set_default_party: invalid party_id: " << req->party_id;
-                reply(nats_,
-                      msg,
-                      set_my_default_party_response{.success = false,
-                                                    .message = "Invalid party_id format"});
-                return;
+            if (!clearing) {
+                try {
+                    party_id = sg(req->party_id);
+                } catch (const std::exception&) {
+                    BOOST_LOG_SEV(account_handler_lg(), warn)
+                        << "set_default_party: invalid party_id: " << req->party_id;
+                    reply(nats_,
+                          msg,
+                          set_my_default_party_response{.success = false,
+                                                        .message = "Invalid party_id format"});
+                    return;
+                }
             }
 
             auto ctx_expected = ores::service::service::make_request_context(
@@ -691,6 +698,21 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
+
+            if (clearing) {
+                service::account_operations_service svc(ctx);
+                auto err = svc.set_my_default_party(account_id, std::nullopt);
+                if (err.empty()) {
+                    BOOST_LOG_SEV(account_handler_lg(), debug)
+                        << "Completed " << msg.subject << " (cleared)";
+                    reply(nats_, msg, set_my_default_party_response{.success = true});
+                } else {
+                    reply(nats_,
+                          msg,
+                          set_my_default_party_response{.success = false, .message = err});
+                }
+                return;
+            }
 
             repository::account_party_repository ap_repo(ctx);
             auto parties = ap_repo.read_latest_by_account(account_id);

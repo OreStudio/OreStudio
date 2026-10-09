@@ -115,9 +115,9 @@ Two combinations look strongest:
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
-| Waiting on    | A decision between the options above.  |
-| Next          | Take the decision, then break the story into tasks. |
+| Now           | One diagram per package, drawn as SVG; PNG and cmapx untracked. |
+| Waiting on    | Nothing.                               |
+| Next          | Work the four tasks in order, starting with the relationships. |
 | Last touched  | 2026-10-09                               |
 
 * Acceptance
@@ -137,12 +137,49 @@ Two combinations look strongest:
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:440BD2AE-E77B-4BFA-BEB8-3DA607512407][Recover the ER diagram's relationships]] | BACKLOG | | | The parser renders no relationships because its FK map lost the table prefix. Infer the edges from the SQL it already reads. |
+| [[id:240C063C-AFF0-4F5C-804D-13F32B7E2FA5][Split the ER diagram by package]] | BACKLOG | | | One diagram over 463 tables cannot be painted. Generate one per package, plus an index. |
+| [[id:4EB66588-9DF4-4EF7-9F5C-416F88BE33E7][Draw the ER diagrams as SVG]] | BACKLOG | | | The raster PNG overflows and the PNG and cmapx carry the installed PlantUML's layout. Emit SVG and untrack both. |
+| [[id:E2FA84AB-7F18-4998-8563-C2E749408B7F][Gate every ER diagram]] | BACKLOG | | | The er-diagram check reads one file. Make it cover every generated diagram, discovered rather than listed. |
 
 * Decisions
 
-Open: which option, and whether the tracked PNG and cmapx stay. The
-capture [[id:D6BB976D-8B44-4D25-94E9-1BFD52D44461][The ER diagram PNG
+*Taken: option A + F -- one diagram per package, drawn as SVG, with the
+PNG and cmapx removed from the tree.*
+
+A, because the grouping already exists in the model as =packages= and
+needs no new metadata, and because it was measured: every package draws
+on its own while the 463-table figure does not. The 21 packages side by
+side are what breaks the raster, not the table count, so splitting
+dissolves the overflow rather than moving it.
+
+F, because the split alone leaves the shape problem. A package is a
+strip about 320 px per table tall, so =refdata= at 153 tables is 48,528
+px high and 1,450 wide: a PNG nobody can read, and a format with a pixel
+budget it can do nothing about. A vector file is zoomable and
+searchable, and it has no fixed raster to overflow. It also ends a
+recurring cost: the PNG and cmapx carry layout coordinates from whatever
+PlantUML build is installed, so they differ between machines and every
+regeneration is noise.
+
+What was not taken, and why:
+
+- B, hand-grouped domains: the groups would be little smaller than the
+  whole, so it buys less than A for more maintenance.
+- C, FK-graph clustering: the grouping would change whenever the schema
+  does, redrawing unrelated diagrams on every merge.
+- D, =:diagram_group:= on every entity: the stronger long-term shape,
+  because the grouping becomes authored and stable, but it is a flag on
+  every model and A already works. Revisit if the packages prove to be
+  the wrong seams.
+- E, an inventory-only big diagram: the detail has to live somewhere,
+  and A and F give it a better home.
+
+One thing all of them need: the relationships. The diagram draws none
+today, so the split would produce 21 pictures of boxes. That is the
+first task, not a follow-up.
+
+The capture [[id:D6BB976D-8B44-4D25-94E9-1BFD52D44461][The ER diagram PNG
 cannot be rendered at the current schema size]] raised the same candidates
 and is superseded by this story.
 

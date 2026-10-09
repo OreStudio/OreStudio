@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: FD266B72-1EFC-43D5-A550-65FC7D49E06D
+:END:
+#+title: Task: Write the 21 market data design notes
+#+description: Give each of the market data prototypes the design record the convention asks for, and link it from the group page.
+#+type: task
+#+level: s1
+#+filetags: :give-every-prototype-its-design-note:sprint_27:v0:
+#+owner: marco
+#+branch: feature/write-the-market-data-design-notes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA876F60-B926-46C5-8F29-6A75B58893DB][Give every prototype its design note]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each of the twenty-one market data prototypes has a design note beside it, and the group page links every one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BA876F60-B926-46C5-8F29-6A75B58893DB][Give every prototype its design note]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- Twenty-one notes exist at doc/prototypes/market_data/<name>.org, each a full design record with the links table, the argument, the variants, the states and the verdict.
+- The group page's Prototype cell links each note, and no argument is left only in the table.
+- org-links, prototypes and site-page pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Design notes written | 21 of 21 | =ls doc/prototypes/market_data/*.org= | 3c5c724eb8 |
+| Notes with the links table and every section | 21 of 21 | a check over the notes for the three links-table rows and the eleven sections | 3c5c724eb8 |
+| Lines per note | 135 to 140 | =wc -l doc/prototypes/market_data/*.org= | 3c5c724eb8 |
+| Rows relinked to their note | 21 | =grep -c 'file:.*\.org\]\[' doc/prototypes/market_data/index.org= | 3c5c724eb8 |
+| prototypes, org-links, site-page | 3/3 passed | =compass check --only prototypes --only org-links --only site-page= | 3c5c724eb8 |
+| Prototypes still without a note | 18, in eight groups | the survey in the story's follow-up task | 3c5c724eb8 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Twenty-one design notes now sit beside the market data prototypes, one per
+prototype, following =doc/prototypes/entry/registration-door.org=. Each opens
+with the links table, then argues the prototype: the question it answers, its
+variants, its states, what is fake, where the code lives, the verdict and what
+it leaves open. The variants and states are the prototype's own — read from the
+query parameters its script switches on, and named with its words — so the note
+describes the page that is there rather than one imagined for it.
+
+The group page's first cell links each note. Before this, a reader who followed
+a prototype from the table landed on the prototype itself and never saw the
+argument, which lived in the cell beside it.
+
+The convention said a note was optional: "A design note, where one exists" and
+"To keep a design note". That wording is what let the largest group in the tree
+go entirely without one, and nothing checked for it. The top page now says every
+prototype has a note and the row links it; the check that refuses a prototype
+without one belongs to the follow-up task, along with the eighteen prototypes in
+the other eight groups that still have none.

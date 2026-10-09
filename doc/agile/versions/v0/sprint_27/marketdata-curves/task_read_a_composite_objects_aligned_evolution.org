@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-a-composite-objects-aligned-evolution
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A caller sees how a whole composite object moved between instants, with the node
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | The plan is written. The operation and the removal of the bucket window are being made. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Add the operation, the stated instants, the reader, the handler, the tests, and remove the bucket window. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -43,9 +43,51 @@ A caller sees how a whole composite object moved between instants, with the node
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The aligned evolution read is the slice read's sibling. It returns the whole
+object rather than one component, and it states the change each node shows
+against the shape. The fixed five-bucket window goes, and the subject that
+carried it goes with it.
+
+1. A new operation in =ores.marketdata.operations=,
+   =get_series_evolution_request= and =get_series_evolution_response=, with the
+   two messages it carries: one node with its coordinate labels and its status,
+   and one instant with a value per node.
+2. The request states the object as the typed identity the resolver takes, and
+   either a range or a set of instants. A set the caller states replaces the
+   range.
+3. The response is the matrix: the axis names once, the declared grid's nodes
+   once with their labels and their status, and one row per instant whose values
+   are index for index with the nodes. It is parallel arrays, not arrays of
+   objects.
+4. The node status is the change the node shows over the range: =persistent=
+   when every instant carries it, =added= when the last carries it and the first
+   does not, =dropped= when the first carries it and the last does not,
+   =intermittent= when an instant between them does, and =never_quoted= when the
+   shape declares it and no instant carries it.
+5. =read_as_of_instants= grows a stated set of instants. A range draws its
+   boundaries from the data; a stated set uses the caller's.
+6. The fixed five-bucket window is removed: its request, its response, the
+   handler method and the registration. The repository's own =read_as_of_buckets=
+   stays, because a backlog story names it as the reference implementation of the
+   as-of-bucket pattern that story exists to generalize.
+7. The shape reader both reads share moves to its own service, so the slice read
+   and the evolution read cannot disagree about what an axis is.
+
+** The grid is the shape's product, so a hole is a cell and not a missing node
+
+The nodes are every combination of the declared values of the object's axes, in
+the order the shape stores the axes and with the last axis varying fastest. That
+is what makes a declared node distinguishable from a node the object does not
+have: the first is a cell of the matrix, marked =never_quoted= when no instant
+carries it, and the second is not in the matrix at all.
+
+** The status is a summary of the range, not of one step
+
+A node that is dropped and then added again is reported =added=, because the
+range's last instant carries it and its first does not. A caller that wants the
+change step by step reads two consecutive rows, which the matrix already carries.
+One word per node is what makes the answer readable at a glance, which is what
+the journey asks for.
 
 * Measurements
 

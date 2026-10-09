@@ -22,8 +22,9 @@ twin now generate from here, so the two cannot drift.
 
 Three groups share the file because they share the namespace and the wire
 conventions. The CRM group reads live rates from a rate engine. The curve
-group bootstraps, republishes and reads curve snapshots. The import and
-export group moves whole ORE files in and out of the tenant.
+group bootstraps, republishes and reads a curve's snapshot, its slice and its
+evolution. The import and export group moves whole ORE files in and out of the
+tenant.
 
 * Includes
 
@@ -670,63 +671,6 @@ The threshold is stated by the evolution journey; the read only reports it.
 :cpp_type: std::string
 :END:
 
-** get_curve_snapshot_buckets_request
-:PROPERTIES:
-:subject: marketdata.v1.ops.get_curve_snapshot_buckets
-:response: get_curve_snapshot_buckets_response
-:END:
-
-Requests a curve-evolution view: =bucket_count= as-of snapshots, one every
-=bucket_seconds=, ending now.
-
-#+begin_src cpp :name comment
-/**
- * @brief Requests a curve-evolution view: bucket_count as-of snapshots, one
- * every bucket_seconds, ending now.
- */
-#+end_src
-
-*** oresmd_uri
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-*** bucket_seconds
-:PROPERTIES:
-:cpp_type: std::int64_t
-:default: 1800
-:END:
-
-*** bucket_count
-:PROPERTIES:
-:cpp_type: std::uint32_t
-:default: 5
-:END:
-
-** get_curve_snapshot_buckets_response
-
-*** buckets
-:PROPERTIES:
-:cpp_type: std::vector<std::vector<ores::marketdata::domain::market_observation>>
-:END:
-
-#+begin_src cpp :name comment
-/** Oldest to newest, one entry per bucket; a bucket with no observations
- * at/before its boundary is an empty vector.
- */
-#+end_src
-
-*** success
-:PROPERTIES:
-:cpp_type: bool
-:default: false
-:END:
-
-*** message
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
 ** series_slice_instant
 
 One instant of a slice: the object as it stood then, one value per declared
@@ -934,6 +878,241 @@ range.
 
 #+begin_src cpp :name comment
 /** Oldest first, one entry per distinct market instant in the range. */
+#+end_src
+
+** evolution_node
+
+One node of a composite object: its coordinate labels, one per declared axis,
+and the change it shows over the range.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One node of a composite object: its coordinate labels and the change
+ * it shows over the range.
+ */
+#+end_src
+
+*** coordinates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+One label per declared axis, index for index with the response's
+=coordinate_fields=.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One label per declared axis, index for index with the response's
+ * coordinate_fields.
+ */
+#+end_src
+
+*** status
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The change the node shows over the range, which is the first of these that
+holds:
+- =never_quoted=: no instant carries it.
+- =persistent=: every instant carries it.
+- =added=: the last instant carries it and the first does not.
+- =dropped=: the first instant carries it and the last does not.
+- =intermittent=: some instant carries it and the rules above do not.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The change the node shows over the range.
+ *
+ * One of never_quoted, persistent, added, dropped or intermittent, which is
+ * the first of those that holds. never_quoted is a node the shape declares and
+ * no instant in the range carries, which is what tells it apart from a node the
+ * object does not have: that node is not in the response at all.
+ */
+#+end_src
+
+** evolution_instant
+
+One instant of the evolution: the object as it stood then, one value per node.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One instant of the evolution: the object as it stood then.
+ */
+#+end_src
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The market instant this row is the object at.
+
+*** values
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+Index for index with the response's =nodes=.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The value at each node, index for index with the response's nodes.
+ *
+ * The empty string is a hole: the shape declares the node and no point held a
+ * value for it at this instant.
+ */
+#+end_src
+
+** get_series_evolution_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_series_evolution
+:response: get_series_evolution_response
+:END:
+
+Requests a whole composite object as instants by nodes over a range or a set of
+instants. The object is named by a typed identity, so no caller builds an oresmd
+URI.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Requests a whole composite object as instants by nodes.
+ *
+ * The object is named the way the resolver names one, so no caller builds an
+ * oresmd URI and no caller matches on one. The instants are either the ones the
+ * object holds between two instants or the set the caller states.
+ */
+#+end_src
+
+*** identity
+:PROPERTIES:
+:cpp_type: resolve_series_identity_request
+:END:
+
+The object, as the typed identity the resolver already takes.
+
+#+begin_src cpp :name comment
+/** The object, as the typed identity the resolver already takes. */
+#+end_src
+
+*** from_instant
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The first market instant of the range, inclusive. Used when =instants= is empty.
+
+#+begin_src cpp :name comment
+/** The first market instant of the range, inclusive, when instants is empty. */
+#+end_src
+
+*** to_instant
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The last market instant of the range, inclusive. Used when =instants= is empty.
+
+#+begin_src cpp :name comment
+/** The last market instant of the range, inclusive, when instants is empty. */
+#+end_src
+
+*** instants
+:PROPERTIES:
+:cpp_type: std::vector<std::chrono::system_clock::time_point>
+:END:
+
+The instants the caller states, which replace the range when the vector is not
+empty. Each one is read as the object stood at it, whether or not the object
+holds a point at exactly that instant.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instants the caller states, which replace the range when the
+ * vector is not empty.
+ *
+ * Each one is read as the object stood at it, whether or not the object holds a
+ * point at exactly that instant. A caller that wants the object at the month
+ * ends states them; a caller that wants everything it holds between two
+ * instants states the range and leaves this empty.
+ */
+#+end_src
+
+** get_series_evolution_response
+
+The object at each instant, against one grid of declared nodes.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The object at each instant, against one grid of declared nodes.
+ *
+ * The grid is stated once, because it belongs to the shape and not to the
+ * points: nodes holds every combination of the declared axis values, each with
+ * its labels and the change it shows over the range, and every instant's values
+ * are index for index with it. A node the shape declares and no instant carries
+ * is a cell all the same, which is what tells it apart from a node the object
+ * does not have.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Why the read was refused, when it was.
+
+#+begin_src cpp :name comment
+/** Why the read was refused, when it was. */
+#+end_src
+
+*** coordinate_fields
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The axis names, in the order the shape stores them. Every node's coordinates
+are index for index with this.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The axis names, in the order the shape stores them.
+ *
+ * Every node's coordinates are index for index with this.
+ */
+#+end_src
+
+*** nodes
+:PROPERTIES:
+:cpp_type: std::vector<evolution_node>
+:END:
+
+The declared grid, with the last axis varying fastest.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The declared grid, with the last axis varying fastest.
+ *
+ * Every combination of the declared axis values is a node, whether or not any
+ * instant carries it.
+ */
+#+end_src
+
+*** instants
+:PROPERTIES:
+:cpp_type: std::vector<evolution_instant>
+:END:
+
+Oldest first, one entry per distinct market instant read.
+
+#+begin_src cpp :name comment
+/** Oldest first, one entry per distinct market instant read. */
 #+end_src
 
 ** import_market_data_request

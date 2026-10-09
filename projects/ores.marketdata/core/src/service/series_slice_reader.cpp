@@ -24,11 +24,9 @@
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
-#include "ores.marketdata.core/repository/series_axis_repository.hpp"
-#include "ores.marketdata.core/repository/series_axis_value_repository.hpp"
+#include "ores.marketdata.core/service/series_shape.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -55,52 +53,6 @@ inline std::string_view logger_name = "ores.marketdata.core.series_slice_reader"
 constexpr std::size_t max_axes = 2;
 
 using datum::field;
-
-/// The declared shape of one series: its coordinate axes and the values each
-/// declares, both in the order the shape stores them.
-struct shape {
-    std::vector<field> axes;
-    std::map<field, std::vector<std::string>> values;
-};
-
-/// The declared shape of @p series_id, as the shape tables hold it.
-shape read_shape(ores::database::context ctx, const std::string& series_id) {
-    using namespace ores::marketdata;
-    const std::vector<std::string> ids{series_id};
-
-    std::vector<std::pair<int, field>> ordered_axes;
-    for (const auto& a : repository::series_axis_repository{}.read_latest_for_series(ctx, ids)) {
-        const auto named = datum::field_named(a.axis_field);
-        if (!named)
-            throw std::runtime_error("the shape declares '" + a.axis_field +
-                                     "', which is not an oresmd field name");
-        ordered_axes.emplace_back(a.sequence, *named);
-    }
-    std::ranges::sort(ordered_axes);
-
-    std::map<field, std::vector<std::pair<int, std::string>>> ordered_values;
-    for (const auto& v :
-         repository::series_axis_value_repository{}.read_latest_for_series(ctx, ids)) {
-        const auto named = datum::field_named(v.axis_field);
-        if (!named)
-            throw std::runtime_error("the shape declares a value of '" + v.axis_field +
-                                     "', which is not an oresmd field name");
-        ordered_values[*named].emplace_back(v.sequence, v.value);
-    }
-
-    shape result;
-    result.axes.reserve(ordered_axes.size());
-    for (auto& [sequence, axis] : ordered_axes) {
-        result.axes.push_back(axis);
-        auto& values = ordered_values[axis];
-        std::ranges::sort(values);
-        auto& declared = result.values[axis];
-        declared.reserve(values.size());
-        for (auto& [position, value] : values)
-            declared.push_back(std::move(value));
-    }
-    return result;
-}
 
 /// The value @p point holds on @p axis, or nothing when it holds none.
 std::optional<std::string> coordinate_of(const datum::market_datum& point, field axis) {
@@ -146,7 +98,7 @@ series_slice_reader::read(ores::database::context ctx,
                       " series; state the party so that it names one");
 
     const auto series_id = boost::uuids::to_string(series.front().id);
-    const auto declared = read_shape(ctx, series_id);
+    const auto declared = read_series_shape(ctx, series_id);
     if (declared.axes.empty())
         return refuse("the object declares no axis, so it is not a composite object");
     if (declared.axes.size() > max_axes)
@@ -187,9 +139,11 @@ series_slice_reader::read(ores::database::context ctx,
     response.coordinate_field = std::string(name_of(coordinate_axis));
     response.coordinates = declared.values.at(coordinate_axis);
 
-    // The instants the object holds in the range, each as it stood then.
-    const auto instants = repository::market_observation_repository{}.read_as_of_instants(
-        ctx, series.front().id, request.from_instant, request.to_instant, max_instants);
+    // The instants the object states in the range, each with its own points: a
+    // node the object does not state at an instant is a hole there, not a value
+    // carried forward.
+    const auto instants = repository::market_observation_repository{}.read_instants(
+        ctx, series.front().id, request.from_instant, request.to_instant, {}, max_instants);
 
     for (const auto& instant : instants) {
         messaging::series_slice_instant row;

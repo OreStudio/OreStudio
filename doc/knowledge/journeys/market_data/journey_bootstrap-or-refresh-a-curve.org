@@ -124,7 +124,7 @@ the only curve the data can hold is the one a republish writes.
 | Run the bootstrap | Bootstrap the curve and echo its points | =marketdata.v1.ops.compute_curve= | exists |
 | Refresh | Bootstrap again at a new as-of | =marketdata.v1.ops.compute_curve= | exists |
 | Read the health | Read per-pillar diagnostics | none | missing |
-| Read the evolution | Read the curve over buckets | =marketdata.v1.ops.get_curve_snapshot_buckets= | exists |
+| Read the evolution | Read the curve over a range | =marketdata.v1.ops.get_series_evolution= | exists |
 | Leave unpublished | Store the candidate | none | missing |
 | Publish later | Bootstrap and publish the output | =marketdata.v1.ops.republish_curve= | partial |
 | Publish later | Ask for the publish to be approved | =inbox.v1.ops.raise_approval= | partial |

@@ -2,21 +2,25 @@
 :ID: 4EE26B23-003B-4DF1-AA83-1196CC6810C3
 :END:
 #+title: Snapshots and cuts
-#+description: The stored-data as-of read, the bucketed curve evolution read and its bucket ceiling, and how both differ from the resolution-side market data snapshot.
+#+description: The stored-data as-of snapshot read, the composite object's slice and evolution reads over a range, their instant ceiling, and how all three differ from the resolution-side market data snapshot.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:storage:snapshot:cut:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-09
 
 * Summary
 
-Two read-only operations answer questions about observations that are
-already stored. =marketdata.v1.curve_snapshot.get= returns the latest value
-of every point of one series. =marketdata.v1.ops.get_curve_snapshot_buckets= returns
-the same kind of read repeated over a window of time, which is the cut. Both
-are served by =curve_snapshot_handler= in
-=projects/ores.marketdata/core/include/ores.marketdata.core/messaging/curve_snapshot_handler.hpp=.
+Three read-only operations answer questions about observations that are already
+stored. =marketdata.v1.curve_snapshot.get= returns the latest value of every
+point of one series, as of now. =marketdata.v1.ops.get_series_slice= returns one
+component of a composite object at each instant in a range.
+=marketdata.v1.ops.get_series_evolution= returns the whole object as a matrix of
+instants by nodes, with the change each node shows.
+
+The snapshot is served by =curve_snapshot_handler=, the slice by
+=series_slice_handler= and the evolution by =series_evolution_handler=, all in
+=projects/ores.marketdata/core/include/ores.marketdata.core/messaging/=.
 
 * Detail
 
@@ -28,7 +32,7 @@ series, which is
 The handler resolves the series id server side from that URI through
 =market_series_repository::read_latest_by_uri=, so a caller never handles an
 internal series id and never decomposes the key. It then calls
-=market_observation_repository::read_as_of= with the series id and the
+=market_observation_repository::read_as_of_records= with the series id and the
 service's current time, and returns one observation per point.
 
 A series that does not exist yet is not an error. A feed that has not
@@ -38,27 +42,50 @@ curve is a normal state and not a failure.
 The request comment states the limit directly. The as-of time is always now,
 and there is no parameter for an as-of instant in the past.
 
-** The cut
+** The slice and the evolution
 
-=get_curve_snapshot_buckets_request= carries the =oresmd_uri=, a
-=bucket_seconds= defaulting to 1800, and a =bucket_count= defaulting to 5.
-The handler calls =market_observation_repository::read_as_of_buckets=, which
-takes one latest boundary, a bucket size and a bucket count, and returns one
-vector of observations per bucket, ordered oldest to newest. A bucket with no
-observation at or before its boundary is an empty vector.
+Both name the object by the typed identity fields the resolver takes, so no
+caller builds an oresmd URI, and both take a range or a set of instants. A set
+the caller states replaces the range.
 
-When the series does not exist, the handler returns =bucket_count= empty
-buckets, so the response shape does not change with the data.
+=get_series_slice_request= adds the component: an axis and a value the shape
+declares. The answer holds the declared values of the other axis once, in the
+order the shape stores them, and one row per instant whose values are index for
+index with them. An object of one axis has one component, the whole object, and
+names no component field. An object of more than two axes is refused, because a
+term structure has one ladder.
 
-** The bucket ceiling
+=get_series_evolution_request= takes no component. The answer holds every
+combination of the declared axis values, with the last axis varying fastest, and
+one row per instant. Each node carries the change it shows over the range:
+=never_quoted= when no instant states it, =persistent= when every instant does,
+=added= when the last does and the first does not, =dropped= when the first does
+and the last does not, and =intermittent= otherwise.
 
-=max_bucket_count = 200= is declared in hard in
-=curve_snapshot_handler.hpp= as a server side ceiling, enforced whatever a
-caller allows. The handler rejects a request with a =bucket_count= of zero,
-above 200, or a =bucket_seconds= at or below zero, and answers with a bad
-request error rather than running the query. The reason is cost. An
-oversized bucket count buys a large =generate_series()= join and a matching
-result allocation.
+** An instant's points are the ones it states
+
+=market_observation_repository::read_instants= returns the points a series
+states at each instant, and not the ones it held by then. A point a later build
+does not state is absent from that build rather than carried forward from the
+last time it was stated. That is what lets a reader see a node a structure
+gained or lost, which is the shape change the slice and evolution reads exist to
+report.
+
+A reader that wants the object as it stood at an instant, assembled from
+whatever the last quote per coordinate was, asks
+=market_observation_repository::read_as_of_records= or =read_as_of_buckets=
+instead. The snapshot read above is the first of those. =read_as_of_buckets=
+remains the repository's as-of read over a uniform grid; the wire window that
+used it, =marketdata.v1.ops.get_curve_snapshot_buckets= with its fixed five
+half-hour buckets ending now, is gone.
+
+** The instant ceiling
+
+Both range reads declare =max_instants = 200= as a server side ceiling, enforced
+whatever a caller asks for. A range that holds more instants is refused, naming
+the ceiling, rather than truncated: a caller that asked for a quarter and
+silently received a day would read the answer as complete. The reason is cost.
+An oversized range buys a large join and a matching result allocation.
 
 ** How a malformed read is refused
 
@@ -82,16 +109,15 @@ word and nothing else.
 
 ** Facts the code shape does not show
 
-- Every read is taken at the service's own clock. The request structs carry
-  no as-of field and the handler passes =std::chrono::system_clock::now()=,
-  so a caller cannot ask for the store as it stood at a past instant.
-- The handler owns the series id lookup, so the two operations are the only
-  read path that needs no series registry knowledge from the client.
-- A rejected bucket request is an error reply and not a response with
-  =success = false=. The handler enforces the ceiling before it runs the
-  query, so the response's own message field is never used for a shape
-  mismatch.
-- Both requests declare =requires_session = true=, so a caller establishes
+- The snapshot is always taken at the service's own clock: its request carries
+  no as-of field and the handler passes =std::chrono::system_clock::now()=. The
+  slice and the evolution carry their range in the request, so both can ask for
+  the store as it stood at a past instant.
+- Each of the three reads owns its own permission check, all of them
+  =marketdata::curve_snapshots:read=, because they read the same data.
+- The handler owns the series id lookup, so the reads are the only read path
+  that needs no series registry knowledge from the client.
+- Every request declares =requires_session = true=, so a caller establishes
   a session first.
 
 * See also
@@ -99,8 +125,9 @@ word and nothing else.
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]], the resolution-side snapshot this note is not about.
-- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the two reads return rows from.
-- The handler is =curve_snapshot_handler= in
-  =projects/ores.marketdata/core/include/ores.marketdata.core/messaging/curve_snapshot_handler.hpp=.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the reads return rows from.
+- The handlers are =curve_snapshot_handler=, =series_slice_handler= and
+  =series_evolution_handler= in
+  =projects/ores.marketdata/core/include/ores.marketdata.core/messaging/=.
 - The row helpers are
   =projects/ores.marketdata/core/include/ores.marketdata.core/repository/as_of_rows.hpp=.

@@ -106,8 +106,6 @@ TEST_CASE("a_slice_returns_one_component_as_a_ladder_at_each_instant", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    // 2Y/ATM is stated once and carried forward, so the second instant shows it
-    // beside the 1Y value that moved.
     import(h,
            "20160210 FX_OPTION/RATE_LNVOL/NZD/USD/1Y/ATM 0.080\n"
            "20160210 FX_OPTION/RATE_LNVOL/NZD/USD/2Y/ATM 0.085\n"
@@ -131,10 +129,13 @@ TEST_CASE("a_slice_returns_one_component_as_a_ladder_at_each_instant", tags) {
     REQUIRE(resp.instants.size() == 3);
 
     CHECK(resp.instants[0].values == std::vector<std::string>{"0.080", "0.085"});
-    CHECK(resp.instants[1].values == std::vector<std::string>{"0.090", "0.085"});
-    // The third instant states no ATM point at all, so the ladder it carries
-    // forward is the one before it.
-    CHECK(resp.instants[2].values == std::vector<std::string>{"0.090", "0.085"});
+    // The second instant states only the 1Y at-the-money point, so the 2Y node is
+    // a hole there: the read reports what the object states at an instant and
+    // not what it last held.
+    CHECK(resp.instants[1].values == std::vector<std::string>{"0.090", ""});
+    // The third instant states no at-the-money point at all, so both nodes are
+    // holes and the instant is still a row.
+    CHECK(resp.instants[2].values == std::vector<std::string>{"", ""});
 }
 
 TEST_CASE("a_slice_names_a_node_the_shape_declares_and_no_point_fills_as_a_hole", tags) {

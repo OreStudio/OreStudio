@@ -8,7 +8,7 @@
 #+filetags: :the_audit_events_miss_the_sign_ins:sprint_27:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3022
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3022][#3022]] | [iam] Record the sign-in, and name the tenant, in the audit events |
 
 * Review
 

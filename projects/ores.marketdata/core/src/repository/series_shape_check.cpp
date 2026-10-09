@@ -31,6 +31,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace ores::marketdata::repository {
@@ -104,7 +105,13 @@ void series_shape_check::check(ores::database::context ctx,
             const auto field = datum::field_named(axis_field);
             if (!field || !point->holds(*field))
                 continue;
-            const auto text = datum::text_of(point->at(*field));
+            // A point that leaves the coordinate out states no value for it, so
+            // the shape has nothing to compare. Empty text a source did write is
+            // still a value, and is compared.
+            const auto& held = point->at(*field);
+            if (std::holds_alternative<datum::none_t>(held))
+                continue;
+            const auto text = datum::text_of(held);
             if (!values.contains(text))
                 throw std::invalid_argument("the shape of series " + id + " declares no value '" +
                                             text + "' for axis '" + axis_field + "'");

@@ -39,19 +39,29 @@ namespace ores::marketdata::domain {
  * the system writes and the codec stays the only thing that reads it; this table is
  * written from that parse, never read back to rebuild a URI.
  *
- * The column set is the identity fields ores.marketdata declares in its codec
- * schema, one column per field the schema marks field_role::identity, plus the
- * columns that say which kind of identity the row carries. A field the type's
- * schema row does not declare is empty, because the row holds only the columns its
- * own type fills. A column is text, not a typed relational form, because the codec
- * keeps every value as the key spelled it and a projection that reinterpreted it
- * would be a second spelling of the same identity.
+ * The column set is the identity fields the codec admits, one column per field
+ * the instrument schema marks field_role::identity, and one column per field the
+ * index grammar declares, because a fixing's whole ORE index name is its identity,
+ * plus the columns that say which kind of identity the row carries. A field the
+ * type's schema row, or the family's index row, does not declare is empty, because
+ * the row holds only the columns its own grammar fills. A column is text, not a
+ * typed relational form, because the codec keeps every value as the key spelled it
+ * and a projection that reinterpreted it would be a second spelling of the same
+ * identity.
  *
  * The table is a current state, not a history: the series row is already temporal
  * and the identity does not change under it, so one row per series is enough and
  * the primary key is the series. The column list is checked against the codec
  * schema by build/scripts/check_marketdata_identity_columns.py, so the two cannot
  * drift.
+ *
+ * The identity the decomposed columns spell is unique per party, as the series URI
+ * is. A fixing row states that at the table: a unique index over its context and
+ * its index-grammar columns, with nulls not distinct so an empty field counts as
+ * equal to an empty field, refuses two fixings that spell one identity. A series
+ * row cannot carry such an index, because its identity spans the whole instrument
+ * schema, more columns than an index may hold; the series table's own unique URI
+ * and the decomposition's injectivity are what keep it single.
  */
 struct market_series_identity final {
     /**
@@ -75,9 +85,10 @@ struct market_series_identity final {
     /**
      * @brief Which grammar named the series: series for a series URI, index for an index (fixing)
      * URI, unknown for a URI neither admits. A series row carries the instrument schema's identity
-     * fields and an index row the index grammar's, so a fixing is joinable on its currency, its
-     * index, its tenor and its asset class. An unknown row carries no field value, so nothing is
-     * invented for a URI the codec could not read.
+     * fields and an index row the index grammar's, so a fixing is joinable on every field its ORE
+     * index name carries: its currency, its index, its tenor, its FX source, its CMB family, its
+     * expiry and its delivery window, as well as its asset class. An unknown row carries no field
+     * value, so nothing is invented for a URI the codec could not read.
      */
     std::string identity_kind;
 
@@ -154,6 +165,28 @@ struct market_series_identity final {
     std::string day_counter;
 
     /**
+     * @brief The delivery date a power fixing names (POWER-NAME-YYYY-MM-DD), as the index grammar
+     * spells it, or empty when the identity is not a power fixing. ORE reads the date as part of
+     * the index name, so two power fixings that differ only in their delivery date are two series.
+     */
+    std::string delivery;
+
+    /**
+     * @brief The end of a power fixing's delivery window, in whole seconds from the start of the
+     * delivery day, as the index grammar spells it, or empty when the fixing names no window. The
+     * grammar name end is a PostgreSQL reserved word, so the column carries the window's name; the
+     * projector maps end onto it.
+     */
+    std::string delivery_end;
+
+    /**
+     * @brief The start of a power fixing's delivery window, in whole seconds from the start of the
+     * delivery day, as the index grammar spells it, or empty when the fixing names no window. The
+     * column is named delivery_start to pair with delivery_end.
+     */
+    std::string delivery_start;
+
+    /**
      * @brief The doc_clause field of the identity, as the URI spells it, or empty when the type's
      * schema row does not declare it.
      */
@@ -170,6 +203,20 @@ struct market_series_identity final {
      * schema row does not declare it.
      */
     std::string eq_name;
+
+    /**
+     * @brief The expiry a commodity or bond fixing names (COMM-NAME-YYYY-MM), as the index grammar
+     * spells it, or empty when the identity is not a dated fixing. ORE reads the date as part of
+     * the index name, so two fixings that differ only in their expiry are two series, not one
+     * series at two points.
+     */
+    std::string expiry;
+
+    /**
+     * @brief The family of a CMB fixing, the index grammar's subject (CMB-FAMILY-TENOR), as the URI
+     * spells it, or empty when the identity is not a CMB fixing.
+     */
+    std::string family;
 
     /**
      * @brief The fixed_ccy field of the identity, as the URI spells it, or empty when the type's
@@ -344,6 +391,13 @@ struct market_series_identity final {
      * row does not declare it.
      */
     std::string side;
+
+    /**
+     * @brief The source of an FX fixing (FX-SOURCE-CCY1-CCY2), as the index grammar spells it, or
+     * empty when the identity is not an FX fixing. Two FX fixings of one currency pair differ only
+     * in their source, so the column is what keeps them apart.
+     */
+    std::string source;
 
     /**
      * @brief The tenor field of the identity, as the URI spells it, or empty when the type's schema

@@ -6,13 +6,14 @@ declares. The schema is the source of truth and the table is written by hand,
 so the two can drift with nothing failing. This check closes that gap:
 
 - The create table statement must carry exactly the identity fields the schema
-  marks as identity, plus the columns that say which kind of identity the row
-  is.
+  marks as identity, the columns the index grammar's fields land in, plus the
+  columns that say which kind of identity the row is.
 - The projector's switch must place every field the schema declares: an
   identity field writes its own column, a coordinate field writes nothing.
-- The projector must account for every name the index grammar declares, placing
-  it in a column or listing it among the names the projection has no column
-  for, so a fixing's field cannot be dropped without a word.
+- The projector must place every name the index grammar declares, and each name
+  must land in a real column. Every index name is part of a fixing's identity,
+  because ORE writes it into the index name, so a name the projector does not
+  place cannot be dropped without a failure.
 
 Run it bare. A finding is a mismatch, and the message names the column and the
 direction each way.
@@ -70,11 +71,9 @@ INDEX_FIELD_ARRAY = re.compile(
     r"inline constexpr std::array<index_field_spec, \d+> (\w+)\{(.*?)\};", re.S
 )
 INDEX_FIELD_NAME = re.compile(r"\{\"(\w+)\",\s*(?:true|false)\}")
-# The projector places an index field with a name comparison, and lists the
-# names it leaves unprojected in one array.
-INDEX_PLACED = re.compile(r'name == "(\w+)"')
-UNPROJECTED_ARRAY = re.compile(r"unprojected_index_names\{(.*?)\};", re.S)
-UNPROJECTED_NAME = re.compile(r'"(\w+)"')
+# The projector places an index name with a comparison on the name and an
+# assignment of its text to the column that holds it.
+INDEX_PLACEMENT = re.compile(r'name == "(\w+)"\)\s*\n\s*row\.(\w+) = text;')
 
 # The entity's schema identifier, which the field's own name must not be:
 # a field called table would collide with the statement's own words otherwise.
@@ -245,8 +244,8 @@ def index_grammar_names() -> set[str]:
     return names
 
 
-def projector_index_mapping() -> tuple[set[str], set[str]]:
-    """(placed, unprojected): the index names the projector accounts for."""
+def projector_index_mapping() -> dict[str, str]:
+    """name -> the projection column the projector writes it into."""
     text = PROJECTOR.read_text()
     if "void assign_index(" not in text:
         raise SystemExit(
@@ -255,29 +254,35 @@ def projector_index_mapping() -> tuple[set[str], set[str]]:
         )
     body = text[text.index("void assign_index(") :]
     body = body[: body.index("\n}\n")]
-    placed = set(INDEX_PLACED.findall(body))
-    listed = UNPROJECTED_ARRAY.search(text)
-    unprojected = set(UNPROJECTED_NAME.findall(listed.group(1))) if listed else set()
-    if not placed or not unprojected:
+    placed = dict(INDEX_PLACEMENT.findall(body))
+    if not placed:
         raise SystemExit(
             f"FAIL: {PROJECTOR.relative_to(REPO_ROOT)} no longer names the index mapping in "
             "the shape this check reads."
         )
-    return placed, unprojected
+    return placed
 
 
 def main() -> int:
     identity, coordinate, every = schema_fields()
     problems: list[str] = []
 
-    # 1. The table's columns are exactly the context columns and the identity
-    #    fields, and nothing else.
+    index_names = index_grammar_names()
+    index_placed = projector_index_mapping()
+    index_columns = set(index_placed.values())
+
+    # 1. The table's columns are exactly the context columns, the schema's
+    #    identity fields and the columns the index grammar's fields land in,
+    #    and nothing else.
     columns = table_columns()
-    expected = set(CONTEXT_COLUMNS) | identity
+    expected = set(CONTEXT_COLUMNS) | identity | index_columns
     for missing in sorted(expected - columns):
         problems.append(f"{CREATE_TABLE} has no column '{missing}'.")
     for extra in sorted(columns - expected):
-        problems.append(f"{CREATE_TABLE} has column '{extra}', which is not an identity field.")
+        problems.append(
+            f"{CREATE_TABLE} has column '{extra}', which is neither a context column, "
+            "nor an identity field, nor an index field."
+        )
 
     # 2. The projector places every field, and places each one correctly.
     placed = projector_switch()
@@ -331,28 +336,27 @@ def main() -> int:
                 "series are missing from it."
             )
 
-    # 4. The projector accounts for every name the index grammar declares: it
-    #    places the name in a column, or lists it as one the projection has no
-    #    column for. A fixing is projected from that grammar, so a name neither
-    #    placed nor listed would be dropped without a word.
-    index_names = index_grammar_names()
-    index_placed, index_unprojected = projector_index_mapping()
-    for both in sorted(index_placed & index_unprojected):
-        problems.append(f"the projector both places index name '{both}' and lists it unprojected.")
-    for missing in sorted(index_names - index_placed - index_unprojected):
+    # 4. The projector places every name the index grammar declares, and places
+    #    it in a real column. Every index name is part of a fixing's identity,
+    #    because ORE writes it into the index name, so a name with no column
+    #    would let two fixings project alike. A name the projector places that
+    #    no family declares is the same failure the other way: the mapping and
+    #    the grammar have parted company.
+    for missing in sorted(index_names - set(index_placed)):
         problems.append(
-            f"the projector names no column and no reason for index name '{missing}', "
+            f"the projector places no column for index name '{missing}', "
             "which an index family declares."
         )
-    for extra in sorted(index_placed - index_names):
+    for extra in sorted(set(index_placed) - index_names):
         problems.append(
             f"the projector places index name '{extra}', which no index family declares."
         )
-    for extra in sorted(index_unprojected - index_names):
-        problems.append(
-            f"the projector lists index name '{extra}' as unprojected, which no index "
-            "family declares."
-        )
+    for name, column in sorted(index_placed.items()):
+        if column not in columns:
+            problems.append(
+                f"the projector places index name '{name}' in column '{column}', "
+                f"which {CREATE_TABLE} does not have."
+            )
 
     if problems:
         return fail(problems)

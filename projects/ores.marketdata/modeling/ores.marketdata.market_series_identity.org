@@ -18,19 +18,29 @@ join on the series and filter on a real column. The URI stays the only spelling
 the system writes and the codec stays the only thing that reads it; this table is
 written from that parse, never read back to rebuild a URI.
 
-The column set is the identity fields =ores.marketdata= declares in its codec
-schema, one column per =field= the schema marks =field_role::identity=, plus the
-columns that say which kind of identity the row carries. A field the type's
-schema row does not declare is empty, because the row holds only the columns its
-own type fills. A column is text, not a typed relational form, because the codec
-keeps every value as the key spelled it and a projection that reinterpreted it
-would be a second spelling of the same identity.
+The column set is the identity fields the codec admits, one column per =field=
+the instrument schema marks =field_role::identity=, and one column per field the
+index grammar declares, because a fixing's whole ORE index name is its identity,
+plus the columns that say which kind of identity the row carries. A field the
+type's schema row, or the family's index row, does not declare is empty, because
+the row holds only the columns its own grammar fills. A column is text, not a
+typed relational form, because the codec keeps every value as the key spelled it
+and a projection that reinterpreted it would be a second spelling of the same
+identity.
 
 The table is a current state, not a history: the series row is already temporal
 and the identity does not change under it, so one row per series is enough and
 the primary key is the series. The column list is checked against the codec
 schema by =build/scripts/check_marketdata_identity_columns.py=, so the two cannot
 drift.
+
+The identity the decomposed columns spell is unique per party, as the series URI
+is. A fixing row states that at the table: a unique index over its context and
+its index-grammar columns, with =nulls not distinct= so an empty field counts as
+equal to an empty field, refuses two fixings that spell one identity. A series
+row cannot carry such an index, because its identity spans the whole instrument
+schema, more columns than an index may hold; the series table's own unique URI
+and the decomposition's injectivity are what keep it single.
 
 * Flags
 :PROPERTIES:
@@ -73,9 +83,10 @@ series table.
 Which grammar named the series: =series= for a series URI, =index= for an index
 (fixing) URI, =unknown= for a URI neither admits. A =series= row carries the
 instrument schema's identity fields and an =index= row the index grammar's, so
-a fixing is joinable on its currency, its index, its tenor and its asset class.
-An =unknown= row carries no field value, so nothing is invented for a URI the
-codec could not read.
+a fixing is joinable on every field its ORE index name carries: its currency, its
+index, its tenor, its FX source, its CMB family, its expiry and its delivery
+window, as well as its asset class. An =unknown= row carries no field value, so
+nothing is invented for a URI the codec could not read.
 
 ** asset_class
 :PROPERTIES:
@@ -197,6 +208,41 @@ schema row does not declare it.
 The =day_counter= field of the identity, as the URI spells it, or empty when the type's
 schema row does not declare it.
 
+** delivery
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =delivery= date a power fixing names (=POWER-NAME-YYYY-MM-DD=), as the index
+grammar spells it, or empty when the identity is not a power fixing. ORE reads the
+date as part of the index name, so two power fixings that differ only in their
+delivery date are two series.
+
+** delivery_end
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =end= of a power fixing's delivery window, in whole seconds from the start of
+the delivery day, as the index grammar spells it, or empty when the fixing names no
+window. The grammar name =end= is a PostgreSQL reserved word, so the column carries
+the window's name; the projector maps =end= onto it.
+
+** delivery_start
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =start= of a power fixing's delivery window, in whole seconds from the start of
+the delivery day, as the index grammar spells it, or empty when the fixing names no
+window. The column is named =delivery_start= to pair with =delivery_end=.
+
 ** doc_clause
 :PROPERTIES:
 :type:     text
@@ -226,6 +272,28 @@ schema row does not declare it.
 
 The =eq_name= field of the identity, as the URI spells it, or empty when the type's
 schema row does not declare it.
+
+** expiry
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =expiry= a commodity or bond fixing names (=COMM-NAME-YYYY-MM=), as the index
+grammar spells it, or empty when the identity is not a dated fixing. ORE reads the
+date as part of the index name, so two fixings that differ only in their expiry are
+two series, not one series at two points.
+
+** family
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =family= of a CMB fixing, the index grammar's subject (=CMB-FAMILY-TENOR=), as
+the URI spells it, or empty when the identity is not a CMB fixing.
 
 ** fixed_ccy
 :PROPERTIES:
@@ -514,6 +582,17 @@ schema row does not declare it.
 The =side= field of the identity, as the URI spells it, or empty when the type's
 schema row does not declare it.
 
+** source
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =source= of an FX fixing (=FX-SOURCE-CCY1-CCY2=), as the index grammar spells
+it, or empty when the identity is not an FX fixing. Two FX fixings of one currency
+pair differ only in their source, so the column is what keeps them apart.
+
 ** tenor
 :PROPERTIES:
 :type:     text
@@ -596,18 +675,29 @@ would be a second copy of something the series table already says.
 
 ** Indexes
 
-| name       | columns                    | unique | current_only | where_extra          |
-|------------+----------------------------+--------+--------------+----------------------|
-| instrument | tenant_id, instrument_type | false  | false        |                      |
-| party      | tenant_id, party_id        | false  | false        |                      |
-| ccy        | tenant_id, ccy             | false  | false        | ccy is not null      |
-| unit_ccy   | tenant_id, unit_ccy        | false  | false        | unit_ccy is not null |
+| name        | columns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | unique | current_only | where_extra                | nulls_not_distinct |
+|-------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------+--------------+----------------------------+--------------------|
+| instrument  | tenant_id, instrument_type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | false  | false        |                            | false              |
+| party       | tenant_id, party_id                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | false  | false        |                            | false              |
+| ccy         | tenant_id, ccy                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | false  | false        | ccy is not null            | false              |
+| unit_ccy    | tenant_id, unit_ccy                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | false  | false        | unit_ccy is not null       | false              |
+| fixing_identity | tenant_id, party_id, asset_class, index, ccy, index_name, tenor, quote_tag, unit_ccy, security_id, contract, source, family, expiry, delivery, delivery_start, delivery_end | true   | false        | identity_kind = 'index'    | true               |
 
 A filter starts with the instrument type, because the asset class alone selects
 most of a class's series and the planner will not use an index it would then have
 to walk. The two currency columns are indexed because a currency pair is the
 scope most callers name, and each sits on a different field: the unit currency is
 the path of an FX identity and the currency is a query key of it.
+
+The =fixing_identity= index states the identity a fixing's decomposition spells:
+a party holds one fixing per ORE index name, so two rows cannot carry the same
+identity. It spans the fixing's context and every index-grammar column, and
+=nulls not distinct= makes an empty field equal to an empty field, because most
+of those columns are empty for any one fixing and a plain unique index would
+treat the rows as distinct. A series row cannot carry one: its identity spans the
+whole instrument schema, more columns than PostgreSQL lets an index hold, so the
+series table's own unique URI is its authority. The index names no =unknown= row,
+which carries no identity at all.
 
 * Physical space
 

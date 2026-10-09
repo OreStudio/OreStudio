@@ -232,13 +232,14 @@ TEST_CASE("two_parties_may_each_hold_one_identity", tags) {
 // projection reads it through the index codec rather than the instrument
 // schema, and its identity fields come from the index grammar.
 ores::marketdata::domain::market_series make_fixing_test_series(database_helper& h,
-                                                               const boost::uuids::uuid& party) {
+                                                                const boost::uuids::uuid& party,
+                                                                const std::string& uri) {
     ores::marketdata::domain::market_series s;
     s.id = boost::uuids::random_generator{}();
     s.version = 0;
     s.tenant_id = h.tenant_id();
     s.party_id = party;
-    s.oresmd_uri = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M";
+    s.oresmd_uri = uri;
     s.series_subclass = "yield";
     s.derivation_kind = "OBSERVED";
     s.derivation_config_id = boost::uuids::nil_uuid();
@@ -257,7 +258,10 @@ TEST_CASE("a_fixing_series_projects_its_identity_fields", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     market_series_repository repo;
-    const auto s = make_fixing_test_series(h, boost::uuids::random_generator{}());
+    const auto s =
+        make_fixing_test_series(h,
+                                boost::uuids::random_generator{}(),
+                                "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M");
     repo.write(h.context(), s);
 
     ores::marketdata::repository::market_series_identity_repository identities;
@@ -284,7 +288,10 @@ TEST_CASE("reprojecting_repairs_a_fixing_row_and_changes_nothing_after", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     market_series_repository repo;
-    const auto s = make_fixing_test_series(h, boost::uuids::random_generator{}());
+    const auto s =
+        make_fixing_test_series(h,
+                                boost::uuids::random_generator{}(),
+                                "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M");
     repo.write(h.context(), s);
 
     // A row an earlier projector wrote: the kind and the asset class and no
@@ -316,4 +323,200 @@ TEST_CASE("reprojecting_repairs_a_fixing_row_and_changes_nothing_after", tags) {
     CHECK(rows[0].index == "ibor");
     CHECK(rows[0].index_name == "EURIBOR");
     CHECK(rows[0].tenor == "6M");
+}
+
+TEST_CASE("an_fx_fixing_projects_its_source", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    const auto s =
+        make_fixing_test_series(h,
+                                boost::uuids::random_generator{}(),
+                                "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=GBP");
+    market_series_repository{}.write(h.context(), s);
+
+    const auto rows = ores::marketdata::repository::market_series_identity_repository{}.read_latest(
+        h.context(), boost::uuids::to_string(s.id));
+    REQUIRE(rows.size() == 1);
+    CHECK(rows[0].identity_kind == "index");
+    CHECK(rows[0].asset_class == "fx");
+    CHECK(rows[0].index == "fx");
+    CHECK(rows[0].unit_ccy == "EUR");
+    CHECK(rows[0].ccy == "GBP");
+    CHECK(rows[0].source == "ECB");
+}
+
+TEST_CASE("two_fx_fixings_that_differ_only_in_source_project_apart", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    const auto party = boost::uuids::random_generator{}();
+
+    market_series_repository repo;
+    const auto ecb = make_fixing_test_series(
+        h, party, "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=GBP");
+    const auto tr20h = make_fixing_test_series(
+        h, party, "oresmd://fx/EUR?type=fixing&index=fx&source=TR20H&ccy=GBP");
+    repo.write(h.context(), ecb);
+    repo.write(h.context(), tr20h);
+
+    ores::marketdata::repository::market_series_identity_repository identities;
+    const auto a = identities.read_latest(h.context(), boost::uuids::to_string(ecb.id));
+    const auto b = identities.read_latest(h.context(), boost::uuids::to_string(tr20h.id));
+    REQUIRE(a.size() == 1);
+    REQUIRE(b.size() == 1);
+
+    // The two identities are equal but for the source, so before the source had
+    // a column they projected alike and a join on the shared columns matched
+    // both. The source is what tells them apart.
+    CHECK(a[0].unit_ccy == b[0].unit_ccy);
+    CHECK(a[0].ccy == b[0].ccy);
+    CHECK(a[0].index == b[0].index);
+    CHECK(a[0].asset_class == b[0].asset_class);
+    CHECK(a[0].source == "ECB");
+    CHECK(b[0].source == "TR20H");
+}
+
+TEST_CASE("a_dated_fixing_projects_its_expiry", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    const auto party = boost::uuids::random_generator{}();
+
+    market_series_repository repo;
+    const auto december = make_fixing_test_series(
+        h, party, "oresmd://commodity/ICE:B?type=fixing&index=commodity&expiry=2024-12");
+    const auto january = make_fixing_test_series(
+        h, party, "oresmd://commodity/ICE:B?type=fixing&index=commodity&expiry=2025-01");
+    repo.write(h.context(), december);
+    repo.write(h.context(), january);
+
+    ores::marketdata::repository::market_series_identity_repository identities;
+    const auto a = identities.read_latest(h.context(), boost::uuids::to_string(december.id));
+    const auto b = identities.read_latest(h.context(), boost::uuids::to_string(january.id));
+    REQUIRE(a.size() == 1);
+    REQUIRE(b.size() == 1);
+
+    // ORE reads the date into the index name, so the two contracts are two
+    // series. Without the expiry column they projected to one identity.
+    CHECK(a[0].index_name == "ICE:B");
+    CHECK(b[0].index_name == "ICE:B");
+    CHECK(a[0].expiry == "2024-12");
+    CHECK(b[0].expiry == "2025-01");
+}
+
+TEST_CASE("a_power_fixing_projects_its_delivery_window", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    const auto s = make_fixing_test_series(
+        h,
+        boost::uuids::random_generator{}(),
+        "oresmd://commodity/"
+        "ICE:PDQ?type=fixing&index=power&delivery=2021-01-01&start=10800&end=14400");
+    market_series_repository{}.write(h.context(), s);
+
+    const auto rows = ores::marketdata::repository::market_series_identity_repository{}.read_latest(
+        h.context(), boost::uuids::to_string(s.id));
+    REQUIRE(rows.size() == 1);
+    CHECK(rows[0].index == "power");
+    CHECK(rows[0].index_name == "ICE:PDQ");
+    CHECK(rows[0].delivery == "2021-01-01");
+    CHECK(rows[0].delivery_start == "10800");
+    CHECK(rows[0].delivery_end == "14400");
+}
+
+TEST_CASE("a_cmb_fixing_projects_its_family", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    const auto s =
+        make_fixing_test_series(h,
+                                boost::uuids::random_generator{}(),
+                                "oresmd://security/GOVT?type=fixing&index=cmb&tenor=10Y");
+    market_series_repository{}.write(h.context(), s);
+
+    const auto rows = ores::marketdata::repository::market_series_identity_repository{}.read_latest(
+        h.context(), boost::uuids::to_string(s.id));
+    REQUIRE(rows.size() == 1);
+    CHECK(rows[0].index == "cmb");
+    CHECK(rows[0].family == "GOVT");
+    CHECK(rows[0].tenor == "10Y");
+}
+
+TEST_CASE("two_market_series_identities_cannot_spell_one_identity", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    ores::marketdata::domain::market_series_identity first;
+    first.tenant_id = h.tenant_id();
+    first.series_id = boost::uuids::random_generator{}();
+    first.party_id = boost::uuids::random_generator{}();
+    first.identity_kind = "index";
+    first.asset_class = "fx";
+    first.index = "fx";
+    first.unit_ccy = "EUR";
+    first.ccy = "GBP";
+    first.source = "ECB";
+
+    ores::marketdata::repository::market_series_identity_repository repo;
+    repo.write(h.context(), first);
+
+    // The same identity spelled by another series: the natural key refuses it,
+    // so a join on the decomposed columns can never match two rows.
+    auto second = first;
+    second.series_id = boost::uuids::random_generator{}();
+    CHECK_THROWS(repo.write(h.context(), second));
+}
+
+TEST_CASE("reprojecting_fills_a_new_column_an_earlier_projection_left_empty", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository repo;
+    const auto s =
+        make_fixing_test_series(h,
+                                boost::uuids::random_generator{}(),
+                                "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=GBP");
+    repo.write(h.context(), s);
+
+    // The row an earlier projector wrote: every field that had a column then,
+    // and nothing for the source, which had none.
+    ores::marketdata::domain::market_series_identity stale;
+    stale.tenant_id = h.tenant_id();
+    stale.series_id = s.id;
+    stale.party_id = s.party_id;
+    stale.identity_kind = "index";
+    stale.asset_class = "fx";
+    stale.index = "fx";
+    stale.unit_ccy = "EUR";
+    stale.ccy = "GBP";
+    ores::marketdata::repository::market_series_identity_repository{}.write(h.context(), stale);
+
+    const auto first =
+        ores::marketdata::repository::market_series_identity_projector::reproject(h.context(), {s});
+    CHECK(first.written == 1);
+    CHECK(first.unchanged == 0);
+
+    const auto rows = ores::marketdata::repository::market_series_identity_repository{}.read_latest(
+        h.context(), boost::uuids::to_string(s.id));
+    REQUIRE(rows.size() == 1);
+    CHECK(rows[0].source == "ECB");
+
+    const auto second =
+        ores::marketdata::repository::market_series_identity_projector::reproject(h.context(), {s});
+    CHECK(second.written == 0);
+    CHECK(second.unchanged == 1);
 }

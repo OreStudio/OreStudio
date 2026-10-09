@@ -58,9 +58,14 @@ struct market_series_identity_entity {
     std::optional<std::string> contract_name;
     std::optional<std::string> curve_id;
     std::optional<std::string> day_counter;
+    std::optional<std::string> delivery;
+    std::optional<std::string> delivery_end;
+    std::optional<std::string> delivery_start;
     std::optional<std::string> doc_clause;
     std::optional<std::string> dst;
     std::optional<std::string> eq_name;
+    std::optional<std::string> expiry;
+    std::optional<std::string> family;
     std::optional<std::string> fixed_ccy;
     std::optional<std::string> fixed_tenor;
     std::optional<std::string> flat_ccy;
@@ -89,6 +94,7 @@ struct market_series_identity_entity {
     std::optional<std::string> security_id;
     std::optional<std::string> seniority;
     std::optional<std::string> side;
+    std::optional<std::string> source;
     std::optional<std::string> tenor;
     std::optional<std::string> term;
     std::optional<std::string> time_unit;

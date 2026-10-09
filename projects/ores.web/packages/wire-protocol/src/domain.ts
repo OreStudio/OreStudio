@@ -434,6 +434,47 @@ export const sessionPageSchema = z.object({
 export type SessionPage = z.infer<typeof sessionPageSchema>;
 
 /**
+ * One authentication event, as the log records it.
+ *
+ * The account and the session are text rather than identifiers, because a
+ * failed login has neither: the server records the username it was tried for
+ * and no account. The time is the storage form, an ISO 8601 string, read as
+ * text rather than as an instant.
+ */
+export const authEventSchema = z.object({
+    id: z.string(),
+    eventTime: z.string(),
+    accountId: z.string(),
+    eventType: z.string(),
+    username: z.string(),
+    sessionId: z.string(),
+    partyId: z.string(),
+    errorDetail: z.string(),
+});
+
+export type AuthEvent = z.infer<typeof authEventSchema>;
+
+/**
+ * One day's session statistics, for one account.
+ *
+ * The duration is in seconds and the byte counts are totals over the day's
+ * ended sessions. A day with no ended sessions has no row.
+ */
+export const sessionStatisticsSchema = z.object({
+    day: z.string(),
+    accountId: z.string(),
+    sessionCount: z.int().nonnegative(),
+    avgDurationSeconds: z.number(),
+    totalBytesSent: z.int().nonnegative(),
+    totalBytesReceived: z.int().nonnegative(),
+    avgBytesSent: z.number(),
+    avgBytesReceived: z.number(),
+    uniqueCountries: z.int().nonnegative(),
+});
+
+export type SessionStatisticsRow = z.infer<typeof sessionStatisticsSchema>;
+
+/**
  * The live session's selected party, as the handover carries it.
  *
  * The account and tenant identifiers travel alongside the party because the

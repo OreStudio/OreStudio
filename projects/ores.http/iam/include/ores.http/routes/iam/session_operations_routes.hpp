@@ -78,6 +78,13 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_active_sessions(const ores::http::domain::http_request& req,
                                ores::nats::service::nats_client& session);
+
+    /**
+     * @brief POST /api/v1/iam/ops/end_session — End session.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_end_session(const ores::http::domain::http_request& req,
+                       ores::nats::service::nats_client& session);
 };
 
 }

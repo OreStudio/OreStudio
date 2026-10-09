@@ -72,13 +72,14 @@ TEST_CASE("session_operations_routes_registers_every_declared_operation", tags) 
     const auto table = registered_routes(session);
     const auto& routes = table->routes();
 
-    REQUIRE(routes.size() == 1);
+    REQUIRE(routes.size() == 2);
 
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
              expected_route{
                  http_method::post, std::string{"/api/v1/iam/ops/get_active_sessions"}, true},
+             expected_route{http_method::post, std::string{"/api/v1/iam/ops/end_session"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -86,7 +87,7 @@ TEST_CASE("session_operations_routes_registers_every_declared_operation", tags) 
         CHECK(found != routes.end());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 1 route(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 2 route(s).";
 }
 
 TEST_CASE("session_operations_routes_requires_a_session_where_the_message_does", tags) {
@@ -102,6 +103,7 @@ TEST_CASE("session_operations_routes_requires_a_session_where_the_message_does",
     for (const auto& expected : {
              expected_route{
                  http_method::post, std::string{"/api/v1/iam/ops/get_active_sessions"}, true},
+             expected_route{http_method::post, std::string{"/api/v1/iam/ops/end_session"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -113,5 +115,5 @@ TEST_CASE("session_operations_routes_requires_a_session_where_the_message_does",
         CHECK(found->auth_declared);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 1 route(s).";
+    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 2 route(s).";
 }

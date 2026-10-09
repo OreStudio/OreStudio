@@ -25,6 +25,9 @@
 #include "ores.shell/app/commands/iam/account_party_commands.hpp"
 #include "ores.shell/app/commands/iam/account_status_commands.hpp"
 #include "ores.shell/app/commands/iam/account_type_commands.hpp"
+#include "ores.shell/app/commands/iam/auth_event_operations_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/geo_operations_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/session_statistics_operations_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/authorization_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/bootstrap_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/login_info_commands.hpp"
@@ -65,6 +68,9 @@ void iam_commands::register_commands(cli::Menu& root_menu,
     account_commands::register_commands(root_menu, session);
     account_credential_commands::register_commands(root_menu, session);
     account_operations_operations_commands::register_commands(root_menu, session);
+    auth_event_operations_operations_commands::register_commands(root_menu, session);
+    geo_operations_operations_commands::register_commands(root_menu, session);
+    session_statistics_operations_operations_commands::register_commands(root_menu, session);
     authorization_operations_commands::register_commands(root_menu, session);
     session_operations_operations_commands::register_commands(root_menu, session);
     session_samples_operations_commands::register_commands(root_menu, session);

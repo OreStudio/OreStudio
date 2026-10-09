@@ -22,19 +22,43 @@
 import type { AuthenticatedCaller } from './account-operations.js';
 import { ACCOUNT_SUBJECTS, setAccountsLocked } from './account-operations.js';
 import { OperationFailedError } from './errors.js';
-import type { Account, AccountSignIns, LoginInfo } from './domain.js';
+import type {
+    Account,
+    AccountSignIns,
+    AuthEvent,
+    LoginInfo,
+    SessionStatisticsRow,
+} from './domain.js';
 import { subjects as loginInfoSubjects } from './generated/iam/protocol/login_info_protocol.js';
+import {
+    subjects as authEventSubjects,
+    type ListAuthEventsRequest as GeneratedListAuthEventsRequest,
+} from './generated/iam/protocol/auth_event_operations_protocol.js';
+import {
+    subjects as sessionStatisticsSubjects,
+    type GetSessionStatisticsRequest as GeneratedGetSessionStatisticsRequest,
+} from './generated/iam/protocol/session_statistics_operations_protocol.js';
 import {
     subjects as sessionSubjects,
     type ListSessionsRequest as GeneratedListSessionsRequest,
 } from './generated/iam/protocol/session_protocol.js';
-import { subjects as sessionOperationSubjects } from './generated/iam/protocol/session_operations_protocol.js';
+import {
+    subjects as sessionOperationSubjects,
+    type EndSessionRequest as GeneratedEndSessionRequest,
+} from './generated/iam/protocol/session_operations_protocol.js';
+import {
+    subjects as geoOperationSubjects,
+    type LookupCountryRequest as GeneratedLookupCountryRequest,
+} from './generated/iam/protocol/geo_operations_protocol.js';
 import {
     SUBJECTS,
     accountPageSchema,
     accountReplySchema,
     accountUsernameRequestSchema,
     activeSessionsReplySchema,
+    authEventListSchema,
+    endSessionReplySchema,
+    lookupCountryReplySchema,
     listAccountsRequestSchema,
     listLoginInfoRequestSchema,
     listSessionsRequestSchema,
@@ -42,10 +66,13 @@ import {
     loginInfoPageSchema,
     loginInfoReplySchema,
     sessionPageSchema,
+    sessionStatisticsListSchema,
     type WireAccountPage,
     type WireActiveSessions,
+    type WireAuthEventList,
     type WireLoginInfoPage,
     type WireSessionPage,
+    type WireSessionStatisticsList,
 } from './operations.js';
 
 /**
@@ -67,7 +94,28 @@ export const CREDENTIAL_SUBJECTS = {
     getLoginInfo: loginInfoSubjects.get_login_info_request,
     listSessions: sessionSubjects.list_sessions_request,
     activeSessions: sessionOperationSubjects.get_active_sessions_request,
+    listAuthEvents: authEventSubjects.list_auth_events_request,
+    sessionStatistics: sessionStatisticsSubjects.get_session_statistics_request,
+    endSession: sessionOperationSubjects.end_session_request,
+    lookupCountry: geoOperationSubjects.lookup_country_request,
 } as const;
+
+/**
+ * The window and page every audit read takes.
+ *
+ * An empty account or time means the filter is off rather than a value to
+ * match, which is the wire's own rule: each empty field is skipped by the
+ * read. The period is an instant computed by the BFF from the deployment's
+ * clock, so the browser never states a window the deployment did not measure.
+ */
+export interface AuditWindow {
+    readonly accountId?: string;
+    readonly eventType?: string;
+    readonly fromTime?: string;
+    readonly toTime?: string;
+    readonly offset?: number;
+    readonly limit?: number;
+}
 
 /** The page of accounts the caller may see. */
 export async function readAccountsPage(
@@ -178,9 +226,9 @@ export async function readSessionsPage(
 /**
  * The sessions with no end time.
  *
- * The handler behind this subject answers `{success: true}` and no rows today,
- * so an empty list is the server's answer and not a failure. The screen states
- * that the read is a stub rather than pretending the tenant has no sessions.
+ * The handler behind this subject reads the sessions whose end time is empty,
+ * so an empty list is the tenant's answer and not a failure: no session is
+ * open.
  */
 export async function readActiveSessions(caller: AuthenticatedCaller): Promise<WireActiveSessions> {
     return caller.callAuthenticated(
@@ -188,6 +236,103 @@ export async function readActiveSessions(caller: AuthenticatedCaller): Promise<W
         {},
         activeSessionsReplySchema,
     );
+}
+
+/**
+ * The authentication events the caller may see, newest first.
+ *
+ * The empty fields are the filter turned off, which is the read's own rule.
+ * The window is start-inclusive and end-exclusive, so adjacent windows tile
+ * without an event landing in two of them.
+ */
+export async function readAuthEvents(
+    caller: AuthenticatedCaller,
+    window: AuditWindow = {},
+): Promise<readonly AuthEvent[]> {
+    const request: GeneratedListAuthEventsRequest = {
+        account_id: window.accountId ?? '',
+        event_type: window.eventType ?? '',
+        from_time: window.fromTime ?? '',
+        to_time: window.toTime ?? '',
+        offset: window.offset ?? 0,
+        limit: window.limit ?? 100,
+    };
+    const answer: WireAuthEventList = await caller.callAuthenticated(
+        CREDENTIAL_SUBJECTS.listAuthEvents,
+        request,
+        authEventListSchema,
+    );
+    return answer.events;
+}
+
+/** The session statistics the caller may see, newest day first. */
+export async function readSessionStatistics(
+    caller: AuthenticatedCaller,
+    window: AuditWindow = {},
+): Promise<readonly SessionStatisticsRow[]> {
+    const request: GeneratedGetSessionStatisticsRequest = {
+        account_id: window.accountId ?? '',
+        from_time: window.fromTime ?? '',
+        to_time: window.toTime ?? '',
+        offset: window.offset ?? 0,
+        limit: window.limit ?? 100,
+    };
+    const answer: WireSessionStatisticsList = await caller.callAuthenticated(
+        CREDENTIAL_SUBJECTS.sessionStatistics,
+        request,
+        sessionStatisticsListSchema,
+    );
+    return answer.rows;
+}
+
+/**
+ * Ends one session of the caller's tenant.
+ *
+ * The tenant scope is the caller's own, so a session of another tenant is not
+ * there to end. The handler states a refusal in the body rather than as a
+ * failed call, so the answer is read and a refusal is thrown as the failure it
+ * is.
+ */
+export async function endSession(caller: AuthenticatedCaller, sessionId: string): Promise<void> {
+    const request: GeneratedEndSessionRequest = { session_id: sessionId };
+    const answer = await caller.callAuthenticated(
+        CREDENTIAL_SUBJECTS.endSession,
+        request,
+        endSessionReplySchema,
+    );
+    if (!answer.success) {
+        throw new OperationFailedError(
+            CREDENTIAL_SUBJECTS.endSession,
+            answer.message.length > 0 ? answer.message : 'The server refused to end the session.',
+        );
+    }
+}
+
+/**
+ * Resolves one address to the country it came from.
+ *
+ * The search is the caller's tenant's published ranges, so an address they do
+ * not cover is not found. Not found is an answer rather than a failure: a
+ * private address never resolves, and a caller that treated it as an error
+ * would have to invent a country.
+ */
+export async function lookupCountry(
+    caller: AuthenticatedCaller,
+    address: string,
+): Promise<string | undefined> {
+    const request: GeneratedLookupCountryRequest = { address };
+    const answer = await caller.callAuthenticated(
+        CREDENTIAL_SUBJECTS.lookupCountry,
+        request,
+        lookupCountryReplySchema,
+    );
+    if (!answer.success) {
+        throw new OperationFailedError(
+            CREDENTIAL_SUBJECTS.lookupCountry,
+            answer.message.length > 0 ? answer.message : 'The country lookup failed.',
+        );
+    }
+    return answer.found ? answer.country_code : undefined;
 }
 
 /**

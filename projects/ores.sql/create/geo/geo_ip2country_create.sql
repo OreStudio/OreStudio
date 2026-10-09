@@ -48,14 +48,24 @@ begin
 end;
 $$ language plpgsql immutable strict;
 
-create or replace function ores_geo_ip2country_lookup_fn(ip_address inet)
+-- The ranges are published per tenant, so the lookup is per tenant too: the
+-- same address resolves to a country in the tenant whose ranges cover it,
+-- and to nothing in a tenant that has published none.
+create or replace function ores_geo_ip2country_lookup_fn(
+    p_tenant_id uuid,
+    p_ip_address inet
+)
 returns table (
     country_code text
 ) as $$
 declare
     ip_as_bigint bigint;
 begin
-    ip_as_bigint := ores_geo_inet_to_bigint_fn(ip_address);
+    if p_tenant_id is null then
+        return;
+    end if;
+
+    ip_as_bigint := ores_geo_inet_to_bigint_fn(p_ip_address);
 
     if ip_as_bigint is null then
         return;
@@ -64,7 +74,8 @@ begin
     return query
     select c.country_code
     from ores_geo_ip2country_tbl c
-    where c.ip_range @> ip_as_bigint
+    where c.tenant_id = p_tenant_id
+      and c.ip_range @> ip_as_bigint
     limit 1;
 end;
 $$ language plpgsql stable;

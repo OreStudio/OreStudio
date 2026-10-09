@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every session and login record says where it came from, and a caller can resolve
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -85,3 +85,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+=ores_geo_ip2country_lookup_fn= ignored the tenant whose ranges it searched
+and returned the first match in the table. It now takes the tenant, so the
+same address resolves only against the ranges that tenant published.
+
+=geolocation_service= passes the tenant from its context and binds the
+address as a parameter rather than splicing it into the statement. =ores.iam.core=
+links =ores.geo=, and the login path fills the session's =country_code= from
+the lookup, so a session now says where it came from. =iam.v1.ops.lookup_country=
+serves the lookup over the wire, with =iam::geo:lookup= and a BFF route.

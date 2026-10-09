@@ -18,6 +18,7 @@
  *
  */
 #include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.core/repository/auth_event_entity.hpp"
@@ -146,6 +147,68 @@ void auth_event_repository::record_signup_failure(
     const std::string& username,
     const std::string& error_detail) {
     insert("signup_failure", event_time, tenant_id, "", username, "", "", error_detail);
+}
+
+std::vector<repository::auth_event_entity>
+auth_event_repository::read_events(const context& ctx,
+                                   const std::string& tenant_id,
+                                   const std::string& account_id,
+                                   const std::string& event_type,
+                                   const std::string& from_time,
+                                   const std::string& to_time,
+                                   std::uint32_t limit,
+                                   std::uint32_t offset) {
+    /*
+     * The filters are optional, and the statement says so itself: an empty
+     * parameter does not filter. Building the WHERE clause in C++ would
+     * branch once per combination, and the table's (tenant_id, event_time)
+     * index still orders the scan.
+     */
+    static const std::string sql =
+        "select id, event_time, tenant_id, account_id, event_type, username, "
+        "session_id, party_id, error_detail "
+        "from ores_iam_auth_events_tbl "
+        "where tenant_id = $1 "
+        "and ($2 = '' or account_id = $2) "
+        "and ($3 = '' or event_type = $3) "
+        "and ($4 = '' or event_time >= $4) "
+        "and ($5 = '' or event_time <= $5) "
+        "order by event_time desc "
+        "limit $6::bigint offset $7::bigint";
+
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {tenant_id,
+         account_id,
+         event_type,
+         from_time,
+         to_time,
+         std::to_string(limit),
+         std::to_string(offset)},
+        lg(),
+        "Reading auth events");
+
+    std::vector<repository::auth_event_entity> events;
+    events.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() < 9)
+            continue;
+
+        repository::auth_event_entity e;
+        e.id = row[0].value_or("");
+        e.event_time = row[1].value_or("");
+        e.tenant_id = row[2].value_or("");
+        e.account_id = row[3].value_or("");
+        e.event_type = row[4].value_or("");
+        e.username = row[5].value_or("");
+        e.session_id = row[6].value_or("");
+        e.party_id = row[7].value_or("");
+        e.error_detail = row[8].value_or("");
+        events.push_back(std::move(e));
+    }
+
+    return events;
 }
 
 }

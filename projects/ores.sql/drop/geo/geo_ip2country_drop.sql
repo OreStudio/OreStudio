@@ -18,7 +18,8 @@
  *
  */
 
-drop function if exists ores_geo_ip2country_lookup_fn;
-drop function if exists ores_geo_inet_to_bigint_fn;
+drop function if exists ores_geo_ip2country_lookup_fn(uuid, inet);
+drop function if exists ores_geo_ip2country_lookup_fn(inet);
+drop function if exists ores_geo_inet_to_bigint_fn(inet);
 drop index if exists ip2country_range_idx;
 drop table if exists ores_geo_ip2country_tbl;

@@ -19,230 +19,194 @@
  *
  */
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Link, useSearchParams } from 'react-router';
-import { api } from '../api/client.js';
-import { Button, Detail, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
-import type { LoginInfo, Session } from '@ores/wire-protocol/browser';
+import { useState, type ReactNode } from 'react';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { isWireTimestamp } from '@ores/wire-protocol/browser';
+import type {
+    AuthEvent,
+    LoginInfo,
+    Session,
+    SessionStatisticsRow,
+} from '@ores/wire-protocol/browser';
+import { api, type AuditPeriod } from '../api/client.js';
+import { useTranslation } from '../i18n/Provider.js';
+import { ApiFailure } from '../api/transport.js';
+import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
+import { useTabs } from '../ui/Tabs.js';
 
 /**
  * Audit: sign-ins, the tenant administrator's screen.
  *
  * The journey is
  * `doc/knowledge/journeys/credentials/journey_audit_sign_ins.org`, and the
- * screen is the accepted prototype's variant B: the active sessions, the
- * session activity and the failed attempts take turns in the body under one
- * filter bar, with *Refresh* as the only action.
+ * screen is the accepted prototype's variant B: the readings take turns in the
+ * body under one filter bar, with *Refresh* as the only page action and *End
+ * session* on an open session's row.
  *
  * The screen is an event log, so it carries no version, no diff and no revert.
- * Every reading the server cannot serve says so: the account filter is drawn
- * unavailable because the read takes no account filter, the session activity
- * has no samples to draw, and the authentication events have no subject at all.
+ * Every reading the server cannot serve says so in its own panel: the session
+ * activity has no samples to draw, and nothing writes one. A refused read is
+ * stated in its panel too, because one reading may be withheld while the rest
+ * of the screen stands.
  */
 
-type Tab = 'sessions' | 'activity' | 'failures';
+type AuditTab = 'sessions' | 'activity' | 'statistics' | 'failures' | 'events';
 
-const TABS: readonly Tab[] = ['sessions', 'activity', 'failures'];
+/** The readings of the screen, in the order the tabs offer them. */
+export const AUDIT_TABS: readonly AuditTab[] = [
+    'sessions',
+    'activity',
+    'statistics',
+    'failures',
+    'events',
+];
+
+/** The period presets the filter offers, mapped to the BFF's window. */
+export const AUDIT_PERIODS: readonly AuditPeriod[] = ['hour', 'day', 'week', 'all'];
 
 /**
- * The periods the filter offers.
+ * The event types the filter offers, in the store's own words.
  *
- * The server takes no time bound on any of these reads, so the filter is
- * applied in the browser to the page that was read, and the screen says so
- * rather than implying the server narrowed it.
+ * The read's event filter is an equality, so the values offered must be the
+ * words the log stores; the prototype's human spellings would match nothing.
  */
-const PERIODS = [
-    { id: 'hour', label: 'last hour', seconds: 3600 },
-    { id: 'day', label: 'last 24 hours', seconds: 86400 },
-    { id: 'week', label: 'last 7 days', seconds: 604800 },
-    { id: 'all', label: 'everything read', seconds: 0 },
+export const AUDIT_EVENT_TYPES = [
+    'login_success',
+    'login_failure',
+    'logout',
+    'token_refresh',
 ] as const;
 
-type PeriodId = (typeof PERIODS)[number]['id'];
-
-/** How many rows the reads ask for, which is what bounds every panel. */
-const PAGE_SIZE = 100;
-
-interface Loaded {
-    readonly active: readonly Session[];
-    readonly sessionCount: number;
-    readonly loginInfo: readonly LoginInfo[];
-    readonly loginInfoCount: number;
-    readonly readAt: string;
+/** The filter the screen opens on: the last day, with every event. */
+export interface AuditFilter {
+    readonly period: AuditPeriod;
+    readonly eventType: string;
 }
 
-type State =
-    | { readonly kind: 'loading' }
-    | { readonly kind: 'ready'; readonly loaded: Loaded }
-    | { readonly kind: 'failed'; readonly reason: string };
+export const DEFAULT_AUDIT_FILTER: AuditFilter = { period: 'day', eventType: '' };
 
-export function AuditPage(): ReactNode {
-    const [state, setState] = useState<State>({ kind: 'loading' });
+/** How many rows the reads ask for, which is what bounds every table. */
+export const AUDIT_PAGE_SIZE = 100;
 
-    const load = useCallback(async (): Promise<void> => {
-        try {
-            const [page, active, loginInfo] = await Promise.all([
-                api.sessions(),
-                api.activeSessions(),
-                api.loginInfoPage(),
-            ]);
-            setState({
-                kind: 'ready',
-                loaded: {
-                    active,
-                    sessionCount: page.totalCount,
-                    loginInfo: loginInfo.loginInfo,
-                    loginInfoCount: loginInfo.totalCount,
-                    readAt: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
-                },
-            });
-        } catch (error) {
-            setState({
-                kind: 'failed',
-                reason: error instanceof Error ? error.message : 'The read failed.',
-            });
-        }
-    }, []);
+/** Where each reading is cached, by the filter it read under. */
+export const AUDIT_SESSIONS_QUERY_KEY = 'audit-active-sessions' as const;
+export const AUDIT_FAILURES_QUERY_KEY = 'audit-login-records' as const;
+export const AUDIT_EVENTS_QUERY_KEY = 'audit-auth-events' as const;
+export const AUDIT_STATISTICS_QUERY_KEY = 'audit-session-statistics' as const;
 
-    useEffect(() => {
-        void load();
-    }, [load]);
+/**
+ * The seconds one period names, for the sessions read.
+ *
+ * The active-sessions read takes no time bound, so the period is applied in
+ * this browser to the rows it answered. The event and statistics reads take the
+ * period as a preset, and the BFF turns it into a window on the deployment's
+ * clock.
+ */
+const PERIOD_SECONDS: Readonly<Record<AuditPeriod, number>> = {
+    hour: 3600,
+    day: 86400,
+    week: 604800,
+    all: 0,
+};
 
-    return (
-        <div className="mx-auto max-w-[1200px] space-y-6">
-            <PageHeader
-                title="Audit: sign-ins"
-                description="Who is signed in, what they are doing, and who is failing to get in."
-                actions={
-                    state.kind === 'ready' ? (
-                        <div className="flex items-center gap-3">
-                            <span className="text-xs text-ink-faint">
-                                Read at {state.loaded.readAt}
-                            </span>
-                            <Button variant="secondary" onClick={() => void load()}>
-                                Refresh
-                            </Button>
-                        </div>
-                    ) : undefined
-                }
-            />
-            {state.kind === 'loading' && (
-                <Notice tone="info">Reading the tenant&rsquo;s sessions…</Notice>
-            )}
-            {state.kind === 'failed' && <Notice tone="error">{state.reason}</Notice>}
-            {state.kind === 'ready' && <AuditView loaded={state.loaded} />}
-        </div>
-    );
+/** Whether a wire start time falls inside the chosen period. */
+export function withinPeriod(startTime: string, period: AuditPeriod): boolean {
+    const span = PERIOD_SECONDS[period];
+    if (span === 0) {
+        return true;
+    }
+    if (!isWireTimestamp(startTime)) {
+        return true;
+    }
+    const at = Date.parse(startTime.replace(' ', 'T'));
+    if (Number.isNaN(at)) {
+        return true;
+    }
+    return Date.now() - at <= span * 1000;
+}
+
+/** The moment a reading was taken, as a wall clock a person reads, in UTC. */
+export function formatReadAt(at: number): string | undefined {
+    if (at === 0) {
+        return undefined;
+    }
+    return `${new Date(at).toISOString().slice(11, 19)} UTC`;
+}
+
+/** The tone one event type is painted with, for the types the log stores. */
+export function eventTone(eventType: string): 'neutral' | 'warn' | 'muted' | 'up' {
+    if (eventType === 'login_success') {
+        return 'up';
+    }
+    if (eventType === 'login_failure' || eventType === 'signup_failure') {
+        return 'warn';
+    }
+    if (eventType === 'logout') {
+        return 'muted';
+    }
+    return 'neutral';
 }
 
 /**
- * Variant B: one filter bar, and the three readings taking turns under it.
+ * The reason a panel cannot show its reading.
  *
- * The reading in view is a query parameter, so a review can link to the one it
- * is about: `/audit?tab=failures` opens the failed attempts directly.
+ * A refusal is stated as the refusal it is, because signing in again changes
+ * nothing: the session is real and the permission is not held.
  */
-export function AuditView({ loaded }: { readonly loaded: Loaded }): ReactNode {
-    const [params, setParams] = useSearchParams();
-    const tab = asTab(params.get('tab'));
-    const [period, setPeriod] = useState<PeriodId>('all');
-    const [selected, setSelected] = useState<string>('');
-
-    const show = (next: Tab): void => {
-        const query = new URLSearchParams(params);
-        query.set('tab', next);
-        setParams(query);
-    };
-
-    const sessions = useMemo(
-        () => loaded.active.filter((row) => withinPeriod(row.startTime, period)),
-        [loaded.active, period],
-    );
-    const chosen = sessions.find((row) => row.id === selected) ?? sessions[0];
-
-    return (
-        <div className="space-y-6">
-            <FilterBar period={period} onPeriod={setPeriod} />
-            <div className="flex gap-1 border-b border-line">
-                {TABS.map((name) => (
-                    <button
-                        key={name}
-                        type="button"
-                        className={cx(
-                            '-mb-px border-b-2 px-4 py-2 text-sm capitalize',
-                            tab === name
-                                ? 'border-accent text-ink'
-                                : 'border-transparent text-ink-muted',
-                        )}
-                        onClick={() => show(name)}
-                    >
-                        {name}
-                    </button>
-                ))}
-            </div>
-            {tab === 'sessions' && (
-                <SessionsPanel
-                    rows={sessions}
-                    openCount={loaded.active.length}
-                    totalCount={loaded.sessionCount}
-                />
-            )}
-            {tab === 'activity' && (
-                <ActivityPanel rows={sessions} chosen={chosen} onChoose={setSelected} />
-            )}
-            {tab === 'failures' && (
-                <FailuresPanel rows={loaded.loginInfo} totalCount={loaded.loginInfoCount} />
-            )}
-            <GapsPanel />
-        </div>
-    );
+function failureReason(error: Error, refused: string): string {
+    if (error instanceof ApiFailure && error.status === 403) {
+        return refused;
+    }
+    return error.message;
 }
 
-/**
- * The filter bar.
- *
- * Two of the three controls the journey names cannot work, and the bar says why
- * rather than offering a control that silently does nothing. The period is
- * applied in the browser, over the page that was read.
- */
+/** The filter bar: the prototype's controls, in the prototype's order. */
 function FilterBar({
-    period,
-    onPeriod,
+    filter,
+    onChange,
 }: {
-    readonly period: PeriodId;
-    readonly onPeriod: (next: PeriodId) => void;
+    readonly filter: AuditFilter;
+    readonly onChange: (next: AuditFilter) => void;
 }): ReactNode {
+    const { t } = useTranslation();
     return (
         <section className="card flex flex-wrap items-end gap-4 p-4">
             <label className="flex flex-col gap-1 text-xs text-ink-muted">
-                Account
+                {t('auditSignIns.account.label')}
                 <Select disabled value="all" onChange={() => undefined}>
-                    <option value="all">Every account (the read takes no account filter)</option>
+                    <option value="all">{t('auditSignIns.account.every')}</option>
                 </Select>
             </label>
             <label className="flex flex-col gap-1 text-xs text-ink-muted">
-                Period
+                {t('auditSignIns.period.label')}
                 <Select
-                    value={period}
-                    onChange={(event) => onPeriod(event.target.value as PeriodId)}
+                    value={filter.period}
+                    onChange={(event) =>
+                        onChange({ ...filter, period: event.target.value as AuditPeriod })
+                    }
                 >
-                    {PERIODS.map((option) => (
-                        <option key={option.id} value={option.id}>
-                            {option.label}
+                    {AUDIT_PERIODS.map((option) => (
+                        <option key={option} value={option}>
+                            {t(`auditSignIns.period.${option}`)}
                         </option>
                     ))}
                 </Select>
             </label>
             <label className="flex flex-col gap-1 text-xs text-ink-muted">
-                Event
-                <Select disabled value="any" onChange={() => undefined}>
-                    <option value="any">Any event (no subject carries them)</option>
+                {t('auditSignIns.event.label')}
+                <Select
+                    value={filter.eventType}
+                    onChange={(event) => onChange({ ...filter, eventType: event.target.value })}
+                >
+                    <option value="">{t('auditSignIns.event.any')}</option>
+                    {AUDIT_EVENT_TYPES.map((option) => (
+                        <option key={option} value={option}>
+                            {t(`auditSignIns.event.${option}`)}
+                        </option>
+                    ))}
                 </Select>
             </label>
-            <p className="flex-1 text-xs text-ink-faint">
-                The period is applied in this browser to the page that was read; the server takes no
-                time bound. No version, diff or revert control appears here: this screen is an event
-                log, not a versioned entity.
-            </p>
+            <p className="flex-1 text-xs text-ink-faint">{t('auditSignIns.filterNote')}</p>
         </section>
     );
 }
@@ -250,70 +214,123 @@ function FilterBar({
 /**
  * The sessions with no end time.
  *
- * The panel compares what the active read answered with what the session page
- * holds, because the two would differ the day something writes an end time and
- * do not today.
+ * The period narrows this panel in the browser, because the active-sessions
+ * read takes no time bound. Each open row offers the one write the screen has:
+ * ending that session, which re-reads the panel.
  */
 function SessionsPanel({
-    rows,
-    openCount,
-    totalCount,
+    sessions,
+    pending,
+    error,
+    endingId,
+    endedId,
+    endError,
+    onEnd,
 }: {
-    readonly rows: readonly Session[];
-    readonly openCount: number;
-    readonly totalCount: number;
+    readonly sessions: readonly Session[];
+    readonly pending: boolean;
+    readonly error: Error | null;
+    readonly endingId: string;
+    readonly endedId: string;
+    readonly endError: string;
+    readonly onEnd: (session: Session) => void;
 }): ReactNode {
+    const { t } = useTranslation();
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-lg font-medium">Active sessions</h2>
+                <h2 className="text-lg font-medium">{t('auditSignIns.sessions.title')}</h2>
                 <span className="text-xs text-ink-faint">
-                    {String(rows.length)} shown of {String(openCount)} open
+                    {t('auditSignIns.sessions.count', { count: sessions.length })}
                 </span>
             </header>
-            <Notice tone="warn">
-                Nothing ends a session. No sign-out writes an end time, so every session this
-                deployment has created has none, all {String(openCount)} read as open, and an old
-                one cannot be told from a live one. Ending another account&rsquo;s session has no
-                operation either, which is why no row offers it.
-            </Notice>
-            {rows.length === 0 ? (
-                <p className="text-sm text-ink-muted">No session in this period has no end time.</p>
+            {pending ? (
+                <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+            ) : error !== null ? (
+                <Notice tone="error">
+                    {failureReason(error, t('auditSignIns.sessions.notAllowed'))}
+                </Notice>
             ) : (
-                <ul className="divide-y divide-line-subtle">
-                    {rows.map((row) => (
-                        <li
-                            key={row.id}
-                            className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3"
-                        >
-                            <span className="w-32 shrink-0 font-mono text-sm">
-                                {row.clientIdentifier === ''
-                                    ? 'unknown client'
-                                    : row.clientIdentifier}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                                <span className="block font-mono text-sm">
-                                    {row.clientIp === '' ? 'no address' : row.clientIp}
-                                </span>
-                                <span className="block text-xs text-ink-muted">
-                                    {row.countryCode === '' ? 'unknown country' : row.countryCode} ·
-                                    started {row.startTime} · account{' '}
-                                    <span className="font-mono">{row.accountId}</span>
-                                </span>
-                            </span>
-                            <span className="hidden text-right text-xs text-ink-faint sm:block">
-                                {String(row.bytesSent)} sent / {String(row.bytesReceived)} received
-                            </span>
-                        </li>
-                    ))}
-                </ul>
+                <>
+                    {endedId !== '' && (
+                        <Notice tone="success">{t('auditSignIns.sessions.ended')}</Notice>
+                    )}
+                    {endError !== '' && <Notice tone="error">{endError}</Notice>}
+                    {sessions.length === 0 ? (
+                        <p className="text-sm text-ink-muted">{t('auditSignIns.sessions.empty')}</p>
+                    ) : (
+                        <>
+                            <table className="w-full text-left text-sm">
+                                <thead className="text-left text-xs text-ink-faint">
+                                    <tr>
+                                        <th className="py-1 font-normal">
+                                            {t('auditSignIns.column.started')}
+                                        </th>
+                                        <th className="py-1 font-normal">
+                                            {t('auditSignIns.column.client')}
+                                        </th>
+                                        <th className="py-1 font-normal">
+                                            {t('auditSignIns.column.address')}
+                                        </th>
+                                        <th className="py-1 font-normal">
+                                            {t('auditSignIns.column.country')}
+                                        </th>
+                                        <th className="py-1 font-normal">
+                                            {t('auditSignIns.column.account')}
+                                        </th>
+                                        <th className="py-1 font-normal">
+                                            {t('auditSignIns.column.traffic')}
+                                        </th>
+                                        <th className="py-1 font-normal" />
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-line-subtle">
+                                    {sessions.map((row) => (
+                                        <tr key={row.id}>
+                                            <td className="whitespace-nowrap py-2 font-mono text-xs">
+                                                {row.startTime}
+                                            </td>
+                                            <td className="py-2 font-mono text-xs">
+                                                {row.clientIdentifier === ''
+                                                    ? '—'
+                                                    : row.clientIdentifier}
+                                            </td>
+                                            <td className="py-2 font-mono text-xs">
+                                                {row.clientIp === '' ? '—' : row.clientIp}
+                                            </td>
+                                            <td className="py-2 text-ink-muted">
+                                                {row.countryCode === '' ? '—' : row.countryCode}
+                                            </td>
+                                            <td className="py-2 font-mono text-xs">
+                                                {row.accountId}
+                                            </td>
+                                            <td className="whitespace-nowrap py-2 text-right text-xs text-ink-faint">
+                                                {String(row.bytesSent)} /{' '}
+                                                {String(row.bytesReceived)}
+                                            </td>
+                                            <td className="py-2 text-right">
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    disabled={endingId !== ''}
+                                                    onClick={() => onEnd(row)}
+                                                >
+                                                    {endingId === row.id
+                                                        ? t('auditSignIns.sessions.ending')
+                                                        : t('auditSignIns.sessions.end')}
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            <p className="text-xs text-ink-faint">
+                                {t('auditSignIns.sessions.note')}
+                            </p>
+                        </>
+                    )}
+                </>
             )}
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-ink-faint">
-                    The session page holds {String(totalCount)} rows and the read returns one page
-                    of {String(PAGE_SIZE)}, so a large tenant is short here.
-                </p>
-            </div>
         </section>
     );
 }
@@ -322,61 +339,135 @@ function SessionsPanel({
  * One session's activity.
  *
  * The journey asks for the byte counters as a time series of samples. Nothing
- * serves them on either transport, so the panel shows the session row's own
- * running totals and states that the series behind them has no read path. No
- * empty chart is drawn, because an empty chart claims the tenant moved nothing.
+ * writes a sample row, so the read behind the series answers with none; the
+ * panel shows the session row's own running totals and states that the series
+ * is not available rather than drawing an empty chart, which would claim the
+ * session moved nothing.
  */
 function ActivityPanel({
-    rows,
+    sessions,
     chosen,
     onChoose,
 }: {
-    readonly rows: readonly Session[];
+    readonly sessions: readonly Session[];
     readonly chosen: Session | undefined;
     readonly onChoose: (id: string) => void;
 }): ReactNode {
+    const { t } = useTranslation();
     return (
         <section className="card space-y-4 p-6">
             <header className="space-y-1">
-                <h2 className="text-lg font-medium">Session activity</h2>
-                <p className="text-sm text-ink-muted">
-                    How the byte totals moved while the session was open.
-                </p>
+                <h2 className="text-lg font-medium">{t('auditSignIns.activity.title')}</h2>
+                <p className="text-sm text-ink-muted">{t('auditSignIns.activity.lead')}</p>
             </header>
             {chosen === undefined ? (
-                <Notice tone="warn">No session is in the period that was read.</Notice>
+                <Notice tone="warn">{t('auditSignIns.activity.noSession')}</Notice>
             ) : (
                 <>
                     <label className="flex max-w-md flex-col gap-1 text-xs text-ink-muted">
-                        Session
+                        {t('auditSignIns.activity.session')}
                         <Select
                             value={chosen.id}
                             onChange={(event) => onChoose(event.target.value)}
                         >
-                            {rows.map((row) => (
+                            {sessions.map((row) => (
                                 <option key={row.id} value={row.id}>
-                                    {row.clientIdentifier === ''
-                                        ? 'unknown client'
-                                        : row.clientIdentifier}
+                                    {row.clientIdentifier === '' ? '—' : row.clientIdentifier}
                                     {' · '}
-                                    {row.clientIp === '' ? 'no address' : row.clientIp}
+                                    {row.clientIp === '' ? '—' : row.clientIp}
                                     {' · '}
                                     {row.startTime}
                                 </option>
                             ))}
                         </Select>
                     </label>
-                    <div className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
-                        <Detail label="Started" value={chosen.startTime} />
-                        <Detail label="Bytes sent" value={String(chosen.bytesSent)} mono />
-                        <Detail label="Bytes received" value={String(chosen.bytesReceived)} mono />
-                    </div>
-                    <Notice tone="warn">
-                        Not available. Nothing serves the samples: the subject behind them is a stub
-                        that answers with no rows, and nothing writes a sample row, so there is no
-                        series to draw. The totals above are the session row&rsquo;s own counters.
-                    </Notice>
+                    <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
+                        <div>
+                            <dt className="text-[11px] uppercase tracking-wide text-ink-faint">
+                                {t('auditSignIns.column.started')}
+                            </dt>
+                            <dd className="mt-0.5 font-mono text-xs">{chosen.startTime}</dd>
+                        </div>
+                        <div>
+                            <dt className="text-[11px] uppercase tracking-wide text-ink-faint">
+                                {t('auditSignIns.activity.bytesSent')}
+                            </dt>
+                            <dd className="mt-0.5 font-mono text-xs">{chosen.bytesSent}</dd>
+                        </div>
+                        <div>
+                            <dt className="text-[11px] uppercase tracking-wide text-ink-faint">
+                                {t('auditSignIns.activity.bytesReceived')}
+                            </dt>
+                            <dd className="mt-0.5 font-mono text-xs">{chosen.bytesReceived}</dd>
+                        </div>
+                    </dl>
+                    <Notice tone="warn">{t('auditSignIns.activity.notAvailable')}</Notice>
                 </>
+            )}
+        </section>
+    );
+}
+
+/** The session statistics: one row per day and account. */
+function StatisticsPanel({
+    query,
+}: {
+    readonly query: UseQueryResult<readonly SessionStatisticsRow[]>;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <section className="card space-y-4 p-6">
+            <header className="space-y-1">
+                <h2 className="text-lg font-medium">{t('auditSignIns.statistics.title')}</h2>
+                <p className="text-sm text-ink-muted">{t('auditSignIns.statistics.lead')}</p>
+            </header>
+            {query.isPending ? (
+                <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+            ) : query.isError ? (
+                <Notice tone="error">
+                    {failureReason(query.error, t('auditSignIns.statistics.notAllowed'))}
+                </Notice>
+            ) : query.data.length === 0 ? (
+                <p className="text-sm text-ink-muted">{t('auditSignIns.statistics.empty')}</p>
+            ) : (
+                <table className="w-full text-left text-sm">
+                    <thead className="text-left text-xs text-ink-faint">
+                        <tr>
+                            <th className="py-1 font-normal">{t('auditSignIns.column.day')}</th>
+                            <th className="py-1 font-normal">{t('auditSignIns.column.account')}</th>
+                            <th className="py-1 text-right font-normal">
+                                {t('auditSignIns.statistics.sessions')}
+                            </th>
+                            <th className="py-1 text-right font-normal">
+                                {t('auditSignIns.statistics.average')}
+                            </th>
+                            <th className="py-1 text-right font-normal">
+                                {t('auditSignIns.column.traffic')}
+                            </th>
+                            <th className="py-1 text-right font-normal">
+                                {t('auditSignIns.statistics.countries')}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-line-subtle">
+                        {query.data.map((row) => (
+                            <tr key={`${row.day}-${row.accountId}`}>
+                                <td className="py-2 font-mono text-xs">{row.day}</td>
+                                <td className="py-2 font-mono text-xs">{row.accountId}</td>
+                                <td className="py-2 text-right tabular-nums">{row.sessionCount}</td>
+                                <td className="py-2 text-right tabular-nums">
+                                    {`${String(Math.round(row.avgDurationSeconds))} s`}
+                                </td>
+                                <td className="whitespace-nowrap py-2 text-right font-mono text-xs text-ink-faint">
+                                    {String(row.totalBytesSent)} / {String(row.totalBytesReceived)}
+                                </td>
+                                <td className="py-2 text-right tabular-nums">
+                                    {row.uniqueCountries}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             )}
         </section>
     );
@@ -389,54 +480,71 @@ function ActivityPanel({
  * incident, so the count and the state travel together.
  */
 function FailuresPanel({
-    rows,
-    totalCount,
+    query,
 }: {
-    readonly rows: readonly LoginInfo[];
-    readonly totalCount: number;
+    readonly query: UseQueryResult<{
+        readonly loginInfo: readonly LoginInfo[];
+        readonly totalCount: number;
+    }>;
 }): ReactNode {
-    const ordered = useMemo(
-        () => [...rows].sort((left, right) => right.failedLogins - left.failedLogins),
-        [rows],
+    const { t } = useTranslation();
+    const ordered = [...(query.data?.loginInfo ?? [])].sort(
+        (left, right) => right.failedLogins - left.failedLogins,
     );
-
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-lg font-medium">Failed attempts</h2>
-                <span className="text-xs text-ink-faint">
-                    {String(rows.length)} shown of {String(totalCount)} records
-                </span>
+                <h2 className="text-lg font-medium">{t('auditSignIns.failures.title')}</h2>
+                {query.data !== undefined && (
+                    <span className="text-xs text-ink-faint">
+                        {t('auditSignIns.failures.count', {
+                            shown: ordered.length,
+                            total: query.data.totalCount,
+                        })}
+                    </span>
+                )}
             </header>
-            {ordered.length === 0 ? (
-                <p className="text-sm text-ink-muted">
-                    The tenant holds no login record, which means nobody has tried to sign in.
-                </p>
+            {query.isPending ? (
+                <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+            ) : query.isError ? (
+                <Notice tone="error">
+                    {failureReason(query.error, t('auditSignIns.failures.notAllowed'))}
+                </Notice>
+            ) : ordered.length === 0 ? (
+                <p className="text-sm text-ink-muted">{t('auditSignIns.failures.empty')}</p>
             ) : (
-                <table className="w-full text-sm">
+                <table className="w-full text-left text-sm">
                     <thead className="text-left text-xs text-ink-faint">
                         <tr>
-                            <th className="py-1 font-normal">Account</th>
-                            <th className="py-1 font-normal">Failed</th>
-                            <th className="py-1 font-normal">Last address</th>
-                            <th className="py-1 font-normal">Last sign-in</th>
-                            <th className="py-1 font-normal">State</th>
+                            <th className="py-1 font-normal">{t('auditSignIns.column.account')}</th>
+                            <th className="py-1 font-normal">
+                                {t('auditSignIns.failures.failed')}
+                            </th>
+                            <th className="py-1 font-normal">
+                                {t('auditSignIns.failures.lastAddress')}
+                            </th>
+                            <th className="py-1 font-normal">
+                                {t('auditSignIns.failures.lastSignIn')}
+                            </th>
+                            <th className="py-1 font-normal">{t('auditSignIns.column.state')}</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-line-subtle">
                         {ordered.map((row) => (
                             <tr key={row.accountId}>
-                                <td className="py-2 font-mono">{row.accountId}</td>
-                                <td className="py-2 font-mono">{String(row.failedLogins)}</td>
-                                <td className="py-2 font-mono">
-                                    {row.lastAttemptIp === '' ? 'unknown' : row.lastAttemptIp}
+                                <td className="py-2 font-mono text-xs">{row.accountId}</td>
+                                <td className="py-2 tabular-nums">{row.failedLogins}</td>
+                                <td className="py-2 font-mono text-xs">
+                                    {row.lastAttemptIp === '' ? '—' : row.lastAttemptIp}
                                 </td>
                                 <td className="py-2">
-                                    {row.lastLogin === '' ? 'never' : row.lastLogin}
+                                    {row.lastLogin === '' ? '—' : row.lastLogin}
                                 </td>
                                 <td className="py-2">
                                     <Tag tone={row.locked ? 'warn' : 'muted'}>
-                                        {row.locked ? 'Locked' : 'Not locked'}
+                                        {row.locked
+                                            ? t('auditSignIns.failures.locked')
+                                            : t('auditSignIns.failures.notLocked')}
                                     </Tag>
                                 </td>
                             </tr>
@@ -444,79 +552,201 @@ function FailuresPanel({
                     </tbody>
                 </table>
             )}
-            <p className="text-xs text-ink-faint">
-                The period filter does not apply here: a login record carries one last sign-in and
-                no attempt times, so no time bound can narrow it. Unlocking an account is{' '}
-                <Link className="underline" to="/rescue">
-                    Rescue access
-                </Link>
-                &rsquo;s job.
-            </p>
         </section>
     );
 }
 
-/** What this journey asks for and the server does not serve. */
-function GapsPanel(): ReactNode {
+/** The authentication event log, newest first. */
+function EventsPanel({
+    query,
+}: {
+    readonly query: UseQueryResult<readonly AuthEvent[]>;
+}): ReactNode {
+    const { t } = useTranslation();
     return (
-        <section className="card space-y-3 p-6">
+        <section className="card space-y-4 p-6">
             <header className="space-y-1">
-                <h2 className="text-lg font-medium">Not available in this build</h2>
-                <p className="text-sm text-ink-muted">
-                    The readings this journey asks for and the server does not serve.
-                </p>
+                <h2 className="text-lg font-medium">{t('auditSignIns.events.title')}</h2>
+                <p className="text-sm text-ink-muted">{t('auditSignIns.events.lead')}</p>
             </header>
-            <ul className="space-y-2 text-sm">
-                <li className="flex gap-2">
-                    <Tag tone="warn">missing</Tag>
-                    <span>
-                        The authentication events — the table exists and no subject reads it
-                    </span>
-                </li>
-                <li className="flex gap-2">
-                    <Tag tone="warn">missing</Tag>
-                    <span>The session statistics — the continuous aggregates have no subject</span>
-                </li>
-                <li className="flex gap-2">
-                    <Tag tone="warn">missing</Tag>
-                    <span>
-                        End another account&rsquo;s session — the repository writes an end time, and
-                        only the caller&rsquo;s own sign-out calls it
-                    </span>
-                </li>
-                <li className="flex gap-2">
-                    <Tag tone="warn">missing</Tag>
-                    <span>
-                        Filter by account — the session read pages by offset and limit and takes no
-                        account filter
-                    </span>
-                </li>
-                <li className="flex gap-2">
-                    <Tag tone="warn">missing</Tag>
-                    <span>
-                        The per-session sample series — nothing writes a sample row, so the subject
-                        behind it answers with none
-                    </span>
-                </li>
-            </ul>
+            {query.isPending ? (
+                <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+            ) : query.isError ? (
+                <Notice tone="error">
+                    {failureReason(query.error, t('auditSignIns.events.notAllowed'))}
+                </Notice>
+            ) : query.data.length === 0 ? (
+                <p className="text-sm text-ink-muted">{t('auditSignIns.events.empty')}</p>
+            ) : (
+                <table className="w-full text-left text-sm">
+                    <thead className="text-left text-xs text-ink-faint">
+                        <tr>
+                            <th className="py-1 font-normal">{t('auditSignIns.events.time')}</th>
+                            <th className="py-1 font-normal">{t('auditSignIns.events.event')}</th>
+                            <th className="py-1 font-normal">{t('auditSignIns.column.account')}</th>
+                            <th className="py-1 font-normal">{t('auditSignIns.events.session')}</th>
+                            <th className="py-1 font-normal">{t('auditSignIns.events.detail')}</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-line-subtle">
+                        {query.data.map((row) => (
+                            <tr key={row.id}>
+                                <td className="whitespace-nowrap py-2 font-mono text-xs">
+                                    {row.eventTime}
+                                </td>
+                                <td className="py-2">
+                                    <Tag tone={eventTone(row.eventType)}>{row.eventType}</Tag>
+                                </td>
+                                <td className="py-2 font-mono text-xs">
+                                    {row.username !== ''
+                                        ? row.username
+                                        : row.accountId !== ''
+                                          ? row.accountId
+                                          : '—'}
+                                </td>
+                                <td className="py-2 font-mono text-xs">
+                                    {row.sessionId === '' ? '—' : row.sessionId}
+                                </td>
+                                <td className="py-2 text-ink-muted">
+                                    {row.errorDetail === '' ? '—' : row.errorDetail}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
         </section>
     );
 }
 
-/** The tab a query parameter names, or the sessions reading when it names none. */
-function asTab(value: string | null): Tab {
-    return TABS.find((name) => name === value) ?? 'sessions';
-}
+export function AuditPage(): ReactNode {
+    const { t } = useTranslation();
+    const [filter, setFilter] = useState<AuditFilter>(DEFAULT_AUDIT_FILTER);
+    const [chosen, setChosen] = useState('');
+    const [endingId, setEndingId] = useState('');
+    const [endedId, setEndedId] = useState('');
+    const [endError, setEndError] = useState('');
 
-/** Whether a wire timestamp falls inside the chosen period. */
-function withinPeriod(timestamp: string, period: PeriodId): boolean {
-    const span = PERIODS.find((option) => option.id === period)?.seconds ?? 0;
-    if (span === 0) {
-        return true;
-    }
-    const at = Date.parse(timestamp.replace(' ', 'T'));
-    if (Number.isNaN(at)) {
-        return true;
-    }
-    return Date.now() - at <= span * 1000;
+    const sessions = useQuery({
+        queryKey: [AUDIT_SESSIONS_QUERY_KEY],
+        queryFn: () => api.activeSessions(),
+        retry: false,
+    });
+    const failures = useQuery({
+        queryKey: [AUDIT_FAILURES_QUERY_KEY],
+        queryFn: () => api.loginInfoPage(),
+        retry: false,
+    });
+    const events = useQuery({
+        queryKey: [AUDIT_EVENTS_QUERY_KEY, filter.period, filter.eventType],
+        queryFn: () =>
+            api.authEvents({
+                period: filter.period,
+                eventType: filter.eventType,
+                offset: 0,
+                limit: AUDIT_PAGE_SIZE,
+            }),
+        retry: false,
+    });
+    const statistics = useQuery({
+        queryKey: [AUDIT_STATISTICS_QUERY_KEY, filter.period],
+        queryFn: () =>
+            api.sessionStatistics({ period: filter.period, offset: 0, limit: AUDIT_PAGE_SIZE }),
+        retry: false,
+    });
+
+    const { tab, bar } = useTabs({
+        label: t('auditSignIns.tabs'),
+        tabs: AUDIT_TABS,
+        titleOf: (name) => t(`auditSignIns.tab.${name}`),
+    });
+
+    /*
+     * The new readings are re-read here rather than by invalidating the cache:
+     * a filter that moved the events and the statistics to their own keys
+     * leaves the reading the person is looking at on the key they asked for.
+     */
+    const refresh = (): void => {
+        void Promise.all([
+            sessions.refetch(),
+            failures.refetch(),
+            events.refetch(),
+            statistics.refetch(),
+        ]);
+    };
+
+    const end = async (session: Session): Promise<void> => {
+        setEndingId(session.id);
+        setEndedId('');
+        setEndError('');
+        try {
+            await api.endSession(session.id);
+            setEndedId(session.id);
+            await sessions.refetch();
+        } catch (error) {
+            setEndError(
+                error instanceof Error ? error.message : t('auditSignIns.sessions.endFailed'),
+            );
+        }
+        setEndingId('');
+    };
+
+    const readAt = formatReadAt(
+        Math.max(
+            sessions.dataUpdatedAt,
+            failures.dataUpdatedAt,
+            events.dataUpdatedAt,
+            statistics.dataUpdatedAt,
+        ),
+    );
+    const openSessions = (sessions.data ?? []).filter((row) =>
+        withinPeriod(row.startTime, filter.period),
+    );
+    const chosenSession = openSessions.find((row) => row.id === chosen) ?? openSessions[0];
+
+    return (
+        <div className="space-y-6">
+            <PageHeader
+                title={t('auditSignIns.title')}
+                description={t('auditSignIns.description')}
+                actions={
+                    <div className="flex items-center gap-3">
+                        {readAt !== undefined && (
+                            <span className="text-xs text-ink-faint">
+                                {t('auditSignIns.readAt', { at: readAt })}
+                            </span>
+                        )}
+                        <Button variant="secondary" onClick={refresh}>
+                            {t('auditSignIns.refresh')}
+                        </Button>
+                    </div>
+                }
+            />
+            <FilterBar filter={filter} onChange={setFilter} />
+            {bar}
+            {tab === 'sessions' && (
+                <SessionsPanel
+                    sessions={openSessions}
+                    pending={sessions.isPending}
+                    error={sessions.error}
+                    endingId={endingId}
+                    endedId={endedId}
+                    endError={endError}
+                    onEnd={(session) => {
+                        void end(session);
+                    }}
+                />
+            )}
+            {tab === 'activity' && (
+                <ActivityPanel
+                    sessions={openSessions}
+                    chosen={chosenSession}
+                    onChoose={setChosen}
+                />
+            )}
+            {tab === 'statistics' && <StatisticsPanel query={statistics} />}
+            {tab === 'failures' && <FailuresPanel query={failures} />}
+            {tab === 'events' && <EventsPanel query={events} />}
+        </div>
+    );
 }

@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.http-route.enabled: true
+:ID: 9B4F1C62-7E3A-4D58-8A21-6C0E5B9D4F31
+:END:
+#+title: ores.iam.geo_operations
+#+description: Codegen operation model for resolving an address to the country it came from.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: geo_operations
+#+namespace: ores::iam::messaging
+#+brief: address to country operations.
+#+filetags: :model:operation:iam:
+#+created: 2026-10-09
++#+updated: 2026-10-09
+
+Resolve an address to the country it came from.
+
+The ranges live in =ores_geo_ip2country_tbl=, published per tenant from the
+=dq.v1.ops.publish_ip2country_from_dq= dataset. The authentication records
+are the caller: a session says where it came from, and an administrator who
+cannot place a session cannot account for it. The lookup is served from here
+rather than from =ores.geo= because =ores.geo= has no service of its own and
+the address it resolves is an authentication one.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+* Messages
+
+** lookup_country_request
+:PROPERTIES:
+:subject: iam.v1.ops.lookup_country
+:response: lookup_country_response
+:http_route: true
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Resolve one address to the country code it came from.
+ *
+ * The search is the caller's tenant's ranges. An address the tenant's ranges
+ * do not cover is not found, which is an answer rather than an error: a
+ * private address never resolves.
+ */
+#+end_src
+
+*** address
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** lookup_country_response
+
+*** country_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** found
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:

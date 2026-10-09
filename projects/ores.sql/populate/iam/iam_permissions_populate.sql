@@ -115,9 +115,16 @@ BEGIN
     -- Session permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::sessions:read', 'View active sessions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::sessions:write', 'Create sessions (login / service-login)');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::sessions:end', 'End another account''s session in the tenant');
 
     -- Login info permissions (read-only audit data)
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::login_info:read', 'View login history and info');
+
+    -- Authentication event log permissions (read-only audit data)
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::auth_events:read', 'View the authentication event log');
+
+    -- Geolocation permission
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::geo:lookup', 'Resolve an address to the country it came from');
 
     -- Seed profile permissions. The generated handlers check these two codes:
     -- a read carries no permission check, the same as every other entity's

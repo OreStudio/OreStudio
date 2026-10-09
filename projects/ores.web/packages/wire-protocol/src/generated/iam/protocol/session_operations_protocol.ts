@@ -46,8 +46,27 @@ export interface GetActiveSessionsResponse {
     message: string;
 }
 
+/**
+ * @brief End another account's session in the caller's tenant.
+ *
+ * A session is opened by signing in and closed by the service that ends it,
+ * so the act is an operation rather than a write to the row. The operator
+ * names the session by its identifier; the tenant scope comes from the
+ * caller's own session, and a session belonging to another tenant is not
+ * there to end.
+ */
+export interface EndSessionRequest {
+    session_id: string;
+}
+
+export interface EndSessionResponse {
+    success: boolean;
+    message: string;
+}
+
 export const subjects = {
     get_active_sessions_request: 'iam.v1.ops.get_active_sessions',
+    end_session_request: 'iam.v1.ops.end_session',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -56,4 +75,5 @@ export const subjects = {
  */
 export const requiresSession = {
     get_active_sessions_request: true,
+    end_session_request: true,
 } as const;

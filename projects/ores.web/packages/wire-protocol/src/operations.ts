@@ -30,8 +30,10 @@ import {
     partySummarySchema,
     uuidSchema,
     wireTimestampSchema,
+    type AuthEvent,
     type LoginInfo,
     type Session,
+    type SessionStatisticsRow,
 } from './domain.js';
 import type { Account, PartySummary } from './domain.js';
 import { subjects as httpInfoSubjects } from './generated/http/protocol/http_info_protocol.js';
@@ -608,11 +610,123 @@ export const sessionPageSchema = z
 export type WireSessionPage = z.infer<typeof sessionPageSchema>;
 
 /**
+ * `list_auth_events_response`.
+ *
+ * The account and the session are carried as text: a failure records the
+ * username it was tried for and no account, so a schema that demanded an
+ * identifier would refuse the very rows the log exists to hold.
+ */
+const wireAuthEventSchema = z.object({
+    id: z.string().default(''),
+    event_time: text,
+    account_id: text,
+    event_type: text,
+    username: text,
+    session_id: text,
+    party_id: text,
+    error_detail: text,
+});
+
+/** Translates one wire authentication event, field by field. */
+function mapAuthEvent(row: z.infer<typeof wireAuthEventSchema>): AuthEvent {
+    return {
+        id: row.id,
+        eventTime: row.event_time,
+        accountId: row.account_id,
+        eventType: row.event_type,
+        username: row.username,
+        sessionId: row.session_id,
+        partyId: row.party_id,
+        errorDetail: row.error_detail,
+    };
+}
+
+export const authEventListSchema = z
+    .object({ events: z.array(wireAuthEventSchema).default([]) })
+    .transform((row) => ({ events: row.events.map(mapAuthEvent) }));
+
+/** The authentication events the BFF returns and the browser consumes. */
+export type WireAuthEventList = z.infer<typeof authEventListSchema>;
+
+/**
+ * `get_session_statistics_response`.
+ *
+ * The handler aggregates the sessions table, so the doubles arrive as text on
+ * some drivers and as numbers on others; the schema accepts both rather than
+ * letting a representation decide whether a day is shown.
+ */
+const wireSessionStatisticsSchema = z.object({
+    day: text,
+    account_id: text,
+    session_count: z.coerce.number().pipe(z.int().nonnegative()).default(0),
+    avg_duration_seconds: z.coerce.number().default(0),
+    total_bytes_sent: z.coerce.number().pipe(z.int().nonnegative()).default(0),
+    total_bytes_received: z.coerce.number().pipe(z.int().nonnegative()).default(0),
+    avg_bytes_sent: z.coerce.number().default(0),
+    avg_bytes_received: z.coerce.number().default(0),
+    unique_countries: z.coerce.number().pipe(z.int().nonnegative()).default(0),
+});
+
+/** Translates one wire statistics row, field by field. */
+function mapSessionStatistics(
+    row: z.infer<typeof wireSessionStatisticsSchema>,
+): SessionStatisticsRow {
+    return {
+        day: row.day,
+        accountId: row.account_id,
+        sessionCount: row.session_count,
+        avgDurationSeconds: row.avg_duration_seconds,
+        totalBytesSent: row.total_bytes_sent,
+        totalBytesReceived: row.total_bytes_received,
+        avgBytesSent: row.avg_bytes_sent,
+        avgBytesReceived: row.avg_bytes_received,
+        uniqueCountries: row.unique_countries,
+    };
+}
+
+export const sessionStatisticsListSchema = z
+    .object({ rows: z.array(wireSessionStatisticsSchema).default([]) })
+    .transform((row) => ({ rows: row.rows.map(mapSessionStatistics) }));
+
+/** The session statistics the BFF returns and the browser consumes. */
+export type WireSessionStatisticsList = z.infer<typeof sessionStatisticsListSchema>;
+
+/**
+ * `end_session_response`.
+ *
+ * The handler states a refusal the caller can act on, such as a session that
+ * has already ended, in the body rather than as a failed call.
+ */
+export const endSessionReplySchema = z.object({
+    success: flag,
+    message: text,
+});
+
+export type EndSessionReply = z.infer<typeof endSessionReplySchema>;
+
+/**
+ * `lookup_country_response`.
+ *
+ * Not found is an answer rather than a failure: the tenant's ranges do not
+ * cover the address, which is what a private address always gets. The
+ * country code is empty in that case, so a caller reads `found` rather than
+ * the code.
+ */
+export const lookupCountryReplySchema = z.object({
+    country_code: text,
+    found: flag,
+    success: flag,
+    message: text,
+});
+
+export type LookupCountryReply = z.infer<typeof lookupCountryReplySchema>;
+
+/**
  * `get_active_sessions_response`.
  *
  * The reply carries `success` and a message beside the rows, and the handler
- * behind it answers `{success: true}` with no rows today: the read is a stub, so
- * an empty list here is the server's answer rather than a failure.
+ * behind it answers the sessions whose end time is empty. An empty list is
+ * therefore the tenant's answer rather than a failure: no session is open.
  */
 export const activeSessionsReplySchema = z
     .object({ sessions: z.array(wireSessionSchema).default([]) })

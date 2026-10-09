@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.http-route.enabled: true
+:ID: 3D9A5E71-4C2B-4F8A-9E6D-1B7C3A5F8D20
+:END:
+#+title: ores.iam.auth_event_operations
+#+description: Codegen operation model for the authentication event log read, rendered to C++ and the BFF route from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: auth_event_operations
+#+namespace: ores::iam::messaging
+#+brief: authentication event log operations.
+#+filetags: :model:operation:iam:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+The authentication event log read.
+
+=ores_iam_auth_events_tbl= records one row per authentication event: a
+successful login, a failed attempt, a logout, a token refresh, a rejected
+refresh and a signup. It is the record an administrator reads to account
+for who is signed in and who is failing to get in, and no subject read it.
+
+The table carries no row-level security: it is a system-level audit log.
+The read therefore scopes on =tenant_id= itself rather than relying on a
+policy, and it answers only the caller's tenant.
+
+The event is not an entity. It has no versions, no diff and no revert,
+because nothing writes one after the fact, so it has no entity model and
+no generated CRUD. The message shape here is the whole of its protocol.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** auth_event
+#+begin_src cpp :name comment
+/**
+ * @brief One authentication event, as the log records it.
+ *
+ * The timestamps are ISO 8601 strings: that is the storage form, and the
+ * screen reads them as text rather than as an instant.
+ */
+#+end_src
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** event_time
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** event_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** session_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** error_detail
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** list_auth_events_request
+:PROPERTIES:
+:subject: iam.v1.auth_events.list
+:response: list_auth_events_response
+:http_route: true
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A window over the caller's tenant authentication events.
+ *
+ * An empty filter does not filter. The window is newest first, so the
+ * screen reads the most recent events without asking for an order.
+ */
+#+end_src
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** event_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** from_time
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** to_time
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 200
+:END:
+
+*** offset
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+** list_auth_events_response
+
+*** events
+:PROPERTIES:
+:cpp_type: std::vector<auth_event>
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:

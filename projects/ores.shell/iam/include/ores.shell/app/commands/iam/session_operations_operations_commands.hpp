@@ -68,6 +68,13 @@ public:
     static void process_get_active_sessions(std::ostream& out,
                                             ores::nats::service::nats_client& session,
                                             const std::vector<std::string>& args);
+
+    /**
+     * @brief end-session <session_id>
+     */
+    static void process_end_session(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    const std::vector<std::string>& args);
 };
 
 }

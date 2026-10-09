@@ -23,8 +23,10 @@ set(files
     "routes/iam/account_credential_routes.cpp"
     "routes/iam/account_operations_routes.cpp"
     "routes/iam/account_routes.cpp"
+    "routes/iam/auth_event_operations_routes.cpp"
     "routes/iam/authorization_routes.cpp"
     "routes/iam/bootstrap_routes.cpp"
+    "routes/iam/geo_operations_routes.cpp"
     "routes/iam/iam_routes.cpp"
     "routes/iam/login_info_routes.cpp"
     "routes/iam/login_routes.cpp"
@@ -32,6 +34,7 @@ set(files
     "routes/iam/role_routes.cpp"
     "routes/iam/session_operations_routes.cpp"
     "routes/iam/session_routes.cpp"
+    "routes/iam/session_statistics_operations_routes.cpp"
     "routes/iam/signup_routes.cpp"
 )
 
@@ -40,8 +43,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_credential_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_operations_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/auth_event_operations_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/authorization_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/bootstrap_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/geo_operations_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/iam_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/login_info_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/login_routes.hpp"
@@ -49,5 +54,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/role_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/session_operations_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/session_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/session_statistics_operations_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/signup_routes.hpp"
 )

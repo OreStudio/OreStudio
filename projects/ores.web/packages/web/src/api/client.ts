@@ -88,7 +88,10 @@ import {
     workflowProgressSchema,
     loginInfoSchema,
     sessionSchema,
+    authEventSchema,
+    sessionStatisticsSchema,
     type Account,
+    type AuthEvent,
     type BootstrapStatus,
     type CreateAdministratorRequest,
     type InitialAdministrator,
@@ -96,6 +99,7 @@ import {
     type LoginInfo,
     type LoginResult,
     type Session,
+    type SessionStatisticsRow,
     type PasswordPolicy,
     type ProvisionPartyRequest,
     type ProvisionPartyResult,
@@ -148,6 +152,12 @@ export type BusRange = '15m' | '1h' | '6h';
  * on the deployment's clock.
  */
 export type LogsRange = '15m' | '1h' | '6h' | '24h';
+
+/**
+ * The period presets the audit screen offers, which the BFF turns into a
+ * window on the deployment's clock. `all` names no window at all.
+ */
+export type AuditPeriod = 'hour' | 'day' | 'week' | 'all';
 
 /**
  * The filters the logs screen sends, already applied.
@@ -1079,6 +1089,59 @@ export const api = {
             .object({ sessions: z.array(sessionSchema) })
             .parse(await request('/api/sessions/active', { method: 'GET' }));
         return answer.sessions;
+    },
+
+    /**
+     * One page of the tenant's authentication events, newest first.
+     *
+     * The period travels as a preset rather than as two instants, because the
+     * window is the deployment's to compute: a browser that sent its own times
+     * would state a window the deployment never measured.
+     */
+    async authEvents(query: {
+        readonly period: AuditPeriod;
+        readonly eventType: string;
+        readonly offset: number;
+        readonly limit: number;
+    }): Promise<readonly AuthEvent[]> {
+        const params = new URLSearchParams({
+            period: query.period,
+            offset: String(query.offset),
+            limit: String(query.limit),
+        });
+        if (query.eventType !== '') {
+            params.set('eventType', query.eventType);
+        }
+        return z
+            .object({ events: z.array(authEventSchema) })
+            .parse(await request(`/api/auth-events?${params.toString()}`, { method: 'GET' }))
+            .events;
+    },
+
+    /** One page of the tenant's session statistics, newest day first. */
+    async sessionStatistics(query: {
+        readonly period: AuditPeriod;
+        readonly offset: number;
+        readonly limit: number;
+    }): Promise<readonly SessionStatisticsRow[]> {
+        const params = new URLSearchParams({
+            period: query.period,
+            offset: String(query.offset),
+            limit: String(query.limit),
+        });
+        return z
+            .object({ rows: z.array(sessionStatisticsSchema) })
+            .parse(await request(`/api/session-statistics?${params.toString()}`, { method: 'GET' }))
+            .rows;
+    },
+
+    /** Ends one session of the caller's tenant. */
+    async endSession(sessionId: string): Promise<void> {
+        await request(`/api/sessions/${encodeURIComponent(sessionId)}/end`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({}),
+        });
     },
 
     /**

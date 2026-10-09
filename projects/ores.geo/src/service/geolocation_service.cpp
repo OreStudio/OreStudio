@@ -29,13 +29,18 @@ geolocation_service::geolocation_service(database::context ctx)
 std::expected<geolocation_result, geolocation_error>
 geolocation_service::lookup(const boost::asio::ip::address& ip) const {
     try {
-        // Use the validated IP address's string representation to prevent injection
+        /*
+         * The ranges are published per tenant, so the lookup names the
+         * tenant whose ranges it searches. The address travels as a bound
+         * parameter rather than as text spliced into the statement.
+         */
         const auto ip_str = ip.to_string();
-        const std::string sql =
-            "SELECT country_code FROM ores_geo_ip2country_lookup_fn('" + ip_str + "'::inet)";
-
-        auto rows = database::repository::execute_raw_multi_column_query(
-            ctx_, sql, lg(), "Geolocation lookup for " + ip_str);
+        const auto rows = database::repository::execute_parameterized_multi_column_query(
+            ctx_,
+            "SELECT country_code FROM ores_geo_ip2country_lookup_fn($1::uuid, $2::inet)",
+            {ctx_.tenant_id().to_string(), ip_str},
+            lg(),
+            "Geolocation lookup for " + ip_str);
 
         if (rows.empty()) {
             return std::unexpected(geolocation_error::address_not_found);

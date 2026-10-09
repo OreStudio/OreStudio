@@ -111,6 +111,20 @@ session_operations_routes::handle_get_active_sessions(const http_request& req,
     }
 }
 
+boost::asio::awaitable<http_response>
+session_operations_routes::handle_end_session(const http_request& req, nats_client& session) {
+    using request_type = messaging::end_session_request;
+    try {
+        const auto parsed = rfl::json::read<request_type>(req.body);
+        if (!parsed) {
+            co_return http_response::bad_request("Invalid request body");
+        }
+        co_return co_await forward(req, session, *parsed);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+}
+
 void session_operations_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
@@ -132,7 +146,21 @@ void session_operations_routes::register_routes(
     router->add_route(get_active_sessions_built);
     registry->register_route(get_active_sessions_built);
 
-    BOOST_LOG_SEV(lg(), info) << "session_operations routes registered: " << 1 << " endpoint(s)";
+    auto end_session_route = router->post("/api/v1/iam/ops/end_session")
+                                 .summary("End session")
+                                 .description("Forwards to the iam.v1.ops.end_session operation.")
+                                 .tags({"iam"})
+                                 .auth_required()
+                                 .body<messaging::end_session_request>()
+                                 .response<messaging::end_session_response>()
+                                 .handler([&session](const http_request& req) {
+                                     return handle_end_session(req, session);
+                                 });
+    const auto end_session_built = end_session_route.build();
+    router->add_route(end_session_built);
+    registry->register_route(end_session_built);
+
+    BOOST_LOG_SEV(lg(), info) << "session_operations routes registered: " << 2 << " endpoint(s)";
 }
 
 }

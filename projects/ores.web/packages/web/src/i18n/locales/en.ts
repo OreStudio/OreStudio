@@ -443,6 +443,8 @@ export const en: SourceCatalogue = {
             lastSignIn: 'Last sign-in',
             locked: 'Locked',
             notLocked: 'Not locked',
+            never: 'Never',
+            neverSignedIn: 'Never signed in',
         },
         events: {
             title: 'Authentication events',

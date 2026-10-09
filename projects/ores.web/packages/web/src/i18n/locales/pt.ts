@@ -438,6 +438,8 @@ const pt: SourceCatalogue = {
             lastSignIn: 'Último início de sessão',
             locked: 'Bloqueada',
             notLocked: 'Não bloqueada',
+            never: 'Nunca',
+            neverSignedIn: 'Nunca iniciou sessão',
         },
         events: {
             title: 'Eventos de autenticação',

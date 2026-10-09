@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 2AE8A650-BE21-43C6-B01F-98CB8F705B31
+:END:
+#+title: Manage synthetic collections prototype
+#+description: The Generation Configs window before it is built, with three views of a collection and the four seeded collections it is read against, on a throwaway page of mock data
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:manage-synthetic-collections/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The collections prototype argues what the *Generation Configs* screen should
+show before any of it is built. It carries three views of one collection — the
+list, the detail form and the coverage — and the four seeded collections they
+are read against, so the layout is judged, not imagined.
+
+It argues the group page's row: a collection is the unit a person starts and
+stops, so it must show what it owns and where it came from before it is run. The
+person does not start a feed. They start a named, party-scoped set of feeds, and
+the screen has to say what the set holds, which feeds the request will touch, and
+which party, dataset and version it belongs to, before that request is sent.
+
+It is throwaway, with no service and no build step. Open the
+[[file:manage-synthetic-collections/][collections page]].
+
+* Detail
+
+** The question
+
+A collection is a =market_data_generation_config=: a name, a description, an
+enabled flag, a party, a scope, a binding mode and a dataset of origin, and it
+owns the typed FX and IR feeds beneath it. In the tree the same rows are the
+Collection nodes, and the folder-scoped start request names one node.
+
+The open question is how the ownership and the provenance stay visible while the
+collection is chosen and started. The tree says nothing else about a node: not
+what it owns, what it was published from, who changed it, or what coverage a
+start will produce.
+
+** The variants
+
+Switch with the bottom bar, or =?variant=. The default is =a=. The variants
+disagree about where the collection is judged: as a row among rows, as a record
+with an audit tail, or as the coverage it produces.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | list | One row per collection: name and version, description, enabled, feed count split into FX and IR, asset classes, dataset, changed by and when, and the actions Edit, Delete, Start all and Stop all. |
+| =B= | detail form | One collection as a record: the name, description and enabled fields the dialog edits, then the read-only audit block, the feeds it owns, and its version history. |
+| =C= | coverage | What the collection spans: asset class by instrument type with the feed count per cell, the currencies covered, and every gap it has. |
+
+*A* is the working view and the closest to the existing window. *B* gives the
+provenance equal standing with the fields. *C* is the view the group did not have,
+and it reads an empty cell as a gap rather than a zero.
+
+** The states
+
+Switch with the bottom bar, or =?state=. The default is =realistic=. Each state
+sets the mock collection the page reads, drawn from the seed populate scripts
+under =projects/ores.sql/populate/synthetic/.
+
+| State | What it shows |
+|-------+---------------|
+| =basic= | Basic: two vintage-grounded FX pairs, no IR curves, enabled and running. A small starter set. |
+| =realistic= | Realistic 2026: 21 CIR curves and 13 FX pairs, the default live theme. |
+| =uniform= | Uniform Demo: 20 Vasicek curves and 11 FX pairs, with its IR curves at auto-start false because they collide with Realistic 2026. |
+| =empty= | No collections configured: the =ores.qt= empty-state text, and the New Collection action. |
+
+ORE Samples 2016, the disabled IBOR-era theme, is in the list but not the bar.
+
+** Driving it
+
+Everything on the page is live and nothing is stored. *New Collection* adds an
+empty collection with no feeds; *Edit* opens the detail form on that collection;
+*Delete* asks first and says the feeds go with it; *Start all* and *Stop all* set
+the mock feeds running and report one folder-scoped request, fanned out by the
+server. *Reset mock changes* appears once a change is made; *Save* reports the
+version the save would write.
+
+** What is fake
+
+Everything on the page is mock data. The four collections, their names,
+descriptions, dataset ids, versions, audit rows and histories are hard-coded
+literals, as are their feeds, currencies, index families, process types and
+source names. There is no server, no session and no build step.
+
+** Where the code lives
+
+=doc/prototypes/market_data/manage-synthetic-collections/=. One file, =index.html=,
+with its CSS and its JavaScript inline: no framework, no =prototype.css= and no
+=prototype.js=. The site build copies the directory as it stands and adds nothing.
+
+** The verdict
+
+The group accepted the argument and recorded it as the row this note answers to:
+a collection is the unit a person starts and stops, so it must show what it owns
+and where it came from before it is run. What the group took is not one variant
+but the requirement they share: the list states the feed count and the asset
+classes, the detail states the dataset, the actor and the version history, and
+the coverage states what a start would span. The three variants and the four
+states stayed on the page as the record.
+
+** What it does not settle
+
+The coverage view. The screens note records that no screen shows a collection's
+coverage before it is started, and variant *C* argues for one. Whether it belongs
+in the list, in the detail, or on a page of its own is open.
+
+The delete cascade. The page deletes a collection and its feeds together, behind
+one confirmation. Whether each feed is named, or the whole set is deleted as one
+act, is open.
+
+The start and the enabled flag. The page draws *Start all* beside *Delete*, and a
+collection can be enabled while no feed runs. Whether enabling and starting are
+one act is open, as is the collision Uniform Demo states, its IR curves left at
+auto-start false because they meet Realistic 2026 on currency and index family.
+
+The collection's own axes. =scope= and =binding_mode= are not drawn at all, and
+the page shows =dataset_id= without showing how a publish from a DQ dataset
+resolves it. A feed is identified by its =source_name=, so a rename is a
+re-identification, and the page does not offer one.
+
+* See also
+
+- The journey that answers to this prototype, *Manage synthetic collections*, has
+  no document yet; [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]] states where it belongs.
+- [[file:index.org][Market data prototypes]] — the group page, and the row that records what this
+  prototype argues.
+- [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]] — the domain record this screen
+  writes.
+- [[id:7557BCCA-54B5-43C0-8B12-F0AD373813F4][The shell operation surface]] — the folder-scoped start and stop the page calls.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.

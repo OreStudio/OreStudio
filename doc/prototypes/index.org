@@ -58,8 +58,11 @@ and Calendars. Their journeys are the first place a new prototype would go.
 the journey group's own name, and the group page is the file =index.org= beside
 the prototypes it lists.
 
-A design note, where one exists, is the file =<name>.org= beside the prototype
-folder, and the group page links it.
+Every prototype has a design note: the file =<name>.org= beside the prototype
+folder, which the group page links. It is the page a reader lands on when they
+follow a prototype from the group table, and it argues the prototype the way
+=doc/prototypes/entry/registration-door.org= does — what it asks, its variants
+and states, what is fake, where the code lives, and the verdict.
 
 The site publishes a prototype exactly as it was written, and adds nothing to
 it: no stylesheet, no header, no links of its own. The site's stylesheet is for
@@ -95,14 +98,17 @@ Every group page states, for each prototype, whether a review exists.
 3. Copy the design tokens from
    =projects/ores.web/packages/web/src/styles.css= so the prototype reads in
    the application's own colours.
-4. Add a row to the group's page, =doc/prototypes/<group>/index.org=, and
-   describe what the prototype argues. Its review cell stays at =none= until a
-   review lands. To keep a design note, put it at
-   =doc/prototypes/<group>/<name>.org= and link it from the row.
-5. Publish nothing by hand. The site build finds every prototype under
+4. Write the design note at =doc/prototypes/<group>/<name>.org=, with the
+   links table above its Summary: what the prototype argues, its variants and
+   states, what is fake, where the code lives and the verdict. A prototype
+   without a note is a row nobody can open.
+5. Add a row to the group's page, =doc/prototypes/<group>/index.org=, and link
+   the note from the row's first cell. Its review cell stays at =none= until a
+   review lands.
+6. Publish nothing by hand. The site build finds every prototype under
    =doc/prototypes/<group>/<name>/= and deploys it where it sits, so no build
    file names it.
-6. For a review, add =doc/prototypes/<group>/<name>/review/= with an
+7. For a review, add =doc/prototypes/<group>/<name>/review/= with an
    =index.html= that lists its screens, and point the row's review cell at it.
 
 A prototype is never a route in =ores.web=. React is for the product, and a

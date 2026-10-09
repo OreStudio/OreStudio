@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 4E65357F-8C9A-46D5-92AA-874C612C58E7
+:END:
+#+title: Manage GMM components prototype
+#+description: The GMM component screen before it is built: three variants of the mixture editor, three mock weight states, and the raw weight sum shown beside the weights the save normalises
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:manage-gmm-components/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The GMM components prototype argues what the component screen should show before
+any of it is built. It carries three variants of the screen and three mock weight
+states, so the layout is judged against numbers, and it argues the row the group
+page records: a mixture is browsed across every feed at once, and the weights are
+normalised on save, so the screen must show the raw sum as well as the normalised
+weights. The typed weight and the stored weight are two different numbers, and a
+person editing a mixture has to see both before the save decides.
+
+It is throwaway, with no service and no build step. Open the
+[[file:manage-gmm-components/][component screen]].
+
+* Detail
+
+** The question
+
+A component is one weighted Gaussian of a feed's mixture: =component_index=, a
+description, a mean, a standard deviation and a weight. The weights are per feed,
+not per screen. The stored rows need not sum to one, and the save divides every
+weight of a feed by its raw sum, so the typed w is not the w the mixture draws from.
+
+The open question is how the screen shows both numbers without making either one
+look like a fault. A raw sum of 0.90 is not a refusal, and a screen that hides it
+hides the only evidence that the typed numbers changed.
+
+** The variants
+
+Switch with the bar at the bottom, or =?variant=. The default is =a=. The
+variants disagree about which question the screen answers.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | components across the FX feeds | One row per component, gathered under its feed, with the per-feed weight sum repeated once, the audit trail of the row, and Edit, Delete and New Component. The mixture is browsed across every feed at once. |
+| =B= | density preview | The selected feed's mixture drawn as f(x) = Σ w_i·N(x; μ_i, σ_i) over log-return percent, the components faint under the bold mixture, and the moments the components imply. |
+| =C= | normalisation and validation | Each feed's raw sum, the normalised weight per component, a flag when a raw sum misses 1, and bars of the normalised weights. The save's arithmetic drawn as data. |
+
+The variants disagree about structure, not colour: *A* spends the screen on the whole catalogue of mixtures, *B* on one feed's shape, *C* on the typed weights against the stored ones.
+
+** The states
+
+Switch with the bar at the bottom, or =?state=. The default is =normal=.
+
+| State | What it shows |
+|-------+---------------|
+| =normal= | Every feed's raw weight sum is 1, so normalisation is the identity. |
+| =unnormalised= | GBP/USD's raw weights sum to 0.90 and is flagged, while USD/JPY and AUD/USD still sum to 1. |
+| =single= | USD/JPY has one component, a plain Gaussian whose σ alone sets the width and whose w stays 1.00. |
+
+The unnormalised state is the point of the prototype. It makes the two numbers
+distinguishable by a person who is not reading the code: the raw sum sits at 0.90
+with a warning, the normalised weights still draw a valid mixture, and the save
+goes through.
+
+** Driving it
+
+The bottom bar switches variant and state, and both are query parameters too, so
+=?variant=c&state=unnormalised= opens one screen directly. In variant *A* the feed
+buttons choose the feed a new component joins, and the table is live: *Edit* opens
+the mock =GmmComponentDetailDialog=, *Save* writes the edit back, *Cancel* drops it,
+*Delete* removes and renumbers a row, and *New Component* appends one at w = 0.00.
+
+Every control is prototype chrome, drawn to look unlike the design being judged.
+
+** What is fake
+
+Everything on the page is mock data. The three feeds, their identifiers, their
+=oresmd://= URLs, the components, the actors, the timestamps and the versions are
+hard-coded literals, and a saved row is attributed to =you (mocked)= at =now=. There
+is no server, no session and no build step: a reload returns the page to its seed.
+
+The arithmetic is real, and the page does it: the density, the moments, the raw
+sums and the normalised weights are computed from the mock rows as the page draws
+them.
+
+** Where the code lives
+
+=doc/prototypes/market_data/manage-gmm-components/=. One file, =index.html=, with
+its CSS and its JavaScript inline: no framework, no =prototype.css=, no
+=prototype.js= and no build step. The page opens by double-clicking it. The site
+build copies the directory through =ores-deploy-web-app= as it stands, adding nothing.
+
+** The verdict
+
+The group accepted the argument and recorded it as the row this note answers to: a
+mixture is browsed across every feed at once, and the weights are normalised on
+save, so the screen must show the raw sum as well as the normalised weights. What
+the group took is that pairing: the cross-feed list of *A* and the table of *C*
+answer it, while the density preview of *B* stayed on the page because it reads one
+feed's shape and the decided question is what the save does to every feed's numbers.
+
+The three variants and the three states stayed on the page as the record, and a
+panel from any of them may still be borrowed.
+
+** What it does not settle
+
+The typed weight. The page says the save divides each weight by its feed's raw sum,
+and the prototype keeps the typed value in the editor. Whether the stored row is
+rewritten is open; [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]] records
+that nothing rewrites the stored rows and that the draw normalises them itself.
+
+The refusal. The page warns when a raw sum is not 1 and lets the save through.
+Whether the shell refuses a sum that misses 1 by more than a tolerance is open.
+
+The all-zero set. The page can delete every component of a feed, which no save
+would accept: the one rule a stored set must satisfy is a sum greater than zero,
+and the service and the client check it elsewhere.
+
+The single component. With K = 1 the mixture is a plain Gaussian and σ alone sets
+the width. Whether the screen keeps a component that carries the whole mixture,
+and whether the density preview belongs on this screen or the feed editor, is
+open.
+
+The shell. The footer names the =gmm_components= resource operations. The page
+asserts them; no service answers.
+
+* See also
+
+- The journey that answers to this prototype, *Manage GMM components*, has no document yet.
+- [[file:index.org][Market data prototypes]] — the group page, and the row that records what this prototype argues.
+- [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]] — what a component row holds, and the normalisation the draw applies.
+- [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]] — the parent feed each mixture belongs to.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.

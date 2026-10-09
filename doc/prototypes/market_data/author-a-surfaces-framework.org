@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: E5E2E849-4A5B-4D9C-8DCB-C8D2D4DB56AE
+:END:
+#+title: Author a surface's framework prototype
+#+description: A volatility surface is axes before it is numbers, in three structural variants and two label states, on mock data
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:volatility_surface:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:author-a-surfaces-framework/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The surface framework prototype argues what the *Author a surface's framework*
+screen should hold before any of it is built. It carries three structural
+variants of the same screen, the two states the label axis can be in, and the
+three smile point sets the desk quotes, so the shape can be judged concretely.
+
+Its argument is one sentence: a surface is axes before it is numbers. The
+quoting convention and the two label ladders decide what the grid can hold, and
+every value in that grid is downstream. A surface whose axes are not stored
+cannot be read back, whatever numbers sit in its cells.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data. It exists because the
+[[file:../../knowledge/journeys/market_data/journey_author-a-surfaces-framework.org][journey]]
+settles what the framework *is*; nothing yet settles what the person *sees*
+while they declare it. Open the [[file:author-a-surfaces-framework/][surface framework]].
+
+* Detail
+
+** The question
+
+The journey puts two axes at the top, the grid and the quoting convention that
+read from them in the middle, and the interpolation, the extrapolation and the
+parametric model at the bottom. The open question is the order a person meets
+those things in, and what the screen does when the strike-label vocabulary is
+missing.
+
+No surface model is stored today. The labels are free text inside a point URI,
+so the desk can send =ATM=, =25RR= and =25BF= as three strings that nothing
+orders or resolves to a strike. The screen must state that gap, because a grid
+drawn from unordered text claims a structure the system does not hold.
+
+** The variants
+
+Switch with the bottom bar, or =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =a= | Two label ladders | The expiry ladder and the label ladder sit side by side at the top, the grid follows them, and the axis ladders close the page. The axes are read first and every number below is a consequence. |
+| =b= | Full grid preview | The framework grid and the grid preview lead, and the ladders explain them afterwards. The cell count is the first thing a person sees. |
+| =c= | Convention-first form | The quoting convention leads: label meaning, delta convention, ATM type and quote type, then the axes those choices imply. |
+
+The variants disagree about order, not about colour. *A* and *C* put the axis
+before the number. *B* answers the count before the cause, which is the reading
+this prototype argues against.
+
+** The states
+
+Switch with the *Labels* buttons in the bottom bar, or =?state=.
+
+| State | What it shows |
+|-------+---------------|
+| =proposed= | The five labels =ATM=, =25RR=, =25BF=, =10RR= and =10BF= are declared, each with a kind and an ordinal. The grid preview lays out 8 expiries by 5 labels and marks 36 quoted and 4 missing cells. |
+| =nostrike= | No strike-label vocabulary exists. The labels are the text decoded from the point URIs, in the order they arrived and with no order column, so nothing can validate or order them. |
+
+The second state is the point of the prototype. With no vocabulary the grid
+preview refuses to draw at all: the 40 cells cannot be laid out because the axis
+order is unknown. The framework grid leaves every strike cell empty, so the
+cells state a missing vocabulary and not a missing quote.
+
+** Driving it
+
+Every switch is a query parameter, so any view is a URL and can be sent on.
+
+- =?variant=a|b|c= chooses the structural variant.
+- =?state=proposed|nostrike= chooses whether the label axis has a vocabulary.
+- =?smile=3|5|rrbf= chooses the smile point set (3-point, 5-point, or ATM / RR
+  / BF). This parameter decides the second axis, and with it the column count.
+- =?repr=delta|rrbf|strike|sabr|svi= chooses the representation the quotes are
+  read in.
+
+** What is fake
+
+Everything. The expiries, the vol levels, the smile skew and curvature, the SABR
+parameters and the reparameterisation table are hard-coded arrays in the page.
+There is no surface entity, no axis rows, no grid cells and no parameter set.
+There is no server, no session and no build step, and the framework lives in the
+page session only.
+
+** Where the code lives
+
+=doc/prototypes/market_data/author-a-surfaces-framework/=. One file,
+=index.html=, which carries its own CSS and JavaScript: plain HTML, no
+framework, no dependency and no build step. There is no =prototype.css= here,
+because the page needs none. The site build copies the directory as it stands
+and adds nothing to it.
+
+** The verdict
+
+The group accepted the framing: a surface is axes before it is numbers, and the
+quoting convention and the two label ladders decide what the grid can hold. That
+is the row this prototype holds on [[file:index.org][Market data prototypes]], and
+it is what the journey carries forward.
+
+The two-ladder reading, variant *A*, is the accepted order: the axis definition
+is read before the grid that follows from it. The =nostrike= state is kept,
+because it draws the consequence of the missing vocabulary where a person would
+meet it. *B* and *C* stay on the page as the record, and *C* holds a real
+alternative.
+
+** What it does not settle
+
+The vocabulary. The prototype draws a proposed label ladder of ATM, the 25s and
+the 10s. Where those labels are stored, and who may add one, are open.
+
+The conventions. The page offers forward, spot, premium-adjusted and driftless
+delta, forward ATMF and a delta-neutral straddle, without choosing any of them.
+It argues that the choice must be stored, because a 25-delta point is a
+different strike under each one; it does not argue which one the desk uses.
+
+The model. SABR, SVI and a grid with no model are all offered, and the SABR
+parameters are mock. Whether a surface stores a parameter set per expiry, and
+how a refit is distinguished from an exact re-expression, is left to the work
+that builds the surface model, as are the surface kinds beyond USD swaption
+volatility.
+* See also
+
+- [[file:../../knowledge/journeys/market_data/journey_author-a-surfaces-framework.org][Author a surface's framework]] — the journey this prototype answers.
+- [[file:index.org][Market data prototypes]] — the group this prototype belongs to.
+- [[file:../index.org][Prototypes]] — the index of every prototype, and where to open each one.
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]] — the journeys this group serves.
+- [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] — the method families the interpolation panel chooses between.

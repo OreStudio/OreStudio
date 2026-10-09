@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 768BEEF8-EAF1-46DF-99A4-17FE68D0ACCC
+:END:
+#+title: Market simulator prototype
+#+description: The Market Simulator composite window before it is built: three variants of the feed tree, the selection summary and the live chart, with the cascade start and stop request, on a throwaway page of mock data
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:synthetic-market-simulator/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The market simulator prototype argues what the *Market Simulator* window should
+show before any of it is built. It carries three variants of the same composite
+window and the three mock running sets they are read against, so the layout is
+judged with something concrete in front of you.
+
+It argues the group page's row: authoring synthetic feeds is one composite
+screen, a tree of the configured feeds, a summary of the selection, and the live
+chart it produces. Starting a collection is one folder-scoped request, and a
+node is running, stopped or partial. The person does not walk the tree feed by
+feed; they name a node and the server fans the request out over its subtree.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data. Open the [[file:synthetic-market-simulator/][simulator]].
+
+* Detail
+
+** The question
+
+The synthetic area authors and runs the market data the platform generates
+rather than receives. The open question is how authoring and running belong on
+one screen, and how a set of feeds is read without opening them one by one. The
+window answers with a namespace tree on the left and the selected leaf on the
+right, with its hero header, its summary and its chart.
+
+** The variants
+
+Switch with the bottom bar, the toolbar, or =?variant=. The default is =a=. The
+variants disagree about what sits beside the tree, not about the tree itself.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | feed table | The tree beside the table for a collection: one row per feed with its instrument, source name, status, bid and ask, process, cadence and vintage. The aggregate view, and the one place spread and cadence are read at once. |
+| =B= | live chart | The tree beside what the selected feed produces: an FX mid-price tick chart, or the overlaid IR curve snapshots, newest bold and older faded, under a History control. One feed over time. |
+| =C= | cascade | The tree beside the start and stop dispatch: the request a node sends, one folder-scoped request for a non-leaf node against the per-feed request for a leaf, next to the Validate Vintage summary. |
+
+The table and the chart answer different questions. *A* is every feed at one
+instant; *B* is one feed across time. *C* draws the request the server receives.
+
+** The states
+
+Switch with the bottom bar, the toolbar, or =?state=. The default is =running=.
+Each state sets the mock running set, and every node on the page derives from it.
+
+| State | What it shows |
+|-------+---------------|
+| =running= | A mix: four feeds running across the three collections, so a collection node reads "3 of 11 running" and the root reads partial. |
+| =allstopped= | Nothing running: every node reads stopped, and the root reads "0 of 16 running". |
+| =novintage= | Nothing running, and Validate Vintage refuses every vintage-backed contributor, naming the missing observation for each. A refused validation starts nothing. |
+
+A node is running, stopped or partial, and there is no fourth answer: an empty
+folder is stopped and a full one is running. A partial node carries its count.
+
+** Driving it
+
+The page is switched with the bottom bar, the toolbar, or the query parameters
+=variant=, =state= and =feed=. The Selection buttons switch the leaf the hero,
+the summary and the chart describe, including an IR curve. Under variant *A* the
+oresmd URL buttons open the shared URL editor in an overlay. The tree draws each
+node's state, but a node is not selectable, and every other toolbar action is
+inert. Every control is prototype chrome, drawn to look unlike the design judged.
+
+** What is fake
+
+Everything on the page is mock data. The three collections, the sixteen feeds,
+their processes, their parameters, their vintages, the running set and every
+validation answer are hard-coded literals, and the mock mid-price paths come
+from a seeded generator so the page draws the same picture on every load. There
+is no server, no session and no build step.
+
+The tick chart and the snapshot overlay read a live stream in the real window;
+here they draw a fixed sample. Starting a feed changes no row, and a refusal is a
+service-side answer the page cannot produce.
+
+** Where the code lives
+
+=doc/prototypes/market_data/synthetic-market-simulator/=. One file, =index.html=,
+with its CSS and its JavaScript inline: no framework, no =prototype.css=, no
+=prototype.js= and no build step. The site build copies the directory as it
+stands and adds nothing to it.
+
+** The verdict
+
+The group accepted the argument and recorded it as the row this note answers to:
+authoring synthetic feeds is one composite screen, a tree of the configured feeds,
+a summary of the selection, and the live chart it produces; starting a collection
+is one folder-scoped request, and a node is running, stopped or partial.
+
+What the group took is the composite shape and the cascade rule, not one
+variant. The tree carries the state of the set, the summary the provenance of the
+selection, and the chart what the feed produces. The table, the chart and the
+cascade stayed on the page as the record, with the three states.
+
+** What it does not settle
+
+The history of a stream. The window draws a fixed sample and a History control
+that selects how many snapshots to draw. Whether a real read has a history
+range, or a read as of a past instant, is open; the page records both as mocks.
+
+The mixed selection. A selection that mixes a leaf with a non-leaf is not
+expressible as one request, so the page sends the per-feed request for each leaf
+and the folder-scoped request for each folder. Whether one selection rule should
+replace the two is open.
+
+Which node the page is describing. The tree draws every node's state, but the
+leaf the hero, the summary and the chart describe is set by =feed=, and the tree
+does not select it. Whether the tree itself selects the node is open.
+
+* See also
+
+- The journey that answers to this prototype, *Market simulator*, has no
+  document yet. It needs one, in =doc/knowledge/journeys/market_data/=, named
+  for the journey it answers.
+- [[file:index.org][Market data prototypes]] — the group page, and the row that records what this
+  prototype argues.
+- [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]] — the inventory this window belongs to, the
+  cascade rule, and the editors behind it.
+- [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]] — the tree the page draws, and
+  the folder a start request names.
+- [[id:7557BCCA-54B5-43C0-8B12-F0AD373813F4][The shell operation surface]] — the same folder-scoped and per-feed start and
+  stop paths without the window.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.

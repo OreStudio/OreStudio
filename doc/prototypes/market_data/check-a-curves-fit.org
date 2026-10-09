@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 394A9FA5-3CA9-4432-BA09-931667510100
+:END:
+#+title: Check a curve's fit prototype
+#+description: One screen that checks a candidate curve against the quotes it came from, its pillar residuals, its forward smoothness and the roll logic behind its dates, with three variants and three market states on mock data
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:fit:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:check-a-curves-fit/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The curve-fit prototype argues what the trader's or quant's "Check a curve's
+fit" screen shows when a candidate is judged against the quotes it was built
+from. The candidate sits at the top, the raw quotes over it, the residuals and
+forwards in the middle, and the calendar and roll logic at the foot, so a person
+reads the market, then the fit, then the dates it settles on.
+
+It is throwaway: not production code, reading no service, every value mock. It
+exists because the [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][journey]] settles
+what the check reads but not how it is shown. The group accepted the argument: a
+curve is checked against the quotes it came from — residuals, forward smoothness
+and roll logic on one screen — and a quote it does not join is a gap, not a zero.
+
+Open the [[file:check-a-curves-fit/][fit check]].
+
+* Detail
+
+** The question
+
+The journey's Goal is to know whether a candidate still stands on the quotes it
+was built from and whether its forwards and dates make sense; the person reads
+and diagnoses and does not publish. It leaves open how those readings share one
+screen: the candidate and the quotes are two separate reads, keyed differently —
+the quote by an =oresmd_uri=, the candidate by a =point_id= — so the screen must
+place them side by side and say what each distance means. An unjoined quote read
+as a zero would invent a market the person never had; a forward step read as a
+confirmed fault would claim a check that never ran. The page is written against
+both: an unmatched quote is a gap, and a forward finding is marked as one no
+operation serves.
+
+** The variants
+
+Switch with the *Show* buttons in the bottom bar, or =?variant=. The variant is
+the presentation, which the journey records as the central design question.
+
+| Variant | Name      | The structural argument |
+|---------+-----------+-------------------------|
+| =a=     | Residuals | The quotes over the candidate, the pillar residuals, the residual plot, then the forwards. Reads a distance at each pillar. |
+| =b=     | Overlay   | The candidate against the raw quotes on one chart, with the forwards below. Reads the shape, and a quote standing off the line is seen at once; it carries no residual table and no residual plot. |
+| =c=     | Combined  | The overlay and the residual plot above the quotes and residual tables, the tables side by side. Both readings of one fit, and the most work for the least certainty; it carries no forward view. |
+
+The variants disagree about the reading, not colour: A reads a distance, B a
+shape, C both. Every variant carries the candidate header, the calendar and roll
+panel and the inert read controls, so they differ only in the middle.
+
+** The states
+
+Switch with the *Market* buttons, or =?state= — the mock market the screen reads against.
+
+| State   | What it shows |
+|---------+---------------|
+| =fit=   | Nine pillars joined, every residual within 2 bp, no forward step, and each tenor resolving on its pillar. The sound candidate. |
+| =large= | The 7Y candidate moves to 3.7830 against a quote of 3.8480, so that residual reads *too large* in the table and red in the plot, and the 5Y-7Y forward carries a step of −9.2 bp. |
+| =gap=   | The 7Y candidate is absent, so that quote reads *not joined*, its residual reads *unmatched*, and the overlay chart breaks the candidate line and tags the 7Y quote as not joined. |
+
+The residual threshold is the argument in one cell. The page draws 2 bp as the
+line between *within* and *too large*. In =gap= the reading is *unmatched* and
+never zero: an absent candidate point is not a candidate of zero.
+
+** Driving it
+
+The bottom bar switches the variant and the market, and the page answers to
+=?variant= and =?state=, so any combination is a URL. *Read candidate* and
+*Recompute candidate* neither read nor compute: each rewrites the strip at the
+top with the missing subject it names, and changes nothing else.
+
+** What is fake
+
+Everything. The USD OIS candidate, its nine pillars, the quotes, the forwards,
+the roll convention and the resolved dates are constants in the page. There is
+no server, no session and no build step, and nothing is published or stored. The
+residual, the relative residual and the reading are computed on the page from
+the two mock lists, because no diagnostics operation serves a residual; the
+forward step is hard-coded and labelled unchecked; the dates are mock and
+labelled derived. The oresmd URL editor's plumbing — the iframe to
+=../oresmd-url-editor/index.html= — is carried but unreachable.
+
+** Where the code lives
+
+=doc/prototypes/market_data/check-a-curves-fit/=. One file, =index.html=,
+holding its markup, styles and script, with a plotting helper =PC= in the same
+file, and no framework and no build step; there is no =prototype.css= and no
+=prototype.js=. The site copies the directory as it stands through
+=ores-deploy-web-app= and adds nothing to it.
+
+** The verdict
+
+The group accepted the argument rather than one variant: a curve is checked
+against the quotes it came from, and the residuals, the forward smoothness and
+the roll logic belong on one screen in that order. It accepted the readings the
+page insists on — an unjoined quote is a gap not a zero, a forward step is drawn
+and marked unchecked, and a resolved date is labelled as derived because no
+point stores it.
+
+What stayed on the page as the record: the three variants, kept because the
+argument must hold whether the person reads a distance or a shape; the three
+states beside them; the residual plot the page computes itself; and the inert
+read controls. No Gemini review was raised.
+
+** What it does not settle
+
+The diagnostics payload. The screen derives the residual from the two reads it
+already has. Whether a residual arrives as its own subject or as a per-pillar
+field on the compute reply, and whether the engine's own distance is the one to
+show, is open.
+
+The health checker and the join. A checker that flags a forward step exists and
+nothing calls it; the quote and the candidate cannot be read together, so the
+page matches them on the coordinate. Whether a forward finding is a subject or a
+findings field, and whether an overlay read returns both together, is open.
+
+The as-of read, the tolerance and surfaces. The candidate is read at now, so the
+page cannot show it as built; the 2 bp line between a sound residual and a large
+one is mock; the screen is for curves only, so a surface fit is not checked here.
+
+* See also
+
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — the journey this prototype answers.
+- [[id:6C44C1D0-B257-4B4A-9580-98845BEA9AFC][Market data prototypes]] — the group page, and the table this prototype sits in.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the instrument this candidate is.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — why a quote and a candidate point are keyed differently.

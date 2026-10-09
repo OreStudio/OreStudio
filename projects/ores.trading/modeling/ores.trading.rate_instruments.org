@@ -149,6 +149,57 @@ Null with =start_date=, and for the same reason.
 
 Optional free-text description.
 
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this instrument. An instrument is written beside
+its trade, so a row cannot exist without one.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.identity.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.identity.trade_activity_id = activity.id;
+    }
+#+end_src
+
 * Delete cascade
 
 The rows a rates instrument owns. Each is keyed by the instrument's own

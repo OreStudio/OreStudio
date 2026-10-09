@@ -250,4 +250,11 @@ describe("a party user's home", () => {
         expect(html).toContain('Coming later');
         expect(html).not.toContain('href="/tenants');
     });
+
+    it('offers the audit card, as the tenant home does', () => {
+        const html = home('application');
+
+        expect(html).toContain('href="/audit"');
+        expect(html).toContain('Sign-ins');
+    });
 });

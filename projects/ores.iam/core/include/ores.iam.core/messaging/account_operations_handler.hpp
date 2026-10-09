@@ -77,6 +77,25 @@ acct_lookup_party(const service::cache::party_cache& cache,
     return cache.lookup(tenant_id, party_id);
 }
 
+/**
+ * @brief One association, named as the member's own party list states it.
+ *
+ * The association carries the identifier alone, so the name, the short code,
+ * the category and the business centre come from the party the cache holds. A
+ * party the cache cannot name projects to empty strings rather than to a
+ * half-read row: the screen states the gap instead of inventing a name.
+ */
+inline ores::iam::messaging::my_party
+acct_project_my_party(const boost::uuids::uuid& party_id,
+                      const std::optional<refdata::domain::party>& party) {
+    return ores::iam::messaging::my_party{
+        .party_id = boost::uuids::to_string(party_id),
+        .name = party ? party->full_name : std::string{},
+        .short_code = party ? party->short_code : std::string{},
+        .party_category = party ? party->party_category : std::string{},
+        .business_center_code = party ? party->business_center_code : std::string{}};
+}
+
 // Reads onboarding.party directly from the DB (never the party cache), so
 // it is immune to cache staleness after a heavy import — unlike the
 // party.status check it replaces, which conflated the party's own domain
@@ -797,6 +816,70 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_my_account_contact_information_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = "The read failed.";
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves iam.v1.ops.get_my_parties.
+     *
+     * The account comes from the validated token, so the read answers only the
+     * caller's own list and needs no permission. The associations come from the
+     * junction repository and the names from IAM's party cache, which is
+     * reloaded once when a party is missing from it. A party the cache still
+     * cannot name answers with empty strings: the screen shows the gap rather
+     * than a half-read row.
+     */
+    void get_my_parties(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        try {
+            auto scope = self_request_scope(msg);
+            if (!scope)
+                return;
+            const auto& [account_id, ctx] = *scope;
+
+            repository::account_repository account_repo;
+            const auto accounts =
+                account_repo.read_latest(ctx, boost::uuids::to_string(account_id));
+            if (accounts.empty()) {
+                get_my_parties_response missing;
+                missing.result.outcome = ores::utility::domain::outcome::missing;
+                missing.result.code = "account_missing";
+                missing.result.message = "The signed-in account was not found.";
+                reply(nats_, msg, missing);
+                return;
+            }
+            const auto& account = accounts.front();
+            const auto tenant_id = account.tenant_id.to_string();
+
+            repository::account_party_repository party_repo(ctx);
+            const auto associations = party_repo.read_latest_by_account(account_id);
+
+            const bool cache_miss =
+                std::any_of(associations.begin(), associations.end(), [&](const auto& ap) {
+                    return !acct_lookup_party(*party_cache_, tenant_id, ap.party_id);
+                });
+            if (cache_miss)
+                (void)party_cache_->load(tenant_id);
+
+            get_my_parties_response response;
+            response.result.outcome = ores::utility::domain::outcome::ok;
+            response.default_party_id = account.default_party_id ?
+                                            boost::uuids::to_string(*account.default_party_id) :
+                                            std::string{};
+            for (const auto& ap : associations) {
+                response.parties.push_back(acct_project_my_party(
+                    ap.party_id, acct_lookup_party(*party_cache_, tenant_id, ap.party_id)));
+            }
+            BOOST_LOG_SEV(account_handler_lg(), debug)
+                << "Completed " << msg.subject << " with " << response.parties.size() << " parties";
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_my_parties_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = "The read failed.";

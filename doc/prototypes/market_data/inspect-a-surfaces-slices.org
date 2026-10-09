@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: C5564FE4-258E-4807-B3FD-DBBAB086EA67
+:END:
+#+title: Inspect a surface's slices prototype
+#+description: Three views of a candidate surface — one slice, the mesh and the arbitrage report — over two mock markets, so the argument that a surface is read a slice at a time can be judged on the screen that carries it
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:surfaces:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                               |
+|---------------+-----------------------------------------------------|
+| Prototype     | [[file:inspect-a-surfaces-slices/][the prototype]]        |
+| Gemini review | none                                                |
+| Group         | [[file:index.org][Market data prototypes]]               |
+
+* Summary
+
+The surface slices prototype argues that a surface is read a slice at a time,
+and that the arbitrage checks are what make the slices trustworthy. It draws a
+candidate USD swaption vol surface from three views — one slice, the mesh and
+the arbitrage report — over two mock markets, so the argument can be judged on
+the screen that has to carry it.
+
+It is throwaway. It is not production code, it reads no service, and every
+value on it is mock data. It exists because the
+[[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][journey]] settles what the person
+reads; nothing yet settles whether that is one view or three, or whether the
+faults in a surface stand beside it or inside it.
+
+A slice is the smile at one expiry across strikes, from the put wing through
+the at-the-money point to the call wing. A smile that looks reasonable can
+still imply a negative density, and a level can still fall in variance against
+a shorter expiry, so the checks belong beside the smiles they judge.
+
+Open the [[file:inspect-a-surfaces-slices/][surface slices]].
+
+* Detail
+
+** The question
+
+The journey gives one screen: the surface and the tenor picker at the top, the
+smiles and the mesh in the middle, and the calendar and butterfly checks at the
+foot. It also records that none of the reads behind that screen exists, so the
+page cannot lean on a service to tell it what a slice is.
+
+The open question is the unit of reading. Is a surface read a smile at a time,
+one expiry at a fixed moment? Is the mesh a view in its own right, or the sum
+of the slices already drawn? And do the checks stand apart as a report, or
+under every smile as a verdict? Getting that wrong produces a screen that
+draws a plausible surface and never states whether it is fit to use.
+
+** The variants
+
+Switch with the *View* buttons in the bottom bar, or =?variant=. The variant is
+the view, which is the journey's central design question.
+
+| Variant | Name      | The structural argument |
+|---------+-----------+-------------------------|
+| =a=     | slice     | One slice at a tenor: the fitted smile with the raw quotes over it, the ATM, RR and FLY term structures the surface is built from, the smiles across tenors, and the arbitrage checks at the foot. The default, and the closest to the journey, which reads a surface a slice at a time. |
+| =b=     | mesh      | The mesh: the surface as a shaded grid and as a wireframe, then the component term structures, then the arbitrage checks. The slice is absent, so the whole surface is read without the smile that makes it. |
+| =c=     | arbitrage | The arbitrage report: the term structures, the calendar and butterfly checks, then the smiles table. The faults come first. |
+
+The variants disagree about what a surface is, not about colour. *A* treats the
+slice as the unit, the mesh as something the reader assembles. *B* treats the
+mesh as the object. *C* tests the surface and reads the numbers as evidence.
+
+** The states
+
+Switch with the *Market* buttons, or =?state=. The state is the mock market the
+screen reads against.
+
+| State       | What it shows |
+|-------------+---------------|
+| =clean=     | A surface that passes: total variance rises across every expiry pair at a fixed strike, and every smile carries a non-negative implied density. |
+| =butterfly= | The same surface with the =5Y= smile made too concave. The implied density at =5Y= is negative, the smile is tagged *density negative at 5Y*, and the butterfly table flags the tenor. |
+
+The =butterfly= market is the point of the prototype: a surface that passes
+every check proves nothing about the checks, while one that fails shows where a
+fault is named beside the smile that carries it. The violation is visible only
+on the =5Y= slice, so the =?state= and the =?tenor= are read together.
+
+** Driving it
+
+The picker is live. *Read surface* and *Read smiles* write one line into the
+strip at the top: that the subject they name is missing and nothing was read.
+The *View*, *Market* and *Slice* buttons rewrite the query string, so any
+combination is a URL. The surface field opens the oresmd URL editor beside the
+page and gets an edited URL back; every control is prototype chrome.
+
+** What is fake
+
+Everything. The surface, its six expiries and five strikes, the 42 quotes it
+claims to hold, the fitted smiles, the jitter over each raw quote, the total
+variances, the implied densities, the =SABR= derivation, the =as of= time and
+the =oresmd= URL are constants in the page. There is no server, no session and
+no build step, and nothing is stored or published. The page states that
+=marketdata.v1.surface.get=, =.surface-slice.get= and =.surface.arbitrage= are
+missing.
+
+** Where the code lives
+
+=doc/prototypes/market_data/inspect-a-surfaces-slices/=. One file,
+=index.html=, holding its markup, styles and script, with its plotting helper
+=PC=, and no framework and no build step. The site copies the directory as it
+stands and adds nothing to it.
+
+** The verdict
+
+The group accepted the argument rather than a layout: a surface is read a slice
+at a time, and the arbitrage checks are what make the slices trustworthy. The
+slice is the unit the person reasons in — one expiry, its strikes, its quotes
+against the fitted line — and the mesh is what the slices make together. The
+checks are the verdict on the slices above them, not a report at the foot.
+
+What stayed on the page as the record: the three views, the two markets and the
+tenor picker, kept because the argument must hold in every combination.
+
+** What it does not settle
+
+Which view the screen opens on. Slice, mesh and arbitrage are drawn and none is
+chosen; the choice belongs to the screen that is built.
+
+Where the checks run and what they are called. No operation returns a total
+variance along an expiry axis, or a density along a smile.
+
+Whether a surface is read whole or a slice at a time, and whether the mesh is a
+read of its own. Both are drawn and no read exists for either.
+
+The past. The =as of= field reads *now* with *no past read*, so the page draws
+one instant; watching a surface move is a different journey.
+
+The strike axis. The page holds five strikes as levels; level against delta is not settled here.
+
+* See also
+
+- [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]] — the journey this prototype answers.
+- [[id:6C44C1D0-B257-4B4A-9580-98845BEA9AFC][Market data prototypes]] — the group page, and the table this prototype sits in.
+- [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]] — what the calendar and butterfly checks mean, and how a surface is tested for them.

@@ -8,63 +8,96 @@
 #+filetags: :implement_membership_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/read-a-members-parties
-#+pr:
+#+pr: 2974
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A member can read every party their account works in, each with a name, from one subject scoped to the caller.
+A member can read every party their account works in, each with a name, from
+one subject scoped to the caller, and reach it from the browser.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next          | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- =iam.v1.ops.get_my_parties= answers the caller's own associations, each with the party's name, short code, category and business centre, and the account's stored default.
+- The read needs no permission and cannot name another account: the request carries no account identifier and the session names it.
+- A party IAM's cache cannot name answers with empty strings, so the screen states the gap rather than drawing a half-read row.
+- The browser reaches it over =GET /api/me/parties=, through the wire-protocol seam, parsed at the boundary on both sides.
+- The shell reaches it, because codegen emits the command from the message.
+- =compass lint=, =check_component_drift.py --component iam=, =check_subject_conformance=, =check_route_auth_declarations= and =check_handler_permissions= pass.
+- The C++ tests cover the naming rule, and the BFF tests cover the route.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Declare the request, the response and the party summary in
+   =ores.iam.account_messages.org=.
+2. Regenerate the component, so the C++ protocol, the TypeScript protocol and
+   the shell command all follow from the one declaration.
+3. Serve it from =account_operations_handler=, which already holds the party
+   cache: the associations come from the junction repository and the names from
+   the cache, reloaded once on a miss.
+4. Register the subscription in =registrar.cpp=.
+5. Wire the browser path: the wire-protocol seam, the BFF route and the web
+   client method.
+6. Test the naming rule as a pure projection, and the route end to end.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Accounts with an association in the demo tenant | 60 | =select count(distinct account_id) from ores_iam_account_parties_tbl= | 4a0d83eabd |
+| Parties the demo tenant's administrator works in | 5 | =select count(distinct party_id) from ores_iam_account_parties_tbl ap join ores_iam_accounts_tbl a on a.id = ap.account_id where a.username = 'tenant_admin'= | 4a0d83eabd |
+| Parties a demo staff account works in | 1 | the same query for =ashley.moore= | 4a0d83eabd |
+| IAM core suite after this change | 259 cases, 791 assertions | =bash build/evidence/run_case.sh ores.iam.core.tests= | dfc7882530 |
+| Shell IAM suite after this change | 405 cases, 1055 assertions | =bash build/evidence/run_case.sh ores.shell.iam.tests= | dfc7882530 |
+| BFF membership cases | 3 | =npm test --workspace @ores/bff -- membership= | dfc7882530 |
 
 * Notes
 
-* Test Scenarios
+- *The naming already exists, twice.* The sign-in reply names parties from
+  IAM's party cache (=auth_handler.hpp=), and =update_account= takes a party
+  identifier with no name. This read reuses the cache and states the same
+  summary shape the sign-in reply does, because the member's screen is asking
+  the same question outside the sign-in step.
+- *Two near-identical summaries now exist.* =party_summary= in
+  =ores.iam.login_messages.org= and =my_party= here. They are not merged: the
+  login summary is part of the sign-in contract and carries =id= rather than
+  =party_id=, and changing it would move the login wire shape. The duplication
+  is recorded rather than silenced.
+- *The cache is the only name the IAM service may read.* The service depends on
+  =refdata.api=, not on refdata's repository, so a name can only come from the
+  per-tenant mirror. A miss reloads the partition once, then answers empty
+  strings rather than failing the whole read.
+- *The shell command is generated.* Codegen emitted
+  =account_operations get-my-parties= and its recipe from the message
+  declaration, so the second client is served without hand-written work. That
+  is the story's decision that a journey is reached from both clients.
+- *A message's declaration order is load-bearing, and nothing checked it.* The
+  response was first declared above the =my_party= it carries, and codegen emits
+  the structs in the order the model states them, so the generated header
+  referenced a type that did not exist yet. Every documentation gate passed;
+  only the compiler caught it. The fix is the order in the model, and the gap is
+  filed as a capture: the model linter could refuse a message whose field names
+  a type declared later in the same file.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -74,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2974][#2974]] | [iam] Read a member's own parties with their names |
 
 * Review
 
@@ -83,3 +116,43 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done 2026-10-09.
+
+A member's own parties are now readable with their names, from one subject, on
+both clients:
+
+| Layer | What landed |
+|-------+-------------|
+| Message | =iam.v1.ops.get_my_parties=, its response and =my_party= in =ores.iam.account_messages.org=. |
+| Server | =account_operations_handler::get_my_parties=, served from the session token and registered in =registrar.cpp=. |
+| Browser | =readMyParties= in =wire-protocol/src/membership.ts=, =GET /api/me/parties=, and =api.myParties()=. |
+| Shell | =account_operations get-my-parties= and its =doc/recipes= page, emitted by codegen from the declaration. |
+| Tests | Two C++ cases for the naming rule, three BFF cases for the route and its refusal. |
+
+The naming rule is a pure helper, =acct_project_my_party=, so the rule is
+tested without a database: a known party is named, and a party the cache cannot
+name projects empty strings rather than a half-read row.
+
+*What the task found.* The response was first declared above the =my_party= it
+carries, and the generators emit a model's types in the order the file states
+them, so the generated header referenced a type that did not exist yet. Every
+documentation gate passed and the compiler was the only signal. The order is
+fixed here and the gap is captured at
+[[id:8D5AA7C2-0D67-4348-9562-D128D3B7ADFB][A message may name a type declared
+later in its model]].
+
+*Verification.* =check_component_drift.py --component iam= reports no drift;
+=check_subject_conformance=, =check_route_auth_declarations=,
+=check_handler_permissions=, =check_open_reads=,
+=check_test_case_reachability= and =check_exported_types_are_compiled= pass;
+clang-format over the changed C++ is clean; the three TypeScript packages
+typecheck. The IAM core suite passes (259 cases, 791 assertions), the shell IAM
+suite passes (405 cases, 1055 assertions), and the three new BFF cases pass.
+The database was recreated for this build, because the recorded schema
+fingerprint was stale — a pre-existing condition, not this change.
+
+One failure is pre-existing and outside this change:
+=check_protocol_twin_coverage= reports the =synthetic= and =scheduler=
+components missing their TypeScript twins. Those files are untracked in this
+worktree and absent from =origin/main=, so the gate fails on the trunk too.

@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 156F4753-3EBF-4286-85B3-8E9E3D2A4460
+:END:
+#+title: Author an IR curve feed prototype
+#+description: An IR curve generation config editor in four tabs, with a curve-shape preview and sampled short-rate paths, as mock data
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:ir_curve_feed:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:author-an-ir-curve-feed/][the prototype]]         |
+| Gemini review | none                                       |
+| Group         | [[file:index.org][Market data prototypes]]    |
+
+* Summary
+
+The author an IR curve feed prototype argues what the IR curve generation config
+editor should be. An IR curve feed is three things decided together: a short-rate
+model, the parameter values it is seeded with, and the tenor ladder the curve is
+bootstrapped from. The prototype puts all three on one screen and draws what they
+imply, so the choice can be judged against a curve shape and a set of sample
+short-rate paths rather than in the abstract.
+
+It makes a second argument about where the preview belongs. The curve shape and
+the paths are not decoration; they are the evidence that says whether the
+parameters and the ladder are sane. Raise the volatility, change the process, or
+empty the ladder, and the picture answers at once.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data. Open the [[file:author-an-ir-curve-feed/][curve feed editor]].
+
+* Detail
+
+** The question
+
+The curve build already settles what a curve is: pillars and a method that joins
+them. This prototype asks what a *generated* curve is before it is built. The
+short-rate model and its parameters decide the shape the curve will have, and the
+Curve Template decides the grid the curve is bootstrapped from. Neither is the
+other's consequence, so the open question is how a person picks the two together
+and sees the result before saving. The failure this guards against is a feed that
+saves cleanly and then produces a flat, inverted or degenerate curve that nobody
+notices until pricing uses it.
+
+** The variants
+
+Switch with the bar at the bottom of the page, or with =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =a= | Curve Template | The template tab with the curve-shape chart it implies. The ladder is the subject; the shape is the answer to it. |
+| =b= | Process | The Process tab: the parameter rows, the curve shape and the sampled paths. The model is the subject, and the paths are the answer. |
+| =c= | Combined editor | The Process and Curve Template panels side by side, then the shape and the paths below. Model and ladder are chosen at once, and neither pushes the other off the screen. |
+
+The variants disagree about which decision leads, not about colour; =variant=
+defaults to =a=.
+
+** The states
+
+Switch with the state buttons at the bottom, or with =?state=.
+
+| State | What it shows |
+|-------+----------------|
+| =vasicek= | A Vasicek process with its own parameter values, drawn as an upward curve. This is the default when no state is given. |
+| =cir= | Cox-Ingersoll-Ross, with a different long-run level and volatility, drawn as a higher upward curve. |
+| =hull_white= | Hull-White with a lower reversion speed and a starting rate above the mean, drawn as an inverted curve. |
+| =incomplete= | A Vasicek process with no Curve Template entries at all. The shape chart is replaced by a statement that there is no tenor grid to draw against, and Save is refused. |
+
+The state switches the whole mock: the process, its parameter values, the ladder
+where the state changes it, and the shape and paths drawn from them.
+
+** Driving it
+
+The Process tab is live. Edit a parameter and the shape and the paths follow. The
+*Reseed* control redraws them from a new step, and the path count takes one to
+eight. The Curve Template tab adds, removes and reorders =[start, end)= rows, and
+every change redraws the shape. The Instrument tab chooses a fixed =r0= or a
+starting rate from a vintage; Provenance shows the binding and the version
+history. Save writes a mock confirmation line.
+
+** What is fake
+
+Everything on the page. The process types, their parameter definitions, the tenor
+names, the instruments, the vintage and the people are hard-coded. The curve
+shape is a closed-form mean-reversion expression, and the sample paths are
+Euler-Maruyama draws from a seeded generator; neither reads a server. There is no
+session or build step.
+
+** Where the code lives
+
+=doc/prototypes/market_data/author-an-ir-curve-feed/=. One file, =index.html=,
+plain HTML, CSS and JavaScript, no framework. There is no =prototype.js= and no
+=prototype.css=. The site build copies the directory as it stands and adds
+nothing to it.
+
+** The verdict
+
+The shape of the editor is accepted: four tabs, the Process tab carrying the
+parameters, the Curve Template tab carrying the ladder, and the curve shape and
+the sample paths standing as the evidence for both. The two previews are what the
+group kept, because they make the parameter and ladder choices answerable where
+they are made.
+
+The page was corrected after review in two places. A bare catalogue default put
+the starting rate on top of the long-term mean and drew a flat curve, so the
+preview looked broken when the choice was merely uninteresting; the default state
+now carries its own parameter values and curves upward. The tab strip now names
+Curve Template by the term the config already uses.
+
+** What it does not settle
+
+The preview contract. The prototype computes the shape and the paths with a
+closed form and a seeded generator. Whether the real screen asks the server for
+both, and at what granularity, belongs to the operations behind the editor.
+
+The history and the save. The version history is a fixed list of four rows, and
+Save writes a line of text. Whether a save diff-syncs the ladder, and whether a
+revert is a new version, are stated as prose and not exercised.
+
+The collision rules. The page states that the validator rejects overlapping
+windows and that at least one entry is required, and the second is enforced by
+disabling Save. The first is not, so it is asserted, not shown.
+
+The catalogue. The process types and their parameter definitions are a fixed list
+in the page. That they are seed data, and that the editor grows a new model with
+no code change, is another prototype's argument and is assumed here.
+
+* See also
+
+- There is no journey document for this prototype yet. It needs one, in
+  =doc/knowledge/journeys/market_data/=, named for the journey it answers.
+- [[file:../../knowledge/ui/synthetic_data_generation_screens.org][The market simulator screens]] — the inventory this editor belongs to, and the
+  window it sits behind.
+- [[file:../../knowledge/domain/ir_curve_generation_config.org][The IR curve generation config]] — the stored row this editor writes.
+- [[file:../../knowledge/domain/ir_curve_template_and_parameters.org][The IR curve template and its parameters]] — the two child row sets the Process
+  and Curve Template tabs edit.

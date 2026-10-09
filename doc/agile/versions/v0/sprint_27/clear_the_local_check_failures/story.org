@@ -8,7 +8,7 @@
 #+filetags: :codegen:release:sprint_27:v0:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment: solid_dirac
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -33,6 +33,7 @@ The local check gate stops failing on drift that predates any branch.
 - Every script the shell recipes tangle to is committed and matches.
 - The DSH plugin package versions match the product version.
 - The local gate's `tangle-shell`, `component-drift` and both `dsh-*` checks pass.
+- Every pgTAP suite passes against a recreated database.
 
 * Tasks
 
@@ -41,6 +42,7 @@ The local check gate stops failing on drift that predates any branch.
 | [[id:DABB1ED1-C126-4194-994F-C0BDFA44AB01][Scaffold story: Clear the local-check failures on main]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:0725298C-D015-4ECB-A72D-DE6ABD387206][Regenerate the drifted shell scripts]] | DONE | 2026-10-07 | 2026-10-07 | Six committed scripts drifted from their recipes, and six more the =account_credential= recipe produces were never committed. |
 | [[id:F42FCBF0-1931-46A9-A227-968996DDE510][Bump the DSH plugin package versions]] | DONE | 2026-10-07 | 2026-10-07 | The two DSH plugin packages declare version 0.0.25 against a 0.0.27 product, so their manifest checks fail. |
+| [[id:28360CF0-B1BA-4D50-8EE3-1D1D72DE80CE][Fix the red pgTAP suites]] | DONE | 2026-10-09 | 2026-10-09 | Task for: Clear the local-check failures on main |
 
 * Decisions
 
@@ -69,3 +71,17 @@ manifest checks. Two failures remain and neither is this change's: =lint= and
 =projects/ores.iam/modeling/ores.iam.account_credential.org=, which PR #2730
 introduced. The model's prose is emitted into generated SQL and C++, so
 correcting it is its own change.
+
+The story closed with one check left red. pgtap failed on ten of its
+thirty-two suites, six of which ran no test at all, and the cause was the
+trading model rather than the suites: no trading entity has been immutable
+since the model became versioned, and the trade's children stopped copying the
+party, so twenty-one fixtures named no audit column and thirteen named a column
+that no longer existed. Every suite passes now, and the cases that proved the
+removed guarantees are rewritten to the versioned behaviour.
+
+One of them could not be. Nothing refuses a report into another party's
+portfolio any more: the check and its message are gone from the generated SQL,
+so the guarantee is missing rather than the test stale. That and the unguarded
+version rewrite are filed on their own story. The same sweep found the ER
+diagram stale after the rates-family header, and it is regenerated here.

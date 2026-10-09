@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 0D91A04C-CEE1-4632-AD17-351909A94F14
+:END:
+#+title: oresmd URL editor prototype
+#+description: The composer, the managed-URL list, the blueprint dialog and the field-source view for the oresmd URI, from the schema and the codes the system already keeps
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:identifiers:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:oresmd-url-editor/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+A valid oresmd URL is very hard to write by hand. The grammar is a scheme, an asset-class host, a
+subject path and a query in the schema's canonical order, and every part names a code the system
+keeps elsewhere: a currency, a day counter, a tenor, a curve id, an index name, a security id. A
+person who types one from memory loses it to a query out of order or a repeated key.
+
+This prototype argues the editor that writes one instead. It composes a URI from the schema row,
+parses one back, and validates the result before anyone copies it. It offers the codes the system
+already keeps as pickers, names the table behind each picker, and carries ORE's own vocabularies
+beside them. The group's claim is that every dialog that shows a URL calls this editor.
+
+It is throwaway. It is not production code, it reads no service, and every value on it is mock data.
+It exists because the grammar is settled in
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] while nothing yet
+settles how a person stands in front of it. Open the [[file:oresmd-url-editor/][editor]].
+
+* Detail
+
+** The question
+
+The grammar gives one URI per market datum: a quote, a series, or a fixing on an ORE index. The schema
+of each is a =constexpr= table rather than a type per instrument, so the fields a URI may hold are
+data, and the codec walks that table. That is what makes the editor possible and the hand-written URL
+fail: the table knows that a swap holds =fwd_start=, =tenor= and =term=, that a series may not hold a
+coordinate, and that =seniority= accepts =SNRFOR= and little else. The question is how a person
+composes one without reading the grammar, and how a second screen shows a URL without a second editor.
+
+** The variants
+
+Switch with the bottom bar, or =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | The composer | The schema row for the chosen kind: one field per table row, a preview, and Copy and Apply. The reader sees which fields the kind holds, which are required and which are left out. |
+| =B= | The managed-URL list | The mock store of URLs beside their quote and series counts, searchable, with a near-duplicate mark. A stored URL is the starting point, and clicking a row loads it into the composer below. |
+| =C= | The blueprint dialog | A curve blueprint's output-series field, with *Edit URL…* opening the editor in a modal over it; Apply writes the URI back. A screen calls the editor, and does not reimplement it. |
+| =D= | The field-source view | The existing tables the editor reads, with their column, list subject and option count, then every field with the source of its options. |
+
+The variants disagree about who owns the editor. A is the editor as a page. B argues that the URLs a
+desk already holds are the best way in. C argues that the editor is a service other dialogs call. D
+argues that naming the source of every code is part of the answer. None changes the grammar.
+
+** The states
+
+Switch with the top bar, or =?state=; a full URI can be loaded with =?url=.
+The bar shows =series-with-coordinate= as =series+coord=.
+
+| State | What it shows |
+|-------+---------------|
+| =valid= | A EUR =ir_swap= quote with =fwd_start=, =tenor= and =term=, and the strict contract holding. |
+| =missing-required= | The same quote with =fwd_start= dropped, so a required field is missing. |
+| =series-with-coordinate= | A series carrying =term=, a coordinate a series is not allowed to hold. |
+| =empty-value= | A quote that carries =index_name= with no value at all. |
+| =fixing= | An index fixing, =EURIBOR 6M=, where the kind decides a different schema row. |
+| =unknown-key= | A spot quote carrying =foo=bar=, a key no row knows. |
+
+A load reports more than a compose: a string that is not =oresmd://=, an unknown type, instrument or
+index family, an asset class that is not the row's own, a path percent-encoded where the subject
+should stand plainly, a query out of canonical schema order, and a key that is unknown or repeated. A
+value the mock read does not hold stays an option, so a load never drops it.
+
+** Driving it
+
+Choose the kind (=quote=, =series= or =fixing=), then the instrument type and quote type, or the index
+family for a fixing; the field table changes with the row. A closed set is a select, drawn from the
+record's own =codes_of=. A table-backed catalogue is a suggested list the user may overtype, because
+ORE accepts values the catalogue omits.
+
+The preview writes the query in the schema's order. Copy and Apply stay disabled while a message
+stands. In variant *C*, Apply writes the URI into the hosting field and closes the modal. The editor
+can be framed on its own with =?embed=1=, where Apply posts the URI to the host page.
+
+** What is fake
+
+Everything. Every table read is a mock: the currencies, the day counters, the tenors, the floating
+index types, and the ibor and overnight index conventions. Every URL, every count, the blueprint and
+its host URI are hard-coded. There is no server, no session and no build step, and nothing is stored.
+
+The constants were embedded by a throwaway generator. =SCHEMA= comes from the schema table and
+=codes_of=, =ORIGIN= from the field-to-source map, and =OPTIONS= from the refdata populate scripts and
+the ORE catalogue. The generator found two gaps and reported them instead of patching the page: no
+power index fields where =market_index.hpp= names delivery and start, and the schema's
+=zc_inflation_swap= written where the record writes =zc_inflationswap=.
+
+** Where the code lives
+
+=doc/prototypes/market_data/oresmd-url-editor/=. One file, =index.html=, plain HTML, CSS and
+JavaScript, no framework and no build step. The page carries its styles and its script inline, so
+there is no =prototype.css= and no =prototype.js=. The site copies the directory as it stands and adds
+nothing to it.
+
+** The verdict
+
+The composer, variant *A*, is accepted. It is the editor, drawn from the schema row rather than from a
+list of instruments. The blueprint invocation, variant *C*, is accepted with it: a dialog holds a URL
+field, calls the editor, and writes the edited URI back; framing the same editor with =?embed=1= is
+the shape a real screen reuses. The field-source view, variant *D*, is accepted as the record of which
+table and list subject serves each field.
+
+*B* stays on the page as the record. A managed catalogue of URLs answers a question the grammar does
+not ask, because a URI is minted from a datum rather than administered beside it; the near-duplicate
+mark survives as a good reading of two URLs that differ in exactly one field.
+
+** What it does not settle
+
+Where the editor opens. The page draws it as a modal over a dialog, and whether the real screen uses
+that modal or an inline field is open. Whether a screen frames the editor at =?embed=1= or calls the
+composer directly, and which list subject it calls for each picker, is open with it.
+
+The subject's own encoding. The path keeps RFC 3986 sub-delimiters, as the record's examples do, and
+whether a real writer should encode them is not decided here. A soft reference is open too: a value
+outside the catalogue is offered, so whether the real editor warns or refuses is unsettled.
+
+* See also
+
+This prototype has no journey document yet. The editor is called by screens that other journeys own,
+[[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]], which answers to it until its
+own journey exists.
+
+- [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][User Journey: Manage a curve's blueprint]] — the blueprint whose output-series field calls the editor.
+- [[file:index.org][Market data prototypes]] — the group page, and the row for this prototype.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — the grammar and the codecs this editor composes against.

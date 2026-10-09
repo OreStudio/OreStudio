@@ -59,6 +59,12 @@ insert into ores_refdata_counterparties_tbl (
     current_user, current_user, 'system.test', 'Ownership mark fixture'
 );
 
+-- The contact table carries a restrictive party-isolation policy on select, so
+-- the party has to be visible before the test can read its own contact row
+-- back. Without this the mark is written and then hidden from the read.
+select set_config('app.visible_party_ids',
+    '{a0000000-0000-0000-0000-0000000000f1}', true);
+
 create or replace function pg_temp.add_contact(p_party uuid, p_type text, p_primary boolean)
 returns void as $$
     insert into ores_refdata_party_contact_informations_tbl (

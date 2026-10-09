@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: BF504294-2A1D-413A-84C8-262575DEBC9D
+:END:
+#+title: Story: Restore the trading guards the versioned model dropped
+#+description: Making every trading entity versioned removed the immutable profiles, and two guarantees went with them without a replacement: a trade's reported portfolio no longer has to belong to the trade's party, and a raw update rewrites every version of a row instead of opening a new one.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Two guarantees went out with the immutable profiles, and nothing replaced them:
+
+- A trade is no longer refused when it is reported into another party's
+  portfolio. The check and its message are gone from the generated SQL, so
+  the report is accepted.
+- A raw update rewrites every version of a trading row in place. The history
+  a versioned table exists to keep can be written over.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- A trade cannot be reported in another party's portfolio.
+- The pgTAP suite that proves it is restored.
+- An update to a versioned trading row does not rewrite the versions already written.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:EC06D83B-9725-4F33-8626-61A4CBF47238][Scaffold story: Restore the trading guards the versioned model dropped]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:85DADF3E-40AD-4E4F-8FDE-6FBC43BBBC89][Refuse a portfolio a trade's party does not own]] | BACKLOG | | | Initial task for: Restore the trading guards the versioned model dropped |
+| [[id:3105DE1F-9D8B-4D0E-8387-E364A618144B][Open a new version when a versioned row is updated]] | BACKLOG | | | Task for: Restore the trading guards the versioned model dropped |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Notes
+
+Two smaller consequences of the same refactor, found while repairing the pgTAP
+suites. Neither is worth a task of its own yet:
+
+- =ores_utility_allow_immutable_purge_fn()= is inert for trading. Nothing in a
+  trading table consults it any more, so a delete closes the current version
+  with the switch on or off. The pgTAP case that used to purge now asserts that
+  the switch changes nothing.
+- The structures insert trigger checks that a structure is not its own parent
+  after it checks that the parent exists, so a self-parent write is refused as
+  a missing parent and the self-parent branch never runs. The check is
+  unreachable rather than wrong.

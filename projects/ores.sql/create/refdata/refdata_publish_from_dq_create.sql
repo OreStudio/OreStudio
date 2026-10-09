@@ -2821,6 +2821,9 @@ begin
     -- The business centre a registered country implies. The publisher states
     -- one centre per counterparty; a tenant that deals through more adds them
     -- through the junction.
+    -- Explicit drop for the same reason as the uuid map above: a second call
+    -- in the same transaction must not collide with the first call's table.
+    drop table if exists lei_counterparty_centre_map;
     create temp table lei_counterparty_centre_map (
         country_code text not null,
         business_centre_code text not null

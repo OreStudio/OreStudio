@@ -436,6 +436,11 @@ function PartyHome({
                         to: '/access',
                     },
                     {
+                        title: t('home.tenant.audit'),
+                        body: t('home.tenant.auditBody'),
+                        to: '/audit',
+                    },
+                    {
                         title: t('home.tenant.versions'),
                         body: t('home.tenant.versionsBody'),
                         to: '/operations/versions',

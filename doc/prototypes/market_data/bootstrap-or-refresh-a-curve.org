@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 40250ACC-3731-4133-B378-8025FE75D70B
+:END:
+#+title: Bootstrap or refresh a curve prototype
+#+description: One bootstrap reads real or synthetic inputs and records where each rate came from, across three screens and three market states
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:curves:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:bootstrap-or-refresh-a-curve/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The bootstrap prototype argues what the trader's "Bootstrap or refresh a
+curve" screen shows while a build is a candidate. Three screens read one build
+and three market states switch the mock market, so the numbers, the shape and
+the trust are judged concretely. It is throwaway, with every value mock data.
+
+A build produces a candidate, not a curve the system uses. One bootstrap reads
+real or synthetic inputs: the same instruments reprice, and only the
+provenance differs, so the screen records where each rate came from. Open the
+[[file:bootstrap-or-refresh-a-curve/][candidate]].
+
+* Detail
+
+** The question
+
+The journey's Goal is to turn today's market into a curve a person can check
+before anyone publishes it. It settles what the build does, not what the
+person sees while the curve is a candidate, so the open question is which
+renderings belong on a screen.
+
+Two failures follow. A candidate is read as published because nothing says
+otherwise; a generated rate is read as a vendor's because the arithmetic is
+the same either way. One move answers both: show the candidate, and carry the
+provenance of every point.
+
+** The variants
+
+Switch with the bottom bar, or =?variant=.
+
+| Variant | Name    | The question it answers |
+|---------+---------+-------------------------|
+| =a=     | Result  | What the build produced: the observations it read and the pillars it solved, short to long. |
+| =b=     | Curves  | The shape the build produced: the input rate, the zero rate, the discount factor and the forward. |
+| =c=     | Checks  | Whether the build can be trusted: the reprice residual, the convergence, and the missing or stale inputs. |
+
+They are not alternatives: the build is one and all three screens are needed,
+because a number, a shape and a check are different claims about the same
+candidate. Each reads that one build, so the curve never differs, and no
+screen can drift from the build it claims to show.
+
+** The states
+
+Switch with the bottom bar's *Market* buttons, or =?state=.
+
+| State        | What it shows |
+|--------------+---------------|
+| =clean=      | Eleven of eleven pillars computed, no input missing or stale, the discount curve present. |
+| =missing=    | The 7Y and 10Y inputs are absent, so nine pillars compute, those rows read missing input, and their line breaks in every chart instead of plotting a value. |
+| =projection= | The family role reads PROJECTION, the discount curve reads =USD-SOFR-OIS=, and the 1M and 3M inputs are stale. |
+
+The input source is a fourth switch, =?source=real|synthetic=, drawn as
+*market* and *synthetic* in the bottom bar and *Market data* and *Synthetic
+feed* in the header. It does not change the bootstrap. The synthetic rates
+come from =synthetic.themes.realistic_2026.usdsofr=, a USD SOFR OIS process
+whose seed is stated, and differ slightly because the feed generates its own
+par ladder; the shape is the same, and only the provenance differs. A curve
+can mix the two.
+
+A missing input is a broken line, not a zero. A stale input changes the
+curve's claim, not its arithmetic: the build still solves, and provenance is
+what lets a reader discount it.
+
+** Driving it
+
+The bottom bar switches the screen, the input source and the market. The page
+also answers to =?variant=, =?source= and =?state=, so any single screen opens
+directly.
+
+*Compute candidate* stamps the selected source and the time on the button. The
+as-of is a datetime control, and the output series opens the oresmd URL editor
+in an overlay and writes the edited URL back. Every control is prototype
+chrome, drawn to look unlike the design being judged.
+
+** What is fake
+
+Everything. There is no server, no session and no build step, and nothing is
+published or stored. Rates, ages and source records are hard-coded; the health
+panel is derived on the page because the server returns no diagnostics;
+*Compute candidate* computes nothing, and the as-of never reaches the build.
+
+** Where the code lives
+
+=doc/prototypes/market_data/bootstrap-or-refresh-a-curve/=. One file,
+=index.html=, holding the markup, the CSS, the JavaScript and the =PC= plotting
+helper, with no framework and no build step; there is no =prototype.css= and no
+=prototype.js=. The site copies the directory as it stands through
+=ores-deploy-web-app= and adds nothing to it.
+
+** The verdict
+
+The group accepted the argument: a build produces a candidate, not a curve the
+system uses; one bootstrap reads either input; and the screen records where
+each rate came from. It accepted the three screens as the way to read one
+build, and the input source as a switch on the face of the screen.
+
+What stays as the record: the Result, Curves and Checks variants over their
+shared build, the three market states, and the point-level provenance that
+marks a generated rate. No Gemini review was raised.
+
+** What it does not settle
+
+The diagnostics payload. The page derives the build health from the points
+received, so how a build reports a missing pillar, a stale input and a failed
+convergence is open.
+
+Refresh. The page draws one build, so it does not say how a refresh differs
+from a first build, or what to do with a pillar that will not reprice.
+
+The storage of provenance: the field, the row, and the read that answers
+"where did this point come from?";
+[[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]] owns that.
+
+The projection: how a candidate becomes one, and which curve supplies the
+discounting;
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] owns that. Approval,
+publication and the oresmd URL's grammar are open too.
+
+* See also
+
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][User Journey: Bootstrap or refresh a curve]] — the journey this prototype answers.
+- [[file:index.org][Market data prototypes]] — the group page, and the row for this prototype.
+- [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]] — how a derived observation records where it came from.

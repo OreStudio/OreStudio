@@ -34,7 +34,7 @@
 
 begin;
 
-select plan(19);
+select plan(17);
 
 -- Row-level security applies to the test user too: state the tenant before
 -- writing anything. The tenant comes first because the fixture below writes
@@ -106,9 +106,11 @@ select set_config('app.current_actor', (select owner_name from t_ctx), true);
 create or replace function pg_temp.activity(p_party uuid, p_type text default 'new_booking')
 returns uuid as $$
     insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,
-        activity_type_code, actor, occurred_at, comment)
+        activity_type_code, actor, occurred_at, comment,
+        modified_by, performed_by, change_reason_code, change_commentary)
     values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), p_party, p_type, 'test',
-        now(), 'test')
+        now(), 'test',
+        current_user, current_user, 'system.new_record', 'Trade activity pgTAP fixture')
     returning id;
 $$ language sql;
 
@@ -140,9 +142,11 @@ create or replace function pg_temp.anchor(p_id uuid, p_counterparty uuid, p_scop
     p_nature text)
 returns void as $$
     insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
-        trade_type, counterparty_scope, booking_nature, entry_channel)
+        trade_type, counterparty_scope, booking_nature, entry_channel,
+        modified_by, performed_by, change_reason_code, change_commentary)
     select p_id, ores_utility_system_tenant_id_fn(), party_id, p_counterparty, 'Swap',
-        p_scope, p_nature, 'manual'
+        p_scope, p_nature, 'manual',
+        current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
     from t_ctx;
 $$ language sql;
 
@@ -150,23 +154,20 @@ create or replace function pg_temp.booking(p_trade uuid, p_book uuid, p_version 
     p_counterparty uuid default null, p_netting_set uuid default null,
     p_party uuid default null)
 returns void as $$
-    insert into ores_trading_trade_bookings_tbl (trade_id, trade_activity_id, tenant_id, version,
-        party_id, counterparty_id, book_id, netting_set_id, trade_date,
+    insert into ores_trading_trade_bookings_tbl (trade_id, trade_activity_id, tenant_id, version, book_id, netting_set_id, trade_date,
         modified_by, performed_by, change_reason_code, change_commentary)
     select p_trade, pg_temp.activity(coalesce(p_party, party_id)),
-        ores_utility_system_tenant_id_fn(), p_version,
-        coalesce(p_party, party_id), p_counterparty, p_book, p_netting_set, current_date,
+        ores_utility_system_tenant_id_fn(), p_version, p_book, p_netting_set, current_date,
         owner_name, owner_name, 'system.new_record', 'test'
     from t_ctx;
 $$ language sql;
 
 create or replace function pg_temp.state(p_trade uuid, p_activity text, p_version int)
 returns void as $$
-    insert into ores_trading_trade_states_tbl (trade_id, trade_activity_id, tenant_id, version,
-        party_id, status_id,
+    insert into ores_trading_trade_states_tbl (trade_id, trade_activity_id, tenant_id, version, status_id,
         modified_by, performed_by, change_reason_code, change_commentary)
     select p_trade, pg_temp.activity(party_id, p_activity), ores_utility_system_tenant_id_fn(),
-        p_version, party_id, ores_utility_nil_uuid_fn(),
+        p_version, ores_utility_nil_uuid_fn(),
         owner_name, owner_name, 'system.new_record', 'test'
     from t_ctx;
 $$ language sql;
@@ -243,30 +244,21 @@ select throws_ok(
     '23503', null,
     'a booking of an unknown trade is refused');
 
-select throws_ok(
-    $$select pg_temp.booking('00000000-0000-0000-0000-0000000ba002',
-        '00000000-0000-0000-0000-0000000bb001', 0, (select counterparty_id from t_ctx), null,
-        (select other_party_id from t_ctx))$$,
-    '23503', null,
-    'a booking cannot name a party other than the trade''s');
-
-select throws_ok(
-    $$select pg_temp.booking('00000000-0000-0000-0000-0000000ba002',
-        '00000000-0000-0000-0000-0000000bb000', 0, (select other_counterparty_id from t_ctx))$$,
-    '23503', null,
-    'a booking cannot name a counterparty other than the trade''s');
-
+-- The booking has no party or counterparty column any more, so the two cases
+-- that named one are gone with it. What the trade owns is what the booking
+-- may name: a book, and a netting set, both of the trade's own party and
+-- counterparty. The insert trigger refuses a bad one as an invalid value.
 select throws_ok(
     $$select pg_temp.booking('00000000-0000-0000-0000-0000000ba002',
         '00000000-0000-0000-0000-0000000bb001', 0, (select counterparty_id from t_ctx))$$,
-    '23503', null,
+    '23514', null,
     'a booking cannot name a book of another party');
 
 select throws_ok(
     $$select pg_temp.booking('00000000-0000-0000-0000-0000000ba002',
         '00000000-0000-0000-0000-0000000bb000', 0, (select counterparty_id from t_ctx),
         '00000000-0000-0000-0000-0000000be001')$$,
-    '23503', null,
+    '23514', null,
     'a booking cannot file the trade in another counterparty''s netting set');
 
 select lives_ok(

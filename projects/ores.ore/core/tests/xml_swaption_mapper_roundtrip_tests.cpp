@@ -211,6 +211,52 @@ TEST_CASE("mapper_roundtrip_swaption_option_block", tags) {
     BOOST_LOG_SEV(lg, info) << "Swaption option-block round-trip test passed";
 }
 
+TEST_CASE("mapper_roundtrip_swaption_exercise_price_children", tags) {
+    auto lg(make_logger(test_suite));
+    auto t = load_trade("IR_Swaption_European.xml", 0);
+
+    // No corpus document states an exercise price list, so the fourth child
+    // is proved on a trade that states two prices against two exercise dates.
+    ores::ore::domain::optionData_ExercisePrices_t prices;
+    static_cast<std::string&>(prices) = "0.01 0.02";
+    t.SwaptionData->OptionData->ExercisePrices = std::move(prices);
+    ores::ore::domain::date second;
+    static_cast<std::string&>(second) = "2034-02-20";
+    t.SwaptionData->OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate.push_back(
+        std::move(second));
+
+    const auto result = swap_instrument_mapper::forward_swaption(t);
+
+    REQUIRE(result.option_exercise_prices.size() == 2u);
+    CHECK(result.option_exercise_prices[0].sequence_number == 1);
+    CHECK(ore_iso(result.option_exercise_prices[0].exercise_date) == "2033-02-20");
+    CHECK(result.option_exercise_prices[0].price.to_double() == Approx(0.01).epsilon(0.0000001));
+    CHECK(result.option_exercise_prices[1].sequence_number == 2);
+    CHECK(ore_iso(result.option_exercise_prices[1].exercise_date) == "2034-02-20");
+    CHECK(result.option_exercise_prices[1].price.to_double() == Approx(0.02).epsilon(0.0000001));
+
+    const auto reconstructed = swap_instrument_mapper::reverse_swaption(
+        result.header,
+        std::get<ores::trading::domain::swaption_instrument>(result.facts),
+        result.legs,
+        result.leg_amounts,
+        result.leg_rates,
+        result.schedules,
+        result.schedule_dates,
+        result.options,
+        result.option_premiums,
+        result.option_exercise_fees,
+        result.option_payment_dates,
+        result.option_exercise_prices);
+
+    REQUIRE(reconstructed.SwaptionData.operator bool());
+    const auto& sd = *reconstructed.SwaptionData;
+    REQUIRE(sd.OptionData.operator bool());
+    REQUIRE(sd.OptionData->ExercisePrices.operator bool());
+    CHECK(std::string(*sd.OptionData->ExercisePrices) == "0.01 0.02");
+    BOOST_LOG_SEV(lg, info) << "Swaption exercise-price round-trip test passed";
+}
+
 // =============================================================================
 // Swaption (Bermudan) mapper tests
 // =============================================================================

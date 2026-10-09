@@ -83,6 +83,7 @@
 #include "ores.trading.api/messaging/fx_variance_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/inflation_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_option_exercise_fee_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_option_exercise_price_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_option_payment_date_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_option_premium_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_option_protocol.hpp"
@@ -134,6 +135,39 @@ std::optional<std::chrono::year_month_day> parse_date(const std::string& text) {
 std::optional<std::chrono::year_month_day>
 parse_optional_date(const std::optional<std::string>& text) {
     return text ? parse_date(*text) : std::nullopt;
+}
+
+// The document states an amount as text and the flat write carries a
+// decimal, so the boundary parses the text; a spelling that does not parse
+// stays an unengaged optional.
+std::optional<ores::utility::decimal::decimal>
+parse_optional_decimal(const std::optional<std::string>& text) {
+    if (!text || text->empty())
+        return std::nullopt;
+    auto parsed = ores::utility::decimal::decimal::from_string(*text);
+    if (!parsed)
+        return std::nullopt;
+    return std::move(*parsed);
+}
+
+// The schema states a list of numbers as one text, split on the separators
+// the corpus uses.
+std::vector<std::string> split_numbers(const std::string& text) {
+    std::vector<std::string> out;
+    std::string current;
+    for (const char c : text) {
+        if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ',' || c == ';') {
+            if (!current.empty()) {
+                out.push_back(current);
+                current.clear();
+            }
+        } else {
+            current.push_back(c);
+        }
+    }
+    if (!current.empty())
+        out.push_back(current);
+    return out;
 }
 
 // The canonical write record carries what the caller owns. The imported
@@ -1137,6 +1171,7 @@ std::string save_option_block(Nats& nats,
                               const boost::uuids::uuid& trade_activity_id,
                               const ores::trading::domain::bond_instrument_data& data) {
     using ores::trading::messaging::put_instrument_option_exercise_fee_request;
+    using ores::trading::messaging::put_instrument_option_exercise_price_request;
     using ores::trading::messaging::put_instrument_option_payment_date_request;
     using ores::trading::messaging::put_instrument_option_premium_request;
     using ores::trading::messaging::put_instrument_option_request;
@@ -1159,10 +1194,9 @@ std::string save_option_block(Nats& nats,
         req.change.write.settlement = block.settlement;
         req.change.write.settlement_method = block.settlement_method;
         req.change.write.pay_off_at_expiry = block.pay_off_at_expiry;
-        req.change.write.premium_amount = block.premium_amount;
+        req.change.write.premium_amount = parse_optional_decimal(block.premium_amount);
         req.change.write.premium_currency = block.premium_currency;
-        req.change.write.premium_pay_date = block.premium_pay_date;
-        req.change.write.exercise_prices = block.exercise_prices;
+        req.change.write.premium_pay_date = parse_optional_date(block.premium_pay_date);
         req.change.write.exercise_fee_settlement_period = block.exercise_fee_settlement_period;
         req.change.write.exercise_fee_settlement_calendar = block.exercise_fee_settlement_calendar;
         req.change.write.exercise_fee_settlement_convention =
@@ -1193,7 +1227,8 @@ std::string save_option_block(Nats& nats,
         if (block.settlement_data) {
             req.change.write.settlement_pay_currency = block.settlement_data->pay_currency;
             req.change.write.settlement_fx_index = block.settlement_data->fx_index;
-            req.change.write.settlement_fixing_date = block.settlement_data->fixing_date;
+            req.change.write.settlement_fixing_date =
+                parse_optional_date(block.settlement_data->fixing_date);
         }
 
         auto resp = nats_call(nats, req, error);
@@ -1215,7 +1250,8 @@ std::string save_option_block(Nats& nats,
             if (premium.settlement) {
                 child.change.write.settlement_pay_currency = premium.settlement->pay_currency;
                 child.change.write.settlement_fx_index = premium.settlement->fx_index;
-                child.change.write.settlement_fixing_date = premium.settlement->fixing_date;
+                child.change.write.settlement_fixing_date =
+                    parse_optional_date(premium.settlement->fixing_date);
             }
             auto child_resp = nats_call(nats, child, error);
             if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
@@ -1231,7 +1267,7 @@ std::string save_option_block(Nats& nats,
             child.change.write.amount =
                 ores::utility::decimal::decimal::from_double(fee.amount).value();
             child.change.write.type = fee.type;
-            child.change.write.start_date = fee.start_date;
+            child.change.write.start_date = parse_optional_date(fee.start_date);
             child.change.write.currency = fee.currency;
             auto child_resp = nats_call(nats, child, error);
             if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
@@ -1250,6 +1286,30 @@ std::string save_option_block(Nats& nats,
                 auto child_resp = nats_call(nats, child, error);
                 if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
                     return error.empty() ? "save_instrument_option_payment_date failed" : error;
+            }
+        }
+
+        // The exercise price list pairs one price with each exercise date the
+        // option states, as the option block's fourth child holds it.
+        if (block.exercise_prices && !data.option_exercise_dates.empty()) {
+            const auto prices = split_numbers(*block.exercise_prices);
+            int price_number = 0;
+            for (std::size_t i = 0;
+                 i < prices.size() && i < data.option_exercise_dates.size();
+                 ++i) {
+                auto parsed = ores::utility::decimal::decimal::from_string(prices[i]);
+                if (!parsed)
+                    continue;
+                put_instrument_option_exercise_price_request child;
+                child.change.write.trade_id = trade_id;
+                child.change.write.trade_activity_id = trade_activity_id;
+                child.change.write.sequence_number = ++price_number;
+                child.change.write.exercise_date =
+                    ores::platform::time::datetime::from_iso8601_date(data.option_exercise_dates[i]);
+                child.change.write.price = std::move(*parsed);
+                auto child_resp = nats_call(nats, child, error);
+                if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
+                    return error.empty() ? "save_instrument_option_exercise_price failed" : error;
             }
         }
     }

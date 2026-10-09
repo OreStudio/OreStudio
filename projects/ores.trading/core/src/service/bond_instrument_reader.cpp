@@ -85,6 +85,7 @@ struct instrument_rows final {
     std::vector<domain::instrument_option_premium> option_premiums;
     std::vector<domain::instrument_option_exercise_fee> option_exercise_fees;
     std::vector<domain::instrument_option_payment_date> option_payment_dates;
+    std::vector<domain::instrument_option_exercise_price> option_exercise_prices;
     std::optional<domain::instrument_strike> strike;
     std::optional<domain::bond_forward> forward;
 };
@@ -223,6 +224,10 @@ read_family_rows(ores::database::context ctx, const std::vector<std::string>& tr
 
     for (auto& row : repository::read_option_payment_dates_by_trade_ids(ctx, trade_ids))
         rows[boost::uuids::to_string(row.trade_id)].option_payment_dates.push_back(std::move(row));
+
+    for (auto& row : repository::read_option_exercise_prices_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].option_exercise_prices.push_back(
+            std::move(row));
 
     for (auto& row : repository::read_strikes_by_trade_ids(ctx, trade_ids))
         rows[boost::uuids::to_string(row.trade_id)].strike = std::move(row);
@@ -546,11 +551,11 @@ std::optional<domain::bond_option_settlement>
 to_option_settlement(bool engaged,
                      const std::optional<std::string>& pay_currency,
                      const std::optional<std::string>& fx_index,
-                     const std::optional<std::string>& fixing_date) {
+                     const std::optional<std::chrono::year_month_day>& fixing_date) {
     if (!engaged)
         return std::nullopt;
     return domain::bond_option_settlement{
-        pay_currency.value_or(""), fx_index.value_or(""), fixing_date};
+        pay_currency.value_or(""), fx_index.value_or(""), iso_optional(fixing_date)};
 }
 
 /**
@@ -589,9 +594,10 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
         block.settlement = row.settlement;
         block.settlement_method = row.settlement_method;
         block.pay_off_at_expiry = row.pay_off_at_expiry;
-        block.premium_amount = row.premium_amount;
+        block.premium_amount =
+            row.premium_amount ? std::optional(row.premium_amount->to_string()) : std::nullopt;
         block.premium_currency = row.premium_currency;
-        block.premium_pay_date = row.premium_pay_date;
+        block.premium_pay_date = iso_optional(row.premium_pay_date);
 
         for (const auto& premium : rows.option_premiums)
             block.premiums.push_back({premium.amount.to_double(),
@@ -602,10 +608,20 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
                                                            premium.settlement_fx_index,
                                                            premium.settlement_fixing_date)});
 
-        block.exercise_prices = row.exercise_prices;
+        // The option's exercise price list is text in the document and rows
+        // here, so the reader joins the rows back into the document's list.
+        if (!rows.option_exercise_prices.empty()) {
+            std::string prices;
+            for (const auto& price : rows.option_exercise_prices) {
+                if (!prices.empty())
+                    prices += ' ';
+                prices += price.price.to_string();
+            }
+            block.exercise_prices = std::move(prices);
+        }
         for (const auto& fee : rows.option_exercise_fees)
             block.exercise_fees.push_back(
-                {fee.amount.to_double(), fee.type, fee.start_date, fee.currency});
+                {fee.amount.to_double(), fee.type, iso_optional(fee.start_date), fee.currency});
 
         block.exercise_fee_settlement_period = row.exercise_fee_settlement_period;
         block.exercise_fee_settlement_calendar = row.exercise_fee_settlement_calendar;

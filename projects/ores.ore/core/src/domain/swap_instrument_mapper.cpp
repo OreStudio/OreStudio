@@ -711,8 +711,9 @@ std::optional<scheduleData> schedule_for(
             static_cast<std::string&>(r.Tenor) = row->tenor.value_or("");
             if (row->calendar)
                 r.Calendar = *row->calendar;
-            r.Convention =
-                parse_code(row->convention, business_day_convention_count, businessDayConvention::MF);
+            if (row->convention)
+                r.Convention = parse_code(
+                    *row->convention, business_day_convention_count, businessDayConvention::MF);
             if (row->term_convention)
                 r.TermConvention = parse_code(
                     *row->term_convention, business_day_convention_count, businessDayConvention::MF);
@@ -831,7 +832,7 @@ void append_option_block(trading::domain::swap_instrument_data& result, const op
     if (od.AutomaticExercise)
         option.automatic_exercise = to_string(*od.AutomaticExercise);
 
-    option.has_exercise_data = od.ExerciseData.has_value();
+    option.has_exercise_data = static_cast<bool>(od.ExerciseData);
     if (od.ExerciseData) {
         option.exercise_date = to_domain_date(std::string(od.ExerciseData->Date));
         if (od.ExerciseData->Price)
@@ -839,7 +840,7 @@ void append_option_block(trading::domain::swap_instrument_data& result, const op
                 ores::utility::decimal::decimal::from_double(*od.ExerciseData->Price).value();
     }
 
-    option.has_payment_data = od.PaymentData.has_value();
+    option.has_payment_data = static_cast<bool>(od.PaymentData);
     if (od.PaymentData && od.PaymentData->Rules) {
         const auto& rules = *od.PaymentData->Rules;
         option.payment_lag = static_cast<std::int64_t>(rules.Lag);
@@ -849,7 +850,7 @@ void append_option_block(trading::domain::swap_instrument_data& result, const op
             option.payment_relative_to = to_string(*rules.RelativeTo);
     }
 
-    option.has_settlement_data = od.SettlementData.has_value();
+    option.has_settlement_data = static_cast<bool>(od.SettlementData);
     if (od.SettlementData) {
         option.settlement_pay_currency = to_string(od.SettlementData->PayCurrency);
         option.settlement_fx_index = std::string(od.SettlementData->FXIndex);
@@ -868,7 +869,7 @@ void append_option_block(trading::domain::swap_instrument_data& result, const op
             premium.amount = ores::utility::decimal::decimal::from_double(p.Amount).value();
             premium.currency = std::string(p.Currency);
             premium.pay_date = to_domain_date(std::string(p.PayDate));
-            premium.has_settlement = p.SettlementData.has_value();
+            premium.has_settlement = static_cast<bool>(p.SettlementData);
             if (p.SettlementData) {
                 premium.settlement_pay_currency = to_string(p.SettlementData->PayCurrency);
                 premium.settlement_fx_index = std::string(p.SettlementData->FXIndex);

@@ -28,9 +28,9 @@ A curve declares its shape when a build publishes it, so the point check has som
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Implemented; build and suites running. |
+| Now          | Implemented; five suites pass.         |
 | Waiting on   | Nothing.                               |
-| Next         | Confirm the build, then raise the PR.  |
+| Next         | Raise the PR.                          |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -88,9 +88,31 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Reference tenor codes the seed holds | 46 | =compass db recreate=, the =refdata_tenors= summary line | 26efed661d |
+| Tenors the corpus writes that the seed does not hold | 13Y, 1Y6M, 40Y, 50Y, 60Y, 70Y and others | extract the corpus term tokens, then compare to the seed | 26efed661d |
+| Marketdata suites | 5 of 5 pass | =ctest -R ores.marketdata --output-on-failure= | 0876c06a72 |
+| =ores.marketdata.core.tests= | 129 cases pass | ctest, same run | 0876c06a72 |
+| =ores.marketdata.core.corpus.tests= | pass | ctest, same run | 0876c06a72 |
+| New import cases | 4 | =./ores.marketdata.core.tests "[service][import_service]"= | 0876c06a72 |
 
 * Notes
+
+The first design declared a shape only for the series an import created, which
+is how acceptance one reads. It does not survive the corpus. One series is named
+by several of the 100 corpus market files with different grids, so the first
+file's shape refused every later file's points, and
+=every_line_of_the_whole_corpus_reaches_the_database= failed on
+=MinimalSetup/Input/market_20160205_flat.txt= and on
+=AmericanMonteCarlo/Input/fx_baskets/marketdata.csv=. The goal's own wording,
+/each series it carries/, and acceptance two's /a series the import does not
+name keeps the shape it had/, both point the other way. The import now declares
+for every series the file carries and appends what the file states.
+
+Two defects the corpus then exposed are fixed here rather than deferred, because
+the import cannot declare a shape on real files without them. A coordinate the
+type makes optional, such as a swaption's =strike_level=, is left out when no
+point states it. And =series_shape_check= no longer compares a coordinate the
+point leaves out, which it read as an empty string.
 
 * Test Scenarios
 
@@ -116,3 +138,60 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An import now declares the shape of every series the file it reads carries. The
+write-time check has axes to enforce, so an imported point whose coordinate no
+file stated is refused instead of being accepted as it was.
+
+What landed:
+
+- =series_shape_writer= moves from =ores.marketdata.service= to
+  =ores.marketdata.core/service/=, so the import can call it. The core library
+  links =ores.refdata.core= for the reference tenor read. The premise in the goal
+  was that core cannot reach the reference data; it can, and =ores.ore.core= and
+  =ores.synthetic.core= already link the same library.
+- =declare= takes a =term_check=. A build passes
+  =against_reference_tenors= and keeps the check it had. An import passes
+  =as_stated=, because the terms it records are the file's. The seed holds 46
+  tenor codes and the corpus writes =13Y=, =1Y6M=, =40Y= and others, so checking
+  an imported shape would refuse valid market data.
+- =import_service= collects, for each series the file carries, the datums the
+  file names for it, and declares every shape before the observation insert.
+- A coordinate the type makes optional is left out when no point states it, and a
+  second file for one series appends its terms after the ones already stored
+  rather than renumbering them.
+- =series_shape_check= no longer compares a coordinate a point leaves out. It
+  held it as =none=, =holds()= reported it as held, and =text_of(none)= is the
+  empty string, so the check demanded a shape that declared an empty value.
+
+Acceptance:
+
+- /An import declares the shape of every series it creates./ Met, and widened to
+  every series the file carries. The Notes above say why the narrower reading
+  fails the corpus.
+- /A series the import does not name keeps the shape it had./ Met. A later file
+  for the same series adds only the terms it states.
+- /The reference-tenor check applies to an imported shape as it does to a built
+  one, or the task says which path is not checked and why./ The import path is
+  not checked, and the reason is measured rather than asserted: the reference
+  table holds 46 codes while the corpus writes tenors such as =13Y= and =1Y6M=.
+  The build path is checked as before.
+- /The layering is stated in the task result./ It is, in the first bullet above.
+  The writer sits in core because the import is a core service, and the check it
+  keeps costs core a link to =ores.refdata.core=.
+- /Re-importing the same file declares the same shape and writes no duplicate
+  axis or value rows./ Met, and covered by
+  =import_re_declares_the_same_shape_without_adding_rows=.
+
+Limitations:
+
+- The shape a series ends with is the union of what every file that named it
+  stated. A file that states fewer terms than an earlier one does not shrink the
+  shape, because the writer appends and never deletes.
+- A fixing series gets no shape. A fixing is not a market datum, so it has no
+  coordinate fields and no series datum for the writer to read.
+- =ores.marketdata.core= now links another component's core library. It is not
+  the first: =ores.ore.core= and =ores.synthetic.core= do the same.
+- The core corpus suite took 1160 s on this run against 566 s before, on a box at
+  load 20. The extra work is one reference-tenor-free shape write and one
+  existing-value read per series, and has not been measured on an idle box.

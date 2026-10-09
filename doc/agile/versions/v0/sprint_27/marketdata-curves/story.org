@@ -74,6 +74,22 @@ refused shape leaves nothing behind. The rule that refuses a point whose coordin
 shape does not declare is its own task, because it needs a hook on the generated
 observation write path.
 
+** The build checks its terms against the reference data, the import records what the file says
+
+Chosen 2026-10-09, with the import task. The shape writer moved down into
+=ores.marketdata.core= so the import can call it, and =declare= now takes the
+check as an argument. A build passes =against_reference_tenors=, because its
+pillars come from the tenant's own curve configuration and a pillar the reference
+table does not hold is a mistake. An import passes =as_stated=, because the terms
+it records are the vendor's, and the ORE example corpus writes =13Y= and =1Y6M=
+where the seed holds 46 codes and neither of those. A single check enforced on
+both paths would refuse valid market data.
+
+The import declares for every series a file carries, not only the ones it
+creates. One series is named by several corpus files with different grids, so
+freezing its shape at the first file would refuse every later file. A later file
+appends the terms it states after the ones already stored.
+
 * Out of scope
 
 -

@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4585D0EF-5DDC-4FC9-83FC-3E98A0A7141A][Hotfix: the marketdata offset field has no name]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -83,3 +83,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Story, tasks and the sprint row are scaffolded, and the hotfix branch carries
+them with the one-line fix.

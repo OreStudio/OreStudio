@@ -28,11 +28,11 @@ translation unit compiles and the suite links.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4585D0EF-5DDC-4FC9-83FC-3E98A0A7141A][Hotfix: the marketdata offset field has no name]] |
-| Now          | Fix written and the build is green locally. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance

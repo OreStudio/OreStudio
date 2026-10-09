@@ -898,6 +898,8 @@ export const en: SourceCatalogue = {
     },
 
     home: {
+        activeModules: 'Active Modules',
+        upcomingModules: 'Upcoming Modules / Roadmap Preview',
         welcome: 'Welcome, {name}',
         system: {
             lead: {
@@ -967,7 +969,6 @@ export const en: SourceCatalogue = {
         },
         party: {
             lead: 'Working for {party}',
-            note: 'The trading screens are not in this release yet. The areas below show what is coming.',
             comingLater: 'Coming later',
             refdata: 'Reference data',
             refdataBody: 'Currencies, calendars, conventions and the parties you trade with.',

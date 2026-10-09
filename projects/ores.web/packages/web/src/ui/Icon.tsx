@@ -33,6 +33,25 @@ import history from '../assets/icons/ic_fluent_history_20_regular.svg';
 import linkDismiss from '../assets/icons/ic_fluent_link_dismiss_20_regular.svg';
 import lockClosed from '../assets/icons/ic_fluent_lock_closed_20_regular.svg';
 import save from '../assets/icons/ic_fluent_save_20_regular.svg';
+import access from '../assets/icons/ic_fluent_key_multiple_20_regular.svg';
+import apps from '../assets/icons/ic_fluent_apps_20_regular.svg';
+import arrowSync from '../assets/icons/ic_fluent_arrow_sync_20_regular.svg';
+import arrowTrending from '../assets/icons/ic_fluent_arrow_trending_20_regular.svg';
+import bus from '../assets/icons/ic_fluent_flash_flow_20_regular.svg';
+import calendar from '../assets/icons/ic_fluent_calendar_clock_20_regular.svg';
+import chart from '../assets/icons/ic_fluent_chart_multiple_20_regular.svg';
+import classification from '../assets/icons/ic_fluent_classification_20_regular.svg';
+import currency from '../assets/icons/ic_fluent_currency_dollar_euro_20_regular.svg';
+import database from '../assets/icons/ic_fluent_database_20_regular.svg';
+import desk from '../assets/icons/ic_fluent_briefcase_20_regular.svg';
+import document from '../assets/icons/ic_fluent_document_table_20_regular.svg';
+import log from '../assets/icons/ic_fluent_notepad_20_regular.svg';
+import party from '../assets/icons/ic_fluent_building_bank_20_regular.svg';
+import people from '../assets/icons/ic_fluent_people_team_20_regular.svg';
+import person from '../assets/icons/ic_fluent_person_accounts_20_regular.svg';
+import record from '../assets/icons/ic_fluent_record_20_regular.svg';
+import server from '../assets/icons/ic_fluent_server_link_20_regular.svg';
+import unlock from '../assets/icons/ic_fluent_lock_open_20_regular.svg';
 import search from '../assets/icons/ic_fluent_search_20_regular.svg';
 
 /**
@@ -41,20 +60,39 @@ import search from '../assets/icons/ic_fluent_search_20_regular.svg';
  * here and to the icon reference before a screen uses it.
  */
 const ICONS = {
+    access,
     add,
     alert,
+    apps,
+    bus,
+    calendar,
     cancel: dismiss,
+    chart,
+    classification,
     copy,
+    currency,
+    database,
     delete: deleteIcon,
+    desk,
+    document,
     edit,
     filter,
     history,
     locked: lockClosed,
+    log,
+    pairs: arrowSync,
+    party,
+    people,
+    person,
+    record,
     refresh: arrowClockwise,
     remove: linkDismiss,
     revert: arrowRotateCounterclockwise,
     save,
     search,
+    server,
+    trend: arrowTrending,
+    unlock,
 } as const;
 
 export type IconName = keyof typeof ICONS;

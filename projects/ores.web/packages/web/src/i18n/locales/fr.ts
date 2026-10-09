@@ -909,6 +909,8 @@ const fr: SourceCatalogue = {
     },
 
     home: {
+        activeModules: 'Modules actifs',
+        upcomingModules: 'Modules à venir / Aperçu de la feuille de route',
         welcome: 'Bienvenue, {name}',
         system: {
             lead: {
@@ -979,7 +981,6 @@ const fr: SourceCatalogue = {
         },
         party: {
             lead: 'Vous travaillez pour {party}',
-            note: 'Les écrans de trading ne font pas encore partie de cette version. Les espaces ci-dessous montrent ce qui arrive.',
             comingLater: 'À venir',
             refdata: 'Données de référence',
             refdataBody:

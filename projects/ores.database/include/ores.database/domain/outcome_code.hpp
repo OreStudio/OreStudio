@@ -60,6 +60,7 @@ enum class outcome_code {
     already_exists,
     version_conflict,
     missing_field,
+    level_violation,
     not_found,
     order_not_supported,
     filter_not_supported,
@@ -84,6 +85,8 @@ enum class outcome_code {
             return "version_conflict";
         case outcome_code::missing_field:
             return "missing_field";
+        case outcome_code::level_violation:
+            return "level_violation";
         case outcome_code::not_found:
             return "not_found";
         case outcome_code::order_not_supported:
@@ -121,6 +124,8 @@ enum class outcome_code {
         case outcome_code::version_conflict:
             return ores::utility::domain::outcome::conflict;
         case outcome_code::missing_field:
+            return ores::utility::domain::outcome::invalid;
+        case outcome_code::level_violation:
             return ores::utility::domain::outcome::invalid;
         case outcome_code::not_found:
             return ores::utility::domain::outcome::missing;
@@ -196,6 +201,11 @@ inline std::string fill(std::string_view tmpl, const outcome_args& a) {
                                 a);
         case outcome_code::missing_field:
             return detail::fill("Invalid {entity}: value cannot be null or empty.", a);
+        case outcome_code::level_violation:
+            return detail::fill(
+                "The {entity} states {field} at level {expected}, and its parent unit is at level "
+                "{current}. A child level must be greater than its parent's.",
+                a);
         case outcome_code::not_found:
             return detail::fill("The {entity} does not exist.", a);
         case outcome_code::order_not_supported:

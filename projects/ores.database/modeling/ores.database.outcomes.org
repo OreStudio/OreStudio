@@ -115,6 +115,28 @@ requires one. The store refuses rather than storing a row that names nothing.
 Invalid {entity}: value cannot be null or empty.
 #+end_src
 
+** level_violation
+:PROPERTIES:
+:code: level_violation
+:outcome: invalid
+:producer: store
+:sqlstate: 23514
+:args: entity, field, expected, current
+:END:
+
+A row states a position in a hierarchy whose rules place it at or above the
+position it must sit below. The write states the level in =expected= and the
+store holds the parent's level in =current=, as the version refusal states what
+the write believes and what the store holds.
+
+The message names the field, so a screen can point at the picker that caused the
+refusal, and it names both levels, so the person is told what to choose instead
+rather than only that the choice was wrong.
+
+#+begin_src text :name message
+The {entity} states {field} at level {expected}, and its parent unit is at level {current}. A child level must be greater than its parent's.
+#+end_src
+
 ** not_found
 :PROPERTIES:
 :code: not_found

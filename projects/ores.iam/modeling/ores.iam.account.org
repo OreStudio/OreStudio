@@ -350,9 +350,15 @@ when set.
 :target_column:  id
 :nullable:       true
 :error_message:  Invalid reports_to_account_id: %. Account must exist.
+:prevent_cycle:  true
 :END:
 
 Reporting line, validated against this same table when set.
+
+The line may not close a cycle. The manager existing is the only other check,
+so without this the store accepts A reports to B while B reports to A, and the
+hierarchy has no root. The generated trigger walks the manager chain and
+refuses a write that would reach the row being written.
 
 * Insert trigger
 

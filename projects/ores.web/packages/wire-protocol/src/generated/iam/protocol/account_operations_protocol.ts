@@ -154,7 +154,22 @@ export interface UpdateMyEmailResponse {
     message: string;
 }
 
+/**
+ * @brief A member's write on the party quick sign-in uses.
+ *
+ * The session names the account, so the request cannot aim the write at
+ * another account, and the write needs no permission. The party must be one
+ * the account is associated with, or the write is refused: the server checks
+ * the association rather than trusting the caller.
+ *
+ * An empty =party_id= clears the stored default. A party id is a UUID, so an
+ * empty string is unambiguous, and this is the only way the request can say
+ * "no default" — the reason the member's screen had no clear control before.
+ */
 export interface SetMyDefaultPartyRequest {
+    /**
+     * @brief The party to store as the default, or empty to clear it.
+     */
     party_id: string;
 }
 

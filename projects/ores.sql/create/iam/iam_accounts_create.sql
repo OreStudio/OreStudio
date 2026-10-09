@@ -250,6 +250,28 @@ begin
             raise exception 'Invalid reports_to_account_id: %. Account must exist.', NEW.reports_to_account_id
                 using errcode = '23503';
         end if;
+
+        -- Reject a reports_to_account_id pointing back at NEW's own row, directly or
+        -- transitively, since the touch-version mechanism re-fires this
+        -- same trigger walking up reports_to_account_id -- an undetected cycle would
+        -- recurse without bound instead of failing cleanly.
+        if exists (
+            with recursive ancestor_chain as (
+                select id, reports_to_account_id as parent_id
+                from ores_iam_accounts_tbl
+                where id = NEW.reports_to_account_id
+                  and valid_to = ores_utility_infinity_timestamp_fn()
+                union all
+                select t.id, t.reports_to_account_id as parent_id
+                from ores_iam_accounts_tbl t
+                join ancestor_chain a on t.id = a.parent_id
+                where t.valid_to = ores_utility_infinity_timestamp_fn()
+            )
+            select 1 from ancestor_chain where id = NEW.id
+        ) then
+            raise exception 'Invalid reports_to_account_id: % would create a cycle in the ores_iam_accounts_tbl hierarchy.', NEW.reports_to_account_id
+                using errcode = '23514';
+        end if;
     end if;
 
     -- Validate account_type

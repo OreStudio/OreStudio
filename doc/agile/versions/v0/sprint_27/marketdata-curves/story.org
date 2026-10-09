@@ -23,10 +23,10 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The representation, the manual point path, staleness, the typed identity, the shape tables and the shape enforcement are done. The next slice gives an import a shape to declare. |
+| Now           | The representation, the manual point path, staleness, the typed identity, the shape tables, the shape enforcement and the import declaration are done. The plan below is now seven BACKLOG tasks, from the typed axis codes to the curve_builds decision. |
 | Waiting on    | Nothing.                               |
-| Next          | The import declaration, then the axis codes as validated vocabulary, the slice read and the aligned evolution read. |
-| Last touched  | 2026-10-08                               |
+| Next          | [[id:474EEF53-AE33-4AE2-80F0-341487E4E0D7][Type the axis values a composite object varies over]], then the slice read, the aligned evolution read, the reshaped single-instant read, the provenance annex, the manual precedence rule and the curve_builds decision. |
+| Last touched  | 2026-10-09                               |
 
 * Acceptance
 
@@ -44,6 +44,13 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 | [[id:3500444B-673D-49F4-BFD9-15AE96DA65AA][Give a composite object its shape tables]] | DONE | 2026-10-08 | 2026-10-08 | Record the axes a composite object varies over and their ordered values, written from the recipe's pillars by a build, and refuse a point whose coordinate is not a declared axis value. |
 | [[id:94DE4430-5770-4A6E-943A-C2FF7B5DC35C][Refuse a point its shape does not declare]] | DONE | 2026-10-08 | 2026-10-09 | Check a point's coordinate against the shape its series declares, at write time, so the shape and the points cannot drift; and write a shape from the declaration an import carries. |
 | [[id:8055844A-9594-4133-A7A2-E62F59805DD0][Let an import declare the shape it carries]] | DONE | 2026-10-09 | 2026-10-09 | Give an observed or imported structure a shape of its own, so the point check has something to enforce on it, and settle where the shape writer lives once the import can reach it. |
+| [[id:474EEF53-AE33-4AE2-80F0-341487E4E0D7][Type the axis values a composite object varies over]] | BACKLOG | | | Give the axis value vocabulary its own typed codes, so a strike label and a quoting convention are canonical and the components of a surface can be enumerated, instead of every component being a free-text axis value. |
+| [[id:D16E6FFD-C9D5-4DBB-B3B9-1D5AA1837C5F][Read one slice of a composite object over time]] | BACKLOG | | | Return one component of a composite object, such as the ATM ladder of a volatility surface, as a term structure over time, from the object definition the shape declares. |
+| [[id:94559B94-B60B-42C9-908C-5A05257D2CBF][Read a composite object's aligned evolution]] | BACKLOG | | | Return a composite object over a range or a set of instants as instants by nodes, with the coordinate labels and numeric values, and the added, dropped and persistent nodes against the declared shape, replacing the fixed five-bucket window. |
+| [[id:BC8D6246-C459-4B31-93C5-C2CC5BB860CE][Reshape the single-instant read to the object definition]] | BACKLOG | | | Bring the single-instant read onto the same object definition as the slice read and the evolution read, so the three cannot disagree about what a composite object is. |
+| [[id:A76EE364-10BE-4FA8-98D6-E55E4F0D9C8A][Give every point a provenance annex]] | BACKLOG | | | Record the source kind of every point, quoted, derived or manual, and for a manual point the actor, the time and the reason, in one cold annex keyed by the point's natural key. |
+| [[id:7552F7C6-1B44-4A8C-B902-6BCF1B12830E][State what a later automatic write does to a manual point]] | BACKLOG | | | Decide and record what an automatic write does to a point an operator keyed by hand, and cover the rule with a test. |
+| [[id:2559483D-1A40-45CB-A888-83CCDD166729][Decide the curve_builds table]] | BACKLOG | | | Decide whether a curve_builds table is needed, from the agreed journeys, once the shape, the reads and the provenance are settled. |
 
 * Decisions
 
@@ -812,35 +819,52 @@ can show the manual segment with its actor and its reason.
 
 *** What to add, in order
 
+Items one and two are done. Items three to eight and ten are now BACKLOG tasks,
+named under each item. Item nine closed before it was ever a task.
+
 1. The composite-object identity at the wire boundary: a typed request (asset
    class, scope such as a currency pair, object kind, party) that resolves to
    the series, so "the FX vol surface for EURUSD" needs no hand-built URI.
+   Task [[id:86B41936-1186-4FEC-B001-C62F59DF0013][Resolve a composite object from its typed identity]], DONE.
 2. The shape tables: the per-object axes and their ordered values, written
    from the recipe's pillars by a build and from the declaration by an import,
    with every term value validated against =refdata_tenors= (which also closes
    capture =A6472918= on the recipe side) and a write-time check that refuses a
    point whose coordinate is not a declared axis value.
+   Tasks [[id:3500444B-673D-49F4-BFD9-15AE96DA65AA][Give a composite object its shape tables]],
+   [[id:94DE4430-5770-4A6E-943A-C2FF7B5DC35C][Refuse a point its shape does not declare]] and
+   [[id:8055844A-9594-4133-A7A2-E62F59805DD0][Let an import declare the shape it carries]], all DONE.
 3. The axis values as typed, validated codes: the strike-label vocabulary and
    the quoting convention, so ATM, 25RR and 25BF are canonical and the
    components of a surface are enumerable.
+   Task [[id:474EEF53-AE33-4AE2-80F0-341487E4E0D7][Type the axis values a composite object varies over]].
 4. The slice read: a component along one axis -- the ATM ladder -- returned as
    a term structure over time, from the same object definition.
+   Task [[id:D16E6FFD-C9D5-4DBB-B3B9-1D5AA1837C5F][Read one slice of a composite object over time]].
 5. The aligned evolution read: the object plus a range or a set of instants,
    returning instants by nodes with the coordinate labels and numeric values,
    and the added, dropped and persistent nodes against the declared shape. It
    replaces the fixed five-bucket window and returns a matrix, not arrays of
    objects.
+   Task [[id:94559B94-B60B-42C9-908C-5A05257D2CBF][Read a composite object's aligned evolution]].
 6. The single-instant read reshaped to the same object definition, so the
    three cannot disagree.
+   Task [[id:BC8D6246-C459-4B31-93C5-C2CC5BB860CE][Reshape the single-instant read to the object definition]].
 7. The per-point provenance annex: the source kind (quoted, derived, manual),
    and for a manual point the actor, the time and the reason, in one cold
    annex keyed by the point's natural key. Name it once -- broaden
    =observation_lineage= or rename it -- rather than adding a second cold
    table beside it.
+   Task [[id:A76EE364-10BE-4FA8-98D6-E55E4F0D9C8A][Give every point a provenance annex]].
 8. The manual precedence rule: what a later automatic write does to a manual
    point, stated as a policy and covered by a test.
-9. Guard the curve-snapshot reads (capture =D9258D1F=).
+   Task [[id:7552F7C6-1B44-4A8C-B902-6BCF1B12830E][State what a later automatic write does to a manual point]].
+9. +Guard the curve-snapshot reads (capture =D9258D1F=).+
+   Closed before this list became tasks. The handler checks
+   =marketdata::curve_snapshots:read= and the permission is seeded, see
+   /What the tree has moved since the earlier passes/ below.
 10. Only then decide the =curve_builds= table, from the agreed journeys.
+   Task [[id:2559483D-1A40-45CB-A888-83CCDD166729][Decide the curve_builds table]].
 
 ** Journey to model reconciliation, 2026-10-07
 

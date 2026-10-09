@@ -136,6 +136,7 @@ export const en: SourceCatalogue = {
                 contact: 'Contact',
                 roles: 'Roles',
                 signIns: 'Sign-ins',
+                timeline: 'Timeline',
             },
             notFound: 'No account has this username.',
             give: 'Give a role',
@@ -1491,6 +1492,15 @@ export const en: SourceCatalogue = {
         revertTo: 'Revert to v{version}',
         value: 'Value',
         valueDiff: 'Value diff',
+    },
+
+    timeline: {
+        by: 'By {who}',
+        empty: 'Nothing has happened to this yet.',
+        field: 'Field',
+        gapsTitle: 'What this stream does not carry',
+        notRevertible: 'This entry records something that happened, so there is nothing to revert.',
+        changeNotOffered: 'Putting a changed field back is not offered here.',
     },
 
     validation: {

@@ -1,0 +1,251 @@
+:PROPERTIES:
+:ID: AAF1D25C-566F-4899-8E88-521DC15EBCDB
+:END:
+#+title: User Journey: Author an FX price feed
+#+description: A quant composes one FX feed: the pair it quotes, the process that drives its ticks, the mixture of Gaussians it draws from, and the sample paths that say whether the choice is a price feed at all.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A quant composes one FX feed: the pair it quotes, the process that drives its ticks, the mixture of Gaussians it draws from, and the sample paths that say whether the choice is a price feed at all.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want this feed to produce the pair I mean, at a believable price, so the
+desk can test against something that behaves like the market." The journey is
+done when the config and its mixture are saved and read back with the pair, the
+derived ORE key, the tick rate and the process the person chose, and when the
+sample paths the screen drew look like a price rather than a number.
+
+* Actor and trigger
+
+The actor is a quant or a trader who holds the synthetic configuration
+permission. The quant is a member acting on their own party's records: the
+config carries =party_id=, and another party's feeds stay out of reach. The
+trigger is a pair the desk must generate and has no feed for, a price behaviour
+that has to change, or a mixture that no longer fits the pair. The journey
+starts at the feed tree the Market Simulator draws and ends when the person
+leaves the saved feed.
+
+A saved config is a candidate. Nothing it describes is produced until the feed
+is enabled and started, and the tick rate it carries is the one a running feed
+honours. The model calls this record the FX spot generation config, and the
+screen calls it the feed.
+
+* Steps
+
+1. *Find the feed.* The person opens *Market data*, then *Synthetic*, and reads
+   the folder tree. The system lists the party's FX feeds under their folder:
+   the base and quote codes, the ORE key, the source name, the tick rate, the
+   engine and the enabled and auto-start flags. The person filters the list by
+   pair or by source name.
+2. *Open or start a feed.* The person selects a feed and the system shows the
+   editor for it, or the person chooses *New FX Rate* and the system shows the
+   same editor empty. Opening a feed reads its mixture of =gmm_component= rows
+   beside the config, because the two are one answer.
+3. *Name the instrument.* The person enters the base and quote currency codes.
+   The system derives the ORE key, =FX/RATE/EUR/USD=, from the pair, and
+   suggests a source name from it. The person may change the source name and
+   add a description. The system offers the currency codes from the reference
+   data and the pairs from the pair catalogue, and it states the pair is not
+   quoted when the catalogue does not hold it.
+4. *Set the price behaviour.* The person chooses the engine, which is the
+   =process_type= column: =geometric=, =arithmetic= or =ornstein_uhlenbeck=.
+   The person sets how often a new price is produced, as ticks per hour, and
+   enters the initial price. For the mean-reverting engine the screen adds the
+   long-term mean and the reversion speed and shows the half-life they imply.
+5. *Edit the mixture.* The person adds, changes and removes the Gaussians the
+   process draws from. Each row carries a zero-based index, a description, a
+   mean log-return, a standard deviation and a weight. The system shows the raw
+   sum of the weights and says that the save normalises them; a sum that is not
+   one is a warning and not a refusal.
+6. *Say where the initial price comes from.* The person chooses =fixed=, where
+   the initial price is the one entered, or =vintage=, where the feed reads the
+   opening price from a named market-data source and date. The system shows the
+   vintage it would read and refuses a source or a date it cannot reach.
+7. *Look at the process before it is saved.* The person reads the return
+   distribution the mixture implies and a batch of sample price paths. The
+   system draws both from the values on the screen and adds a seed and a path
+   count; *Reseed* draws a new batch from the same mixture. Nothing the preview
+   computes is stored and nothing reaches the feed.
+8. *Validate and save.* The person chooses *Save feed*. The screen holds the
+   save while a rule fails: both currency codes are three letters and differ,
+   the price source has what it needs, the mixture holds at least one component
+   and the weights sum above zero. The system then writes the config, writes
+   the mixture, and replies with the version it wrote. The feed is not started
+   by the save; it stays disabled until the person enables it and a running
+   feed is asked for.
+9. *Check the history.* The person opens the history of the config or of one
+   component. The system shows every version with the field-level difference
+   from the one before. A revert is a new version, not a deletion.
+10. *Delete a feed that is no longer wanted.* The person chooses *Delete*. The
+    system removes the mixture first and the config after it, and asks for a
+    reason. A feed that is running is stopped before it can be removed.
+11. *Leave.* The person goes back to the feed tree. Nothing has been published,
+    and no tick has been produced.
+
+Steps 8 and 10 are each two writes, not one: the config and its mixture are
+separate resources, so a failure between them leaves a feed whose mixture is
+partly updated, or orphaned component rows; see /What is missing/.
+
+* Screens and wireframes
+
+One screen. The feed's identity and the pair sit at the top, the price
+behaviour, the mixture and the rules sit in the middle in the order the save
+reads them, and the two previews sit beside them, so the person reads the
+choice and what it does at once. Save sits at the end of the form it commits.
+
+#+caption: FX feed authoring: the pair and derived ORE key, the price behaviour and the mixture of Gaussians, the validation rules, and the return distribution and sample paths they imply.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_author-an-fx-price-feed.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/market_data/author-an-fx-price-feed/index.html=: mock data only, no backend, no build step and no session. It argues that an FX feed is an instrument, a tick clock and a process, and that the process must be read twice before it is saved, as the return distribution it implies and as the sample paths it produces.
+
+- [[id:FC948AE9-B042-48C6-BF6E-6D0A026830D3][Author an FX price feed prototype]]
+  - Variants :: a the instrument and the provenance rows, b the price behaviour with the tick clock and the two previews, c the advanced mixture editor with the raw weight sum
+  - States :: geometric, ou, gmm, invalid (base and quote both =US=, weights summing to 0.95, and a disconnected vintage browser reading *No vintages found*)
+  - Source :: =doc/prototypes/market_data/author-an-fx-price-feed/index.html=
+  - Open :: =/OreStudio/doc/prototypes/market_data/author-an-fx-price-feed/= once the site is built, or the file directly
+- [[id:4E65357F-8C9A-46D5-92AA-874C612C58E7][Manage GMM components prototype]]
+  - Variants :: a every feed's components in one table with the per-feed weight sum, b the mixture density and its moments, c the raw sum beside the normalised weight per component
+  - States :: normal, unnormalised (GBP/USD's raw weights sum to 0.90 and are flagged), single (USD/JPY has one component, a plain Gaussian)
+  - Source :: =doc/prototypes/market_data/manage-gmm-components/index.html=
+  - Open :: =/OreStudio/doc/prototypes/market_data/manage-gmm-components/= once the site is built, or the file directly
+
+The second prototype answers the same mixture from the other side: the rows a
+feed editor writes are also a catalogue read across every feed at once, and the
+screen that reads them has to show the typed weight and the stored weight as
+two numbers.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =fx_spot_generation_config= | The feed row: the pair, the derived ORE key, the source name, the tick rate, the engine, the initial price and where it comes from, the enabled and auto-start flags, and the folder it sits under | [[id:9CCB36D2-D297-478D-8968-41FE16623FBC][ores.synthetic.fx_spot_generation_config]] |
+| =gmm_component= | The mixture the process draws from: one weighted Gaussian per row, with its index, description, mean, standard deviation and weight | [[id:0F0FB279-A707-4BA5-A1A2-40F46E591EB6][ores.synthetic.gmm_component]] |
+| =market_data_generation_config= | The named container the feed belongs to, which supplies the collection the tree groups the feed under | [[id:8771702C-0BC4-4955-8D7E-DDBE2497D5B3][ores.synthetic.market_data_generation_config]] |
+| =folder= | The hierarchy node the feed hangs from, so a person finds it in the tree rather than by its source name | [[id:5455BC0F-59E3-4EA4-ABA2-6C4BB6CA00C7][ores.synthetic.folder]] |
+
+The pair is two soft references: =base_currency_code= and
+=quote_currency_code= are text and point at =ores.refdata.currency= without a
+declared foreign key. The ticks a saved feed produces land in a =market_series=
+whose oresmd URI is derived from the ORE key, and the feed references that
+series only through the key. Both configs and components are versioned, so each
+has a history, and the mixture is stored as rows and never as a blob.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the feed | List the FX feeds | =synthetic.v1.fx_spot_generation_configs.list= | exists |
+| Find the feed | List the party's containers | =synthetic.v1.market_data_generation_configs.list= | exists |
+| Find the feed | List the folder tree | =synthetic.v1.folders.list= | exists |
+| Find the feed | Read one collection's row | =synthetic.v1.market_data_generation_configs.get= | exists |
+| Open or start a feed | Read one feed | =synthetic.v1.fx_spot_generation_configs.get= | exists |
+| Open or start a feed | List the feed's mixture | =synthetic.v1.gmm_components.list= | exists |
+| Name the instrument | Fill the currency picker | =refdata.v1.currencies.list= | exists |
+| Name the instrument | Offer the quoted pairs | =refdata.v1.currency_pairs.list= | exists |
+| Set the price behaviour | Choose the engine and the tick rate | =synthetic.v1.fx_spot_generation_configs.put= | exists |
+| Say where the price comes from | Store the price source, the initial price or the vintage | =synthetic.v1.fx_spot_generation_configs.put= | exists |
+| Say where the price comes from | Browse the vintages the source offers | none | missing |
+| Edit the mixture | Write, add or reorder a component | =synthetic.v1.gmm_components.put=, =.put_many= | exists |
+| Edit the mixture | Remove a component | =synthetic.v1.gmm_components.delete= | exists |
+| Read the process before saving | Simulate sample FX spot paths | =synthetic.v1.ops.simulate_fx_spot_paths= | exists |
+| Validate and save | Write the feed | =synthetic.v1.fx_spot_generation_configs.put= | exists |
+| Check the history | List a feed's versions | =synthetic.v1.fx_spot_generation_configs_versions.list= | exists |
+| Check the history | List a component's versions | =synthetic.v1.gmm_components_versions.list= | exists |
+| Check the history | Read one version | =synthetic.v1.fx_spot_generation_configs_versions.get=, =synthetic.v1.gmm_components_versions.get= | exists |
+| Check the history | Read every version with its diff | =synthetic.v1.history.get= | exists |
+| Check the history | Revert by writing the old values | the entity's =put= | exists |
+| Delete a feed | Remove the feed's mixture | =synthetic.v1.gmm_components.delete_many= | exists |
+| Delete a feed | Remove the feed | =synthetic.v1.fx_spot_generation_configs.delete= | exists |
+
+The history request is the generic one, with =entity_type=
+=ores.synthetic.fx_spot_generation_config= or =ores.synthetic.gmm_component=;
+both register a history provider. The mixture is its own resource, so saving a
+feed and saving its weights are separate calls, and no operation writes both
+together. The FX simulate takes the mixture as request parameters rather than
+reading the config, so it previews the values on the screen and never the saved
+row.
+
+* What is missing
+
+1. *No screen exists.* No web page, HTTP route or shell verb reaches these
+   operations from a browser. The generated detail dialog for this config went
+   with the removed desktop client, and the shell files are codegen commands a
+   person runs by hand. The candidate is a web page and a route. Until then the
+   journey runs from the shell, with the previews unavailable.
+2. *The typed weight is not kept.* The save normalises the weights of a feed,
+   but nothing stores the values as typed, so the raw sum and the normalised
+   weights cannot be told apart after the save, and the screen that shows both
+   cannot be rebuilt from the row. The candidate is a decision on whether the
+   raw weight is stored beside the normalised one. Until then the mixture reads
+   back as the numbers the draw uses.
+3. *The engine picker does not select the mixture.* The screen presents three
+   engines, while =process_type= holds =geometric=, =arithmetic= or
+   =ornstein_uhlenbeck=, and the =gmm_component= rows are what the draw
+   actually mixes. Nothing in the row says the mixture is the engine, so a
+   saved feed does not reproduce what was previewed. The candidate is a process
+   type that names the mixture, or a rule that a mixture is always the source
+   of the returns. Until then the screen says which engine the config holds and
+   draws the mixture regardless.
+4. *The preview does not name its feed.* The simulate request carries the
+   mixture, the price and the seed, and no config id, so the paths a person
+   judges are the screen's numbers and not the stored feed's. The candidate is
+   a preview that reads a saved config by id. Until then the screen states that
+   the preview uses the unsaved values.
+5. *A new feed has no folder.* =folder_id= is optional and only the
+   publish-from-dq path fills it, so a feed made by hand has no place in the
+   tree and the person cannot find it where they left it. The candidate is a
+   folder the editor resolves or creates on save. Until then the screen lists
+   the feed under the collection that owns it.
+6. *Saving is not atomic.* The config and its mixture are separate generated
+   resources with separate =put= subjects, and no operation writes both. A
+   failure between the two writes leaves a feed with a partly updated mixture,
+   and the save is a transaction the caller must compose. The candidate is an
+   apply operation that writes the config and its mixture together. Until then
+   the screen saves the config first, then the mixture, and says what it wrote.
+7. *The pair is not validated against a declared reference.* The base and quote
+   codes are text, the pair catalogue is read on the page, and no operation
+   answers "is this pair quoted". The candidate is a declared reference or a
+   validation call. Until then the screen marks a pair the catalogue does not
+   hold and lets the save through.
+8. *No approval kind covers a feed.* A change to a feed that a running producer
+   honours is written with no second pair of eyes and no comment. The candidate
+   is an approval kind for the feed, with its decide permission. Until then a
+   save takes effect at once and the history names the writer alone.
+
+* Related journeys
+
+- [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]] — the operations journey that starts, stops and watches the feeds this editor authors.
+- [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] — the IR equivalent of this feed, and the shape this editor follows.
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — where a generated rate becomes a candidate curve, with the provenance marked generated.
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]] — the group that consumes what a feed produces.
+
+* Related knowledge
+
+- [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]]
+- [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]]
+- [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]]
+- [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]]
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]
+- [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]]
+- [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Scope]]
+
+* See also
+
+- [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]] — the window this editor belongs to, and the prototype behind each screen.
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this document follows.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.

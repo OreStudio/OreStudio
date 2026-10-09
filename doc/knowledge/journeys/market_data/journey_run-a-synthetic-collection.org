@@ -1,0 +1,220 @@
+:PROPERTIES:
+:ID: A829B804-23A5-493C-BDC6-A3B513EBDFEF
+:END:
+#+title: User Journey: Run a synthetic collection
+#+description: A trader or market data operator starts and stops a named synthetic collection, and reads what it owns, what it covers and what is running before the start request is sent.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or market data operator starts and stops a named synthetic collection, and reads what it owns, what it covers and what is running before the start request is sent.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want this collection generating the market data my desk needs, and I want to
+know what it spans before I start it." The journey is done when the collection's
+feeds are running and the screen reads back which feeds started, which were
+already running, and which were skipped; and, at the other end, when the
+matching stop has left the subtree stopped. Synthetic market data is authored
+and run by =ores.synthetic=, and a running feed writes observations that the
+platform reads at once. Nothing in this journey is a candidate awaiting a
+publish.
+
+* Actor and trigger
+
+The actor is a trader or a market data operator who holds the synthetic
+market-data role for a party. The trigger is a session that needs live generated
+market data: a demo, a test of a pricing run against a known curve shape, or a
+desk that wants a currency covered that the live feed does not. The journey
+starts at the collections list and ends when the person leaves it with the
+collection running, or stopped, and a report of what the request changed. The
+actor keeps a second journey for authoring the feeds a collection owns; this one
+begins after they exist.
+
+* Steps
+
+1. *Find the collection.* The person opens *Market data*, then *Synthetic*, then
+   *Collections*. The system lists the party's collections: the name and version,
+   the description, the enabled flag, the feed count split into FX and IR, the
+   asset classes, the dataset of origin, and who changed it and when.
+2. *Open the collection.* The person selects a row and the system shows the
+   collection: the name, the description and the enabled flag, then read-only
+   provenance (dataset, version, modified by, performed by, recorded at, change
+   reason), then the feeds it owns and its version history.
+3. *Read what the collection owns.* The system shows one row per feed with its
+   source name, its output series' oresmd URI, its process, its auto-start flag
+   and its running state. The FX rows and the IR rows are listed apart. A feed is
+   identified by its source name, which mirrors the namespace path.
+4. *Check the coverage.* Before starting, the person reads what a start would
+   span: the asset class by instrument type with the feed count per cell, the
+   currencies covered, and every gap the collection has. An empty cell is a gap,
+   not a zero.
+5. *Check the contributors.* The person chooses *Validate Vintage*. The system
+   checks each contributor against the market it must read: for an FX feed, the
+   availability of the vintage it is grounded in; for an IR curve, the local
+   binding-collision rule; a fixed-price feed needs neither. The summary says how
+   many items pass or do not need validation.
+6. *Start the collection.* The person chooses *Start*. The system sends one
+   folder-scoped request naming the collection's folder; the server resolves the
+   subtree and starts every feed beneath it, of every asset class, in one round
+   trip. A selected feed leaf, or a selection that mixes a leaf with a non-leaf,
+   uses the per-feed request instead. The request is refused if a contributor
+   fails a check, and nothing is started.
+7. *Read the report.* The system answers with the count started, the count
+   already running and the count skipped, broken down by kind. The screen says
+   what the request did and re-reads the running set, so the tree and the list
+   now read a mix: running, stopped, or partial with its count.
+8. *Stop the collection.* When the data is no longer needed the person chooses
+   *Stop*. The same folder-scoped request stops the subtree, and the answer
+   reports how many feeds stopped. A collection left enabled but stopped is a
+   normal resting state.
+
+Step 6 is one request for the whole collection, not one per feed: the client does
+not walk the tree. The counts it returns are the only report of the fan-out, and
+the skipped items are not named; see /What is missing/.
+
+* Screens and wireframes
+
+One screen. The collection's identity and its counts sit at the top, its feeds
+and their coverage sit in the middle, and the start, the vintage check and the
+stop sit at the bottom with the dispatch they send, so the person reads the set
+above the act.
+
+#+caption: Market Simulator: the collections, one collection's feeds and coverage, and the folder-scoped start and stop.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_run-a-synthetic-collection.png]]
+
+* Prototype
+
+Two design notes answer this journey, one per window it composes.
+
+- [[id:768BEEF8-EAF1-46DF-99A4-17FE68D0ACCC][Market simulator prototype]] — the composite window: the feed tree, the selection summary and the live chart, and the cascade start and stop.
+  - Variants :: =a= feed table, =b= live chart, =c= cascade
+  - States :: =running=, =allstopped=, =novintage= (which refuses every vintage-backed contributor)
+  - Source :: =doc/prototypes/market_data/synthetic-market-simulator/index.html=
+  - Open :: =/OreStudio/doc/prototypes/market_data/synthetic-market-simulator/= once the site is built, or the file directly
+- [[id:2AE8A650-BE21-43C6-B01F-98CB8F705B31][Manage synthetic collections prototype]] — the collections window: the list, the detail form and the coverage.
+  - Variants :: =A= list, =B= detail form, =C= coverage
+  - States :: =basic=, =realistic=, =uniform=, =empty=
+  - Source :: =doc/prototypes/market_data/manage-synthetic-collections/index.html=
+  - Open :: =/OreStudio/doc/prototypes/market_data/manage-synthetic-collections/= once the site is built, or the file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_data_generation_config= | The collection row: name, description, enabled, scope, binding mode, dataset of origin | [[proj:projects/ores.synthetic/modeling/ores.synthetic.market_data_generation_config.org][ores.synthetic.market_data_generation_config]] |
+| =folder= | The tree node the folder-scoped request names, and the node kind a start may address | [[proj:projects/ores.synthetic/modeling/ores.synthetic.folder.org][ores.synthetic.folder]] |
+| =fx_spot_generation_config= | One FX feed: currency pair, source name, ORE key, price source, cadence, GMM starting price, vintage, folder | [[proj:projects/ores.synthetic/modeling/ores.synthetic.fx_spot_generation_config.org][ores.synthetic.fx_spot_generation_config]] |
+| =gmm_component= | The weighted Gaussian components of an FX feed's price process | [[proj:projects/ores.synthetic/modeling/ores.synthetic.gmm_component.org][ores.synthetic.gmm_component]] |
+| =ir_curve_generation_config= | One IR curve feed: currency, index family, tenor, role, process type, cadence, fixed-leg frequency, vintage, folder | [[proj:projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config.org][ores.synthetic.ir_curve_generation_config]] |
+| =ir_curve_generation_config_process_parameter_value= | The process parameters of an IR curve as row-based values | [[proj:projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config_process_parameter_value.org][ores.synthetic.ir_curve_generation_config_process_parameter_value]] |
+| =yield_curve_process_parameter_definition= | The parameter vocabulary a process type accepts, with its bounds and defaults | [[proj:projects/ores.synthetic/modeling/ores.synthetic.yield_curve_process_parameter_definition.org][ores.synthetic.yield_curve_process_parameter_definition]] |
+| =yield_curve_process_type= | The short-rate model an IR curve feed names | [[proj:projects/ores.synthetic/modeling/ores.synthetic.yield_curve_process_type.org][ores.synthetic.yield_curve_process_type]] |
+| =ir_curve_template_entry= | The tenor and instrument grid an IR curve feed publishes, in order | [[proj:projects/ores.synthetic/modeling/ores.synthetic.ir_curve_template_entry.org][ores.synthetic.ir_curve_template_entry]] |
+| =market_series= | The catalogue entry each feed's output series resolves to, by its oresmd URI | [[proj:projects/ores.marketdata/modeling/ores.marketdata.market_series.org][ores.marketdata.market_series]] |
+
+The collection owns its FX and IR feeds as one-to-many children. The tree rows
+the screen draws are not parsed out of a source name: they are =folder= rows,
+and the collection node links back to its =market_data_generation_config=. A
+running feed writes =market_observation= rows under the series' oresmd URI; that
+write is the market-data service's, not this journey's.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the collection | List the collections | =synthetic.v1.market_data_generation_configs.list= | exists |
+| Open the collection | Read one collection | =synthetic.v1.market_data_generation_configs.get= | exists |
+| Open the collection | Read the tree the list is drawn from | =synthetic.v1.folders.list=, =.get= | exists |
+| Read what the collection owns | List the feeds | =synthetic.v1.feed_configs.list= | exists |
+| Read what the collection owns | List the collection's IR curve feeds | =synthetic.v1.ir_curve_generation_configs.list= | exists |
+| Read what the collection owns | List the collection's FX feeds | =synthetic.v1.fx_spot_generation_configs.list= | exists |
+| Read what the collection owns | Fill the process and parameter columns | =synthetic.v1.yield_curve_process_types.list=, =synthetic.v1.yield_curve_process_parameter_definitions.list= | exists |
+| Read what the collection owns | Read an IR curve's grid and components | =synthetic.v1.ir_curve_template_entries.list=, =synthetic.v1.gmm_components.list= | exists |
+| Check the coverage | Read the output series each feed publishes to | =marketdata.v1.market_series.list=, =.get= | exists |
+| Check the contributors | Check every contributor's vintage | =marketdata.v1.ops.get_vintage_validity= | exists |
+| Start the collection | Start the subtree, one request | =marketdata.v1.ops.start_feeds_under_folder= | exists |
+| Start the collection | Start one selected feed leaf | =synthetic.v1.ops.start_feed= | exists |
+| Read the report | Re-read the running feeds | =synthetic.v1.feed_configs.list= | exists |
+| Stop the collection | Stop the subtree, one request | =marketdata.v1.ops.stop_feeds_under_folder= | exists |
+| Stop the collection | Stop one selected feed leaf | =synthetic.v1.ops.stop_feed= | exists |
+
+=feed_configs.list= answers with the source names of the currently running
+feeds, of every kind, and takes no filter; the screen joins that set to the
+collection's own feed rows to draw a state per row. Starting a feed is keyed by
+the feed config's own =config_id=, and the folder request is keyed by the
+collection folder's =folder_id=, resolved server-side over the whole subtree.
+
+* What is missing
+
+1. *The coverage read is four lists and a join.* No subject answers "what does
+   this collection span". The screen lists the FX feeds, the IR feeds, the
+   template entries and the series, then counts the cells itself. The candidate
+   is a coverage read scoped to a collection. Until then the screen joins four
+   lists and says a cell it cannot fill is unknown.
+2. *The running set is global, not scoped.* =feed_configs.list= returns every
+   running source name the caller may see, with no collection or folder filter,
+   as a list of strings. The screen cannot ask for one node's running set, and it
+   cannot tell a stopped feed from one whose producer has died. The candidate is
+   a scoped read carrying a per-feed state. Until then the screen reads the whole
+   set and matches on source name.
+3. *A skipped feed is a count, not a name.* The folder start answers with started,
+   already running and skipped, aggregated and by kind, and with no per-feed
+   detail. A person cannot see which feed was skipped or why, so a partial start
+   is not actionable from the screen. The candidate is a report naming each
+   skipped feed and its reason. Until then the screen prints the counts and says
+   the detail is not on the wire.
+4. *The folder handle is a UUID on the wire.* The request names the node by
+   =folder_id=, not by a path; the shell resolves a codename to that id itself,
+   but a web client carries the id it read from the list. The candidate is a
+   folder path the server resolves. Until then the screen keeps the id it read.
+5. *A start can collide and the client cannot predict it.* The Uniform Demo theme
+   leaves its IR curves at auto-start false because they meet Realistic 2026 on
+   currency and index family, and an IR contributor is refused on a binding
+   collision. Nothing on the screen states the rule before the check runs. The
+   candidate is the collision shown against the row. Until then the person reads
+   the check's outcome only.
+6. *No web screen exists.* No web page or HTTP route reaches these subjects as a
+   journey. The shell exposes =synthetic start folder= and the matching verbs,
+   and the Qt window is gone, so today the journey runs from the shell alone,
+   per feed or per folder, with no coverage view. The candidate is a web page
+   and a route. Until then the shell is the only surface.
+7. *A collection has no schedule.* The feeds start when a person says so, and a
+   collection left enabled with nothing running is a normal state, so the enabled
+   flag and the running set are read together and mean different things. The
+   candidate is a stated rule for what enabling does. Until then the screen shows
+   both and the person reads them.
+
+* Related journeys
+
+- [[id:AAF1D25C-566F-4899-8E88-521DC15EBCDB][Author an FX price feed]] — write the FX feed a collection owns, before this journey can start it.
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — the observations a running feed writes, and the ones that fail.
+- [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] — the same audit trail, applied to a published curve built from synthetic data.
+- [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] — the curve equivalent of a collection: authored here, bootstrapped there.
+
+* Related knowledge
+
+- [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]]
+- [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]]
+- [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]]
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][The feed binding]]
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+- [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:7557BCCA-54B5-43C0-8B12-F0AD373813F4][The shell operation surface]]
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]]

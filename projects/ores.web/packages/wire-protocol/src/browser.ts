@@ -177,7 +177,7 @@ export type { ImageUploadPolicy, ImageUploadView } from './entities/image.js';
 // The parties the signed-in member works in, as the Where I work screen reads
 // them from the BFF.
 export { myPartiesSchema, myPartySchema } from './membership.js';
-export type { MyParties, MyParty } from './membership.js';
+export type { MyParties, MyParty, ReportingLineWrite } from './membership.js';
 
 // The starting-point read, so the browser parses what the BFF served with the
 // definition the server serialised it from.
@@ -297,3 +297,14 @@ export type {
     InboxStoryField,
     RequestViewer,
 } from './inbox.js';
+
+// The timeline the browser parses: the entries, and what the stream cannot show.
+export {
+    TIMELINE_PROVENANCE_FIELDS,
+    fieldValue,
+    timelineEventSchema,
+    timelineFieldSchema,
+    timelineGapSchema,
+    timelineSchema,
+} from './timeline.js';
+export type { Timeline, TimelineEvent, TimelineField, TimelineGap } from './timeline.js';

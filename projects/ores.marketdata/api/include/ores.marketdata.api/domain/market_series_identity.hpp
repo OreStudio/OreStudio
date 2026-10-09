@@ -74,8 +74,10 @@ struct market_series_identity final {
 
     /**
      * @brief Which grammar named the series: series for a series URI, index for an index (fixing)
-     * URI, unknown for a URI neither admits. A row whose kind is not series carries no field value,
-     * so nothing is invented for a URI the codec could not read.
+     * URI, unknown for a URI neither admits. A series row carries the instrument schema's identity
+     * fields and an index row the index grammar's, so a fixing is joinable on its currency, its
+     * index, its tenor and its asset class. An unknown row carries no field value, so nothing is
+     * invented for a URI the codec could not read.
      */
     std::string identity_kind;
 

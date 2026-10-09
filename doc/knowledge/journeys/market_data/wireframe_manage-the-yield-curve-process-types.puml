@@ -1,0 +1,54 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>MANAGE YIELD CURVE PROCESS TYPES</b> | [ Market data / Synthetic / Configuration ]
+  --
+  {#
+    Process type catalogue | 5 types | 25 parameter definitions
+  }
+  {#
+    Order | Code | Name | Description | Parameters
+    1 | VASICEK | Vasicek | Mean-reverting Gaussian short-rate model | 4
+    2 | COX_INGERSOLL_ROSS | Cox-Ingersoll-Ross | Square-root volatility, non-negative rate | 5
+    3 | HULL_WHITE | Hull-White | Time-dependent mean-reversion target | 4
+    4 | TWO_FACTOR_GAUSSIAN | Two-Factor Gaussian | Two correlated Gaussian factors | 7
+    5 | BLACK_KARASINSKI | Black-Karasinski | Log-normal rate on a trinomial lattice | 5
+  }
+  [ New process type ] | [ Edit ] | [ Delete ]
+  --
+  <b>Parameter definitions: Vasicek (VASICEK)</b>
+  {#
+    Parameter | Display name | Symbol | Short label | Data type | Default | Min | Max | Order
+    kappa | Mean reversion speed | κ | κ rev | double | 0.5 | 0 | | 1
+    theta | Long-term mean | θ | θ mean | double | 0.03 | | | 2
+    sigma | Volatility | σ | σ vol | double | 0.01 | 0 | | 3
+    initial_rate | Initial short rate | | r₀ | double | 0.03 | | | 4
+  }
+  [ New definition ] | [ Edit ]
+  --
+  Shared by every type: kappa, theta, sigma, initial_rate. The two-factor engine replaces kappa and sigma with one pair per factor and adds rho; Black-Karasinski adds lattice_steps.
+  --
+  [ Save type ] | [ Save definitions ] | [ History ]
+  --
+  System-tenant catalogue. A saved row changes what every tenant's IR curve editor offers.
+}
+
+@enduml

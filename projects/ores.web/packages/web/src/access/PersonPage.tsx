@@ -34,6 +34,7 @@ import { SignInsPanel } from './SignIns.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { ContactTab, IdentityTab } from './PersonForms.js';
+import { Timeline } from '../timeline/Timeline.js';
 import { RecordHeader } from '../refdata/records.js';
 import { useTabs } from '../ui/Tabs.js';
 
@@ -82,13 +83,24 @@ function Person({
         queryFn: () => api.accountAccess(account.id),
     });
     const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
+    const story = useQuery({
+        queryKey: ['timeline', 'person', account.username],
+        queryFn: () => api.timeline('person', account.username),
+    });
     const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
     const name = displayName(account, account.username);
-    const refresh = () => queries.invalidateQueries({ queryKey: ['account-access', account.id] });
+    const refresh = () => {
+        void queries.invalidateQueries({ queryKey: ['account-access', account.id] });
+        /*
+         * A grant taken away is read back as a closed one, which the stream
+         * does not carry, so the story is read again rather than patched.
+         */
+        void queries.invalidateQueries({ queryKey: ['timeline', 'person', account.username] });
+    };
 
     const { tab, bar } = useTabs({
         label: name,
-        tabs: ['details', 'contact', 'roles', 'signIns'],
+        tabs: ['details', 'contact', 'roles', 'signIns', 'timeline'],
         titleOf: (part) => t(`access.person.tabs.${part}`),
     });
     const roles = access.data?.roles ?? [];
@@ -126,6 +138,41 @@ function Person({
                     queryKey={['account-sign-ins', account.username]}
                     read={(page) => api.accountSignIns(account.username, page)}
                 />
+            )}
+            {tab === 'timeline' && (
+                <>
+                    {story.isPending && (
+                        <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                    )}
+                    {story.isError && <Notice tone="error">{story.error.message}</Notice>}
+                    {story.data !== undefined && (
+                        <Timeline
+                            timeline={story.data}
+                            /*
+                             * A grant is the one entry on this stream a screen
+                             * can act on: taking a role away closes the grant,
+                             * which is the write the roles tab already makes.
+                             * A field change has no revert offered here, and
+                             * the stream says so rather than showing a dead
+                             * control.
+                             */
+                            renderActions={(event) => {
+                                if (event.kind !== 'granted') return undefined;
+                                const held = roles.find(
+                                    (role) => role.roleId === event.entityId,
+                                );
+                                if (held === undefined) return undefined;
+                                return (
+                                    <div className="mt-2 flex justify-end">
+                                        <Button size="sm" onClick={() => setTaking(held)}>
+                                            {t('access.person.takeAway')}
+                                        </Button>
+                                    </div>
+                                );
+                            }}
+                        />
+                    )}
+                </>
             )}
             {tab === 'roles' && (
                 <div className="space-y-4">

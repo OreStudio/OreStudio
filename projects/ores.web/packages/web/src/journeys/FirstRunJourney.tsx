@@ -264,7 +264,18 @@ export function FirstRunJourney({
      * person has just filled in into a sign-in for the account they have just
      * created: the second sign-in this journey exists to spare them.
      */
-    const signInRequired = useRef(!inBootstrapMode).current;
+    const startedWithAdministrator = useRef(!inBootstrapMode).current;
+    /*
+     * Whether the person is asked to sign in as the deployment's administrator
+     * rather than create it.
+     *
+     * The answer frozen above is not quite enough on its own: a browser sitting
+     * on this rail while the deployment is rebuilt underneath it holds a stale
+     * one, and would ask for a sign-in to a deployment that is waiting for its
+     * first administrator. A deployment that says it is in bootstrap mode has
+     * nobody to sign in as, so that answer is taken as it stands.
+     */
+    const signInRequired = startedWithAdministrator && !inBootstrapMode;
     /*
      * What the installation is left with. The ordinary ending is the default,
      * and the choice lives here rather than on the server because it is the

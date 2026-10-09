@@ -50,6 +50,7 @@ render_swap_convention_fields(const domain::swap_convention& v) {
         {.name = "Float Frequency", .value = v.float_frequency.value_or(std::string{})});
     fields.push_back({.name = "Sub Periods Coupon Type",
                       .value = v.sub_periods_coupon_type.value_or(std::string{})});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -39,6 +39,7 @@ export interface FutureConventionWrite {
     netting_type: string | null;
     calendar: string | null;
     overnight_index_tenor: string | null;
+    oresmd_uri: string | null;
 }
 
 export interface FutureConventionChange {

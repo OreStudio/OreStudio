@@ -110,6 +110,7 @@ to_domain(const messaging::bma_basis_swap_convention_write& write) {
     v.index_settlement_days = write.index_settlement_days;
     v.index_payment_period = write.index_payment_period;
     v.overnight_lockout_days = write.overnight_lockout_days;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

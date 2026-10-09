@@ -125,6 +125,17 @@ struct ois_convention final {
     std::optional<int> rate_cutoff;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: the overnight index the swap
+     * references, for example 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR' for 'USD-SOFR'.
+     * Classification: identifier — the address pins the one index the swap uses.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this OIS convention.
      */
     std::string modified_by;

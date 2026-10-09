@@ -43,6 +43,7 @@ struct swap_index_convention_write {
     std::string id;
     std::string conventions;
     std::optional<std::string> fixing_calendar;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct swap_index_convention_change {

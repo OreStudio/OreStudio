@@ -42,6 +42,7 @@ export interface FxOptionConventionWrite {
     long_term_delta_type: string | null;
     risk_reversal_in_favor_of: string | null;
     butterfly_style: string | null;
+    oresmd_uri: string | null;
 }
 
 export interface FxOptionConventionChange {

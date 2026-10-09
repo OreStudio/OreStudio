@@ -87,16 +87,16 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <fixing_calendar> <day_count_fraction> <settlement_days> <reason>
-     * <commentary>
+     * @brief add <id> <fixing_calendar> <day_count_fraction> <settlement_days> <oresmd_uri>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <fixing_calendar> <day_count_fraction> <settlement_days> <reason>
-     * <commentary> [--version <n>]
+     * @brief set <id> <fixing_calendar> <day_count_fraction> <settlement_days> <oresmd_uri>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <fixing_calendar> <day_count_fraction> <settlement_days>
-     * <reason> <commentary>
+     * <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

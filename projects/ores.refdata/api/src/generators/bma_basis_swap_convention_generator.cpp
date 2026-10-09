@@ -59,6 +59,7 @@ generate_synthetic_bma_basis_swap_convention(utility::generation::generation_con
     r.index_settlement_days = std::nullopt;
     r.index_payment_period = std::nullopt;
     r.overnight_lockout_days = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

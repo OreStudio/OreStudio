@@ -116,6 +116,18 @@ struct cds_convention final {
     std::optional<std::string> last_period_day_count_fraction;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs. The convention sets premium
+     * and settlement terms only; the credit series is named by the trade. Classification:
+     * requirement — the address states the credit-spread curve need, with the reference entity and
+     * the point left open.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this CDS convention.
      */
     std::string modified_by;

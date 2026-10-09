@@ -107,6 +107,7 @@ to_domain(const messaging::cms_spread_option_convention_write& write) {
     v.calendar = write.calendar;
     v.day_count_fraction = write.day_count_fraction;
     v.roll_convention = write.roll_convention;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

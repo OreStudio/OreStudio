@@ -104,6 +104,7 @@ domain::bond_yield_convention to_domain(const messaging::bond_yield_convention_w
     v.accuracy = write.accuracy;
     v.max_evaluations = write.max_evaluations;
     v.guess = write.guess;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

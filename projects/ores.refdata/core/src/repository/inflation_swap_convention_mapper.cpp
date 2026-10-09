@@ -64,6 +64,7 @@ inflation_swap_convention_mapper::map(const inflation_swap_convention_entity& v)
     r.publication_schedule_rules = v.publication_schedule_rules;
     r.publication_schedule_dates = v.publication_schedule_dates;
     r.publication_schedule_derived_groups = v.publication_schedule_derived_groups;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -99,6 +100,7 @@ inflation_swap_convention_mapper::map(const domain::inflation_swap_convention& v
     r.publication_schedule_rules = v.publication_schedule_rules;
     r.publication_schedule_dates = v.publication_schedule_dates;
     r.publication_schedule_derived_groups = v.publication_schedule_derived_groups;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

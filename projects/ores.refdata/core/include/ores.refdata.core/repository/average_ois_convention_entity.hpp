@@ -56,6 +56,7 @@ struct average_ois_convention_entity {
     std::string index;
     std::string on_tenor;
     std::string rate_cutoff;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -51,6 +51,7 @@ struct cds_convention_write {
     bool pays_at_default_time;
     std::optional<int> upfront_settlement_days;
     std::optional<std::string> last_period_day_count_fraction;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct cds_convention_change {

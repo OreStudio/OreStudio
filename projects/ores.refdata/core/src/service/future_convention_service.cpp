@@ -102,6 +102,7 @@ domain::future_convention to_domain(const messaging::future_convention_write& wr
     v.netting_type = write.netting_type;
     v.calendar = write.calendar;
     v.overnight_index_tenor = write.overnight_index_tenor;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

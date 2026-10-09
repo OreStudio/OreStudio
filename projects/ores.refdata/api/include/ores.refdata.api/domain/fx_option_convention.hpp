@@ -108,6 +108,18 @@ struct fx_option_convention final {
     std::optional<std::string> butterfly_style;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs. The convention points at
+     * another convention (fx_convention_id) and names no pair or surface itself. Classification:
+     * requirement — the address states the FX volatility-surface need for the pair the referenced
+     * convention names. The pointer at another convention is not market data.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this FX option convention.
      */
     std::string modified_by;

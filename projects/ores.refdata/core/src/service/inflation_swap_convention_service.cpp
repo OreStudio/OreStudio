@@ -115,6 +115,7 @@ to_domain(const messaging::inflation_swap_convention_write& write) {
     v.publication_schedule_rules = write.publication_schedule_rules;
     v.publication_schedule_dates = write.publication_schedule_dates;
     v.publication_schedule_derived_groups = write.publication_schedule_derived_groups;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

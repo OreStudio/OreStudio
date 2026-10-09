@@ -142,7 +142,7 @@ void ibor_index_convention_commands::register_commands(cli::Menu& root_menu, nat
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <id> <fixing_calendar> <day_count_fraction> <settlement_days> "
-        "<business_day_convention> <end_of_month> <reason> <commentary>");
+        "<business_day_convention> <end_of_month> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,7 +150,8 @@ void ibor_index_convention_commands::register_commands(cli::Menu& root_menu, nat
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <fixing_calendar> <day_count_fraction> <settlement_days> "
-        "<business_day_convention> <end_of_month> <reason> <commentary> [--version <n>]");
+        "<business_day_convention> <end_of_month> <oresmd_uri> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
@@ -158,7 +159,7 @@ void ibor_index_convention_commands::register_commands(cli::Menu& root_menu, nat
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <fixing_calendar> <day_count_fraction> <settlement_days> "
-        "<business_day_convention> <end_of_month> <reason> <commentary>");
+        "<business_day_convention> <end_of_month> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -353,8 +354,8 @@ void ibor_index_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -369,6 +370,7 @@ void ibor_index_convention_commands::process_add(std::ostream& out,
                    parsed->positionals[next++],
                    "business_day_convention");
         read_token(req.change.write.end_of_month, parsed->positionals[next++], "end_of_month");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -411,8 +413,8 @@ void ibor_index_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -427,6 +429,7 @@ void ibor_index_convention_commands::process_set(std::ostream& out,
                    parsed->positionals[next++],
                    "business_day_convention");
         read_token(req.change.write.end_of_month, parsed->positionals[next++], "end_of_month");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -481,8 +484,8 @@ void ibor_index_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 6 + 2) {
-            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 7 + 2) {
+            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -499,6 +502,7 @@ void ibor_index_convention_commands::process_put_many(std::ostream& out,
                        parsed->positionals[next++],
                        "business_day_convention");
             read_token(change.write.end_of_month, parsed->positionals[next++], "end_of_month");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

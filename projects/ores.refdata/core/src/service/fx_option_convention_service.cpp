@@ -106,6 +106,7 @@ domain::fx_option_convention to_domain(const messaging::fx_option_convention_wri
     v.long_term_delta_type = write.long_term_delta_type;
     v.risk_reversal_in_favor_of = write.risk_reversal_in_favor_of;
     v.butterfly_style = write.butterfly_style;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

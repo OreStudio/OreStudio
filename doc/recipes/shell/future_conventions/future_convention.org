@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-future_conventions add <id> <index> <date_generation_rule> <netting_type> <calendar> <overnight_index_tenor> <reason> <commentary>
+future_conventions add <id> <index> <date_generation_rule> <netting_type> <calendar> <overnight_index_tenor> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.future_conventions.put=.
 
 #+name: future_conventions-add
 #+begin_src ores-shell :tangle future_conventions-add.ores :exports none
-future_conventions add __none__ __none__ - - - - system.new_record generated_script
+future_conventions add __none__ __none__ - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-future_conventions set <id> <index> <date_generation_rule> <netting_type> <calendar> <overnight_index_tenor> <reason> <commentary> [--version <n>]
+future_conventions set <id> <index> <date_generation_rule> <netting_type> <calendar> <overnight_index_tenor> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.future_conventions.put=.
 
 #+name: future_conventions-set
 #+begin_src ores-shell :tangle future_conventions-set.ores :exports none
-future_conventions set __none__ __none__ - - - - system.new_record generated_script
+future_conventions set __none__ __none__ - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-future_conventions put-many --count <n> <id> <index> <date_generation_rule> <netting_type> <calendar> <overnight_index_tenor> <reason> <commentary>
+future_conventions put-many --count <n> <id> <index> <date_generation_rule> <netting_type> <calendar> <overnight_index_tenor> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.future_conventions.put_many=.
 
 #+name: future_conventions-put-many
 #+begin_src ores-shell :tangle future_conventions-put-many.ores :exports none
-future_conventions put-many --count 1 __none__ __none__ - - - - system.new_record generated_script
+future_conventions put-many --count 1 __none__ __none__ - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

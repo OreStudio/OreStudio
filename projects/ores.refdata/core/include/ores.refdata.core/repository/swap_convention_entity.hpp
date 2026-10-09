@@ -53,6 +53,7 @@ struct swap_convention_entity {
     std::string index;
     std::optional<std::string> float_frequency;
     std::optional<std::string> sub_periods_coupon_type;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

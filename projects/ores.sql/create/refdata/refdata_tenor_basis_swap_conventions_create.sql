@@ -56,6 +56,7 @@ create table if not exists "ores_refdata_tenor_basis_swap_conventions_tbl" (
     "short_index" text null,
     "short_pay_tenor" text null,
     "spread_on_short" boolean null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

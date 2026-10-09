@@ -46,6 +46,7 @@ export interface BmaBasisSwapConvention {
     index_settlement_days: number | null;
     index_payment_period: string | null;
     overnight_lockout_days: number | null;
+    oresmd_uri: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

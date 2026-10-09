@@ -109,6 +109,27 @@ named =schedule_code= axis — see
 std::string("ANCHOR_OFFSET")
 #+end_src
 
+** oresmd_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The oresmd URI of the market data this convention needs. The convention is
+a code list for tenors and names no series. Classification: requirement —
+at most it states the curve and the point a tenor is measured from, with
+everything left open. Uncertain: the convention states no market data need
+at all, so the address is the least well-founded of the set.
+
+The column holds the address as a value, so refdata depends on the oresmd
+format as a contract only and never on the marketdata library or its tables.
+Nullable, because no convention is required to state its address yet.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -145,6 +166,7 @@ std::string("ANCHOR_OFFSET")
 
 #+begin_src cpp :name includes
 #include <string>
+#include <optional>
 #+end_src
 
 ** Conventions

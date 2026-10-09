@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-commodity_forward_conventions add <id> <spot_days> <points_factor> <advance_calendar> <spot_relative> <delivery_location> <business_day_convention> <outright> <reason> <commentary>
+commodity_forward_conventions add <id> <spot_days> <points_factor> <advance_calendar> <spot_relative> <delivery_location> <business_day_convention> <outright> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.commodity_forward_conventions.put=.
 
 #+name: commodity_forward_conventions-add
 #+begin_src ores-shell :tangle commodity_forward_conventions-add.ores :exports none
-commodity_forward_conventions add __none__ - - - - - - - system.new_record generated_script
+commodity_forward_conventions add __none__ - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-commodity_forward_conventions set <id> <spot_days> <points_factor> <advance_calendar> <spot_relative> <delivery_location> <business_day_convention> <outright> <reason> <commentary> [--version <n>]
+commodity_forward_conventions set <id> <spot_days> <points_factor> <advance_calendar> <spot_relative> <delivery_location> <business_day_convention> <outright> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.commodity_forward_conventions.put=.
 
 #+name: commodity_forward_conventions-set
 #+begin_src ores-shell :tangle commodity_forward_conventions-set.ores :exports none
-commodity_forward_conventions set __none__ - - - - - - - system.new_record generated_script
+commodity_forward_conventions set __none__ - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-commodity_forward_conventions put-many --count <n> <id> <spot_days> <points_factor> <advance_calendar> <spot_relative> <delivery_location> <business_day_convention> <outright> <reason> <commentary>
+commodity_forward_conventions put-many --count <n> <id> <spot_days> <points_factor> <advance_calendar> <spot_relative> <delivery_location> <business_day_convention> <outright> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.commodity_forward_conventions.put_many=.
 
 #+name: commodity_forward_conventions-put-many
 #+begin_src ores-shell :tangle commodity_forward_conventions-put-many.ores :exports none
-commodity_forward_conventions put-many --count 1 __none__ - - - - - - - system.new_record generated_script
+commodity_forward_conventions put-many --count 1 __none__ - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

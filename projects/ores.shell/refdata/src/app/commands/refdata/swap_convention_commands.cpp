@@ -142,7 +142,7 @@ void swap_convention_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <id> <fixed_calendar> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> "
-        "<index> <float_frequency> <sub_periods_coupon_type> <reason> <commentary>");
+        "<index> <float_frequency> <sub_periods_coupon_type> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,8 +150,8 @@ void swap_convention_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <fixed_calendar> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> "
-        "<index> <float_frequency> <sub_periods_coupon_type> <reason> <commentary> [--version "
-        "<n>]");
+        "<index> <float_frequency> <sub_periods_coupon_type> <oresmd_uri> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,8 +159,8 @@ void swap_convention_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <fixed_calendar> <fixed_frequency> <fixed_convention> "
-        "<fixed_day_count_fraction> <index> <float_frequency> <sub_periods_coupon_type> <reason> "
-        "<commentary>");
+        "<fixed_day_count_fraction> <index> <float_frequency> <sub_periods_coupon_type> "
+        "<oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -355,8 +355,8 @@ void swap_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -375,6 +375,7 @@ void swap_convention_commands::process_add(std::ostream& out,
         read_token(req.change.write.sub_periods_coupon_type,
                    parsed->positionals[next++],
                    "sub_periods_coupon_type");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -417,8 +418,8 @@ void swap_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -437,6 +438,7 @@ void swap_convention_commands::process_set(std::ostream& out,
         read_token(req.change.write.sub_periods_coupon_type,
                    parsed->positionals[next++],
                    "sub_periods_coupon_type");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -491,8 +493,8 @@ void swap_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 8 + 2) {
-            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 9 + 2) {
+            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -513,6 +515,7 @@ void swap_convention_commands::process_put_many(std::ostream& out,
             read_token(change.write.sub_periods_coupon_type,
                        parsed->positionals[next++],
                        "sub_periods_coupon_type");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-intraday_power_load_conventions add <id> <explicit_load_profile> <business_day_load_rules> <reason> <commentary>
+intraday_power_load_conventions add <id> <explicit_load_profile> <business_day_load_rules> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.intraday_power_load_conventions.put=.
 
 #+name: intraday_power_load_conventions-add
 #+begin_src ores-shell :tangle intraday_power_load_conventions-add.ores :exports none
-intraday_power_load_conventions add __none__ - - system.new_record generated_script
+intraday_power_load_conventions add __none__ - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-intraday_power_load_conventions set <id> <explicit_load_profile> <business_day_load_rules> <reason> <commentary> [--version <n>]
+intraday_power_load_conventions set <id> <explicit_load_profile> <business_day_load_rules> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.intraday_power_load_conventions.put=.
 
 #+name: intraday_power_load_conventions-set
 #+begin_src ores-shell :tangle intraday_power_load_conventions-set.ores :exports none
-intraday_power_load_conventions set __none__ - - system.new_record generated_script
+intraday_power_load_conventions set __none__ - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-intraday_power_load_conventions put-many --count <n> <id> <explicit_load_profile> <business_day_load_rules> <reason> <commentary>
+intraday_power_load_conventions put-many --count <n> <id> <explicit_load_profile> <business_day_load_rules> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.intraday_power_load_conventions.put_many=.
 
 #+name: intraday_power_load_conventions-put-many
 #+begin_src ores-shell :tangle intraday_power_load_conventions-put-many.ores :exports none
-intraday_power_load_conventions put-many --count 1 __none__ - - system.new_record generated_script
+intraday_power_load_conventions put-many --count 1 __none__ - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

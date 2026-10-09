@@ -58,6 +58,7 @@ average_ois_convention_mapper::map(const average_ois_convention_entity& v) {
     r.index = v.index;
     r.on_tenor = v.on_tenor;
     r.rate_cutoff = v.rate_cutoff;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -87,6 +88,7 @@ average_ois_convention_mapper::map(const domain::average_ois_convention& v) {
     r.index = v.index;
     r.on_tenor = v.on_tenor;
     r.rate_cutoff = v.rate_cutoff;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

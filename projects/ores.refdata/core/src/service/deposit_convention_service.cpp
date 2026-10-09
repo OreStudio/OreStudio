@@ -104,6 +104,7 @@ domain::deposit_convention to_domain(const messaging::deposit_convention_write& 
     v.end_of_month = write.end_of_month;
     v.day_count_fraction = write.day_count_fraction;
     v.settlement_days = write.settlement_days;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

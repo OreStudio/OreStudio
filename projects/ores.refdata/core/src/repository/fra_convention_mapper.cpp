@@ -48,6 +48,7 @@ domain::fra_convention fra_convention_mapper::map(const fra_convention_entity& v
     r.id = v.id.value();
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.index = v.index;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -67,6 +68,7 @@ fra_convention_entity fra_convention_mapper::map(const domain::fra_convention& v
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.index = v.index;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

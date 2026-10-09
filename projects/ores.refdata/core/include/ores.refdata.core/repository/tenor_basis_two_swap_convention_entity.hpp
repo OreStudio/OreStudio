@@ -56,6 +56,7 @@ struct tenor_basis_two_swap_convention_entity {
     std::string short_fixed_day_count_fraction;
     std::string short_index;
     std::optional<bool> long_minus_short;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

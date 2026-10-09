@@ -106,6 +106,7 @@ to_domain(const messaging::zero_inflation_index_convention_write& write) {
     v.frequency = write.frequency;
     v.availability_lag = write.availability_lag;
     v.currency = write.currency;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

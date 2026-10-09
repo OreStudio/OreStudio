@@ -104,6 +104,7 @@ domain::currency_pair_convention to_domain(const messaging::currency_pair_conven
     v.business_day_convention = write.business_day_convention;
     v.spot_relative = write.spot_relative;
     v.end_of_month = write.end_of_month;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

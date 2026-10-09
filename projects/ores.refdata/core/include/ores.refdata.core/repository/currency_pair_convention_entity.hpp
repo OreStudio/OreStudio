@@ -51,6 +51,7 @@ struct currency_pair_convention_entity {
     std::optional<std::string> business_day_convention;
     std::optional<bool> spot_relative;
     std::optional<bool> end_of_month;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -89,7 +89,7 @@ public:
     /**
      * @brief add <id> <settlement_days> <calendar> <frequency> <payment_convention> <rule>
      * <day_count_fraction> <settles_accrual> <pays_at_default_time> <upfront_settlement_days>
-     * <last_period_day_count_fraction> <reason> <commentary>
+     * <last_period_day_count_fraction> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -98,7 +98,7 @@ public:
     /**
      * @brief set <id> <settlement_days> <calendar> <frequency> <payment_convention> <rule>
      * <day_count_fraction> <settles_accrual> <pays_at_default_time> <upfront_settlement_days>
-     * <last_period_day_count_fraction> <reason> <commentary> [--version <n>]
+     * <last_period_day_count_fraction> <oresmd_uri> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -107,7 +107,7 @@ public:
     /**
      * @brief put-many --count <n> <id> <settlement_days> <calendar> <frequency>
      * <payment_convention> <rule> <day_count_fraction> <settles_accrual> <pays_at_default_time>
-     * <upfront_settlement_days> <last_period_day_count_fraction> <reason> <commentary>
+     * <upfront_settlement_days> <last_period_day_count_fraction> <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

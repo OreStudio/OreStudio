@@ -48,6 +48,7 @@ struct cms_spread_option_convention_write {
     std::string calendar;
     std::string day_count_fraction;
     std::string roll_convention;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct cms_spread_option_convention_change {

@@ -41,6 +41,7 @@ export interface DepositConventionWrite {
     end_of_month: boolean | null;
     day_count_fraction: string | null;
     settlement_days: number | null;
+    oresmd_uri: string | null;
 }
 
 export interface DepositConventionChange {

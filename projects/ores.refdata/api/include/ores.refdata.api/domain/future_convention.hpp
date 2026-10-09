@@ -94,6 +94,17 @@ struct future_convention final {
     std::optional<std::string> overnight_index_tenor;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: the index the future
+     * references, as a fixing URI. Classification: identifier — the index is named in full, so the
+     * address pins one series.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this future convention.
      */
     std::string modified_by;

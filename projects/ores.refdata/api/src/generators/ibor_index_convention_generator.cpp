@@ -52,6 +52,7 @@ generate_synthetic_ibor_index_convention(utility::generation::generation_context
     r.settlement_days = 2;
     r.business_day_convention = std::string("ModifiedFollowing");
     r.end_of_month = false;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

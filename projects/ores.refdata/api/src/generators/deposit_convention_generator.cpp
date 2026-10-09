@@ -55,6 +55,7 @@ generate_synthetic_deposit_convention(utility::generation::generation_context& c
     r.end_of_month = std::nullopt;
     r.day_count_fraction = std::nullopt;
     r.settlement_days = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

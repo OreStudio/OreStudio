@@ -104,6 +104,7 @@ domain::swap_convention to_domain(const messaging::swap_convention_write& write)
     v.index = write.index;
     v.float_frequency = write.float_frequency;
     v.sub_periods_coupon_type = write.sub_periods_coupon_type;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

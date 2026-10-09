@@ -44,6 +44,7 @@ export interface AverageOisConventionWrite {
     index: string;
     on_tenor: string;
     rate_cutoff: string;
+    oresmd_uri: string | null;
 }
 
 export interface AverageOisConventionChange {

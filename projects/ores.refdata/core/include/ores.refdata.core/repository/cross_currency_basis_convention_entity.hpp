@@ -70,6 +70,7 @@ struct cross_currency_basis_convention_entity {
     std::optional<int> flat_rate_cutoff;
     std::optional<bool> flat_is_averaged;
     std::optional<bool> flat_observation_shift;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -90,7 +90,7 @@ public:
      * @brief add <id> <settlement_days> <settlement_calendar> <settlement_convention>
      * <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index>
      * <eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days>
-     * <rate_cutoff> <is_averaged> <observation_shift> <reason> <commentary>
+     * <rate_cutoff> <is_averaged> <observation_shift> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -100,7 +100,8 @@ public:
      * @brief set <id> <settlement_days> <settlement_calendar> <settlement_convention>
      * <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index>
      * <eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days>
-     * <rate_cutoff> <is_averaged> <observation_shift> <reason> <commentary> [--version <n>]
+     * <rate_cutoff> <is_averaged> <observation_shift> <oresmd_uri> <reason> <commentary> [--version
+     * <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -111,7 +112,7 @@ public:
      * <settlement_convention> <fixed_currency> <fixed_frequency> <fixed_convention>
      * <fixed_day_count_fraction> <index> <eom> <is_resettable> <float_index_is_resettable>
      * <include_spread> <lookback> <fixing_days> <rate_cutoff> <is_averaged> <observation_shift>
-     * <reason> <commentary>
+     * <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

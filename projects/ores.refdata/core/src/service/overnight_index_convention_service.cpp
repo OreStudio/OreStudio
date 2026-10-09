@@ -102,6 +102,7 @@ to_domain(const messaging::overnight_index_convention_write& write) {
     v.fixing_calendar = write.fixing_calendar;
     v.day_count_fraction = write.day_count_fraction;
     v.settlement_days = write.settlement_days;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

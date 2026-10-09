@@ -118,6 +118,7 @@ to_domain(const messaging::cross_currency_fix_float_convention_write& write) {
     v.rate_cutoff = write.rate_cutoff;
     v.is_averaged = write.is_averaged;
     v.observation_shift = write.observation_shift;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

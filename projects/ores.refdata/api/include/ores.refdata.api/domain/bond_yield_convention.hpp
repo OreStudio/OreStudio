@@ -99,6 +99,19 @@ struct bond_yield_convention final {
     std::optional<double> guess;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs. The convention sets only the
+     * solver parameters (compounding, price type, accuracy, guess), so it names no series.
+     * Classification: requirement — the address states the bond price series a yield is solved
+     * from, with the bond and the point left open. Uncertain: the convention names no bond, so the
+     * address is a curve-level requirement at best.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this bond yield convention.
      */
     std::string modified_by;

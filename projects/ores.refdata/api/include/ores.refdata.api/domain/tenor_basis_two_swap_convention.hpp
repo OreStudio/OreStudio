@@ -117,6 +117,17 @@ struct tenor_basis_two_swap_convention final {
     std::optional<bool> long_minus_short;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: the long_index or the
+     * short_index, as a fixing URI. The single field cannot name both; which one it carries is a
+     * product decision. Classification: identifier — the leg it names is fully specified.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this two-tenor basis swap convention.
      */
     std::string modified_by;

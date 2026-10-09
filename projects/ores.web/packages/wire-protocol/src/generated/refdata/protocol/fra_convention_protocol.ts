@@ -35,6 +35,7 @@ export interface FraConventionKey {
 export interface FraConventionWrite {
     id: string;
     index: string;
+    oresmd_uri: string | null;
 }
 
 export interface FraConventionChange {

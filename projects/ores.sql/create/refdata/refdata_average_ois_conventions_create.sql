@@ -45,6 +45,7 @@ create table if not exists "ores_refdata_average_ois_conventions_tbl" (
     "index" text not null,
     "on_tenor" text not null,
     "rate_cutoff" text not null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

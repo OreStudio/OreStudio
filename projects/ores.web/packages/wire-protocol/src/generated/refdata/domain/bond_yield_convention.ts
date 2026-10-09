@@ -41,6 +41,7 @@ export interface BondYieldConvention {
     accuracy: number | null;
     max_evaluations: number | null;
     guess: number | null;
+    oresmd_uri: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

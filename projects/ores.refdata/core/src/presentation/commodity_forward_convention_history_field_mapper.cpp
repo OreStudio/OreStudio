@@ -55,6 +55,7 @@ render_commodity_forward_convention_fields(const domain::commodity_forward_conve
                       .value = v.business_day_convention.value_or(std::string{})});
     fields.push_back({.name = "Outright",
                       .value = v.outright ? (*v.outright ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -105,6 +106,17 @@ struct cms_spread_option_convention final {
      * stores.
      */
     std::string roll_convention;
+
+    /**
+     * @brief The oresmd URI of the market data this convention needs. The convention sets schedule
+     * and day-count terms only, so it names no index. Classification: requirement — the address
+     * states a CMS spread curve need, with the indices and the point left open.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
 
     /**
      * @brief Username of the person who last modified this CMS spread option convention.

@@ -165,6 +165,7 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         business_day_convention: code.nullable(),
         spot_relative: z.boolean().nullable(),
         end_of_month: z.boolean().nullable(),
+        oresmd_uri: text.nullable(),
     }) satisfies z.ZodType<CurrencyPairConventionWrite>,
     'pair-calendars': z.object({
         pair_code: pairCode,

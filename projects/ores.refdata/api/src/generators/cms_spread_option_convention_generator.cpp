@@ -55,6 +55,7 @@ generate_synthetic_cms_spread_option_convention(utility::generation::generation_
     r.calendar = std::string("TARGET");
     r.day_count_fraction = std::string("ACT/360");
     r.roll_convention = std::string("ModifiedFollowing");
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

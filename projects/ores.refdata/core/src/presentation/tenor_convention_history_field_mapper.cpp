@@ -27,6 +27,7 @@
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/tenor_convention.hpp"
+#include <string>
 #include <vector>
 
 namespace ores::refdata::presentation {
@@ -40,6 +41,7 @@ render_tenor_convention_fields(const domain::tenor_convention& v) {
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Measured From", .value = v.measured_from});
     fields.push_back({.name = "Resolution Algorithm", .value = v.resolution_algorithm});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

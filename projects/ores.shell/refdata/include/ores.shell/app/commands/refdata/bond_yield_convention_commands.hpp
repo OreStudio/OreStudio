@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess>
-     * <reason> <commentary>
+     * <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess>
-     * <reason> <commentary> [--version <n>]
+     * <oresmd_uri> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <compounding> <frequency> <price_type> <accuracy>
-     * <max_evaluations> <guess> <reason> <commentary>
+     * <max_evaluations> <guess> <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

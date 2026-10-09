@@ -51,6 +51,7 @@ struct average_ois_convention_write {
     std::string index;
     std::string on_tenor;
     std::string rate_cutoff;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct average_ois_convention_change {

@@ -91,7 +91,7 @@ public:
      * <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar>
      * <inflation_convention> <publication_roll> <start_delay> <start_delay_convention>
      * <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates>
-     * <publication_schedule_derived_groups> <reason> <commentary>
+     * <publication_schedule_derived_groups> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -102,7 +102,7 @@ public:
      * <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar>
      * <inflation_convention> <publication_roll> <start_delay> <start_delay_convention>
      * <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates>
-     * <publication_schedule_derived_groups> <reason> <commentary> [--version <n>]
+     * <publication_schedule_derived_groups> <oresmd_uri> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -113,7 +113,7 @@ public:
      * <interpolated> <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar>
      * <inflation_convention> <publication_roll> <start_delay> <start_delay_convention>
      * <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates>
-     * <publication_schedule_derived_groups> <reason> <commentary>
+     * <publication_schedule_derived_groups> <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

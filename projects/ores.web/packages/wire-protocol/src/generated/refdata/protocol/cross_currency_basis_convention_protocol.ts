@@ -58,6 +58,7 @@ export interface CrossCurrencyBasisConventionWrite {
     flat_rate_cutoff: number | null;
     flat_is_averaged: boolean | null;
     flat_observation_shift: boolean | null;
+    oresmd_uri: string | null;
 }
 
 export interface CrossCurrencyBasisConventionChange {

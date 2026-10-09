@@ -100,6 +100,7 @@ domain::swap_index_convention to_domain(const messaging::swap_index_convention_w
     v.id = write.id;
     v.conventions = write.conventions;
     v.fixing_calendar = write.fixing_calendar;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

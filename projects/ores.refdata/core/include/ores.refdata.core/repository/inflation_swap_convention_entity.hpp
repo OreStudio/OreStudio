@@ -62,6 +62,7 @@ struct inflation_swap_convention_entity {
     std::optional<std::string> publication_schedule_rules;
     std::optional<std::string> publication_schedule_dates;
     std::optional<std::string> publication_schedule_derived_groups;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -142,8 +142,8 @@ void fx_option_convention_commands::register_commands(cli::Menu& root_menu, nats
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <id> <fx_convention_id> <atm_type> <delta_type> <switch_tenor> <long_term_atm_type> "
-        "<long_term_delta_type> <risk_reversal_in_favor_of> <butterfly_style> <reason> "
-        "<commentary>");
+        "<long_term_delta_type> <risk_reversal_in_favor_of> <butterfly_style> <oresmd_uri> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -151,8 +151,8 @@ void fx_option_convention_commands::register_commands(cli::Menu& root_menu, nats
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <fx_convention_id> <atm_type> <delta_type> <switch_tenor> <long_term_atm_type> "
-        "<long_term_delta_type> <risk_reversal_in_favor_of> <butterfly_style> <reason> "
-        "<commentary> [--version <n>]");
+        "<long_term_delta_type> <risk_reversal_in_favor_of> <butterfly_style> <oresmd_uri> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -161,7 +161,7 @@ void fx_option_convention_commands::register_commands(cli::Menu& root_menu, nats
         },
         "put-many --count <n> <id> <fx_convention_id> <atm_type> <delta_type> <switch_tenor> "
         "<long_term_atm_type> <long_term_delta_type> <risk_reversal_in_favor_of> <butterfly_style> "
-        "<reason> <commentary>");
+        "<oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +356,8 @@ void fx_option_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -377,6 +377,7 @@ void fx_option_convention_commands::process_add(std::ostream& out,
                    "risk_reversal_in_favor_of");
         read_token(
             req.change.write.butterfly_style, parsed->positionals[next++], "butterfly_style");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -419,8 +420,8 @@ void fx_option_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -440,6 +441,7 @@ void fx_option_convention_commands::process_set(std::ostream& out,
                    "risk_reversal_in_favor_of");
         read_token(
             req.change.write.butterfly_style, parsed->positionals[next++], "butterfly_style");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -494,8 +496,8 @@ void fx_option_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 10 + 2) {
+            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -517,6 +519,7 @@ void fx_option_convention_commands::process_put_many(std::ostream& out,
                        "risk_reversal_in_favor_of");
             read_token(
                 change.write.butterfly_style, parsed->positionals[next++], "butterfly_style");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

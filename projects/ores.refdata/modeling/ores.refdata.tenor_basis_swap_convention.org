@@ -247,6 +247,27 @@ Whether the quoted spread is added to the short leg rather than the long one.
 std::nullopt
 #+end_src
 
+** oresmd_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The oresmd URI of the market data this convention needs: one of
+=pay_index=, =receive_index=, =long_index= or =short_index=, as a fixing
+URI. The single field cannot name all four; which one it carries is a
+product decision. Classification: identifier — the leg it names is fully
+specified.
+
+The column holds the address as a value, so refdata depends on the oresmd
+format as a contract only and never on the marketdata library or its tables.
+Nullable, because no convention is required to state its address yet.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags

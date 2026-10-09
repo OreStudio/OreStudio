@@ -225,7 +225,11 @@ function PairDialog({
                 ...intent,
             });
             await api.saveRecord(CONVENTIONS, {
-                write: { pair_code: code, ...writeOf(CONVENTION_FIELDS, values) },
+                write: {
+                    pair_code: code,
+                    oresmd_uri: convention?.['oresmd_uri'] ?? null,
+                    ...writeOf(CONVENTION_FIELDS, values),
+                },
                 version: convention?.version ?? null,
                 ...(convention === undefined
                     ? { reasonCode: NEW_RECORD_REASON, commentary: '' }

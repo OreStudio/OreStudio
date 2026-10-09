@@ -48,6 +48,7 @@ struct swap_index_convention_entity {
     std::string party_id;
     std::string conventions;
     std::optional<std::string> fixing_calendar;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -55,6 +55,7 @@ struct tenor_basis_swap_convention_write {
     std::optional<std::string> short_index;
     std::optional<std::string> short_pay_tenor;
     std::optional<bool> spread_on_short;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct tenor_basis_swap_convention_change {

@@ -49,6 +49,7 @@ render_currency_pair_convention_fields(const domain::currency_pair_convention& v
     fields.push_back(
         {.name = "End Of Month",
          .value = v.end_of_month ? (*v.end_of_month ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

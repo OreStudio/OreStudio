@@ -43,6 +43,7 @@ create table if not exists "ores_refdata_deposit_conventions_tbl" (
     "end_of_month" boolean null,
     "day_count_fraction" text null,
     "settlement_days" integer null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

@@ -55,6 +55,7 @@ generate_synthetic_swap_convention(utility::generation::generation_context& ctx)
     r.index = std::string("EUR-EURIBOR-6M");
     r.float_frequency = std::nullopt;
     r.sub_periods_coupon_type = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

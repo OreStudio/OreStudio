@@ -50,6 +50,7 @@ generate_synthetic_swap_index_convention(utility::generation::generation_context
     r.party_id = ctx.generate_uuid();
     r.conventions = std::string("EUR-6M-SWAP-CONVENTIONS");
     r.fixing_calendar = std::string("TARGET");
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

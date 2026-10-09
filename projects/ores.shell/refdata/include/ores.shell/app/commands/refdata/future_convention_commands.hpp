@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <id> <index> <date_generation_rule> <netting_type> <calendar>
-     * <overnight_index_tenor> <reason> <commentary>
+     * <overnight_index_tenor> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <id> <index> <date_generation_rule> <netting_type> <calendar>
-     * <overnight_index_tenor> <reason> <commentary> [--version <n>]
+     * <overnight_index_tenor> <oresmd_uri> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <index> <date_generation_rule> <netting_type> <calendar>
-     * <overnight_index_tenor> <reason> <commentary>
+     * <overnight_index_tenor> <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -145,7 +145,7 @@ void cross_currency_fix_float_convention_commands::register_commands(cli::Menu& 
         "add <id> <settlement_days> <settlement_calendar> <settlement_convention> <fixed_currency> "
         "<fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <eom> "
         "<is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days> "
-        "<rate_cutoff> <is_averaged> <observation_shift> <reason> <commentary>");
+        "<rate_cutoff> <is_averaged> <observation_shift> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -155,7 +155,8 @@ void cross_currency_fix_float_convention_commands::register_commands(cli::Menu& 
         "set <id> <settlement_days> <settlement_calendar> <settlement_convention> <fixed_currency> "
         "<fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <eom> "
         "<is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days> "
-        "<rate_cutoff> <is_averaged> <observation_shift> <reason> <commentary> [--version <n>]");
+        "<rate_cutoff> <is_averaged> <observation_shift> <oresmd_uri> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -165,7 +166,8 @@ void cross_currency_fix_float_convention_commands::register_commands(cli::Menu& 
         "put-many --count <n> <id> <settlement_days> <settlement_calendar> <settlement_convention> "
         "<fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> "
         "<eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> "
-        "<fixing_days> <rate_cutoff> <is_averaged> <observation_shift> <reason> <commentary>");
+        "<fixing_days> <rate_cutoff> <is_averaged> <observation_shift> <oresmd_uri> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -357,8 +359,8 @@ void cross_currency_fix_float_convention_commands::process_add(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 18 + 2) {
-            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 19 + 2) {
+            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -392,6 +394,7 @@ void cross_currency_fix_float_convention_commands::process_add(
         read_token(req.change.write.is_averaged, parsed->positionals[next++], "is_averaged");
         read_token(
             req.change.write.observation_shift, parsed->positionals[next++], "observation_shift");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -433,8 +436,8 @@ void cross_currency_fix_float_convention_commands::process_set(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 18 + 2) {
-            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 19 + 2) {
+            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -468,6 +471,7 @@ void cross_currency_fix_float_convention_commands::process_set(
         read_token(req.change.write.is_averaged, parsed->positionals[next++], "is_averaged");
         read_token(
             req.change.write.observation_shift, parsed->positionals[next++], "observation_shift");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -521,8 +525,8 @@ void cross_currency_fix_float_convention_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 18 + 2) {
-            fail(out) << "Expected " << (change_count * 18 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 19 + 2) {
+            fail(out) << "Expected " << (change_count * 19 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -558,6 +562,7 @@ void cross_currency_fix_float_convention_commands::process_put_many(
             read_token(change.write.is_averaged, parsed->positionals[next++], "is_averaged");
             read_token(
                 change.write.observation_shift, parsed->positionals[next++], "observation_shift");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

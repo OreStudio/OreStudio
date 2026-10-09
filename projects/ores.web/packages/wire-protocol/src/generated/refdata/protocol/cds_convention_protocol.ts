@@ -44,6 +44,7 @@ export interface CdsConventionWrite {
     pays_at_default_time: boolean;
     upfront_settlement_days: number | null;
     last_period_day_count_fraction: string | null;
+    oresmd_uri: string | null;
 }
 
 export interface CdsConventionChange {

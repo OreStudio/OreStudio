@@ -51,6 +51,7 @@ struct future_convention_entity {
     std::optional<std::string> netting_type;
     std::optional<std::string> calendar;
     std::optional<std::string> overnight_index_tenor;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

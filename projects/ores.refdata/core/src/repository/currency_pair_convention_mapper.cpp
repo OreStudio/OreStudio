@@ -50,6 +50,7 @@ currency_pair_convention_mapper::map(const currency_pair_convention_entity& v) {
     r.business_day_convention = v.business_day_convention;
     r.spot_relative = v.spot_relative;
     r.end_of_month = v.end_of_month;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -74,6 +75,7 @@ currency_pair_convention_mapper::map(const domain::currency_pair_convention& v) 
     r.business_day_convention = v.business_day_convention;
     r.spot_relative = v.spot_relative;
     r.end_of_month = v.end_of_month;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -37,6 +37,7 @@ export interface TenorConventionWrite {
     description: string;
     measured_from: string;
     resolution_algorithm: string;
+    oresmd_uri: string | null;
 }
 
 export interface TenorConventionChange {

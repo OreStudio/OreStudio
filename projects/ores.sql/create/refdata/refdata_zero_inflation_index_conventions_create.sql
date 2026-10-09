@@ -53,6 +53,7 @@ create table if not exists "ores_refdata_zero_inflation_index_conventions_tbl" (
     "frequency" text not null,
     "availability_lag" text not null,
     "currency" text not null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

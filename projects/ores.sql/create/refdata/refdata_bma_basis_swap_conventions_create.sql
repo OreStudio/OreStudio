@@ -51,6 +51,7 @@ create table if not exists "ores_refdata_bma_basis_swap_conventions_tbl" (
     "index_settlement_days" integer null,
     "index_payment_period" text null,
     "overnight_lockout_days" integer null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

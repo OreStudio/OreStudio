@@ -102,6 +102,18 @@ struct swap_convention final {
     std::optional<std::string> sub_periods_coupon_type;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: the index of the floating
+     * leg, for example 'oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M' for
+     * 'EUR-EURIBOR-6M'. Classification: identifier — the address pins the one index the floating
+     * leg uses.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this swap convention.
      */
     std::string modified_by;

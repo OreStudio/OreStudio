@@ -89,7 +89,8 @@ public:
     /**
      * @brief add <id> <index> <bma_index> <bma_payment_calendar> <bma_payment_convention>
      * <bma_payment_lag> <index_payment_calendar> <index_payment_convention> <index_payment_lag>
-     * <index_settlement_days> <index_payment_period> <overnight_lockout_days> <reason> <commentary>
+     * <index_settlement_days> <index_payment_period> <overnight_lockout_days> <oresmd_uri> <reason>
+     * <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -98,8 +99,8 @@ public:
     /**
      * @brief set <id> <index> <bma_index> <bma_payment_calendar> <bma_payment_convention>
      * <bma_payment_lag> <index_payment_calendar> <index_payment_convention> <index_payment_lag>
-     * <index_settlement_days> <index_payment_period> <overnight_lockout_days> <reason> <commentary>
-     * [--version <n>]
+     * <index_settlement_days> <index_payment_period> <overnight_lockout_days> <oresmd_uri> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -109,7 +110,7 @@ public:
      * @brief put-many --count <n> <id> <index> <bma_index> <bma_payment_calendar>
      * <bma_payment_convention> <bma_payment_lag> <index_payment_calendar>
      * <index_payment_convention> <index_payment_lag> <index_settlement_days> <index_payment_period>
-     * <overnight_lockout_days> <reason> <commentary>
+     * <overnight_lockout_days> <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

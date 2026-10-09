@@ -109,6 +109,7 @@ domain::ois_convention to_domain(const messaging::ois_convention_write& write) {
     v.rule = write.rule;
     v.payment_calendar = write.payment_calendar;
     v.rate_cutoff = write.rate_cutoff;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

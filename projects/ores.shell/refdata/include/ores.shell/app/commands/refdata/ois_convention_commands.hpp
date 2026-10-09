@@ -89,7 +89,7 @@ public:
     /**
      * @brief add <id> <spot_lag> <index> <fixed_day_count_fraction> <fixed_calendar> <payment_lag>
      * <end_of_month> <fixed_frequency> <fixed_convention> <fixed_payment_convention> <rule>
-     * <payment_calendar> <rate_cutoff> <reason> <commentary>
+     * <payment_calendar> <rate_cutoff> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -98,7 +98,7 @@ public:
     /**
      * @brief set <id> <spot_lag> <index> <fixed_day_count_fraction> <fixed_calendar> <payment_lag>
      * <end_of_month> <fixed_frequency> <fixed_convention> <fixed_payment_convention> <rule>
-     * <payment_calendar> <rate_cutoff> <reason> <commentary> [--version <n>]
+     * <payment_calendar> <rate_cutoff> <oresmd_uri> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -107,7 +107,8 @@ public:
     /**
      * @brief put-many --count <n> <id> <spot_lag> <index> <fixed_day_count_fraction>
      * <fixed_calendar> <payment_lag> <end_of_month> <fixed_frequency> <fixed_convention>
-     * <fixed_payment_convention> <rule> <payment_calendar> <rate_cutoff> <reason> <commentary>
+     * <fixed_payment_convention> <rule> <payment_calendar> <rate_cutoff> <oresmd_uri> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

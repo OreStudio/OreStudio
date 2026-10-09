@@ -89,7 +89,8 @@ public:
     /**
      * @brief add <id> <calendar> <long_fixed_frequency> <long_fixed_convention>
      * <long_fixed_day_count_fraction> <long_index> <short_fixed_frequency> <short_fixed_convention>
-     * <short_fixed_day_count_fraction> <short_index> <long_minus_short> <reason> <commentary>
+     * <short_fixed_day_count_fraction> <short_index> <long_minus_short> <oresmd_uri> <reason>
+     * <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -98,8 +99,8 @@ public:
     /**
      * @brief set <id> <calendar> <long_fixed_frequency> <long_fixed_convention>
      * <long_fixed_day_count_fraction> <long_index> <short_fixed_frequency> <short_fixed_convention>
-     * <short_fixed_day_count_fraction> <short_index> <long_minus_short> <reason> <commentary>
-     * [--version <n>]
+     * <short_fixed_day_count_fraction> <short_index> <long_minus_short> <oresmd_uri> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -108,7 +109,8 @@ public:
     /**
      * @brief put-many --count <n> <id> <calendar> <long_fixed_frequency> <long_fixed_convention>
      * <long_fixed_day_count_fraction> <long_index> <short_fixed_frequency> <short_fixed_convention>
-     * <short_fixed_day_count_fraction> <short_index> <long_minus_short> <reason> <commentary>
+     * <short_fixed_day_count_fraction> <short_index> <long_minus_short> <oresmd_uri> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -43,6 +43,7 @@ struct intraday_power_load_convention_write {
     std::string id;
     std::optional<std::string> explicit_load_profile;
     std::optional<std::string> business_day_load_rules;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct intraday_power_load_convention_change {

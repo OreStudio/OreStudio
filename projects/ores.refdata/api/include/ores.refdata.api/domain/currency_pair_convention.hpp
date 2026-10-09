@@ -94,6 +94,19 @@ struct currency_pair_convention final {
     std::optional<bool> end_of_month;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs. The convention names the
+     * pair, but not the instrument type, the source or the term-structure point. Classification:
+     * requirement — the address states the pair's rate need, which resolution narrows to one
+     * series. Uncertain: with the pair fixed it could be read as an identifier of the pair's spot
+     * series.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this currency pair convention.
      */
     std::string modified_by;

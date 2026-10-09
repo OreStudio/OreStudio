@@ -89,7 +89,7 @@ public:
     /**
      * @brief add <id> <fx_convention_id> <atm_type> <delta_type> <switch_tenor>
      * <long_term_atm_type> <long_term_delta_type> <risk_reversal_in_favor_of> <butterfly_style>
-     * <reason> <commentary>
+     * <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -98,7 +98,7 @@ public:
     /**
      * @brief set <id> <fx_convention_id> <atm_type> <delta_type> <switch_tenor>
      * <long_term_atm_type> <long_term_delta_type> <risk_reversal_in_favor_of> <butterfly_style>
-     * <reason> <commentary> [--version <n>]
+     * <oresmd_uri> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -107,7 +107,7 @@ public:
     /**
      * @brief put-many --count <n> <id> <fx_convention_id> <atm_type> <delta_type> <switch_tenor>
      * <long_term_atm_type> <long_term_delta_type> <risk_reversal_in_favor_of> <butterfly_style>
-     * <reason> <commentary>
+     * <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

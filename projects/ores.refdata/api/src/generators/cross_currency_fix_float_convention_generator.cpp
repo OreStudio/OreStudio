@@ -65,6 +65,7 @@ domain::cross_currency_fix_float_convention generate_synthetic_cross_currency_fi
     r.rate_cutoff = std::nullopt;
     r.is_averaged = std::nullopt;
     r.observation_shift = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

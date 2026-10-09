@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/fra_convention.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::refdata::presentation {
@@ -40,6 +41,7 @@ render_fra_convention_fields(const domain::fra_convention& v) {
     fields.push_back({.name = "ID", .value = v.id});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Index", .value = v.index});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

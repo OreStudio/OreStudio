@@ -44,6 +44,7 @@ struct tenor_convention_write {
     std::string description;
     std::string measured_from;
     std::string resolution_algorithm;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct tenor_convention_change {

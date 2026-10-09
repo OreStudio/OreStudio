@@ -144,8 +144,8 @@ void tenor_basis_swap_convention_commands::register_commands(cli::Menu& root_men
         },
         "add <id> <pay_index> <pay_frequency> <receive_index> <receive_frequency> <spread_on_rec> "
         "<include_spread> <sub_periods_coupon_type> <pay_is_averaged> <rec_is_averaged> "
-        "<long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <reason> "
-        "<commentary>");
+        "<long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> "
+        "<oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -154,8 +154,8 @@ void tenor_basis_swap_convention_commands::register_commands(cli::Menu& root_men
         },
         "set <id> <pay_index> <pay_frequency> <receive_index> <receive_frequency> <spread_on_rec> "
         "<include_spread> <sub_periods_coupon_type> <pay_is_averaged> <rec_is_averaged> "
-        "<long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <reason> "
-        "<commentary> [--version <n>]");
+        "<long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> "
+        "<oresmd_uri> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -165,7 +165,7 @@ void tenor_basis_swap_convention_commands::register_commands(cli::Menu& root_men
         "put-many --count <n> <id> <pay_index> <pay_frequency> <receive_index> <receive_frequency> "
         "<spread_on_rec> <include_spread> <sub_periods_coupon_type> <pay_is_averaged> "
         "<rec_is_averaged> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> "
-        "<spread_on_short> <reason> <commentary>");
+        "<spread_on_short> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -360,8 +360,8 @@ void tenor_basis_swap_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -387,6 +387,7 @@ void tenor_basis_swap_convention_commands::process_add(std::ostream& out,
             req.change.write.short_pay_tenor, parsed->positionals[next++], "short_pay_tenor");
         read_token(
             req.change.write.spread_on_short, parsed->positionals[next++], "spread_on_short");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -429,8 +430,8 @@ void tenor_basis_swap_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -456,6 +457,7 @@ void tenor_basis_swap_convention_commands::process_set(std::ostream& out,
             req.change.write.short_pay_tenor, parsed->positionals[next++], "short_pay_tenor");
         read_token(
             req.change.write.spread_on_short, parsed->positionals[next++], "spread_on_short");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -510,8 +512,8 @@ void tenor_basis_swap_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 15 + 2) {
-            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 16 + 2) {
+            fail(out) << "Expected " << (change_count * 16 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -539,6 +541,7 @@ void tenor_basis_swap_convention_commands::process_put_many(std::ostream& out,
                 change.write.short_pay_tenor, parsed->positionals[next++], "short_pay_tenor");
             read_token(
                 change.write.spread_on_short, parsed->positionals[next++], "spread_on_short");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

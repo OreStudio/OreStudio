@@ -59,6 +59,7 @@ domain::ois_convention ois_convention_mapper::map(const ois_convention_entity& v
     r.rule = v.rule;
     r.payment_calendar = v.payment_calendar;
     r.rate_cutoff = v.rate_cutoff;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -89,6 +90,7 @@ ois_convention_entity ois_convention_mapper::map(const domain::ois_convention& v
     r.rule = v.rule;
     r.payment_calendar = v.payment_calendar;
     r.rate_cutoff = v.rate_cutoff;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

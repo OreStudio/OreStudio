@@ -44,6 +44,7 @@ create table if not exists "ores_refdata_intraday_power_load_conventions_tbl" (
     "party_id" uuid not null,
     "explicit_load_profile" text null,
     "business_day_load_rules" text null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

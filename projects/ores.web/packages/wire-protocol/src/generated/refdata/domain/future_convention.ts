@@ -40,6 +40,7 @@ export interface FutureConvention {
     netting_type: string | null;
     calendar: string | null;
     overnight_index_tenor: string | null;
+    oresmd_uri: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

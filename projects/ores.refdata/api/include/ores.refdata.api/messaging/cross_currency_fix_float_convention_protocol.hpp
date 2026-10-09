@@ -58,6 +58,7 @@ struct cross_currency_fix_float_convention_write {
     std::optional<int> rate_cutoff;
     std::optional<bool> is_averaged;
     std::optional<bool> observation_shift;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct cross_currency_fix_float_convention_change {

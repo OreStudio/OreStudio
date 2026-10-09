@@ -141,21 +141,21 @@ void fra_convention_commands::register_commands(cli::Menu& root_menu, nats_clien
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <index> <reason> <commentary>");
+        "add <id> <index> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <index> <reason> <commentary> [--version <n>]");
+        "set <id> <index> <oresmd_uri> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <index> <reason> <commentary>");
+        "put-many --count <n> <id> <index> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -350,13 +350,14 @@ void fra_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 2 + 2) {
-            fail(out) << "Expected " << (2 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 3 + 2) {
+            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.index, parsed->positionals[next++], "index");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -399,13 +400,14 @@ void fra_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 2 + 2) {
-            fail(out) << "Expected " << (2 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 3 + 2) {
+            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.index, parsed->positionals[next++], "index");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -460,8 +462,8 @@ void fra_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 2 + 2) {
-            fail(out) << "Expected " << (change_count * 2 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 3 + 2) {
+            fail(out) << "Expected " << (change_count * 3 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -469,6 +471,7 @@ void fra_convention_commands::process_put_many(std::ostream& out,
             messaging::fra_convention_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
             read_token(change.write.index, parsed->positionals[next++], "index");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

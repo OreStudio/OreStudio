@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention>
-     * <spot_relative> <end_of_month> <reason> <commentary>
+     * <spot_relative> <end_of_month> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention>
-     * <spot_relative> <end_of_month> <reason> <commentary> [--version <n>]
+     * <spot_relative> <end_of_month> <oresmd_uri> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <pair_code> <pip_factor> <tick_size> <decimal_places>
-     * <business_day_convention> <spot_relative> <end_of_month> <reason> <commentary>
+     * <business_day_convention> <spot_relative> <end_of_month> <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

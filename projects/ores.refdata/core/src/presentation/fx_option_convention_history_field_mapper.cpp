@@ -53,6 +53,7 @@ render_fx_option_convention_fields(const domain::fx_option_convention& v) {
                       .value = v.risk_reversal_in_favor_of.value_or(std::string{})});
     fields.push_back(
         {.name = "Butterfly Style", .value = v.butterfly_style.value_or(std::string{})});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

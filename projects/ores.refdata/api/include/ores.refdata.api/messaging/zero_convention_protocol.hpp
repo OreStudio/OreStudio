@@ -50,6 +50,7 @@ struct zero_convention_write {
     std::optional<std::string> spot_calendar;
     std::optional<std::string> roll_convention;
     std::optional<bool> end_of_month;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct zero_convention_change {

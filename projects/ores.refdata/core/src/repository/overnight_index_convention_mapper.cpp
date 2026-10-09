@@ -47,6 +47,7 @@ overnight_index_convention_mapper::map(const overnight_index_convention_entity& 
     r.fixing_calendar = v.fixing_calendar;
     r.day_count_fraction = v.day_count_fraction;
     r.settlement_days = v.settlement_days;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -68,6 +69,7 @@ overnight_index_convention_mapper::map(const domain::overnight_index_convention&
     r.fixing_calendar = v.fixing_calendar;
     r.day_count_fraction = v.day_count_fraction;
     r.settlement_days = v.settlement_days;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

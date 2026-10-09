@@ -113,6 +113,7 @@ to_domain(const messaging::tenor_basis_swap_convention_write& write) {
     v.short_index = write.short_index;
     v.short_pay_tenor = write.short_pay_tenor;
     v.spread_on_short = write.spread_on_short;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

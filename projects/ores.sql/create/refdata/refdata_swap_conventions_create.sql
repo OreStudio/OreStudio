@@ -41,6 +41,7 @@ create table if not exists "ores_refdata_swap_conventions_tbl" (
     "index" text not null,
     "float_frequency" text null,
     "sub_periods_coupon_type" text null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

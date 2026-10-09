@@ -49,6 +49,7 @@ ibor_index_convention_mapper::map(const ibor_index_convention_entity& v) {
     r.settlement_days = v.settlement_days;
     r.business_day_convention = v.business_day_convention;
     r.end_of_month = v.end_of_month;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -72,6 +73,7 @@ ibor_index_convention_mapper::map(const domain::ibor_index_convention& v) {
     r.settlement_days = v.settlement_days;
     r.business_day_convention = v.business_day_convention;
     r.end_of_month = v.end_of_month;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

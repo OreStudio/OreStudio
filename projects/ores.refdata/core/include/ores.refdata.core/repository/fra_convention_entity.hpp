@@ -47,6 +47,7 @@ struct fra_convention_entity {
     int version = 0;
     std::string party_id;
     std::string index;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

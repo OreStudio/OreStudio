@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-cms_spread_option_conventions add <id> <forward_start> <spot_days> <swap_tenor> <fixing_days> <calendar> <day_count_fraction> <roll_convention> <reason> <commentary>
+cms_spread_option_conventions add <id> <forward_start> <spot_days> <swap_tenor> <fixing_days> <calendar> <day_count_fraction> <roll_convention> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.cms_spread_option_conventions.put=.
 
 #+name: cms_spread_option_conventions-add
 #+begin_src ores-shell :tangle cms_spread_option_conventions-add.ores :exports none
-cms_spread_option_conventions add __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+cms_spread_option_conventions add __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-cms_spread_option_conventions set <id> <forward_start> <spot_days> <swap_tenor> <fixing_days> <calendar> <day_count_fraction> <roll_convention> <reason> <commentary> [--version <n>]
+cms_spread_option_conventions set <id> <forward_start> <spot_days> <swap_tenor> <fixing_days> <calendar> <day_count_fraction> <roll_convention> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.cms_spread_option_conventions.put=.
 
 #+name: cms_spread_option_conventions-set
 #+begin_src ores-shell :tangle cms_spread_option_conventions-set.ores :exports none
-cms_spread_option_conventions set __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+cms_spread_option_conventions set __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-cms_spread_option_conventions put-many --count <n> <id> <forward_start> <spot_days> <swap_tenor> <fixing_days> <calendar> <day_count_fraction> <roll_convention> <reason> <commentary>
+cms_spread_option_conventions put-many --count <n> <id> <forward_start> <spot_days> <swap_tenor> <fixing_days> <calendar> <day_count_fraction> <roll_convention> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.cms_spread_option_conventions.put_many=.
 
 #+name: cms_spread_option_conventions-put-many
 #+begin_src ores-shell :tangle cms_spread_option_conventions-put-many.ores :exports none
-cms_spread_option_conventions put-many --count 1 __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+cms_spread_option_conventions put-many --count 1 __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =delete=

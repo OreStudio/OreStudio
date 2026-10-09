@@ -53,6 +53,7 @@ struct deposit_convention_entity {
     std::optional<bool> end_of_month;
     std::optional<std::string> day_count_fraction;
     std::optional<int> settlement_days;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

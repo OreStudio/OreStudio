@@ -112,6 +112,19 @@ struct zero_convention final {
     std::optional<bool> end_of_month;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs. The convention sets only the
+     * day count and compounding a zero or discount curve is bootstrapped with, so it names no
+     * series. Classification: requirement — the address states a curve-level need, with the
+     * term-structure point left open for resolution to pick. Uncertain: the oresmd grammar has no
+     * curve URI yet, so no such address can be written today.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this zero convention.
      */
     std::string modified_by;

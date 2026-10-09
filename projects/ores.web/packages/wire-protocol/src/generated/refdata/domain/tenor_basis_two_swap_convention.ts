@@ -45,6 +45,7 @@ export interface TenorBasisTwoSwapConvention {
     short_fixed_day_count_fraction: string;
     short_index: string;
     long_minus_short: boolean | null;
+    oresmd_uri: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

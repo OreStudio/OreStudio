@@ -163,6 +163,7 @@ render_commodity_future_convention_fields(const domain::commodity_future_convent
                       .value = v.future_continuation_mappings.value_or(std::string{})});
     fields.push_back({.name = "Option Continuation Mappings",
                       .value = v.option_continuation_mappings.value_or(std::string{})});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -108,6 +108,7 @@ domain::average_ois_convention to_domain(const messaging::average_ois_convention
     v.index = write.index;
     v.on_tenor = write.on_tenor;
     v.rate_cutoff = write.rate_cutoff;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

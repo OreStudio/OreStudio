@@ -55,6 +55,7 @@ commodity_forward_convention_mapper::map(const commodity_forward_convention_enti
     r.delivery_location = v.delivery_location;
     r.business_day_convention = v.business_day_convention;
     r.outright = v.outright;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -81,6 +82,7 @@ commodity_forward_convention_mapper::map(const domain::commodity_forward_convent
     r.delivery_location = v.delivery_location;
     r.business_day_convention = v.business_day_convention;
     r.outright = v.outright;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

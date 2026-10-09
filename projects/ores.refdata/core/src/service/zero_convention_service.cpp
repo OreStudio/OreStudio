@@ -106,6 +106,7 @@ domain::zero_convention to_domain(const messaging::zero_convention_write& write)
     v.spot_calendar = write.spot_calendar;
     v.roll_convention = write.roll_convention;
     v.end_of_month = write.end_of_month;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

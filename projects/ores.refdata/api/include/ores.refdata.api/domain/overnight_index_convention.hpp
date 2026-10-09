@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -71,6 +72,17 @@ struct overnight_index_convention final {
      * @brief Number of business days from fixing to value date (usually 0 or 1).
      */
     int settlement_days = 0;
+
+    /**
+     * @brief The oresmd URI of the index this convention defines: the overnight index itself, as a
+     * fixing URI, for example 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR' for 'USD-SOFR'.
+     * Classification: fixing — the convention defines the index.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
 
     /**
      * @brief Username of the person who last modified this overnight index convention.

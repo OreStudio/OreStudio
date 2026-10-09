@@ -54,6 +54,7 @@ bond_yield_convention_mapper::map(const bond_yield_convention_entity& v) {
     r.accuracy = v.accuracy;
     r.max_evaluations = v.max_evaluations;
     r.guess = v.guess;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -79,6 +80,7 @@ bond_yield_convention_mapper::map(const domain::bond_yield_convention& v) {
     r.accuracy = v.accuracy;
     r.max_evaluations = v.max_evaluations;
     r.guess = v.guess;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

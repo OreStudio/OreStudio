@@ -37,6 +37,7 @@ export interface SwapIndexConvention {
     party_id: string;
     conventions: string;
     fixing_calendar: string | null;
+    oresmd_uri: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

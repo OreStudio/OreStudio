@@ -36,6 +36,7 @@ export interface SwapIndexConventionWrite {
     id: string;
     conventions: string;
     fixing_calendar: string | null;
+    oresmd_uri: string | null;
 }
 
 export interface SwapIndexConventionChange {

@@ -58,6 +58,7 @@ generate_synthetic_cds_convention(utility::generation::generation_context& ctx) 
     r.pays_at_default_time = true;
     r.upfront_settlement_days = std::nullopt;
     r.last_period_day_count_fraction = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

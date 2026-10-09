@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -68,6 +69,19 @@ struct fra_convention final {
      * details are inherited from the referenced index convention.
      */
     std::string index;
+
+    /**
+     * @brief The oresmd URI of the market data this convention needs: the IBOR index whose own
+     * conventions govern the FRA, for example
+     * 'oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M' for 'EUR-EURIBOR-6M'.
+     * Classification: identifier — the convention names the index in full, so the address pins one
+     * series.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
 
     /**
      * @brief Username of the person who last modified this FRA convention.

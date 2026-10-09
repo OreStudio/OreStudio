@@ -98,6 +98,7 @@ domain::fra_convention to_domain(const messaging::fra_convention_write& write) {
     domain::fra_convention v;
     v.id = write.id;
     v.index = write.index;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

@@ -46,6 +46,7 @@ struct ibor_index_convention_write {
     int settlement_days;
     std::string business_day_convention;
     bool end_of_month;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct ibor_index_convention_change {

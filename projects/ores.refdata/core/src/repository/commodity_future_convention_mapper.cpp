@@ -98,6 +98,7 @@ commodity_future_convention_mapper::map(const commodity_future_convention_entity
     r.prohibited_expiries = v.prohibited_expiries;
     r.future_continuation_mappings = v.future_continuation_mappings;
     r.option_continuation_mappings = v.option_continuation_mappings;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -167,6 +168,7 @@ commodity_future_convention_mapper::map(const domain::commodity_future_conventio
     r.prohibited_expiries = v.prohibited_expiries;
     r.future_continuation_mappings = v.future_continuation_mappings;
     r.option_continuation_mappings = v.option_continuation_mappings;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

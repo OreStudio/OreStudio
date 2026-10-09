@@ -56,6 +56,7 @@ fx_option_convention_mapper::map(const fx_option_convention_entity& v) {
     r.long_term_delta_type = v.long_term_delta_type;
     r.risk_reversal_in_favor_of = v.risk_reversal_in_favor_of;
     r.butterfly_style = v.butterfly_style;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -83,6 +84,7 @@ fx_option_convention_mapper::map(const domain::fx_option_convention& v) {
     r.long_term_delta_type = v.long_term_delta_type;
     r.risk_reversal_in_favor_of = v.risk_reversal_in_favor_of;
     r.butterfly_style = v.butterfly_style;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

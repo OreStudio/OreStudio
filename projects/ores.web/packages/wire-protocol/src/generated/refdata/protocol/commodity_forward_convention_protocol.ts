@@ -41,6 +41,7 @@ export interface CommodityForwardConventionWrite {
     delivery_location: string | null;
     business_day_convention: string | null;
     outright: boolean | null;
+    oresmd_uri: string | null;
 }
 
 export interface CommodityForwardConventionChange {

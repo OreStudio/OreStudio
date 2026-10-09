@@ -54,6 +54,7 @@ domain::deposit_convention deposit_convention_mapper::map(const deposit_conventi
     r.end_of_month = v.end_of_month;
     r.day_count_fraction = v.day_count_fraction;
     r.settlement_days = v.settlement_days;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -79,6 +80,7 @@ deposit_convention_entity deposit_convention_mapper::map(const domain::deposit_c
     r.end_of_month = v.end_of_month;
     r.day_count_fraction = v.day_count_fraction;
     r.settlement_days = v.settlement_days;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

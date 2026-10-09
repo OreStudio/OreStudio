@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -81,6 +82,18 @@ struct ibor_index_convention final {
      * @brief Whether end-of-month convention applies.
      */
     bool end_of_month = false;
+
+    /**
+     * @brief The oresmd URI of the index this convention defines: the IBOR index itself, as a
+     * fixing URI, for example 'oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR' for
+     * 'EUR-EURIBOR'. Classification: fixing — the convention defines the index, so the address
+     * names the fixing itself and not a series it references.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
 
     /**
      * @brief Username of the person who last modified this IBOR index convention.

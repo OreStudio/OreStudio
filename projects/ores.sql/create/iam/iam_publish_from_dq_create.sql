@@ -40,6 +40,12 @@
  * per legal entity, same as business units/portfolios/books). Idempotent
  * by (tenant_id, username): an account that already exists is skipped.
  *
+ * An account's email is its sign-in address, and every address inside a
+ * tenant names the tenant: the domain is the target tenant's hostname, the
+ * name the sign-in path resolves the tenant by, not the corporate domain the
+ * source dataset happens to carry. Only the local part comes from the
+ * artefact, so the source system's mailbox name survives.
+ *
  * business_unit_code in the artefact is informational only today --
  * ores_iam_accounts_tbl has no business-unit FK (accounts are scoped to
  * a party, not a desk); it is not consumed here.
@@ -56,6 +62,7 @@ returns table (
 ) as $$
 declare
     v_target_party_id uuid;
+    v_target_hostname text;
     v_inserted bigint := 0;
     v_skipped bigint := 0;
     r record;
@@ -70,6 +77,21 @@ begin
     v_target_party_id := (p_params ->> 'party_id')::uuid;
     if v_target_party_id is null then
         raise exception 'ores_iam_publish_accounts_from_dq_fn requires params.party_id';
+    end if;
+
+    -- The tenant the accounts land in supplies the domain of their sign-in
+    -- addresses, so a tenant keeps one spelling of an address whatever the
+    -- source dataset called the company. The hostname is the name the sign-in
+    -- path resolves the tenant by, so the address names the tenant the same
+    -- way the principal does.
+    select hostname into v_target_hostname
+    from ores_iam_tenants_tbl
+    where id = p_target_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_target_hostname is null then
+        raise exception 'ores_iam_publish_accounts_from_dq_fn: no active tenant %',
+            p_target_tenant_id;
     end if;
 
     for r in
@@ -94,7 +116,12 @@ begin
             change_reason_code, change_commentary, valid_from, valid_to
         ) values (
             v_account_id, p_target_tenant_id, 0, r.account_type, r.username, r.full_name,
-            r.email, r.job_title, nullif(r.photo_key, ''),
+            case
+                when position('@' in r.email) > 0
+                    then split_part(r.email, '@', 1) || '@' || v_target_hostname
+                else r.username || '@' || v_target_hostname
+            end,
+            r.job_title, nullif(r.photo_key, ''),
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import', 'Published from organisation dataset',
             current_timestamp, ores_utility_infinity_timestamp_fn()

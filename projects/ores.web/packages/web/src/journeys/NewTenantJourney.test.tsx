@@ -75,7 +75,7 @@ const demonstration: SeedProfileChoice = {
         code: 'acme_corporation',
         hostname: 'acme_corporation',
         adminUsername: 'tenant_admin',
-        adminEmail: 'admin@acme_corporation.com',
+        adminEmail: 'admin@acme_corporation',
     },
     inheritsAdminPassword: true,
 };

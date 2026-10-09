@@ -83,7 +83,7 @@ insert into ores_iam_seed_profiles_tbl (
     'For demos and testing',
     '["4 legal entities, books and desks", "45 staff to sign in as", "Live synthetic market data"]'::jsonb,
     'evaluation', 'Acme Corporation', 'acme_corporation', 'acme_corporation',
-    'tenant_admin', 'admin@acme_corporation.com',
+    'tenant_admin', 'admin@acme_corporation',
     true, false, 20,
     0, current_user, current_user, 'system.initial_load',
     'Initial population of seed profiles'

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,45 +26,63 @@ A tenant administrator reads the reporting shape as a tree, selects a person, an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next          | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- The screen runs in =ores.web= on the accepted variant A: the indented tree with the selected person beside it.
+- The tree states each person, the manager each reports to in the panel, the depth, and how many report to them directly.
+- The manager picker cannot offer the person or anybody who reports to them, so a ring cannot be asked for from the screen.
+- Saving states a reason and a note, and sends the narrow write with the account version the panel read, so a concurrent change is refused as a conflict and stated.
+- A person who reaches no root is stated rather than drawn as a root.
+- The gaps the journey still records are stated: the office is not readable, the approval is not held, and the line has no history here.
+- The screen passes its own tests, and the route table test reaches it from the people list.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Draw the tree from the shape read the group's server task landed, with
+   expand and collapse, and the selected person in the panel beside it.
+2. Take the manager candidates from the tree itself: everybody except the
+   person and their branch.
+3. Read the selected person's account for the version the narrow write states
+   back, so a change made elsewhere is refused rather than overwritten.
+4. State the gaps that remain on the screen, as the story's acceptance
+   requires.
+5. Add the route, the entry point on the people list, and the labels.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web suite after this change | 479 tests in 46 files | =npm test --workspace @ores/web= | (branch tip) |
+| Screen and route cases | 5 | =npm test --workspace @ores/web -- membership= | (branch tip) |
 
 * Notes
 
-* Test Scenarios
+- *The manager candidates come from the tree, not from a read.* The picker
+  offers everybody in the shape except the person and their branch, computed
+  from the same answer the tree is drawn from. The server refuses a ring too;
+  the screen refusing to ask for one is what keeps the two honest rather than
+  relying on the refusal.
+- *The version the write states comes from the account read, not the tree.*
+  The tree read answers the shape and no version, so selecting a person reads
+  their account for it. That read is the administrator's ordinary account read,
+  and a failure there states that the write will carry no version rather than
+  pretending to have one.
+- *The journey's remaining gaps are drawn, not hidden.* The story's acceptance
+  is that every gap a journey records is closed or stated on the screen, so the
+  panel at the foot names the three that remain rather than leaving a reader to
+  find them.
+- *The entry point is the people list.* The administrator arrives from the
+  roster they were already reading, so the button sits on that screen's header
+  rather than in the member's account menu.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -83,3 +101,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done 2026-10-09.
+
+*Reporting lines* runs in =ores.web= on the accepted variant A:
+
+| Layer | What landed |
+|-------+-------------|
+| Screen | =membership/ReportingLinesPage.tsx=: the indented tree with expand and collapse, the selected person beside it, the manager picker, the reason and the note. |
+| Rule | =managerCandidates= leaves out the person and everybody who reports to them, so the screen cannot ask for a ring. |
+| Version | Selecting a person reads their account for the version the narrow write states back, so a change made elsewhere is refused as a conflict rather than overwritten. |
+| Entry | The route =/reporting-lines=, reached from a button on the people list. |
+| Gaps | The three the journey still records are stated on the screen: the office is not readable, the approval is not held, and the line has no history here. |
+| Tests | Four screen cases and one route case. |
+
+*Verification.* The web suite passes, 479 tests in 46 files, five of them this
+screen's own and the route reaching it. The three TypeScript packages
+typecheck, and =compass lint= passes.
+
+*Limitation.* As with the member's screen, this one is not walked by hand
+against a running installation: the environment's database was recreated for
+the group's SQL change, so no tenant with a reporting line exists to sign in
+as. The read and the write it drives are covered by the server suite and the
+BFF cases, and the screen by its own.

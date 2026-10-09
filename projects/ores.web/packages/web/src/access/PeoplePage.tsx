@@ -25,6 +25,7 @@ import type { Account, SessionMode } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { RecordList, type ListSource } from '../refdata/RecordList.js';
+import { LinkButton } from '../ui/Primitives.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { Tag } from '../ui/Primitives.js';
 import { displayName } from './names.js';
@@ -63,6 +64,11 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
             title={title}
             lead={system ? t('accounts.description') : t('access.people.lead')}
             crumbs={[{ label: t('shell.menu.home'), to: '/' }, { label: title }]}
+            actions={
+                <LinkButton to="/reporting-lines" variant="ghost" size="sm">
+                    {t('membership.reporting.title')}
+                </LinkButton>
+            }
             pathOf={(account) => personPath(account.username)}
             columns={[
                 {

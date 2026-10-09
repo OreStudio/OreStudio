@@ -2172,6 +2172,38 @@ export const en: SourceCatalogue = {
             footnote:
                 'Switching issues a fresh sign-in token, so every screen reads the party you chose. The default is what quick sign-in picks next time.',
         },
+        reporting: {
+            title: 'Reporting lines',
+            lead: 'Who reports to whom, and the one line this screen changes.',
+            tree: 'Reporting tree',
+            people: '{count} people',
+            reports: '{count} reporting',
+            expandAll: 'Expand all',
+            collapseAll: 'Collapse all',
+            expand: 'Expand',
+            collapse: 'Collapse',
+            pickSomeone: 'Pick a person in the tree to read their line.',
+            reportsTo: 'Reports to',
+            noManager: 'No manager (a root)',
+            directReports: 'Direct reports',
+            depth: 'Depth',
+            reachesNoRoot: 'Reaches no root',
+            manager: 'Manager',
+            reason: 'Reason',
+            commentary: 'Note',
+            save: 'Save line',
+            clear: 'Clear line',
+            noVersion: 'The account could not be read, so the write states no version.',
+            unrooted:
+                '{count} people reach no root: their manager is gone, or the line that holds them is broken. They are left out of the tree rather than drawn as roots.',
+            gaps: 'What this screen cannot do',
+            gapOffice:
+                'The office each person works in is not readable here: the account-party read carries an identifier and no name.',
+            gapApproval:
+                'A reporting-line change a person asks for is a proposal that their senior or the tenant administrator approves, and nothing in the platform holds such an approval, so the line does not move.',
+            gapHistory:
+                'The line has no history on this screen. The account is versioned, so a past line is recoverable, and this screen states none of it.',
+        },
     },
 
     common: {

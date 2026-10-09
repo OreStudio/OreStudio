@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 004E867C-000D-4009-91AA-377C140ED73D
+:END:
+#+title: Story: Implement the synthetic market data journeys in ores.web
+#+description: The four synthetic journeys are written and none of them is built. Project the synthetic protocol to TypeScript, give the BFF its routes, and build the four screens.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person authors an FX price feed, authors an IR curve feed, runs a collection and keeps the yield curve model catalogue in ores.web, on the subjects the journeys name.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AF124B71-1F0B-4899-8707-F85B81FD51C3][Scaffold the synthetic implementation story]] | STARTED | 2026-10-09 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. |
+| [[id:0091F10A-AC68-4C12-8536-F72E371E4E61][Bring the synthetic models onto the address mechanism]] | BACKLOG | | | The nine synthetic models carry no Physical space section, so no protocol address is declared and the TypeScript twin cannot be generated. |
+| [[id:ECFA5A82-3BAE-45A0-8044-6A9CB8E30913][Project the synthetic protocol to TypeScript]] | BACKLOG | | | Synthetic is one of three components with no committed TypeScript protocol, so ores.web cannot speak it. |
+| [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] | BACKLOG | | | The BFF has no route for any synthetic subject, and the web reaches the bus only through the BFF. |
+| [[id:2DCC5A20-11C5-4EDA-B8AA-386710F9F804][Build the yield curve process type screen]] | BACKLOG | | | Journey 4: the process types and their parameter definitions, as a record screen over the two catalogues. |
+| [[id:6E54699C-427C-471A-AA70-FCCCD27ABC85][Build the FX price feed screen]] | BACKLOG | | | Journey 1: the pair, the process, the GMM mixture and the sample paths, on the record-screen framework. |
+| [[id:1E325838-917A-4F74-B880-15DEF844CD90][Build the IR curve feed screen]] | BACKLOG | | | Journey 2: the identity, the short-rate process and its parameter values, the template ladder, and the shape and path previews. |
+| [[id:899404A9-FDF2-4BF6-B11D-B1F4240B2D4E][Build the synthetic collection screen]] | BACKLOG | | | Journey 3: the feed tree, the selection, the live chart and the folder-scoped start and stop. |
+| [[id:F8D3EEA7-E3A8-4CDE-BA1B-05C1F0031D8E][Close the gaps the synthetic journeys found]] | BACKLOG | | | No subject lists the vintages a price source offers; several lists filter on id_one_of where the screen needs the parent; the parameter definition's wire key drops the process type. |
+
+* Decisions
+
+* Out of scope
+
+-

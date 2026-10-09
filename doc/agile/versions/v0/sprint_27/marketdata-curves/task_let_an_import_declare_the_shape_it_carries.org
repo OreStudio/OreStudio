@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/let-an-import-declare-the-shape-it-carries
-#+pr: 2941
+#+pr: 2942
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -129,6 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2942][#2942]] | [agile] Close the marketdata import shape task |
 | [[https://github.com/OreStudio/OreStudio/pull/2941][#2941]] | [marketdata] Let an import declare the shape it carries |
 
 * Review

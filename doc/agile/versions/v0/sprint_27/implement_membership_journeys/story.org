@@ -23,9 +23,9 @@ The two Membership journeys run in ores.web against the real server. The member 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The story is scaffolded and the two prototype tasks are written. Neither prototype is built. |
+| Now           | Both prototypes are built and accepted by the product owner on 2026-10-09: Where I work variant A, Reporting lines variant A. |
 | Waiting on    | Nothing.                               |
-| Next          | Prototype [[id:B3D7CFB5-753F-41E1-9545-89B271D5D1A6][Where I work]], then [[id:08E9CD97-DE62-4F88-95BB-E26A5703DD8D][Reporting lines]], and put both to the product owner for sign-off. |
+| Next          | Write the build tasks from the accepted prototypes. |
 | Last touched  | 2026-10-09                               |
 
 * Acceptance
@@ -39,9 +39,9 @@ The two Membership journeys run in ores.web against the real server. The member 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:4CEC2C02-B400-4B4D-B72C-27B0E8F5CED2][Scaffold story: Implement the membership journeys in ores.web]] | STARTED | 2026-10-09 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:B3D7CFB5-753F-41E1-9545-89B271D5D1A6][Prototype Where I work]] | BACKLOG | | | [wayfinder:prototype] The member's screen: the identity summary, the parties the account works in, the default party, the switch, and the gap where no client path exists. |
-| [[id:08E9CD97-DE62-4F88-95BB-E26A5703DD8D][Prototype Reporting lines]] | BACKLOG | | | [wayfinder:prototype] The administrator's screen: the reporting tree, the selected account's line, the manager picker with a change reason, and the gap where no approval exists. |
+| [[id:4CEC2C02-B400-4B4D-B72C-27B0E8F5CED2][Scaffold story: Implement the membership journeys in ores.web]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B3D7CFB5-753F-41E1-9545-89B271D5D1A6][Prototype Where I work]] | DONE | 2026-10-09 | 2026-10-09 | [wayfinder:prototype] The member's screen: the identity summary, the parties the account works in, the default party, the switch, and the gap where no client path exists. |
+| [[id:08E9CD97-DE62-4F88-95BB-E26A5703DD8D][Prototype Reporting lines]] | DONE | 2026-10-09 | 2026-10-09 | [wayfinder:prototype] The administrator's screen: the reporting tree, the selected account's line, the manager picker with a change reason, and the gap where no approval exists. |
 
 * Plan
 
@@ -62,6 +62,12 @@ it.
 
 * Decisions
 
+- *The accepted variants are A on both screens.* Where I work puts a card per
+  party with both actions on the card they change, so nothing depends on a
+  selection made elsewhere. Reporting lines puts the indented tree beside the
+  selected person, with the whole tenant on one screen and the controls in a
+  fixed place. Each prototype task's =* Result= records what the accepted
+  variant settles and what the rejected ones gave up.
 - *The prototypes precede the build.* A screen with three missing operations
   cannot be sized from its document alone. The prototype shows the layout, the
   copy and the empty states, and the build tasks are written from what the

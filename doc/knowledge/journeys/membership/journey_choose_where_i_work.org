@@ -75,6 +75,19 @@ The rule the screen has to state is the one the server enforces: the default
 party must be one of the account's assigned parties. The picker offers nothing
 else, so the member cannot state an invalid default.
 
+* Prototype
+
+Accepted by the product owner on 2026-10-09: variant A, one place each. The
+prototype is a static page under =doc/prototypes/= and is kept there as the
+record; the rejected shapes stay on it, switchable from the bar at the foot.
+
+- Accepted commit :: =15a9f9f5dc=, the commit the accepted page was signed off at
+- Accepted variant :: =a=
+- Source :: =doc/prototypes/membership/where-i-work/index.html=
+- Open :: =/OreStudio/doc/prototypes/membership/where-i-work/= once the site is built, or the file directly
+- Design note :: [[id:0EFF4748-4DDE-4C22-8F28-373F1E992671][Where I work prototype]]
+- Design record :: [[id:B3D7CFB5-753F-41E1-9545-89B271D5D1A6][Task: Prototype Where I work]]
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

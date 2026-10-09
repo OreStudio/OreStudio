@@ -34,11 +34,11 @@ the server does not have.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] |
-| Now          | The prototype is being built.          |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next          | Put the three variants to the product owner for sign-off. |
+| Next          | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -131,3 +131,46 @@ screen states each one, and the prototype decides how.
 |   |                 |      |          |       |
 
 * Result
+
+Built and accepted 2026-10-09. Variant A.
+
+*Accepted by the product owner on 2026-10-09: variant A, tree and inspector.*
+
+The recommendation was A. What it settles: depth and branches are plain, the
+whole tenant stays on one screen, and the controls have a fixed place beside
+the tree. The chart's fidelity to an org chart and the table's search-friendliness
+are not carried; the table remains the easier read for a large tenant, and the
+tree read the journey proposes would let both scale.
+
+- Source :: =doc/prototypes/membership/reporting-lines/index.html=
+- Accepted commit :: =15a9f9f5dc=, the commit the accepted page was signed off at
+- Variants :: =?variant=a|b|c=, switched from the bar at the foot of the page
+- Cases :: =?case=clean|flat|proposal=
+
+*The three variants.*
+
+- *A · Tree.* An indented tree with expand and collapse, and the selected
+  person in a panel beside it. Accepted.
+- *B · Chart.* Boxes joined by connector lines.
+- *C · Table.* One row per person, indented by depth, with a manager column.
+
+*Decisions the prototype settles.*
+
+- *The shape is drawn from the flat roster, and the page says so.* The journey
+  says the tree is assembled by the client, and the prototype shows the cost:
+  every account arrives before one branch is drawn. The tree read is argued for
+  rather than hidden.
+- *The manager picker refuses a loop the server would accept.* Everyone who
+  reports to the selected person, directly or through others, is left out of
+  the picker, and the panel states that the screen is doing the check the
+  server does not.
+- *The waiting proposal is drawn and cannot move the line.* The page names who
+  decides — a hierarchical superior or a tenant administrator — and states that
+  nothing in the platform holds the approval.
+- *An unnamed office is marked, not invented.* Office values carry an amber
+  underline with the reason, because the association read cannot name a party.
+
+*Verification.* =check_prototype_inventory.py= passes; =compass lint= passes.
+A CDP run in headless Chrome drove the page through every variant and case and
+read each result back: 14 checks, all passing
+(=build/evidence/prototype_check.mjs=).

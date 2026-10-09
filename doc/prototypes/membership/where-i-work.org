@@ -32,9 +32,10 @@ Open the [[file:where-i-work/][prototype]].
 
 ** The verdict
 
-*Not yet signed off.* The recommendation is variant A, one card per party, with
-the two actions a member takes — act for it, or make it the default — on the card
-they change.
+Accepted on 2026-10-09: variant A, one card per party, with the two actions a
+member takes — act for it, or make it the default — on the card they change.
+The rejected shapes stay in the prototype, switchable from the bar at the foot
+of the page.
 
 ** The three variants
 

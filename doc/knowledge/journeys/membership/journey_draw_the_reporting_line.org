@@ -78,6 +78,20 @@ The tree panel is drawn from a flat list. The wireframe says so, because it
 decides what the screen can promise: no subtree can be fetched on its own, so
 the screen reads the whole roster and nests it.
 
+* Prototype
+
+Accepted by the product owner on 2026-10-09: variant A, the tree with the
+selected person beside it. The prototype is a static page under
+=doc/prototypes/= and is kept there as the record; the rejected shapes stay on
+it, switchable from the bar at the foot.
+
+- Accepted commit :: =15a9f9f5dc=, the commit the accepted page was signed off at
+- Accepted variant :: =a=
+- Source :: =doc/prototypes/membership/reporting-lines/index.html=
+- Open :: =/OreStudio/doc/prototypes/membership/reporting-lines/= once the site is built, or the file directly
+- Design note :: [[id:2D4296A1-E632-4CF8-91AA-B6EEAFD40965][Reporting lines prototype]]
+- Design record :: [[id:08E9CD97-DE62-4F88-95BB-E26A5703DD8D][Task: Prototype Reporting lines]]
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

@@ -36,8 +36,9 @@ Open the [[file:reporting-lines/][prototype]].
 
 ** The verdict
 
-*Not yet signed off.* The recommendation is variant A, an indented tree with the
-selected person beside it.
+Accepted on 2026-10-09: variant A, an indented tree with the selected person
+beside it. The rejected shapes stay in the prototype, switchable from the bar at
+the foot of the page.
 
 ** The three variants
 

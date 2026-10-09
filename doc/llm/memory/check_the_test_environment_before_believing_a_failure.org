@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B212AA34-0900-4FF8-9A25-0C74E46FECFA
+:END:
+#+title: Check the test environment before believing a test failure
+#+description: A ctest failure is often a missing prerequisite: the broker, a build that matches the schema fingerprint, or a free database connection.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+Before diagnosing a ctest failure as a regression, check the three prerequisites a run has: the NATS broker is up, the build matches the database's schema fingerprint, and PostgreSQL has free connection slots. Each of the three has its own unmistakable signature and its own fix, and none of them is a code defect.
+
+*Why:* A run without the broker fails the eventing integration tests with 'NATS connect failed' on a rotating set of entities, which reads exactly like a regression. A build whose SQL differs from the database's refuses to start with 'the database schema does not match this build'. And when other environments' fleets hold the connection slots, the remaining ones are reserved for superusers and every suite fails to connect. Each cost a diagnosis.
+
+*How to apply:* Start the fleet with compass services start, not a hand-started nats-server: the clients take their mTLS material from .env, and compass test run now refuses with that instruction when the broker's port is not listening. After any rebase or SQL change, run compass db recreate -y -k so the build and the database agree. If suites fail with 'remaining connection slots are reserved for roles with the SUPERUSER attribute', follow doc/recipes/sql/how_do_i_solve_postgres_max_connections.org: find which environments hold idle connections, or raise max_connections.

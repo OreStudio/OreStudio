@@ -631,6 +631,23 @@ CATALOGUE: tuple[Check, ...] = (
         phase=PREPARE,
     ),
     Check(
+        id="backlog-indexes",
+        title="The backlog bucket indexes match the captures",
+        argv=(
+            "bash",
+            "-c",
+            "python3 projects/ores.codegen/scripts/regenerate_backlog_indexes.py"
+            " && git diff --exit-code -- doc/agile/product_backlog",
+        ),
+        classes=("docs",),
+        paths=("doc/agile/product_backlog/*",),
+        phase=PREPARE,
+        fix="Promote or file the capture with compass (compass capture promote,"
+            " compass capture file), which regenerates the indexes, or run"
+            " projects/ores.codegen/scripts/regenerate_backlog_indexes.py and"
+            " commit the result.",
+    ),
+    Check(
         id="dsh-environment",
         title="The DSH environment plugin passes its own checks",
         argv=(

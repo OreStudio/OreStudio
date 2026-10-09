@@ -23,9 +23,9 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The representation, the manual point path, staleness, the typed identity, the shape tables, the shape enforcement, the import declaration and the typed axis values are done. The plan below is now six BACKLOG tasks, from the slice read to the curve_builds decision. |
+| Now           | The representation, the manual point path, staleness, the typed identity, the shape tables, the shape enforcement, the import declaration, the typed axis values and the slice read are done. The plan below is now five BACKLOG tasks, from the aligned evolution read to the curve_builds decision. |
 | Waiting on    | Nothing.                               |
-| Next          | [[id:D16E6FFD-C9D5-4DBB-B3B9-1D5AA1837C5F][Read one slice of a composite object over time]], then the aligned evolution read, the reshaped single-instant read, the provenance annex, the manual precedence rule and the curve_builds decision. |
+| Next          | [[id:94559B94-B60B-42C9-908C-5A05257D2CBF][Read a composite object's aligned evolution]], then the reshaped single-instant read, the provenance annex, the manual precedence rule and the curve_builds decision. |
 | Last touched  | 2026-10-09                               |
 
 * Acceptance
@@ -45,7 +45,7 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 | [[id:94DE4430-5770-4A6E-943A-C2FF7B5DC35C][Refuse a point its shape does not declare]] | DONE | 2026-10-08 | 2026-10-09 | Check a point's coordinate against the shape its series declares, at write time, so the shape and the points cannot drift; and write a shape from the declaration an import carries. |
 | [[id:8055844A-9594-4133-A7A2-E62F59805DD0][Let an import declare the shape it carries]] | DONE | 2026-10-09 | 2026-10-09 | Give an observed or imported structure a shape of its own, so the point check has something to enforce on it, and settle where the shape writer lives once the import can reach it. |
 | [[id:474EEF53-AE33-4AE2-80F0-341487E4E0D7][Type the axis values a composite object varies over]] | DONE | 2026-10-09 | 2026-10-09 | Give the axis value vocabulary its own typed codes, so a strike label and a quoting convention are canonical and the components of a surface can be enumerated, instead of every component being a free-text axis value. |
-| [[id:D16E6FFD-C9D5-4DBB-B3B9-1D5AA1837C5F][Read one slice of a composite object over time]] | BACKLOG | | | Return one component of a composite object, such as the ATM ladder of a volatility surface, as a term structure over time, from the object definition the shape declares. |
+| [[id:D16E6FFD-C9D5-4DBB-B3B9-1D5AA1837C5F][Read one slice of a composite object over time]] | DONE | 2026-10-09 | 2026-10-09 | Return one component of a composite object, such as the ATM ladder of a volatility surface, as a term structure over time, from the object definition the shape declares. |
 | [[id:94559B94-B60B-42C9-908C-5A05257D2CBF][Read a composite object's aligned evolution]] | BACKLOG | | | Return a composite object over a range or a set of instants as instants by nodes, with the coordinate labels and numeric values, and the added, dropped and persistent nodes against the declared shape, replacing the fixed five-bucket window. |
 | [[id:BC8D6246-C459-4B31-93C5-C2CC5BB860CE][Reshape the single-instant read to the object definition]] | BACKLOG | | | Bring the single-instant read onto the same object definition as the slice read and the evolution read, so the three cannot disagree about what a composite object is. |
 | [[id:A76EE364-10BE-4FA8-98D6-E55E4F0D9C8A][Give every point a provenance annex]] | BACKLOG | | | Record the source kind of every point, quoted, derived or manual, and for a manual point the actor, the time and the reason, in one cold annex keyed by the point's natural key. |
@@ -116,6 +116,33 @@ refuses =ATMF= and =25D=, which ORE's strike grammar reads and its FX option
 quote then throws on. =correlation= shares the field, so its strike is checked
 by the same grammar. A per-surface quoting convention, the ATM type and the
 delta type, stays with journey 2.
+
+** A slice is the object's instants against the shape's ladder
+
+Chosen 2026-10-09, with the slice read. A component is returned as a term
+structure at each instant the object holds in a range, and the read is one
+statement: the instants come from the data, and the per-instant reduction is the
+same =LATERAL= and =DISTINCT ON= the bucket read already runs over the same
+index.
+
+Two choices follow from what a term structure is. The *instants are the
+object's* and not the component's, so an instant at which only another component
+moved still appears, with this one carried forward; otherwise every instant
+would hold a different set of nodes and none would be a term structure. The
+*ladder is the shape's* and not the points', so a node the object declares and
+no point fills is a hole, which is what the shape tables exist to make visible.
+
+The read serves an object of one or two axes and refuses more. A term structure
+has one ladder, so an object of three axes, such as a swaption cube, has a slice
+that is a surface, and that is the evolution read's work.
+
+The component is selected in C++ through the codec rather than in SQL, because a
+component is a coordinate inside the point's URI and a text match on it would
+depend on how the codec encodes it.
+
+The read takes the snapshot family's =marketdata::curve_snapshots:read=
+permission. A slice reads the same data as the snapshot it belongs to, so a
+second permission would split one grant across two subjects.
 
 * Out of scope
 
@@ -839,7 +866,7 @@ can show the manual segment with its actor and its reason.
 
 *** What to add, in order
 
-Items one to three are done. Items four to eight and ten are now BACKLOG tasks,
+Items one to four are done. Items five to eight and ten are now BACKLOG tasks,
 named under each item. Item nine closed before it was ever a task.
 
 1. The composite-object identity at the wire boundary: a typed request (asset
@@ -864,7 +891,9 @@ named under each item. Item nine closed before it was ever a task.
    journey 2.
 4. The slice read: a component along one axis -- the ATM ladder -- returned as
    a term structure over time, from the same object definition.
-   Task [[id:D16E6FFD-C9D5-4DBB-B3B9-1D5AA1837C5F][Read one slice of a composite object over time]].
+   Task [[id:D16E6FFD-C9D5-4DBB-B3B9-1D5AA1837C5F][Read one slice of a composite object over time]], DONE. The
+   instants are the object's, the ladder is the shape's, and an object of more
+   than two axes is refused.
 5. The aligned evolution read: the object plus a range or a set of instants,
    returning instants by nodes with the coordinate labels and numeric values,
    and the added, dropped and persistent nodes against the declared shape. It

@@ -26,11 +26,11 @@ A caller asks for one component of a composite object over a range and gets a te
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Implemented and green. The operation, the as-of instant read, the reader, the handler and the tests are in. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR, then record the result.   |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance

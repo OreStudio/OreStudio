@@ -66,6 +66,33 @@ struct get_active_sessions_response {
     std::string message;
 };
 
+/**
+ * @brief End another account's session in the caller's tenant.
+ *
+ * A session is opened by signing in and closed by the service that ends it,
+ * so the act is an operation rather than a write to the row. The operator
+ * names the session by its identifier; the tenant scope comes from the
+ * caller's own session, and a session belonging to another tenant is not
+ * there to end.
+ */
+struct end_session_request {
+    using response_type = struct end_session_response;
+    static constexpr std::string_view nats_subject = "iam.v1.ops.end_session";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid session_id;
+};
+
+struct end_session_response {
+    bool success = false;
+    std::string message;
+};
+
 }
 
 #endif

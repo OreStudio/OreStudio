@@ -41,6 +41,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.iam.api.lib
+        ores.geo.lib
         ores.variability.core.lib
         ores.database.lib
         ores.dq.api.lib

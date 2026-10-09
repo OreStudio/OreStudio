@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.http-route.enabled: true
+:ID: 5E7C2A94-1B6D-4E83-9F20-3A8D6C1E7B45
+:END:
+#+title: ores.iam.session_statistics_operations
+#+description: Codegen operation model for the session statistics read.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: session_statistics_operations
+#+namespace: ores::iam::messaging
+#+brief: session statistics operations.
+#+filetags: :model:operation:iam:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+How much the tenant's sessions moved, day by day.
+
+The screen reads this beside the session list: the list says who is
+connected, the statistics say how much traffic the tenant's sign-ins carry
+and how long they last.
+
+=ores.sql= creates three continuous aggregates over the sessions table, and
+they exist only under the Timescale licence. A development database runs the
+Apache licence and has none of them, so the read aggregates the sessions
+table itself and answers in either edition.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** session_statistics_row
+#+begin_src cpp :name comment
+/**
+ * @brief One day's session statistics, for one account.
+ *
+ * The duration is in seconds and the byte counts are totals over the day's
+ * ended sessions. A day with no ended sessions has no row.
+ */
+#+end_src
+
+*** day
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** session_count
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** avg_duration_seconds
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** total_bytes_sent
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** total_bytes_received
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** avg_bytes_sent
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** avg_bytes_received
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** unique_countries
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+** get_session_statistics_request
+:PROPERTIES:
+:subject: iam.v1.ops.get_session_statistics
+:response: get_session_statistics_response
+:http_route: true
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A window over the caller's tenant session statistics.
+ *
+ * An empty filter does not filter. The window is newest first, so the screen
+ * reads the most recent days without asking for an order.
+ */
+#+end_src
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** from_time
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** to_time
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 100
+:END:
+
+*** offset
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+** get_session_statistics_response
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::vector<session_statistics_row>
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:

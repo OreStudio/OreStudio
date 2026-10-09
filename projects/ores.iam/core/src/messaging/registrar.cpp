@@ -24,7 +24,9 @@
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/auth_event_operations_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
+#include "ores.iam.api/messaging/geo_operations_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/password_policy_protocol.hpp"
@@ -32,6 +34,7 @@
 #include "ores.iam.api/messaging/reset_protocol.hpp"
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_statistics_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
@@ -43,6 +46,8 @@
 #include "ores.iam.core/messaging/account_credential_registrar.hpp"
 #include "ores.iam.core/messaging/account_operations_handler.hpp"
 #include "ores.iam.core/messaging/account_party_handler.hpp"
+#include "ores.iam.core/messaging/auth_event_handler.hpp"
+#include "ores.iam.core/messaging/geo_handler.hpp"
 #include "ores.iam.core/messaging/account_registrar.hpp"
 #include "ores.iam.core/messaging/account_type_registrar.hpp"
 #include "ores.iam.core/messaging/auth_handler.hpp"
@@ -328,6 +333,28 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_session_samples_request::nats_subject, qg, [sh](ores::nats::message msg) {
             sh->samples(std::move(msg));
+        }));
+    subs.push_back(
+        nats.queue_subscribe(end_session_request::nats_subject, qg, [sh](ores::nats::message msg) {
+            sh->end(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_session_statistics_request::nats_subject, qg, [sh](ores::nats::message msg) {
+            sh->statistics(std::move(msg));
+        }));
+
+    // --- Auth events: the record of what sign-in actually did ---
+    auto aeh = std::make_shared<auth_event_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        list_auth_events_request::nats_subject, qg, [aeh](ores::nats::message msg) {
+            aeh->list(std::move(msg));
+        }));
+
+    // --- Geography: where a sign-in came from ---
+    auto gh = std::make_shared<geo_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        lookup_country_request::nats_subject, qg, [gh](ores::nats::message msg) {
+            gh->lookup_country(std::move(msg));
         }));
 
     // --- Roles: the derived CRUD protocol ---

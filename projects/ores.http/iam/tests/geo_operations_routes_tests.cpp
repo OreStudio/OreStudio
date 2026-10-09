@@ -24,7 +24,7 @@
  */
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-#include "ores.http/routes/iam/session_operations_routes.hpp"
+#include "ores.http/routes/iam/geo_operations_routes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <algorithm>
@@ -37,7 +37,7 @@ using namespace ores::logging;
 using ores::http::domain::http_method;
 using ores::http::net::router;
 using ores::http::openapi::endpoint_registry;
-using ores::http::routes::iam::session_operations_routes;
+using ores::http::routes::iam::geo_operations_routes;
 using ores::nats::service::nats_client;
 
 namespace {
@@ -59,27 +59,25 @@ struct expected_route {
 std::shared_ptr<router> registered_routes(nats_client& session) {
     auto table = std::make_shared<router>();
     auto registry = std::make_shared<endpoint_registry>();
-    session_operations_routes::register_routes(table, registry, session);
+    geo_operations_routes::register_routes(table, registry, session);
     return table;
 }
 
 }
 
-TEST_CASE("session_operations_routes_registers_every_declared_operation", tags) {
+TEST_CASE("geo_operations_routes_registers_every_declared_operation", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     const auto table = registered_routes(session);
     const auto& routes = table->routes();
 
-    REQUIRE(routes.size() == 2);
+    REQUIRE(routes.size() == 1);
 
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
-             expected_route{
-                 http_method::post, std::string{"/api/v1/iam/ops/get_active_sessions"}, true},
-             expected_route{http_method::post, std::string{"/api/v1/iam/ops/end_session"}, true},
+             expected_route{http_method::post, std::string{"/api/v1/iam/ops/lookup_country"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -87,10 +85,10 @@ TEST_CASE("session_operations_routes_registers_every_declared_operation", tags) 
         CHECK(found != routes.end());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 2 route(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 1 route(s).";
 }
 
-TEST_CASE("session_operations_routes_requires_a_session_where_the_message_does", tags) {
+TEST_CASE("geo_operations_routes_requires_a_session_where_the_message_does", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -101,9 +99,7 @@ TEST_CASE("session_operations_routes_requires_a_session_where_the_message_does",
     // session cannot be registered without one, and one the model declares
     // public is not made unreachable by a flag it never asked for.
     for (const auto& expected : {
-             expected_route{
-                 http_method::post, std::string{"/api/v1/iam/ops/get_active_sessions"}, true},
-             expected_route{http_method::post, std::string{"/api/v1/iam/ops/end_session"}, true},
+             expected_route{http_method::post, std::string{"/api/v1/iam/ops/lookup_country"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -115,5 +111,5 @@ TEST_CASE("session_operations_routes_requires_a_session_where_the_message_does",
         CHECK(found->auth_declared);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 2 route(s).";
+    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 1 route(s).";
 }

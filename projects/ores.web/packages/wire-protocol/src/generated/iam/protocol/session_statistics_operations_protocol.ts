@@ -22,51 +22,46 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { Session } from '../domain/session.js';
-
 /**
- * @brief A session with its party-scoped context.
+ * @brief One day's session statistics, for one account.
  *
- * The session is the entity; party_id, visible_party_ids and username are
- * the denormalised fields reached through the account-party association.
- * They are message fields because no column backs them.
+ * The duration is in seconds and the byte counts are totals over the day's
+ * ended sessions. A day with no ended sessions has no row.
  */
-export interface SessionView {
-    session: Session;
-    party_id: string;
-    visible_party_ids: string[];
-    username: string;
-}
-
-export interface GetActiveSessionsRequest {}
-
-export interface GetActiveSessionsResponse {
-    sessions: Session[];
-    success: boolean;
-    message: string;
+export interface SessionStatisticsRow {
+    day: string;
+    account_id: string;
+    session_count: number;
+    avg_duration_seconds: number;
+    total_bytes_sent: number;
+    total_bytes_received: number;
+    avg_bytes_sent: number;
+    avg_bytes_received: number;
+    unique_countries: number;
 }
 
 /**
- * @brief End another account's session in the caller's tenant.
+ * @brief A window over the caller's tenant session statistics.
  *
- * A session is opened by signing in and closed by the service that ends it,
- * so the act is an operation rather than a write to the row. The operator
- * names the session by its identifier; the tenant scope comes from the
- * caller's own session, and a session belonging to another tenant is not
- * there to end.
+ * An empty filter does not filter. The window is newest first, so the screen
+ * reads the most recent days without asking for an order.
  */
-export interface EndSessionRequest {
-    session_id: string;
+export interface GetSessionStatisticsRequest {
+    account_id: string;
+    from_time: string;
+    to_time: string;
+    limit: number;
+    offset: number;
 }
 
-export interface EndSessionResponse {
+export interface GetSessionStatisticsResponse {
+    rows: SessionStatisticsRow[];
     success: boolean;
     message: string;
 }
 
 export const subjects = {
-    get_active_sessions_request: 'iam.v1.ops.get_active_sessions',
-    end_session_request: 'iam.v1.ops.end_session',
+    get_session_statistics_request: 'iam.v1.ops.get_session_statistics',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -74,6 +69,5 @@ export const subjects = {
  * assuming every call carries a token.
  */
 export const requiresSession = {
-    get_active_sessions_request: true,
-    end_session_request: true,
+    get_session_statistics_request: true,
 } as const;

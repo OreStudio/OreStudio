@@ -27,6 +27,9 @@
 #include "ores.http/routes/iam/login_routes.hpp"
 #include "ores.http/routes/iam/permission_routes.hpp"
 #include "ores.http/routes/iam/role_routes.hpp"
+#include "ores.http/routes/iam/auth_event_operations_routes.hpp"
+#include "ores.http/routes/iam/geo_operations_routes.hpp"
+#include "ores.http/routes/iam/session_statistics_operations_routes.hpp"
 #include "ores.http/routes/iam/session_operations_routes.hpp"
 #include "ores.http/routes/iam/session_routes.hpp"
 #include "ores.http/routes/iam/signup_routes.hpp"
@@ -49,6 +52,9 @@ void iam_routes::register_routes(std::shared_ptr<ores::http::net::router> router
     login_routes::register_routes(router, registry, session);
     signup_routes::register_routes(router, registry, session);
     bootstrap_routes::register_routes(router, registry, session);
+    auth_event_operations_routes::register_routes(router, registry, session);
+    geo_operations_routes::register_routes(router, registry, session);
+    session_statistics_operations_routes::register_routes(router, registry, session);
     session_operations_routes::register_routes(router, registry, session);
 }
 

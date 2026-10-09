@@ -27,6 +27,7 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/password_policy_protocol.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 #include "ores.iam.api/messaging/registration_policy_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.core/domain/token_settings.hpp"
@@ -705,6 +706,18 @@ public:
             sess.start_time = now;
             sess.protocol = "http";
             sess.client_ip = ip;
+            // Resolve where the session came from. The ranges are published
+            // per tenant, so a tenant that has published none leaves the
+            // country empty rather than guessing.
+            try {
+                geo::service::geolocation_service geo(login_ctx);
+                if (const auto located = geo.lookup(ip)) {
+                    sess.country_code = located->country_code;
+                }
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                    << "Failed to resolve the session's country: " << e.what();
+            }
             // party_id set below once we know which party is active
             try {
                 repository::session_repository sess_repo;
@@ -949,17 +962,21 @@ public:
                             << "Failed to update logout state: " << e.what();
                     }
                     // Persist session end time using the IDs embedded in
-                    // the JWT at login.
+                    // the JWT at login. The byte counters are the session's
+                    // own running totals, so they are carried through rather
+                    // than zeroed: a sign-out closes the session, it does not
+                    // erase what the session moved.
                     if (claims_result->session_id && claims_result->session_start_time) {
                         try {
                             const auto session_id = sg(*claims_result->session_id);
                             repository::session_repository sess_repo;
+                            const auto ended = sess_repo.read(ctx_, session_id);
                             sess_repo.end_session(ctx_,
                                                   session_id,
                                                   *claims_result->session_start_time,
                                                   std::chrono::system_clock::now(),
-                                                  0,
-                                                  0);
+                                                  ended ? ended->bytes_sent : 0,
+                                                  ended ? ended->bytes_received : 0);
                         } catch (const std::exception& e) {
                             BOOST_LOG_SEV(auth_handler_lg(), warn)
                                 << "Failed to end session record: " << e.what();

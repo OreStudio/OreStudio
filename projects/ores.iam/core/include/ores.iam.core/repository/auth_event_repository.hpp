@@ -22,10 +22,13 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.iam.core/repository/auth_event_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <chrono>
+#include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -180,6 +183,23 @@ public:
                                const std::string& tenant_id,
                                const std::string& username,
                                const std::string& error_detail);
+
+    /**
+     * @brief Read one tenant's authentication events, newest first.
+     *
+     * The table carries no row-level security, so the read scopes on
+     * =tenant_id= itself rather than relying on a policy. An empty
+     * =account_id=, =event_type=, =from_time= or =to_time= does not filter.
+     * The times are the storage form, so they compare as the column does.
+     */
+    std::vector<repository::auth_event_entity> read_events(const context& ctx,
+                                                           const std::string& tenant_id,
+                                                           const std::string& account_id,
+                                                           const std::string& event_type,
+                                                           const std::string& from_time,
+                                                           const std::string& to_time,
+                                                           std::uint32_t limit,
+                                                           std::uint32_t offset);
 
 private:
     void insert(const std::string& event_type,

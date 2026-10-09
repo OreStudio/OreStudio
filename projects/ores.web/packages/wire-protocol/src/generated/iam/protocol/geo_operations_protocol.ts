@@ -22,51 +22,26 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { Session } from '../domain/session.js';
-
 /**
- * @brief A session with its party-scoped context.
+ * @brief Resolve one address to the country code it came from.
  *
- * The session is the entity; party_id, visible_party_ids and username are
- * the denormalised fields reached through the account-party association.
- * They are message fields because no column backs them.
+ * The search is the caller's tenant's ranges. An address the tenant's ranges
+ * do not cover is not found, which is an answer rather than an error: a
+ * private address never resolves.
  */
-export interface SessionView {
-    session: Session;
-    party_id: string;
-    visible_party_ids: string[];
-    username: string;
+export interface LookupCountryRequest {
+    address: string;
 }
 
-export interface GetActiveSessionsRequest {}
-
-export interface GetActiveSessionsResponse {
-    sessions: Session[];
-    success: boolean;
-    message: string;
-}
-
-/**
- * @brief End another account's session in the caller's tenant.
- *
- * A session is opened by signing in and closed by the service that ends it,
- * so the act is an operation rather than a write to the row. The operator
- * names the session by its identifier; the tenant scope comes from the
- * caller's own session, and a session belonging to another tenant is not
- * there to end.
- */
-export interface EndSessionRequest {
-    session_id: string;
-}
-
-export interface EndSessionResponse {
+export interface LookupCountryResponse {
+    country_code: string;
+    found: boolean;
     success: boolean;
     message: string;
 }
 
 export const subjects = {
-    get_active_sessions_request: 'iam.v1.ops.get_active_sessions',
-    end_session_request: 'iam.v1.ops.end_session',
+    lookup_country_request: 'iam.v1.ops.lookup_country',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -74,6 +49,5 @@ export const subjects = {
  * assuming every call carries a token.
  */
 export const requiresSession = {
-    get_active_sessions_request: true,
-    end_session_request: true,
+    lookup_country_request: true,
 } as const;

@@ -94,3 +94,40 @@ beside the entity they annotate.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+** end_session_request
+:PROPERTIES:
+:subject: iam.v1.ops.end_session
+:response: end_session_response
+:http_route: true
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief End another account's session in the caller's tenant.
+ *
+ * A session is opened by signing in and closed by the service that ends it,
+ * so the act is an operation rather than a write to the row. The operator
+ * names the session by its identifier; the tenant scope comes from the
+ * caller's own session, and a session belonging to another tenant is not
+ * there to end.
+ */
+#+end_src
+
+*** session_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+** end_session_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:

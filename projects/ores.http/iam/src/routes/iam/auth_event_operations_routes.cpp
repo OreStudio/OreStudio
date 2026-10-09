@@ -22,8 +22,8 @@
  * Template: cpp_http_route_operation_implementation.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.http/routes/iam/session_operations_routes.hpp"
-#include "ores.iam.api/messaging/session_operations_protocol.hpp"
+#include "ores.http/routes/iam/auth_event_operations_routes.hpp"
+#include "ores.iam.api/messaging/auth_event_operations_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
@@ -101,19 +101,9 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
 }
 
 boost::asio::awaitable<http_response>
-session_operations_routes::handle_get_active_sessions(const http_request& req,
+auth_event_operations_routes::handle_list_auth_events(const http_request& req,
                                                       nats_client& session) {
-    using request_type = messaging::get_active_sessions_request;
-    try {
-        co_return co_await forward(req, session, request_type{});
-    } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
-    }
-}
-
-boost::asio::awaitable<http_response>
-session_operations_routes::handle_end_session(const http_request& req, nats_client& session) {
-    using request_type = messaging::end_session_request;
+    using request_type = messaging::list_auth_events_request;
     try {
         const auto parsed = rfl::json::read<request_type>(req.body);
         if (!parsed) {
@@ -125,42 +115,28 @@ session_operations_routes::handle_end_session(const http_request& req, nats_clie
     }
 }
 
-void session_operations_routes::register_routes(
+void auth_event_operations_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering session_operations routes";
+    BOOST_LOG_SEV(lg(), info) << "Registering auth_event_operations routes";
 
-    auto get_active_sessions_route =
-        router->post("/api/v1/iam/ops/get_active_sessions")
-            .summary("Get active sessions")
-            .description("Forwards to the iam.v1.ops.get_active_sessions operation.")
+    auto list_auth_events_route =
+        router->post("/api/v1/iam/auth_events/list")
+            .summary("List auth events")
+            .description("Forwards to the iam.v1.auth_events.list operation.")
             .tags({"iam"})
             .auth_required()
-            .body<messaging::get_active_sessions_request>()
-            .response<messaging::get_active_sessions_response>()
+            .body<messaging::list_auth_events_request>()
+            .response<messaging::list_auth_events_response>()
             .handler([&session](const http_request& req) {
-                return handle_get_active_sessions(req, session);
+                return handle_list_auth_events(req, session);
             });
-    const auto get_active_sessions_built = get_active_sessions_route.build();
-    router->add_route(get_active_sessions_built);
-    registry->register_route(get_active_sessions_built);
+    const auto list_auth_events_built = list_auth_events_route.build();
+    router->add_route(list_auth_events_built);
+    registry->register_route(list_auth_events_built);
 
-    auto end_session_route = router->post("/api/v1/iam/ops/end_session")
-                                 .summary("End session")
-                                 .description("Forwards to the iam.v1.ops.end_session operation.")
-                                 .tags({"iam"})
-                                 .auth_required()
-                                 .body<messaging::end_session_request>()
-                                 .response<messaging::end_session_response>()
-                                 .handler([&session](const http_request& req) {
-                                     return handle_end_session(req, session);
-                                 });
-    const auto end_session_built = end_session_route.build();
-    router->add_route(end_session_built);
-    registry->register_route(end_session_built);
-
-    BOOST_LOG_SEV(lg(), info) << "session_operations routes registered: " << 2 << " endpoint(s)";
+    BOOST_LOG_SEV(lg(), info) << "auth_event_operations routes registered: " << 1 << " endpoint(s)";
 }
 
 }

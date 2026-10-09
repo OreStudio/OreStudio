@@ -23,8 +23,10 @@ set(files
     "account_credential_routes_tests.cpp"
     "account_operations_routes_tests.cpp"
     "account_routes_tests.cpp"
+    "auth_event_operations_routes_tests.cpp"
     "authorization_routes_tests.cpp"
     "bootstrap_routes_tests.cpp"
+    "geo_operations_routes_tests.cpp"
     "login_info_routes_tests.cpp"
     "login_routes_tests.cpp"
     "main.cpp"
@@ -32,5 +34,6 @@ set(files
     "role_routes_tests.cpp"
     "session_operations_routes_tests.cpp"
     "session_routes_tests.cpp"
+    "session_statistics_operations_routes_tests.cpp"
     "signup_routes_tests.cpp"
 )

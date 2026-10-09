@@ -42,12 +42,12 @@ public:
      * the service reads once, so the handler is handed the value rather than
      * reading a setting on every queue read.
      */
-    static std::vector<ores::nats::service::subscription> register_handlers(
-        ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier,
-        std::chrono::seconds answered_window,
-        std::chrono::seconds reminder_window);
+    static std::vector<ores::nats::service::subscription>
+    register_handlers(ores::nats::service::client& nats,
+                      ores::database::context ctx,
+                      std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                      std::chrono::seconds answered_window,
+                      std::chrono::seconds reminder_window);
 };
 
 }

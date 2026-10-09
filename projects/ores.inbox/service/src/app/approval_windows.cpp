@@ -31,10 +31,8 @@ namespace ores::inbox::service::app {
 
 namespace {
 
-constexpr std::string_view answered_setting_name =
-    "inbox.approval_queue.answered_window_seconds";
-constexpr std::string_view reminder_setting_name =
-    "inbox.approval_expiry.reminder_window_seconds";
+constexpr std::string_view answered_setting_name = "inbox.approval_queue.answered_window_seconds";
+constexpr std::string_view reminder_setting_name = "inbox.approval_expiry.reminder_window_seconds";
 
 auto& lg() {
     static auto instance = ores::logging::make_logger("ores.inbox.service.app.approval_windows");
@@ -73,8 +71,8 @@ std::chrono::seconds read_window(ores::nats::service::nats_client& svc_nats,
         if (!answer)
             throw std::runtime_error("the answer could not be read");
         if (answer->result.outcome != outcome::ok)
-            throw std::runtime_error(answer->result.message.empty() ? "no such setting"
-                                                                    : answer->result.message);
+            throw std::runtime_error(answer->result.message.empty() ? "no such setting" :
+                                                                      answer->result.message);
 
         const auto seconds = std::stoll(answer->value);
         if (seconds < 0)

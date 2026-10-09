@@ -104,13 +104,18 @@ public:
      * Compensation walks a run's satisfied prefix backwards, so it reads this
      * order in reverse.
      */
-    [[nodiscard]] const std::vector<std::string>& order() const { return order_; }
+    [[nodiscard]] const std::vector<std::string>& order() const {
+        return order_;
+    }
 
     /** How many steps the run has. */
-    [[nodiscard]] std::size_t size() const { return order_.size(); }
+    [[nodiscard]] std::size_t size() const {
+        return order_.size();
+    }
 
 private:
-    using graph_t = boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, std::string>;
+    using graph_t =
+        boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, std::string>;
 
     graph_t graph_;
     /** The vertex a step's name belongs to. */

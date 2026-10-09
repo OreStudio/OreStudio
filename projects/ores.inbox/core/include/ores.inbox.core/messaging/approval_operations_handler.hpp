@@ -420,14 +420,14 @@ public:
             reply(nats_,
                   msg,
                   get_approval_response{.result = approval_result(outcome::ok, "", ""),
-                                                .request = *found});
+                                        .request = *found});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error reading approval request " << req->request_id << ": " << e.what();
             reply(nats_,
                   msg,
-                  get_approval_response{.result = approval_result(
-                                                    outcome::failed, "read_failed", e.what())});
+                  get_approval_response{
+                      .result = approval_result(outcome::failed, "read_failed", e.what())});
         }
     }
 
@@ -485,17 +485,16 @@ public:
             std::ranges::sort(answer, std::greater{}, &approval_request_version::version);
             reply(nats_,
                   msg,
-                  get_approval_history_response{
-                      .result = approval_result(outcome::ok, "", ""),
-                      .versions = std::move(answer)});
+                  get_approval_history_response{.result = approval_result(outcome::ok, "", ""),
+                                                .versions = std::move(answer)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error reading the history of approval request " << req->request_id << ": "
                 << e.what();
             reply(nats_,
                   msg,
-                  get_approval_history_response{.result = approval_result(
-                                                    outcome::failed, "read_failed", e.what())});
+                  get_approval_history_response{
+                      .result = approval_result(outcome::failed, "read_failed", e.what())});
         }
     }
 
@@ -586,9 +585,8 @@ public:
                 ids.push_back(e.request_id);
             reply(nats_,
                   msg,
-                  remind_expiring_approvals_response{
-                      .result = approval_result(outcome::ok, "", ""),
-                      .reminded = std::move(ids)});
+                  remind_expiring_approvals_response{.result = approval_result(outcome::ok, "", ""),
+                                                     .reminded = std::move(ids)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error warning the deciders of requests close to their deadline: " << e.what();

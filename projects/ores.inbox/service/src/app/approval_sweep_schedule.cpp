@@ -112,8 +112,8 @@ boost::asio::awaitable<void> approval_sweep_schedule::register_job() {
                                         " attempts: " + attempt_result.error().message);
         } else {
             BOOST_LOG_SEV(lg(), warn)
-                << "Could not register the sweep job (attempt " << attempt << " of "
-                << max_attempts << "): " << attempt_result.error().message;
+                << "Could not register the sweep job (attempt " << attempt << " of " << max_attempts
+                << "): " << attempt_result.error().message;
         }
 
         timer.expires_after(retry_delay);
@@ -121,8 +121,7 @@ boost::asio::awaitable<void> approval_sweep_schedule::register_job() {
     }
 }
 
-std::expected<void, approval_sweep_schedule::failure>
-approval_sweep_schedule::try_register_once() {
+std::expected<void, approval_sweep_schedule::failure> approval_sweep_schedule::try_register_once() {
     using ores::scheduler::messaging::job_definition_change;
     using ores::scheduler::messaging::list_job_definitions_request;
     using ores::scheduler::messaging::put_job_definition_request;

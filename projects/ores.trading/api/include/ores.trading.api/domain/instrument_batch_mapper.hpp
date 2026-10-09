@@ -34,8 +34,8 @@ namespace ores::trading::domain {
  * carrier rather than the parts: the import path and the tests build a
  * trade_instrument and need the wire shape.
  */
-ORES_TRADING_API_EXPORT void
-append_instrument(instrument_batch& batch, const trade_instrument& instrument);
+ORES_TRADING_API_EXPORT void append_instrument(instrument_batch& batch,
+                                               const trade_instrument& instrument);
 
 /**
  * @brief The instrument a trade's batch rows state, or a monostate instrument

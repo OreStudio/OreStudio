@@ -19,8 +19,8 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.workflow.core/service/workflow_graph.hpp"
-#include <catch2/catch_test_macros.hpp>
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
 
@@ -43,13 +43,13 @@ TEST_CASE("a linear chain is ordered as it was written", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
     // The chain the reporting path builds, reduced to its shape.
-    const workflow_graph graph({{"gather_trades", {}},
-                                {"gather_market_data", {}},
-                                {"assemble_bundle", {"gather_trades", "gather_market_data"}},
-                                {"prepare_ore_package",
-                                 {"assemble_bundle", "gather_trades", "gather_market_data"}},
-                                {"submit_compute", {"prepare_ore_package"}},
-                                {"finalise", {"submit_compute"}}});
+    const workflow_graph graph(
+        {{"gather_trades", {}},
+         {"gather_market_data", {}},
+         {"assemble_bundle", {"gather_trades", "gather_market_data"}},
+         {"prepare_ore_package", {"assemble_bundle", "gather_trades", "gather_market_data"}},
+         {"submit_compute", {"prepare_ore_package"}},
+         {"finalise", {"submit_compute"}}});
 
     REQUIRE_FALSE(graph.incoherent().has_value());
     CHECK(graph.size() == 6);

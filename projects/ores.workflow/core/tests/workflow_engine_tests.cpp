@@ -1564,8 +1564,8 @@ TEST_CASE("a consumer of two producers waits for both while the producers run to
     // Completing the consumer ends the run, because every step has answered.
     for (const auto& r : after_both)
         if (r.name == "combine")
-            f.engine->on_step_completed(as_message(
-                completion_for(instance_id, boost::uuids::to_string(r.id), step_outcome::completed)));
+            f.engine->on_step_completed(as_message(completion_for(
+                instance_id, boost::uuids::to_string(r.id), step_outcome::completed)));
 
     workflow_instance_repository instances;
     const auto instance = instances.read_latest(f.h.context(), instance_id);

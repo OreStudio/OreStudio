@@ -149,6 +149,7 @@ to_domain(const messaging::commodity_future_convention_write& write) {
     v.prohibited_expiries = write.prohibited_expiries;
     v.future_continuation_mappings = write.future_continuation_mappings;
     v.option_continuation_mappings = write.option_continuation_mappings;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

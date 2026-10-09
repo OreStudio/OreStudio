@@ -62,6 +62,7 @@ create table if not exists "ores_refdata_inflation_swap_conventions_tbl" (
     "publication_schedule_rules" text null,
     "publication_schedule_dates" text null,
     "publication_schedule_derived_groups" text null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

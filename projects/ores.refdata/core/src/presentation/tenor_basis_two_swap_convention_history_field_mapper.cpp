@@ -54,6 +54,7 @@ render_tenor_basis_two_swap_convention_fields(const domain::tenor_basis_two_swap
     fields.push_back(
         {.name = "Long Minus Short",
          .value = v.long_minus_short ? (*v.long_minus_short ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -143,6 +143,18 @@ struct tenor_basis_swap_convention final {
     std::optional<bool> spread_on_short;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: one of pay_index,
+     * receive_index, long_index or short_index, as a fixing URI. The single field cannot name all
+     * four; which one it carries is a product decision. Classification: identifier — the leg it
+     * names is fully specified.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this tenor basis swap convention.
      */
     std::string modified_by;

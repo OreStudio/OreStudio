@@ -72,6 +72,7 @@ generate_synthetic_cross_currency_basis_convention(utility::generation::generati
     r.flat_rate_cutoff = std::nullopt;
     r.flat_is_averaged = std::nullopt;
     r.flat_observation_shift = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

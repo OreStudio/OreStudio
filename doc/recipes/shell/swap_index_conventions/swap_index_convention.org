@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-swap_index_conventions add <id> <conventions> <fixing_calendar> <reason> <commentary>
+swap_index_conventions add <id> <conventions> <fixing_calendar> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.swap_index_conventions.put=.
 
 #+name: swap_index_conventions-add
 #+begin_src ores-shell :tangle swap_index_conventions-add.ores :exports none
-swap_index_conventions add __none__ __none__ - system.new_record generated_script
+swap_index_conventions add __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-swap_index_conventions set <id> <conventions> <fixing_calendar> <reason> <commentary> [--version <n>]
+swap_index_conventions set <id> <conventions> <fixing_calendar> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.swap_index_conventions.put=.
 
 #+name: swap_index_conventions-set
 #+begin_src ores-shell :tangle swap_index_conventions-set.ores :exports none
-swap_index_conventions set __none__ __none__ - system.new_record generated_script
+swap_index_conventions set __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-swap_index_conventions put-many --count <n> <id> <conventions> <fixing_calendar> <reason> <commentary>
+swap_index_conventions put-many --count <n> <id> <conventions> <fixing_calendar> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.swap_index_conventions.put_many=.
 
 #+name: swap_index_conventions-put-many
 #+begin_src ores-shell :tangle swap_index_conventions-put-many.ores :exports none
-swap_index_conventions put-many --count 1 __none__ __none__ - system.new_record generated_script
+swap_index_conventions put-many --count 1 __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=

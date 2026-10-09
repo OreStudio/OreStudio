@@ -57,6 +57,7 @@ generate_synthetic_zero_convention(utility::generation::generation_context& ctx)
     r.spot_calendar = std::nullopt;
     r.roll_convention = std::nullopt;
     r.end_of_month = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

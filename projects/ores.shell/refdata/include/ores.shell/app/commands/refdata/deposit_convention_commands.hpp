@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <id> <index_based> <index> <calendar> <convention> <end_of_month>
-     * <day_count_fraction> <settlement_days> <reason> <commentary>
+     * <day_count_fraction> <settlement_days> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <id> <index_based> <index> <calendar> <convention> <end_of_month>
-     * <day_count_fraction> <settlement_days> <reason> <commentary> [--version <n>]
+     * <day_count_fraction> <settlement_days> <oresmd_uri> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <index_based> <index> <calendar> <convention> <end_of_month>
-     * <day_count_fraction> <settlement_days> <reason> <commentary>
+     * <day_count_fraction> <settlement_days> <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

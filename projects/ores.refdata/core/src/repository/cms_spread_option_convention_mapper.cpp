@@ -55,6 +55,7 @@ cms_spread_option_convention_mapper::map(const cms_spread_option_convention_enti
     r.calendar = v.calendar;
     r.day_count_fraction = v.day_count_fraction;
     r.roll_convention = v.roll_convention;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -81,6 +82,7 @@ cms_spread_option_convention_mapper::map(const domain::cms_spread_option_convent
     r.calendar = v.calendar;
     r.day_count_fraction = v.day_count_fraction;
     r.roll_convention = v.roll_convention;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

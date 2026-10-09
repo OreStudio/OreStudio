@@ -92,7 +92,7 @@ public:
      * <spread_payment_lag> <flat_payment_lag> <spread_include_spread> <spread_lookback>
      * <spread_fixing_days> <spread_rate_cutoff> <spread_is_averaged> <spread_observation_shift>
      * <flat_include_spread> <flat_lookback> <flat_fixing_days> <flat_rate_cutoff>
-     * <flat_is_averaged> <flat_observation_shift> <reason> <commentary>
+     * <flat_is_averaged> <flat_observation_shift> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,8 @@ public:
      * <spread_payment_lag> <flat_payment_lag> <spread_include_spread> <spread_lookback>
      * <spread_fixing_days> <spread_rate_cutoff> <spread_is_averaged> <spread_observation_shift>
      * <flat_include_spread> <flat_lookback> <flat_fixing_days> <flat_rate_cutoff>
-     * <flat_is_averaged> <flat_observation_shift> <reason> <commentary> [--version <n>]
+     * <flat_is_averaged> <flat_observation_shift> <oresmd_uri> <reason> <commentary> [--version
+     * <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -116,7 +117,8 @@ public:
      * <spread_tenor> <spread_payment_lag> <flat_payment_lag> <spread_include_spread>
      * <spread_lookback> <spread_fixing_days> <spread_rate_cutoff> <spread_is_averaged>
      * <spread_observation_shift> <flat_include_spread> <flat_lookback> <flat_fixing_days>
-     * <flat_rate_cutoff> <flat_is_averaged> <flat_observation_shift> <reason> <commentary>
+     * <flat_rate_cutoff> <flat_is_averaged> <flat_observation_shift> <oresmd_uri> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

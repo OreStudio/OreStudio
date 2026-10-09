@@ -88,8 +88,8 @@ public:
 
     /**
      * @brief add <id> <tenor_based> <day_count_fraction> <compounding> <compounding_frequency>
-     * <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <reason>
-     * <commentary>
+     * <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <oresmd_uri>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,8 +97,8 @@ public:
 
     /**
      * @brief set <id> <tenor_based> <day_count_fraction> <compounding> <compounding_frequency>
-     * <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <reason>
-     * <commentary> [--version <n>]
+     * <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <oresmd_uri>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -107,7 +107,7 @@ public:
     /**
      * @brief put-many --count <n> <id> <tenor_based> <day_count_fraction> <compounding>
      * <compounding_frequency> <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention>
-     * <end_of_month> <reason> <commentary>
+     * <end_of_month> <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -50,6 +50,7 @@ generate_synthetic_overnight_index_convention(utility::generation::generation_co
     r.fixing_calendar = std::string("TARGET");
     r.day_count_fraction = std::string("ACT/360");
     r.settlement_days = 0;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

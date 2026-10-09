@@ -42,6 +42,7 @@ struct fra_convention_key {
 struct fra_convention_write {
     std::string id;
     std::string index;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct fra_convention_change {

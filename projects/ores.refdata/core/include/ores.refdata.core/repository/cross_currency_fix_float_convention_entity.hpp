@@ -64,6 +64,7 @@ struct cross_currency_fix_float_convention_entity {
     std::optional<int> rate_cutoff;
     std::optional<bool> is_averaged;
     std::optional<bool> observation_shift;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

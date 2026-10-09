@@ -110,6 +110,7 @@ to_domain(const messaging::tenor_basis_two_swap_convention_write& write) {
     v.short_fixed_day_count_fraction = write.short_fixed_day_count_fraction;
     v.short_index = write.short_index;
     v.long_minus_short = write.long_minus_short;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

@@ -44,6 +44,7 @@ render_intraday_power_load_convention_fields(const domain::intraday_power_load_c
                       .value = v.explicit_load_profile.value_or(std::string{})});
     fields.push_back({.name = "Business Day Load Rules",
                       .value = v.business_day_load_rules.value_or(std::string{})});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

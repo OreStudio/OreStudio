@@ -48,6 +48,7 @@ struct tenor_convention_entity {
     std::optional<std::string> description;
     std::string measured_from;
     std::string resolution_algorithm;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

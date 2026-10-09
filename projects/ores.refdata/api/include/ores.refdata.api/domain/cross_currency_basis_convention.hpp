@@ -187,6 +187,18 @@ struct cross_currency_basis_convention final {
     std::optional<bool> flat_observation_shift;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: the flat_index or the
+     * spread_index, as a fixing URI. The single field cannot name both legs; which one it carries
+     * is a product decision. Classification: identifier — the leg it names is fully specified, so
+     * the address pins that one series.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this cross-currency basis convention.
      */
     std::string modified_by;

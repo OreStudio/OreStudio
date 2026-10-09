@@ -72,6 +72,7 @@ cross_currency_basis_convention_mapper::map(const cross_currency_basis_conventio
     r.flat_rate_cutoff = v.flat_rate_cutoff;
     r.flat_is_averaged = v.flat_is_averaged;
     r.flat_observation_shift = v.flat_observation_shift;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -115,6 +116,7 @@ cross_currency_basis_convention_mapper::map(const domain::cross_currency_basis_c
     r.flat_rate_cutoff = v.flat_rate_cutoff;
     r.flat_is_averaged = v.flat_is_averaged;
     r.flat_observation_shift = v.flat_observation_shift;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

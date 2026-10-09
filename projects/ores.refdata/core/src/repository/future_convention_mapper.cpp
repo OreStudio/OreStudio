@@ -52,6 +52,7 @@ domain::future_convention future_convention_mapper::map(const future_convention_
     r.netting_type = v.netting_type;
     r.calendar = v.calendar;
     r.overnight_index_tenor = v.overnight_index_tenor;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -75,6 +76,7 @@ future_convention_entity future_convention_mapper::map(const domain::future_conv
     r.netting_type = v.netting_type;
     r.calendar = v.calendar;
     r.overnight_index_tenor = v.overnight_index_tenor;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

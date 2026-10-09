@@ -40,6 +40,7 @@ export interface ZeroInflationIndexConventionWrite {
     frequency: string;
     availability_lag: string;
     currency: string;
+    oresmd_uri: string | null;
 }
 
 export interface ZeroInflationIndexConventionChange {

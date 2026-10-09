@@ -58,6 +58,7 @@ generate_synthetic_tenor_basis_two_swap_convention(utility::generation::generati
     r.short_fixed_day_count_fraction = std::string("ACT/360");
     r.short_index = std::string("EUR-EURIBOR-3M");
     r.long_minus_short = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

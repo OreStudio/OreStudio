@@ -70,6 +70,7 @@ std::vector<ores::diff::domain::field_value> render_cross_currency_fix_float_con
     fields.push_back(
         {.name = "Observation Shift",
          .value = v.observation_shift ? (*v.observation_shift ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

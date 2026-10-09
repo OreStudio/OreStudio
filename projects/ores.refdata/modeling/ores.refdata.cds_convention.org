@@ -188,6 +188,26 @@ Day count fraction for the last coupon period (canonical FpML). When absent the 
 std::nullopt
 #+end_src
 
+** oresmd_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The oresmd URI of the market data this convention needs. The convention
+sets premium and settlement terms only; the credit series is named by the
+trade. Classification: requirement — the address states the credit-spread
+curve need, with the reference entity and the point left open.
+
+The column holds the address as a value, so refdata depends on the oresmd
+format as a contract only and never on the marketdata library or its tables.
+Nullable, because no convention is required to state its address yet.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags

@@ -57,6 +57,7 @@ create table if not exists "ores_refdata_cross_currency_fix_float_conventions_tb
     "rate_cutoff" integer null,
     "is_averaged" boolean null,
     "observation_shift" boolean null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

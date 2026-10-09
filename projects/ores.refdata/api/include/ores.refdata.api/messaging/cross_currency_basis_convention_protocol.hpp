@@ -65,6 +65,7 @@ struct cross_currency_basis_convention_write {
     std::optional<int> flat_rate_cutoff;
     std::optional<bool> flat_is_averaged;
     std::optional<bool> flat_observation_shift;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct cross_currency_basis_convention_change {

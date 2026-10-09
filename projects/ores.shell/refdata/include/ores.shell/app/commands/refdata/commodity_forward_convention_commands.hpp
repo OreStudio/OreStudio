@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <id> <spot_days> <points_factor> <advance_calendar> <spot_relative>
-     * <delivery_location> <business_day_convention> <outright> <reason> <commentary>
+     * <delivery_location> <business_day_convention> <outright> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,8 +96,8 @@ public:
 
     /**
      * @brief set <id> <spot_days> <points_factor> <advance_calendar> <spot_relative>
-     * <delivery_location> <business_day_convention> <outright> <reason> <commentary> [--version
-     * <n>]
+     * <delivery_location> <business_day_convention> <outright> <oresmd_uri> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -105,8 +105,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <spot_days> <points_factor> <advance_calendar>
-     * <spot_relative> <delivery_location> <business_day_convention> <outright> <reason>
-     * <commentary>
+     * <spot_relative> <delivery_location> <business_day_convention> <outright> <oresmd_uri>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

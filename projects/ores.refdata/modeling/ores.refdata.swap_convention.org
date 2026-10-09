@@ -149,6 +149,27 @@ Sub-period coupon type when the float leg uses sub-periods. Either 'Compounding'
 std::nullopt
 #+end_src
 
+** oresmd_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The oresmd URI of the market data this convention needs: the index of the
+floating leg, for example
+'oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M' for
+'EUR-EURIBOR-6M'. Classification: identifier — the address pins the one
+index the floating leg uses.
+
+The column holds the address as a value, so refdata depends on the oresmd
+format as a contract only and never on the marketdata library or its tables.
+Nullable, because no convention is required to state its address yet.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags

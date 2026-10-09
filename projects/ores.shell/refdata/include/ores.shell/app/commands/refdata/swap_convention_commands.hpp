@@ -88,8 +88,8 @@ public:
 
     /**
      * @brief add <id> <fixed_calendar> <fixed_frequency> <fixed_convention>
-     * <fixed_day_count_fraction> <index> <float_frequency> <sub_periods_coupon_type> <reason>
-     * <commentary>
+     * <fixed_day_count_fraction> <index> <float_frequency> <sub_periods_coupon_type> <oresmd_uri>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,8 +97,8 @@ public:
 
     /**
      * @brief set <id> <fixed_calendar> <fixed_frequency> <fixed_convention>
-     * <fixed_day_count_fraction> <index> <float_frequency> <sub_periods_coupon_type> <reason>
-     * <commentary> [--version <n>]
+     * <fixed_day_count_fraction> <index> <float_frequency> <sub_periods_coupon_type> <oresmd_uri>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -106,8 +106,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <fixed_calendar> <fixed_frequency> <fixed_convention>
-     * <fixed_day_count_fraction> <index> <float_frequency> <sub_periods_coupon_type> <reason>
-     * <commentary>
+     * <fixed_day_count_fraction> <index> <float_frequency> <sub_periods_coupon_type> <oresmd_uri>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

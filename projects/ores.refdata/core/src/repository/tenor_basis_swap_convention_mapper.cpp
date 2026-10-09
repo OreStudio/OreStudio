@@ -62,6 +62,7 @@ tenor_basis_swap_convention_mapper::map(const tenor_basis_swap_convention_entity
     r.short_index = v.short_index;
     r.short_pay_tenor = v.short_pay_tenor;
     r.spread_on_short = v.spread_on_short;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -95,6 +96,7 @@ tenor_basis_swap_convention_mapper::map(const domain::tenor_basis_swap_conventio
     r.short_index = v.short_index;
     r.short_pay_tenor = v.short_pay_tenor;
     r.spread_on_short = v.spread_on_short;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

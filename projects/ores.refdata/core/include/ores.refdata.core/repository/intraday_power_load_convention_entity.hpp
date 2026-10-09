@@ -48,6 +48,7 @@ struct intraday_power_load_convention_entity {
     std::string party_id;
     std::optional<std::string> explicit_load_profile;
     std::optional<std::string> business_day_load_rules;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

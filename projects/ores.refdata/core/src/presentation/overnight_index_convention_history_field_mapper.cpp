@@ -41,6 +41,7 @@ render_overnight_index_convention_fields(const domain::overnight_index_conventio
     fields.push_back({.name = "Fixing Calendar", .value = v.fixing_calendar});
     fields.push_back({.name = "Day Count Fraction", .value = v.day_count_fraction});
     fields.push_back({.name = "Settlement Days", .value = std::to_string(v.settlement_days)});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

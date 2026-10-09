@@ -141,21 +141,23 @@ void swap_index_convention_commands::register_commands(cli::Menu& root_menu, nat
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <conventions> <fixing_calendar> <reason> <commentary>");
+        "add <id> <conventions> <fixing_calendar> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <conventions> <fixing_calendar> <reason> <commentary> [--version <n>]");
+        "set <id> <conventions> <fixing_calendar> <oresmd_uri> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <conventions> <fixing_calendar> <reason> <commentary>");
+        "put-many --count <n> <id> <conventions> <fixing_calendar> <oresmd_uri> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -350,8 +352,8 @@ void swap_index_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -359,6 +361,7 @@ void swap_index_convention_commands::process_add(std::ostream& out,
         read_token(req.change.write.conventions, parsed->positionals[next++], "conventions");
         read_token(
             req.change.write.fixing_calendar, parsed->positionals[next++], "fixing_calendar");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -401,8 +404,8 @@ void swap_index_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -410,6 +413,7 @@ void swap_index_convention_commands::process_set(std::ostream& out,
         read_token(req.change.write.conventions, parsed->positionals[next++], "conventions");
         read_token(
             req.change.write.fixing_calendar, parsed->positionals[next++], "fixing_calendar");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -464,8 +468,8 @@ void swap_index_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 3 + 2) {
-            fail(out) << "Expected " << (change_count * 3 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 4 + 2) {
+            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -475,6 +479,7 @@ void swap_index_convention_commands::process_put_many(std::ostream& out,
             read_token(change.write.conventions, parsed->positionals[next++], "conventions");
             read_token(
                 change.write.fixing_calendar, parsed->positionals[next++], "fixing_calendar");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

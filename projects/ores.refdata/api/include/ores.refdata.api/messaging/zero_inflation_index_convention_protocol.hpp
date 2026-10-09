@@ -47,6 +47,7 @@ struct zero_inflation_index_convention_write {
     std::string frequency;
     std::string availability_lag;
     std::string currency;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct zero_inflation_index_convention_change {

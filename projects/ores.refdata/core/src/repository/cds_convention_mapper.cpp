@@ -57,6 +57,7 @@ domain::cds_convention cds_convention_mapper::map(const cds_convention_entity& v
     r.pays_at_default_time = v.pays_at_default_time;
     r.upfront_settlement_days = v.upfront_settlement_days;
     r.last_period_day_count_fraction = v.last_period_day_count_fraction;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -85,6 +86,7 @@ cds_convention_entity cds_convention_mapper::map(const domain::cds_convention& v
     r.pays_at_default_time = v.pays_at_default_time;
     r.upfront_settlement_days = v.upfront_settlement_days;
     r.last_period_day_count_fraction = v.last_period_day_count_fraction;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -50,6 +50,7 @@ render_bond_yield_convention_fields(const domain::bond_yield_convention& v) {
          .value = v.max_evaluations ? std::to_string(*v.max_evaluations) : std::string{}});
     fields.push_back(
         {.name = "Guess", .value = v.guess ? std::to_string(*v.guess) : std::string{}});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

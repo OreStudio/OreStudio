@@ -35,6 +35,7 @@ create table if not exists "ores_refdata_fra_conventions_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "index" text not null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

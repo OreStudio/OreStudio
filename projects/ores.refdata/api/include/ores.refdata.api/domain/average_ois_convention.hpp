@@ -116,6 +116,17 @@ struct average_ois_convention final {
     std::string rate_cutoff;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: the overnight index the
+     * floating leg compounds, as a fixing URI. Classification: identifier — the index is named in
+     * full, so the address pins one series.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this averaging OIS convention.
      */
     std::string modified_by;

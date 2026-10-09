@@ -105,6 +105,17 @@ struct commodity_forward_convention final {
     std::optional<bool> outright;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs. The convention sets quoting
+     * and delivery terms only, so it names no commodity. Classification: requirement — the address
+     * states a commodity forward price need, with the commodity and the expiry left open.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this commodity forward convention.
      */
     std::string modified_by;

@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <id> <region_name> <region_code> <revised> <frequency> <availability_lag>
-     * <currency> <reason> <commentary>
+     * <currency> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <id> <region_name> <region_code> <revised> <frequency> <availability_lag>
-     * <currency> <reason> <commentary> [--version <n>]
+     * <currency> <oresmd_uri> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <region_name> <region_code> <revised> <frequency>
-     * <availability_lag> <currency> <reason> <commentary>
+     * <availability_lag> <currency> <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

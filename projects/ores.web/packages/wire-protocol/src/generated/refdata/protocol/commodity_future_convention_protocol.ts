@@ -84,6 +84,7 @@ export interface CommodityFutureConventionWrite {
     prohibited_expiries: string | null;
     future_continuation_mappings: string | null;
     option_continuation_mappings: string | null;
+    oresmd_uri: string | null;
 }
 
 export interface CommodityFutureConventionChange {

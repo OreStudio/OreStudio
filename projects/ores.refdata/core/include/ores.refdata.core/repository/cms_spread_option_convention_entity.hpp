@@ -53,6 +53,7 @@ struct cms_spread_option_convention_entity {
     std::string calendar;
     std::string day_count_fraction;
     std::string roll_convention;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

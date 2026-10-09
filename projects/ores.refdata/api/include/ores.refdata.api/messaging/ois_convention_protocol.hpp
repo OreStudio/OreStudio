@@ -53,6 +53,7 @@ struct ois_convention_write {
     std::optional<std::string> rule;
     std::optional<std::string> payment_calendar;
     std::optional<int> rate_cutoff;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct ois_convention_change {

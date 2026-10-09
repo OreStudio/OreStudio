@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-zero_conventions add <id> <tenor_based> <day_count_fraction> <compounding> <compounding_frequency> <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <reason> <commentary>
+zero_conventions add <id> <tenor_based> <day_count_fraction> <compounding> <compounding_frequency> <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.zero_conventions.put=.
 
 #+name: zero_conventions-add
 #+begin_src ores-shell :tangle zero_conventions-add.ores :exports none
-zero_conventions add __none__ false __none__ - - - - - - - system.new_record generated_script
+zero_conventions add __none__ false __none__ - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-zero_conventions set <id> <tenor_based> <day_count_fraction> <compounding> <compounding_frequency> <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <reason> <commentary> [--version <n>]
+zero_conventions set <id> <tenor_based> <day_count_fraction> <compounding> <compounding_frequency> <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.zero_conventions.put=.
 
 #+name: zero_conventions-set
 #+begin_src ores-shell :tangle zero_conventions-set.ores :exports none
-zero_conventions set __none__ false __none__ - - - - - - - system.new_record generated_script
+zero_conventions set __none__ false __none__ - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-zero_conventions put-many --count <n> <id> <tenor_based> <day_count_fraction> <compounding> <compounding_frequency> <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <reason> <commentary>
+zero_conventions put-many --count <n> <id> <tenor_based> <day_count_fraction> <compounding> <compounding_frequency> <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.zero_conventions.put_many=.
 
 #+name: zero_conventions-put-many
 #+begin_src ores-shell :tangle zero_conventions-put-many.ores :exports none
-zero_conventions put-many --count 1 __none__ false __none__ - - - - - - - system.new_record generated_script
+zero_conventions put-many --count 1 __none__ false __none__ - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

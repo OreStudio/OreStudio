@@ -49,6 +49,7 @@ generate_synthetic_fra_convention(utility::generation::generation_context& ctx) 
     r.id = std::string("EUR-6M-FRA-CONVENTIONS") + "-" + std::to_string(idx);
     r.party_id = ctx.generate_uuid();
     r.index = std::string("EUR-EURIBOR-6M");
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

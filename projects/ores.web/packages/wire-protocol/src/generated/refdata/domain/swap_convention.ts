@@ -42,6 +42,7 @@ export interface SwapConvention {
     index: string;
     float_frequency: string | null;
     sub_periods_coupon_type: string | null;
+    oresmd_uri: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

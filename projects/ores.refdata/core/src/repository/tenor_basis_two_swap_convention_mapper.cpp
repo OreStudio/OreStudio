@@ -58,6 +58,7 @@ tenor_basis_two_swap_convention_mapper::map(const tenor_basis_two_swap_conventio
     r.short_fixed_day_count_fraction = v.short_fixed_day_count_fraction;
     r.short_index = v.short_index;
     r.long_minus_short = v.long_minus_short;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -87,6 +88,7 @@ tenor_basis_two_swap_convention_mapper::map(const domain::tenor_basis_two_swap_c
     r.short_fixed_day_count_fraction = v.short_fixed_day_count_fraction;
     r.short_index = v.short_index;
     r.long_minus_short = v.long_minus_short;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

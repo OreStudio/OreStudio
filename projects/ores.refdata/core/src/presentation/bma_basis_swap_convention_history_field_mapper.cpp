@@ -65,6 +65,7 @@ render_bma_basis_swap_convention_fields(const domain::bma_basis_swap_convention&
                       .value = v.overnight_lockout_days ?
                                    std::to_string(*v.overnight_lockout_days) :
                                    std::string{}});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -60,6 +60,7 @@ create table if not exists "ores_refdata_cross_currency_basis_conventions_tbl" (
     "flat_rate_cutoff" integer null,
     "flat_is_averaged" boolean null,
     "flat_observation_shift" boolean null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

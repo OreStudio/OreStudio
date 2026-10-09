@@ -48,6 +48,7 @@ struct swap_convention_write {
     std::string index;
     std::optional<std::string> float_frequency;
     std::optional<std::string> sub_periods_coupon_type;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct swap_convention_change {

@@ -103,6 +103,7 @@ domain::ibor_index_convention to_domain(const messaging::ibor_index_convention_w
     v.settlement_days = write.settlement_days;
     v.business_day_convention = write.business_day_convention;
     v.end_of_month = write.end_of_month;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

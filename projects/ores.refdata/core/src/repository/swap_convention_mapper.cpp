@@ -54,6 +54,7 @@ domain::swap_convention swap_convention_mapper::map(const swap_convention_entity
     r.index = v.index;
     r.float_frequency = v.float_frequency;
     r.sub_periods_coupon_type = v.sub_periods_coupon_type;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -79,6 +80,7 @@ swap_convention_entity swap_convention_mapper::map(const domain::swap_convention
     r.index = v.index;
     r.float_frequency = v.float_frequency;
     r.sub_periods_coupon_type = v.sub_periods_coupon_type;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

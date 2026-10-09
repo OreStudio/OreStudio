@@ -55,6 +55,7 @@ render_cds_convention_fields(const domain::cds_convention& v) {
                                    std::string{}});
     fields.push_back({.name = "Last Period Day Count Fraction",
                       .value = v.last_period_day_count_fraction.value_or(std::string{})});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

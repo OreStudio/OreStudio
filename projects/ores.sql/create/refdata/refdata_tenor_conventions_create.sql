@@ -52,6 +52,7 @@ create table if not exists "ores_refdata_tenor_conventions_tbl" (
     "description" text null,
     "measured_from" text not null,
     "resolution_algorithm" text not null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

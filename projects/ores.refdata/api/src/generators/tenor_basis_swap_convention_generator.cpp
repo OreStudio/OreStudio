@@ -62,6 +62,7 @@ generate_synthetic_tenor_basis_swap_convention(utility::generation::generation_c
     r.short_index = std::nullopt;
     r.short_pay_tenor = std::nullopt;
     r.spread_on_short = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

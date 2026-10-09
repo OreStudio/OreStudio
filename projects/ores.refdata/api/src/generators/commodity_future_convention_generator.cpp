@@ -98,6 +98,7 @@ generate_synthetic_commodity_future_convention(utility::generation::generation_c
     r.prohibited_expiries = std::nullopt;
     r.future_continuation_mappings = std::nullopt;
     r.option_continuation_mappings = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

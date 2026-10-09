@@ -144,7 +144,7 @@ void average_ois_convention_commands::register_commands(cli::Menu& root_menu,
         },
         "add <id> <spot_lag> <fixed_tenor> <fixed_day_count_fraction> <fixed_calendar> "
         "<fixed_convention> <fixed_payment_convention> <fixed_frequency> <index> <on_tenor> "
-        "<rate_cutoff> <reason> <commentary>");
+        "<rate_cutoff> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -153,7 +153,7 @@ void average_ois_convention_commands::register_commands(cli::Menu& root_menu,
         },
         "set <id> <spot_lag> <fixed_tenor> <fixed_day_count_fraction> <fixed_calendar> "
         "<fixed_convention> <fixed_payment_convention> <fixed_frequency> <index> <on_tenor> "
-        "<rate_cutoff> <reason> <commentary> [--version <n>]");
+        "<rate_cutoff> <oresmd_uri> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -162,7 +162,7 @@ void average_ois_convention_commands::register_commands(cli::Menu& root_menu,
         },
         "put-many --count <n> <id> <spot_lag> <fixed_tenor> <fixed_day_count_fraction> "
         "<fixed_calendar> <fixed_convention> <fixed_payment_convention> <fixed_frequency> <index> "
-        "<on_tenor> <rate_cutoff> <reason> <commentary>");
+        "<on_tenor> <rate_cutoff> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -357,8 +357,8 @@ void average_ois_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -379,6 +379,7 @@ void average_ois_convention_commands::process_add(std::ostream& out,
         read_token(req.change.write.index, parsed->positionals[next++], "index");
         read_token(req.change.write.on_tenor, parsed->positionals[next++], "on_tenor");
         read_token(req.change.write.rate_cutoff, parsed->positionals[next++], "rate_cutoff");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -421,8 +422,8 @@ void average_ois_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -443,6 +444,7 @@ void average_ois_convention_commands::process_set(std::ostream& out,
         read_token(req.change.write.index, parsed->positionals[next++], "index");
         read_token(req.change.write.on_tenor, parsed->positionals[next++], "on_tenor");
         read_token(req.change.write.rate_cutoff, parsed->positionals[next++], "rate_cutoff");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -497,8 +499,8 @@ void average_ois_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -521,6 +523,7 @@ void average_ois_convention_commands::process_put_many(std::ostream& out,
             read_token(change.write.index, parsed->positionals[next++], "index");
             read_token(change.write.on_tenor, parsed->positionals[next++], "on_tenor");
             read_token(change.write.rate_cutoff, parsed->positionals[next++], "rate_cutoff");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

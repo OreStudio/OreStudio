@@ -142,7 +142,7 @@ void bond_yield_convention_commands::register_commands(cli::Menu& root_menu, nat
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess> "
-        "<reason> <commentary>");
+        "<oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,7 +150,7 @@ void bond_yield_convention_commands::register_commands(cli::Menu& root_menu, nat
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess> "
-        "<reason> <commentary> [--version <n>]");
+        "<oresmd_uri> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -158,7 +158,7 @@ void bond_yield_convention_commands::register_commands(cli::Menu& root_menu, nat
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <compounding> <frequency> <price_type> <accuracy> "
-        "<max_evaluations> <guess> <reason> <commentary>");
+        "<max_evaluations> <guess> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -353,8 +353,8 @@ void bond_yield_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -366,6 +366,7 @@ void bond_yield_convention_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.max_evaluations, parsed->positionals[next++], "max_evaluations");
         read_token(req.change.write.guess, parsed->positionals[next++], "guess");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -408,8 +409,8 @@ void bond_yield_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -421,6 +422,7 @@ void bond_yield_convention_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.max_evaluations, parsed->positionals[next++], "max_evaluations");
         read_token(req.change.write.guess, parsed->positionals[next++], "guess");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -475,8 +477,8 @@ void bond_yield_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 7 + 2) {
-            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -490,6 +492,7 @@ void bond_yield_convention_commands::process_put_many(std::ostream& out,
             read_token(
                 change.write.max_evaluations, parsed->positionals[next++], "max_evaluations");
             read_token(change.write.guess, parsed->positionals[next++], "guess");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

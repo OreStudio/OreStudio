@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-ois_conventions add <id> <spot_lag> <index> <fixed_day_count_fraction> <fixed_calendar> <payment_lag> <end_of_month> <fixed_frequency> <fixed_convention> <fixed_payment_convention> <rule> <payment_calendar> <rate_cutoff> <reason> <commentary>
+ois_conventions add <id> <spot_lag> <index> <fixed_day_count_fraction> <fixed_calendar> <payment_lag> <end_of_month> <fixed_frequency> <fixed_convention> <fixed_payment_convention> <rule> <payment_calendar> <rate_cutoff> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.ois_conventions.put=.
 
 #+name: ois_conventions-add
 #+begin_src ores-shell :tangle ois_conventions-add.ores :exports none
-ois_conventions add __none__ 0 __none__ __none__ - - - - - - - - - system.new_record generated_script
+ois_conventions add __none__ 0 __none__ __none__ - - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-ois_conventions set <id> <spot_lag> <index> <fixed_day_count_fraction> <fixed_calendar> <payment_lag> <end_of_month> <fixed_frequency> <fixed_convention> <fixed_payment_convention> <rule> <payment_calendar> <rate_cutoff> <reason> <commentary> [--version <n>]
+ois_conventions set <id> <spot_lag> <index> <fixed_day_count_fraction> <fixed_calendar> <payment_lag> <end_of_month> <fixed_frequency> <fixed_convention> <fixed_payment_convention> <rule> <payment_calendar> <rate_cutoff> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.ois_conventions.put=.
 
 #+name: ois_conventions-set
 #+begin_src ores-shell :tangle ois_conventions-set.ores :exports none
-ois_conventions set __none__ 0 __none__ __none__ - - - - - - - - - system.new_record generated_script
+ois_conventions set __none__ 0 __none__ __none__ - - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-ois_conventions put-many --count <n> <id> <spot_lag> <index> <fixed_day_count_fraction> <fixed_calendar> <payment_lag> <end_of_month> <fixed_frequency> <fixed_convention> <fixed_payment_convention> <rule> <payment_calendar> <rate_cutoff> <reason> <commentary>
+ois_conventions put-many --count <n> <id> <spot_lag> <index> <fixed_day_count_fraction> <fixed_calendar> <payment_lag> <end_of_month> <fixed_frequency> <fixed_convention> <fixed_payment_convention> <rule> <payment_calendar> <rate_cutoff> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.ois_conventions.put_many=.
 
 #+name: ois_conventions-put-many
 #+begin_src ores-shell :tangle ois_conventions-put-many.ores :exports none
-ois_conventions put-many --count 1 __none__ 0 __none__ __none__ - - - - - - - - - system.new_record generated_script
+ois_conventions put-many --count 1 __none__ 0 __none__ __none__ - - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

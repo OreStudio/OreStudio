@@ -54,6 +54,7 @@ generate_synthetic_zero_inflation_index_convention(utility::generation::generati
     r.frequency = std::string("Monthly");
     r.availability_lag = std::string("1M");
     r.currency = std::string("GBP");
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

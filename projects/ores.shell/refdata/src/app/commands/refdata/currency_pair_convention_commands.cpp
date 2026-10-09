@@ -143,7 +143,7 @@ void currency_pair_convention_commands::register_commands(cli::Menu& root_menu,
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention> "
-        "<spot_relative> <end_of_month> <reason> <commentary>");
+        "<spot_relative> <end_of_month> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -151,7 +151,7 @@ void currency_pair_convention_commands::register_commands(cli::Menu& root_menu,
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention> "
-        "<spot_relative> <end_of_month> <reason> <commentary> [--version <n>]");
+        "<spot_relative> <end_of_month> <oresmd_uri> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +159,8 @@ void currency_pair_convention_commands::register_commands(cli::Menu& root_menu,
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <pair_code> <pip_factor> <tick_size> <decimal_places> "
-        "<business_day_convention> <spot_relative> <end_of_month> <reason> <commentary>");
+        "<business_day_convention> <spot_relative> <end_of_month> <oresmd_uri> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -354,8 +355,8 @@ void currency_pair_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -368,6 +369,7 @@ void currency_pair_convention_commands::process_add(std::ostream& out,
                    "business_day_convention");
         read_token(req.change.write.spot_relative, parsed->positionals[next++], "spot_relative");
         read_token(req.change.write.end_of_month, parsed->positionals[next++], "end_of_month");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -410,8 +412,8 @@ void currency_pair_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -424,6 +426,7 @@ void currency_pair_convention_commands::process_set(std::ostream& out,
                    "business_day_convention");
         read_token(req.change.write.spot_relative, parsed->positionals[next++], "spot_relative");
         read_token(req.change.write.end_of_month, parsed->positionals[next++], "end_of_month");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -478,8 +481,8 @@ void currency_pair_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 7 + 2) {
-            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -494,6 +497,7 @@ void currency_pair_convention_commands::process_put_many(std::ostream& out,
                        "business_day_convention");
             read_token(change.write.spot_relative, parsed->positionals[next++], "spot_relative");
             read_token(change.write.end_of_month, parsed->positionals[next++], "end_of_month");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

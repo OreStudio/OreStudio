@@ -332,6 +332,18 @@ struct commodity_future_convention final {
     std::optional<std::string> option_continuation_mappings;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: the index_name the future
+     * references, as a fixing URI. The peak, off-peak and averaging references are not named by
+     * this one field; which one it carries is a product decision. Classification: identifier — the
+     * reference it names is fully specified.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this commodity future convention.
      */
     std::string modified_by;

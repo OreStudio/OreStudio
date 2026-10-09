@@ -43,6 +43,7 @@ render_ibor_index_convention_fields(const domain::ibor_index_convention& v) {
     fields.push_back({.name = "Settlement Days", .value = std::to_string(v.settlement_days)});
     fields.push_back({.name = "Business Day Convention", .value = v.business_day_convention});
     fields.push_back({.name = "End Of Month", .value = v.end_of_month ? "true" : "false"});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

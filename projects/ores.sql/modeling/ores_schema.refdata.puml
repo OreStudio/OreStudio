@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-09T13:18:53.298820Z
+' Generated: 2026-10-09T14:39:37.739931Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -162,6 +162,7 @@ package "refdata" #FFF3E0 {
         * index : text
         * on_tenor : text
         * rate_cutoff : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -262,6 +263,7 @@ package "refdata" #FFF3E0 {
           index_settlement_days : integer
           index_payment_period : text
           overnight_lockout_days : integer
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -335,6 +337,7 @@ package "refdata" #FFF3E0 {
           accuracy : double
           max_evaluations : integer
           guess : double
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -965,6 +968,7 @@ package "refdata" #FFF3E0 {
         * pays_at_default_time : boolean
           upfront_settlement_days : integer
           last_period_day_count_fraction : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1060,6 +1064,7 @@ package "refdata" #FFF3E0 {
         * calendar : text
         * day_count_fraction : text
         * roll_convention : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1150,6 +1155,7 @@ package "refdata" #FFF3E0 {
           delivery_location : text
           business_day_convention : text
           outright : boolean
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1229,6 +1235,7 @@ package "refdata" #FFF3E0 {
           prohibited_expiries : text
           future_continuation_mappings : text
           option_continuation_mappings : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1640,6 +1647,7 @@ package "refdata" #FFF3E0 {
           flat_rate_cutoff : integer
           flat_is_averaged : boolean
           flat_observation_shift : boolean
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1683,6 +1691,7 @@ package "refdata" #FFF3E0 {
           rate_cutoff : integer
           is_averaged : boolean
           observation_shift : boolean
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2029,6 +2038,7 @@ package "refdata" #FFF3E0 {
           business_day_convention : text
           spot_relative : boolean
           end_of_month : boolean
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2885,6 +2895,7 @@ package "refdata" #FFF3E0 {
           end_of_month : boolean
           day_count_fraction : text
           settlement_days : integer
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3115,6 +3126,7 @@ package "refdata" #FFF3E0 {
         --
         * version : integer
         * index : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3144,6 +3156,7 @@ package "refdata" #FFF3E0 {
           netting_type : text
           calendar : text
           overnight_index_tenor : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3176,6 +3189,7 @@ package "refdata" #FFF3E0 {
           long_term_delta_type : text
           risk_reversal_in_favor_of : text
           butterfly_style : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3252,6 +3266,7 @@ package "refdata" #FFF3E0 {
         * settlement_days : integer
         * business_day_convention : text
         * end_of_month : boolean
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3412,6 +3427,7 @@ package "refdata" #FFF3E0 {
           publication_schedule_rules : text
           publication_schedule_dates : text
           publication_schedule_derived_groups : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3529,6 +3545,7 @@ package "refdata" #FFF3E0 {
         * version : integer
           explicit_load_profile : text
           business_day_load_rules : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3904,6 +3921,7 @@ package "refdata" #FFF3E0 {
           rule : text
           payment_calendar : text
           rate_cutoff : integer
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3930,6 +3948,7 @@ package "refdata" #FFF3E0 {
         * fixing_calendar : text
         * day_count_fraction : text
         * settlement_days : integer
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4693,6 +4712,7 @@ package "refdata" #FFF3E0 {
         * index : text
           float_frequency : text
           sub_periods_coupon_type : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4719,6 +4739,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * conventions : text
           fixing_calendar : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4842,6 +4863,7 @@ package "refdata" #FFF3E0 {
           short_index : text
           short_pay_tenor : text
           spread_on_short : boolean
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4883,6 +4905,7 @@ package "refdata" #FFF3E0 {
         * short_fixed_day_count_fraction : text
         * short_index : text
           long_minus_short : boolean
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4966,6 +4989,7 @@ package "refdata" #FFF3E0 {
           description : text
         * measured_from : text
         * resolution_algorithm : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5255,6 +5279,7 @@ package "refdata" #FFF3E0 {
           spot_calendar : text
           roll_convention : text
           end_of_month : boolean
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5285,6 +5310,7 @@ package "refdata" #FFF3E0 {
         * frequency : text
         * availability_lag : text
         * currency : text
+          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

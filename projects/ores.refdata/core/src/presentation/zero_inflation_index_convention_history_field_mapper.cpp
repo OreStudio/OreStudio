@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::refdata::presentation {
@@ -45,6 +46,7 @@ render_zero_inflation_index_convention_fields(const domain::zero_inflation_index
     fields.push_back({.name = "Frequency", .value = v.frequency});
     fields.push_back({.name = "Availability Lag", .value = v.availability_lag});
     fields.push_back({.name = "Currency", .value = v.currency});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

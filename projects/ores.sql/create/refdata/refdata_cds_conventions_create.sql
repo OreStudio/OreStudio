@@ -44,6 +44,7 @@ create table if not exists "ores_refdata_cds_conventions_tbl" (
     "pays_at_default_time" boolean not null,
     "upfront_settlement_days" integer null,
     "last_period_day_count_fraction" text null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

@@ -39,6 +39,7 @@ export interface IborIndexConvention {
     settlement_days: number;
     business_day_convention: string;
     end_of_month: boolean;
+    oresmd_uri: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

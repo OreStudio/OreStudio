@@ -102,7 +102,7 @@ public:
      * <averaging_pricing_calendar> <averaging_conventions> <averaging_use_business_days>
      * <averaging_delivery_roll_days> <averaging_future_month_offset>
      * <averaging_daily_expiry_offset> <prohibited_expiries> <future_continuation_mappings>
-     * <option_continuation_mappings> <reason> <commentary>
+     * <option_continuation_mappings> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -124,7 +124,7 @@ public:
      * <averaging_pricing_calendar> <averaging_conventions> <averaging_use_business_days>
      * <averaging_delivery_roll_days> <averaging_future_month_offset>
      * <averaging_daily_expiry_offset> <prohibited_expiries> <future_continuation_mappings>
-     * <option_continuation_mappings> <reason> <commentary> [--version <n>]
+     * <option_continuation_mappings> <oresmd_uri> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -146,7 +146,7 @@ public:
      * <averaging_pricing_calendar> <averaging_conventions> <averaging_use_business_days>
      * <averaging_delivery_roll_days> <averaging_future_month_offset>
      * <averaging_daily_expiry_offset> <prohibited_expiries> <future_continuation_mappings>
-     * <option_continuation_mappings> <reason> <commentary>
+     * <option_continuation_mappings> <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -46,6 +46,7 @@ export interface OisConventionWrite {
     rule: string | null;
     payment_calendar: string | null;
     rate_cutoff: number | null;
+    oresmd_uri: string | null;
 }
 
 export interface OisConventionChange {

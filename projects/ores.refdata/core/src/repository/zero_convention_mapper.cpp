@@ -56,6 +56,7 @@ domain::zero_convention zero_convention_mapper::map(const zero_convention_entity
     r.spot_calendar = v.spot_calendar;
     r.roll_convention = v.roll_convention;
     r.end_of_month = v.end_of_month;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -83,6 +84,7 @@ zero_convention_entity zero_convention_mapper::map(const domain::zero_convention
     r.spot_calendar = v.spot_calendar;
     r.roll_convention = v.roll_convention;
     r.end_of_month = v.end_of_month;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

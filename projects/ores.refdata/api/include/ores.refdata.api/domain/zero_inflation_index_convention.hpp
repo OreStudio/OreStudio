@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -103,6 +104,17 @@ struct zero_inflation_index_convention final {
      * @brief Currency the index is quoted in.
      */
     std::string currency;
+
+    /**
+     * @brief The oresmd URI of the index this convention defines: the zero-coupon inflation index
+     * itself, as a fixing URI, for example 'oresmd://inflation/UKRPI?type=fixing&index=inflation'
+     * for 'UKRPI'. Classification: fixing — the convention defines the index.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
 
     /**
      * @brief Username of the person who last modified this zero inflation index convention.

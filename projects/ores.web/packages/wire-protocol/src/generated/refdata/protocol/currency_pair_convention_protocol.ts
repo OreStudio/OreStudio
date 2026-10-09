@@ -40,6 +40,7 @@ export interface CurrencyPairConventionWrite {
     business_day_convention: string | null;
     spot_relative: boolean | null;
     end_of_month: boolean | null;
+    oresmd_uri: string | null;
 }
 
 export interface CurrencyPairConventionChange {

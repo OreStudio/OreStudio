@@ -155,6 +155,17 @@ struct cross_currency_fix_float_convention final {
     std::optional<bool> observation_shift;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: the index of the floating
+     * leg, as a fixing URI. Classification: identifier — the named index is fully specified and the
+     * address pins it.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this cross-currency fix-float convention.
      */
     std::string modified_by;

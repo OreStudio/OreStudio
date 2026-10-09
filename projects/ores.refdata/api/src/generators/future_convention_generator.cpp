@@ -53,6 +53,7 @@ generate_synthetic_future_convention(utility::generation::generation_context& ct
     r.netting_type = std::string("Compounding");
     r.calendar = std::string("TARGET");
     r.overnight_index_tenor = std::string("3M");
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

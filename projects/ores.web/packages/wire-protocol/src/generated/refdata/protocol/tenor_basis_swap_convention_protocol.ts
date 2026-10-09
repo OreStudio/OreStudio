@@ -48,6 +48,7 @@ export interface TenorBasisSwapConventionWrite {
     short_index: string | null;
     short_pay_tenor: string | null;
     spread_on_short: boolean | null;
+    oresmd_uri: string | null;
 }
 
 export interface TenorBasisSwapConventionChange {

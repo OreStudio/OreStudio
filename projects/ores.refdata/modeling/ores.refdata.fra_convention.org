@@ -71,6 +71,27 @@ IBOR index identifier (e.g. 'EUR-EURIBOR-6M'). All settlement, calendar, and day
 std::string("EUR-EURIBOR-6M")
 #+end_src
 
+** oresmd_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The oresmd URI of the market data this convention needs: the IBOR index
+whose own conventions govern the FRA, for example
+'oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M' for
+'EUR-EURIBOR-6M'. Classification: identifier — the convention names the
+index in full, so the address pins one series.
+
+The column holds the address as a value, so refdata depends on the oresmd
+format as a contract only and never on the marketdata library or its tables.
+Nullable, because no convention is required to state its address yet.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -98,12 +119,14 @@ std::string("EUR-EURIBOR-6M")
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #+end_src
 
 ** Entity includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #include "sqlgen/Timestamp.hpp"
 #+end_src

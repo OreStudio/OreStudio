@@ -107,6 +107,7 @@ domain::cds_convention to_domain(const messaging::cds_convention_write& write) {
     v.pays_at_default_time = write.pays_at_default_time;
     v.upfront_settlement_days = write.upfront_settlement_days;
     v.last_period_day_count_fraction = write.last_period_day_count_fraction;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

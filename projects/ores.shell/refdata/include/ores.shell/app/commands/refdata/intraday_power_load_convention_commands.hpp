@@ -87,23 +87,24 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <explicit_load_profile> <business_day_load_rules> <reason> <commentary>
+     * @brief add <id> <explicit_load_profile> <business_day_load_rules> <oresmd_uri> <reason>
+     * <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <explicit_load_profile> <business_day_load_rules> <reason> <commentary>
-     * [--version <n>]
+     * @brief set <id> <explicit_load_profile> <business_day_load_rules> <oresmd_uri> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <explicit_load_profile> <business_day_load_rules> <reason>
-     * <commentary>
+     * @brief put-many --count <n> <id> <explicit_load_profile> <business_day_load_rules>
+     * <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

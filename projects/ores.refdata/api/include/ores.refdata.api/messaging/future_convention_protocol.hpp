@@ -46,6 +46,7 @@ struct future_convention_write {
     std::optional<std::string> netting_type;
     std::optional<std::string> calendar;
     std::optional<std::string> overnight_index_tenor;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct future_convention_change {

@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-currency_pair_conventions add <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention> <spot_relative> <end_of_month> <reason> <commentary>
+currency_pair_conventions add <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention> <spot_relative> <end_of_month> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.currency_pair_conventions.put=.
 
 #+name: currency_pair_conventions-add
 #+begin_src ores-shell :tangle currency_pair_conventions-add.ores :exports none
-currency_pair_conventions add __none__ 0 0 0 - - - system.new_record generated_script
+currency_pair_conventions add __none__ 0 0 0 - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-currency_pair_conventions set <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention> <spot_relative> <end_of_month> <reason> <commentary> [--version <n>]
+currency_pair_conventions set <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention> <spot_relative> <end_of_month> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.currency_pair_conventions.put=.
 
 #+name: currency_pair_conventions-set
 #+begin_src ores-shell :tangle currency_pair_conventions-set.ores :exports none
-currency_pair_conventions set __none__ 0 0 0 - - - system.new_record generated_script
+currency_pair_conventions set __none__ 0 0 0 - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-currency_pair_conventions put-many --count <n> <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention> <spot_relative> <end_of_month> <reason> <commentary>
+currency_pair_conventions put-many --count <n> <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention> <spot_relative> <end_of_month> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.currency_pair_conventions.put_many=.
 
 #+name: currency_pair_conventions-put-many
 #+begin_src ores-shell :tangle currency_pair_conventions-put-many.ores :exports none
-currency_pair_conventions put-many --count 1 __none__ 0 0 0 - - - system.new_record generated_script
+currency_pair_conventions put-many --count 1 __none__ 0 0 0 - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

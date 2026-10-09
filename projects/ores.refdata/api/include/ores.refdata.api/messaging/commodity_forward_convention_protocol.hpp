@@ -48,6 +48,7 @@ struct commodity_forward_convention_write {
     std::optional<std::string> delivery_location;
     std::optional<std::string> business_day_convention;
     std::optional<bool> outright;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct commodity_forward_convention_change {

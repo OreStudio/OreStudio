@@ -102,6 +102,7 @@ to_domain(const messaging::intraday_power_load_convention_write& write) {
     v.id = write.id;
     v.explicit_load_profile = write.explicit_load_profile;
     v.business_day_load_rules = write.business_day_load_rules;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

@@ -50,6 +50,7 @@ export interface InflationSwapConventionWrite {
     publication_schedule_rules: string | null;
     publication_schedule_dates: string | null;
     publication_schedule_derived_groups: string | null;
+    oresmd_uri: string | null;
 }
 
 export interface InflationSwapConventionChange {

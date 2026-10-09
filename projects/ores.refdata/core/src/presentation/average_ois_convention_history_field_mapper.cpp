@@ -53,6 +53,7 @@ render_average_ois_convention_fields(const domain::average_ois_convention& v) {
     fields.push_back({.name = "Index", .value = v.index});
     fields.push_back({.name = "On Tenor", .value = v.on_tenor});
     fields.push_back({.name = "Rate Cutoff", .value = v.rate_cutoff});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

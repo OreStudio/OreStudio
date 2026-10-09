@@ -65,6 +65,7 @@ domain::cross_currency_fix_float_convention cross_currency_fix_float_convention_
     r.rate_cutoff = v.rate_cutoff;
     r.is_averaged = v.is_averaged;
     r.observation_shift = v.observation_shift;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -101,6 +102,7 @@ cross_currency_fix_float_convention_entity cross_currency_fix_float_convention_m
     r.rate_cutoff = v.rate_cutoff;
     r.is_averaged = v.is_averaged;
     r.observation_shift = v.observation_shift;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

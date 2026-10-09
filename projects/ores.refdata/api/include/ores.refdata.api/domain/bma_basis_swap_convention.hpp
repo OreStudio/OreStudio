@@ -124,6 +124,17 @@ struct bma_basis_swap_convention final {
     std::optional<int> overnight_lockout_days;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: the index or the bma_index,
+     * as a fixing URI. The single field cannot name both; which one it carries is a product
+     * decision. Classification: identifier — the reference it names is fully specified.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this BMA basis swap convention.
      */
     std::string modified_by;

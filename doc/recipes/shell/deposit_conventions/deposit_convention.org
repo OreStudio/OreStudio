@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-deposit_conventions add <id> <index_based> <index> <calendar> <convention> <end_of_month> <day_count_fraction> <settlement_days> <reason> <commentary>
+deposit_conventions add <id> <index_based> <index> <calendar> <convention> <end_of_month> <day_count_fraction> <settlement_days> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.deposit_conventions.put=.
 
 #+name: deposit_conventions-add
 #+begin_src ores-shell :tangle deposit_conventions-add.ores :exports none
-deposit_conventions add __none__ false - - - - - - system.new_record generated_script
+deposit_conventions add __none__ false - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-deposit_conventions set <id> <index_based> <index> <calendar> <convention> <end_of_month> <day_count_fraction> <settlement_days> <reason> <commentary> [--version <n>]
+deposit_conventions set <id> <index_based> <index> <calendar> <convention> <end_of_month> <day_count_fraction> <settlement_days> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.deposit_conventions.put=.
 
 #+name: deposit_conventions-set
 #+begin_src ores-shell :tangle deposit_conventions-set.ores :exports none
-deposit_conventions set __none__ false - - - - - - system.new_record generated_script
+deposit_conventions set __none__ false - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-deposit_conventions put-many --count <n> <id> <index_based> <index> <calendar> <convention> <end_of_month> <day_count_fraction> <settlement_days> <reason> <commentary>
+deposit_conventions put-many --count <n> <id> <index_based> <index> <calendar> <convention> <end_of_month> <day_count_fraction> <settlement_days> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.deposit_conventions.put_many=.
 
 #+name: deposit_conventions-put-many
 #+begin_src ores-shell :tangle deposit_conventions-put-many.ores :exports none
-deposit_conventions put-many --count 1 __none__ false - - - - - - system.new_record generated_script
+deposit_conventions put-many --count 1 __none__ false - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

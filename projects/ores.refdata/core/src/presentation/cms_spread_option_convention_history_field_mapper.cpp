@@ -47,6 +47,7 @@ render_cms_spread_option_convention_fields(const domain::cms_spread_option_conve
     fields.push_back({.name = "Calendar", .value = v.calendar});
     fields.push_back({.name = "Day Count Fraction", .value = v.day_count_fraction});
     fields.push_back({.name = "Roll Convention", .value = v.roll_convention});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

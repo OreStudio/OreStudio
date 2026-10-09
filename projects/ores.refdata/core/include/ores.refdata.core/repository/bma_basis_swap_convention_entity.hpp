@@ -57,6 +57,7 @@ struct bma_basis_swap_convention_entity {
     std::optional<int> index_settlement_days;
     std::optional<std::string> index_payment_period;
     std::optional<int> overnight_lockout_days;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

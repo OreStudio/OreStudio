@@ -60,6 +60,7 @@ generate_synthetic_ois_convention(utility::generation::generation_context& ctx) 
     r.rule = std::nullopt;
     r.payment_calendar = std::nullopt;
     r.rate_cutoff = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

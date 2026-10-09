@@ -49,6 +49,7 @@ create table if not exists "ores_refdata_cms_spread_option_conventions_tbl" (
     "calendar" text not null,
     "day_count_fraction" text not null,
     "roll_convention" text not null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

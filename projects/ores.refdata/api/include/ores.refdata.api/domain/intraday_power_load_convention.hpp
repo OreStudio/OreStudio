@@ -83,6 +83,18 @@ struct intraday_power_load_convention final {
     std::optional<std::string> business_day_load_rules;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs. The convention embeds its own
+     * load profile in explicit_load_profile and names no series. Classification: requirement — the
+     * address states a power load-shape need, with the series left open. Uncertain: the profile is
+     * inline, so the address could equally be read as an identifier of that embedded profile.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this intraday power load convention.
      */
     std::string modified_by;

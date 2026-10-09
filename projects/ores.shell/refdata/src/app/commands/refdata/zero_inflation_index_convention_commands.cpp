@@ -143,7 +143,7 @@ void zero_inflation_index_convention_commands::register_commands(cli::Menu& root
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <id> <region_name> <region_code> <revised> <frequency> <availability_lag> <currency> "
-        "<reason> <commentary>");
+        "<oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -151,7 +151,7 @@ void zero_inflation_index_convention_commands::register_commands(cli::Menu& root
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <region_name> <region_code> <revised> <frequency> <availability_lag> <currency> "
-        "<reason> <commentary> [--version <n>]");
+        "<oresmd_uri> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +159,7 @@ void zero_inflation_index_convention_commands::register_commands(cli::Menu& root
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <region_name> <region_code> <revised> <frequency> "
-        "<availability_lag> <currency> <reason> <commentary>");
+        "<availability_lag> <currency> <oresmd_uri> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -353,8 +353,8 @@ void zero_inflation_index_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -366,6 +366,7 @@ void zero_inflation_index_convention_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.availability_lag, parsed->positionals[next++], "availability_lag");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -408,8 +409,8 @@ void zero_inflation_index_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -421,6 +422,7 @@ void zero_inflation_index_convention_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.availability_lag, parsed->positionals[next++], "availability_lag");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -474,8 +476,8 @@ void zero_inflation_index_convention_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 7 + 2) {
-            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -489,6 +491,7 @@ void zero_inflation_index_convention_commands::process_put_many(
             read_token(
                 change.write.availability_lag, parsed->positionals[next++], "availability_lag");
             read_token(change.write.currency, parsed->positionals[next++], "currency");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -54,6 +54,7 @@ generate_synthetic_currency_pair_convention(utility::generation::generation_cont
     r.business_day_convention = std::string("Following");
     r.spot_relative = true;
     r.end_of_month = false;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-bond_yield_conventions add <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess> <reason> <commentary>
+bond_yield_conventions add <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.bond_yield_conventions.put=.
 
 #+name: bond_yield_conventions-add
 #+begin_src ores-shell :tangle bond_yield_conventions-add.ores :exports none
-bond_yield_conventions add __none__ __none__ - - - - - system.new_record generated_script
+bond_yield_conventions add __none__ __none__ - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-bond_yield_conventions set <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess> <reason> <commentary> [--version <n>]
+bond_yield_conventions set <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.bond_yield_conventions.put=.
 
 #+name: bond_yield_conventions-set
 #+begin_src ores-shell :tangle bond_yield_conventions-set.ores :exports none
-bond_yield_conventions set __none__ __none__ - - - - - system.new_record generated_script
+bond_yield_conventions set __none__ __none__ - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-bond_yield_conventions put-many --count <n> <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess> <reason> <commentary>
+bond_yield_conventions put-many --count <n> <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.bond_yield_conventions.put_many=.
 
 #+name: bond_yield_conventions-put-many
 #+begin_src ores-shell :tangle bond_yield_conventions-put-many.ores :exports none
-bond_yield_conventions put-many --count 1 __none__ __none__ - - - - - system.new_record generated_script
+bond_yield_conventions put-many --count 1 __none__ __none__ - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

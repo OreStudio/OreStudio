@@ -100,6 +100,7 @@ domain::tenor_convention to_domain(const messaging::tenor_convention_write& writ
     v.description = write.description;
     v.measured_from = write.measured_from;
     v.resolution_algorithm = write.resolution_algorithm;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

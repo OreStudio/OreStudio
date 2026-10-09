@@ -59,6 +59,7 @@ bma_basis_swap_convention_mapper::map(const bma_basis_swap_convention_entity& v)
     r.index_settlement_days = v.index_settlement_days;
     r.index_payment_period = v.index_payment_period;
     r.overnight_lockout_days = v.overnight_lockout_days;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -89,6 +90,7 @@ bma_basis_swap_convention_mapper::map(const domain::bma_basis_swap_convention& v
     r.index_settlement_days = v.index_settlement_days;
     r.index_payment_period = v.index_payment_period;
     r.overnight_lockout_days = v.overnight_lockout_days;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

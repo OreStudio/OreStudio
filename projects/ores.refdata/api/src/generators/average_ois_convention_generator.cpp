@@ -58,6 +58,7 @@ generate_synthetic_average_ois_convention(utility::generation::generation_contex
     r.index = std::string("EUR-EONIA");
     r.on_tenor = std::string("1M");
     r.rate_cutoff = std::string("0");
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

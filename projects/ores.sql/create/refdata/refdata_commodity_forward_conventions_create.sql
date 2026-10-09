@@ -47,6 +47,7 @@ create table if not exists "ores_refdata_commodity_forward_conventions_tbl" (
     "delivery_location" text null,
     "business_day_convention" text null,
     "outright" boolean null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

@@ -51,6 +51,7 @@ export interface CrossCurrencyFixFloatConventionWrite {
     rate_cutoff: number | null;
     is_averaged: boolean | null;
     observation_shift: boolean | null;
+    oresmd_uri: string | null;
 }
 
 export interface CrossCurrencyFixFloatConventionChange {

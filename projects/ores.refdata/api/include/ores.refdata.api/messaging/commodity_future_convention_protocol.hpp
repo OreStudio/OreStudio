@@ -91,6 +91,7 @@ struct commodity_future_convention_write {
     std::optional<std::string> prohibited_expiries;
     std::optional<std::string> future_continuation_mappings;
     std::optional<std::string> option_continuation_mappings;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct commodity_future_convention_change {

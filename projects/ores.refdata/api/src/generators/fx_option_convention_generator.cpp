@@ -56,6 +56,7 @@ generate_synthetic_fx_option_convention(utility::generation::generation_context&
     r.long_term_delta_type = std::string("Forward");
     r.risk_reversal_in_favor_of = std::string("Call");
     r.butterfly_style = std::string("Broker");
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

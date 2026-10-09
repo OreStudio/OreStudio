@@ -43,6 +43,7 @@ export interface ZeroConventionWrite {
     spot_calendar: string | null;
     roll_convention: string | null;
     end_of_month: boolean | null;
+    oresmd_uri: string | null;
 }
 
 export interface ZeroConventionChange {

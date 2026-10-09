@@ -107,6 +107,7 @@ to_domain(const messaging::commodity_forward_convention_write& write) {
     v.delivery_location = write.delivery_location;
     v.business_day_convention = write.business_day_convention;
     v.outright = write.outright;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

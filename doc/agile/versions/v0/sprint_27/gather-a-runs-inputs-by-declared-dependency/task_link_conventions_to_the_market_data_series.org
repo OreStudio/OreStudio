@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: A13916C5-C2CF-4384-9CFD-911F8487A731
+:END:
+#+title: Task: Link each convention to its market data series
+#+description: A convention's market-data reference is free text, so nothing can validate it or join it to a series. Give each convention kind that names an index or a curve one oresmd URI column, holding the address as a value, so refdata depends on the oresmd format as a contract only and never on the marketdata tables.
+#+type: task
+#+level: s1
+#+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
+#+owner: marco
+#+branch: feature/link-conventions-to-the-market-data-series
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An instrument convention names the market data it depends on as free text (for example fra_convention.index = 'EUR-EURIBOR-6M'), so the reference cannot be validated and cannot be joined to the market series that answers it. Add one nullable oresmd URI column to every convention kind, and record what each kind's address is (an identifier, a requirement, or a fixing) and why. Every convention kind states a market data need, so no kind is excluded: the first cut's test, "does this convention reference a market data series?", was wrong, and its thirteen exclusions are retracted (see the PR body).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- Every convention kind, all 26, carries an oresmd_uri column; each kind's address is classified as an identifier, a requirement, or a fixing, with the reason recorded in the model doc string and the PR body.
+- The column is nullable text and holds the address as a value: refdata depends on the oresmd format as a contract only, never on the marketdata library or its tables.
+- The models, their generated output and the codegen drift gate agree, and the build, the affected suites, the lint and the org link check are clean.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Convention kinds carrying oresmd_uri | 26 of 26 | =grep -l oresmd_uri projects/ores.refdata/modeling/ores.refdata.*_convention.org | wc -l= | branch tip |
+| Affected C++ suites | 3394 cases, 0 failures | =compass build test_<suite>= for api, core, client, service, shell.refdata, http.refdata, ore.core | branch tip |
+| Web suites | 880 tests, 0 failures | =npm test= in =projects/ores.web= (bff 296, web 425, wire-protocol 159) | branch tip |
+| Codegen drift, refdata | no drift | =check_component_drift.py --component refdata --dry-run= | branch tip |
+| Org link check | 0 unresolved | =emacs -Q --script projects/ores.lisp/src/ores-check-org-links.el= | branch tip |
+
+* Notes
+
+- 2026-10-09: the first cut added the column to 13 of the 26 kinds and excluded 13 on the test "does this convention reference a market data series?". That test is wrong. The product owner ruled that every convention kind needs an oresmd URI, since a URI need not be an identity; a fixing is a first-class oresmd subject, and a requirement is a legitimate less-specified address. The exclusions are retracted and every kind now carries the column.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| https://github.com/OreStudio/OreStudio/pull/2922 | [refdata] Link every convention to a market data series |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All 26 convention kinds carry one nullable =oresmd_uri= column. Each kind's
+address is classified as an identifier, a requirement, or a fixing, with the
+reason in the model's doc string and in the PR body; five kinds are marked
+unsure there (Zero, BondYield, IntradayPowerLoad, CurrencyPair, Tenor). The
+build exits 0, the seven affected C++ suites pass (3394 cases), the Web suites
+pass (880 tests), the refdata drift gate reports no drift, and the lint and
+org link checks are clean. The one hand-written Web dependency, the BFF Zod
+write schema and the currency pair screen's write payload, carries the new
+column.

@@ -164,6 +164,17 @@ struct inflation_swap_convention final {
     std::optional<std::string> publication_schedule_derived_groups;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: the inflation index the swap
+     * references, for example 'oresmd://inflation/UKRPI?type=fixing&index=inflation' for 'UKRPI'.
+     * Classification: identifier — the address pins the one index the swap uses.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this inflation swap convention.
      */
     std::string modified_by;

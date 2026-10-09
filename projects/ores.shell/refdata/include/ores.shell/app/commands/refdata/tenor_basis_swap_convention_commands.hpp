@@ -90,7 +90,7 @@ public:
      * @brief add <id> <pay_index> <pay_frequency> <receive_index> <receive_frequency>
      * <spread_on_rec> <include_spread> <sub_periods_coupon_type> <pay_is_averaged>
      * <rec_is_averaged> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor>
-     * <spread_on_short> <reason> <commentary>
+     * <spread_on_short> <oresmd_uri> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -100,7 +100,7 @@ public:
      * @brief set <id> <pay_index> <pay_frequency> <receive_index> <receive_frequency>
      * <spread_on_rec> <include_spread> <sub_periods_coupon_type> <pay_is_averaged>
      * <rec_is_averaged> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor>
-     * <spread_on_short> <reason> <commentary> [--version <n>]
+     * <spread_on_short> <oresmd_uri> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -110,7 +110,7 @@ public:
      * @brief put-many --count <n> <id> <pay_index> <pay_frequency> <receive_index>
      * <receive_frequency> <spread_on_rec> <include_spread> <sub_periods_coupon_type>
      * <pay_is_averaged> <rec_is_averaged> <long_index> <long_pay_tenor> <short_index>
-     * <short_pay_tenor> <spread_on_short> <reason> <commentary>
+     * <short_pay_tenor> <spread_on_short> <oresmd_uri> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

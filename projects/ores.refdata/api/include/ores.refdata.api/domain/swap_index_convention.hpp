@@ -79,6 +79,17 @@ struct swap_index_convention final {
     std::optional<std::string> fixing_calendar;
 
     /**
+     * @brief The oresmd URI of the index this convention defines: the named swap index itself, as a
+     * fixing URI in the swap family. Classification: fixing — the convention defines the index;
+     * conventions points at the swap convention it follows and is not market data.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this swap index convention.
      */
     std::string modified_by;

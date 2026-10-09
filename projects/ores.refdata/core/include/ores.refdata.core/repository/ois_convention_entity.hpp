@@ -58,6 +58,7 @@ struct ois_convention_entity {
     std::optional<std::string> rule;
     std::optional<std::string> payment_calendar;
     std::optional<int> rate_cutoff;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

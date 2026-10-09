@@ -55,6 +55,7 @@ generate_synthetic_commodity_forward_convention(utility::generation::generation_
     r.delivery_location = std::nullopt;
     r.business_day_convention = std::nullopt;
     r.outright = std::nullopt;
+    r.oresmd_uri = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -190,6 +190,25 @@ Business days before the period end at which the compounded rate is fixed.
 std::string("0")
 #+end_src
 
+** oresmd_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The oresmd URI of the market data this convention needs: the overnight
+index the floating leg compounds, as a fixing URI. Classification:
+identifier — the index is named in full, so the address pins one series.
+
+The column holds the address as a value, so refdata depends on the oresmd
+format as a contract only and never on the marketdata library or its tables.
+Nullable, because no convention is required to state its address yet.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags

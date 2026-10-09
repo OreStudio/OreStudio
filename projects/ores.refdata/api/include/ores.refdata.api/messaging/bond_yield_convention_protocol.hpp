@@ -47,6 +47,7 @@ struct bond_yield_convention_write {
     std::optional<double> accuracy;
     std::optional<int> max_evaluations;
     std::optional<double> guess;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct bond_yield_convention_change {

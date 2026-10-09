@@ -50,6 +50,7 @@ swap_index_convention_mapper::map(const swap_index_convention_entity& v) {
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.conventions = v.conventions;
     r.fixing_calendar = v.fixing_calendar;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -71,6 +72,7 @@ swap_index_convention_mapper::map(const domain::swap_index_convention& v) {
     r.party_id = boost::uuids::to_string(v.party_id);
     r.conventions = v.conventions;
     r.fixing_calendar = v.fixing_calendar;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -103,6 +103,7 @@ create table if not exists "ores_refdata_commodity_future_conventions_tbl" (
     "prohibited_expiries" text null,
     "future_continuation_mappings" text null,
     "option_continuation_mappings" text null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

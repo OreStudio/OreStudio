@@ -42,6 +42,7 @@ export interface CmsSpreadOptionConvention {
     calendar: string;
     day_count_fraction: string;
     roll_convention: string;
+    oresmd_uri: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

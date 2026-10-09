@@ -143,7 +143,8 @@ void commodity_forward_convention_commands::register_commands(cli::Menu& root_me
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <id> <spot_days> <points_factor> <advance_calendar> <spot_relative> "
-        "<delivery_location> <business_day_convention> <outright> <reason> <commentary>");
+        "<delivery_location> <business_day_convention> <outright> <oresmd_uri> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
@@ -151,8 +152,8 @@ void commodity_forward_convention_commands::register_commands(cli::Menu& root_me
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <spot_days> <points_factor> <advance_calendar> <spot_relative> "
-        "<delivery_location> <business_day_convention> <outright> <reason> <commentary> [--version "
-        "<n>]");
+        "<delivery_location> <business_day_convention> <outright> <oresmd_uri> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -160,7 +161,8 @@ void commodity_forward_convention_commands::register_commands(cli::Menu& root_me
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <spot_days> <points_factor> <advance_calendar> <spot_relative> "
-        "<delivery_location> <business_day_convention> <outright> <reason> <commentary>");
+        "<delivery_location> <business_day_convention> <outright> <oresmd_uri> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -355,8 +357,8 @@ void commodity_forward_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -372,6 +374,7 @@ void commodity_forward_convention_commands::process_add(std::ostream& out,
                    parsed->positionals[next++],
                    "business_day_convention");
         read_token(req.change.write.outright, parsed->positionals[next++], "outright");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -414,8 +417,8 @@ void commodity_forward_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -431,6 +434,7 @@ void commodity_forward_convention_commands::process_set(std::ostream& out,
                    parsed->positionals[next++],
                    "business_day_convention");
         read_token(req.change.write.outright, parsed->positionals[next++], "outright");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -485,8 +489,8 @@ void commodity_forward_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 8 + 2) {
-            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 9 + 2) {
+            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -504,6 +508,7 @@ void commodity_forward_convention_commands::process_put_many(std::ostream& out,
                        parsed->positionals[next++],
                        "business_day_convention");
             read_token(change.write.outright, parsed->positionals[next++], "outright");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

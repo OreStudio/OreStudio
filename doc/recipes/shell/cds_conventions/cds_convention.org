@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-cds_conventions add <id> <settlement_days> <calendar> <frequency> <payment_convention> <rule> <day_count_fraction> <settles_accrual> <pays_at_default_time> <upfront_settlement_days> <last_period_day_count_fraction> <reason> <commentary>
+cds_conventions add <id> <settlement_days> <calendar> <frequency> <payment_convention> <rule> <day_count_fraction> <settles_accrual> <pays_at_default_time> <upfront_settlement_days> <last_period_day_count_fraction> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.cds_conventions.put=.
 
 #+name: cds_conventions-add
 #+begin_src ores-shell :tangle cds_conventions-add.ores :exports none
-cds_conventions add __none__ 0 __none__ __none__ __none__ __none__ __none__ false false - - system.new_record generated_script
+cds_conventions add __none__ 0 __none__ __none__ __none__ __none__ __none__ false false - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-cds_conventions set <id> <settlement_days> <calendar> <frequency> <payment_convention> <rule> <day_count_fraction> <settles_accrual> <pays_at_default_time> <upfront_settlement_days> <last_period_day_count_fraction> <reason> <commentary> [--version <n>]
+cds_conventions set <id> <settlement_days> <calendar> <frequency> <payment_convention> <rule> <day_count_fraction> <settles_accrual> <pays_at_default_time> <upfront_settlement_days> <last_period_day_count_fraction> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.cds_conventions.put=.
 
 #+name: cds_conventions-set
 #+begin_src ores-shell :tangle cds_conventions-set.ores :exports none
-cds_conventions set __none__ 0 __none__ __none__ __none__ __none__ __none__ false false - - system.new_record generated_script
+cds_conventions set __none__ 0 __none__ __none__ __none__ __none__ __none__ false false - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-cds_conventions put-many --count <n> <id> <settlement_days> <calendar> <frequency> <payment_convention> <rule> <day_count_fraction> <settles_accrual> <pays_at_default_time> <upfront_settlement_days> <last_period_day_count_fraction> <reason> <commentary>
+cds_conventions put-many --count <n> <id> <settlement_days> <calendar> <frequency> <payment_convention> <rule> <day_count_fraction> <settles_accrual> <pays_at_default_time> <upfront_settlement_days> <last_period_day_count_fraction> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.cds_conventions.put_many=.
 
 #+name: cds_conventions-put-many
 #+begin_src ores-shell :tangle cds_conventions-put-many.ores :exports none
-cds_conventions put-many --count 1 __none__ 0 __none__ __none__ __none__ __none__ __none__ false false - - system.new_record generated_script
+cds_conventions put-many --count 1 __none__ 0 __none__ __none__ __none__ __none__ __none__ false false - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

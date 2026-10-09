@@ -103,6 +103,18 @@ struct deposit_convention final {
     std::optional<int> settlement_days;
 
     /**
+     * @brief The oresmd URI of the market data this convention needs: the IBOR index of a deposit
+     * when index_based is set, for example
+     * 'oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M' for 'EUR-EURIBOR-6M'.
+     * Classification: identifier — the index name is complete, so the address pins one series.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
+
+    /**
      * @brief Username of the person who last modified this deposit convention.
      */
     std::string modified_by;

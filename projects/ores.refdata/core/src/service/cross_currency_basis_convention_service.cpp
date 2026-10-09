@@ -124,6 +124,7 @@ to_domain(const messaging::cross_currency_basis_convention_write& write) {
     v.flat_rate_cutoff = write.flat_rate_cutoff;
     v.flat_is_averaged = write.flat_is_averaged;
     v.flat_observation_shift = write.flat_observation_shift;
+    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 

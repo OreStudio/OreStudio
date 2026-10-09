@@ -44,6 +44,7 @@ struct overnight_index_convention_write {
     std::string fixing_calendar;
     std::string day_count_fraction;
     int settlement_days;
+    std::optional<std::string> oresmd_uri;
 };
 
 struct overnight_index_convention_change {

@@ -43,6 +43,7 @@ create table if not exists "ores_refdata_fx_option_conventions_tbl" (
     "long_term_delta_type" text null,
     "risk_reversal_in_favor_of" text null,
     "butterfly_style" text null,
+    "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

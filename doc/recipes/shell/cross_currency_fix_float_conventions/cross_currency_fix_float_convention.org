@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-cross_currency_fix_float_conventions add <id> <settlement_days> <settlement_calendar> <settlement_convention> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days> <rate_cutoff> <is_averaged> <observation_shift> <reason> <commentary>
+cross_currency_fix_float_conventions add <id> <settlement_days> <settlement_calendar> <settlement_convention> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days> <rate_cutoff> <is_averaged> <observation_shift> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.cross_currency_fix_float_conventions.put=.
 
 #+name: cross_currency_fix_float_conventions-add
 #+begin_src ores-shell :tangle cross_currency_fix_float_conventions-add.ores :exports none
-cross_currency_fix_float_conventions add __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ - - - - - - - - - system.new_record generated_script
+cross_currency_fix_float_conventions add __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ - - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-cross_currency_fix_float_conventions set <id> <settlement_days> <settlement_calendar> <settlement_convention> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days> <rate_cutoff> <is_averaged> <observation_shift> <reason> <commentary> [--version <n>]
+cross_currency_fix_float_conventions set <id> <settlement_days> <settlement_calendar> <settlement_convention> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days> <rate_cutoff> <is_averaged> <observation_shift> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.cross_currency_fix_float_conventions.put=.
 
 #+name: cross_currency_fix_float_conventions-set
 #+begin_src ores-shell :tangle cross_currency_fix_float_conventions-set.ores :exports none
-cross_currency_fix_float_conventions set __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ - - - - - - - - - system.new_record generated_script
+cross_currency_fix_float_conventions set __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ - - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-cross_currency_fix_float_conventions put-many --count <n> <id> <settlement_days> <settlement_calendar> <settlement_convention> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days> <rate_cutoff> <is_averaged> <observation_shift> <reason> <commentary>
+cross_currency_fix_float_conventions put-many --count <n> <id> <settlement_days> <settlement_calendar> <settlement_convention> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days> <rate_cutoff> <is_averaged> <observation_shift> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.cross_currency_fix_float_conventions.put_many=.
 
 #+name: cross_currency_fix_float_conventions-put-many
 #+begin_src ores-shell :tangle cross_currency_fix_float_conventions-put-many.ores :exports none
-cross_currency_fix_float_conventions put-many --count 1 __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ - - - - - - - - - system.new_record generated_script
+cross_currency_fix_float_conventions put-many --count 1 __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ - - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

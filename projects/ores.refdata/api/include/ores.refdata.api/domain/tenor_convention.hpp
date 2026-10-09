@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -96,6 +97,18 @@ struct tenor_convention final {
      * [[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][tenor_schedule]]).
      */
     std::string resolution_algorithm;
+
+    /**
+     * @brief The oresmd URI of the market data this convention needs. The convention is a code list
+     * for tenors and names no series. Classification: requirement — at most it states the curve and
+     * the point a tenor is measured from, with everything left open. Uncertain: the convention
+     * states no market data need at all, so the address is the least well-founded of the set.
+     *
+     * The column holds the address as a value, so refdata depends on the oresmd format as a
+     * contract only and never on the marketdata library or its tables. Nullable, because no
+     * convention is required to state its address yet.
+     */
+    std::optional<std::string> oresmd_uri;
 
     /**
      * @brief Username of the person who last modified this tenor convention.

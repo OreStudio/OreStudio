@@ -56,6 +56,7 @@ struct cds_convention_entity {
     bool pays_at_default_time = false;
     std::optional<int> upfront_settlement_days;
     std::optional<std::string> last_period_day_count_fraction;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

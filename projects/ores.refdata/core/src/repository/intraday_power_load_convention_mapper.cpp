@@ -50,6 +50,7 @@ intraday_power_load_convention_mapper::map(const intraday_power_load_convention_
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.explicit_load_profile = v.explicit_load_profile;
     r.business_day_load_rules = v.business_day_load_rules;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -71,6 +72,7 @@ intraday_power_load_convention_mapper::map(const domain::intraday_power_load_con
     r.party_id = boost::uuids::to_string(v.party_id);
     r.explicit_load_profile = v.explicit_load_profile;
     r.business_day_load_rules = v.business_day_load_rules;
+    r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

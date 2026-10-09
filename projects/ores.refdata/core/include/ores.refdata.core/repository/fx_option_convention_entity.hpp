@@ -54,6 +54,7 @@ struct fx_option_convention_entity {
     std::optional<std::string> long_term_delta_type;
     std::optional<std::string> risk_reversal_in_favor_of;
     std::optional<std::string> butterfly_style;
+    std::optional<std::string> oresmd_uri;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

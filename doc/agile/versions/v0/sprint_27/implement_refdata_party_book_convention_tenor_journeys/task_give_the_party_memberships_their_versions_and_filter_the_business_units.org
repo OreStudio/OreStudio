@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-09
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,38 +26,60 @@ Journey 6 shows when and by whom a membership was closed, lists a party's busine
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- A party's business units are read in one call, without the client paging the
+  tenant's units and grouping them.
+- A unit whose type breaks the party's level rule is refused with a code and a
+  sentence a screen can act on, in the shape the store's other refusals use.
+- The membership versions read is either built or filed with the reason it is
+  not.
+
+The third acceptance item is the one that changed. It is filed rather than
+built, and the reason is under /Result/.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add a =level_violation= entry to the outcome catalogue and point the
+   business-unit insert trigger at it, so the level rule refuses the way the
+   store's other refusals do.
+2. Put =list_by= and =list_by_uuid= on the business unit's =party_id= foreign
+   key, which is the shape the counterparty children already use, and
+   regenerate.
+3. Read the membership versions work closely enough to say what it costs, and
+   file it if it is not one change with the other two.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Outcomes in the catalogue before / after | 14 → 15 | =grep -c '^\\*\\* ' projects/ores.database/modeling/ores.database.outcomes.org= | =08cc921699= |
+| Subjects =refdata= declares before / after the filter | 1771 → 1772 | the inventory command in the sibling task | =08cc921699= |
+| Junction models that would gain a versions read under the unconditional variant | 20 | =grep -rl '^#+type: ores.codegen.junction' --include=*.org projects \| wc -l= | =08cc921699= |
+| Of those, the ones that are built rather than filed | 0 | =ls projects/ores.refdata/core/src/messaging/ \| grep -c party_country_history= | =08cc921699= |
+| Open rows in journey 6 before / after | 3 → 1 | =grep -cE '^\\| [^|]+ \\| [^|]+ \\| [^|]+ \\| (missing\|partial) \\|' doc/knowledge/journeys/parties/journey_keep_a_partys_details_current.org= | =08cc921699= |
 
 * Notes
+
+The catalogue's argument vocabulary is fixed: =entity=, =field=, =value=,
+=expected=, =current=, =reason=, =limit=. A level refusal needs two numbers — the
+level the write asks for and the parent's level — so it uses =expected= and
+=current=, which is the pair =version_conflict= already uses for what the write
+believes and what the store holds. That choice is not cosmetic:
+=ores_outcome_raise_fn= takes its arguments positionally, so an outcome that
+reached for =value= and =limit= would put the parent's level in =expected= and
+some call site would need named notation the tree does not otherwise use.
+
+The business-unit trigger's level block is a named src block that declares
+=:implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e=, and that declaration is
+kept.
 
 * Test Scenarios
 
@@ -83,3 +105,67 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Two of the three parts are built. The third is filed as
+[[id:75FC1047-7339-442F-983C-083DB8BD8C5E][Give the party memberships their
+versions]], because it is a codegen change with a design question in it, and
+neither belongs in a change that also carries a foreign-key property and a
+catalogue entry.
+
+*What landed.*
+
+- *Business units are filtered by party.* The =party_id= foreign key on
+  =business_unit= now carries =list_by= and =list_by_uuid=, the same shape the
+  counterparty children use. That renders
+  =refdata.v1.business_units.list_by_party_id= and puts =party_id_one_of= on the
+  plain list's filter, so a page that spans parties is one call. Before, listing
+  one party's units meant paging the tenant's units and grouping them on the
+  client.
+- *The level rule refuses from the catalogue.* A new =level_violation= outcome
+  renders into the C++ header and the PostgreSQL functions, and the
+  business-unit insert trigger calls =ores_outcome_raise_fn= with it instead of
+  raising a bare =raise exception=. The refusal now carries the code, names
+  =unit_type_id= as the field, and names both levels in its sentence, so the
+  screen can point at the picker that caused it. The store outcomes on the same
+  row already went through that raiser, so the level rule was the one refusal
+  there that did not.
+
+*What is filed, and why.*
+
+The membership versions read is not built. Giving a junction a versions
+sub-resource is opt-in codegen work: the junction repository has no =read_all=
+and no =read_at_version=, and the junction blocks of the service and repository
+templates have no versions bodies, so three tangled templates need editing
+before the header's new declarations have anything behind them. That is a
+self-contained change and it is filed on its own.
+
+It is filed rather than built for a second reason, which is the one that matters
+more. Journey 6 says the screen shows "when and by whom a membership was
+closed", and that reads like a history dialog — the generic diff route at
+=refdata.v1.history.get=. That route is addressed by a single =entity_id=, and a
+junction's identity is the pair, so no junction is registered there and none of
+the refdata junctions renders a history provider. A versions list is not blocked
+on that decision, but if the journey wants a field-level difference it is not
+enough either. The new task opens with that question rather than assuming an
+answer, because the answer changes the shape of the work.
+
+*Verification.*
+
+The branch builds. The model-drift gate reports no drift and zero exceptions.
+The component-drift sweep reports that no file this branch touched would change.
+The shell recipe inventory and the physical space inventory are both up to date.
+Journey 6's table carries one open row, down from three, and every subject either
+party journey names resolves against an inventory of the declared subjects.
+
+The codegen suite reports seven failures in =test_rls_isolation.py=,
+=test_rls_own_or_system_tenant_rows.py=, =test_soft_fk_target.py= and
+=test_sql_name_base.py=. They are pre-existing and unrelated: no file under
+=projects/ores.codegen/= is modified by this branch, and none of those tests
+reads the two modeling files it changes.
+
+*What was left alone.* =tangle-shell= reports three stale
+=projects/ores.shell/scripts/library/report_instances/*.ores= scripts, whose
+committed text disagrees with their org source at =doc/recipes/shell/report_instances/=.
+That drift is on trunk and this branch does not touch it; repairing it here
+would put an unrelated generated-file change in this review. The branch's own
+shell output is refreshed and consistent.

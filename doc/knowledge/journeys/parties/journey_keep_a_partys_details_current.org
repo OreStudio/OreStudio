@@ -217,9 +217,10 @@ membership that closed, because the junction write bumps the party's version.
 | Set the structure | List the party's counterparty links | =refdata.v1.party_counterparties.list_by_party_id= | exists |
 | Set the structure | Fill the counterparty picker | =refdata.v1.counterparties.list= | exists |
 | Set the structure | Link or unlink a counterparty | =refdata.v1.party_counterparties.put=, =.delete= | exists |
-| Set the structure | List the party's business units | =refdata.v1.business_units.list= | partial |
+| Set the structure | List the party's business units | =refdata.v1.business_units.list_by_party_id= | exists |
 | Set the structure | Fill the unit type picker | =refdata.v1.business_unit_types.list= | exists |
 | Set the structure | Reclassify a business unit | =refdata.v1.business_units.put= | exists |
+| Set the structure | Read the refusal a level breach gives | the typed =result.code= =level_violation= and its =result.message= on =refdata.v1.business_units.put= | exists |
 | Review | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
 | Confirm | Write every change as one unit | =refdata.v1.ops.put_party_composite= | exists |
 | Confirm | Read the party back | =refdata.v1.parties.get= | exists |
@@ -245,10 +246,8 @@ versions are item 1 below.
 
 * What is missing
 
-Item 1 is the missing row of the coverage table above. Item 2 is the one
-=partial= row, the read the journey does not get whole. Items 3 and 4 are the
-gaps the coverage table cannot carry, because the operation exists and the
-failure does not.
+One item. It is the missing row of the coverage table above; the coverage table
+carries no =partial= row any more.
 
 1. *A membership leaves no readable version.* The =party_countries= and
    =party_currencies= tables keep closed versions, but the generated protocol
@@ -258,24 +257,12 @@ failure does not.
    versions read for the two junctions, in the shape the party's children
    already have. Until it exists, the screen shows the memberships that are open,
    marks the one being closed in this session, and gives the party's own history
-   as the only trail.
-2. *The business unit is not filtered by party.* =business_units_filter= carries
-   =id_one_of= and nothing else, and the protocol has no =list_by_party_id=, so
-   listing one party's units means paging the tenant's units and grouping them
-   on the client. The candidate is the party filter, in the shape the three
-   junctions already have.
-3. *A refusal for the business unit level rule is still the trigger's text.* The
-   business-unit insert trigger raises the level rule with a bare =raise
-   exception= and its own sentence, and the client reads it only as a string. It
-   names no field that a screen can act on, so the person cannot be told which
-   unit or identifier to correct without the message being parsed. The store
-   outcomes on the same row, =already_exists= and =version_conflict=, do go
-   through =ores_outcome_raise_fn=, so the rule is the one refusal on that row
-   that does not. The candidate is a catalogue outcome for it, carrying the
-   field, the rule and the value it found. Until it exists, the screen shows the
-   message with the unit and its parent beside it, as the refused state draws.
-4. *The level rule has no outcome of its own.* The rule is real and the screen
-   draws it, but the only way to learn it is to break it, as item 3 says.
+   as the only trail. The work is filed as
+   [[id:75FC1047-7339-442F-983C-083DB8BD8C5E][Give the party memberships
+   their versions]], and it opens with a question this table cannot answer:
+   whether the screen wants a list of versions or the field-level difference the
+   generic history request gives the party, because a junction has no single id
+   for that request to be addressed by.
 
 * Related journeys
 

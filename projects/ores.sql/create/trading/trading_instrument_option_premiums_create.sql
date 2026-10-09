@@ -51,7 +51,7 @@ create table if not exists "ores_trading_instrument_option_premiums_tbl" (
     "has_settlement" boolean not null,
     "settlement_pay_currency" text null,
     "settlement_fx_index" text null,
-    "settlement_fixing_date" text null,
+    "settlement_fixing_date" date null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

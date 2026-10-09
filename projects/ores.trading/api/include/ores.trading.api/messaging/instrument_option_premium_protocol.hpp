@@ -50,7 +50,7 @@ struct instrument_option_premium_write {
     bool has_settlement;
     std::optional<std::string> settlement_pay_currency;
     std::optional<std::string> settlement_fx_index;
-    std::optional<std::string> settlement_fixing_date;
+    std::optional<std::chrono::year_month_day> settlement_fixing_date;
 };
 
 struct instrument_option_premium_change {

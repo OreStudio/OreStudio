@@ -117,7 +117,6 @@ domain::instrument_option to_domain(const messaging::instrument_option_write& wr
     v.premium_amount = write.premium_amount;
     v.premium_currency = write.premium_currency;
     v.premium_pay_date = write.premium_pay_date;
-    v.exercise_prices = write.exercise_prices;
     v.exercise_fee_settlement_period = write.exercise_fee_settlement_period;
     v.exercise_fee_settlement_calendar = write.exercise_fee_settlement_calendar;
     v.exercise_fee_settlement_convention = write.exercise_fee_settlement_convention;

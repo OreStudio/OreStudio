@@ -63,10 +63,15 @@ domain::instrument_option instrument_option_mapper::map(const instrument_option_
     r.settlement = v.settlement;
     r.settlement_method = v.settlement_method;
     r.pay_off_at_expiry = v.pay_off_at_expiry;
-    r.premium_amount = v.premium_amount;
+    r.premium_amount =
+        v.premium_amount.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.premium_amount).value()) :
+            std::nullopt;
     r.premium_currency = v.premium_currency;
-    r.premium_pay_date = v.premium_pay_date;
-    r.exercise_prices = v.exercise_prices;
+    r.premium_pay_date =
+        v.premium_pay_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.premium_pay_date)) :
+            std::nullopt;
     r.exercise_fee_settlement_period = v.exercise_fee_settlement_period;
     r.exercise_fee_settlement_calendar = v.exercise_fee_settlement_calendar;
     r.exercise_fee_settlement_convention = v.exercise_fee_settlement_convention;
@@ -88,7 +93,10 @@ domain::instrument_option instrument_option_mapper::map(const instrument_option_
     r.has_settlement_data = v.has_settlement_data;
     r.settlement_pay_currency = v.settlement_pay_currency;
     r.settlement_fx_index = v.settlement_fx_index;
-    r.settlement_fixing_date = v.settlement_fixing_date;
+    r.settlement_fixing_date = v.settlement_fixing_date.has_value() ?
+                                   std::optional(ores::platform::time::datetime::from_iso8601_date(
+                                       *v.settlement_fixing_date)) :
+                                   std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -119,10 +127,13 @@ instrument_option_entity instrument_option_mapper::map(const domain::instrument_
     r.settlement = v.settlement;
     r.settlement_method = v.settlement_method;
     r.pay_off_at_expiry = v.pay_off_at_expiry;
-    r.premium_amount = v.premium_amount;
+    r.premium_amount =
+        v.premium_amount.has_value() ? std::optional(v.premium_amount->to_string()) : std::nullopt;
     r.premium_currency = v.premium_currency;
-    r.premium_pay_date = v.premium_pay_date;
-    r.exercise_prices = v.exercise_prices;
+    r.premium_pay_date =
+        v.premium_pay_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.premium_pay_date)) :
+            std::nullopt;
     r.exercise_fee_settlement_period = v.exercise_fee_settlement_period;
     r.exercise_fee_settlement_calendar = v.exercise_fee_settlement_calendar;
     r.exercise_fee_settlement_convention = v.exercise_fee_settlement_convention;
@@ -142,7 +153,10 @@ instrument_option_entity instrument_option_mapper::map(const domain::instrument_
     r.has_settlement_data = v.has_settlement_data;
     r.settlement_pay_currency = v.settlement_pay_currency;
     r.settlement_fx_index = v.settlement_fx_index;
-    r.settlement_fixing_date = v.settlement_fixing_date;
+    r.settlement_fixing_date = v.settlement_fixing_date.has_value() ?
+                                   std::optional(ores::platform::time::datetime::to_iso8601_date(
+                                       *v.settlement_fixing_date)) :
+                                   std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

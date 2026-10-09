@@ -117,8 +117,10 @@ struct instrument_option_premium final {
 
     /**
      * @brief Date the premium's settlement block fixes on.
+     *
+     * The schema states the date as text and the boundary parses it, so the column is a date.
      */
-    std::optional<std::string> settlement_fixing_date;
+    std::optional<std::chrono::year_month_day> settlement_fixing_date;
 
     /**
      * @brief Username of the person who last modified this instrument option premium.

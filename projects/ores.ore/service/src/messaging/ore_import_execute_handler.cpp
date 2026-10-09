@@ -2186,6 +2186,179 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             rate_resp->result.outcome != ores::utility::domain::outcome::ok)
                             return false;
                     }
+
+                    // The shared children: the cap/floor's strike and its
+                    // underlying swap's schedules, and the swaption's option
+                    // block and its children.
+                    for (const auto& strike : r.strikes) {
+                        put_instrument_strike_request strike_req;
+                        strike_req.change.write.trade_id = strike.trade_id;
+                        strike_req.change.write.trade_activity_id = strike.trade_activity_id;
+                        strike_req.change.write.price_value = strike.price_value;
+                        strike_req.change.write.price_currency = strike.price_currency;
+                        strike_req.change.write.yield_value = strike.yield_value;
+                        strike_req.change.write.yield_compounding = strike.yield_compounding;
+                        strike_req.change.write.bare_value = strike.bare_value;
+                        strike_req.change.write.bare_currency = strike.bare_currency;
+                        auto strike_resp = nats_call(delegated_nats, strike_req, instr_error);
+                        if (!strike_resp ||
+                            strike_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+
+                    for (const auto& schedule : r.schedules) {
+                        put_instrument_schedule_request schedule_req;
+                        auto& w = schedule_req.change.write;
+                        w.trade_id = schedule.trade_id;
+                        w.owner_role = schedule.owner_role;
+                        w.owner_number = schedule.owner_number;
+                        w.schedule_role = schedule.schedule_role;
+                        w.sequence_number = schedule.sequence_number;
+                        w.trade_activity_id = schedule.trade_activity_id;
+                        w.schedule_kind = schedule.schedule_kind;
+                        w.start_date = schedule.start_date;
+                        w.end_date = schedule.end_date;
+                        w.adjust_end_date_to_previous_month_end =
+                            schedule.adjust_end_date_to_previous_month_end;
+                        w.tenor = schedule.tenor;
+                        w.calendar = schedule.calendar;
+                        w.convention = schedule.convention;
+                        w.term_convention = schedule.term_convention;
+                        w.rule = schedule.rule;
+                        w.end_of_month = schedule.end_of_month;
+                        w.end_of_month_convention = schedule.end_of_month_convention;
+                        w.first_date = schedule.first_date;
+                        w.last_date = schedule.last_date;
+                        w.remove_first_date = schedule.remove_first_date;
+                        w.remove_last_date = schedule.remove_last_date;
+                        w.include_duplicate_dates = schedule.include_duplicate_dates;
+                        auto schedule_resp = nats_call(delegated_nats, schedule_req, instr_error);
+                        if (!schedule_resp ||
+                            schedule_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+
+                    for (const auto& date_row : r.schedule_dates) {
+                        put_instrument_schedule_date_request date_req;
+                        date_req.change.write.trade_id = date_row.trade_id;
+                        date_req.change.write.owner_role = date_row.owner_role;
+                        date_req.change.write.owner_number = date_row.owner_number;
+                        date_req.change.write.schedule_role = date_row.schedule_role;
+                        date_req.change.write.schedule_sequence_number =
+                            date_row.schedule_sequence_number;
+                        date_req.change.write.sequence_number = date_row.sequence_number;
+                        date_req.change.write.trade_activity_id = date_row.trade_activity_id;
+                        date_req.change.write.schedule_date = date_row.schedule_date;
+                        auto date_resp = nats_call(delegated_nats, date_req, instr_error);
+                        if (!date_resp ||
+                            date_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+
+                    for (const auto& option : r.options) {
+                        put_instrument_option_request option_req;
+                        auto& w = option_req.change.write;
+                        w.trade_id = option.trade_id;
+                        w.trade_activity_id = option.trade_activity_id;
+                        w.long_short = option.long_short;
+                        w.option_type = option.option_type;
+                        w.payoff_type = option.payoff_type;
+                        w.payoff_type_2 = option.payoff_type_2;
+                        w.style = option.style;
+                        w.notice_period = option.notice_period;
+                        w.notice_calendar = option.notice_calendar;
+                        w.notice_convention = option.notice_convention;
+                        w.mid_coupon_exercise = option.mid_coupon_exercise;
+                        w.settlement = option.settlement;
+                        w.settlement_method = option.settlement_method;
+                        w.pay_off_at_expiry = option.pay_off_at_expiry;
+                        w.premium_amount = option.premium_amount;
+                        w.premium_currency = option.premium_currency;
+                        w.premium_pay_date = option.premium_pay_date;
+                        w.exercise_fee_settlement_period = option.exercise_fee_settlement_period;
+                        w.exercise_fee_settlement_calendar = option.exercise_fee_settlement_calendar;
+                        w.exercise_fee_settlement_convention =
+                            option.exercise_fee_settlement_convention;
+                        w.automatic_exercise = option.automatic_exercise;
+                        w.has_exercise_data = option.has_exercise_data;
+                        w.exercise_date = option.exercise_date;
+                        w.exercise_price = option.exercise_price;
+                        w.has_payment_data = option.has_payment_data;
+                        w.payment_lag = option.payment_lag;
+                        w.payment_calendar = option.payment_calendar;
+                        w.payment_convention = option.payment_convention;
+                        w.payment_relative_to = option.payment_relative_to;
+                        w.has_settlement_data = option.has_settlement_data;
+                        w.settlement_pay_currency = option.settlement_pay_currency;
+                        w.settlement_fx_index = option.settlement_fx_index;
+                        w.settlement_fixing_date = option.settlement_fixing_date;
+                        auto option_resp = nats_call(delegated_nats, option_req, instr_error);
+                        if (!option_resp ||
+                            option_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+
+                    for (const auto& premium : r.option_premiums) {
+                        put_instrument_option_premium_request premium_req;
+                        auto& w = premium_req.change.write;
+                        w.trade_id = premium.trade_id;
+                        w.sequence_number = premium.sequence_number;
+                        w.trade_activity_id = premium.trade_activity_id;
+                        w.amount = premium.amount;
+                        w.currency = premium.currency;
+                        w.pay_date = premium.pay_date;
+                        w.has_settlement = premium.has_settlement;
+                        w.settlement_pay_currency = premium.settlement_pay_currency;
+                        w.settlement_fx_index = premium.settlement_fx_index;
+                        w.settlement_fixing_date = premium.settlement_fixing_date;
+                        auto premium_resp = nats_call(delegated_nats, premium_req, instr_error);
+                        if (!premium_resp ||
+                            premium_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+
+                    for (const auto& fee : r.option_exercise_fees) {
+                        put_instrument_option_exercise_fee_request fee_req;
+                        auto& w = fee_req.change.write;
+                        w.trade_id = fee.trade_id;
+                        w.sequence_number = fee.sequence_number;
+                        w.trade_activity_id = fee.trade_activity_id;
+                        w.amount = fee.amount;
+                        w.type = fee.type;
+                        w.start_date = fee.start_date;
+                        w.currency = fee.currency;
+                        auto fee_resp = nats_call(delegated_nats, fee_req, instr_error);
+                        if (!fee_resp ||
+                            fee_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+
+                    for (const auto& payment : r.option_payment_dates) {
+                        put_instrument_option_payment_date_request payment_req;
+                        payment_req.change.write.trade_id = payment.trade_id;
+                        payment_req.change.write.sequence_number = payment.sequence_number;
+                        payment_req.change.write.trade_activity_id = payment.trade_activity_id;
+                        payment_req.change.write.payment_date = payment.payment_date;
+                        auto payment_resp =
+                            nats_call(delegated_nats, payment_req, instr_error);
+                        if (!payment_resp ||
+                            payment_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+
+                    for (const auto& price : r.option_exercise_prices) {
+                        put_instrument_option_exercise_price_request price_req;
+                        price_req.change.write.trade_id = price.trade_id;
+                        price_req.change.write.sequence_number = price.sequence_number;
+                        price_req.change.write.trade_activity_id = price.trade_activity_id;
+                        price_req.change.write.exercise_date = price.exercise_date;
+                        price_req.change.write.price = price.price;
+                        auto price_resp = nats_call(delegated_nats, price_req, instr_error);
+                        if (!price_resp ||
+                            price_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+
                     return true;
                 } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
                     return std::visit(

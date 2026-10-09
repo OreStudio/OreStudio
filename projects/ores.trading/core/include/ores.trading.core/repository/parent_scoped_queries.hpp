@@ -36,6 +36,7 @@
 #include "ores.trading.api/domain/bond_leg_rate.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
 #include "ores.trading.api/domain/instrument_option_payment_date.hpp"
 #include "ores.trading.api/domain/instrument_option_premium.hpp"
 #include "ores.trading.api/domain/instrument_schedule.hpp"
@@ -249,6 +250,17 @@ read_option_exercise_fees_by_trade_ids(context ctx, const std::vector<std::strin
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_payment_date>
 read_option_payment_dates_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+
+/**
+ * @brief Reads the exercise prices of a set of instruments' option rows.
+ *
+ * Rows come back in instrument order, then in ordinal order.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param trade_ids UUIDs of the trades whose exercise prices to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_exercise_price>
+read_option_exercise_prices_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the strike of a set of instruments.

@@ -50,7 +50,6 @@ export interface InstrumentOptionWrite {
     premium_amount: string | null;
     premium_currency: string | null;
     premium_pay_date: string | null;
-    exercise_prices: string | null;
     exercise_fee_settlement_period: string | null;
     exercise_fee_settlement_calendar: string | null;
     exercise_fee_settlement_convention: string | null;

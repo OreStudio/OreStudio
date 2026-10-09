@@ -122,7 +122,14 @@ TEST_CASE("mapper_roundtrip_swaption_european_reverse", tags) {
         std::get<ores::trading::domain::swaption_instrument>(result.facts),
         result.legs,
         result.leg_amounts,
-        result.leg_rates);
+        result.leg_rates,
+        result.schedules,
+        result.schedule_dates,
+        result.options,
+        result.option_premiums,
+        result.option_exercise_fees,
+        result.option_payment_dates,
+        result.option_exercise_prices);
 
     REQUIRE(reconstructed.SwaptionData.operator bool());
     const auto& sd = *reconstructed.SwaptionData;
@@ -141,6 +148,67 @@ TEST_CASE("mapper_roundtrip_swaption_european_reverse", tags) {
     CHECK(std::string(*sd.LegData[0].Currency) == "EUR");
     CHECK(std::string(*sd.LegData[1].Currency) == "EUR");
     BOOST_LOG_SEV(lg, info) << "Swaption European reverse-mapper test passed";
+}
+
+TEST_CASE("mapper_roundtrip_swaption_option_block", tags) {
+    auto lg(make_logger(test_suite));
+    const auto t = load_trade("IR_Swaption_European.xml", 0);
+    const auto result = swap_instrument_mapper::forward_swaption(t);
+
+    // The document's option element becomes one row and its premium children.
+    REQUIRE(result.options.size() == 1u);
+    const auto& option = result.options.front();
+    CHECK(option.long_short == "Long");
+    CHECK(option.style == std::optional<std::string>("European"));
+    CHECK(option.settlement == std::optional<std::string>("Cash"));
+    REQUIRE(result.option_premiums.size() == 1u);
+    const auto& premium = result.option_premiums.front();
+    CHECK(premium.sequence_number == 1);
+    CHECK(premium.amount.to_double() == Approx(1090000.0).epsilon(0.0001));
+    CHECK(premium.currency == "EUR");
+    CHECK(ore_iso(premium.pay_date) == "2033-02-20");
+
+    // The exercise date is a shared schedule row under the option owner.
+    REQUIRE(result.schedules.size() == 1u);
+    CHECK(result.schedules.front().owner_role == "option");
+    CHECK(result.schedules.front().owner_number == 1);
+    CHECK(result.schedules.front().schedule_role == "exercise_dates");
+    CHECK(result.schedules.front().schedule_kind == "dates");
+    REQUIRE(result.schedule_dates.size() == 1u);
+    CHECK(ore_iso(result.schedule_dates.front().schedule_date) == "2033-02-20");
+
+    const auto reconstructed = swap_instrument_mapper::reverse_swaption(
+        result.header,
+        std::get<ores::trading::domain::swaption_instrument>(result.facts),
+        result.legs,
+        result.leg_amounts,
+        result.leg_rates,
+        result.schedules,
+        result.schedule_dates,
+        result.options,
+        result.option_premiums,
+        result.option_exercise_fees,
+        result.option_payment_dates,
+        result.option_exercise_prices);
+
+    REQUIRE(reconstructed.SwaptionData.operator bool());
+    const auto& sd = *reconstructed.SwaptionData;
+    REQUIRE(sd.OptionData.operator bool());
+    CHECK(std::string(sd.OptionData->LongShort) == "Long");
+    CHECK(std::string(*sd.OptionData->Style) == "European");
+    CHECK(ores::ore::domain::to_string(*sd.OptionData->Settlement) == "Cash");
+    REQUIRE(sd.OptionData->Premiums.operator bool());
+    REQUIRE(sd.OptionData->Premiums->Premium.size() == 1u);
+    const auto& p = sd.OptionData->Premiums->Premium.front();
+    CHECK(static_cast<float>(p.Amount) == Approx(1090000.0f).epsilon(0.0001f));
+    CHECK(std::string(p.Currency) == "EUR");
+    CHECK(std::string(p.PayDate) == "2033-02-20");
+    REQUIRE(sd.OptionData->exerciseDatesGroup.operator bool());
+    REQUIRE(sd.OptionData->exerciseDatesGroup->ExerciseDates.operator bool());
+    REQUIRE(sd.OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate.size() == 1u);
+    CHECK(std::string(sd.OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate[0]) ==
+          "2033-02-20");
+    BOOST_LOG_SEV(lg, info) << "Swaption option-block round-trip test passed";
 }
 
 // =============================================================================

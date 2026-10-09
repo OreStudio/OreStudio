@@ -31,7 +31,7 @@
  * and the equity, FX and commodity products state it too. The nine bond
  * tables carry the option's type and its strike and nothing else, so this
  * table holds the block: the exercise and payment terms, the settlement
- * terms, and the three nested groups whose lists get child tables of
+ * terms, and the four nested groups whose lists get child tables of
  * their own.
  *
  * A member the document omits is a null column. Three members are
@@ -40,11 +40,11 @@
  * omitted it. Each of those three carries a flag on this row:
  * has_exercise_data, has_payment_data and has_settlement_data.
  *
- * Every other member is text, and the text is the document's own
- * spelling. The schema types the premium amount, the exercise price list
- * and the several flags as text or as its own bool, which enumerates
- * thirteen spellings, so a decoded form would not re-emit what the
- * document held.
+ * The schema types the premium amount, the premium pay date and the
+ * several flags as text or as its own bool, which enumerates thirteen
+ * spellings, so a decoded form would not re-emit what the document held.
+ * The premium amount and the two settlement dates are typed here and the
+ * boundary converts, as the family's end_date does.
  */
 
 create table if not exists "ores_trading_instrument_options_tbl" (
@@ -64,10 +64,9 @@ create table if not exists "ores_trading_instrument_options_tbl" (
     "settlement" text null,
     "settlement_method" text null,
     "pay_off_at_expiry" text null,
-    "premium_amount" text null,
+    "premium_amount" numeric(28, 10) null,
     "premium_currency" text null,
-    "premium_pay_date" text null,
-    "exercise_prices" text null,
+    "premium_pay_date" date null,
     "exercise_fee_settlement_period" text null,
     "exercise_fee_settlement_calendar" text null,
     "exercise_fee_settlement_convention" text null,
@@ -83,7 +82,7 @@ create table if not exists "ores_trading_instrument_options_tbl" (
     "has_settlement_data" boolean not null,
     "settlement_pay_currency" text null,
     "settlement_fx_index" text null,
-    "settlement_fixing_date" text null,
+    "settlement_fixing_date" date null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

@@ -56,6 +56,7 @@
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
 #include "ores.trading.api/domain/instrument_option_payment_date.hpp"
 #include "ores.trading.api/domain/instrument_option_premium.hpp"
 #include "ores.trading.api/domain/instrument_schedule.hpp"
@@ -219,6 +220,10 @@ struct instrument_batch {
      * @brief The instrument_option_exercise_fee rows, keyed by trade id.
      */
     std::vector<instrument_option_exercise_fee> instrument_option_exercise_fees;
+    /**
+     * @brief The instrument_option_exercise_price rows, keyed by trade id.
+     */
+    std::vector<instrument_option_exercise_price> instrument_option_exercise_prices;
     /**
      * @brief The instrument_option_payment_date rows, keyed by trade id.
      */
@@ -512,6 +517,13 @@ inline void append(instrument_batch& batch, instrument_option v) {
  */
 inline void append(instrument_batch& batch, instrument_option_exercise_fee v) {
     batch.instrument_option_exercise_fees.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one instrument_option_exercise_price to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_option_exercise_price v) {
+    batch.instrument_option_exercise_prices.push_back(std::move(v));
 }
 
 /**

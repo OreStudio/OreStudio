@@ -87,8 +87,10 @@ struct instrument_option_exercise_fee final {
 
     /**
      * @brief Date the exercise fee starts to apply.
+     *
+     * The schema states the date as text and the boundary parses it, so the column is a date.
      */
-    std::optional<std::string> start_date;
+    std::optional<std::chrono::year_month_day> start_date;
 
     /**
      * @brief Currency the exercise fee is stated in.

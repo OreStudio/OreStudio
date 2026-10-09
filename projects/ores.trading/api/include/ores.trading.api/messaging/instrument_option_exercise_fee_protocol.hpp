@@ -46,7 +46,7 @@ struct instrument_option_exercise_fee_write {
     boost::uuids::uuid trade_activity_id;
     ores::utility::decimal::decimal amount;
     std::optional<std::string> type;
-    std::optional<std::string> start_date;
+    std::optional<std::chrono::year_month_day> start_date;
     std::optional<std::string> currency;
 };
 

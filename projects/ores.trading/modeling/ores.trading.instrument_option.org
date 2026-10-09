@@ -20,7 +20,7 @@ The bond option and the ascot both state the same =optionData= element,
 and the equity, FX and commodity products state it too. The nine bond
 tables carry the option's type and its strike and nothing else, so this
 table holds the block: the exercise and payment terms, the settlement
-terms, and the three nested groups whose lists get child tables of
+terms, and the four nested groups whose lists get child tables of
 their own.
 
 A member the document omits is a null column. Three members are
@@ -29,11 +29,11 @@ cannot say whether the document stated the group and left it bare or
 omitted it. Each of those three carries a flag on this row:
 =has_exercise_data=, =has_payment_data= and =has_settlement_data=.
 
-Every other member is text, and the text is the document's own
-spelling. The schema types the premium amount, the exercise price list
-and the several flags as text or as its own bool, which enumerates
-thirteen spellings, so a decoded form would not re-emit what the
-document held.
+The schema types the premium amount, the premium pay date and the
+several flags as text or as its own bool, which enumerates thirteen
+spellings, so a decoded form would not re-emit what the document held.
+The premium amount and the two settlement dates are typed here and the
+boundary converts, as the family's =end_date= does.
 
 * Flags
 :PROPERTIES:
@@ -195,16 +195,16 @@ Flag saying the payoff falls due at expiry.
 
 ** premium_amount
 :PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
+:type:     numeric(28, 10)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
 Premium amount for the single-premium spelling.
 
-The column is text because the schema states the amount as text, and
-the corpus states amounts the numeric form would reformat. The premium
-list spelling keeps its rows in the premium table.
+The schema states the amount as text and the boundary parses it, so the
+column holds a decimal. The premium list spelling keeps its rows in the
+premium table.
 
 ** premium_currency
 :PROPERTIES:
@@ -217,24 +217,15 @@ Currency the single premium pays in.
 
 ** premium_pay_date
 :PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 Date the single premium pays on.
 
-** exercise_prices
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The exercise price list, as the document spelled it.
-
-The schema types the member as text, so the column keeps the
-document's own text rather than a decoded list of numbers.
+The schema states the date as text and the boundary parses it, so the
+column is a date.
 
 ** exercise_fee_settlement_period
 :PROPERTIES:
@@ -397,12 +388,15 @@ FX index the settlement block fixes against.
 
 ** settlement_fixing_date
 :PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 Date the settlement block fixes on, when the document states one.
+
+The schema states the date as text and the boundary parses it, so the
+column is a date.
 
 * Foreign keys
 

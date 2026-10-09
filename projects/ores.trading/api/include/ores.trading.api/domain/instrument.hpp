@@ -27,6 +27,14 @@
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
+#include "ores.trading.api/domain/instrument_option.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
+#include "ores.trading.api/domain/instrument_option_payment_date.hpp"
+#include "ores.trading.api/domain/instrument_option_premium.hpp"
+#include "ores.trading.api/domain/instrument_schedule.hpp"
+#include "ores.trading.api/domain/instrument_schedule_date.hpp"
+#include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/rates_fact_variant.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
@@ -74,6 +82,12 @@ struct with_legs {
 // alone. Both are keyed by the same trade, so a rates instrument in memory
 // is the header plus its fact plus its children. A leaf that states no
 // schedule leaves the collection empty.
+//
+// The family writes to the shared children the bond pilot built: a
+// cap/floor states its strikes and its underlying swap's schedules and a
+// swaption states an option block. Those rows are the shared entities
+// themselves, keyed by the flat trade id, so the carrier holds them beside
+// its own legs. A leaf that states none leaves the collection empty.
 struct swap_instrument_data {
     rate_instrument header;
     rates_fact_variant facts;
@@ -81,6 +95,14 @@ struct swap_instrument_data {
     std::vector<swap_leg_amount> leg_amounts;
     std::vector<swap_leg_rate> leg_rates;
     std::vector<callable_swap_call_date> call_dates;
+    std::vector<instrument_strike> strikes;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
+    std::vector<instrument_option> options;
+    std::vector<instrument_option_premium> option_premiums;
+    std::vector<instrument_option_exercise_fee> option_exercise_fees;
+    std::vector<instrument_option_payment_date> option_payment_dates;
+    std::vector<instrument_option_exercise_price> option_exercise_prices;
 };
 
 using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
@@ -161,6 +183,30 @@ inline void stamp_ids(swap_instrument_data& data,
     }
     for (auto& call_date : data.call_dates) {
         stamp_ids(call_date, trade_id, activity_id);
+    }
+    for (auto& strike : data.strikes) {
+        stamp_ids(strike, trade_id, activity_id);
+    }
+    for (auto& schedule : data.schedules) {
+        stamp_ids(schedule, trade_id, activity_id);
+    }
+    for (auto& schedule_date : data.schedule_dates) {
+        stamp_ids(schedule_date, trade_id, activity_id);
+    }
+    for (auto& option : data.options) {
+        stamp_ids(option, trade_id, activity_id);
+    }
+    for (auto& premium : data.option_premiums) {
+        stamp_ids(premium, trade_id, activity_id);
+    }
+    for (auto& fee : data.option_exercise_fees) {
+        stamp_ids(fee, trade_id, activity_id);
+    }
+    for (auto& payment_date : data.option_payment_dates) {
+        stamp_ids(payment_date, trade_id, activity_id);
+    }
+    for (auto& exercise_price : data.option_exercise_prices) {
+        stamp_ids(exercise_price, trade_id, activity_id);
     }
 }
 

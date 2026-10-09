@@ -228,7 +228,10 @@ TEST_CASE("mapper_roundtrip_capfloor_reverse", tags) {
         std::get<ores::trading::domain::cap_floor_instrument>(result.facts),
         result.legs,
         result.leg_amounts,
-        result.leg_rates);
+        result.leg_rates,
+        result.strikes,
+        result.schedules,
+        result.schedule_dates);
 
     REQUIRE(reconstructed.CapFloorData.operator bool());
     const auto& cf = *reconstructed.CapFloorData;
@@ -238,6 +241,55 @@ TEST_CASE("mapper_roundtrip_capfloor_reverse", tags) {
     CHECK(std::string(cf.LegData.ScheduleData.Rules[0].StartDate) == "2023-10-11");
     CHECK(std::string(cf.LegData.legDataType.FloatingLegData->Index) == "EUR-EURIBOR-6M");
     BOOST_LOG_SEV(lg, info) << "CapFloor reverse-mapper test passed";
+}
+
+TEST_CASE("mapper_roundtrip_capfloor_shared_children", tags) {
+    auto lg(make_logger(test_suite));
+    const auto t = load_first_trade("IR_Cap_on_IBOR.xml");
+    const auto result = swap_instrument_mapper::forward_capfloor(t);
+
+    // The document's single cap becomes one shared strike row.
+    REQUIRE(result.strikes.size() == 1u);
+    REQUIRE(result.strikes.front().bare_value.has_value());
+    CHECK(result.strikes.front().bare_value->to_double() == Approx(0.025).epsilon(0.0001));
+
+    // The underlying swap leg's rule block becomes one schedule row and no
+    // date rows.
+    REQUIRE(result.schedules.size() == 1u);
+    CHECK(result.schedules.front().owner_role == "swap");
+    CHECK(result.schedules.front().owner_number == 1);
+    CHECK(result.schedules.front().schedule_role == "schedule");
+    CHECK(result.schedules.front().schedule_kind == "rules");
+    CHECK(ore_iso(result.schedules.front().start_date) == "2023-10-11");
+    CHECK(result.schedules.front().tenor.value_or("") == "6M");
+    CHECK(result.schedule_dates.empty());
+
+    const auto reconstructed = swap_instrument_mapper::reverse_capfloor(
+        result.header,
+        std::get<ores::trading::domain::cap_floor_instrument>(result.facts),
+        result.legs,
+        result.leg_amounts,
+        result.leg_rates,
+        result.strikes,
+        result.schedules,
+        result.schedule_dates);
+
+    REQUIRE(reconstructed.CapFloorData.operator bool());
+    const auto& cf = *reconstructed.CapFloorData;
+    REQUIRE(cf.Caps.operator bool());
+    REQUIRE(cf.Caps->Cap.size() == 1u);
+    CHECK(static_cast<float>(cf.Caps->Cap.front()) == Approx(0.025f).epsilon(0.0001f));
+
+    // The stored schedule is the document's own, so the whole rule block
+    // survives rather than being regenerated from the header's dates.
+    REQUIRE(cf.LegData.ScheduleData.Rules.size() == 1u);
+    CHECK(std::string(cf.LegData.ScheduleData.Rules[0].StartDate) == "2023-10-11");
+    REQUIRE(cf.LegData.ScheduleData.Rules[0].EndDate.operator bool());
+    CHECK(std::string(*cf.LegData.ScheduleData.Rules[0].EndDate) == "2038-10-10");
+    CHECK(std::string(cf.LegData.ScheduleData.Rules[0].Tenor) == "6M");
+    REQUIRE(cf.LegData.ScheduleData.Rules[0].Calendar.operator bool());
+    CHECK(std::string(*cf.LegData.ScheduleData.Rules[0].Calendar) == "EUR");
+    BOOST_LOG_SEV(lg, info) << "CapFloor shared-children round-trip test passed";
 }
 
 // =============================================================================

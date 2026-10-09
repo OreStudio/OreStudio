@@ -61,7 +61,6 @@ struct instrument_option_entity {
     std::optional<std::string> premium_amount;
     std::optional<std::string> premium_currency;
     std::optional<std::string> premium_pay_date;
-    std::optional<std::string> exercise_prices;
     std::optional<std::string> exercise_fee_settlement_period;
     std::optional<std::string> exercise_fee_settlement_calendar;
     std::optional<std::string> exercise_fee_settlement_convention;

@@ -40,9 +40,14 @@ book_purpose_type and ledger_feed_type became non-nullable on the book, the arte
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The failure names its own column, so the work is to find every writer of it
+rather than to read the error again. That column arrived on three things at
+once — the book, the artefact that feeds it, and the trigger that validates it
+— and the loaders were brought to it while the publisher between them was not.
+
+Reproduce by retrying the run that failed, which is the only path that reaches
+the publisher, then hold the published table against the artefact to see
+whether the values crossed.
 
 * Measurements
 
@@ -56,7 +61,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Columns the publisher dropped | 2, of the 20 it names | the function's INSERT list | 2c6b5bcbf1 |
+| Books in the tenant before | 0, with the setup failed at step 3 | =select count(*) from ores_refdata_books_tbl= | 2c6b5bcbf1 |
+| Books after the retry | 110: 100 Trading, 10 SweepTarget | the same query | 2c6b5bcbf1 |
+| Tenant setup steps at hand-over | publish_bundle, import_lei_hierarchy, provision_party and start_market_feeds completed, load_staff running | the step table | 2c6b5bcbf1 |
 
 * Notes
 
@@ -84,3 +92,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A tenant can be provisioned again. The publisher reads book_purpose_type and
+ledger_feed_type out of the artefact and writes them on, so the trigger that
+validates them has something to validate, and the tenant setup walks its steps
+instead of failing at the third.
+
+Three changes in a row moved the same two columns across three tables and each
+one left the next reader behind: the columns went onto the book, the loaders
+learnt to write the artefact, and nobody told the publisher that reads it. The
+lesson is not that the publisher was missed. It is that nothing compares a
+publish function's INSERT list against the table it writes — the same gap a
+loader census would close, and the third defect this session that a check
+looking at column lists would have caught.
+
+The error also reaches the browser as the whole PL/pgSQL body, several hundred
+words of it, laid out in the step panel. That is a presentation defect of its
+own and is not fixed here.

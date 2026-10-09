@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: FAB3F3DC-0140-4C28-BF2C-DA2B66C2C9DC
+:END:
+#+title: Calibrate or refresh a surface prototype
+#+description: Three result views for a surface calibration, and the two calibrations they show, so the error, the slices and the mesh can be judged apart before any of it is built
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:calibration:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:calibrate-or-refresh-a-surface/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+A surface fit is a calibration error before it is a picture. The error says
+whether the fit is usable and where it failed, the slices say what shape the fit
+found, and the mesh says how that shape moves across expiry and delta. The
+prototype puts three views beside each other so one screen can be judged.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data. It exists because the
+[[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][journey]] settles that the person
+reads the calibration error and the slices and leaves the surface unpublished;
+nothing yet settles what that reading looks like, or whether the error is a
+number on a chart or the thing the screen is arranged around.
+
+The page argues for the error. It draws the error summary first, with the worst
+slice, the residual against the worst quote, and each slice's share of the total
+error. A surface that did not converge must read as a failure at the top of the
+screen, not as a shape with an unflattering colour. Open the
+[[file:calibrate-or-refresh-a-surface/][prototype]].
+
+* Detail
+
+** The question
+
+The journey gives one screen: the surface and its as-of at the top, the quotes
+it reads and the parameterisation in the middle, and what the fit produced at
+the bottom. That last panel is the open question. A trader asks three things of
+a calibration: is it trustworthy, which is the error; where is the market wrong,
+which is the slices; and how the surface moves, which is the mesh and the term
+structures that compose it.
+
+One chart cannot answer all three. A smile chart with a bad expiry in it still
+looks like a smile, and a fit-error summary says nothing about the smile's
+shape. The prototype asks whether the screen can hold both, with the error as
+the gate and the pictures as the detail.
+
+** The variants
+
+Switch with the *Result view* buttons in the bottom bar, or =variant=. The
+variant is the journey's open design question.
+
+| Variant | Name            | The structural argument |
+|---------+-----------------+-------------------------|
+| =a=     | slice table     | *Slices — one smile per expiry*: a row per tenor with ATM, 25d RR, 25d BF, RMSE and a flag, and the ATM and RR/BF term structures beside it. The reading a desk already keeps. |
+| =b=     | smile and mesh  | *Smiles* over the delta axis for 1Y, 5Y and 10Y, a vol heat map across expiry and delta, and the mesh lifted from the same grid. The same numbers, drawn. |
+| =c=     | fit error       | *Fit error summary*: overall RMSE, worst slice, iterations, convergence, then each slice's residual on its worst quote, its RMSE and its share of the total error, with the term structures beside it. The error is the subject of the panel, not an annotation on a chart. |
+
+The variants disagree about which question leads. A treats the error as a column
+of the per-tenor numbers, B treats it as a legend entry on a drawn shape, and C
+makes it the subject and derives the pictures from it.
+
+** The states
+
+Switch with the *Calibration* buttons in the bottom bar, or =state=. The state
+is the mock calibration the page holds.
+
+| State       | What it shows |
+|-------------+---------------|
+| =converged= | 42 iterations of 100, overall RMSE 5.8bp, *fit within tolerance on every slice*. The slice RMSEs run from 3.1bp at 1Y to 11.4bp at 30Y. |
+| =failed=    | 100 iterations of 100, overall RMSE 61.7bp, *stopped at the iteration cap: SABR alpha at its bound on the 10Y slice*. The 10Y RMSE is 46.2bp and the 30Y 28.7bp. |
+
+A slice is flagged *ok* below 6bp, *watch* above it, and *poor fit* above 15bp.
+The failed state marks the 10Y and 30Y rows, the mesh notes that the 10Y row is
+the last iterate, and the smile panel states that the 10Y smile must not be read
+as a quote. The two states run through every variant, so a result view that
+cannot make a failed calibration read as a failure has not been judged.
+
+** Driving it
+
+The result view and the calibration switch by query string, so any combination
+is a URL. *Calibrate candidate* reports the fit and writes nothing:
+=marketdata.v1.surface.calibrate= does not exist, so the button names the step.
+The foot of the journey keeps the surface unpublished and the published surface
+unchanged. Every oresmd URI opens the URL editor prototype.
+
+** What is fake
+
+Everything. The six quotes with their values, sources and times; the five slices
+with their ATM, RR, BF and RMSE; the run's iteration count, convergence and
+note; and the derivation are constants in the page. There is no calibration
+engine, no server and no session. SABR is named as selected only.
+
+** Where the code lives
+
+=doc/prototypes/market_data/calibrate-or-refresh-a-surface/=. One file,
+=index.html=, holding its markup, styles and script, with its plotting helper
+=PC=. No framework and no build step. The site copies the directory as it stands.
+
+** The verdict
+
+The group accepted the ordering rather than a chart: the calibration error is
+the first thing the screen says about a fit, and the slices and the mesh are
+readings taken from it. The error panel carries the worst slice, the iteration
+count against the cap, and each slice's share of the error.
+
+What stayed on the page as the record: all three result views and both states,
+and the term structures beside variants *a* and *c*, because the ATM and RR/BF
+curves are what compose the surface.
+
+** What it does not settle
+
+Which result view ships. All three are drawn and none is chosen; the choice
+belongs to the read operations the server will carry, and the journey's
+=marketdata.v1.surface.calibration.get= and =marketdata.v1.surface-slice.get=
+are both missing.
+
+What a calibration error is measured against. The page holds an RMSE per slice
+and an overall RMSE, and invents a residual per worst quote and a share of total
+error. No document fixes those as the error a fit reports.
+
+The strike vocabulary. There is no quoting convention and no strike or
+moneyness label, so the delta axis is the page's choice and the quotes are
+carried as oresmd URI coordinates. The identity of a surface is unsettled too:
+every read is keyed by the URI string, the as-of cannot be served in the past,
+and the page offers the current snapshot only.
+
+* See also
+
+- [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] — the journey this prototype answers.
+- [[id:6C44C1D0-B257-4B4A-9580-98845BEA9AFC][Market data prototypes]] — the group page.
+- [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]] — the reading side of the same slice gap.
+- [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][Author a surface's framework]] — the axes and quoting convention this calibration reads.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — a fitted point carries its config and source series.

@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: ED191054-5B49-4F6D-8EF5-63D0EB8EE535
+:END:
+#+title: Withdraw or replace a published curve prototype
+#+description: A trader's withdraw or replace screen before it is built: three variants and three states, with mock data, no withdrawal operation and no server behind the act
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:withdrawal:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:withdraw-or-replace-a-published-curve/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The prototype argues that a wrong publish is undone as an act with a reason, and
+that the withdrawal can need its own approval. Three variants draw the undo, and
+three states the kind that governs it.
+
+It is throwaway: it reads no service, every value is mock data, and no operation
+stands behind the controls. The
+[[id:B05A31CC-FA22-4534-848E-601A30822992][journey]] settles what undoing a
+publish *does*; this page settles what the trader *sees* when the version that
+was published cannot be named.
+
+Open the [[file:withdraw-or-replace-a-published-curve/][screen]].
+
+* Detail
+
+** The question
+
+The journey gives the trader one screen: the published curve at the top, its
+versions and the proposed change in the middle, and the reason, the action and
+the effect on consumers at the bottom. The open question is how that undo is
+drawn when nothing marks which version was published, and how the same screen
+reads a count that is zero or more: at zero the trader withdraws alone and the
+act applies at once, at one or more a person stands between the ask and the undo.
+
+** The variants
+
+Switch with the bottom bar, or with =?variant=a=, =?variant=b= or =?variant=c=;
+the default is =a=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =a= | The withdraw form | The curve and its versions, the reason and the withdraw action, then the consumers and the decisions. The undo as one act. |
+| =b= | The replace form | The same, with the replacement's as-of and source beside the reason and the act named replace. |
+| =c= | The version being retired beside the replacement | The retired version against the replacement proposed, with the field-level difference under them, so the change is read before it is made. |
+
+The variants disagree about which act the screen is, not about the curve: all
+three render the same header, versions, consumers and decisions.
+
+** The states
+
+Switch with the bottom bar, or with =?state=no-approval=, =?state=approval= or
+=?state=withdrawn=; the default is =no-approval=. The state sets the kind's
+=approvals_required= and the record already in the history.
+
+| State | What it shows |
+|-------+---------------|
+| =no-approval= | =approvals_required= is 0, so the withdrawal applies at once. The field reads *0 - the trader withdraws alone*, and nothing waits. |
+| =approval= | One approver holding =marketdata::curve_withdrawal:decide= must decide. The decisions panel carries one waiting row raised by =a.reyes= under =marketdata.curve_withdrawal=. |
+| =withdrawn= | Withdrawn at 2026-10-06 17:05 by =m.oduya=. The act is a new version, not a deletion: =v4.1= withdrawn beside =v4= superseded, and the decision approved with *Stale pillar confirmed.* |
+
+The state is the argument in one control: =no-approval= makes the click the act,
+=approval= adds a waiting row, =withdrawn= shows the reason attached.
+
+** Driving it
+
+The bottom bar switches variant and state and writes every change to the query
+string through =URLSearchParams=, so any pair can be linked:
+=?variant=c&state=withdrawn=. The banner states the variant, the state and the
+kind's count.
+
+The reason field and the replacement as-of are live inputs but inert: nothing
+reads them. *Raise withdraw request*, *Raise replace request*, *Withdraw now*
+and *Replace now* are disabled because no operation answers them. The one live
+control is the curve identity, which opens the oresmd URL editor in an overlay.
+
+** What is fake
+
+Everything: the curve, its identity, derivation, recipe and observations; the
+six points and their values; the two versions with their writers, clocks and
+sources; the reason; the three consumers; the kind and its count; and the
+decision, its approver and its comment are constants in the page.
+
+There is no server, no session and no build step. The controls call nothing: no
+curve is withdrawn, no version is superseded, no consumer is told and nothing is
+stored.
+
+** Where the code lives
+
+=doc/prototypes/market_data/withdraw-or-replace-a-published-curve/=. The
+directory holds one file, =index.html=, with its CSS and JavaScript inline: no
+framework, no =prototype.css=, no =prototype.js= and no build step. The site
+copies the directory as it stands and adds nothing to it. The identity button
+opens =../oresmd-url-editor/index.html= in an overlay, borrowing the editor
+prototype beside it.
+
+** The verdict
+
+The group accepted the argument recorded as the row this note answers to: a wrong
+publish is undone as an act with a reason, and the withdrawal can need its own
+approval. What the group took is the act with its tail: the reason is labelled
+*kept against the act*, so the undo leaves a why as well as a what, and the
+retired version stays beside its replacement rather than being deleted. The
+count is the kind's rule, read at both ends, so a tenant may let a trader
+withdraw alone or require an approver.
+
+The three variants, the three states, the disabled controls and the consumers
+and decisions panels stayed on the page as the record.
+
+** What it does not settle
+
+The withdrawal and replacement operations. No operation undoes a publish, so the
+controls are disabled; the candidates are =curve_bootstrap.withdraw= and
+=curve_bootstrap.replace=.
+
+The published state. Nothing marks a version published: no =published_at=, no
+=published_by=, no superseded link, so the screen cannot say which version
+pricing is using.
+
+The withdrawal kind and its count. No market-data withdrawal kind is seeded, and
+=iam.role_grant= does not withdraw a curve; the candidate is
+=marketdata.curve_withdrawal= with a configurable =approvals_required=, and the
+four-eyes rule is drawn but nothing here enforces it.
+
+The consumers and the baseline. No read maps this curve to its consumers, no
+notification kind tells them it changed, and the compare uses the version read
+back.
+
+* See also
+
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] — the journey this prototype answers.
+- [[id:6C44C1D0-B257-4B4A-9580-98845BEA9AFC][Market data prototypes]] — the group page, and the row that records what this prototype argues.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record the withdrawal ask is held in, and the four-eyes rule the count obeys.

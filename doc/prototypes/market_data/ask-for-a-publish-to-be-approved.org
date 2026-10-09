@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 0D2D4494-1EBD-4627-B09F-BF902BC9D832
+:END:
+#+title: Ask for a publish to be approved prototype
+#+description: The maker's request screen before it is built: the day's candidate set, the delta against the last published values, and one raise that writes a request the maker cannot decide
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:publish:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:ask-for-a-publish-to-be-approved/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The prototype argues that a publish is a request, not a save. The maker who
+holds a curve raises the day's candidate set; a second pair of eyes decides it.
+The screen has two jobs that must not be confused: show the delta the decision
+rests on, and raise a request the maker cannot answer.
+
+It exists because the [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][journey]] settles
+what the raise *does* — an approval request naming the candidate set, readable
+back as waiting — and nothing yet settles what the maker *sees* while raising
+it. Three variants present the delta. It reads no service, holds no session, and
+every value on it is mock data. Open the
+[[file:ask-for-a-publish-to-be-approved/][ask for a publish to be approved screen]].
+
+* Detail
+
+** The question
+
+The journey's goal is a person who built today's curve and wants it to be the
+curve the desk prices from, with someone else saying yes first. The maker must
+see what changes if the request is granted, because the approver decides from
+that delta; and the maker must not decide it, because that decision is the
+reason the request exists at all.
+
+The open question is where the delta belongs and how much one screen carries. A
+changed list per curve, a difference at every node, and a summary by currency
+answer different questions, and each hides something the others show. The screen
+must also say what a person meets when there is nothing to raise and when a
+request for the same set already waits.
+
+** The variants
+
+Switch with the bottom bar, or with =?variant=a=, =?variant=b= or
+=?variant=c=. The default is =a=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | per curve | One row per curve: its currency, its points, how many changed, the largest move and the mean change. The smallest delta that still names a curve, and the one a maker reads first. |
+| =B= | by node | One row per point: last published, candidate, the difference in basis points, and whether it moved. The most honest delta and the longest table, since three curves and eight tenors make twenty-four rows. |
+| =C= | by currency | One row per currency: its curves, its points, the largest absolute move, the mean change and a bar for the profile. A glance, at the cost of hiding which node moved. |
+
+The variants disagree about the shape of the delta, not the request. All three
+sit above the same ask and the same list of the maker's own requests. *A* tags a
+curve as small or as needing review beyond a two-basis-point mean; *B* tags a
+node as flat or moved at the same threshold; *C* draws the largest move as a
+bar.
+
+** The states
+
+Switch with the bottom bar, or with =?state=nothing=, =?state=ready= or
+=?state=raised=. The default is =ready=.
+
+| State | What it shows |
+|-------+---------------|
+| =nothing= | No candidate set exists for the value date. The candidate and delta panels say so and *Raise publish request* is disabled. The page tells the maker to bootstrap the curve first; there is nothing to ask about. |
+| =ready= | A candidate set for 2026-10-06 16:00 UTC, with the delta against the last published values. *Raise publish request* is enabled, and the note under it states the kind, its one approval from Market data approvers, the comment on approval, and its seven-day life. |
+| =raised= | A request for the same set is already waiting under *My requests*. The header reads *request waiting* instead of *candidate · not published*, and the raise is disabled, because one request is enough. |
+
+The maker's own request list carries past rows in every state, so the page
+always shows how a waiting, an approved and a refused one read.
+
+** Driving it
+
+The bottom bar switches the variant and the state, and each change is written to
+the query string, so any pair can be linked directly. In =ready=, press *Raise
+publish request* and the note becomes the raised outcome, the button disables,
+and nothing else moves. The series is an =oresmd://= URL; press it and the
+oresmd URL editor opens in an overlay. Every control is prototype chrome, and
+the banner states the variant and state in hand.
+
+** What is fake
+
+Everything on the page is mock data: the curves, recipes, tenors, last published
+and candidate values, discount factors, provenance rows, past requests, the kind
+and the deciding group are hard-coded literals.
+
+There is no server, no session and no build step. The raise calls nothing: it
+writes a sentence into the note. No request is created, none is stored, no one
+is notified, and no candidate set is read. Reload and it is as it was.
+
+** Where the code lives
+
+=doc/prototypes/market_data/ask-for-a-publish-to-be-approved/=. The directory
+holds one file, =index.html=, with its CSS and its JavaScript inline: no
+framework, no =prototype.css=, no =prototype.js=, and no build step.
+
+The site build copies the directory through =ores-deploy-web-app= as it stands
+and adds nothing to it. No build file names the prototype, and nothing in the
+directory is compiled, generated or rewritten.
+
+** The verdict
+
+The group accepted the argument and recorded it as the row this note answers to:
+a publish is a request, not a save; the maker raises it with the delta and cannot
+decide it. The three variants and the three states stayed on the page as the
+record of the question, so a later screen can borrow a panel from any of them.
+
+What the group took is the shape of the maker's screen, not a particular table:
+the delta above the ask, the ask with its kind and terms, the maker's requests
+after it, and a raise disabled whenever there is nothing to raise or a request
+waits.
+
+** What it does not settle
+
+The baseline. There is no published marker and no diff subject on the server
+today, so the comparison is by eye against a snapshot the maker chooses.
+Whether the system holds that diff, or the screen builds one, is open.
+
+The request. The prototype invents one record with a reason, a kind, a deciding
+group, a decide permission and a seven-day life. Whether the reason is kept,
+whether expiry is enforced, and whether the deciding group is set per kind are
+open; [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] argues the general shape.
+
+The notice and the refusal. A raise tells nobody, and a notice to the approver
+and the maker is its own requirement. The state names a refused request but does
+not draw what the maker reads when it comes back refused, or how they raise the
+set again.
+
+* See also
+
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — the journey this prototype renders.
+- [[file:index.org][Market data prototypes]] — the group page, and the row that records what this prototype argues.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record a raise creates, and the four-eyes rule it obeys.

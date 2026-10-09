@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: 6B07FA13-ACB6-4F4A-83A4-537A9B114C01
+:END:
+#+title: See who changed a curve, and when prototype
+#+description: One curve's trail on a single page: its blueprint changes, builds, hand adjustments, approvals and publishes, each with an actor, in three variants and three trails
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:trail:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:see-who-changed-a-curve/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The trail prototype argues that the trail of a curve is one place: its blueprint
+changes, its builds, its hand adjustments, its approvals and its publishes, each
+with an actor. It draws that place three ways, so the shape can be judged with
+something concrete in front of you rather than in the abstract.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data. It exists because the
+[[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][journey]] settles what the trail reads
+— the versions the server already keeps — and nothing yet settles how five kinds of
+act, with different actors and different lifetimes, belong on one screen, or what
+the screen says when a kind has no read behind it at all. Open the
+[[file:see-who-changed-a-curve/][trail]]; it opens on variant *a* and trail =rich=.
+
+* Detail
+
+** The question
+
+The trail carries no state of its own: it is a reading of the versions the server
+keeps. The open question is how that reading is shown when its five kinds arrive
+from different entities, on different clocks, and several cannot be read yet. The
+journey records the defects already — an observation keeps no actor, no publish
+operation exists, no market-data approval kind is seeded — so the prototype asks
+what a screen honestly shows around those absences.
+
+** The variants
+
+Switch with the *Variant* buttons in the bottom bar, or =?variant=. The variant is
+how the five kinds are laid out, which is the screen's central design question.
+
+| Variant | Name             | The structural argument |
+|---------+------------------+-------------------------|
+| =a=     | merged timeline  | One table, newest first, with a *Kind* column over blueprint, build, manual, approval and publish. The shortest read, and the one that hides which rows the server can answer. |
+| =b=     | one table per kind | A panel for blueprint changes, one for builds, one for manual adjustments, one for approvals, one for publishes. The longest read, and the one whose panels match the reads the journey lists, panel by panel. |
+| =c=     | two-version compare | The selected version and the one before it, side by side, with the field-level difference under them. It addresses the series row only, because no point registers a history provider. |
+
+The variants disagree about structure, not colour. *A* trades completeness for
+speed, *B* gives each kind its own panel and notice, and *C* answers the journey's
+last step and leaves the four other kinds off the page.
+
+** The states
+
+Switch with the *Trail* buttons, or =?state=. The state is the mock trail the page
+reads.
+
+| State    | What it shows |
+|----------+---------------|
+| =rich=   | The full trail: blueprint versions =v1= to =v3= with their field differences, four builds from =ir_curve.usd=, =bloomberg= and manual, two hand points written by =j.silva= and =a.reyes=, one approved request, and two publishes, =v3= and =v4=. |
+| =empty=  | Nothing published yet. The header tag reads *never published*, and the approvals and publishes panels are empty and say so. The rest of the trail stands. |
+| =manual= | The rich trail, plus a panel naming one hand point: =fwd_start=0D&tenor=2Y= at 4.4050, written by =j.silva= under reason =curve.trader_override=. |
+
+The =manual= panel is the argument in one block. It says the writer is *inferred*,
+because the observation keeps no version and no actor, and it reads the writer
+from the write's change reason and the source string. The screen states the
+inference rather than claiming a version it cannot read.
+
+** Driving it
+
+The bottom bar switches variant and trail, and any combination is a URL:
+=?variant=b&state=manual= opens that page, because every button rewrites the query
+string rather than hiding panels in place. One control is live: the series URI is a
+button that opens the oresmd URL editor in an overlay and takes back the URL the
+editor returns. A link to the journey sits at the top right, every actor name is
+drawn as a link that goes nowhere, and no other click writes.
+
+** What is fake
+
+Everything. The series, its subclass, its derivation, its config and its
+provenance; the three blueprint versions and their field differences; the four
+builds and their point counts; the two hand points, their values, reasons and
+writers; the lineage row; the approval and its decision; and the two publishes,
+with every actor and clock, are constants in the page. There is no server, no
+session and no build step, and nothing is written or stored.
+
+** Where the code lives
+
+=doc/prototypes/market_data/see-who-changed-a-curve/=. One file, =index.html=,
+holding its markup, styles and script, with no framework and no build step. The
+site copies the directory as it stands and adds nothing to it. The URI button
+opens =../oresmd-url-editor/index.html= in an overlay, so the page borrows the
+editor prototype beside it and embeds no copy of its own.
+
+** The verdict
+
+The group accepted the argument rather than a layout: the trail of a curve is one
+reading, in one place, and each row names its actor and time where the server
+keeps one. A panel whose read does not exist says which subject is missing and
+stays empty, and a writer the server cannot name is marked *inferred* rather than
+presented as a version. The three variants proved the argument holds whether the
+kinds are merged, separated or reduced to a compare.
+
+What stayed on the page as the record: the three variants; the three trails,
+because the empty and manual cases are what the missing reads produce; the
+per-point provenance panel, kept as the record that a lineage row is read by an id
+the screen does not hold; and the oresmd URL editor overlay on the series URI.
+
+** What it does not settle
+
+Which variant wins. The merged timeline, the per-kind tables and the compare are
+all drawn and none is chosen; the choice belongs to the reads the server will
+answer.
+
+The publish and approval panels. No publish subject and no publish event exist, so
+the two publish rows are the design target, not a read. The inbox seeds one kind,
+=iam.role_grant=, and no kind names a curve publish or a hand adjustment, so the
+approvals panel holds a shape and is otherwise empty.
+
+The actor, the manual marker and the lineage read. =market_observation= registers
+no history provider and keeps no version, so a build has no actor and a point's
+writer is inferred from the change reason and the source string; no column marks a
+point manual, so a source that names no producer channel is treated as one by
+convention; and the lineage read takes the row's id, not the observation, so the
+screen matches the rest by hand. No field separates a candidate from a published
+value, so the trail does not claim which points were published.
+
+* See also
+
+- [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] — the journey this prototype answers.
+- [[id:6C44C1D0-B257-4B4A-9580-98845BEA9AFC][Market data prototypes]] — the group page, and the table this prototype sits in.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — why a consumer must know where a point came from before it can read the who and the why.

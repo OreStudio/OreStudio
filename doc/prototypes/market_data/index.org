@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:index:ui:market_data:
 #+created: 2026-10-08
-#+updated: 2026-10-08
+#+updated: 2026-10-09
 
 * Summary
 
@@ -26,35 +26,36 @@ generated alternative kept beside the agreed design, never instead of it.
 #+ATTR_HTML: :class hug-leading
 | Prototype                                 | What it argues | Open it | Review |
 |-------------------------------------------+----------------+---------+--------|
-| Manage a curve's blueprint                | A curve's blueprint is its pillars and the method that joins them; the pillar editor is where the design question sits. | [[file:manage-a-curves-blueprint/][prototype]] | none |
-| Author a surface's framework              | A surface is axes before it is numbers: the quoting convention and the two label ladders decide what the grid can hold. | [[file:author-a-surfaces-framework/][prototype]] | none |
-| Watch the market and clear its exceptions | The market's exceptions are cleared where they are seen, so the quotes and the fallbacks belong on one screen. | [[file:watch-the-market-and-clear-its-exceptions/][prototype]] | none |
-| Bootstrap or refresh a curve              | A build produces a candidate, not a curve the system uses. One bootstrap reads real or synthetic inputs: the same instruments reprice, and only the provenance differs, so the screen records where each rate came from. | [[file:bootstrap-or-refresh-a-curve/][prototype]] | none |
-| Calibrate or refresh a surface            | A surface fit is a calibration error before it is a picture: the error, the slices and the mesh answer different questions. | [[file:calibrate-or-refresh-a-surface/][prototype]] | none |
-| Adjust a curve or surface by hand         | A hand adjustment is a first-class point with an actor and a reason, and it must read as a point the market did not send. | [[file:adjust-a-curve-or-surface-by-hand/][prototype]] | none |
-| Check a curve's fit                       | A curve is checked against the quotes it came from: residuals, forward smoothness and the roll logic, on one screen. | [[file:check-a-curves-fit/][prototype]] | none |
-| Inspect a surface's slices                | A surface is read a slice at a time, and the arbitrage checks are what make the slices trustworthy. | [[file:inspect-a-surfaces-slices/][prototype]] | none |
-| Ask for a publish to be approved          | A publish is a request, not a save: the maker raises it with the delta and cannot decide it. | [[file:ask-for-a-publish-to-be-approved/][prototype]] | none |
-| Decide a publish                          | The checker decides from the delta and the checks, with a comment, and the kind may ask for more than one pair of eyes. | [[file:decide-a-publish/][prototype]] | none |
-| Publish the approved set                  | Publishing is the moment the candidate becomes what pricing uses, and the approval count decides whether a person stands in it. | [[file:publish-the-approved-set/][prototype]] | none |
-| Withdraw or replace a published curve     | A wrong publish is undone as an act with a reason, and the withdrawal can need its own approval. | [[file:withdraw-or-replace-a-published-curve/][prototype]] | none |
-| Watch a curve or surface evolve           | One instant and a range are the same view at different zoom: the alignment and the added and dropped nodes are the argument. | [[file:watch-a-curve-or-surface-evolve/][prototype]] | none |
-| See who changed a curve, and when         | The trail of a curve: blueprint changes, builds, hand adjustments, approvals and publishes in one place, each with an actor. | [[file:see-who-changed-a-curve/][prototype]] | none |
-| oresmd URL editor                         | A valid oresmd URL is very hard to write by hand; this editor composes, parses and validates one from the schema, offers the codes the system already keeps (currencies, day counters, tenors, curve ids, index names, security ids) plus ORE's own vocabularies as pickers, and every dialog that shows a URL calls it. | [[file:oresmd-url-editor/][prototype]] | none |
-| Market simulator                          | Authoring synthetic feeds is one composite screen: a tree of the configured feeds, a summary of the selection, and the live chart it produces. Starting a collection is one folder-scoped request, and a node is running, stopped or partial. | [[file:synthetic-market-simulator/][prototype]] | none |
-| Author an FX price feed                   | An FX feed is a process plus a tick clock plus provenance, and the process is read twice before it is saved: the return distribution and the sample paths it implies. | [[file:author-an-fx-price-feed/][prototype]] | none |
-| Author an IR curve feed                   | An IR curve feed is a short-rate model, its parameters and the tenor ladder it is bootstrapped from; the curve shape and the sample paths say whether the choice is sane. | [[file:author-an-ir-curve-feed/][prototype]] | none |
-| Manage synthetic collections              | A collection is the unit a person starts and stops, so it must show what it owns and where it came from before it is run. | [[file:manage-synthetic-collections/][prototype]] | none |
-| Manage GMM components                     | A mixture is browsed across every feed at once, and the weights are normalised on save, so the screen must show the raw sum as well as the normalised weights. | [[file:manage-gmm-components/][prototype]] | none |
-| Manage yield curve process types          | The short-rate models and their parameters are data, not code, so a new model appears in the curve editor with no change to the editor. | [[file:manage-yield-curve-process-types/][prototype]] | none |
+| [[file:manage-a-curves-blueprint.org][Manage a curve's blueprint]] | A curve's blueprint is its pillars and the method that joins them; the pillar editor is where the design question sits. | [[file:manage-a-curves-blueprint/][prototype]] | none |
+| [[file:author-a-surfaces-framework.org][Author a surface's framework]] | A surface is axes before it is numbers: the quoting convention and the two label ladders decide what the grid can hold. | [[file:author-a-surfaces-framework/][prototype]] | none |
+| [[file:watch-the-market-and-clear-its-exceptions.org][Watch the market and clear its exceptions]] | The market's exceptions are cleared where they are seen, so the quotes and the fallbacks belong on one screen. | [[file:watch-the-market-and-clear-its-exceptions/][prototype]] | none |
+| [[file:bootstrap-or-refresh-a-curve.org][Bootstrap or refresh a curve]] | A build produces a candidate, not a curve the system uses. One bootstrap reads real or synthetic inputs: the same instruments reprice, and only the provenance differs, so the screen records where each rate came from. | [[file:bootstrap-or-refresh-a-curve/][prototype]] | none |
+| [[file:calibrate-or-refresh-a-surface.org][Calibrate or refresh a surface]] | A surface fit is a calibration error before it is a picture: the error, the slices and the mesh answer different questions. | [[file:calibrate-or-refresh-a-surface/][prototype]] | none |
+| [[file:adjust-a-curve-or-surface-by-hand.org][Adjust a curve or surface by hand]] | A hand adjustment is a first-class point with an actor and a reason, and it must read as a point the market did not send. | [[file:adjust-a-curve-or-surface-by-hand/][prototype]] | none |
+| [[file:check-a-curves-fit.org][Check a curve's fit]] | A curve is checked against the quotes it came from: residuals, forward smoothness and the roll logic, on one screen. | [[file:check-a-curves-fit/][prototype]] | none |
+| [[file:inspect-a-surfaces-slices.org][Inspect a surface's slices]] | A surface is read a slice at a time, and the arbitrage checks are what make the slices trustworthy. | [[file:inspect-a-surfaces-slices/][prototype]] | none |
+| [[file:ask-for-a-publish-to-be-approved.org][Ask for a publish to be approved]] | A publish is a request, not a save: the maker raises it with the delta and cannot decide it. | [[file:ask-for-a-publish-to-be-approved/][prototype]] | none |
+| [[file:decide-a-publish.org][Decide a publish]] | The checker decides from the delta and the checks, with a comment, and the kind may ask for more than one pair of eyes. | [[file:decide-a-publish/][prototype]] | none |
+| [[file:publish-the-approved-set.org][Publish the approved set]] | Publishing is the moment the candidate becomes what pricing uses, and the approval count decides whether a person stands in it. | [[file:publish-the-approved-set/][prototype]] | none |
+| [[file:withdraw-or-replace-a-published-curve.org][Withdraw or replace a published curve]] | A wrong publish is undone as an act with a reason, and the withdrawal can need its own approval. | [[file:withdraw-or-replace-a-published-curve/][prototype]] | none |
+| [[file:watch-a-curve-or-surface-evolve.org][Watch a curve or surface evolve]] | One instant and a range are the same view at different zoom: the alignment and the added and dropped nodes are the argument. | [[file:watch-a-curve-or-surface-evolve/][prototype]] | none |
+| [[file:see-who-changed-a-curve.org][See who changed a curve, and when]] | The trail of a curve: blueprint changes, builds, hand adjustments, approvals and publishes in one place, each with an actor. | [[file:see-who-changed-a-curve/][prototype]] | none |
+| [[file:oresmd-url-editor.org][oresmd URL editor]] | A valid oresmd URL is very hard to write by hand; this editor composes, parses and validates one from the schema, offers the codes the system already keeps (currencies, day counters, tenors, curve ids, index names, security ids) plus ORE's own vocabularies as pickers, and every dialog that shows a URL calls it. | [[file:oresmd-url-editor/][prototype]] | none |
+| [[file:synthetic-market-simulator.org][Market simulator]] | Authoring synthetic feeds is one composite screen: a tree of the configured feeds, a summary of the selection, and the live chart it produces. Starting a collection is one folder-scoped request, and a node is running, stopped or partial. | [[file:synthetic-market-simulator/][prototype]] | none |
+| [[file:author-an-fx-price-feed.org][Author an FX price feed]] | An FX feed is a process plus a tick clock plus provenance, and the process is read twice before it is saved: the return distribution and the sample paths it implies. | [[file:author-an-fx-price-feed/][prototype]] | none |
+| [[file:author-an-ir-curve-feed.org][Author an IR curve feed]] | An IR curve feed is a short-rate model, its parameters and the tenor ladder it is bootstrapped from; the curve shape and the sample paths say whether the choice is sane. | [[file:author-an-ir-curve-feed/][prototype]] | none |
+| [[file:manage-synthetic-collections.org][Manage synthetic collections]] | A collection is the unit a person starts and stops, so it must show what it owns and where it came from before it is run. | [[file:manage-synthetic-collections/][prototype]] | none |
+| [[file:manage-gmm-components.org][Manage GMM components]] | A mixture is browsed across every feed at once, and the weights are normalised on save, so the screen must show the raw sum as well as the normalised weights. | [[file:manage-gmm-components/][prototype]] | none |
+| [[file:manage-yield-curve-process-types.org][Manage yield curve process types]] | The short-rate models and their parameters are data, not code, so a new model appears in the curve editor with no change to the editor. | [[file:manage-yield-curve-process-types/][prototype]] | none |
 
 * Adding a prototype
 
 Create =doc/prototypes/market_data/<name>/= with an =index.html=, and a
 =prototype.css= and =prototype.js= when it needs them. Open the page with
 the links table every prototype carries, and leave its review row at
-=none=. Add a row to the table above, with the design note beside the
-prototype when there is one. Stop there: the site build finds every
+=none=. Write the design note at
+=doc/prototypes/market_data/<name>.org=, add a row to the table above, and
+link the note from the row's first cell. Stop there: the site build finds every
 prototype under this tree, so no build file names it.
 
 A review goes at =doc/prototypes/market_data/<name>/review/=, with an

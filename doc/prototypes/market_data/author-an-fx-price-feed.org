@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: FC948AE9-B042-48C6-BF6E-6D0A026830D3
+:END:
+#+title: Author an FX price feed prototype
+#+description: The FX spot feed editor before it is built: three variants of the instrument, the process and the GMM components, and four mock feeds the process is read against, on a throwaway page
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:author-an-fx-price-feed/][the prototype]]         |
+| Gemini review | none |
+| Group         | [[file:index.org][Market data prototypes]] |
+
+* Summary
+
+The FX feed prototype argues what the *Edit FX Rate* screen should show before
+any of it is built. It carries three variants of the same editor — instrument
+with provenance, price behaviour with its two charts, and the advanced GMM
+component editor — and four mock feeds, so the layout can be judged against
+something concrete.
+
+It argues the group page's row: an FX feed is a process plus a tick clock plus
+provenance, and the process is read twice, as the return distribution it implies
+and as the sample paths it produces. The person authoring a feed chooses the
+shape of the returns it will publish, and the screen shows it while it is still
+a choice.
+
+It is throwaway, with no service and no build step. Open the
+[[file:author-an-fx-price-feed/][feed editor]].
+
+* Detail
+
+** The question
+
+The config a feed is built from is small: a pair, an ORE key derived from it, a
+price source, a tick clock, and a stochastic process. The process is the open
+part: its parameters are draw statistics, not a price, and the same numbers read
+as a plausible feed or an absurd one by the shape they imply. The editor carries
+it twice, as the return distribution and the paths it walks, beside the clock.
+
+Provenance is decided here too, and a GMM feed's weights need not sum to one as
+typed, so the screen shows the raw sum and the normalisation the save applies.
+
+** The variants
+
+Switch with the tabs, the bottom bar, or =?variant=. The default is =a=. The
+variants disagree about what the editor is for: *A* treats a feed as an
+instrument with an audit tail, *B* as a process to be looked at before it is
+chosen, and *C* as a mixture to be edited directly.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | instrument + provenance | The instrument table: the pair, the derived ORE key, the source name and description, the price source, and the audit row the save would write. The provenance belongs on the screen that decides it. |
+| =B= | price behaviour | The engine, the tick clock, the Simple sliders, and the two previews the argument rests on: the return distribution and the sample paths. |
+| =C= | advanced GMM | The raw μ, σ and w table for the mixture, the weight sum, and the mixture density with its weighted components. The most control and the least forgiving. |
+
+** The states
+
+Switch with the bottom bar, or =?state=. The default is =geometric=. Each state
+sets the mock feed the page reads and the starting positions of its controls.
+
+| State | What it shows |
+|-------+---------------|
+| =geometric= | Geometric Brownian Motion, a valid pair, and GMM components that sum to 1. The ordinary feed. |
+| =ou= | Ornstein-Uhlenbeck, so the half-life and the price-domain steady-state density apply: the distribution chart leaves the return domain for N(θ, σ²/2κ). |
+| =gmm= | Gaussian Mixture, three components whose weights sum to 1, and the mixture density drawn over its weighted parts. |
+| =invalid= | Base and quote are both =US=, so the pair is malformed; the weights sum to 0.95; and the vintage browser is disconnected, reading *No vintages found*. |
+
+** Driving it
+
+Everything on the page is live. The engine decides which sliders appear; the
+tick clock echoes its own rate as ticks per hour; the initial price, the paths
+and the seed redraw the sample chart. *Reseed* draws a new set from the seed the
+page carries. In the advanced variant, *Add process*, *Remove* and *Restore a
+single Normal-profile component* edit the mixture.
+
+The ORE key is derived and read-only. The series is an =oresmd://= URL; press one
+and the oresmd URL editor opens in an overlay. Every control is prototype
+chrome, drawn to look unlike the design being judged.
+
+** What is fake
+
+Everything on the page is mock data. The pair, the ORE key, the source name
+=EURUSD-SYNTH=, the description, the vintage, the seed, the components and the
+provenance rows are hard-coded literals, as is the service that writes them.
+There is no server, no session and no build step.
+
+No save button is drawn: the validation panel states that Save is blocked while
+a rule fails. No config is written, no feed is started, and no vintage is read.
+Reload the page and it is as it was.
+
+** Where the code lives
+
+=doc/prototypes/market_data/author-an-fx-price-feed/=. One file, =index.html=,
+with its CSS and its JavaScript inline: no framework, no =prototype.css=, no
+=prototype.js=, and no build step. The page opens by double-clicking the file.
+The site build copies the directory through =ores-deploy-web-app= as it stands
+and adds nothing to it. Nothing in it is compiled, generated or rewritten.
+
+** The verdict
+
+The group accepted the argument and recorded it as the row this note answers to:
+an FX feed is a process plus a tick clock plus provenance, and the process is
+read twice before it is saved. What the group took is the shape of the editor,
+not one panel: the instrument and the audit row stand together, the price
+behaviour carries the clock and previews the process, and a GMM feed shows its
+weight sum before the save normalises it. The three variants and the four states
+stayed on the page as the record.
+
+** What it does not settle
+
+The engine list. The three engines are a code-side list, while the IR curve
+editor's process types are runtime-managed catalogue data. Whether a new FX
+engine arrives as data is open.
+
+The tick clock. The page fixes one interval. Whether ticks arrive at irregular
+intervals instead, and how a person would author that, is not closed here.
+
+The normalisation. The page shows the raw weight sum and says the save
+normalises it. Whether the values as typed are kept is open.
+
+The price domain. An Ornstein-Uhlenbeck feed adds absolute increments, and the
+page warns they may go negative. Whether that is refused, clamped or allowed is
+open.
+
+The vintage source. *From vintage data* browses a mock picker. Which vintage a
+feed is bound to, and how that binding is validated, are open.
+
+* See also
+
+- The journey that answers to this prototype, *Author an FX price feed*, has no
+  document yet; [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]] states where it belongs.
+- [[file:index.org][Market data prototypes]] — the group page, and the row that records what this prototype argues.
+- [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]] — the record this editor writes.
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] — what starts and stops a feed once it exists.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.

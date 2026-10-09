@@ -130,9 +130,7 @@ export function ReportingLinesPage(): ReactNode {
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,1fr)]">
                 <section className="rounded-md border border-line bg-surface-raised">
                     <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
-                        <h2 className="text-sm font-semibold">
-                            {t('membership.reporting.tree')}
-                        </h2>
+                        <h2 className="text-sm font-semibold">{t('membership.reporting.tree')}</h2>
                         <div className="flex items-center gap-2">
                             <Tag tone="muted">
                                 {t('membership.reporting.people', { count: nodes.length })}
@@ -203,8 +201,7 @@ export function ReportingLinesPage(): ReactNode {
                                                   (node) =>
                                                       node.accountId ===
                                                       selected.reportsToAccountId,
-                                              )?.fullName ??
-                                              selected.reportsToAccountId)
+                                              )?.fullName ?? selected.reportsToAccountId)
                                     }
                                 />
                                 <Detail

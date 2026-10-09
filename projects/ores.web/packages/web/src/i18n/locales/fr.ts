@@ -2238,8 +2238,7 @@ const fr: SourceCatalogue = {
             commentary: 'Note',
             save: 'Enregistrer la ligne',
             clear: 'Effacer la ligne',
-            noVersion:
-                'Le compte n’a pas pu être lu : l’écriture n’indique donc aucune version.',
+            noVersion: 'Le compte n’a pas pu être lu : l’écriture n’indique donc aucune version.',
             unrooted:
                 '{count} personnes n’atteignent aucune racine : leur responsable a disparu, ou la ligne qui les porte est rompue. Elles sont laissées hors de l’arborescence plutôt que dessinées comme racines.',
             gaps: 'Ce que cet écran ne peut pas faire',

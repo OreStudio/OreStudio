@@ -140,7 +140,11 @@ export function WhereIWorkPage({
                     <>
                         <div className="mt-2 text-base font-medium">{acting.name}</div>
                         <dl className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                            <Detail label={t('membership.where.code')} value={acting.shortCode} mono />
+                            <Detail
+                                label={t('membership.where.code')}
+                                value={acting.shortCode}
+                                mono
+                            />
                             <Detail
                                 label={t('membership.where.where')}
                                 value={acting.businessCenterCode}
@@ -159,9 +163,7 @@ export function WhereIWorkPage({
 
             <section className="space-y-3">
                 <h2 className="text-sm font-semibold">{t('membership.where.parties')}</h2>
-                {mine.length <= 1 && (
-                    <Notice tone="info">{t('membership.where.oneParty')}</Notice>
-                )}
+                {mine.length <= 1 && <Notice tone="info">{t('membership.where.oneParty')}</Notice>}
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {mine.map((party) => (
                         <PartyCard
@@ -235,9 +237,7 @@ function PartyCard({
             </div>
             <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-line-subtle pt-3">
                 {acting ? (
-                    <span className="text-xs text-ink-faint">
-                        {t('membership.where.thisIsIt')}
-                    </span>
+                    <span className="text-xs text-ink-faint">{t('membership.where.thisIsIt')}</span>
                 ) : (
                     <Button variant="primary" size="sm" disabled={busy} onClick={onSwitch}>
                         {t('membership.where.switch')}

@@ -70,9 +70,10 @@ const TREE = [
 function render(nodes: readonly ReportingTreeNode[], unrooted = 0): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['reporting-tree'], { unrooted, nodes });
-    client.setQueryData(['amend-reasons'], [
-        { code: 'common.non_material_update', description: 'Non material update' },
-    ]);
+    client.setQueryData(
+        ['amend-reasons'],
+        [{ code: 'common.non_material_update', description: 'Non material update' }],
+    );
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>

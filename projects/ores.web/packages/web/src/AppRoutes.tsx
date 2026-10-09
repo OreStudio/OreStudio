@@ -537,7 +537,9 @@ export function AppRoutes({
             />
             <Route
                 path="/reporting-lines"
-                element={signedIn(gate.version, session, shell, () => <ReportingLinesPage />)}
+                element={signedIn(gate.version, session, shell, () => (
+                    <ReportingLinesPage />
+                ))}
             />
             <Route
                 path="/people"

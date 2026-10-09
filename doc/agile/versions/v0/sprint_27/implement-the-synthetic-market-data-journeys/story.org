@@ -36,7 +36,7 @@ A person authors an FX price feed, authors an IR curve feed, runs a collection a
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:AF124B71-1F0B-4899-8707-F85B81FD51C3][Scaffold the synthetic implementation story]] | STARTED | 2026-10-09 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. |
+| [[id:AF124B71-1F0B-4899-8707-F85B81FD51C3][Scaffold the synthetic implementation story]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. |
 | [[id:0091F10A-AC68-4C12-8536-F72E371E4E61][Bring the synthetic models onto the address mechanism]] | BACKLOG | | | The nine synthetic models carry no Physical space section, so no protocol address is declared and the TypeScript twin cannot be generated. |
 | [[id:ECFA5A82-3BAE-45A0-8044-6A9CB8E30913][Project the synthetic protocol to TypeScript]] | BACKLOG | | | Synthetic is one of three components with no committed TypeScript protocol, so ores.web cannot speak it. |
 | [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] | BACKLOG | | | The BFF has no route for any synthetic subject, and the web reaches the bus only through the BFF. |

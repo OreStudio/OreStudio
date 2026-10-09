@@ -26,11 +26,11 @@ The story is wired into the sprint and its tasks are filed.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance

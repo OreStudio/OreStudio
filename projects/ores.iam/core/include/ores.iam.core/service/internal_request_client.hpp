@@ -30,6 +30,7 @@
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 namespace ores::iam::service {
 
@@ -128,6 +129,21 @@ public:
                                          result.error().what());
             return *result;
         }
+    }
+
+    /**
+     * @brief Publishes @p msg to @p subject carrying this client's token.
+     *
+     * A step whose work is to start another run publishes a start message
+     * rather than making a request, and that message requires a session, so
+     * the identity the client was minted for has to reach the bus directly
+     * instead of through a subject that would answer it.
+     */
+    template <typename Message>
+    void publish(std::string_view subject, const Message& msg) {
+        const auto& codec = ores::nats::default_wire_codec();
+        const auto bytes = codec.encode(msg);
+        nats_.js_publish(subject, std::span<const std::byte>(bytes), headers());
     }
 
     /**

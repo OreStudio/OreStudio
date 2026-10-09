@@ -58,6 +58,7 @@ TEST_CASE("the executor classifies each kind it executes into its own action", t
     CHECK(classify_step_kind("start_market_feeds") == provision_step_action::start_market_feeds);
     CHECK(classify_step_kind("complete_provisioning") ==
           provision_step_action::complete_provisioning);
+    CHECK(classify_step_kind("start_tenant_setup") == provision_step_action::start_tenant_setup);
 }
 
 TEST_CASE("the executor refuses every kind it does not know", tags) {

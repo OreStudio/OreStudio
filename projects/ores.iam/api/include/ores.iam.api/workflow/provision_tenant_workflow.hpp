@@ -49,6 +49,11 @@ inline constexpr std::string_view provision_tenant_workflow_type = "provision_te
 /// =iam.v1.ops.provision_party= starts the run, and the run names this type.
 inline constexpr std::string_view provision_party_workflow_type = "provision_party_workflow";
 
+/// The workflow type the new tenant's own setup run declares in its start
+/// message. It is not a request's subject either: the system-side run's last
+/// step starts this one, and this run names this type.
+inline constexpr std::string_view tenant_setup_workflow_type = "tenant_setup_workflow";
+
 /**
  * @brief What each run acts on, as the start message states it.
  *
@@ -76,6 +81,14 @@ inline constexpr std::string_view provision_tenant_step_subject =
 /// kinds the profile declares. A run finishes only by running its steps out, so
 /// "the tenant is ready" is a step rather than a property of the definition.
 inline constexpr std::string_view complete_provisioning_step_kind = "complete_provisioning";
+
+/// The step kind that hands the tenant to its own administrator, appended to
+/// the system-side run after the kinds the profile declares. Its work is to
+/// start the tenant's own setup run, which finishes the tenant. A profile
+/// never orders it: where the two runs are joined is the notation's statement
+/// and not a starting point's, so a profile that names it is refused rather
+/// than given a second handover.
+inline constexpr std::string_view start_tenant_setup_step_kind = "start_tenant_setup";
 
 /// The step kinds the notation knows, each named once so a handler that reads
 /// the catalogue by kind names the same string the catalogue declares.
@@ -170,6 +183,11 @@ struct step_kind_words {
         return {"Start the market feeds",
                 "Starts the synthetic market data the tenant's curves and prices are built from.",
                 orchestrating_step_timeout};
+    if (kind == start_tenant_setup_step_kind)
+        return {"Hand the tenant to its administrator",
+                "Starts the tenant's own setup run, which runs as the tenant "
+                "administrator and finishes the tenant.",
+                write_step_timeout};
     if (kind == complete_provisioning_step_kind)
         return {"Finish",
                 "Marks the tenant ready: it stops bootstrapping and becomes active.",
@@ -204,6 +222,23 @@ inline constexpr std::string_view provision_executed_step_kinds[] = {system_prov
     return std::any_of(std::begin(provision_executed_step_kinds),
                        std::end(provision_executed_step_kinds),
                        [kind](std::string_view known) { return known == kind; });
+}
+
+/**
+ * @brief Whether a step kind acts in the system tenant rather than the tenant
+ * being provisioned.
+ *
+ * The split between the two runs is this predicate. The provisioning of one
+ * tenant is two runs joined at the authentication boundary: the caller owns
+ * the run whose kinds act in the system tenant, and the new tenant owns the
+ * run whose kinds act inside it. @c system_provision is the only system-scoped
+ * kind today -- it publishes the installation's own data, which belongs to the
+ * system tenant and exists before the new tenant holds anything. A kind added
+ * to the catalogue has to be classified here, so that a future kind cannot
+ * land in a run by accident.
+ */
+[[nodiscard]] inline bool is_system_scoped_step_kind(std::string_view kind) {
+    return kind == system_provision_step_kind;
 }
 
 /**
@@ -361,6 +396,8 @@ make_step(const provision_tenant_workflow_request& run,
         return {load_staff_step_kind, provision_party_step_kind};
     if (kind == start_market_feeds_step_kind)
         return {publish_bundle_step_kind};
+    if (kind == start_tenant_setup_step_kind)
+        return {system_provision_step_kind};
     return {};
 }
 
@@ -418,8 +455,15 @@ inline void declare_inputs(std::vector<ores::workflow::service::workflow_step_de
 }
 
 /**
- * @brief One engine step per kind the run declares, in the order it declares
- * them.
+ * @brief One engine step per kind one half of a profile declares, in the order
+ * it declares them, followed by the kind that run appends.
+ *
+ * The provisioning of one tenant is two runs, and this builds one of them.
+ * @p system_scoped chooses the half: true builds the kinds that act in the
+ * system tenant, false the kinds that act in the new tenant. Every declared
+ * kind is checked before the split, so a run refuses a profile that orders an
+ * unbuilt kind whichever half it would have landed in, and a kind one run does
+ * not take is a kind the other run takes.
  *
  * A kind the catalogue does not know, and a kind this build does not execute,
  * are both refused by throwing before the engine creates the run, naming the
@@ -427,29 +471,45 @@ inline void declare_inputs(std::vector<ores::workflow::service::workflow_step_de
  * a starting point that orders an unbuilt kind can never half-provision what it
  * was asked for.
  *
- * The completing step a tenant run appends is deliberately not here: the run
- * that provisions a party of an existing tenant has nothing to complete.
+ * The kinds a run appends are deliberately not here: complete_provisioning
+ * finishes the tenant and start_tenant_setup hands it to its own
+ * administrator, so a profile that orders either is refused. @p appended_kind
+ * is the one this run adds instead, empty for a run that appends none and
+ * composes its own final step.
  */
 [[nodiscard]] inline std::vector<ores::workflow::service::workflow_step_def>
 build_declared_steps(const provision_tenant_workflow_request& run,
+                     bool system_scoped,
+                     const std::string& appended_kind,
+                     const std::string& appended_arguments_json,
                      std::unordered_map<std::string, int>& seen) {
     std::vector<ores::workflow::service::workflow_step_def> steps;
     std::vector<std::string> kinds;
-    steps.reserve(run.steps.size());
-    kinds.reserve(run.steps.size());
+    steps.reserve(run.steps.size() + 1);
+    kinds.reserve(run.steps.size() + 1);
 
     for (const auto& declared : run.steps) {
         if (declared.kind == complete_provisioning_step_kind)
             throw std::runtime_error("The profile orders the step kind '" + declared.kind +
                                      "', which every tenant run appends itself.");
+        if (declared.kind == start_tenant_setup_step_kind)
+            throw std::runtime_error("The profile orders the step kind '" + declared.kind +
+                                     "', which the provisioning run appends itself.");
         if (!is_declared_step_kind(declared.kind))
             throw std::runtime_error("The profile orders the step kind '" + declared.kind +
                                      "', which this deployment does not know.");
         if (!is_executed_step_kind(declared.kind))
             throw std::runtime_error("The profile orders the step kind '" + declared.kind +
                                      "', which this deployment does not execute.");
+        if (is_system_scoped_step_kind(declared.kind) != system_scoped)
+            continue;
         steps.push_back(make_step(run, declared.kind, declared.arguments_json, seen));
         kinds.push_back(declared.kind);
+    }
+
+    if (!appended_kind.empty()) {
+        steps.push_back(make_step(run, appended_kind, appended_arguments_json, seen));
+        kinds.push_back(appended_kind);
     }
 
     declare_inputs(steps, kinds);
@@ -461,11 +521,13 @@ build_declared_steps(const provision_tenant_workflow_request& run,
 /**
  * @brief Registers the provision_tenant_workflow definition.
  *
- * One engine step per step kind the run's request declares, in the order the
- * profile declared them, plus one final step that completes the tenant. Every
- * step is dispatched to @ref provision_tenant_step_subject, which ores.iam
- * serves: the engine sends a step and waits for the handler to report it, so a
- * step's kind must have an executor there.
+ * The system side of a tenant's provisioning, as its own run: one engine step
+ * per system-scoped kind the request declares, in the order the profile
+ * declared them, plus the step that hands the tenant to its own administrator
+ * and starts the run that finishes it. Every step is dispatched to
+ * @ref provision_tenant_step_subject, which ores.iam serves: the engine sends a
+ * step and waits for the handler to report it, so a step's kind must have an
+ * executor there.
  */
 inline void
 register_provision_tenant_workflow(ores::workflow::service::workflow_registry& registry) {
@@ -477,23 +539,68 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
     def.on_failure = failure_policy::stop;
     def.steps_depend_on_request = true;
     def.description =
-        "Provisions a tenant from a seed profile: publishes the bundles the profile orders, "
-        "imports its LEI hierarchy, provisions its parties, loads its staff, attaches its "
-        "images, starts its market feeds, and completes the tenant. One engine step per declared "
-        "step kind, in the profile's order, plus the step that completes it.";
+        "Publishes the installation's own data into the system tenant and hands the tenant to "
+        "its own administrator, who runs its setup. One engine step per system-scoped kind the "
+        "profile orders, plus the step that starts the tenant's own run.";
 
     def.build_steps = [](const std::string& request_json,
                          const std::string& /*tenant_id*/,
                          const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
         const auto run = detail::read_workflow_request(request_json);
         std::unordered_map<std::string, int> seen;
-        auto steps = detail::build_declared_steps(run, seen);
+        return detail::build_declared_steps(run,
+                                            /*system_scoped=*/true,
+                                            std::string(start_tenant_setup_step_kind),
+                                            request_json,
+                                            seen);
+    };
+
+    registry.register_definition(std::move(def));
+}
+
+/**
+ * @brief Registers the tenant_setup_workflow definition.
+ *
+ * The new tenant's own setup, as its own run: one engine step per kind the
+ * request declares that is not system-scoped, in the order the profile declared
+ * them, plus the step that completes the tenant. The run is owned by the new
+ * tenant and its steps act as that tenant's administrator, which the system
+ * side created. Its request is the same one the system-side run received: one
+ * run hands its own request to the next rather than composing another.
+ *
+ * The tenant run and this one share the subject, the step command and the
+ * notation, so a kind means one thing on both sides and the executor that
+ * serves one serves the other.
+ */
+inline void
+register_tenant_setup_workflow(ores::workflow::service::workflow_registry& registry) {
+
+    using namespace ores::workflow::service;
+
+    workflow_definition def;
+    def.type_name = std::string(tenant_setup_workflow_type);
+    def.on_failure = failure_policy::stop;
+    def.steps_depend_on_request = true;
+    def.description =
+        "Finishes a tenant from the seed profile the system-side run received: publishes the "
+        "bundles the profile orders, imports its LEI hierarchy, provisions its parties, loads "
+        "its staff, attaches its images, starts its market feeds, and completes the tenant. One "
+        "engine step per declared kind that acts inside the tenant, in the profile's order, plus "
+        "the step that completes it.";
+
+    def.build_steps = [](const std::string& request_json,
+                         const std::string& /*tenant_id*/,
+                         const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
+        const auto run = detail::read_workflow_request(request_json);
+        std::unordered_map<std::string, int> seen;
+        auto steps = detail::build_declared_steps(
+            run, /*system_scoped=*/false, std::string{}, std::string{}, seen);
         auto finish =
             detail::make_step(run, std::string(complete_provisioning_step_kind), "{}", seen);
         // Nothing is finished before everything is: the finishing step marks the
         // tenant active, so it reads every step the run declared rather than
-        // only the last. A chain of seven kinds therefore ends in a fan-in of
-        // seven, which is also what lets the middle of the chain fan out.
+        // only the last. A chain of six kinds therefore ends in a fan-in of
+        // six, which is also what lets the middle of the chain fan out.
         finish.consumes.reserve(steps.size());
         for (const auto& declared : steps)
             finish.consumes.push_back(declared.name);
@@ -537,7 +644,8 @@ register_provision_party_workflow(ores::workflow::service::workflow_registry& re
                          const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
         const auto run = detail::read_workflow_request(request_json);
         std::unordered_map<std::string, int> seen;
-        return detail::build_declared_steps(run, seen);
+        return detail::build_declared_steps(
+            run, /*system_scoped=*/false, std::string{}, std::string{}, seen);
     };
 
     registry.register_definition(std::move(def));

@@ -27,6 +27,7 @@ import { useTranslation } from './i18n/Provider.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
 import { useSite } from './session/SiteProvider.js';
+import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { setupAnswerStep } from './session/setupAnswer.js';
 import { useJourneyServer } from './journeys/server.js';
 import { FirstRunJourney } from './journeys/FirstRunJourney.js';
@@ -762,6 +763,7 @@ export function ConnectedApp(): ReactNode {
     const { state: gate, recheck, reading } = useBootstrap();
     const { state: session, signIn, chooseParty, signOut } = useSession();
     const { environment } = useSite();
+    const { t } = useTranslation();
     const server = useJourneyServer();
     const navigate = useNavigate();
     const [journeyInProgress, setJourneyInProgress] = useState(false);
@@ -829,75 +831,77 @@ export function ConnectedApp(): ReactNode {
     });
 
     return (
-        <AppRoutes
-            gate={gate}
-            session={session}
-            self={account.data ?? null}
-            environment={environment}
-            journey={
-                <FirstRunJourney
-                    server={server}
-                    inBootstrapMode={gate.status === 'ready' && gate.inBootstrapMode}
-                    signedIn={session.status === 'authenticated'}
-                    onStarted={() => setJourneyInProgress(true)}
-                    onFinished={() => {
-                        setJourneyInProgress(false);
+        <ErrorBoundary title={t('journey.failedHeading')} hint={t('journey.reloadHint')}>
+            <AppRoutes
+                gate={gate}
+                session={session}
+                self={account.data ?? null}
+                environment={environment}
+                journey={
+                    <FirstRunJourney
+                        server={server}
+                        inBootstrapMode={gate.status === 'ready' && gate.inBootstrapMode}
+                        signedIn={session.status === 'authenticated'}
+                        onStarted={() => setJourneyInProgress(true)}
+                        onFinished={() => {
+                            setJourneyInProgress(false);
+                            /*
+                             * The tenant the journey just made is the fact that
+                             * releases the gate, and this answer is what carries
+                             * it: without asking again the deployment would still
+                             * read as one with no tenant, and the journey would
+                             * keep the browser it has just finished with.
+                             */
+                            void recheck();
+                        }}
+                    />
+                }
+                newTenantJourney={
+                    <NewTenantJourney
+                        server={server}
                         /*
-                         * The tenant the journey just made is the fact that
-                         * releases the gate, and this answer is what carries
-                         * it: without asking again the deployment would still
-                         * read as one with no tenant, and the journey would
-                         * keep the browser it has just finished with.
+                         * The journey ends either inside the new tenant or signed
+                         * out, and both are places the route table already knows:
+                         * the home page sends a signed-out visitor to sign in.
                          */
-                        void recheck();
-                    }}
-                />
-            }
-            newTenantJourney={
-                <NewTenantJourney
-                    server={server}
-                    /*
-                     * The journey ends either inside the new tenant or signed
-                     * out, and both are places the route table already knows:
-                     * the home page sends a signed-out visitor to sign in.
-                     */
-                    onFinished={() => navigate('/')}
-                />
-            }
-            tenantSetupJourney={
-                <TenantSetupJourney
-                    server={server}
-                    /*
-                     * The run is what clears the tenant's flag, so the gate is
-                     * asked again rather than trusted: its answer is what lets
-                     * this administrator into the application.
-                     */
-                    onFinished={() => {
-                        void recheck();
-                    }}
-                />
-            }
-            newPartyJourney={
-                <NewPartyJourney
-                    server={server}
-                    /*
-                     * The journey ends working as the new party, or at the
-                     * screen the person came from; both are the home page.
-                     */
-                    onFinished={() => navigate('/')}
-                />
-            }
-            signUpJourney={<SignUpJourney server={server} />}
-            journeyInProgress={journeyInProgress}
-            onSignIn={signIn}
-            onChooseParty={chooseParty}
-            onSignOut={() => {
-                void signOut();
-            }}
-            onRetryBootstrap={() => {
-                void recheck();
-            }}
-        />
+                        onFinished={() => navigate('/')}
+                    />
+                }
+                tenantSetupJourney={
+                    <TenantSetupJourney
+                        server={server}
+                        /*
+                         * The run is what clears the tenant's flag, so the gate is
+                         * asked again rather than trusted: its answer is what lets
+                         * this administrator into the application.
+                         */
+                        onFinished={() => {
+                            void recheck();
+                        }}
+                    />
+                }
+                newPartyJourney={
+                    <NewPartyJourney
+                        server={server}
+                        /*
+                         * The journey ends working as the new party, or at the
+                         * screen the person came from; both are the home page.
+                         */
+                        onFinished={() => navigate('/')}
+                    />
+                }
+                signUpJourney={<SignUpJourney server={server} />}
+                journeyInProgress={journeyInProgress}
+                onSignIn={signIn}
+                onChooseParty={chooseParty}
+                onSignOut={() => {
+                    void signOut();
+                }}
+                onRetryBootstrap={() => {
+                    void recheck();
+                }}
+            />
+        </ErrorBoundary>
     );
 }
 

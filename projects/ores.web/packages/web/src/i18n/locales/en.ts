@@ -1513,7 +1513,9 @@ export const en: SourceCatalogue = {
 
     journey: {
         steps: 'Steps',
-        actionFailed: 'The step failed: {message}',
+        failedHeading: 'The setup stopped on an error',
+        reloadHint:
+            'Reload the page to start again from the last screen the deployment recorded.',
         policyFailed:
             'The password rules could not be read, so no password can be set here. {message}',
 

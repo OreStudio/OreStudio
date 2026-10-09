@@ -108,75 +108,86 @@ export function JourneyPage({ steps, at, onMove, header }: JourneyPageProps): Re
     };
 
     return (
-        <div className="grid gap-8 md:grid-cols-[14rem_1fr]">
-            <nav aria-label={t('journey.steps')}>
-                <ol className="space-y-1">
-                    {entries.map((entry, index) => (
-                        <li
-                            key={entry.id}
-                            aria-current={entry.state === 'current' ? 'step' : undefined}
-                            className={cx(
-                                'flex items-center gap-3 rounded-md px-3 py-2 text-sm',
-                                RAIL_ENTRY[entry.state],
-                            )}
-                        >
-                            <span
-                                aria-hidden
+        <div className="space-y-6">
+            {/*
+             * The failure belongs above the rail rather than inside the step
+             * card: a step that did not run is the whole screen's news, and a
+             * notice tucked under a heading is what let a failed setup read as
+             * an ordinary screen with nothing to say.
+             */}
+            {failure !== undefined && (
+                <Notice tone="error">
+                    <p className="font-semibold">{t('journey.failedHeading')}</p>
+                    <p className="mt-2 font-mono break-words">{failure}</p>
+                </Notice>
+            )}
+            <div className="grid gap-8 md:grid-cols-[14rem_1fr]">
+                <nav aria-label={t('journey.steps')}>
+                    <ol className="space-y-1">
+                        {entries.map((entry, index) => (
+                            <li
+                                key={entry.id}
+                                aria-current={entry.state === 'current' ? 'step' : undefined}
                                 className={cx(
-                                    'grid size-6 shrink-0 place-items-center rounded-full border text-xs',
-                                    RAIL_MARK[entry.state],
+                                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm',
+                                    RAIL_ENTRY[entry.state],
                                 )}
                             >
-                                {entry.state === 'done' ? '✓' : index + 1}
-                            </span>
-                            {entry.title}
-                        </li>
-                    ))}
-                </ol>
-            </nav>
+                                <span
+                                    aria-hidden
+                                    className={cx(
+                                        'grid size-6 shrink-0 place-items-center rounded-full border text-xs',
+                                        RAIL_MARK[entry.state],
+                                    )}
+                                >
+                                    {entry.state === 'done' ? '✓' : index + 1}
+                                </span>
+                                {entry.title}
+                            </li>
+                        ))}
+                    </ol>
+                </nav>
 
-            <section className="card p-6">
-                {header !== undefined && (
-                    <div className="mb-5 border-b border-line pb-5">{header}</div>
-                )}
-                <h2 className="mb-1 text-lg font-semibold">{step.title}</h2>
-                <p className="mb-5 text-sm text-ink-muted">{step.lead}</p>
-                {failure !== undefined && (
-                    <Notice tone="error">{t('journey.actionFailed', { message: failure })}</Notice>
-                )}
-                {step.body}
-                {(step.next !== undefined || back) && (
-                    <div className="mt-6 flex border-t border-line pt-4">
-                        {/*
-                         * A step the person may not walk back from offers no
-                         * button at all: a disabled one reports a rule they
-                         * cannot act on, and the rail already says the step is
-                         * behind them.
-                         */}
-                        {back && (
-                            <Button variant="ghost" onClick={() => onMove(at - 1)}>
-                                {t('common.back')}
-                            </Button>
-                        )}
-                        {step.next !== undefined && (
-                            <Button
-                                variant="primary"
-                                className="ml-auto"
-                                disabled={!step.next.enabled}
-                                pending={running}
-                                /*
-                                 * The button's own pending state reports the
-                                 * wait, and a rejection sets the failure notice
-                                 * above. Nothing else can act on it.
-                                 */
-                                onClick={() => void advance()}
-                            >
-                                {step.next.label}
-                            </Button>
-                        )}
-                    </div>
-                )}
-            </section>
+                <section className="card p-6">
+                    {header !== undefined && (
+                        <div className="mb-5 border-b border-line pb-5">{header}</div>
+                    )}
+                    <h2 className="mb-1 text-lg font-semibold">{step.title}</h2>
+                    <p className="mb-5 text-sm text-ink-muted">{step.lead}</p>
+                    {step.body}
+                    {(step.next !== undefined || back) && (
+                        <div className="mt-6 flex border-t border-line pt-4">
+                            {/*
+                             * A step the person may not walk back from offers no
+                             * button at all: a disabled one reports a rule they
+                             * cannot act on, and the rail already says the step is
+                             * behind them.
+                             */}
+                            {back && (
+                                <Button variant="ghost" onClick={() => onMove(at - 1)}>
+                                    {t('common.back')}
+                                </Button>
+                            )}
+                            {step.next !== undefined && (
+                                <Button
+                                    variant="primary"
+                                    className="ml-auto"
+                                    disabled={!step.next.enabled}
+                                    pending={running}
+                                    /*
+                                     * The button's own pending state reports the
+                                     * wait, and a rejection sets the failure notice
+                                     * above. Nothing else can act on it.
+                                     */
+                                    onClick={() => void advance()}
+                                >
+                                    {step.next.label}
+                                </Button>
+                            )}
+                        </div>
+                    )}
+                </section>
+            </div>
         </div>
     );
 }

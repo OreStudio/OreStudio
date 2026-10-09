@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-09
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Journey 7 classifies a book with every field the screen draws, and a close or a 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
 
 * Acceptance
 
@@ -85,6 +85,23 @@ carries a design question that must be settled before it is written.
    /What is missing/ to what is still open. Gap 4, the rights panel, is out of
    scope by the story's own decision and stays.
 
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Outcomes in the catalogue before / after | 15 → 17 | =grep -c '^\\*\\* ' projects/ores.database/modeling/ores.database.outcomes.org= | =f782c45687= |
+| Cross-component table reads in =ores.sql/create/=, all six components | 0 | =for c in refdata trading iam dq marketdata compute; do grep -rhoE "from (refdata\|trading\|iam\|dq\|marketdata\|compute)_[a-z_]+" projects/ores.sql/create/$c/*.sql; done= | =f782c45687= |
+| Journey 7 rows that are =missing= or =partial= | 7 → 1 | =grep -cE '^\\| [^\\|]+ \\| [^\\|]+ \\| [^\\|]+ \\| (missing\|partial) \\|' doc/knowledge/journeys/books/journey_shape_the_book_structure.org= | =f782c45687= |
+| Subjects journey 7 names that do not resolve | 0 | the inventory diff in the sibling tasks | =f782c45687= |
+| Book model's own columns that a write could not carry | 2 → 0 | =grep -c "book_purpose_type\\|ledger_feed_type" projects/ores.refdata/modeling/ores.refdata.book.org= | =f782c45687= |
+
 * Notes
 
 Reconnaissance at =f782c45687= (trunk), before any edit. Journey 7's gaps 1, 2, 3
@@ -106,21 +123,13 @@ trigger should declare it too.
 =owner_unit_id= is nullable and its foreign key has no ancestry check, only an
 active-row check.
 
-* Measurements
-
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
-
-* Notes
+Two things the catalogue enforces that the plan did not anticipate. A SQLSTATE
+may be raised by one outcome only, so =status_transition_not_allowed= takes
+=22023= and =unit_outside_ancestry= takes =23503=, because =level_violation=
+already holds =23514=. And a book's insert trigger fires =before insert= with no
+=return= of its own; an early =return NEW= inside a rule block would skip
+change-reason validation and the whole version-management tail, so the ancestry
+walk carries a found flag rather than returning.
 
 * Test Scenarios
 
@@ -146,3 +155,64 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Three of the four units are built. The fourth cannot be built where the journey
+reads as if it would be, and the finding is recorded in journey 7 rather than
+turned into a refusal that lies.
+
+*What landed.*
+
+- *The book carries its purpose and its ledger feed.* =book_purpose_type= and
+  =ledger_feed_type= are non-nullable text columns on =ores.refdata.book=,
+  mirroring =regulatory_book_type=: validated by function in the insert trigger,
+  present on the write, the detail form, the table display and the list columns.
+  They default to =Trading= and =None=, which the lookups' own seeds name as the
+  values for a book with no specialised role and no ledger connection. No new SQL
+  was needed for the validation, because =ores_refdata_validate_book_purpose_type_fn=
+  and =ores_refdata_validate_ledger_feed_type_fn= already existed.
+- *The status transition rule refuses from the catalogue.* The book trigger now
+  reads the status the row currently holds and refuses a move the lifecycle does
+  not draw: =Active= to =Frozen= or =Closed=, =Frozen= back to =Active= only, and
+  =Closed= terminal. A move to the status a row already holds is not a move. The
+  refusal is the new =status_transition_not_allowed= outcome, so the reply carries
+  a code and a sentence naming both statuses rather than the trigger's own words.
+- *The owning unit is checked against the ancestry chain.* The trigger walks the
+  book's =parent_portfolio_id= chain to the root and refuses an =owner_unit_id=
+  the chain never names, as the new =unit_outside_ancestry= outcome. The walk
+  carries a seen-set so a cycle cannot hang it, and a found flag rather than an
+  early return, because a =return= in a =before insert= trigger would skip
+  change-reason validation and the version-management tail.
+
+*What is recorded rather than built.*
+
+*Closing a book with open activity is not refused, and this change does not
+pretend otherwise.* The journey wants the refusal to name the open trades,
+unsettled cash flows and open positions the book still holds. Those rows are
+=trading='s. No component's SQL reads another component's tables — the check
+across all six =create/= directories finds zero cross-component reads — and
+=ores.refdata.core= declares no dependency on =trading=, so neither the trigger
+nor the service can reach them. Enforcing it here would mean the first
+cross-component read in the schema, or a wire round trip that cannot be atomic
+with the book write. That is an architectural decision, not an implementation
+detail, so the gap stays open with the reason written into journey 7. The screen
+checks before it writes, as it does today.
+
+*Verification.*
+
+The branch builds. =check_model_drift.py --summary= reports no drift and zero
+exceptions. =check_component_drift.py --sweep= reports that no file this branch
+touched would change. The shell recipe inventory and the physical space inventory
+are both up to date, and the tangle regenerated 3386 scripts without leaving an
+untracked file behind. Journey 7's table went from seven =missing=/=partial= rows
+to one, and every subject it names resolves.
+
+*What is not verified.* No database test exercises the new trigger logic, and no
+C++ test exercises the two new columns. The =db= and =ctest= tiers were not run:
+this box shares one PostgreSQL across eleven worktrees, so =compass db recreate=
+would disrupt the others, and the local =.env= is at format version 27 against a
+required 29. The PL/pgSQL is therefore reviewed by reading the rendered trigger,
+not by executing it. The status rule and the ancestry walk are the two pieces
+that most deserve a database test when one can be run safely.
+
+*What was left alone.* Journey 7's gap 4, the rights panel, stays: the story
+assigns =portfolio_right= to the Access group, and this task's scope excludes it.

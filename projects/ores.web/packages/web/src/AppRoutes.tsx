@@ -94,13 +94,14 @@ import type { EnvironmentView } from '@ores/contracts';
  * system provisioner wizard has not recorded that it finished: a first-run
  * installation may keep only the system tenant, and the wizard signs the person
  * out at the end, so the flag is read through their session while they have
- * one. The third is a tenant administrator whose own tenant has not finished
- * the setup run the deployment started for it, which holds the browser on the
- * tenant setup screen. A visitor with no session is never held, and neither is
- * a session in a tenant that finished its run or whose deployment kept no
- * tenant of its own: the deployment's lacking a tenant of its own is not a
- * reason to hold the rail. The deployment's own state is what survives a
- * reload; the tab's memory only outlives the run.
+ * one. The third is a session whose tenant is still bootstrapping, which holds
+ * the browser on the tenant setup screen: the fact comes from the tenant's own
+ * lifecycle status, so it reads the same in every party of the tenant. A
+ * visitor with no session is never held, and neither is a session in a tenant
+ * that has finished its run or whose deployment kept no tenant of its own: the
+ * deployment's lacking a tenant of its own is not a reason to hold the rail.
+ * The deployment's own state is what survives a reload; the tab's memory only
+ * outlives the run.
  */
 export interface AppRoutesProps {
     readonly gate: BootstrapState;
@@ -223,15 +224,16 @@ export function AppRoutes({
         !gate.onboardingComplete;
 
     /*
-     * A tenant administrator whose tenant has not finished its own setup run
-     * stays on the tenant setup screen. The mode is what separates the two
-     * rails: a super administrator acts on the deployment itself, and every
-     * other session acts on the tenant whose run this is.
+     * A session whose tenant is still bootstrapping stays on the tenant setup
+     * screen. The fact is the session's, taken from the tenant's own lifecycle
+     * status when the session opened, so it reads the same in every party of
+     * the tenant. The setting this replaces lived under the tenant's system
+     * party, and a session in any other party read it as unfinished forever.
+     * The system tenant is never bootstrapping, so a super administrator is
+     * never held here.
      */
     const resumingTenantSetup =
-        session.status === 'authenticated' &&
-        session.session.mode !== 'system-administration' &&
-        !gate.onboardingTenantComplete;
+        session.status === 'authenticated' && session.session.tenantBootstrapping;
 
     /*
      * A rail is the one public screen somebody can be signed in on, so it
@@ -762,7 +764,7 @@ export function AppRoutes({
 /** The wiring: the two states, and the actions the screens can take. */
 export function ConnectedApp(): ReactNode {
     const { state: gate, recheck, reading } = useBootstrap();
-    const { state: session, signIn, chooseParty, signOut } = useSession();
+    const { state: session, signIn, chooseParty, refresh, signOut } = useSession();
     const { environment } = useSite();
     const { t } = useTranslation();
     const server = useJourneyServer();
@@ -879,12 +881,13 @@ export function ConnectedApp(): ReactNode {
                         <TenantSetupJourney
                             server={server}
                             /*
-                             * The run is what clears the tenant's flag, so the gate is
-                             * asked again rather than trusted: its answer is what lets
-                             * this administrator into the application.
+                             * The run's finish is what makes the tenant active, so
+                             * the session is read again rather than trusted: its
+                             * answer is what lets this administrator into the
+                             * application.
                              */
                             onFinished={() => {
-                                void recheck();
+                                void refresh();
                             }}
                         />
                     }

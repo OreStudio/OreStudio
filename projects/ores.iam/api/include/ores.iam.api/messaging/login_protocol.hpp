@@ -101,6 +101,21 @@ struct login_response {
     std::string email;
     bool password_reset_required = false;
     bool tenant_bootstrap_mode = false;
+    /**
+     * @brief Whether the caller's tenant is still being set up.
+     *
+     * This is the tenant's own lifecycle status, which reads @c bootstrapping
+     * until the tenant's setup run marks it @c active. It is a fact about the
+     * tenant row, so every party of the tenant reads it the same way, and it is
+     * what a screen must hold a tenant administrator's setup on.
+     *
+     * It is stated beside @c tenant_bootstrap_mode rather than derived from it.
+     * That flag is a setting under the tenant's system party, and the completing
+     * step clears it as a warning rather than a condition: a tenant that is
+     * already active can still report the flag as set, so the flag cannot answer
+     * this question on its own.
+     */
+    bool tenant_bootstrapping = false;
     bool party_setup_required = false;
     /**
      * @brief Set when the party provisioner wizard has completed

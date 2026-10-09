@@ -158,6 +158,8 @@ export interface ActiveSession {
     readonly accountId: string;
     readonly tenantId: string;
     readonly tenantName: string;
+    /** Whether the caller's tenant is still being set up. */
+    readonly tenantBootstrapping: boolean;
     /** The build the session was opened against. */
     readonly version: string;
     /** The database the login answer carried, beside the build it states. */
@@ -177,6 +179,8 @@ export interface PartySelectionRequired {
     readonly accountId: string;
     readonly tenantId: string;
     readonly tenantName: string;
+    /** Whether the caller's tenant is still being set up. */
+    readonly tenantBootstrapping: boolean;
     /** The build the login was answered by. */
     readonly version: string;
     /** The database the login answer carried, beside the build it states. */
@@ -760,6 +764,7 @@ export class OresClient {
             accountId: reply.accountId,
             tenantId: reply.tenantId,
             tenantName: reply.tenantName,
+            tenantBootstrapping: reply.tenantBootstrapping,
             version: reply.version,
             database: reply.database,
             username: reply.username,
@@ -809,6 +814,7 @@ export class OresClient {
             accountId: input.expected.accountId,
             tenantId: input.expected.tenantId,
             tenantName: reply.tenantName.length > 0 ? reply.tenantName : input.expected.tenantName,
+            tenantBootstrapping: input.expected.tenantBootstrapping,
             version: input.expected.version,
             database: input.expected.database,
             username: reply.username.length > 0 ? reply.username : input.expected.username,
@@ -1390,6 +1396,7 @@ function toActive(reply: LoginResponse, party: PartySummary): ActiveSession {
         accountId: reply.accountId,
         tenantId: reply.tenantId,
         tenantName: reply.tenantName,
+        tenantBootstrapping: reply.tenantBootstrapping,
         version: reply.version,
         database: reply.database,
         username: reply.username,

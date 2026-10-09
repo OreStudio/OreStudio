@@ -87,6 +87,14 @@ interface SessionContextValue {
      * caller holds a complete list.
      */
     readonly switchParty: (partyId: string) => Promise<void>;
+    /**
+     * Reads the session again from the server.
+     *
+     * The session view carries facts the server holds, the tenant's setup
+     * status among them, and a screen that has just changed one asks for it
+     * again rather than trusting the copy it was handed.
+     */
+    readonly refresh: () => Promise<void>;
     readonly signOut: () => Promise<void>;
 }
 
@@ -156,7 +164,7 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
         queryKey: SESSION_QUERY_KEY,
         queryFn: api.session,
     });
-    const { data, isPending, isError, error } = sessionQuery;
+    const { data, isPending, isError, error, refetch } = sessionQuery;
 
     useEffect(() => {
         if (isPending) {
@@ -249,6 +257,10 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
         [queryClient],
     );
 
+    const refresh = useCallback<SessionContextValue['refresh']>(async () => {
+        await refetch();
+    }, [refetch]);
+
     const signOut = useCallback<SessionContextValue['signOut']>(async () => {
         await api.logout();
         queryClient.removeQueries({
@@ -264,9 +276,10 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
             signIn,
             chooseParty,
             switchParty,
+            refresh,
             signOut,
         }),
-        [state, signIn, chooseParty, switchParty, signOut],
+        [state, signIn, chooseParty, switchParty, refresh, signOut],
     );
 
     return <SessionContext value={value}>{children}</SessionContext>;

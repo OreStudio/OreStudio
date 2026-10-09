@@ -214,6 +214,30 @@ inline bool auth_is_tenant_bootstrap_mode(const ores::database::context& ctx,
     return false;
 }
 
+/**
+ * @brief Whether the tenant's own row still states that it is being set up.
+ *
+ * The status is the lifecycle fact the tenant's completing step flips, and it
+ * is a fact about the tenant row, so every party of the tenant reads it the
+ * same way. The setting beside it, @c system.bootstrap_mode, is cleared by the
+ * same step as a warning rather than a condition, so a tenant that is already
+ * active can still report the setting as set. A read that fails answers false:
+ * the deployment cannot prove the tenant is still being set up, and holding a
+ * signed-in person on a rail is the worse direction.
+ */
+inline bool auth_is_tenant_bootstrapping(const ores::database::context& ctx,
+                                         const boost::uuids::uuid& tenant_id) {
+    try {
+        const auto tenants = repository::read_active_tenant_by_id(ctx, tenant_id);
+        if (!tenants.empty())
+            return tenants.front().status == "bootstrapping";
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to read tenant status: " << e.what();
+    }
+    return false;
+}
+
 // Reads onboarding.party directly from the DB (never the party cache), so
 // it is immune to cache staleness after a heavy import — unlike the
 // party.status check it replaces, which conflated the party's own domain
@@ -684,6 +708,17 @@ public:
             const bool in_tenant_bootstrap =
                 !acct.tenant_id.is_system() &&
                 auth_is_tenant_bootstrap_mode(login_ctx, acct.tenant_id.to_string());
+            /*
+             * The session's setup rail is decided by the tenant's lifecycle
+             * status, not by the setting above: the completing step clears the
+             * setting as a warning, and a tenant that is already active can
+             * still report it as set. The status is a fact about the tenant row,
+             * so a session in any of the tenant's parties reads it the same
+             * way.
+             */
+            const bool tenant_bootstrapping =
+                !acct.tenant_id.is_system() &&
+                auth_is_tenant_bootstrapping(login_ctx, acct.tenant_id.to_uuid());
 
             repository::account_party_repository ap_repo(login_ctx);
             auto account_parties = ap_repo.read_latest_by_account(acct.id);
@@ -811,6 +846,7 @@ public:
                 resp.email = acct.email;
                 resp.selected_party_id = boost::uuids::to_string(party_id);
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
+                resp.tenant_bootstrapping = tenant_bootstrapping;
                 resp.password_reset_required = outcome.password_reset_required;
                 resp.access_lifetime_s = token_settings()->access_lifetime_s;
                 resp.session_id = session_id_str;
@@ -871,6 +907,7 @@ public:
                 resp.username = acct.username;
                 resp.email = acct.email;
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
+                resp.tenant_bootstrapping = tenant_bootstrapping;
                 resp.password_reset_required = outcome.password_reset_required;
                 resp.access_lifetime_s = token_settings()->party_selection_lifetime_s;
                 resp.session_id = session_id_str;

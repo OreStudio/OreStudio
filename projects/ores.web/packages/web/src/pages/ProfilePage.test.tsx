@@ -55,6 +55,7 @@ const session: SessionView = {
     tenantId: TENANT_ID,
     tenantName: 'Acme Corporation',
     mode: 'application',
+    tenantBootstrapping: false,
     version: 'v0.0.25 (test)',
     party: {
         id: '66666666-6666-6666-6666-666666666666',

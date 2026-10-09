@@ -93,6 +93,7 @@ function buildTestServer(): ReturnType<typeof buildServer> {
                 accountId: '11111111-1111-1111-1111-111111111111',
                 tenantId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
                 tenantName: 'Northwind Capital',
+                tenantBootstrapping: false,
                 version: 'v0.0.25 [x64-linux] (local abc1234)',
                 database: DATABASE,
                 username: 'tenant_admin',

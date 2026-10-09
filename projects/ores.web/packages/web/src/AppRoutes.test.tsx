@@ -44,6 +44,7 @@ const session: SessionView = {
     tenantId: '3f1e2d4c-0000-4000-8000-000000000002',
     tenantName: 'Acme Corporation',
     mode: 'application',
+    tenantBootstrapping: false,
     version: 'v0.0.25 (test)',
     party,
     availableParties: [party],

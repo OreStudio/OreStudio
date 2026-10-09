@@ -437,6 +437,57 @@ export interface SetReportingLineResponse {
 }
 
 /**
+ * @brief One account in the tenant's reporting shape.
+ *
+ * The depth counts from a root: a root is 0, its reports are 1, and so on.
+ * When the read names a root, that root is 0 in the answer. An account that
+ * does not reach any root — a manager who is missing, or a ring the store
+ * accepted before the guard existed — is answered with depth -1 and counted in
+ * the response's unrooted total.
+ *
+ * Declared before the response that carries it, because the generators emit
+ * the messages in the order this file states them.
+ */
+export interface ReportingTreeNode {
+    account_id: string;
+    username: string;
+    full_name: string;
+    job_title: string;
+    /**
+     * @brief The manager's account id, or empty when the account is a root.
+     */
+    reports_to_account_id: string;
+    /**
+     * @brief The number of managers between this account and a root, or -1 when it
+     * reaches none.
+     */
+    depth: number;
+    direct_reports: number;
+}
+
+/**
+ * @brief The tenant's reporting shape in one read.
+ *
+ * The read answers the tenant's own accounts, which row-level security bounds,
+ * and needs =iam::accounts:read=. An empty =root_account_id= asks for the whole
+ * tenant, ordered by depth; a stated root asks for that account's branch, so a
+ * screen can open one part of a large organisation without carrying the rest.
+ */
+export interface GetReportingTreeRequest {
+    root_account_id: string;
+}
+
+export interface GetReportingTreeResponse {
+    result: Result;
+    nodes: ReportingTreeNode[];
+    /**
+     * @brief How many accounts in the tenant reach no root. Stated so the screen
+     * can say the shape is broken rather than draw a tree that is missing people.
+     */
+    unrooted: number;
+}
+
+/**
  * @brief Reconciles the accounts a tenant holds with the pictures they name.
  *
  * Every account that names a picture code and carries no picture gets one:
@@ -480,6 +531,7 @@ export const subjects = {
     get_my_account_contact_information_request: 'iam.v1.ops.get_my_account_contact_information',
     get_my_parties_request: 'iam.v1.ops.get_my_parties',
     set_reporting_line_request: 'iam.v1.ops.set_reporting_line',
+    get_reporting_tree_request: 'iam.v1.ops.get_reporting_tree',
     attach_account_pictures_request: 'iam.v1.ops.attach_account_pictures',
 } as const;
 /**
@@ -505,5 +557,6 @@ export const requiresSession = {
     get_my_account_contact_information_request: true,
     get_my_parties_request: true,
     set_reporting_line_request: true,
+    get_reporting_tree_request: true,
     attach_account_pictures_request: true,
 } as const;

@@ -182,6 +182,13 @@ public:
                                            const std::vector<std::string>& args);
 
     /**
+     * @brief get-reporting-tree <root_account_id>
+     */
+    static void process_get_reporting_tree(std::ostream& out,
+                                           ores::nats::service::nats_client& session,
+                                           const std::vector<std::string>& args);
+
+    /**
      * @brief attach-account-pictures
      */
     static void process_attach_account_pictures(std::ostream& out,

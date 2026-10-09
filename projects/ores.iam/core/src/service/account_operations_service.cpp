@@ -24,12 +24,17 @@
 #include "ores.security/validation/email_validator.hpp"
 #include "ores.security/validation/password_validator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <queue>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <array>
 #include <format>
+#include <limits>
 #include <openssl/evp.h>
 #include <stdexcept>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -1009,6 +1014,143 @@ messaging::set_reporting_line_response account_operations_service::set_reporting
     response.result.outcome = ores::utility::domain::outcome::ok;
 
     BOOST_LOG_SEV(lg(), info) << "Set the reporting line for account: " << request.account_id;
+    return response;
+}
+
+messaging::get_reporting_tree_response account_operations_service::get_reporting_tree(
+    const messaging::get_reporting_tree_request& request) {
+    messaging::get_reporting_tree_response response;
+
+    // The tenant's own roster, which row-level security bounds.
+    const auto accounts = account_repo_.read_latest(ctx_);
+
+    std::unordered_map<std::string, const domain::account*> by_id;
+    std::unordered_map<std::string, std::vector<std::string>> children;
+    for (const auto& account : accounts) {
+        const auto id = boost::uuids::to_string(account.id);
+        by_id[id] = &account;
+        if (account.reports_to_account_id) {
+            children[boost::uuids::to_string(*account.reports_to_account_id)].push_back(id);
+        }
+    }
+
+    // A root is an account that states no manager. An account that names a
+    // manager the tenant no longer holds is not promoted to a root: it belongs
+    // to the unrooted total, because drawing it as a root would hide the gap.
+    std::vector<std::string> roots;
+    for (const auto& account : accounts) {
+        if (!account.reports_to_account_id) {
+            roots.push_back(boost::uuids::to_string(account.id));
+        }
+    }
+
+    if (!request.root_account_id.empty() && by_id.count(request.root_account_id) == 0) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        response.result.message = "No account in this tenant has that identifier.";
+        return response;
+    }
+
+    // Breadth-first from the roots, so the walk is the distance and a ring the
+    // store accepted before the guard existed cannot spin: a row is placed
+    // once. The walk is over the whole tenant even when one branch is asked
+    // for, because a depth and the unrooted total are facts about the tenant
+    // rather than about the branch that happened to be read.
+    std::unordered_map<std::string, int> depth;
+    std::vector<std::string> order;
+    std::queue<std::pair<std::string, int>> pending;
+    for (const auto& root : roots) {
+        depth[root] = 0;
+        pending.push({root, 0});
+    }
+    while (!pending.empty()) {
+        const auto front = pending.front();
+        pending.pop();
+        order.push_back(front.first);
+        const auto kids = children.find(front.first);
+        if (kids == children.end()) {
+            continue;
+        }
+        for (const auto& child : kids->second) {
+            if (depth.count(child) > 0) {
+                continue;
+            }
+            depth[child] = front.second + 1;
+            pending.push({child, front.second + 1});
+        }
+    }
+
+    // What the walk could not reach belongs to no root.
+    std::vector<std::string> unplaced;
+    for (const auto& account : accounts) {
+        const auto id = boost::uuids::to_string(account.id);
+        if (depth.count(id) == 0) {
+            ++response.unrooted;
+            unplaced.push_back(id);
+        }
+    }
+
+    const auto node_for = [&](const std::string& id, int d) {
+        const auto* account = by_id.at(id);
+        const auto kids = children.find(id);
+        return messaging::reporting_tree_node{
+            .account_id = id,
+            .username = account->username,
+            .full_name = account->full_name,
+            .job_title = account->job_title,
+            .reports_to_account_id = account->reports_to_account_id ?
+                                         boost::uuids::to_string(*account->reports_to_account_id) :
+                                         std::string{},
+            .depth = d,
+            .direct_reports = static_cast<int>(kids == children.end() ? 0 : kids->second.size())};
+    };
+
+    if (request.root_account_id.empty()) {
+        for (const auto& id : order) {
+            response.nodes.push_back(node_for(id, depth.at(id)));
+        }
+        for (const auto& id : unplaced) {
+            response.nodes.push_back(node_for(id, -1));
+        }
+    } else if (depth.count(request.root_account_id) == 0) {
+        // The stated root reaches no root itself, so its branch is that row
+        // alone, and it is already counted above.
+        response.nodes.push_back(node_for(request.root_account_id, -1));
+    } else {
+        // The branch alone, with the stated root as its depth zero.
+        const int base = depth.at(request.root_account_id);
+        std::unordered_set<std::string> seen{request.root_account_id};
+        std::queue<std::string> branch;
+        branch.push(request.root_account_id);
+        while (!branch.empty()) {
+            const auto id = branch.front();
+            branch.pop();
+            response.nodes.push_back(node_for(id, depth.at(id) - base));
+            const auto kids = children.find(id);
+            if (kids == children.end()) {
+                continue;
+            }
+            for (const auto& child : kids->second) {
+                if (seen.insert(child).second) {
+                    branch.push(child);
+                }
+            }
+        }
+    }
+
+    // Shallowest first, so a reader sees the shape in the order it is drawn,
+    // and the unrooted rows last so they cannot read as roots.
+    std::sort(response.nodes.begin(), response.nodes.end(), [](const auto& a, const auto& b) {
+        const auto rank = [](const messaging::reporting_tree_node& n) {
+            return n.depth < 0 ? std::numeric_limits<int>::max() : n.depth;
+        };
+        if (rank(a) != rank(b)) {
+            return rank(a) < rank(b);
+        }
+        return a.username < b.username;
+    });
+
+    response.result.outcome = ores::utility::domain::outcome::ok;
     return response;
 }
 

@@ -348,6 +348,27 @@ It is addressed at =iam.v1.ops.set_reporting_line=.
 account_operations set-reporting-line __none__ __none__ __none__ __none__ __none__
 #+end_src
 
+** =get-reporting-tree=
+:PROPERTIES:
+:ID: 0EF3DE85-F812-58AB-93D8-F1B143386D30
+:END:
+
+Sends =get_reporting_tree_request= and prints =get_reporting_tree_response=, so the shape is the protocol's and the meaning is the service's. It reads =root_account_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations get-reporting-tree <root_account_id>
+#+end_example
+
+It is addressed at =iam.v1.ops.get_reporting_tree=.
+
+#+name: account_operations-get-reporting-tree
+#+begin_src ores-shell :tangle account_operations-get-reporting-tree.ores :exports none
+account_operations get-reporting-tree __none__
+#+end_src
+
 ** =attach-account-pictures=
 :PROPERTIES:
 :ID: 8AA25319-A2C3-5767-8DCF-7B7303EE6D96

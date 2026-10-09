@@ -458,11 +458,20 @@ export {
     myPartiesSchema,
     myPartySchema,
     readMyParties,
+    readReportingTree,
     reportingLineRequestSchema,
+    reportingTreeNodeSchema,
+    reportingTreeSchema,
     setMyDefaultParty,
     setReportingLine,
 } from './membership.js';
-export type { MyParties, MyParty, ReportingLineWrite } from './membership.js';
+export type {
+    MyParties,
+    MyParty,
+    ReportingLineWrite,
+    ReportingTree,
+    ReportingTreeNode,
+} from './membership.js';
 
 export {
     CREDENTIAL_SUBJECTS,

@@ -52,7 +52,9 @@ import {
     removeTenant,
     accountAccessSchema,
     accountSchema,
+    readReportingTree,
     reportingLineRequestSchema,
+    reportingTreeSchema,
     setReportingLine,
     deleteRole,
     giveRole,
@@ -1089,6 +1091,16 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return accountSchema.parse(
             await setReportingLine(session.client, accountId, parsed.data),
         );
+    });
+
+    /**
+     * The tenant's reporting shape in one read, or one account's branch of it
+     * when a root is named. The server needs iam::accounts:read.
+     */
+    server.get('/api/reporting-tree', async (request) => {
+        const session = requireSession(request);
+        const { root } = request.query as { root?: string };
+        return reportingTreeSchema.parse(await readReportingTree(session.client, root ?? ''));
     });
 
     /** The roles one account holds. The server allows it to a holder of iam::roles:read. */

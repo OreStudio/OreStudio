@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,32 +26,61 @@ One read answers the tenant's reporting shape, and a large tenant does not send 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next          | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- =iam.v1.ops.get_reporting_tree= answers the tenant's accounts with the manager each reports to, its depth from a root, and how many report to it directly.
+- An empty root answers the whole tenant, ordered shallowest first; a stated root answers that account's branch alone, with the root at depth zero.
+- An account that reaches no root is answered with depth -1 and counted in =unrooted=, rather than dropped or drawn as a root.
+- The read needs =iam::accounts:read= and names no tenant: row-level security bounds what it can see.
+- The browser reaches it over =GET /api/reporting-tree=, and the shell reaches the same subject.
+- =check_component_drift.py --component iam= reports no drift, and the C++ and BFF tests cover it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Declare =iam.v1.ops.get_reporting_tree=: the root to answer from, or empty
+   for the whole tenant.
+2. Build the shape in the service from the tenant's roster: the children by
+   manager, a breadth-first walk from the accounts that state no manager, and a
+   rebase when one branch is asked for.
+3. Count what the walk cannot reach, and answer it with depth -1.
+4. Serve it behind =iam::accounts:read=, wire the browser path, and let codegen
+   emit the shell command.
+5. Test the depths and direct reports, the branch read, and an account whose
+   manager has left.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| IAM core suite after this change | 267 cases, 955 assertions | =bash build/evidence/run_case.sh ores.iam.core.tests= | (branch tip) |
+| BFF membership cases | 10 | =npm test --workspace @ores/bff -- membership= | (branch tip) |
+
+* Notes
+
+- *Depth and the unrooted total are tenant facts, not branch facts.* The first
+  version walked from the stated root and answered its subtree, then appended
+  whatever else it could not place. A branch read came back with the whole
+  tenant's strays attached to it. The walk is now always over the tenant, and a
+  branch read rebases the depths and answers the subtree alone.
+- *The read still loads the tenant's roster.* A recursive query would page a
+  branch in the database rather than in the service, which is what a very large
+  tenant wants. The generated account repository offers no such read and the
+  service holds no hand-written SQL, so this version computes the shape from
+  the roster it already reads. Stated as the limit rather than hidden: the host
+  and the wire answer are one call, and the database work is the tenant.
+- *A manager who has left is stated, not promoted.* An account that names a
+  manager the tenant no longer holds is not drawn as a root: it is counted and
+  answered with depth -1, because drawing it as a root would hide the gap.
+- *The cycle guard from the task before this one makes most rings impossible.*
+  The unrooted count remains because a database created before the guard can
+  still hold one, and because the read must be total.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
@@ -83,3 +112,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done 2026-10-09.
+
+The tenant's reporting shape is one read:
+
+| Layer | What landed |
+|-------+-------------|
+| Message | =iam.v1.ops.get_reporting_tree=: the root to answer from, or empty for the whole tenant, and a node per account with its manager, depth and direct reports. |
+| Service | The walk over the tenant's roster, rebased when a branch is asked for, with the accounts that reach no root counted and answered at depth -1. |
+| Handler | Served behind =iam::accounts:read=. |
+| Clients | =readReportingTree= in the wire seam, =GET /api/reporting-tree=, =api.reportingTree()=, and the generated shell command. |
+| Tests | Three C++ cases and two BFF cases. |
+
+*Verification.* =check_component_drift.py --component iam= reports no drift and
+clang-format is clean. The IAM core suite passes, 267 cases and 955 assertions.
+The BFF membership tests pass, 10 cases. The three TypeScript packages
+typecheck.
+
+*What the tests caught.* The first version answered a branch read with the
+branch plus every account in the tenant that reached no root, so a two-person
+branch came back with sixty-four rows. The suite shares a tenant, which is what
+made the strays visible; the fix is the one described in =* Notes=, and the
+branch test now asserts that what sits above the root is not in the answer.

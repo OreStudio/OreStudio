@@ -979,6 +979,117 @@ from here is what the registrar subscribes with.
  */
 #+end_src
 
+** reporting_tree_node
+
+#+begin_src cpp :name comment
+/**
+ * @brief One account in the tenant's reporting shape.
+ *
+ * The depth counts from a root: a root is 0, its reports are 1, and so on.
+ * When the read names a root, that root is 0 in the answer. An account that
+ * does not reach any root — a manager who is missing, or a ring the store
+ * accepted before the guard existed — is answered with depth -1 and counted in
+ * the response's unrooted total.
+ *
+ * Declared before the response that carries it, because the generators emit
+ * the messages in the order this file states them.
+ */
+#+end_src
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** full_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** job_title
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** reports_to_account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The manager's account id, or empty when the account is a root.
+ */
+#+end_src
+
+*** depth
+:PROPERTIES:
+:cpp_type: int
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The number of managers between this account and a root, or -1 when it
+ * reaches none.
+ */
+#+end_src
+
+*** direct_reports
+:PROPERTIES:
+:cpp_type: int
+:END:
+
+** get_reporting_tree_request
+:PROPERTIES:
+:subject: iam.v1.ops.get_reporting_tree
+:response: get_reporting_tree_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant's reporting shape in one read.
+ *
+ * The read answers the tenant's own accounts, which row-level security bounds,
+ * and needs =iam::accounts:read=. An empty =root_account_id= asks for the whole
+ * tenant, ordered by depth; a stated root asks for that account's branch, so a
+ * screen can open one part of a large organisation without carrying the rest.
+ */
+#+end_src
+
+*** root_account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_reporting_tree_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** nodes
+:PROPERTIES:
+:cpp_type: std::vector<reporting_tree_node>
+:END:
+
+*** unrooted
+:PROPERTIES:
+:cpp_type: int
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many accounts in the tenant reach no root. Stated so the screen
+ * can say the shape is broken rather than draw a tree that is missing people.
+ */
+#+end_src
+
 ** attach_account_pictures_request
 :PROPERTIES:
 :subject: iam.v1.ops.attach_account_pictures

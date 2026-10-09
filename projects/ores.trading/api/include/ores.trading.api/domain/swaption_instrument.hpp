@@ -25,8 +25,8 @@
 #ifndef ORES_TRADING_API_DOMAIN_SWAPTION_INSTRUMENT_HPP
 #define ORES_TRADING_API_DOMAIN_SWAPTION_INSTRUMENT_HPP
 
-#include "ores.dq.api/domain/audit_record.hpp"
-#include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
 #include <string_view>
@@ -39,9 +39,36 @@ namespace ores::trading::domain {
  * Represents a swaption — an option granting the right to enter into an
  * interest rate swap at a future date. Exercise type may be European,
  * Bermudan, or American.
+ *
+ * This row is the family's fact table, not its identity. The header,
+ * ores.trading.rate_instruments, holds the trade type code, the party, the
+ * instrument's start and maturity dates and its description; this table holds
+ * only the product's own fields, and joins the header by trade_id.
  */
 struct swaption_instrument final {
-    instrument_identity identity;
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief The trade this instrument belongs to, and the instrument's own key.
+     *
+     * The trade id identifies both the trade and its instrument, so the instrument carries no
+     * identity of its own: this column is the key, and the trade it names gives the instrument its
+     * scope.
+     */
+    boost::uuids::uuid trade_id;
+
+    /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
 
     /**
      * @brief Option expiry date.
@@ -82,27 +109,38 @@ struct swaption_instrument final {
     std::string long_short;
 
     /**
-     * @brief Optional underlying swap start date.
-     *
-     * ISO 8601 date string (YYYY-MM-DD). Null if not yet determined.
+     * @brief Username of the person who last modified this swaption instrument.
      */
-    std::optional<std::chrono::year_month_day> start_date;
+    std::string modified_by;
 
     /**
-     * @brief Optional underlying swap maturity date.
-     *
-     * ISO 8601 date string (YYYY-MM-DD). Null if not yet determined.
+     * @brief Username of the account that performed this action.
      */
-    std::optional<std::chrono::year_month_day> maturity_date;
+    std::string performed_by;
 
     /**
-     * @brief Optional free-text description.
+     * @brief Code identifying the reason for the change.
      *
-     * Human-readable notes about this instrument.
+     * References change_reasons table (soft FK).
      */
-    std::string description;
+    std::string change_reason_code;
 
-    ores::dq::domain::audit_record audit;
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+
     /**
      * @brief Value equality.
      *

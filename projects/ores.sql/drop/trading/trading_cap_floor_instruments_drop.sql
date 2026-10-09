@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists cap_floor_instruments_tbl_tenant_isolation_policy on "ores_trading_cap_floor_instruments_tbl";
 drop rule if exists ores_trading_cap_floor_instruments_delete_rule on "ores_trading_cap_floor_instruments_tbl";
 drop trigger if exists ores_trading_cap_floor_instruments_insert_trg on "ores_trading_cap_floor_instruments_tbl";
 drop function if exists ores_trading_cap_floor_instruments_insert_fn;

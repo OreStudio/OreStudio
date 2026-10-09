@@ -55,6 +55,7 @@
 #include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
 #include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
 #include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
+#include "ores.trading.core/service/rate_instrument_service.hpp"
 #include "ores.trading.core/service/scripted_instrument_service.hpp"
 #include "ores.trading.core/service/swaption_instrument_service.hpp"
 #include "ores.trading.core/service/trade_envelope_reader.hpp"
@@ -99,10 +100,9 @@ void populate_instruments_for_trades(const Ctx& ctx,
 
     // Phase 1: bucket instrument IDs by the table that holds them
     std::vector<std::string> bond_ids, credit_ids, commodity_ids, scripted_ids, composite_ids,
-        fra_ids, vswap_ids, capfloor_ids, swaption_ids, bgs_ids, callable_ids, koswap_ids, infl_ids,
-        fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids, fxvar_ids, eq_opt_ids,
-        eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids, eq_acc_ids,
-        eq_pos_ids;
+        rate_ids, fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids, fxvar_ids,
+        eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids,
+        eq_acc_ids, eq_pos_ids;
 
     for (const auto& item : items) {
         const auto& t = item.anchor;
@@ -115,17 +115,8 @@ void populate_instruments_for_trades(const Ctx& ctx,
         // trade's own id is the key the product tables are read by.
         const auto id = boost::uuids::to_string(t.id);
         switch (*table) {
-            case instrument_table::balance_guaranteed_swap_instrument:
-                bgs_ids.push_back(id);
-                break;
             case instrument_table::bond_instrument:
                 bond_ids.push_back(id);
-                break;
-            case instrument_table::callable_swap_instrument:
-                callable_ids.push_back(id);
-                break;
-            case instrument_table::cap_floor_instrument:
-                capfloor_ids.push_back(id);
                 break;
             case instrument_table::commodity_instrument:
                 commodity_ids.push_back(id);
@@ -163,9 +154,6 @@ void populate_instruments_for_trades(const Ctx& ctx,
             case instrument_table::equity_variance_swap_instrument:
                 eq_var_ids.push_back(id);
                 break;
-            case instrument_table::fra_instrument:
-                fra_ids.push_back(id);
-                break;
             case instrument_table::fx_accumulator_instrument:
                 fxacc_ids.push_back(id);
                 break;
@@ -187,20 +175,11 @@ void populate_instruments_for_trades(const Ctx& ctx,
             case instrument_table::fx_variance_swap_instrument:
                 fxvar_ids.push_back(id);
                 break;
-            case instrument_table::inflation_swap_instrument:
-                infl_ids.push_back(id);
-                break;
-            case instrument_table::knock_out_swap_instrument:
-                koswap_ids.push_back(id);
+            case instrument_table::rate_instrument:
+                rate_ids.push_back(id);
                 break;
             case instrument_table::scripted_instrument:
                 scripted_ids.push_back(id);
-                break;
-            case instrument_table::swaption_instrument:
-                swaption_ids.push_back(id);
-                break;
-            case instrument_table::vanilla_swap_instrument:
-                vswap_ids.push_back(id);
                 break;
         }
     }
@@ -215,16 +194,7 @@ void populate_instruments_for_trades(const Ctx& ctx,
     // Phase 2: the children, one read per table over the whole page. A child
     // carries the trade id its instrument does, so the reads need no pairing.
     {
-        std::vector<std::string> all_swap;
-        for (auto* v : {&fra_ids,
-                        &vswap_ids,
-                        &capfloor_ids,
-                        &swaption_ids,
-                        &bgs_ids,
-                        &callable_ids,
-                        &koswap_ids,
-                        &infl_ids})
-            all_swap.insert(all_swap.end(), v->begin(), v->end());
+        const auto& all_swap = rate_ids;
         if (!all_swap.empty()) {
             repository::swap_leg_repository leg_repo;
             auto legs = leg_repo.read_by_instruments_batch(ctx, all_swap);
@@ -246,9 +216,9 @@ void populate_instruments_for_trades(const Ctx& ctx,
                 batch.composite_legs.push_back(std::move(leg));
         }
     }
-    if (!callable_ids.empty()) {
+    if (!rate_ids.empty()) {
         repository::callable_swap_call_date_repository call_date_repo;
-        auto dates = call_date_repo.read_by_instruments_batch(ctx, callable_ids);
+        auto dates = call_date_repo.read_by_instruments_batch(ctx, rate_ids);
         take(dates, batch.callable_swap_call_dates);
     }
     if (!commodity_ids.empty()) {
@@ -289,45 +259,51 @@ void populate_instruments_for_trades(const Ctx& ctx,
         take(rows, batch.composite_instruments);
     }
 
-    // The rates family: eight sub-types over one shared legs table.
-    if (!fra_ids.empty()) {
+    // The rates family: the header is the routed instrument and the eight
+    // product tables are its facts, read for the same trade ids.
+    if (!rate_ids.empty()) {
+        service::rate_instrument_service svc(ctx);
+        auto rows = svc.get_rate_instruments(rate_ids);
+        take(rows, batch.rate_instruments);
+    }
+    if (!rate_ids.empty()) {
         service::fra_instrument_service svc(ctx);
-        auto rows = svc.get_fra_instruments(fra_ids);
+        auto rows = svc.get_fra_instruments(rate_ids);
         take(rows, batch.fra_instruments);
     }
-    if (!vswap_ids.empty()) {
+    if (!rate_ids.empty()) {
         service::vanilla_swap_instrument_service svc(ctx);
-        auto rows = svc.get_vanilla_swap_instruments(vswap_ids);
+        auto rows = svc.get_vanilla_swap_instruments(rate_ids);
         take(rows, batch.vanilla_swap_instruments);
     }
-    if (!capfloor_ids.empty()) {
+    if (!rate_ids.empty()) {
         service::cap_floor_instrument_service svc(ctx);
-        auto rows = svc.get_cap_floor_instruments(capfloor_ids);
+        auto rows = svc.get_cap_floor_instruments(rate_ids);
         take(rows, batch.cap_floor_instruments);
     }
-    if (!swaption_ids.empty()) {
+    if (!rate_ids.empty()) {
         service::swaption_instrument_service svc(ctx);
-        auto rows = svc.get_swaption_instruments(swaption_ids);
+        auto rows = svc.get_swaption_instruments(rate_ids);
         take(rows, batch.swaption_instruments);
     }
-    if (!bgs_ids.empty()) {
+    if (!rate_ids.empty()) {
         service::balance_guaranteed_swap_instrument_service svc(ctx);
-        auto rows = svc.get_balance_guaranteed_swap_instruments(bgs_ids);
+        auto rows = svc.get_balance_guaranteed_swap_instruments(rate_ids);
         take(rows, batch.balance_guaranteed_swap_instruments);
     }
-    if (!callable_ids.empty()) {
+    if (!rate_ids.empty()) {
         service::callable_swap_instrument_service svc(ctx);
-        auto rows = svc.get_callable_swap_instruments(callable_ids);
+        auto rows = svc.get_callable_swap_instruments(rate_ids);
         take(rows, batch.callable_swap_instruments);
     }
-    if (!koswap_ids.empty()) {
+    if (!rate_ids.empty()) {
         service::knock_out_swap_instrument_service svc(ctx);
-        auto rows = svc.get_knock_out_swap_instruments(koswap_ids);
+        auto rows = svc.get_knock_out_swap_instruments(rate_ids);
         take(rows, batch.knock_out_swap_instruments);
     }
-    if (!infl_ids.empty()) {
+    if (!rate_ids.empty()) {
         service::inflation_swap_instrument_service svc(ctx);
-        auto rows = svc.get_inflation_swap_instruments(infl_ids);
+        auto rows = svc.get_inflation_swap_instruments(rate_ids);
         take(rows, batch.inflation_swap_instruments);
     }
 

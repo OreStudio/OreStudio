@@ -96,11 +96,11 @@ TEST_CASE("mapper_roundtrip_swaption_european_forward", tags) {
     const auto t = load_trade("IR_Swaption_European.xml", 0);
 
     const auto result = swap_instrument_mapper::forward_swaption(t);
-    const auto& instr = std::get<ores::trading::domain::swaption_instrument>(result.instrument);
+    const auto& instr = std::get<ores::trading::domain::swaption_instrument>(result.facts);
 
     CHECK(instr.exercise_type == "European");
     CHECK(ore_iso(instr.expiry_date) == "2033-02-20"); // first exercise date
-    CHECK(ore_iso(instr.maturity_date) == "2043-02-21");
+    CHECK(ore_iso(result.header.maturity_date) == "2043-02-21");
     REQUIRE(result.legs.size() == 2u);
     // leg 0: floating (EUR-EURIBOR-3M)
     CHECK(result.legs[0].leg_type_code == "Floating");
@@ -118,7 +118,8 @@ TEST_CASE("mapper_roundtrip_swaption_european_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_swaption(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_swaption(
-        std::get<ores::trading::domain::swaption_instrument>(result.instrument),
+        result.header,
+        std::get<ores::trading::domain::swaption_instrument>(result.facts),
         result.legs,
         result.leg_amounts,
         result.leg_rates);
@@ -151,7 +152,7 @@ TEST_CASE("mapper_roundtrip_swaption_bermudan_forward", tags) {
     const auto t = load_trade("IR_Swaption_Bermudan.xml", 0);
 
     const auto result = swap_instrument_mapper::forward_swaption(t);
-    const auto& instr = std::get<ores::trading::domain::swaption_instrument>(result.instrument);
+    const auto& instr = std::get<ores::trading::domain::swaption_instrument>(result.facts);
 
     CHECK(instr.exercise_type == "Bermudan");
     // First exercise date from the 6 listed
@@ -183,10 +184,9 @@ TEST_CASE("forward_swaption_leaves_dates_unset_without_a_schedule", tags) {
     REQUIRE(!p.Trade.empty());
 
     const auto result = swap_instrument_mapper::forward_swaption(p.Trade.front());
-    const auto& instr = std::get<ores::trading::domain::swaption_instrument>(result.instrument);
 
-    CHECK(!instr.start_date.has_value());
-    CHECK(!instr.maturity_date.has_value());
+    CHECK(!result.header.start_date.has_value());
+    CHECK(!result.header.maturity_date.has_value());
     REQUIRE(!result.legs.empty());
 }
 
@@ -221,7 +221,8 @@ TEST_CASE("mapper_roundtrip_callable_swap_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_callable_swap(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_callable_swap(
-        std::get<ores::trading::domain::callable_swap_instrument>(result.instrument),
+        result.header,
+        std::get<ores::trading::domain::callable_swap_instrument>(result.facts),
         result.legs,
         result.leg_amounts,
         result.leg_rates,

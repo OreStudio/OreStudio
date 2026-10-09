@@ -45,17 +45,12 @@ struct fra_instrument_entity {
     sqlgen::PrimaryKey<std::string> trade_id;
     std::string tenant_id;
     int version = 0;
-    std::string trade_type_code;
-    std::string party_id;
     std::string trade_activity_id;
-    std::string start_date;
-    std::string end_date;
     std::string currency;
     std::string rate_index;
     std::string long_short;
     double strike = 0.0;
     std::string notional;
-    std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

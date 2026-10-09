@@ -90,6 +90,7 @@
 #include "ores.trading.api/messaging/instrument_schedule_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
 #include "ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/rate_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_amount_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_protocol.hpp"
@@ -2016,69 +2017,65 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 if constexpr (std::is_same_v<T, std::monostate>) {
                     return true; // no instrument for this trade type
                 } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
-                    // The instrument is written first and its legs beside it: a
+                    // The header is written first: the fact row carries the
+                    // product's own fields only, and the header owns the
+                    // identity, the dates and the description. A fact row
+                    // without its header has no party and no trade type.
+                    put_rate_instrument_request header_req;
+                    header_req.change.write.trade_id = r.header.identity.trade_id;
+                    header_req.change.write.trade_activity_id =
+                        r.header.identity.trade_activity_id;
+                    header_req.change.write.trade_type_code = r.header.identity.trade_type_code;
+                    header_req.change.write.start_date = r.header.start_date;
+                    header_req.change.write.maturity_date = r.header.maturity_date;
+                    header_req.change.write.description = r.header.description;
+                    auto header_resp = nats_call(delegated_nats, header_req, instr_error);
+                    if (!header_resp ||
+                        header_resp->result.outcome != ores::utility::domain::outcome::ok)
+                        return false;
+
+                    // The fact row is written next and its legs beside it: a
                     // swap's economics are its leg rows, so the item is written
-                    // only when both succeed.
+                    // only when all succeed.
                     const bool instrument_ok = std::visit(
                         [&](const auto& instr) -> bool {
                             using InstrT = std::decay_t<decltype(instr)>;
                             using namespace ores::trading::domain;
                             if constexpr (std::is_same_v<InstrT, fra_instrument>) {
                                 put_fra_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.end_date = instr.end_date;
+                                req.change.write.trade_id = instr.trade_id;
+                                req.change.write.trade_activity_id = instr.trade_activity_id;
                                 req.change.write.currency = instr.currency;
                                 req.change.write.rate_index = instr.rate_index;
                                 req.change.write.long_short = instr.long_short;
                                 req.change.write.strike = instr.strike;
                                 req.change.write.notional = instr.notional;
-                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
                                        resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT, vanilla_swap_instrument>) {
                                 put_vanilla_swap_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.trade_id = instr.trade_id;
+                                req.change.write.trade_activity_id = instr.trade_activity_id;
                                 req.change.write.settlement_lag = instr.settlement_lag;
-                                req.change.write.netting_set_id = instr.netting_set_id;
-                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
                                        resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT, cap_floor_instrument>) {
                                 put_cap_floor_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.maturity_date = instr.maturity_date;
-                                req.change.write.description = instr.description;
+                                req.change.write.trade_id = instr.trade_id;
+                                req.change.write.trade_activity_id = instr.trade_activity_id;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
                                        resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT, swaption_instrument>) {
                                 put_swaption_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
+                                req.change.write.trade_id = instr.trade_id;
+                                req.change.write.trade_activity_id = instr.trade_activity_id;
                                 req.change.write.expiry_date = instr.expiry_date;
                                 req.change.write.exercise_type = instr.exercise_type;
                                 req.change.write.settlement_type = instr.settlement_type;
                                 req.change.write.long_short = instr.long_short;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.maturity_date = instr.maturity_date;
-                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
                                        resp->result.outcome == ores::utility::domain::outcome::ok;
@@ -2086,26 +2083,16 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                      InstrT,
                                                      balance_guaranteed_swap_instrument>) {
                                 put_balance_guaranteed_swap_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.trade_id = instr.trade_id;
+                                req.change.write.trade_activity_id = instr.trade_activity_id;
                                 req.change.write.lockout_days = instr.lockout_days;
-                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
                                        resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT, callable_swap_instrument>) {
                                 put_callable_swap_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.maturity_date = instr.maturity_date;
-                                req.change.write.description = instr.description;
+                                req.change.write.trade_id = instr.trade_id;
+                                req.change.write.trade_activity_id = instr.trade_activity_id;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 if (!resp ||
                                     resp->result.outcome != ores::utility::domain::outcome::ok)
@@ -2113,9 +2100,9 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 int sequence_number = 0;
                                 for (const auto& call_date : r.call_dates) {
                                     put_callable_swap_call_date_request date_req;
-                                    date_req.change.write.trade_id = instr.identity.trade_id;
+                                    date_req.change.write.trade_id = r.header.identity.trade_id;
                                     date_req.change.write.trade_activity_id =
-                                        instr.identity.trade_activity_id;
+                                        instr.trade_activity_id;
                                     date_req.change.write.sequence_number = ++sequence_number;
                                     date_req.change.write.call_date = call_date.call_date;
                                     auto date_resp =
@@ -2128,32 +2115,22 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 knock_out_swap_instrument>) {
                                 put_knock_out_swap_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.trade_id = instr.trade_id;
+                                req.change.write.trade_activity_id = instr.trade_activity_id;
                                 req.change.write.barrier_start_date = instr.barrier_start_date;
                                 req.change.write.barrier_level = instr.barrier_level;
                                 req.change.write.barrier_type = instr.barrier_type;
-                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
                                        resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 inflation_swap_instrument>) {
                                 put_inflation_swap_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.trade_id = instr.trade_id;
+                                req.change.write.trade_activity_id = instr.trade_activity_id;
                                 req.change.write.inflation_index_code = instr.inflation_index_code;
                                 req.change.write.base_cpi = instr.base_cpi;
                                 req.change.write.lag_convention = instr.lag_convention;
-                                req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
                                        resp->result.outcome == ores::utility::domain::outcome::ok;
@@ -2161,7 +2138,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 return true;
                             }
                         },
-                        r.instrument);
+                        r.facts);
                     if (!instrument_ok)
                         return false;
                     for (const auto& leg : r.legs) {

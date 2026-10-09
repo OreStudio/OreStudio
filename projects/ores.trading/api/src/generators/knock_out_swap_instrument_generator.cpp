@@ -41,23 +41,19 @@ generate_synthetic_knock_out_swap_instrument(utility::generation::generation_con
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::knock_out_swap_instrument r;
-    r.identity.version = 0;
-    r.identity.tenant_id =
+    r.version = 0;
+    r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.identity.trade_id = ctx.generate_uuid();
-    r.identity.trade_type_code = std::string("KnockOutSwap");
-    r.identity.party_id = ctx.generate_uuid();
-    r.identity.trade_activity_id = ctx.generate_uuid();
-    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
-    r.maturity_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
+    r.trade_id = ctx.generate_uuid();
+    r.trade_activity_id = ctx.generate_uuid();
     r.barrier_start_date = std::chrono::year_month_day{std::chrono::year{2027} / 5 / 3};
     r.barrier_level = 0.05;
     r.barrier_type = std::string("UpAndOut");
-    r.audit.modified_by = modified_by;
-    r.audit.performed_by = modified_by;
-    r.audit.change_reason_code = "system.test";
-    r.audit.change_commentary = "Synthetic test data";
-    r.audit.recorded_at = ctx.past_timepoint();
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 

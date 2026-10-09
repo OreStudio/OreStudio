@@ -46,13 +46,12 @@ std::string convert_to_table(const std::vector<inflation_swap_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Type" << "Start Date" << "Maturity Date" << "Index"
-          << "Base CPI" << "Lag Convention" << "Recorded At" << fort::endr;
+    table << fort::header << "ID" << "Index" << "Base CPI" << "Lag Convention" << "Modified By"
+          << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& is : v) {
-        table << is.identity.trade_id << is.identity.trade_type_code << is.start_date
-              << is.maturity_date << is.inflation_index_code << opt_str(is.base_cpi)
-              << is.lag_convention << is.audit.recorded_at << fort::endr;
+        table << is.trade_id << is.inflation_index_code << opt_str(is.base_cpi) << is.lag_convention
+              << is.modified_by << is.version << fort::endr;
     }
     return table.to_string();
 }

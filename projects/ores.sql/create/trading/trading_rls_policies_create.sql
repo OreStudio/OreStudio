@@ -718,18 +718,24 @@ for select using (
 );
 
 -- =============================================================================
--- Rates Instrument Tables
+-- Rates Instruments
 -- =============================================================================
+-- The rates family's header is the family's party boundary, as
+-- bond_instruments is the bond family's: it carries party_id and the
+-- trade_type_code the family routes on, and the eight product fact tables
+-- carry neither. The facts take the generated tenant policy that
+-- :rls_tenant_isolation: emits; the header takes the tenant policy and the
+-- restrictive party policy below, so it is written by hand here.
 
 -- -----------------------------------------------------------------------------
--- FRA Instruments
+-- Rate Instruments (rates family header)
 -- -----------------------------------------------------------------------------
-alter table ores_trading_fra_instruments_tbl enable row level security;
+alter table ores_trading_rate_instruments_tbl enable row level security;
 
-drop policy if exists fra_instruments_tenant_isolation_policy
-    on ores_trading_fra_instruments_tbl;
+drop policy if exists rate_instruments_tenant_isolation_policy
+    on ores_trading_rate_instruments_tbl;
 
-create policy fra_instruments_tenant_isolation_policy on ores_trading_fra_instruments_tbl
+create policy rate_instruments_tenant_isolation_policy on ores_trading_rate_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -737,193 +743,11 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
-drop policy if exists fra_instruments_party_isolation_policy
-    on ores_trading_fra_instruments_tbl;
+drop policy if exists rate_instruments_party_isolation_policy
+    on ores_trading_rate_instruments_tbl;
 
-create policy fra_instruments_party_isolation_policy
-on ores_trading_fra_instruments_tbl
-as restrictive
-for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-);
-
--- -----------------------------------------------------------------------------
--- Vanilla Swap Instruments
--- -----------------------------------------------------------------------------
-alter table ores_trading_vanilla_swap_instruments_tbl enable row level security;
-
-drop policy if exists vanilla_swap_instruments_tenant_isolation_policy
-    on ores_trading_vanilla_swap_instruments_tbl;
-
-create policy vanilla_swap_instruments_tenant_isolation_policy on ores_trading_vanilla_swap_instruments_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
-drop policy if exists vanilla_swap_instruments_party_isolation_policy
-    on ores_trading_vanilla_swap_instruments_tbl;
-
-create policy vanilla_swap_instruments_party_isolation_policy
-on ores_trading_vanilla_swap_instruments_tbl
-as restrictive
-for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-);
-
--- -----------------------------------------------------------------------------
--- Cap/Floor Instruments
--- -----------------------------------------------------------------------------
-alter table ores_trading_cap_floor_instruments_tbl enable row level security;
-
-drop policy if exists cap_floor_instruments_tenant_isolation_policy
-    on ores_trading_cap_floor_instruments_tbl;
-
-create policy cap_floor_instruments_tenant_isolation_policy on ores_trading_cap_floor_instruments_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
-drop policy if exists cap_floor_instruments_party_isolation_policy
-    on ores_trading_cap_floor_instruments_tbl;
-
-create policy cap_floor_instruments_party_isolation_policy
-on ores_trading_cap_floor_instruments_tbl
-as restrictive
-for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-);
-
--- -----------------------------------------------------------------------------
--- Swaption Instruments
--- -----------------------------------------------------------------------------
-alter table ores_trading_swaption_instruments_tbl enable row level security;
-
-drop policy if exists swaption_instruments_tenant_isolation_policy
-    on ores_trading_swaption_instruments_tbl;
-
-create policy swaption_instruments_tenant_isolation_policy on ores_trading_swaption_instruments_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
-drop policy if exists swaption_instruments_party_isolation_policy
-    on ores_trading_swaption_instruments_tbl;
-
-create policy swaption_instruments_party_isolation_policy
-on ores_trading_swaption_instruments_tbl
-as restrictive
-for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-);
-
--- -----------------------------------------------------------------------------
--- Balance Guaranteed Swap Instruments
--- -----------------------------------------------------------------------------
-alter table ores_trading_balance_guaranteed_swap_instruments_tbl enable row level security;
-
-drop policy if exists bgs_instruments_tenant_isolation_policy
-    on ores_trading_balance_guaranteed_swap_instruments_tbl;
-
-create policy bgs_instruments_tenant_isolation_policy on ores_trading_balance_guaranteed_swap_instruments_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
-drop policy if exists bgs_instruments_party_isolation_policy
-    on ores_trading_balance_guaranteed_swap_instruments_tbl;
-
-create policy bgs_instruments_party_isolation_policy
-on ores_trading_balance_guaranteed_swap_instruments_tbl
-as restrictive
-for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-);
-
--- -----------------------------------------------------------------------------
--- Callable Swap Instruments
--- -----------------------------------------------------------------------------
-alter table ores_trading_callable_swap_instruments_tbl enable row level security;
-
-drop policy if exists callable_swap_instruments_tenant_isolation_policy
-    on ores_trading_callable_swap_instruments_tbl;
-
-create policy callable_swap_instruments_tenant_isolation_policy on ores_trading_callable_swap_instruments_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
-drop policy if exists callable_swap_instruments_party_isolation_policy
-    on ores_trading_callable_swap_instruments_tbl;
-
-create policy callable_swap_instruments_party_isolation_policy
-on ores_trading_callable_swap_instruments_tbl
-as restrictive
-for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-);
-
--- -----------------------------------------------------------------------------
--- Knock-Out Swap Instruments
--- -----------------------------------------------------------------------------
-alter table ores_trading_knock_out_swap_instruments_tbl enable row level security;
-
-drop policy if exists knock_out_swap_instruments_tenant_isolation_policy
-    on ores_trading_knock_out_swap_instruments_tbl;
-
-create policy knock_out_swap_instruments_tenant_isolation_policy on ores_trading_knock_out_swap_instruments_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
-drop policy if exists knock_out_swap_instruments_party_isolation_policy
-    on ores_trading_knock_out_swap_instruments_tbl;
-
-create policy knock_out_swap_instruments_party_isolation_policy
-on ores_trading_knock_out_swap_instruments_tbl
-as restrictive
-for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-);
-
--- -----------------------------------------------------------------------------
--- Inflation Swap Instruments
--- -----------------------------------------------------------------------------
-alter table ores_trading_inflation_swap_instruments_tbl enable row level security;
-
-drop policy if exists inflation_swap_instruments_tenant_isolation_policy
-    on ores_trading_inflation_swap_instruments_tbl;
-
-create policy inflation_swap_instruments_tenant_isolation_policy on ores_trading_inflation_swap_instruments_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
-drop policy if exists inflation_swap_instruments_party_isolation_policy
-    on ores_trading_inflation_swap_instruments_tbl;
-
-create policy inflation_swap_instruments_party_isolation_policy
-on ores_trading_inflation_swap_instruments_tbl
+create policy rate_instruments_party_isolation_policy
+on ores_trading_rate_instruments_tbl
 as restrictive
 for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())

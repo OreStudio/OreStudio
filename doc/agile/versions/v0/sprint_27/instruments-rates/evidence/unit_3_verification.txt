@@ -1,0 +1,210 @@
+Unit 3 verification: the rates family header and the eight fact tables
+======================================================================
+
+The numbers the task page carries, with the command that produced each and
+the raw output where a bare number would not be enough.
+
+Tree: branch feature/author-the-rates-family-header off origin/main at
+bb1127566a, with the unit-3 working tree applied.
+
+
+1. The model conversion is one artefact and it is reversible
+------------------------------------------------------------
+
+Command:
+    python3 doc/agile/versions/v0/sprint_27/instruments-rates/evidence/convert_rates_products_to_facts.py
+
+Output:
+    converted projects/ores.trading/modeling/ores.trading.fra_instrument.org
+    converted projects/ores.trading/modeling/ores.trading.vanilla_swap_instrument.org
+    converted projects/ores.trading/modeling/ores.trading.cap_floor_instrument.org
+    converted projects/ores.trading/modeling/ores.trading.swaption_instrument.org
+    converted projects/ores.trading/modeling/ores.trading.balance_guaranteed_swap_instrument.org
+    converted projects/ores.trading/modeling/ores.trading.callable_swap_instrument.org
+    converted projects/ores.trading/modeling/ores.trading.knock_out_swap_instrument.org
+    converted projects/ores.trading/modeling/ores.trading.inflation_swap_instrument.org
+
+It takes no arguments and reads only the model directory, so a reviewer can
+rerun it against origin/main's models and diff the result.
+
+Command:
+    git diff --numstat -- projects/ores.trading/modeling/
+
+Output (nine models: the eight converted, plus the catalogue):
+    234 insertions, 882 deletions
+
+
+2. The header's coverage check is the family's ten codes
+--------------------------------------------------------
+
+Command:
+    grep -n 'trade_type_code.*in (' projects/ores.sql/create/trading/trading_rate_instruments_create.sql
+
+Output:
+    84:    check ("trade_type_code" in ('Swap', 'CrossCurrencySwap',
+        'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap',
+        'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap',
+        'InflationSwap')),
+
+Command:
+    grep -n 'in (' projects/ores.sql/create/trading/trading_fra_instruments_create.sql
+
+Output (the fact table carries only its own check):
+    63:    check ("long_short" in ('Long', 'Short'))
+
+
+3. The header stamps the party and the facts do not
+---------------------------------------------------
+
+Command:
+    grep -c 'NEW.party_id' projects/ores.sql/create/trading/trading_rate_instruments_create.sql
+    grep -c 'NEW.party_id' projects/ores.sql/create/trading/trading_fra_instruments_create.sql
+
+Output:
+    2
+    0
+
+Command:
+    grep -n 'tenant_id = ores_iam_current_tenant_id_fn' \
+        projects/ores.sql/create/trading/trading_fra_instruments_create.sql
+
+Output (the generated tenant policy, because the fact sets
+:rls_tenant_isolation: true):
+    193:    tenant_id = ores_iam_current_tenant_id_fn()
+
+
+4. The generator's delete rule closes the family
+------------------------------------------------
+
+Command:
+    grep -n 'delete from' projects/ores.sql/create/trading/trading_rate_instruments_create.sql
+
+Output: twelve tables, in the cascade function the delete rule calls:
+    ores_trading_swap_legs_tbl
+    ores_trading_swap_leg_amounts_tbl
+    ores_trading_swap_leg_rates_tbl
+    ores_trading_callable_swap_call_dates_tbl
+    ores_trading_vanilla_swap_instruments_tbl
+    ores_trading_fra_instruments_tbl
+    ores_trading_cap_floor_instruments_tbl
+    ores_trading_swaption_instruments_tbl
+    ores_trading_balance_guaranteed_swap_instruments_tbl
+    ores_trading_callable_swap_instruments_tbl
+    ores_trading_knock_out_swap_instruments_tbl
+    ores_trading_inflation_swap_instruments_tbl
+
+
+5. Codegen drift and the codegen suite
+--------------------------------------
+
+Command:
+    projects/ores.codegen/venv/bin/python \
+        projects/ores.codegen/scripts/check_component_drift.py \
+        --component trading-cpp --dry-run
+
+Output:
+    No drift: generated output matches the checked-in tree.
+
+Command:
+    projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q
+
+Output:
+    1299 passed in 43.59s
+
+Command:
+    projects/ores.codegen/venv/bin/python \
+        projects/ores.codegen/scripts/regenerate_physical_space_inventories.py
+
+Output:
+    50 inventory table(s) up to date.
+
+Command:
+    projects/ores.codegen/venv/bin/python \
+        projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all
+
+Output:
+    5 file(s) updated, every one of them rates-reachable:
+    projects/ores.shell/trading/src/component_files.cmake
+    projects/ores.shell/trading/tests/component_files.cmake
+    projects/ores.trading/api/src/component_files.cmake
+    projects/ores.trading/core/src/component_files.cmake
+    projects/ores.trading/service/src/component_files.cmake
+
+The static checks that the change reaches, each run bare and each clean:
+
+    check_generated_column_refs   no problem
+    check_entity_table_writes     115 known writer(s), no new ones
+    check_protocol_twin_coverage  all 403 protocol headers have a TS twin
+    check_route_auth_declarations every route states its position
+    check_shell_command_composition  138 units registered
+    check_registry_exceptions     18 components, 6 accepted exceptions
+    check_sql_reachability        every create/populate/drop file is reached
+    check_model_drift             no model drift
+    check_paste_block_symbols     139 blocks resolve
+    check_open_reads              278 history providers guarded
+    check_subject_conformance     227 declarations, none new
+    check_test_case_reachability  9715 cases, none inside a conditional
+
+
+6. Build and the suites
+-----------------------
+
+Command:
+    ./compass.sh build --preset linux-clang-debug-make -j 2
+
+Output:
+    exit 0, no errors, no warnings.
+
+Command (the fleet must be stopped first: it holds every DB connection slot):
+    ./compass.sh services stop
+    ./compass.sh db recreate -y -k
+
+Output:
+    Database recreation complete | Duration: 5m 16s
+
+Command:
+    cd build/output/linux-clang-debug-make/publish/bin
+    set -a && . .env && set +a
+    ./ores.trading.api.tests
+    ./ores.trading.core.tests
+    ./ores.ore.core.tests
+
+Output:
+    ores.trading.api.tests   All tests passed (370 assertions in 82 test cases)
+    ores.trading.core.tests  All tests passed (954 assertions in 141 test cases)
+    ores.ore.core.tests      All tests passed (482193 assertions in 624 test cases)
+
+Command (the acceptance's "a delete that closes the family"):
+    ./ores.trading.core.tests "[repository][rate_instrument]"
+
+Output:
+    All tests passed (25 assertions in 1 test case)
+
+The case is
+projects/ores.trading/core/tests/repository_rate_instrument_cascade_tests.cpp:
+it seeds a trade, writes a rate_instrument header with an fra_instrument fact
+row and a swap_leg, deletes the header through the generated repository (a
+real SQL DELETE, which fires the store's ON DELETE DO INSTEAD rule), and
+asserts the fact and the leg are unreadable while the trade anchor is not.
+
+ores.trading.core.tests alone was 929 assertions in 140 cases before this
+case; it is 954 in 141 with it.
+
+
+7. Suites that changed and do not apply
+---------------------------------------
+
+ores.trading.service.tests passes (26 assertions in 10 cases).
+ores.ore.service.tests reports "No tests ran" and exits 2: the suite has no
+test cases, only main.cpp, on main as well. It is not a regression.
+
+
+7. First build attempt: the three errors it found
+-------------------------------------------------
+
+The first build failed with three -Werror,-Wunused-parameter errors, all in
+projects/ores.ore/core/src/domain/swap_instrument_mapper.cpp: the reverse
+mappers for the plain swap, the cap/floor and the callable swap took the
+product's fact row and no longer read it, because the fields they used to
+read moved to the header. The parameters are marked [[maybe_unused]], the
+codebase's established form, and the second build is the exit-0 one above.

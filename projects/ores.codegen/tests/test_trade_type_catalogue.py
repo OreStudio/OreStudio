@@ -138,9 +138,13 @@ def _create_sql(tmp_path, model):
 
 
 def test_a_routed_table_checks_exactly_the_codes_routed_to_it(tmp_path):
-    sql = _create_sql(tmp_path, TRADING / "ores.trading.vanilla_swap_instrument.org")
+    sql = _create_sql(tmp_path, TRADING / "ores.trading.rate_instruments.org")
 
-    assert "\"trade_type_code\" in ('Swap', 'CrossCurrencySwap', 'FlexiSwap')" in sql
+    assert (
+        "\"trade_type_code\" in ('Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', "
+        "'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', "
+        "'KnockOutSwap', 'InflationSwap')" in sql
+    )
 
 
 def test_no_two_routed_tables_accept_the_same_code():

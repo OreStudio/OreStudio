@@ -28,7 +28,6 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -38,35 +37,22 @@ render_swaption_instrument_fields(const domain::swaption_instrument& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
-    fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
-    fields.push_back({.name = "Trade Activity ID",
-                      .value = boost::uuids::to_string(v.identity.trade_activity_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
+    fields.push_back(
+        {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Expiry Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Exercise Type", .value = v.exercise_type});
     fields.push_back({.name = "Settlement Type", .value = v.settlement_type});
     fields.push_back({.name = "Long Short", .value = v.long_short});
-    fields.push_back({.name = "Start Date",
-                      .value = v.start_date ?
-                                   ores::platform::time::datetime::to_iso8601_date(*v.start_date) :
-                                   std::string{}});
-    fields.push_back({.name = "Maturity Date",
-                      .value = v.maturity_date ? ores::platform::time::datetime::to_iso8601_date(
-                                                     *v.maturity_date) :
-                                                 std::string{}});
-    fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
-    fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
-    fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});
+    fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
+    fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});
     fields.push_back(
-        {.name = provenance_fields::change_reason_code, .value = v.audit.change_reason_code});
-    fields.push_back(
-        {.name = provenance_fields::change_commentary, .value = v.audit.change_commentary});
-    fields.push_back(
-        {.name = provenance_fields::recorded_at,
-         .value = ores::platform::time::datetime::to_iso8601_utc(v.audit.recorded_at)});
+        {.name = provenance_fields::change_reason_code, .value = v.change_reason_code});
+    fields.push_back({.name = provenance_fields::change_commentary, .value = v.change_commentary});
+    fields.push_back({.name = provenance_fields::recorded_at,
+                      .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
 
     return fields;
 }

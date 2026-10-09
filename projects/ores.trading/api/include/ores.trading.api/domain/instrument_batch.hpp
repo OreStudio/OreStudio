@@ -55,6 +55,7 @@
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
@@ -80,21 +81,9 @@ namespace ores::trading::domain {
  */
 struct instrument_batch {
     /**
-     * @brief The balance_guaranteed_swap_instrument rows, keyed by trade id.
-     */
-    std::vector<balance_guaranteed_swap_instrument> balance_guaranteed_swap_instruments;
-    /**
      * @brief The bond_instrument_data rows, keyed by trade id.
      */
     std::vector<bond_instrument_data> bond_instruments;
-    /**
-     * @brief The callable_swap_instrument rows, keyed by trade id.
-     */
-    std::vector<callable_swap_instrument> callable_swap_instruments;
-    /**
-     * @brief The cap_floor_instrument rows, keyed by trade id.
-     */
-    std::vector<cap_floor_instrument> cap_floor_instruments;
     /**
      * @brief The commodity_instrument rows, keyed by trade id.
      */
@@ -144,10 +133,6 @@ struct instrument_batch {
      */
     std::vector<equity_variance_swap_instrument> equity_variance_swap_instruments;
     /**
-     * @brief The fra_instrument rows, keyed by trade id.
-     */
-    std::vector<fra_instrument> fra_instruments;
-    /**
      * @brief The fx_accumulator_instrument rows, keyed by trade id.
      */
     std::vector<fx_accumulator_instrument> fx_accumulator_instruments;
@@ -176,29 +161,29 @@ struct instrument_batch {
      */
     std::vector<fx_variance_swap_instrument> fx_variance_swap_instruments;
     /**
-     * @brief The inflation_swap_instrument rows, keyed by trade id.
+     * @brief The rate_instrument rows, keyed by trade id.
      */
-    std::vector<inflation_swap_instrument> inflation_swap_instruments;
-    /**
-     * @brief The knock_out_swap_instrument rows, keyed by trade id.
-     */
-    std::vector<knock_out_swap_instrument> knock_out_swap_instruments;
+    std::vector<rate_instrument> rate_instruments;
     /**
      * @brief The scripted_instrument rows, keyed by trade id.
      */
     std::vector<scripted_instrument> scripted_instruments;
     /**
-     * @brief The swaption_instrument rows, keyed by trade id.
+     * @brief The balance_guaranteed_swap_instrument rows, keyed by trade id.
      */
-    std::vector<swaption_instrument> swaption_instruments;
-    /**
-     * @brief The vanilla_swap_instrument rows, keyed by trade id.
-     */
-    std::vector<vanilla_swap_instrument> vanilla_swap_instruments;
+    std::vector<balance_guaranteed_swap_instrument> balance_guaranteed_swap_instruments;
     /**
      * @brief The callable_swap_call_date rows, keyed by trade id.
      */
     std::vector<callable_swap_call_date> callable_swap_call_dates;
+    /**
+     * @brief The callable_swap_instrument rows, keyed by trade id.
+     */
+    std::vector<callable_swap_instrument> callable_swap_instruments;
+    /**
+     * @brief The cap_floor_instrument rows, keyed by trade id.
+     */
+    std::vector<cap_floor_instrument> cap_floor_instruments;
     /**
      * @brief The commodity_basket_constituent rows, keyed by trade id.
      */
@@ -212,6 +197,18 @@ struct instrument_batch {
      */
     std::vector<equity_position_option_underlying> equity_position_option_underlyings;
     /**
+     * @brief The fra_instrument rows, keyed by trade id.
+     */
+    std::vector<fra_instrument> fra_instruments;
+    /**
+     * @brief The inflation_swap_instrument rows, keyed by trade id.
+     */
+    std::vector<inflation_swap_instrument> inflation_swap_instruments;
+    /**
+     * @brief The knock_out_swap_instrument rows, keyed by trade id.
+     */
+    std::vector<knock_out_swap_instrument> knock_out_swap_instruments;
+    /**
      * @brief The swap_leg rows, keyed by trade id.
      */
     std::vector<swap_leg> swap_legs;
@@ -223,6 +220,14 @@ struct instrument_batch {
      * @brief The swap_leg_rate rows, keyed by trade id.
      */
     std::vector<swap_leg_rate> swap_leg_rates;
+    /**
+     * @brief The swaption_instrument rows, keyed by trade id.
+     */
+    std::vector<swaption_instrument> swaption_instruments;
+    /**
+     * @brief The vanilla_swap_instrument rows, keyed by trade id.
+     */
+    std::vector<vanilla_swap_instrument> vanilla_swap_instruments;
 };
 
 /**
@@ -244,31 +249,10 @@ template <typename T>
 }
 
 /**
- * @brief Adds one balance_guaranteed_swap_instrument to the array that holds its type.
- */
-inline void append(instrument_batch& batch, balance_guaranteed_swap_instrument v) {
-    batch.balance_guaranteed_swap_instruments.push_back(std::move(v));
-}
-
-/**
  * @brief Adds one bond_instrument_data to the array that holds its type.
  */
 inline void append(instrument_batch& batch, bond_instrument_data v) {
     batch.bond_instruments.push_back(std::move(v));
-}
-
-/**
- * @brief Adds one callable_swap_instrument to the array that holds its type.
- */
-inline void append(instrument_batch& batch, callable_swap_instrument v) {
-    batch.callable_swap_instruments.push_back(std::move(v));
-}
-
-/**
- * @brief Adds one cap_floor_instrument to the array that holds its type.
- */
-inline void append(instrument_batch& batch, cap_floor_instrument v) {
-    batch.cap_floor_instruments.push_back(std::move(v));
 }
 
 /**
@@ -356,13 +340,6 @@ inline void append(instrument_batch& batch, equity_variance_swap_instrument v) {
 }
 
 /**
- * @brief Adds one fra_instrument to the array that holds its type.
- */
-inline void append(instrument_batch& batch, fra_instrument v) {
-    batch.fra_instruments.push_back(std::move(v));
-}
-
-/**
  * @brief Adds one fx_accumulator_instrument to the array that holds its type.
  */
 inline void append(instrument_batch& batch, fx_accumulator_instrument v) {
@@ -412,17 +389,10 @@ inline void append(instrument_batch& batch, fx_variance_swap_instrument v) {
 }
 
 /**
- * @brief Adds one inflation_swap_instrument to the array that holds its type.
+ * @brief Adds one rate_instrument to the array that holds its type.
  */
-inline void append(instrument_batch& batch, inflation_swap_instrument v) {
-    batch.inflation_swap_instruments.push_back(std::move(v));
-}
-
-/**
- * @brief Adds one knock_out_swap_instrument to the array that holds its type.
- */
-inline void append(instrument_batch& batch, knock_out_swap_instrument v) {
-    batch.knock_out_swap_instruments.push_back(std::move(v));
+inline void append(instrument_batch& batch, rate_instrument v) {
+    batch.rate_instruments.push_back(std::move(v));
 }
 
 /**
@@ -433,17 +403,10 @@ inline void append(instrument_batch& batch, scripted_instrument v) {
 }
 
 /**
- * @brief Adds one swaption_instrument to the array that holds its type.
+ * @brief Adds one balance_guaranteed_swap_instrument to the array that holds its type.
  */
-inline void append(instrument_batch& batch, swaption_instrument v) {
-    batch.swaption_instruments.push_back(std::move(v));
-}
-
-/**
- * @brief Adds one vanilla_swap_instrument to the array that holds its type.
- */
-inline void append(instrument_batch& batch, vanilla_swap_instrument v) {
-    batch.vanilla_swap_instruments.push_back(std::move(v));
+inline void append(instrument_batch& batch, balance_guaranteed_swap_instrument v) {
+    batch.balance_guaranteed_swap_instruments.push_back(std::move(v));
 }
 
 /**
@@ -451,6 +414,20 @@ inline void append(instrument_batch& batch, vanilla_swap_instrument v) {
  */
 inline void append(instrument_batch& batch, callable_swap_call_date v) {
     batch.callable_swap_call_dates.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one callable_swap_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, callable_swap_instrument v) {
+    batch.callable_swap_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one cap_floor_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, cap_floor_instrument v) {
+    batch.cap_floor_instruments.push_back(std::move(v));
 }
 
 /**
@@ -475,6 +452,27 @@ inline void append(instrument_batch& batch, equity_position_option_underlying v)
 }
 
 /**
+ * @brief Adds one fra_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, fra_instrument v) {
+    batch.fra_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one inflation_swap_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, inflation_swap_instrument v) {
+    batch.inflation_swap_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one knock_out_swap_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, knock_out_swap_instrument v) {
+    batch.knock_out_swap_instruments.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one swap_leg to the array that holds its type.
  */
 inline void append(instrument_batch& batch, swap_leg v) {
@@ -493,6 +491,20 @@ inline void append(instrument_batch& batch, swap_leg_amount v) {
  */
 inline void append(instrument_batch& batch, swap_leg_rate v) {
     batch.swap_leg_rates.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one swaption_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, swaption_instrument v) {
+    batch.swaption_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one vanilla_swap_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, vanilla_swap_instrument v) {
+    batch.vanilla_swap_instruments.push_back(std::move(v));
 }
 
 /**

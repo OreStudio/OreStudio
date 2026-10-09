@@ -37,10 +37,7 @@ namespace ores::trading::domain {
  * catalogue routes at least one trade type to.
  */
 enum class instrument_table {
-    balance_guaranteed_swap_instrument,
     bond_instrument,
-    callable_swap_instrument,
-    cap_floor_instrument,
     commodity_instrument,
     composite_instrument,
     credit_instrument,
@@ -53,7 +50,6 @@ enum class instrument_table {
     equity_position_instrument,
     equity_swap_instrument,
     equity_variance_swap_instrument,
-    fra_instrument,
     fx_accumulator_instrument,
     fx_asian_forward_instrument,
     fx_barrier_option_instrument,
@@ -61,11 +57,8 @@ enum class instrument_table {
     fx_forward_instrument,
     fx_vanilla_option_instrument,
     fx_variance_swap_instrument,
-    inflation_swap_instrument,
-    knock_out_swap_instrument,
-    scripted_instrument,
-    swaption_instrument,
-    vanilla_swap_instrument
+    rate_instrument,
+    scripted_instrument
 };
 
 /**
@@ -77,27 +70,27 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "CompositeTrade")
         return instrument_table::composite_instrument;
     if (trade_type == "Swap")
-        return instrument_table::vanilla_swap_instrument;
+        return instrument_table::rate_instrument;
     if (trade_type == "CrossCurrencySwap")
-        return instrument_table::vanilla_swap_instrument;
+        return instrument_table::rate_instrument;
     if (trade_type == "ForwardRateAgreement")
-        return instrument_table::fra_instrument;
+        return instrument_table::rate_instrument;
     if (trade_type == "CapFloor")
-        return instrument_table::cap_floor_instrument;
+        return instrument_table::rate_instrument;
     if (trade_type == "Swaption")
-        return instrument_table::swaption_instrument;
+        return instrument_table::rate_instrument;
     if (trade_type == "FlexiSwap")
-        return instrument_table::vanilla_swap_instrument;
+        return instrument_table::rate_instrument;
     if (trade_type == "BalanceGuaranteedSwap")
-        return instrument_table::balance_guaranteed_swap_instrument;
+        return instrument_table::rate_instrument;
     if (trade_type == "CallableSwap")
-        return instrument_table::callable_swap_instrument;
+        return instrument_table::rate_instrument;
     if (trade_type == "KnockOutSwap")
-        return instrument_table::knock_out_swap_instrument;
+        return instrument_table::rate_instrument;
     if (trade_type == "RiskParticipationAgreement")
         return instrument_table::credit_instrument;
     if (trade_type == "InflationSwap")
-        return instrument_table::inflation_swap_instrument;
+        return instrument_table::rate_instrument;
     if (trade_type == "FxForward")
         return instrument_table::fx_forward_instrument;
     if (trade_type == "FxSwap")

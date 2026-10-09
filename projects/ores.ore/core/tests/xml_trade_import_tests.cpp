@@ -230,8 +230,7 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
     ores::trading::domain::stamp_ids(item.instrument, item.anchor.id);
 
     const auto& r = std::get<swap_instrument_data>(item.instrument);
-    const auto instr_id =
-        std::visit([](const auto& instr) { return instr.identity.trade_id; }, r.instrument);
+    const auto instr_id = r.header.identity.trade_id;
     CHECK(instr_id == item.anchor.id);
     CHECK(!r.legs.empty());
     for (const auto& leg : r.legs)

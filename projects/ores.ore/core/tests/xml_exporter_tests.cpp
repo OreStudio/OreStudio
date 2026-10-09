@@ -279,11 +279,11 @@ TEST_CASE("export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap", tags
         const auto* sd = std::get_if<ores::trading::domain::swap_instrument_data>(&src.instrument);
         REQUIRE(sd != nullptr);
         const auto* leaf =
-            std::get_if<ores::trading::domain::vanilla_swap_instrument>(&sd->instrument);
+            std::get_if<ores::trading::domain::vanilla_swap_instrument>(&sd->facts);
         REQUIRE(leaf != nullptr);
-        if (leaf->identity.trade_type_code == "CrossCurrencySwap")
+        if (sd->header.identity.trade_type_code == "CrossCurrencySwap")
             ++cross_currency;
-        else if (leaf->identity.trade_type_code == "Swap")
+        else if (sd->header.identity.trade_type_code == "Swap")
             ++swaps;
     }
     CHECK(swaps == 1);

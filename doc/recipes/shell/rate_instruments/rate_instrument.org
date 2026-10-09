@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 328EE706-8152-5080-B0F3-5D9F66551372
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the rate_instruments commands from the shell?
+#+description: Every command the rate_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:rate_instruments:
+
+This file documents the rate_instruments resource at the shell, one section per command. Every command is a subcommand of =rate_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5FF10A5B-8DD2-53DC-9A9D-34F3E2DE93A4
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+rate_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.rate_instruments.list=.
+
+#+name: rate_instruments-list
+#+begin_src ores-shell :tangle rate_instruments-list.ores :exports none
+rate_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: FAE2712A-81F4-5DE4-A64E-7E4C1DD03DD6
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+rate_instruments get <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.rate_instruments.get=.
+
+#+name: rate_instruments-get
+#+begin_src ores-shell :tangle rate_instruments-get.ores :exports none
+rate_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: AD80ECA7-CDA3-53A4-BF94-9BEB6C70BF43
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+rate_instruments get-many <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.rate_instruments.get_many=.
+
+#+name: rate_instruments-get-many
+#+begin_src ores-shell :tangle rate_instruments-get-many.ores :exports none
+rate_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: E2D016A7-556C-555B-8D3C-47A8F82CE90F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+rate_instruments add <trade_id> <trade_type_code> <trade_activity_id> <start_date> <maturity_date> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.rate_instruments.put=.
+
+#+name: rate_instruments-add
+#+begin_src ores-shell :tangle rate_instruments-add.ores :exports none
+rate_instruments add 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 - - __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 39F23F9B-64A5-5CB7-94E7-70739B981CCA
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+rate_instruments set <trade_id> <trade_type_code> <trade_activity_id> <start_date> <maturity_date> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.rate_instruments.put=.
+
+#+name: rate_instruments-set
+#+begin_src ores-shell :tangle rate_instruments-set.ores :exports none
+rate_instruments set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 - - __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 49974F10-2435-5153-859F-D5D6DFD982F2
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+rate_instruments put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <start_date> <maturity_date> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.rate_instruments.put_many=.
+
+#+name: rate_instruments-put-many
+#+begin_src ores-shell :tangle rate_instruments-put-many.ores :exports none
+rate_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 - - __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 82F550E8-F73E-5898-A9E0-E1C9539C43E5
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+rate_instruments delete <trade_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.rate_instruments.delete=.
+
+#+name: rate_instruments-delete
+#+begin_src ores-shell :tangle rate_instruments-delete.ores :exports none
+rate_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: CE0609AA-2A48-5201-8238-0607102A5CD3
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+rate_instruments delete-many <trade_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.rate_instruments.delete_many=.
+
+#+name: rate_instruments-delete-many
+#+begin_src ores-shell :tangle rate_instruments-delete-many.ores :exports none
+rate_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: B12BA142-EF7F-587E-926E-A0319138C084
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+rate_instruments versions <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.rate_instruments_versions.list=.
+
+#+name: rate_instruments-versions
+#+begin_src ores-shell :tangle rate_instruments-versions.ores :exports none
+rate_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: DC60FC37-DFAF-5A7E-A69C-FCE833B27A2B
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+rate_instruments version <trade_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.rate_instruments_versions.get=.
+
+#+name: rate_instruments-version
+#+begin_src ores-shell :tangle rate_instruments-version.ores :exports none
+rate_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

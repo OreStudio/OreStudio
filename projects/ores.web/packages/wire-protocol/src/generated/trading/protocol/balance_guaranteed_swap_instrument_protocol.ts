@@ -34,12 +34,8 @@ export interface BalanceGuaranteedSwapInstrumentKey {
 
 export interface BalanceGuaranteedSwapInstrumentWrite {
     trade_id: string;
-    trade_type_code: string;
     trade_activity_id: string;
-    start_date: string;
-    maturity_date: string;
     lockout_days: number | null;
-    description: string;
 }
 
 export interface BalanceGuaranteedSwapInstrumentChange {

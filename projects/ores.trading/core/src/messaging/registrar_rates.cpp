@@ -24,6 +24,7 @@
 #include "ores.trading.core/messaging/fra_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/inflation_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/knock_out_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/rate_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 #include "ores.trading.core/messaging/rpa_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/swap_leg_registrar.hpp"
@@ -37,6 +38,11 @@ register_rates_handlers(ores::nats::service::client& nats,
                         ores::database::context ctx,
                         std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
+
+    auto rate_instrument_subs = register_rate_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(rate_instrument_subs.begin()),
+                std::make_move_iterator(rate_instrument_subs.end()));
 
     auto fra_instrument_subs = register_fra_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),

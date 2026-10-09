@@ -69,6 +69,12 @@ ores::ore::domain::trade load_first_trade(const std::string& filename) {
     return p.Trade.front();
 }
 
+// The family header holds a date as an optional calendar date; the ORE XML
+// holds its ISO-8601 spelling. An absent date renders as an empty string.
+std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
 } // namespace
 
 // =============================================================================
@@ -102,11 +108,10 @@ TEST_CASE("mapper_roundtrip_swap_vanilla_forward", tags) {
     const auto t = load_first_trade("IR_Swap_Vanilla.xml");
 
     const auto result = swap_instrument_mapper::forward_swap(t);
-    const auto& instr = std::get<ores::trading::domain::vanilla_swap_instrument>(result.instrument);
     const auto& legs = result.legs;
 
-    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.start_date) == "2023-02-21");
-    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.maturity_date) == "2043-02-21");
+    CHECK(ore_iso(result.header.start_date) == "2023-02-21");
+    CHECK(ore_iso(result.header.maturity_date) == "2043-02-21");
 
     REQUIRE(legs.size() == 2);
     CHECK(legs[0].leg_type_code == "Fixed");
@@ -127,7 +132,8 @@ TEST_CASE("mapper_roundtrip_swap_vanilla_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_swap(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_swap(
-        std::get<ores::trading::domain::vanilla_swap_instrument>(result.instrument),
+        result.header,
+        std::get<ores::trading::domain::vanilla_swap_instrument>(result.facts),
         result.legs,
         result.leg_amounts,
         result.leg_rates);
@@ -153,11 +159,11 @@ TEST_CASE("mapper_roundtrip_fra_forward", tags) {
     const auto t = load_first_trade("IR_FRA.xml");
 
     const auto result = swap_instrument_mapper::forward_fra(t);
-    const auto& instr = std::get<ores::trading::domain::fra_instrument>(result.instrument);
+    const auto& instr = std::get<ores::trading::domain::fra_instrument>(result.facts);
     const auto& legs = result.legs;
 
-    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.start_date) == "2026-10-19");
-    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.end_date) == "2027-04-20");
+    CHECK(ore_iso(result.header.start_date) == "2026-10-19");
+    CHECK(ore_iso(result.header.maturity_date) == "2027-04-20");
     CHECK(instr.currency == "EUR");
     CHECK(instr.notional.to_double() == Approx(100000000.0).epsilon(0.001));
 
@@ -174,7 +180,8 @@ TEST_CASE("mapper_roundtrip_fra_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_fra(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_fra(
-        std::get<ores::trading::domain::fra_instrument>(result.instrument),
+        result.header,
+        std::get<ores::trading::domain::fra_instrument>(result.facts),
         result.legs,
         result.leg_amounts,
         result.leg_rates);
@@ -198,11 +205,10 @@ TEST_CASE("mapper_roundtrip_capfloor_forward", tags) {
     const auto t = load_first_trade("IR_Cap_on_IBOR.xml");
 
     const auto result = swap_instrument_mapper::forward_capfloor(t);
-    const auto& instr = std::get<ores::trading::domain::cap_floor_instrument>(result.instrument);
     const auto& legs = result.legs;
 
-    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.start_date) == "2023-10-11");
-    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.maturity_date) == "2038-10-10");
+    CHECK(ore_iso(result.header.start_date) == "2023-10-11");
+    CHECK(ore_iso(result.header.maturity_date) == "2038-10-10");
 
     REQUIRE(legs.size() == 1);
     CHECK(legs[0].leg_type_code == "Floating");
@@ -218,7 +224,8 @@ TEST_CASE("mapper_roundtrip_capfloor_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_capfloor(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_capfloor(
-        std::get<ores::trading::domain::cap_floor_instrument>(result.instrument),
+        result.header,
+        std::get<ores::trading::domain::cap_floor_instrument>(result.facts),
         result.legs,
         result.leg_amounts,
         result.leg_rates);
@@ -243,7 +250,7 @@ TEST_CASE("mapper_roundtrip_ccs_forward", tags) {
 
     const auto result = swap_instrument_mapper::forward_swap(t);
     REQUIRE(
-        std::holds_alternative<ores::trading::domain::vanilla_swap_instrument>(result.instrument));
+        std::holds_alternative<ores::trading::domain::vanilla_swap_instrument>(result.facts));
     const auto& legs = result.legs;
 
     REQUIRE(legs.size() >= 2);
@@ -260,15 +267,15 @@ TEST_CASE("mapper_roundtrip_knock_out_swap_forward", tags) {
 
     const auto result = swap_instrument_mapper::forward_knock_out_swap(t);
     REQUIRE(std::holds_alternative<ores::trading::domain::knock_out_swap_instrument>(
-        result.instrument));
+        result.facts));
     const auto& instr =
-        std::get<ores::trading::domain::knock_out_swap_instrument>(result.instrument);
+        std::get<ores::trading::domain::knock_out_swap_instrument>(result.facts);
 
-    CHECK(instr.identity.trade_type_code == "KnockOutSwap");
+    CHECK(result.header.identity.trade_type_code == "KnockOutSwap");
     CHECK(instr.barrier_type == "UpAndOut");
     CHECK(instr.barrier_level == Approx(0.05).epsilon(0.0001));
-    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.start_date) == "2024-05-02");
-    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.maturity_date) == "2029-05-02");
+    CHECK(ore_iso(result.header.start_date) == "2024-05-02");
+    CHECK(ore_iso(result.header.maturity_date) == "2029-05-02");
     CHECK(ores::platform::time::datetime::to_iso8601_date(instr.barrier_start_date) ==
           "2027-05-03");
 
@@ -287,7 +294,8 @@ TEST_CASE("mapper_roundtrip_knock_out_swap_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_knock_out_swap(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_knock_out_swap(
-        std::get<ores::trading::domain::knock_out_swap_instrument>(result.instrument),
+        result.header,
+        std::get<ores::trading::domain::knock_out_swap_instrument>(result.facts),
         result.legs,
         result.leg_amounts,
         result.leg_rates);

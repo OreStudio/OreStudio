@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/author-the-rates-family-header
-#+pr:
+#+pr: 2962
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -30,11 +30,11 @@ and write the header beside them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Not started. The design is settled and recorded in this plan. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Author the header model, then convert the products. |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -123,9 +123,55 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Models converted to fact tables | 8, plus the catalogue | =convert_rates_products_to_facts.py= (evidence below) | bb1127566a |
+| Model diff | 234 insertions, 882 deletions across 9 models | =git diff --numstat -- projects/ores.trading/modeling/= | bb1127566a |
+| Header coverage check | the family's ten codes | =grep 'trade_type_code.*in (' trading_rate_instruments_create.sql= | bb1127566a |
+| Cascade targets | 12 tables | =grep 'delete from' trading_rate_instruments_create.sql= | bb1127566a |
+| Party stamp | 2 in the header, 0 in a fact table | =grep -c 'NEW.party_id' ...= | bb1127566a |
+| Codegen suite | 1299 passed | =pytest projects/ores.codegen/tests -q= | bb1127566a |
+| Codegen drift | none | =check_component_drift.py --component trading-cpp --dry-run= | bb1127566a |
+| Build | exit 0, no errors, no warnings | =./compass.sh build --preset linux-clang-debug-make -j 2= | bb1127566a |
+| =ores.trading.api.tests= | 370 assertions in 82 cases, all pass | the suite binary, after =compass db recreate -y -k= | bb1127566a |
+| =ores.trading.core.tests= | 954 assertions in 141 cases, all pass | the suite binary | bb1127566a |
+| The cascade delete | 25 assertions in 1 case, all pass | =./ores.trading.core.tests "[repository][rate_instrument]"= | bb1127566a |
+| =ores.ore.core.tests= | 482193 assertions in 624 cases, all pass | the suite binary | bb1127566a |
+
+The raw output for every row above is in
+[[file:evidence/unit_3_verification.txt]]; the model conversion itself is the
+rerunnable script [[file:evidence/convert_rates_products_to_facts.py]].
 
 * Notes
+
+Decisions taken while doing the work, all following the pilot rather than
+inventing a mechanism:
+
+- The header's tenant isolation is hand-written, not the generated
+  =:rls_tenant_isolation:= form. The header carries =party_id=, so it needs the
+  restrictive party policy beside the tenant policy, and the generated form
+  states the tenant policy alone; =bond_instruments= is wired the same way. The
+  eight fact tables carry no party, so each takes the generated tenant policy,
+  and the hand-written product blocks were removed from
+  =trading_rls_policies_create.sql= in the same change to avoid a second policy
+  on every fact table.
+- The header's =start_date= and =maturity_date= are
+  =std::optional<std::chrono::year_month_day>=, because the swaption's were
+  nullable and the header is the union of the family's shapes. The table's
+  check is the null-tolerant form the swaption carried.
+- The FRA's =end_date= does not survive as a fact column: it is the header's
+  =maturity_date=. Finding R9 turns on one name for the date, and =end_date=
+  is one of the names it lists.
+- =netting_set_id= was dropped from the vanilla swap's facts (design decision
+  D5). =trade_booking= holds the same fact as a uuid foreign key, and nothing
+  wrote the instrument's text copy; it joins the header with the rest of the
+  field move rather than waiting for a separate clean-up.
+- =InflationSwap= routes to =rate_instruments= with the rest of the family. A
+  table cannot be both a routed instrument and a fact child, so converting
+  =inflation_swap_instruments= to a fact table forces the code to the header.
+  The taxonomy still calls it an inflation product and it leaves with that
+  family's rework, as the catalogue records.
+- =rates_instrument_variant= became =rates_fact_variant=, because its
+  alternatives are fact rows now, and =swap_instrument_data= holds the header
+  beside them, with the variant member named =facts=.
 
 * Test Scenarios
 
@@ -142,7 +188,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2962][#2962]] | [trading,ore,sql] Move the rates family onto its header |
 
 * Review
 
@@ -151,3 +197,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The rates family has a header. =ores_trading_rate_instruments_tbl= carries the
+family's coverage check, the party and the party boundary, the trade-activity
+key, the start and maturity dates, the description and the delete cascade that
+closes the family's twelve tables. The eight product tables are fact tables
+keyed by the same trade, holding only their own fields; the catalogue routes
+the family's ten codes to the header; and the import writes the header row
+before the fact row where the export reads both. A new case deletes a header
+and proves the family closes with it.
+
+The task's acceptance has one line that does not hold as written: "each
+product fact table checks its own" trade type. The catalogue states one
+routing per trade type, so a fact table cannot carry a check while the header
+carries the family's, and the bond pilot this family follows does not do it
+either. The story's acceptance is reconciled here rather than at story close,
+because the reason is structural, not a deferral.
+
+Two clauses of the staging unit that this task's Plan listed as already done
+were already done: the cross-currency swap's own type (its own task) and the
+seven unwritten columns.

@@ -34,16 +34,12 @@ export interface FraInstrumentKey {
 
 export interface FraInstrumentWrite {
     trade_id: string;
-    trade_type_code: string;
     trade_activity_id: string;
-    start_date: string;
-    end_date: string;
     currency: string;
     rate_index: string;
     long_short: string;
     strike: number;
     notional: string;
-    description: string;
 }
 
 export interface FraInstrumentChange {

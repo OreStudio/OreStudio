@@ -34,13 +34,8 @@ export interface VanillaSwapInstrumentKey {
 
 export interface VanillaSwapInstrumentWrite {
     trade_id: string;
-    trade_type_code: string;
     trade_activity_id: string;
-    start_date: string;
-    maturity_date: string;
     settlement_lag: number | null;
-    netting_set_id: string;
-    description: string;
 }
 
 export interface VanillaSwapInstrumentChange {

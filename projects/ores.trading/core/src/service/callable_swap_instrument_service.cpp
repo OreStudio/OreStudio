@@ -88,7 +88,7 @@ read_one(repository::callable_swap_instrument_repository& repo,
  */
 messaging::callable_swap_instrument_key key_from(const domain::callable_swap_instrument& v) {
     messaging::callable_swap_instrument_key key;
-    key.trade_id = v.identity.trade_id;
+    key.trade_id = v.trade_id;
     return key;
 }
 
@@ -101,12 +101,8 @@ messaging::callable_swap_instrument_key key_from(const domain::callable_swap_ins
  */
 domain::callable_swap_instrument to_domain(const messaging::callable_swap_instrument_write& write) {
     domain::callable_swap_instrument v;
-    v.identity.trade_id = write.trade_id;
-    v.identity.trade_type_code = write.trade_type_code;
-    v.identity.trade_activity_id = write.trade_activity_id;
-    v.start_date = write.start_date;
-    v.maturity_date = write.maturity_date;
-    v.description = write.description;
+    v.trade_id = write.trade_id;
+    v.trade_activity_id = write.trade_activity_id;
     return v;
 }
 
@@ -257,13 +253,12 @@ callable_swap_instrument_service::delete_callable_swap_instrument(
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
             const auto live = read_one(repo_, ctx_, request.removal.key);
-            response.result =
-                refuse(outcome_code::version_conflict,
-                       {.entity = "callable_swap_instrument",
-                        .field = "trade_id",
-                        .expected = expected ? std::to_string(*expected) : std::string{},
-                        .current = live.empty() ? std::string{} :
-                                                  std::to_string(live.front().identity.version)});
+            response.result = refuse(
+                outcome_code::version_conflict,
+                {.entity = "callable_swap_instrument",
+                 .field = "trade_id",
+                 .expected = expected ? std::to_string(*expected) : std::string{},
+                 .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
             break;
         }
         case repository::callable_swap_instrument_repository::remove_status::unsupported:
@@ -363,7 +358,7 @@ ores::utility::domain::result callable_swap_instrument_service::prepare_change(
             // The protocol states the version as a uint32 and the row carries it
             // as an int, so the comparison states the conversion.
             if (!change.precondition.version ||
-                static_cast<std::uint32_t>(current.front().identity.version) !=
+                static_cast<std::uint32_t>(current.front().version) !=
                     *change.precondition.version) {
                 return refuse(outcome_code::version_conflict,
                               {.entity = "callable_swap_instrument",
@@ -371,7 +366,7 @@ ores::utility::domain::result callable_swap_instrument_service::prepare_change(
                                .expected = change.precondition.version ?
                                                std::to_string(*change.precondition.version) :
                                                std::string{},
-                               .current = std::to_string(current.front().identity.version)});
+                               .current = std::to_string(current.front().version)});
             }
             break;
         case precondition_kind::any:
@@ -380,23 +375,12 @@ ores::utility::domain::result callable_swap_instrument_service::prepare_change(
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.
-    // The audit reaches the row through whichever member carries it, so a
-    // grouped entity is stamped member by member; stamping it whole would
-    // find no audit column and leave the row without one.
-    stamp(out.identity,
+    stamp(out,
           ctx_,
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :
               intent.reason_code);
-    // The audit reaches the row through whichever member carries it, so a
-    // grouped entity is stamped member by member; stamping it whole would
-    // find no audit column and leave the row without one.
-    stamp(out.audit,
-          ctx_,
-          intent.reason_code.empty() ?
-              std::string(ores::service::messaging::change_reasons::new_record) :
-              intent.reason_code);
-    out.audit.change_commentary = intent.commentary;
+    out.change_commentary = intent.commentary;
     return result;
 }
 
@@ -439,21 +423,19 @@ callable_swap_instrument_service::get_callable_swap_instruments(
 
 void callable_swap_instrument_service::save_callable_swap_instrument(
     const domain::callable_swap_instrument& v) {
-    if (v.identity.trade_id.is_nil())
+    if (v.trade_id.is_nil())
         throw std::invalid_argument("Callable Swap Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving callable swap instrument. "
-                               << "trade_id: " << v.identity.trade_id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving callable swap instrument. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved callable swap instrument. "
-                              << "trade_id: " << v.identity.trade_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved callable swap instrument. " << "trade_id: " << v.trade_id;
 }
 
 void callable_swap_instrument_service::save_callable_swap_instruments(
     const std::vector<domain::callable_swap_instrument>& callable_swap_instruments) {
     for (const auto& e : callable_swap_instruments) {
-        if (e.identity.trade_id.is_nil())
+        if (e.trade_id.is_nil())
             throw std::invalid_argument("Callable Swap Instrument trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << callable_swap_instruments.size()

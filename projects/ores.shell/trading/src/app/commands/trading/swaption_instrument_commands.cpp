@@ -141,27 +141,24 @@ void swaption_instrument_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_type_code> <trade_activity_id> <expiry_date> <exercise_type> "
-        "<settlement_type> <long_short> <start_date> <maturity_date> <description> <reason> "
-        "<commentary>");
+        "add <trade_id> <trade_activity_id> <expiry_date> <exercise_type> <settlement_type> "
+        "<long_short> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_type_code> <trade_activity_id> <expiry_date> <exercise_type> "
-        "<settlement_type> <long_short> <start_date> <maturity_date> <description> <reason> "
-        "<commentary> [--version <n>]");
+        "set <trade_id> <trade_activity_id> <expiry_date> <exercise_type> <settlement_type> "
+        "<long_short> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <expiry_date> "
-        "<exercise_type> <settlement_type> <long_short> <start_date> <maturity_date> <description> "
-        "<reason> <commentary>");
+        "put-many --count <n> <trade_id> <trade_activity_id> <expiry_date> <exercise_type> "
+        "<settlement_type> <long_short> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,14 +353,12 @@ void swaption_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
-            req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
         read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.expiry_date, parsed->positionals[next++], "expiry_date");
@@ -371,9 +366,6 @@ void swaption_instrument_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.settlement_type, parsed->positionals[next++], "settlement_type");
         read_token(req.change.write.long_short, parsed->positionals[next++], "long_short");
-        read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
-        read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -416,14 +408,12 @@ void swaption_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
-            req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
         read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.expiry_date, parsed->positionals[next++], "expiry_date");
@@ -431,9 +421,6 @@ void swaption_instrument_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.settlement_type, parsed->positionals[next++], "settlement_type");
         read_token(req.change.write.long_short, parsed->positionals[next++], "long_short");
-        read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
-        read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -488,8 +475,8 @@ void swaption_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 10 + 2) {
-            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 6 + 2) {
+            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -497,17 +484,12 @@ void swaption_instrument_commands::process_put_many(std::ostream& out,
             messaging::swaption_instrument_change change;
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(
-                change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
-            read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             read_token(change.write.expiry_date, parsed->positionals[next++], "expiry_date");
             read_token(change.write.exercise_type, parsed->positionals[next++], "exercise_type");
             read_token(
                 change.write.settlement_type, parsed->positionals[next++], "settlement_type");
             read_token(change.write.long_short, parsed->positionals[next++], "long_short");
-            read_token(change.write.start_date, parsed->positionals[next++], "start_date");
-            read_token(change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-            read_token(change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

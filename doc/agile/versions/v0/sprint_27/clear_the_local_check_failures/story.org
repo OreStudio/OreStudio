@@ -43,7 +43,7 @@ The local check gate stops failing on drift that predates any branch.
 | [[id:0725298C-D015-4ECB-A72D-DE6ABD387206][Regenerate the drifted shell scripts]] | DONE | 2026-10-07 | 2026-10-07 | Six committed scripts drifted from their recipes, and six more the =account_credential= recipe produces were never committed. |
 | [[id:F42FCBF0-1931-46A9-A227-968996DDE510][Bump the DSH plugin package versions]] | DONE | 2026-10-07 | 2026-10-07 | The two DSH plugin packages declare version 0.0.25 against a 0.0.27 product, so their manifest checks fail. |
 | [[id:28360CF0-B1BA-4D50-8EE3-1D1D72DE80CE][Fix the red pgTAP suites]] | DONE | 2026-10-09 | 2026-10-09 | Task for: Clear the local-check failures on main |
-| [[id:28C34FD1-2B79-4D39-BAA6-19046A20CC0E][Carry the book purpose through the publisher]] | STARTED | 2026-10-09 | | Task for: Clear the local-check failures on main |
+| [[id:28C34FD1-2B79-4D39-BAA6-19046A20CC0E][Carry the book purpose through the publisher]] | DONE | 2026-10-09 | 2026-10-09 | Task for: Clear the local-check failures on main |
 
 * Decisions
 

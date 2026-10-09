@@ -101,7 +101,7 @@ export function systemPartyOf(parties: readonly PartySummary[]): PartySummary | 
 const WELCOME_STAGES: readonly (readonly [string, string])[] = [
     ['journey.welcome.stage.admin', 'journey.welcome.stage.adminBody'],
     ['journey.welcome.stage.tenant', 'journey.welcome.stage.tenantBody'],
-    ['journey.welcome.stage.signIn', 'journey.welcome.stage.signInBody'],
+    ['journey.welcome.stage.handOver', 'journey.welcome.stage.handOverBody'],
 ];
 
 /**

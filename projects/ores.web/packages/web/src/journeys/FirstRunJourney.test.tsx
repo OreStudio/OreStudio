@@ -112,7 +112,7 @@ describe('the welcome', () => {
 
         expect(html).toContain('Create the administrator');
         expect(html).toContain('Create the first tenant');
-        expect(html).toContain('Sign in');
+        expect(html).toContain('Hand the tenant over');
         expect(html).not.toContain('Bare system');
         expect(html).not.toContain('role="radiogroup"');
     });

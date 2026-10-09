@@ -241,7 +241,7 @@ describe('A person', () => {
      * it because they may not read a colleague's would take away the only place
      * they can put their own address.
      */
-    it("offers a member their own contact record", () => {
+    it('offers a member their own contact record', () => {
         const html = member('daniel', '/people/daniel');
 
         expect(html).toContain('>Contact<');

@@ -19,6 +19,7 @@
  *
  */
 
+import { ArrowLeftRight, Briefcase, Calendar, Coins, Tags } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { PageHeader } from '../ui/Primitives.js';
@@ -27,10 +28,10 @@ import { Crumbs, classificationsPath } from './shared.js';
 
 /** The screens built, with their addresses. */
 const BUILT = [
-    { screen: 'calendars', to: '/refdata/calendars' },
-    { screen: 'currencies', to: '/refdata/currencies' },
-    { screen: 'currencyPairs', to: '/refdata/currency-pairs' },
-    { screen: 'deskGroups', to: '/refdata/desk-groups' },
+    { screen: 'calendars', to: '/refdata/calendars', icon: Calendar },
+    { screen: 'currencies', to: '/refdata/currencies', icon: Coins },
+    { screen: 'currencyPairs', to: '/refdata/currency-pairs', icon: ArrowLeftRight },
+    { screen: 'deskGroups', to: '/refdata/desk-groups', icon: Briefcase },
 ] as const;
 
 /**
@@ -47,15 +48,17 @@ export function RefdataPage(): ReactNode {
             </div>
             <Tiles
                 tiles={[
-                    ...BUILT.map(({ screen, to }) => ({
+                    ...BUILT.map(({ screen, to, icon }) => ({
                         title: t(`refdata.area.screens.${screen}`),
                         body: t(`refdata.area.screens.${screen}Body`),
                         to,
+                        icon,
                     })),
                     {
                         title: t('refdata.classifications.title'),
                         body: t('refdata.area.classificationsBody'),
                         to: classificationsPath(),
+                        icon: Tags,
                     },
                 ]}
             />

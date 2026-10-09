@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 7951165B-5E0D-4FB2-96B4-062D3510A75E
+:END:
+#+title: Task: Restore the palette and bring the cards their icons
+#+description: Task for: Align the web palette with the reviewed scheme
+#+type: task
+#+level: s1
+#+filetags: :align-the-web-palette-with-the-reviewed-scheme:sprint_27:v0:
+#+owner: marco
+#+branch: fix/keep-the-project-site-palette
+#+pr: 3012
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A194593B-B37F-4E75-A667-A63CC3E9C042][Align the web palette with the reviewed scheme]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The theme was moved onto the scheme the landing-page review argued, and the scheme was tried and rejected: the blue-black ramp on the slate neutrals read as flatter than the palette it replaced. Put the project site's palette back. Keep what the review contributed that is not a colour, and take the one thing it had and the application does not: a glyph on every card.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A194593B-B37F-4E75-A667-A63CC3E9C042][Align the web palette with the reviewed scheme]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The theme's colours are the project site's again.
+- The review's non-colour contributions survive.
+- Every journey card carries an icon.
+
+* Plan
+
+Try the scheme before arguing about it. The theme is one block and every screen
+reads it, so the palette moved in one commit and the only way to know whether
+it is better is to run it and look at it. It was not better.
+
+The revert is the same block. What the review contributed that is not a colour
+stays, because none of it was the objection: the tints, the elevation, the
+radius scale and the micro-label type were all things the theme lacked. The
+glyphs are the one thing the review had and the application did not, so they
+are the part that gets built rather than reverted.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Colour roles restored to the site's | 17 | =grep -c -- '--color-' styles.css= | 33dfea905b |
+| Tokens the review contributed that stay | 8 | accent tints, roadmap pair, radii, glow, micro type | 33dfea905b |
+| Tiles given a glyph | 26, at three call sites | =grep -c 'icon:' HomePage.tsx RefdataPage.tsx OperationsArea.tsx= | cbda14d8ef |
+| Web tests | 481 in 46 files, all pass | =npm test --workspace @ores/web= | cbda14d8ef |
+| Built bundle | css 36.0 kB → 39.9 kB | =npm run build --workspace @ores/web= | cbda14d8ef |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3012][#3012]] | [web] Put the project site's palette back and give the tiles their glyphs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The palette is the project site's again, and the grid has a face. Every tile at
+the three call sites now leads with a glyph in a tinted square, takes the accent
+on its border and a tinted elevation on hover, and carries a rule across its
+foot with the arrow that goes in.
+
+The scheme was rejected on sight, which is the honest reason and the reason the
+commit that introduced it gave for trying it: a palette is not argued about
+from contrast arithmetic, it is looked at. The measurements taken before the
+move are sound and are why the accent survived at all — but they cannot say
+whether a scheme reads well, and this one did not.
+
+The glyphs are lucide, the set the review drew with, so a tile that is not
+built yet can wear the future hue and the grid says which tiles can be gone to
+before a word of it is read.

@@ -19,6 +19,22 @@
  *
  */
 
+import {
+    ArrowLeftRight,
+    Building2,
+    Database,
+    GitBranch,
+    KeyRound,
+    LifeBuoy,
+    LineChart,
+    Lock,
+    LogIn,
+    PieChart,
+    Plus,
+    ShieldCheck,
+    TrendingUp,
+    Users,
+} from 'lucide-react';
 import { useHolds } from '../access/holds.js';
 import { displayName } from '../access/names.js';
 import { useQuery } from '@tanstack/react-query';
@@ -362,23 +378,60 @@ function TenantHome({
 }): ReactNode {
     const { t } = useTranslation();
     const tiles: Tile[] = [
-        { title: t('home.tenant.parties'), body: t('home.tenant.partiesBody'), to: '/parties' },
-        { title: t('home.tenant.people'), body: t('home.tenant.peopleBody'), to: '/people' },
-        { title: t('home.tenant.roles'), body: t('home.tenant.rolesBody'), to: '/roles' },
-        { title: t('home.party.refdata'), body: t('home.party.refdataBody'), to: '/refdata' },
+        {
+            title: t('home.tenant.parties'),
+            body: t('home.tenant.partiesBody'),
+            to: '/parties',
+            icon: Building2,
+        },
+        {
+            title: t('home.tenant.people'),
+            body: t('home.tenant.peopleBody'),
+            to: '/people',
+            icon: Users,
+        },
+        {
+            title: t('home.tenant.roles'),
+            body: t('home.tenant.rolesBody'),
+            to: '/roles',
+            icon: ShieldCheck,
+        },
+        {
+            title: t('home.party.refdata'),
+            body: t('home.party.refdataBody'),
+            to: '/refdata',
+            icon: Database,
+        },
         {
             title: t('home.tenant.newParty'),
             body: t('home.tenant.newPartyBody'),
             to: '/parties/new',
+            icon: Plus,
         },
-        { title: t('home.tenant.rescue'), body: t('home.tenant.rescueBody'), to: '/rescue' },
-        { title: t('home.tenant.audit'), body: t('home.tenant.auditBody'), to: '/audit' },
+        {
+            title: t('home.tenant.rescue'),
+            body: t('home.tenant.rescueBody'),
+            to: '/rescue',
+            icon: LifeBuoy,
+        },
+        {
+            title: t('home.tenant.audit'),
+            body: t('home.tenant.auditBody'),
+            to: '/audit',
+            icon: LogIn,
+        },
         {
             title: t('home.tenant.versions'),
             body: t('home.tenant.versionsBody'),
             to: '/operations/versions',
+            icon: GitBranch,
         },
-        { title: t('home.tenant.security'), body: t('home.tenant.securityBody'), to: '/security' },
+        {
+            title: t('home.tenant.security'),
+            body: t('home.tenant.securityBody'),
+            to: '/security',
+            icon: Lock,
+        },
     ];
 
     return (
@@ -398,9 +451,11 @@ function PartyHome({
 }): ReactNode {
     const { t } = useTranslation();
     const holds = useHolds();
+    const comingIcons = { marketdata: LineChart, trading: TrendingUp, reporting: PieChart };
     const coming: Tile[] = (['marketdata', 'trading', 'reporting'] as const).map((area) => ({
         title: t(`home.party.${area}`),
         body: t(`home.party.${area}Body`),
+        icon: comingIcons[area],
     }));
 
     return (
@@ -417,6 +472,7 @@ function PartyHome({
                                   title: t('home.tenant.people'),
                                   body: t('home.tenant.peopleBody'),
                                   to: '/people',
+                                  icon: Users,
                               },
                           ]
                         : []),
@@ -424,26 +480,31 @@ function PartyHome({
                         title: t('home.party.refdata'),
                         body: t('home.party.refdataBody'),
                         to: '/refdata',
+                        icon: Database,
                     },
                     {
                         title: t('home.party.security'),
                         body: t('home.party.securityBody'),
                         to: '/security',
+                        icon: Lock,
                     },
                     {
                         title: t('home.tenant.access'),
                         body: t('home.tenant.accessBody'),
                         to: '/access',
+                        icon: KeyRound,
                     },
                     {
                         title: t('home.tenant.audit'),
                         body: t('home.tenant.auditBody'),
                         to: '/audit',
+                        icon: LogIn,
                     },
                     {
                         title: t('home.tenant.versions'),
                         body: t('home.tenant.versionsBody'),
                         to: '/operations/versions',
+                        icon: GitBranch,
                     },
                 ]}
             />

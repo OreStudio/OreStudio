@@ -41,6 +41,7 @@ The application's dark theme is the GitHub-dark palette the project site uses, a
 |------+-------+-------+-----+-------------|
 | [[id:7FA31354-8182-444E-8C53-3A0232829BE8][Scaffold story: Align the web palette with the reviewed scheme]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:AA8E7910-AD45-4397-B3FB-067F33373AFC][Move the web theme onto the reviewed scheme]] | DONE | 2026-10-09 | 2026-10-09 | Initial task for: Align the web palette with the reviewed scheme |
+| [[id:7951165B-5E0D-4FB2-96B4-062D3510A75E][Restore the palette and bring the cards their icons]] | DONE | | 2026-10-09 | Task for: Align the web palette with the reviewed scheme |
 
 * Decisions
 

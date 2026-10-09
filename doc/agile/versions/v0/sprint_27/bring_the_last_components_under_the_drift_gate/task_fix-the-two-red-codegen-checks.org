@@ -8,7 +8,7 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/fix-the-two-red-codegen-checks
-#+pr:
+#+pr: 2924
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2924][#2924]] | [codegen,sql] Fix the two red codegen checks |
 
 * Review
 

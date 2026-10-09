@@ -306,6 +306,27 @@ It is addressed at =iam.v1.ops.get_my_account_contact_information=.
 account_operations get-my-account-contact-information
 #+end_src
 
+** =get-my-parties=
+:PROPERTIES:
+:ID: 6FC32928-D003-5055-9849-71083524E888
+:END:
+
+Sends =get_my_parties_request= and prints =get_my_parties_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations get-my-parties
+#+end_example
+
+It is addressed at =iam.v1.ops.get_my_parties=.
+
+#+name: account_operations-get-my-parties
+#+begin_src ores-shell :tangle account_operations-get-my-parties.ores :exports none
+account_operations get-my-parties
+#+end_src
+
 ** =attach-account-pictures=
 :PROPERTIES:
 :ID: 8AA25319-A2C3-5767-8DCF-7B7303EE6D96

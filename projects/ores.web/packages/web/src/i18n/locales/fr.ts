@@ -438,6 +438,8 @@ const fr: SourceCatalogue = {
             lastSignIn: 'Dernière connexion',
             locked: 'Verrouillé',
             notLocked: 'Non verrouillé',
+            never: 'Jamais',
+            neverSignedIn: 'Jamais connecté',
         },
         events: {
             title: 'Événements d’authentification',

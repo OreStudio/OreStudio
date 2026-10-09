@@ -35,7 +35,7 @@
 
 begin;
 
-select plan(8);
+select plan(7);
 
 -- Row-level security applies to the test user too: state the tenant before
 -- writing anything. The tenant comes first because the fixture below writes
@@ -82,36 +82,41 @@ select (select id from ores_refdata_parties_tbl
 -- Two trades, because a link needs both ends. The anchored trade is the one
 -- the link starts at; the replacement is where it ends.
 insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
-    trade_type, counterparty_scope, booking_nature, entry_channel)
+    trade_type, counterparty_scope, booking_nature, entry_channel,
+    modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000ca003', ores_utility_system_tenant_id_fn(), party_id,
-    counterparty_id, 'Swap', 'external', 'actual', 'manual'
+    counterparty_id, 'Swap', 'external', 'actual', 'manual',
+    current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
 from t_ctx;
 
 insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
-    trade_type, counterparty_scope, booking_nature, entry_channel)
+    trade_type, counterparty_scope, booking_nature, entry_channel,
+    modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000ca004', ores_utility_system_tenant_id_fn(), party_id,
-    counterparty_id, 'Swap', 'external', 'actual', 'manual'
+    counterparty_id, 'Swap', 'external', 'actual', 'manual',
+    current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
 from t_ctx;
 
 create or replace function pg_temp.activity(p_party uuid, p_type text default 'new_booking')
 returns uuid as $$
     insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,
-        activity_type_code, actor, occurred_at, comment)
+        activity_type_code, actor, occurred_at, comment,
+        modified_by, performed_by, change_reason_code, change_commentary)
     values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), p_party, p_type, 'test',
-        now(), 'test')
+        now(), 'test',
+        current_user, current_user, 'system.new_record', 'Trade activity pgTAP fixture')
     returning id;
 $$ language sql;
 
 create or replace function pg_temp.link(p_from uuid, p_to uuid, p_type text,
-    p_party uuid default null, p_activity uuid default null)
+    p_activity uuid default null)
 returns void as $$
     insert into ores_trading_trade_links_tbl (from_trade_id, to_trade_id, link_type,
-        trade_activity_id, tenant_id, version, party_id, modified_by, performed_by,
+        trade_activity_id, tenant_id, version, modified_by, performed_by,
         change_reason_code, change_commentary)
     select p_from, p_to, p_type,
         coalesce(p_activity, pg_temp.activity(party_id)),
-        ores_utility_system_tenant_id_fn(), 0,
-        coalesce(p_party, party_id), current_user, current_user,
+        ores_utility_system_tenant_id_fn(), 0, current_user, current_user,
         'system.new_record', 'test'
     from t_ctx;
 $$ language sql;
@@ -151,7 +156,7 @@ select throws_ok(
 
 select throws_ok(
     $$select pg_temp.link('00000000-0000-0000-0000-0000000ca003',
-        '00000000-0000-0000-0000-0000000ca004', 'CloseOut', null,
+        '00000000-0000-0000-0000-0000000ca004', 'CloseOut',
         '00000000-0000-0000-0000-0000000caf0f')$$,
     '23503', null,
     'a link made by an unknown activity is refused');
@@ -160,12 +165,9 @@ select throws_ok(
 -- The copied party and the two ends
 -- =============================================================================
 
-select throws_ok(
-    $$select pg_temp.link('00000000-0000-0000-0000-0000000ca003',
-        '00000000-0000-0000-0000-0000000ca004', 'Novation',
-        (select other_party_id from t_ctx))$$,
-    '23503', null,
-    'a link carries the party of its from end, not another party''s');
+-- A link used to carry the party of its from end and a case here proved the
+-- pin. The children stopped copying the party, so there is no copy left to get
+-- wrong and nothing for the case to assert.
 
 select throws_ok(
     $$select pg_temp.link('00000000-0000-0000-0000-0000000ca003',

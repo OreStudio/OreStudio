@@ -26,16 +26,16 @@
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/auth_event_operations_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
-#include "ores.iam.api/messaging/geo_operations_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include "ores.iam.api/messaging/geo_operations_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/password_policy_protocol.hpp"
 #include "ores.iam.api/messaging/registration_policy_protocol.hpp"
 #include "ores.iam.api/messaging/reset_protocol.hpp"
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
-#include "ores.iam.api/messaging/session_statistics_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
+#include "ores.iam.api/messaging/session_statistics_operations_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
@@ -46,13 +46,13 @@
 #include "ores.iam.core/messaging/account_credential_registrar.hpp"
 #include "ores.iam.core/messaging/account_operations_handler.hpp"
 #include "ores.iam.core/messaging/account_party_handler.hpp"
-#include "ores.iam.core/messaging/auth_event_handler.hpp"
-#include "ores.iam.core/messaging/geo_handler.hpp"
 #include "ores.iam.core/messaging/account_registrar.hpp"
 #include "ores.iam.core/messaging/account_type_registrar.hpp"
+#include "ores.iam.core/messaging/auth_event_handler.hpp"
 #include "ores.iam.core/messaging/auth_handler.hpp"
 #include "ores.iam.core/messaging/authorization_handler.hpp"
 #include "ores.iam.core/messaging/bootstrap_handler.hpp"
+#include "ores.iam.core/messaging/geo_handler.hpp"
 #include "ores.iam.core/messaging/login_info_registrar.hpp"
 #include "ores.iam.core/messaging/permission_registrar.hpp"
 #include "ores.iam.core/messaging/publish_from_dq_handler.hpp"
@@ -279,6 +279,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             acth->get_my_account_contact_information(
                                                 std::move(msg));
                                         }));
+    subs.push_back(nats.queue_subscribe(
+        get_my_parties_request::nats_subject, qg, [acth](ores::nats::message msg) {
+            acth->get_my_parties(std::move(msg));
+        }));
 
     // --- Account parties ---
     // The associations are stored in a junction the codegen owns, but their

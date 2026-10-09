@@ -93,6 +93,7 @@ export const AUDIT_SESSIONS_QUERY_KEY = 'audit-active-sessions' as const;
 export const AUDIT_FAILURES_QUERY_KEY = 'audit-login-records' as const;
 export const AUDIT_EVENTS_QUERY_KEY = 'audit-auth-events' as const;
 export const AUDIT_STATISTICS_QUERY_KEY = 'audit-session-statistics' as const;
+export const AUDIT_ACCOUNTS_QUERY_KEY = 'audit-account-names' as const;
 
 /**
  * The seconds one period names, for the sessions read.
@@ -131,6 +132,80 @@ export function formatReadAt(at: number): string | undefined {
         return undefined;
     }
     return `${new Date(at).toISOString().slice(11, 19)} UTC`;
+}
+
+/**
+ * Whether a wire timestamp names no moment.
+ *
+ * An account that has never signed in carries the wire's zero instant,
+ * `1970-01-01 00:00:00Z`, which is the epoch rather than a sign-in. An empty
+ * value names no moment either.
+ */
+export function isZeroTimestamp(value: string): boolean {
+    if (value === '') {
+        return true;
+    }
+    if (!isWireTimestamp(value)) {
+        return false;
+    }
+    return Date.parse(value.replace(' ', 'T')) === 0;
+}
+
+/**
+ * Whether a wire address names no address.
+ *
+ * An account that has never been tried carries the wire's zero address,
+ * `0.0.0.0`, which is a placeholder rather than somewhere a person signed in.
+ * An empty value names no address either.
+ */
+export function isZeroAddress(value: string): boolean {
+    return value === '' || value === '0.0.0.0';
+}
+
+/**
+ * The login records in the order the panel reads them.
+ *
+ * A login record is per-account state rather than an event, so the read
+ * answers one for every account. The rows that have something to say come
+ * first: the most failed, then the accounts that have signed in at least once,
+ * then the accounts that have never been used.
+ */
+export function orderLoginRecords(rows: readonly LoginInfo[]): readonly LoginInfo[] {
+    return [...rows].sort((left, right) => {
+        if (left.failedLogins !== right.failedLogins) {
+            return right.failedLogins - left.failedLogins;
+        }
+        return Number(isZeroTimestamp(left.lastLogin)) - Number(isZeroTimestamp(right.lastLogin));
+    });
+}
+
+/**
+ * An account as the audit names it.
+ *
+ * The username is the first line because a person reads a name, not a key; the
+ * identifier sits under it for the support call that quotes it. An account the
+ * read did not answer keeps its identifier alone.
+ */
+function AccountCell({
+    accountId,
+    username,
+    nameOf,
+}: {
+    readonly accountId: string;
+    readonly username?: string;
+    readonly nameOf: ReadonlyMap<string, string>;
+}): ReactNode {
+    if (accountId === '') {
+        return <span>{username === undefined || username === '' ? '—' : username}</span>;
+    }
+    const name =
+        username !== undefined && username !== '' ? username : (nameOf.get(accountId) ?? '');
+    return (
+        <div className="space-y-0.5">
+            {name !== '' && <div>{name}</div>}
+            <div className="font-mono text-xs text-ink-faint">{accountId}</div>
+        </div>
+    );
 }
 
 /** The tone one event type is painted with, for the types the log stores. */
@@ -220,6 +295,7 @@ function FilterBar({
  */
 function SessionsPanel({
     sessions,
+    accountNames,
     pending,
     error,
     endingId,
@@ -228,6 +304,7 @@ function SessionsPanel({
     onEnd,
 }: {
     readonly sessions: readonly Session[];
+    readonly accountNames: ReadonlyMap<string, string>;
     readonly pending: boolean;
     readonly error: Error | null;
     readonly endingId: string;
@@ -301,8 +378,11 @@ function SessionsPanel({
                                             <td className="py-2 text-ink-muted">
                                                 {row.countryCode === '' ? '—' : row.countryCode}
                                             </td>
-                                            <td className="py-2 font-mono text-xs">
-                                                {row.accountId}
+                                            <td className="py-2">
+                                                <AccountCell
+                                                    accountId={row.accountId}
+                                                    nameOf={accountNames}
+                                                />
                                             </td>
                                             <td className="whitespace-nowrap py-2 text-right text-xs text-ink-faint">
                                                 {String(row.bytesSent)} /{' '}
@@ -411,8 +491,10 @@ function ActivityPanel({
 /** The session statistics: one row per day and account. */
 function StatisticsPanel({
     query,
+    accountNames,
 }: {
     readonly query: UseQueryResult<readonly SessionStatisticsRow[]>;
+    readonly accountNames: ReadonlyMap<string, string>;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -453,7 +535,9 @@ function StatisticsPanel({
                         {query.data.map((row) => (
                             <tr key={`${row.day}-${row.accountId}`}>
                                 <td className="py-2 font-mono text-xs">{row.day}</td>
-                                <td className="py-2 font-mono text-xs">{row.accountId}</td>
+                                <td className="py-2">
+                                    <AccountCell accountId={row.accountId} nameOf={accountNames} />
+                                </td>
                                 <td className="py-2 text-right tabular-nums">{row.sessionCount}</td>
                                 <td className="py-2 text-right tabular-nums">
                                     {`${String(Math.round(row.avgDurationSeconds))} s`}
@@ -481,16 +565,16 @@ function StatisticsPanel({
  */
 function FailuresPanel({
     query,
+    accountNames,
 }: {
     readonly query: UseQueryResult<{
         readonly loginInfo: readonly LoginInfo[];
         readonly totalCount: number;
     }>;
+    readonly accountNames: ReadonlyMap<string, string>;
 }): ReactNode {
     const { t } = useTranslation();
-    const ordered = [...(query.data?.loginInfo ?? [])].sort(
-        (left, right) => right.failedLogins - left.failedLogins,
-    );
+    const ordered = orderLoginRecords(query.data?.loginInfo ?? []);
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
@@ -532,13 +616,29 @@ function FailuresPanel({
                     <tbody className="divide-y divide-line-subtle">
                         {ordered.map((row) => (
                             <tr key={row.accountId}>
-                                <td className="py-2 font-mono text-xs">{row.accountId}</td>
+                                <td className="py-2">
+                                    <AccountCell accountId={row.accountId} nameOf={accountNames} />
+                                </td>
                                 <td className="py-2 tabular-nums">{row.failedLogins}</td>
-                                <td className="py-2 font-mono text-xs">
-                                    {row.lastAttemptIp === '' ? '—' : row.lastAttemptIp}
+                                <td className="py-2">
+                                    {isZeroAddress(row.lastAttemptIp) ? (
+                                        <span className="text-xs text-ink-faint">
+                                            {t('auditSignIns.failures.never')}
+                                        </span>
+                                    ) : (
+                                        <span className="font-mono text-xs">
+                                            {row.lastAttemptIp}
+                                        </span>
+                                    )}
                                 </td>
                                 <td className="py-2">
-                                    {row.lastLogin === '' ? '—' : row.lastLogin}
+                                    {isZeroTimestamp(row.lastLogin) ? (
+                                        <span className="text-xs text-ink-faint">
+                                            {t('auditSignIns.failures.neverSignedIn')}
+                                        </span>
+                                    ) : (
+                                        row.lastLogin
+                                    )}
                                 </td>
                                 <td className="py-2">
                                     <Tag tone={row.locked ? 'warn' : 'muted'}>
@@ -559,8 +659,10 @@ function FailuresPanel({
 /** The authentication event log, newest first. */
 function EventsPanel({
     query,
+    accountNames,
 }: {
     readonly query: UseQueryResult<readonly AuthEvent[]>;
+    readonly accountNames: ReadonlyMap<string, string>;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -597,12 +699,12 @@ function EventsPanel({
                                 <td className="py-2">
                                     <Tag tone={eventTone(row.eventType)}>{row.eventType}</Tag>
                                 </td>
-                                <td className="py-2 font-mono text-xs">
-                                    {row.username !== ''
-                                        ? row.username
-                                        : row.accountId !== ''
-                                          ? row.accountId
-                                          : '—'}
+                                <td className="py-2">
+                                    <AccountCell
+                                        accountId={row.accountId}
+                                        username={row.username}
+                                        nameOf={accountNames}
+                                    />
                                 </td>
                                 <td className="py-2 font-mono text-xs">
                                     {row.sessionId === '' ? '—' : row.sessionId}
@@ -654,6 +756,20 @@ export function AuditPage(): ReactNode {
             api.sessionStatistics({ period: filter.period, offset: 0, limit: AUDIT_PAGE_SIZE }),
         retry: false,
     });
+    const accounts = useQuery({
+        queryKey: [AUDIT_ACCOUNTS_QUERY_KEY],
+        queryFn: () => api.accounts(),
+        retry: false,
+    });
+
+    /*
+     * The readings speak in account identifiers. The account list is read once
+     * and turned into the names every panel shows; a refused read leaves the
+     * map empty and each panel falls back to the identifier alone.
+     */
+    const accountNames = new Map(
+        (accounts.data?.accounts ?? []).map((row) => [row.id, row.username] as const),
+    );
 
     const { tab, bar } = useTabs({
         label: t('auditSignIns.tabs'),
@@ -727,6 +843,7 @@ export function AuditPage(): ReactNode {
             {tab === 'sessions' && (
                 <SessionsPanel
                     sessions={openSessions}
+                    accountNames={accountNames}
                     pending={sessions.isPending}
                     error={sessions.error}
                     endingId={endingId}
@@ -744,9 +861,11 @@ export function AuditPage(): ReactNode {
                     onChoose={setChosen}
                 />
             )}
-            {tab === 'statistics' && <StatisticsPanel query={statistics} />}
-            {tab === 'failures' && <FailuresPanel query={failures} />}
-            {tab === 'events' && <EventsPanel query={events} />}
+            {tab === 'statistics' && (
+                <StatisticsPanel query={statistics} accountNames={accountNames} />
+            )}
+            {tab === 'failures' && <FailuresPanel query={failures} accountNames={accountNames} />}
+            {tab === 'events' && <EventsPanel query={events} accountNames={accountNames} />}
         </div>
     );
 }

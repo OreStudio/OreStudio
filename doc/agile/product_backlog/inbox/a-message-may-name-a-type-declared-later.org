@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 8D5AA7C2-0D67-4348-9562-D128D3B7ADFB
+:END:
+#+title: A message may name a type declared later in its model
+#+description: The generators emit a model's structs in the order the file states them, so a response declared above the type it carries produces a header that does not compile. Every documentation gate passes; only the compiler catches it.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:modeling:lint:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A message model may state a type after the message that carries it. The
+generators emit the structs in the order the file states them, so the generated
+header references a type that is declared further down and does not compile.
+
+* Why
+
+It happened on 2026-10-09, adding =iam.v1.ops.get_my_parties=: the response was
+declared above the =my_party= it carries, and the generated C++ referenced
+=my_party= before its declaration. Nothing in the documentation gates noticed.
+=check_component_drift= regenerates faithfully, =check_subject_conformance=,
+=check_route_auth_declarations=, =check_handler_permissions= and =check_open_reads=
+all passed, and =compass lint= was clean. The first signal was a compiler error
+inside a nested rfl template, twenty minutes into a build, in a header nobody
+edited by hand.
+
+The cost is not the error; it is where the error arrives. A model author who
+declares a message before its payload gets no feedback until a full C++ build
+reaches the component, and the message points into =reflectcpp='s field
+counting rather than at the model.
+
+Two directions, and they are not exclusive:
+
+- *A check.* The model linter can refuse a message whose field names a type
+  declared later in the same file, with the fix in the message. It is a
+  small, local rule over one file.
+- *A generator change.* The generator can order the emitted types
+  topologically, or forward-declare them, so the model's own order stops
+  being load-bearing. That removes the rule rather than enforcing it, and it
+  is the better of the two if the ordering has no other meaning.
+
+The decision it forces is which of those this project wants: a lint that keeps
+the constraint, or a generator that drops it.
+
+* References
+
+- Found while building [[id:B168458B-DAB9-4847-823F-2B75DBC3FA38][Read a member's parties with their names]].
+- The model: =projects/ores.iam/modeling/ores.iam.account_messages.org=.
+- The generators: =projects/ores.codegen/library/templates/ores.cpp.*.org=.
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the catalogue the task that found this belongs to.

@@ -789,6 +789,91 @@ from here is what the registrar subscribes with.
  */
 #+end_src
 
+** my_party
+
+#+begin_src cpp :name comment
+/**
+ * @brief One party the caller's account works in, as the member's own screen
+ * reads it.
+ *
+ * The name, the category and the business centre come from IAM's party cache,
+ * which mirrors refdata's parties per tenant; the association itself carries
+ * the identifier alone. A party the cache has not seen answers with empty
+ * strings rather than a half-read row.
+ *
+ * Declared before the response that carries it, because the generators emit
+ * the messages in the order this file states them.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** short_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_category
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** business_center_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_my_parties_request
+:PROPERTIES:
+:subject: iam.v1.ops.get_my_parties
+:response: get_my_parties_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A member's read of the parties their own account works in.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's list. The read needs no permission: it is a
+ * self read on the allow-list of Authorised reads.
+ *
+ * The subject exists because the association read answers with a party
+ * identifier and nothing on the browser's path turns one into a name: the
+ * sign-in reply is the only read that names a party today.
+ */
+#+end_src
+
+** get_my_parties_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** default_party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The party quick sign-in uses, or empty when the account stores none.
+ */
+#+end_src
+
+*** parties
+:PROPERTIES:
+:cpp_type: std::vector<my_party>
+:END:
+
 ** attach_account_pictures_request
 :PROPERTIES:
 :subject: iam.v1.ops.attach_account_pictures

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-a-composite-objects-aligned-evolution
+#+pr: 3018
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A caller sees how a whole composite object moved between instants, with the node
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and green. The operation, the instant read, the reader, the handler, the shared shape reader and the removal of the bucket window are in. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Open the PR, then record the result.   |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -43,9 +43,51 @@ A caller sees how a whole composite object moved between instants, with the node
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The aligned evolution read is the slice read's sibling. It returns the whole
+object rather than one component, and it states the change each node shows
+against the shape. The fixed five-bucket window goes, and the subject that
+carried it goes with it.
+
+1. A new operation in =ores.marketdata.operations=,
+   =get_series_evolution_request= and =get_series_evolution_response=, with the
+   two messages it carries: one node with its coordinate labels and its status,
+   and one instant with a value per node.
+2. The request states the object as the typed identity the resolver takes, and
+   either a range or a set of instants. A set the caller states replaces the
+   range.
+3. The response is the matrix: the axis names once, the declared grid's nodes
+   once with their labels and their status, and one row per instant whose values
+   are index for index with the nodes. It is parallel arrays, not arrays of
+   objects.
+4. The node status is the change the node shows over the range: =persistent=
+   when every instant carries it, =added= when the last carries it and the first
+   does not, =dropped= when the first carries it and the last does not,
+   =intermittent= when an instant between them does, and =never_quoted= when the
+   shape declares it and no instant carries it.
+5. =read_as_of_instants= grows a stated set of instants. A range draws its
+   boundaries from the data; a stated set uses the caller's.
+6. The fixed five-bucket window is removed: its request, its response, the
+   handler method and the registration. The repository's own =read_as_of_buckets=
+   stays, because a backlog story names it as the reference implementation of the
+   as-of-bucket pattern that story exists to generalize.
+7. The shape reader both reads share moves to its own service, so the slice read
+   and the evolution read cannot disagree about what an axis is.
+
+** The grid is the shape's product, so a hole is a cell and not a missing node
+
+The nodes are every combination of the declared values of the object's axes, in
+the order the shape stores the axes and with the last axis varying fastest. That
+is what makes a declared node distinguishable from a node the object does not
+have: the first is a cell of the matrix, marked =never_quoted= when no instant
+carries it, and the second is not in the matrix at all.
+
+** The status is a summary of the range, not of one step
+
+A node that is dropped and then added again is reported =added=, because the
+range's last instant carries it and its first does not. A caller that wants the
+change step by step reads two consecutive rows, which the matrix already carries.
+One word per node is what makes the answer readable at a glance, which is what
+the journey asks for.
 
 * Measurements
 
@@ -59,9 +101,41 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| marketdata suites | 5 of 5 pass: api, client, core, core.corpus, service. The corpus took 2757 s on a loaded box against a fresh database. | =ctest --test-dir build/output/linux-clang-debug-make -R "^ores\.marketdata\." --output-on-failure= | =9c9933410e= |
+| new evolution cases | 5 cases, 46 assertions, all pass | =publish/bin/ores.marketdata.core.tests "[series_evolution_reader]"= | =9c9933410e= |
+| marketdata codegen drift | none | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component marketdata --dry-run= | =9c9933410e= |
+| local checks, branch against =origin/main= | 28 of 30 pass. =codegen-tests= and =event-registrars= are the same failure, and it is not this branch's: =ores.refdata= does not compose the =sub_periods_coupon_type= registrar. | =python3 build/scripts/local_checks.py --exclude-heavy --base origin/main --jobs 2= | =9c9933410e= |
 
 * Notes
+
+- The instants are the points the object states at them, not the points it held
+  by then. This is the pivot of the task. Under an as-of reconstruction a node
+  that was once quoted is carried for ever, so no node is ever dropped and the
+  added and dropped report the acceptance asks for has no content. The read is
+  therefore the object as each instant states it, and a node the object does not
+  state at an instant is a hole there.
+- The slice read changed with it. It shipped carrying the last known value
+  forward, and it now shows the holes too, because the two reads must not
+  disagree about what the object states. Its test changed with it.
+- The as-of reads stay. The single-instant snapshot is still an as-of
+  reconstruction, and the repository keeps =read_as_of_records= and
+  =read_as_of_buckets= for a reader that wants the object assembled from the
+  last quote per coordinate. The story's reshaping task owns the reconciliation
+  of the snapshot with these two.
+- The fixed five-bucket window is gone: its request, its response, its handler
+  method and its registration. The repository's own =read_as_of_buckets= stays,
+  because a backlog story names it as the reference implementation of the
+  as-of-bucket pattern that story exists to generalize.
+- The status words are checked in order: =never_quoted=, =persistent=,
+  =added=, =dropped=, and =intermittent= for what is left. A node carried at
+  both ends but not in between is =intermittent= and not =persistent=, which is
+  the one case the three words the story names do not cover.
+- The shape reader both range reads share moved to =series_shape=, so the two
+  cannot disagree about what an axis is.
+- =projects/ores.marketdata/api/modeling/ores.marketdata.api.puml= lists the
+  removed bucket classes and does not list the slice classes either. No codegen
+  address in this tree writes that file and no gate covers it, so this task
+  leaves it as it found it.
 
 * Test Scenarios
 
@@ -78,7 +152,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3018][#3018]] | [marketdata] Read a composite object's aligned evolution |
 
 * Review
 
@@ -87,3 +161,64 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A composite object's evolution is one aligned read. A caller names the object by
+typed identity fields and a range or a set of instants, and gets instants by
+nodes, each node carrying its declared labels and the change it shows. The fixed
+five-bucket window is gone.
+
+What landed:
+
+- =get_series_evolution_request= and =get_series_evolution_response= in
+  =ores.marketdata.operations=, generated into the C++ protocol and the
+  TypeScript twin, with =evolution_node= and =evolution_instant=.
+- =market_observation_repository::read_instants=, which returns the points a
+  series states at each instant, in one statement over the observation index.
+- =service::series_evolution_reader=, which builds the declared grid, walks the
+  instants and marks every node.
+- =messaging::series_evolution_handler=, registered on
+  =marketdata.v1.ops.get_series_evolution=.
+- =service::series_shape=, the shape reader the slice read and the evolution read
+  now share.
+- The five-bucket window's request, response, handler method and registration are
+  removed.
+
+Acceptance:
+
+- /The read returns a matrix of instants by nodes, not arrays of objects./ Met.
+  The response states the axis names once, the grid once, and one row per instant
+  whose values are index for index with the nodes.
+- /Every node is marked added, dropped or persistent against the declared
+  shape./ Met, with two words the acceptance does not name: =never_quoted= for a
+  node no instant states, and =intermittent= for one that some instant states and
+  that none of the other rules covers. The rules are checked in order.
+- /The fixed five-bucket window is replaced./ Met. The subject, its handler
+  method and its registration are gone. The repository's own
+  =read_as_of_buckets= stays, because a backlog story names it as the reference
+  implementation of the as-of-bucket pattern that story exists to generalize.
+- /A node the shape declares and no instant carries is distinguishable from a
+  node the object does not have./ Met. The grid is the product of the declared
+  axis values, so the first is a cell of the matrix marked =never_quoted=, and
+  the second is not in the response at all.
+
+Limitations:
+
+- *An instant's points are the ones it states, and the slice read changed to
+  match.* Under an as-of reconstruction a node that was once quoted is carried
+  for ever, so no node is ever dropped and this task's own acceptance has no
+  content. The two reads must not disagree about what the object states, so the
+  slice read, which shipped carrying values forward, now shows the holes too.
+  The as-of reads stay for the single-instant snapshot, and the story's reshaping
+  task owns the reconciliation of that read with these two.
+- *Every point of every instant is walked.* A node is matched in C++ through the
+  codec and not in SQL, for the reason the slice read gives: a component is a
+  coordinate inside the point's URI, and a text match on it would depend on how
+  the codec encodes it.
+- *The status is a summary of the range and not of one step.* A node dropped and
+  then added again is reported =added=. A caller that wants the change step by
+  step reads two consecutive rows, which the matrix carries.
+- *The API diagram is stale.*
+  =projects/ores.marketdata/api/modeling/ores.marketdata.api.puml= lists the
+  removed bucket classes and never listed the slice classes either. No codegen
+  address in this tree writes that file and no gate covers it, so the task leaves
+  it as it found it.

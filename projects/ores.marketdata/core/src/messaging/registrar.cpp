@@ -37,6 +37,7 @@
 #include "ores.marketdata.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.marketdata.core/messaging/series_classification_rule_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_classification_rule_registrar.hpp"
+#include "ores.marketdata.core/messaging/series_evolution_handler.hpp"
 #include "ores.marketdata.core/messaging/series_identity_handler.hpp"
 #include "ores.marketdata.core/messaging/series_slice_handler.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -105,7 +106,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             h.backfill_identity(std::move(msg));
                                         }));
 
-    // Curve snapshots (as-of / as-of-buckets, for curve/grid viewers)
+    // The single-instant snapshot of a curve or grid, for curve/grid viewers.
     subs.push_back(nats.queue_subscribe(std::string(get_curve_snapshot_request::nats_subject),
                                         queue,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
@@ -113,13 +114,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             h.get_snapshot(std::move(msg));
                                         }));
 
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_curve_snapshot_buckets_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 curve_snapshot_handler h(nats, ctx, verifier);
-                                 h.get_snapshot_buckets(std::move(msg));
-                             }));
+    // A whole composite object as instants by nodes, with the change each node
+    // shows against the shape.
+    subs.push_back(nats.queue_subscribe(std::string(get_series_evolution_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            series_evolution_handler h(nats, ctx, verifier);
+                                            h.get_evolution(std::move(msg));
+                                        }));
 
     // One component of a composite object as a term structure at each instant
     // in a range.

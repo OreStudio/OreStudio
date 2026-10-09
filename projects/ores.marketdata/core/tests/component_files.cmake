@@ -39,5 +39,6 @@ set(files
     "service_corpus_import_tests.cpp"
     "service_import_service_tests.cpp"
     "service_ore_export_tests.cpp"
+    "service_series_evolution_reader_tests.cpp"
     "service_series_slice_reader_tests.cpp"
 )

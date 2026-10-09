@@ -42,13 +42,6 @@ inline auto& curve_snapshot_handler_lg() {
         ores::logging::make_logger("ores.marketdata.messaging.curve_snapshot_handler");
     return instance;
 }
-
-// A caller can ask for any bucket count, and an oversized one costs a large
-// generate_series()/LATERAL join and a correspondingly large result
-// allocation. Server-side ceiling, enforced regardless of what any caller
-// happens to allow.
-constexpr std::uint32_t max_bucket_count = 200;
-
 }
 
 using ores::service::messaging::reply;
@@ -57,10 +50,12 @@ using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 /**
- * @brief NATS message handler for curve snapshot / curve-evolution queries -- read-only, thin
- * wrappers around market_observation_repository::read_as_of_records()/read_as_of_buckets(),
- * with series_id resolved server-side from the series' oresmd identity, so callers don't
- * need to know internal series ids.
+ * @brief NATS message handler for the single-instant curve snapshot read -- a
+ * thin wrapper around market_observation_repository::read_as_of_records(), with
+ * series_id resolved server-side from the series' oresmd identity, so callers
+ * do not need to know internal series ids.
+ *
+ * The evolution over a range is its own read, in series_evolution_handler.
  */
 class curve_snapshot_handler {
 public:
@@ -109,59 +104,6 @@ public:
                     resp.warning = summary.warning;
                 }
                 // No series yet (feed hasn't published) is not an error -- empty snapshot.
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(curve_snapshot_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
-            BOOST_LOG_SEV(curve_snapshot_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-        BOOST_LOG_SEV(curve_snapshot_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
-    }
-
-    void get_snapshot_buckets(ores::nats::message msg) {
-        BOOST_LOG_SEV(curve_snapshot_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!ores::service::messaging::has_permission(req_ctx,
-                                                      "marketdata::curve_snapshots:read")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        get_curve_snapshot_buckets_response resp;
-        if (auto req = decode<get_curve_snapshot_buckets_request>(msg)) {
-            if (req->bucket_count == 0 || req->bucket_count > max_bucket_count ||
-                req->bucket_seconds <= 0) {
-                BOOST_LOG_SEV(curve_snapshot_handler_lg(), warn)
-                    << "Rejected " << msg.subject << ": bucket_count=" << req->bucket_count
-                    << " bucket_seconds=" << req->bucket_seconds;
-                error_reply(nats_, msg, ores::service::error_code::bad_request);
-                return;
-            }
-            try {
-                repository::market_series_repository series_repo;
-                auto series = series_repo.read_latest_by_uri(req_ctx, req->oresmd_uri);
-                if (!series.empty()) {
-                    repository::market_observation_repository obs_repo;
-                    resp.buckets =
-                        obs_repo.read_as_of_buckets(req_ctx,
-                                                    series.front().id,
-                                                    std::chrono::system_clock::now(),
-                                                    std::chrono::seconds(req->bucket_seconds),
-                                                    req->bucket_count);
-                } else {
-                    resp.buckets.resize(req->bucket_count);
-                }
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(curve_snapshot_handler_lg(), error)

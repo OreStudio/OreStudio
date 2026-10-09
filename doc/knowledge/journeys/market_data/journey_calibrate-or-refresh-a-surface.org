@@ -136,7 +136,7 @@ rows have no entity to compose; see /What is missing/.
 | Fit the quotes | Calibrate the surface | =marketdata.v1.surface.calibrate= | missing |
 | Read the calibration error | Read the fit error | =marketdata.v1.surface.calibration.get= | missing |
 | Read the slices | Read one smile | =marketdata.v1.surface-slice.get= | missing |
-| Refresh the surface | Re-read the observations over a range | =marketdata.v1.ops.get_curve_snapshot_buckets= | partial |
+| Refresh the surface | Re-read the observations over a range | =marketdata.v1.ops.get_series_evolution= | exists |
 | Leave unpublished | Arrange the approval later | =inbox.v1.ops.raise_approval= | exists |
 | Check the change trail | Read the series' history | =marketdata.v1.history.get= | exists |
 

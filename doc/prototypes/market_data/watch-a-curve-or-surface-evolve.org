@@ -120,18 +120,17 @@ raised.
 Which layout wins. The matrix, the sparkline list and the compare are all drawn
 and none is chosen; the choice belongs to the reads the server will answer.
 
-The as-of read and the range. =marketdata.v1.curve_snapshot.get= answers for now
-and carries no time, and =marketdata.v1.ops.get_curve_snapshot_buckets= ends at
-now, so the range always ends at the read's own instant and the past is not shown.
+The as-of read. =marketdata.v1.curve_snapshot.get= answers for now and carries no
+time, so the single instant is the latest one. The range reads take their range,
+or their set of instants, from the caller.
 
-The set of instants and the difference. No request names two or more instants and
-returns one snapshot per instant, so the comparison and its difference are
-computed on the page from two reads.
-
-The alignment and the shape. The reply is unaligned with text values, so the grid
-is aligned in the browser on the =oresmd_uri= and a hole in a bucket is a gap,
-not a typed null; and with no declared node set, a node that should be there and
-is not cannot be told from a node not part of the curve at all.
+The set of instants, the alignment and the shape. The aligned evolution read,
+=marketdata.v1.ops.get_series_evolution=, answers all three: it carries a range
+or a set of instants, returns instants by nodes with each node's declared label,
+and draws the grid from the shape tables, so a hole is a typed cell and a node
+the object does not have is not in the reply. The difference between two instants
+is still the page's own, because the reply holds both values and not their
+difference.
 
 * See also
 

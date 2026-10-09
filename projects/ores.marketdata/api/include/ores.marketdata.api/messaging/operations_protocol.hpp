@@ -332,34 +332,6 @@ struct get_curve_snapshot_response {
 };
 
 /**
- * @brief Requests a curve-evolution view: bucket_count as-of snapshots, one
- * every bucket_seconds, ending now.
- */
-struct get_curve_snapshot_buckets_request {
-    using response_type = struct get_curve_snapshot_buckets_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_curve_snapshot_buckets";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string oresmd_uri;
-    std::int64_t bucket_seconds = 1800;
-    std::uint32_t bucket_count = 5;
-};
-
-struct get_curve_snapshot_buckets_response {
-    /** Oldest to newest, one entry per bucket; a bucket with no observations
-     * at/before its boundary is an empty vector.
-     */
-    std::vector<std::vector<ores::marketdata::domain::market_observation>> buckets;
-    bool success = false;
-    std::string message;
-};
-
-/**
  * @brief One instant of a slice: the object as it stood then.
  */
 struct series_slice_instant {
@@ -448,6 +420,107 @@ struct get_series_slice_response {
     std::vector<std::string> coordinates;
     /** Oldest first, one entry per distinct market instant in the range. */
     std::vector<series_slice_instant> instants;
+};
+
+/**
+ * @brief One node of a composite object: its coordinate labels and the change
+ * it shows over the range.
+ */
+struct evolution_node {
+    /**
+     * @brief One label per declared axis, index for index with the response's
+     * coordinate_fields.
+     */
+    std::vector<std::string> coordinates;
+    /**
+     * @brief The change the node shows over the range.
+     *
+     * One of never_quoted, persistent, added, dropped or intermittent, which is
+     * the first of those that holds. never_quoted is a node the shape declares and
+     * no instant in the range carries, which is what tells it apart from a node the
+     * object does not have: that node is not in the response at all.
+     */
+    std::string status;
+};
+
+/**
+ * @brief One instant of the evolution: the object as it stood then.
+ */
+struct evolution_instant {
+    std::chrono::system_clock::time_point as_of;
+    /**
+     * @brief The value at each node, index for index with the response's nodes.
+     *
+     * The empty string is a hole: the shape declares the node and no point held a
+     * value for it at this instant.
+     */
+    std::vector<std::string> values;
+};
+
+/**
+ * @brief Requests a whole composite object as instants by nodes.
+ *
+ * The object is named the way the resolver names one, so no caller builds an
+ * oresmd URI and no caller matches on one. The instants are either the ones the
+ * object holds between two instants or the set the caller states.
+ */
+struct get_series_evolution_request {
+    using response_type = struct get_series_evolution_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_series_evolution";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** The object, as the typed identity the resolver already takes. */
+    resolve_series_identity_request identity;
+    /** The first market instant of the range, inclusive, when instants is empty. */
+    std::chrono::system_clock::time_point from_instant;
+    /** The last market instant of the range, inclusive, when instants is empty. */
+    std::chrono::system_clock::time_point to_instant;
+    /**
+     * @brief The instants the caller states, which replace the range when the
+     * vector is not empty.
+     *
+     * Each one is read as the object stood at it, whether or not the object holds a
+     * point at exactly that instant. A caller that wants the object at the month
+     * ends states them; a caller that wants everything it holds between two
+     * instants states the range and leaves this empty.
+     */
+    std::vector<std::chrono::system_clock::time_point> instants;
+};
+
+/**
+ * @brief The object at each instant, against one grid of declared nodes.
+ *
+ * The grid is stated once, because it belongs to the shape and not to the
+ * points: nodes holds every combination of the declared axis values, each with
+ * its labels and the change it shows over the range, and every instant's values
+ * are index for index with it. A node the shape declares and no instant carries
+ * is a cell all the same, which is what tells it apart from a node the object
+ * does not have.
+ */
+struct get_series_evolution_response {
+    bool success = false;
+    /** Why the read was refused, when it was. */
+    std::string message;
+    /**
+     * @brief The axis names, in the order the shape stores them.
+     *
+     * Every node's coordinates are index for index with this.
+     */
+    std::vector<std::string> coordinate_fields;
+    /**
+     * @brief The declared grid, with the last axis varying fastest.
+     *
+     * Every combination of the declared axis values is a node, whether or not any
+     * instant carries it.
+     */
+    std::vector<evolution_node> nodes;
+    /** Oldest first, one entry per distinct market instant read. */
+    std::vector<evolution_instant> instants;
 };
 
 /**

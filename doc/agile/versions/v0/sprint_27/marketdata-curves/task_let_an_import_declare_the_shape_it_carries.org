@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/let-an-import-declare-the-shape-it-carries
-#+pr: 2941
+#+pr: 2942
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -26,11 +26,11 @@ A curve declares its shape when a build publishes it, so the point check has som
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Implemented; five suites pass.         |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -129,6 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2942][#2942]] | [agile] Close the marketdata import shape task |
 | [[https://github.com/OreStudio/OreStudio/pull/2941][#2941]] | [marketdata] Let an import declare the shape it carries |
 
 * Review

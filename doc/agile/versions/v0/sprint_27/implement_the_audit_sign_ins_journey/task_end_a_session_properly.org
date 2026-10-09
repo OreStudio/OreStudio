@@ -86,7 +86,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
 
 Logout ended its session row with zeroed byte counters, so a sign-out erased
 what the session had moved. It now reads the row and carries the counters

@@ -8,7 +8,7 @@
 #+filetags: :implement_the_audit_sign_ins_journey:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-the-audit-sign-ins-journey
-#+pr: 2932
+#+pr: 2933
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -75,6 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2933][#2933]] | [agile] Drop the duplicate Result headings the audit tasks carry |
 | [[https://github.com/OreStudio/OreStudio/pull/2932][#2932]] | [iam,geo,web] Build the audit sign-ins journey |
 
 * Review
@@ -85,7 +86,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
 
 =Audit: sign-ins= reads the five panels the journey names off one filter bar,
 with Refresh as the only page action. An open session carries *End session*,

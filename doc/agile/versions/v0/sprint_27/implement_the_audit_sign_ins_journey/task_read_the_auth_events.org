@@ -85,7 +85,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
 
 =iam.v1.auth_events.list= reads the caller's tenant's events, newest first,
 filtered by account, period and event type. The table carries no row-level

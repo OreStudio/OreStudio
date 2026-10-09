@@ -84,7 +84,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
 
 =iam.v1.ops.get_session_statistics= answers one row per day and account,
 newest day first, scoped to the caller's tenant.

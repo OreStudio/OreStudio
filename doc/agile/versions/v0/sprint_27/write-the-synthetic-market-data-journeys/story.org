@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: C55256A3-C3B9-4F4D-AFDF-312374AD04BE
+:END:
+#+title: Story: Write the synthetic market data journeys
+#+description: Six synthetic prototypes sit in the market data group with no journey behind them. Write the journeys that say who authors an FX or IR feed, how a collection is run and watched, and how the model catalogue is kept.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every synthetic prototype answers to a journey document: the actor, the steps, the wireframe, the entities it composes, a coverage table checked against the synthetic subjects, and the gaps that must close before it is built.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- Four journeys stand beside the six synthetic prototypes, each carrying
+  the sections the extraction standard asks for, a wireframe and a
+  coverage table checked against the synthetic subjects.
+- Every synthetic prototype answers to one of them, linked by its design
+  note.
+- The group hub lists the four, and org-links, site-page and
+  structure-notes pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CB66592B-BD5C-449E-A329-D4C3C6B0B712][Write the four synthetic journeys]] | DONE | 2026-10-09 | 2026-10-09 | Author the FX feed, IR curve feed, collection and model-catalogue journeys from their prototypes, with coverage tables checked against the synthetic subjects. |
+
+* Decisions
+
+* Out of scope
+
+-

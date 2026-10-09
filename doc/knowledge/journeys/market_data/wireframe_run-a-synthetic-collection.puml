@@ -1,0 +1,76 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>MARKET SIMULATOR</b> | Collections | Start | Stop | Validate Vintage | [ Back to collections ]
+  --
+  {#
+    Collections | Feed(s) | State
+    ^Basic^ | 2 | ^0 of 2 running^
+    ^Realistic 2026^ | 34 | ^4 of 34 running^
+    ^Uniform Demo^ | 31 | ^3 of 31 running^
+    ^ORE Samples 2016^ | 17 | ^0 of 17 running^
+  }
+  --
+  <b>REALISTIC 2026</b> | ^enabled^ | <b>4 of 34 running</b> | [ Reload ]
+  {
+    Folder | Synthetic / Realistic 2026
+    Kind | collection (non-leaf)
+    Dataset | synthetic.themes.realistic_2026
+    Version | 7
+    Feeds | 13 FX + 21 IR = 34
+    Currencies | 10 in both, 3 FX-only, 10 IR-only
+    Changed by | a.reyes (trader) | 2026-10-06 14:12
+  }
+  --
+  {#
+    Feed | Source name | Output series | Process | Auto-start | State
+    FX EUR/USD | synthetic.themes.realistic_2026.eurusd | oresmd://fx/EUR?instrument=fx_spot&quote=rate&ccy=USD | Geometric mixture | yes | ^running^
+    FX GBP/USD | synthetic.themes.realistic_2026.gbpusd | oresmd://fx/GBP?instrument=fx_spot&quote=rate&ccy=USD | Geometric mixture | yes | ^running^
+    FX USD/JPY | synthetic.themes.realistic_2026.usdjpy | oresmd://fx/USD?instrument=fx_spot&quote=rate&ccy=JPY | Geometric mixture | yes | ^running^
+    IR USD-SOFR | synthetic.themes.realistic_2026.usdsofr | oresmd://ir/USD?instrument=discount&quote=rate&curve_id=USD-SOFR | COX_INGERSOLL_ROSS | yes | ^running^
+    IR EUR-ESTR | synthetic.themes.realistic_2026.eurestr | oresmd://ir/EUR?instrument=discount&quote=rate&curve_id=EUR-ESTR | COX_INGERSOLL_ROSS | yes | ^stopped^
+    IR USD-SOFR FOMC | synthetic.themes.realistic_2026.usdsofrfomc | oresmd://ir/USD?instrument=discount&quote=rate&curve_id=USD-SOFRE | COX_INGERSOLL_ROSS | yes | ^stopped^
+    IR GBP-SONIA | synthetic.themes.realistic_2026.gbpsonia | oresmd://ir/GBP?instrument=discount&quote=rate&curve_id=GBP-SONIA | COX_INGERSOLL_ROSS | yes | ^stopped^
+  }
+  --
+  {
+    Validate Vintage — one row per contributor, 34 contributor(s)
+    FX synthetic.themes.realistic_2026.eurusd | ore.reference @ 2026-05-05 | ^pass^
+    IR synthetic.themes.realistic_2026.usdsofr | no vintage needed; binding free for USD-sofr | ^pass^
+    FX synthetic.themes.realistic_2026.usdchf | ore.reference @ 2026-05-05 | ^pass^
+    IR synthetic.themes.realistic_2026.usdsofrfomc | no vintage needed; binding free for USD-sofr | ^pass^
+    34 of 34 pass or do not need validation; 0 refused.
+    Start 34 validated feed(s) | [ Validate Vintage ] | [ Start ]
+  }
+  --
+  {
+    Start dispatch | marketdata.v1.ops.start_feeds_under_folder
+    Request | folder_id = c7f1e2a4-9b3d-4e58-8a01-2d6f4c9b7e15 (Realistic 2026), subtree
+    Answer | started 30, already running 4, skipped 0
+    By kind | fx: 13 started | ir: 17 started, 4 already running
+    State after the run | 34 of 34 running; the collection reads running
+  }
+  --
+  [ Stop ] | [ Back to collections ]
+  Running: the collection's feeds write synthetic observations; a folder-scoped request covers the subtree.
+}
+
+@enduml

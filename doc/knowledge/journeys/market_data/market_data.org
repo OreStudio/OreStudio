@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:marketdata:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-09
 
 A curve or a surface is a composite object the desk is responsible for: it is
 built from what the market sends, corrected by hand where the market is wrong
@@ -20,6 +20,12 @@ Market observations and published curves are two different things. An
 observation is what the market sends and nobody signs it off; a published
 curve is what the system uses, and it exists only once a person has published
 it. Nothing a feed writes is used until then.
+
+A feed need not be the real market. The group's synthetic journeys author an
+FX price feed and an IR curve feed, run them as a named collection, and keep
+the short-rate models the curve editor offers as data rather than code. A
+synthetic feed writes observations through the same path a real one does, so
+the provenance is what tells them apart.
 
 * Journeys
 
@@ -40,6 +46,10 @@ it. Nothing a feed writes is used until then.
 | [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] | trader, approver | Undo a publish, with the reason kept |
 | [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] | consumer | One instant, or a range, over time |
 | [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] | auditor | The trail of a published curve |
+| [[id:AAF1D25C-566F-4899-8E88-521DC15EBCDB][Author an FX price feed]] | quant, trader | The pair, the process, the GMM mixture and the sample paths that say whether it is a price feed |
+| [[id:4B62FC8A-169A-4843-A8BF-D5E23FE34852][Author an IR curve feed]] | quant | The short-rate model, its parameters and the tenor ladder the curve is bootstrapped from |
+| [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Run a synthetic collection]] | trader, operations | The feeds a collection owns, what it covers, and one folder-scoped start |
+| [[id:AFABC8A2-61A8-486E-80EC-65856914AA17][Manage the yield curve process types]] | system administrator | The short-rate models and their parameters, kept as data rather than code |
 
 * Related
 

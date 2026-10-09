@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: CB66592B-BD5C-449E-A329-D4C3C6B0B712
+:END:
+#+title: Task: Write the four synthetic journeys
+#+description: Author the FX feed, IR curve feed, collection and model-catalogue journeys from their prototypes, with coverage tables checked against the synthetic subjects.
+#+type: task
+#+level: s1
+#+filetags: :write-the-synthetic-market-data-journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/write-the-four-synthetic-journeys
+#+pr: 2984
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C55256A3-C3B9-4F4D-AFDF-312374AD04BE][Write the synthetic market data journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Four journey documents stand in the market data group beside the six synthetic prototypes, each with a wireframe, a coverage table and its gaps.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C55256A3-C3B9-4F4D-AFDF-312374AD04BE][Write the synthetic market data journeys]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- Each journey carries the sections the extraction standard requires, with the coverage table naming the synthetic subject each step reaches and its status.
+- Every one of the six synthetic prototypes is named under a journey's * Prototype section, or its absence is stated.
+- The market data group hub lists the new journeys, and org-links and the journey checks pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Journeys written | 4 | =ls doc/knowledge/journeys/market_data/journey_*.org= | 7bf082bee2 |
+| Lines per journey | 220 to 251 | =wc -l= on the four | 7bf082bee2 |
+| Coverage rows | 22, 21, 15, 11 | the =* Operations and messages= tables | 7bf082bee2 |
+| Subjects marked missing | 1: no subject lists the vintages a price source offers | the FX journey's gap table | 7bf082bee2 |
+| Wireframes | 4 puml, 4 png rendered | =plantuml -tpng wireframe_*.puml= | 7bf082bee2 |
+| Prototypes covered | 6 of 6 | the four journeys' =* Prototype= sections | 7bf082bee2 |
+| org-links, site-page, structure-notes | 3/3 passed | =compass check --only org-links --only site-page --only structure-notes= | 7bf082bee2 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2984][#2984]] | [doc] Write the synthetic market data journeys |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Four journeys now stand beside the six synthetic prototypes, which had no
+journey at all before this:
+
+- [[id:AAF1D25C-566F-4899-8E88-521DC15EBCDB][Author an FX price feed]] — the pair, the
+  process, the mixture of Gaussians and the sample paths, with the
+  across-feeds component view the mixture is browsed from.
+- [[id:4B62FC8A-169A-4843-A8BF-D5E23FE34852][Author an IR curve feed]] — the currency,
+  index and role, the short-rate process and its parameter values, and the
+  tenor ladder the curve is bootstrapped from.
+- [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Run a synthetic collection]] — the feeds a
+  collection owns, what it covers and what is running, and the one
+  folder-scoped start.
+- [[id:AFABC8A2-61A8-486E-80EC-65856914AA17][Manage the yield curve process types]] —
+  the models and their parameters kept as data, so a new model appears in
+  the curve editor with no change to it.
+
+Every subject in the four coverage tables was verified against the protocol
+headers rather than assumed, and the gaps are stated rather than smoothed
+over. The FX feed has no subject that lists the vintages a price source
+offers, so the step is marked missing; two IR reads and the process-type
+lists carry an =id_one_of= filter where the screen needs the parent or an
+order, so those are partial; and the collection's gaps — no coverage read,
+an unscoped global running set, skipped feeds returned as counts only — are
+named.
+
+The journeys link their prototypes' design notes by id, which is why the
+prototype sweep had to land first.

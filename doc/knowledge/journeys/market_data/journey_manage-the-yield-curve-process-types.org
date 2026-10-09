@@ -1,0 +1,226 @@
+:PROPERTIES:
+:ID: AFABC8A2-61A8-486E-80EC-65856914AA17
+:END:
+#+title: User Journey: Manage the yield curve process types
+#+description: A system administrator keeps the two runtime-managed catalogues the IR curve editor reads: the short-rate models it offers, and the parameters each model takes, with their names, defaults and bounds.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator keeps the two runtime-managed catalogues the IR curve editor reads: the short-rate models it offers, and the parameters each model takes, with their names, defaults and bounds.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want the editor to offer the models the build can actually run, so a quant
+picks a process and gets the parameters that process takes, without waiting for
+a code change." The journey is done when the type reads back in its display
+order, each of its parameter definitions reads back with a name, a default and
+its bounds, and no engine is left in the catalogue that the build cannot
+construct.
+
+* Actor and trigger
+
+The actor is the system administrator who keeps the synthetic reference data,
+acting inside the system tenant. The catalogue is shared platform vocabulary,
+not a desk's own record, so the actor is not a trader. The trigger is an engine
+the platform must offer, a parameter whose default or bound must change, or an
+engine that must be retired. The journey starts at the process type catalogue
+under *Market Data*, *Synthetic*, *Configuration* and ends when the person
+leaves the saved catalogue.
+
+A saved row is a statement about what the editor offers, not about what runs.
+Two code paths read the same catalogue and disagree about which engines work;
+see /What is missing/.
+
+* Steps
+
+1. *Open the catalogue.* The person opens *Market Data*, then *Synthetic*, then
+   *Configuration*, and chooses *Manage yield curve process types*. The system
+   lists the process types with their code, name, description and parameter
+   count. It also reads the parameter-definition catalogue, because the list
+   call cannot be scoped to one type.
+2. *Choose a type or start one.* The person selects a row and the system shows
+   that type's parameter definitions, or the person chooses *New process type*
+   and the system shows the same panel empty. The code is the type's key; the
+   screen does not let it be typed twice.
+3. *Set the identity.* The person sets the code, the name, the description and
+   the display order. The display order is the comparator the editor's picker
+   sorts on, so the person decides where the engine sits in the list. The row
+   is system-tenant reference data.
+4. *Define the parameters the type takes.* The person adds, changes and removes
+   definition rows. Each row carries a parameter name, a display name, a
+   symbol, a short label, a data type, a default, a minimum, a maximum and a
+   display order. The =(process_type_code, parameter_name)= pair is the natural
+   key, so a name is unique within its type and is reused by another type with
+   its own row. A blank bound is open, not zero.
+5. *Compare the types.* The person reads the parameter defaults as one grid:
+   one row per engine, one column per parameter name, and an empty cell where a
+   type does not define that parameter. The grid is composed on the page from
+   the same reads. The one-factor engines share =kappa=, =theta=, =sigma= and
+   =initial_rate=; the two-factor engine replaces =kappa= and =sigma= with one
+   pair per factor and adds =rho=; the log-normal engine adds the lattice step
+   count. Only those shared names are common to every type.
+6. *Save the type.* The person chooses *Save type*. The system writes the row
+   and replies with the version it wrote. A save is a new bitemporal version,
+   not an edit in place.
+7. *Save the definitions.* The person chooses *Save definitions*. The system
+   writes the changed rows, one version each. Saving the type and its
+   definitions is two writes, not one; see /What is missing/.
+8. *Check what a removal reaches.* Before retiring a type or a parameter the
+   person reads the IR curve generation configs and matches them on
+   =process_type= on the page, because no list is scoped to a type. A config
+   whose process type is gone fails its own validation on the next write.
+9. *Remove a definition or a type.* The person chooses *Delete*. The system
+   removes the row. Neither removal is guarded: a config references the type's
+   code only softly, and a value row references the definition only softly. The
+   screen warns from the matches it read in step 8.
+10. *Check the history.* The person opens the history of the type or of one
+    definition. The system shows every version with the field-level difference
+    from the one before. A revert is a new version, not a deletion.
+11. *Leave.* The person goes back to the configuration screen. No curve has been
+    built, and no feed has started.
+
+* Screens and wireframes
+
+One screen. The catalogue of types sits at the top with its counts, the
+parameter definitions of the selected type sit in the middle, and the
+comparison and the write controls sit at the bottom, so the person reads the
+catalogue before the rows it holds.
+
+#+caption: Yield curve process types: the catalogue of short-rate models, the parameter definitions of the selected model, and their defaults and bounds.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_manage-the-yield-curve-process-types.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/market_data/manage-yield-curve-process-types/index.html=: mock data only, no
+backend, no build step and no session. It argues that the short-rate models and their parameters are data, not
+code, so a new model appears in the editor with no change to the editor; the shared parameter set is where the
+design question sits.
+
+- [[id:45F5E06E-B1FD-404F-8B41-7744960EAB2D][Manage yield curve process types prototype]]
+- Variants :: A the process type catalogue, one row per type with its parameter count; B the parameter definitions of the selected type, one row per parameter, with a bar chart of the defaults; C a heat map of types by parameter name, shaded by default value and empty where a type does not define the parameter
+- States :: vasicek (the four shared definitions), cir (the same four plus =market_price_of_risk=, and =initial_rate= tightened to a non-negative minimum), hull_white, empty (a catalogue with no types)
+- Source :: =doc/prototypes/market_data/manage-yield-curve-process-types/index.html=
+- Open :: =/OreStudio/doc/prototypes/market_data/manage-yield-curve-process-types/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =yield_curve_process_type= | The catalogue row: code, name, description and display order | [[proj:projects/ores.synthetic/modeling/ores.synthetic.yield_curve_process_type.org][ores.synthetic.yield_curve_process_type]] |
+| =yield_curve_process_parameter_definition= | The parameters of one type: name, display name, symbol, short label, data type, default, minimum, maximum and display order | [[proj:projects/ores.synthetic/modeling/ores.synthetic.yield_curve_process_parameter_definition.org][ores.synthetic.yield_curve_process_parameter_definition]] |
+| =ir_curve_generation_config= | The configs whose =process_type= reads this catalogue, and the usage a removal must count | [[proj:projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config.org][ores.synthetic.ir_curve_generation_config]] |
+| =ir_curve_generation_config_process_parameter_value= | The stored values each definition instantiates, one per parameter per config | [[proj:projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config_process_parameter_value.org][ores.synthetic.ir_curve_generation_config_process_parameter_value]] |
+
+The type and the definition are versioned, so each has a history. The type is
+keyed by code and the definition by =(process_type_code, parameter_name)=; both
+are system-tenant reference data, read by every tenant and written only there.
+The two config entities are not written here: the journey reads them to say
+what a removal would strand.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the catalogue | List the process types in display order | =synthetic.v1.yield_curve_process_types.list= | partial |
+| Open the catalogue | List the parameter definitions | =synthetic.v1.yield_curve_process_parameter_definitions.list= | partial |
+| Choose a type or start one | Read one or many types | =synthetic.v1.yield_curve_process_types.get=, =.get_many= | exists |
+| Define the parameters | Read many definitions | =synthetic.v1.yield_curve_process_parameter_definitions.get_many= | exists |
+| Save the type | Write a type, one or many | =synthetic.v1.yield_curve_process_types.put=, =.put_many= | exists |
+| Save the definitions | Write a definition, one or many | =synthetic.v1.yield_curve_process_parameter_definitions.put=, =.put_many= | exists |
+| Check what a removal reaches | Read the IR curve generation configs | =synthetic.v1.ir_curve_generation_configs.list= | partial |
+| Remove a definition or a type | Remove a definition, one or many | =synthetic.v1.yield_curve_process_parameter_definitions.delete=, =.delete_many= | partial |
+| Remove a definition or a type | Remove a type, one or many | =synthetic.v1.yield_curve_process_types.delete=, =.delete_many= | partial |
+| Check the history | Read every version with its diff | =synthetic.v1.history.get= | exists |
+| Check the history | Revert by writing the old values | the entity's =put= | exists |
+
+The =partial= rows are the generated verbs. The type list filters on
+=code_one_of= alone and refuses an order, so the screen sorts by =display_order=
+itself. The definition list filters on =id_one_of= alone, so no list is scoped
+to a process type. The config list filters on =id_one_of= alone, so the usage
+match is made on the page. The definition key carries =parameter_name= alone,
+so a read or a removal by key names a name that several types share and not one
+type's row. The history request is the generic one, with =entity_type=
+=ores.synthetic.yield_curve_process_type= or
+=ores.synthetic.yield_curve_process_parameter_definition=; both register a
+history provider.
+
+* What is missing
+
+1. *The catalogue and the build disagree about which engines work.* Five codes
+   are seeded and the parameter-mapping layer constructs all five, but the
+   quant process factory constructs three and throws for the rest. A row added
+   for a fourth engine appears in the editor and fails when a curve is built.
+   The candidate is one factory, or a capability column the catalogue carries.
+   Until then the screen states which engines the build can construct.
+2. *Saving a type is not atomic.* The type and its definitions are separate
+   generated resources with separate =put= subjects, and no operation writes
+   both. A failure between the two writes leaves a type with a partly updated
+   parameter list. The candidate is an apply operation that writes the type and
+   its definitions together. Until then the screen writes the type first, then
+   the definitions, and says what it wrote.
+3. *No list is scoped to a type.* The type filter is =code_one_of= and the
+   definition filter is =id_one_of=, so nothing names "the definitions of this
+   type". The candidate is a =process_type_code= filter on the definition list,
+   or a scoped read. Until then the screen reads the whole catalogue and groups
+   on the page, and that read grows with every type.
+4. *A definition is addressed by a name several types share.* The key carries
+   =parameter_name= alone, and =kappa= exists in four types, so a read or a
+   removal by key is ambiguous across them. The candidate is a key that carries
+   =process_type_code= with =parameter_name=. Until then the screen addresses a
+   definition by its id and never by name alone.
+5. *A removal is unguarded.* A config references the type's code only softly
+   and a value row references the definition only softly, and the batch removal
+   is unconditional. A type can be removed while a config still selects it, and
+   a definition while a value row still instantiates it. The candidate is a
+   removal that refuses while a reference lives, or a live-usage count on the
+   read. Until then the screen matches on the page and warns.
+6. *The shared parameters are repeated in every type.* The one-factor engines
+   carry the same four definition rows, and a change to a shared default must
+   be repeated in each. The candidate is one shared set that each type extends.
+   Until then the comparison grid is the only place the repetition is visible.
+7. *No screen exists.* No web page, HTTP route or shell verb reaches either
+   catalogue. The only path that reads them is =synthetic setup=, which checks
+   an authored feed against them before it writes a row. The candidate is a web
+   page and a route. Until then the catalogue is changed by seed SQL and
+   migration.
+8. *No approval kind covers a catalogue change.* The inbox models a generic
+   approval kind, but only =iam.role_grant= is seeded. A change to a shared
+   catalogue takes effect at once, with no second pair of eyes and no comment.
+   The candidate is an approval kind for the catalogues. Until then a save takes
+   effect at once and the history names the writer alone.
+
+* Related journeys
+
+- [[id:4B62FC8A-169A-4843-A8BF-D5E23FE34852][Author an IR curve feed]] — the journey that selects one of these types and fills the values its definitions describe.
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — the build that reads the curve a selected process has generated, and turns it into a candidate.
+- [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] — the blueprint analogue, for a curve built from quotes rather than generated.
+- [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]] — start and stop the feeds whose process types this catalogue supplies.
+
+* Related knowledge
+
+- [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]]
+- [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]]
+- [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]]
+- [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]]
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]
+- [[id:7557BCCA-54B5-43C0-8B12-F0AD373813F4][The shell operation surface]]
+- [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]]

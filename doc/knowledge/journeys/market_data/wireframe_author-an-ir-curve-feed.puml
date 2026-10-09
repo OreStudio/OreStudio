@@ -1,0 +1,81 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>IR CURVE FEED: USD / SOFR</b> | [ Back to collections ]
+  --
+  {#
+    Instrument | Value
+    Collection | ORE Samples 2016
+    Currency | USD
+    Index family | sofr
+    Tenor | ^none (overnight family)^
+    Role | ^self_discounting^
+    Fixed leg frequency | ^Annual^
+    ORE key | synthetic.realistic.usdsofr
+    Price source | ^vintage^ | ore.samples.2016-02-05 | 2016-02-05
+    Vintage series | oresmd://ir/USD?type=series&instrument=mm&quote=rate&fwd_start=2D
+    Description | Overnight RFR curve for USD; single-curve and self-discounting.
+    Enabled | true | Auto start | false | Ticks per hour | 4
+  }
+  --
+  [ Instrument ] | [ Process ] | [ Curve Template ] | [ Provenance ]
+  --
+  {#
+    Process | ^VASICEK^ | Definition source | yield_curve_process_type
+    Parameter | Symbol | Value | Min | Max | Default
+    Mean reversion speed | κ | 0.5 | 0 | — | 0.5
+    Long-term mean | θ | 0.038 | — | — | 0.03
+    Volatility | σ | 0.010 | 0 | — | 0.01
+    Initial short rate | r0 | 0.026 | — | — | 0.03
+  }
+  --
+  Curve shape — rate vs tenor: 7 markers, upward, from 2.6% to 4.1%
+  --
+  Sample short-rate paths: 5 draws, seed 20260724, 5Y horizon
+  [ Reseed ] | Paths: 5 | mock draws
+  --
+  {#
+    Curve Template | # | Start tenor | End tenor | Instrument
+    . | 0 | 1M | 3M | DEPO
+    . | 1 | 3M | 6M | DEPO
+    . | 2 | 6M | 1Y | FRA
+    . | 3 | 1Y | 2Y | IRS
+    . | 4 | 2Y | 5Y | IRS
+    . | 5 | 5Y | 10Y | IRS
+    . | 6 | 10Y | 30Y | IRS
+  }
+  [ Add entry ] | [ Move up ] | [ Move down ] | [ Remove ]
+  --
+  Provenance | changed by marco | 2026-07-24 09:41 UTC
+  {#
+    Version | Written | By | Change from the one before
+    v7 | 2026-07-24 09:41 | marco | Process parameters re-calibrated
+    v6 | 2026-07-18 16:02 | marco | Curve Template: added IRS 10Y–30Y
+    v5 | 2026-07-14 11:27 | joey | Price source set to vintage ore.samples.2016-02-05
+  }
+  [ Save ] | [ Cancel ]
+  --
+  Not running: Save writes the config, then its parameter values, then the ladder. A running feed keeps its old parameters until it is stopped and restarted.
+  --
+  Refused when the ladder is empty: at least one Curve Template entry is required, and the shape has no tenor grid to draw against.
+}
+
+@enduml

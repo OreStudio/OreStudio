@@ -156,6 +156,8 @@ screen; see /What is missing/.
 | Identity | Offer the party types | =refdata.v1.party_types.list= | exists |
 | Identity | Offer the party statuses | =refdata.v1.party_statuses.list= | exists |
 | Identity | Offer the business centres | =refdata.v1.business_centres.list= | exists |
+| Identity | Read the centres the counterparty deals through | =refdata.v1.counterparty_business_centres.list_by_counterparty_id= | exists |
+| Identity | Write the centres the counterparty deals through | =refdata.v1.counterparty_business_centres.put_many= | exists |
 | Identity | Offer the parent counterparties | =refdata.v1.counterparties.list= | exists |
 | Identifiers | Offer the identifier schemes | =refdata.v1.party_id_schemes.list= | exists |
 | Identifiers | Read the identifiers | =refdata.v1.counterparty_identifiers.list_by_counterparty_id= | exists |

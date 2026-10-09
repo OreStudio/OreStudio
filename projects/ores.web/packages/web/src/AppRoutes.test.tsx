@@ -129,6 +129,7 @@ const journey = <p>First run journey</p>;
 const tenantSetupJourney = <p>Tenant setup screen</p>;
 const newTenantJourney = <p>New tenant journey</p>;
 const newPartyJourney = <p>New party journey</p>;
+const counterpartyJourney = <p>Counterparty onboarding</p>;
 const signUpJourney = <p>Registration door</p>;
 
 function render(
@@ -170,6 +171,7 @@ function render(
                         tenantSetupJourney={tenantSetupJourney}
                         newTenantJourney={newTenantJourney}
                         newPartyJourney={newPartyJourney}
+                        counterpartyJourney={counterpartyJourney}
                         signUpJourney={signUpJourney}
                         journeyInProgress={false}
                         onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
@@ -307,6 +309,18 @@ describe('the route table once the flag is clear', () => {
         const html = render('/parties/new', readyAnonymous, anonymous);
 
         expect(html).not.toContain('New party journey');
+    });
+
+    it('offers the counterparty onboarding screen to a signed-in person', () => {
+        const html = render('/counterparties/onboard', ready, authenticated);
+
+        expect(html).toContain('Counterparty onboarding');
+    });
+
+    it('sends a visitor to sign in rather than to the counterparty screen', () => {
+        const html = render('/counterparties/onboard', readyAnonymous, anonymous);
+
+        expect(html).not.toContain('Counterparty onboarding');
     });
 
     /*

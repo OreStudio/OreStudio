@@ -34,6 +34,8 @@ import { useJourneyServer } from './journeys/server.js';
 import { FirstRunJourney } from './journeys/FirstRunJourney.js';
 import { NewTenantJourney } from './journeys/NewTenantJourney.js';
 import { NewPartyJourney } from './journeys/NewPartyJourney.js';
+import { CounterpartyJourney } from './journeys/CounterpartyJourney.js';
+import { useCounterpartyServer } from './journeys/counterpartyServer.js';
 import { SignUpJourney } from './journeys/SignUpJourney.js';
 import { TenantSetupJourney } from './journeys/TenantSetupJourney.js';
 import { AppShell } from './components/AppShell.js';
@@ -133,6 +135,15 @@ export interface AppRoutesProps {
      */
     readonly newPartyJourney: ReactNode;
     /**
+     * The counterparty onboarding screen, which a tenant administrator or an
+     * Operations account runs.
+     *
+     * It is a route for the same reason the party journey is: the session
+     * already names the tenant, and the person arrives at it from a screen and
+     * leaves it for one.
+     */
+    readonly counterpartyJourney: ReactNode;
+    /**
      * The registration door, which a visitor with no account runs.
      *
      * It is a route rather than a gate for the same reason the other two are:
@@ -171,6 +182,7 @@ export function AppRoutes({
     tenantSetupJourney,
     newTenantJourney,
     newPartyJourney,
+    counterpartyJourney,
     signUpJourney,
     journeyInProgress,
     self,
@@ -783,6 +795,10 @@ export function AppRoutes({
                 path="/parties/new"
                 element={signedIn(gate.version, session, shell, () => newPartyJourney)}
             />
+            <Route
+                path="/counterparties/onboard"
+                element={signedIn(gate.version, session, shell, () => counterpartyJourney)}
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
@@ -795,9 +811,16 @@ export function ConnectedApp(): ReactNode {
     const { environment } = useSite();
     const { t } = useTranslation();
     const server = useJourneyServer();
+    const counterpartyServer = useCounterpartyServer();
     const navigate = useNavigate();
     const [journeyInProgress, setJourneyInProgress] = useState(false);
     const username = session.status === 'authenticated' ? session.session.username : '';
+    /*
+     * The tenant's own party, which an agreement's fixed tenant side names. A
+     * visitor with no session cannot reach the journey, so an empty id here is
+     * only a screen that has not asked.
+     */
+    const partyId = session.status === 'authenticated' ? session.session.party.id : '';
     /*
      * The gate's setup flags are read through the session, and the session they
      * were first read through was nobody's. Signing in changes what that answer
@@ -929,6 +952,17 @@ export function ConnectedApp(): ReactNode {
                         />
                     }
                     signUpJourney={<SignUpJourney server={server} />}
+                    counterpartyJourney={
+                        <CounterpartyJourney
+                            server={counterpartyServer}
+                            partyId={partyId}
+                            /*
+                             * The journey ends at the counterparty list it opened
+                             * on, or at the home page a person came from.
+                             */
+                            onFinished={() => navigate('/')}
+                        />
+                    }
                     journeyInProgress={journeyInProgress}
                     onSignIn={signIn}
                     onChooseParty={chooseParty}

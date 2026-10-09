@@ -38,6 +38,7 @@
 #include "ores.marketdata.core/messaging/series_classification_rule_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_classification_rule_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_identity_handler.hpp"
+#include "ores.marketdata.core/messaging/series_slice_handler.hpp"
 #include "ores.nats/domain/message.hpp"
 #include <functional>
 #include <memory>
@@ -119,6 +120,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                  curve_snapshot_handler h(nats, ctx, verifier);
                                  h.get_snapshot_buckets(std::move(msg));
                              }));
+
+    // One component of a composite object as a term structure at each instant
+    // in a range.
+    subs.push_back(nats.queue_subscribe(std::string(get_series_slice_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            series_slice_handler h(nats, ctx, verifier);
+                                            h.get_slice(std::move(msg));
+                                        }));
 
     // Typed series identity: resolves a series from the identity fields a
     // caller states, so no caller builds an oresmd URI or matches on one.

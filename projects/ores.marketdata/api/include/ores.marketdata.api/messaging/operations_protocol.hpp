@@ -360,6 +360,97 @@ struct get_curve_snapshot_buckets_response {
 };
 
 /**
+ * @brief One instant of a slice: the object as it stood then.
+ */
+struct series_slice_instant {
+    std::chrono::system_clock::time_point as_of;
+    /**
+     * @brief The value at each declared coordinate, index for index with the
+     * response's coordinates.
+     *
+     * The empty string is a hole: the shape declares the coordinate and no point
+     * holds a value for it at this instant. A short vector would be read as a
+     * shorter object, which is the mistake the aligned shape exists to prevent.
+     */
+    std::vector<std::string> values;
+};
+
+/**
+ * @brief Requests one component of a composite object over a range of
+ * instants.
+ *
+ * The object is named the way the resolver names one, so no caller builds an
+ * oresmd URI and no caller matches on one. The component is the value the
+ * object holds on one of its axes; an object with a single axis has one
+ * component, the whole object, and leaves the component field empty.
+ */
+struct get_series_slice_request {
+    using response_type = struct get_series_slice_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_series_slice";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** The object, as the typed identity the resolver already takes. */
+    resolve_series_identity_request identity;
+    /**
+     * @brief The axis the component fixes, an oresmd field code such as
+     * strike_label.
+     *
+     * Empty for an object with one coordinate axis, whose one component is the
+     * whole object.
+     */
+    std::string component_field;
+    /**
+     * @brief The value the component fixes on that axis, such as ATM, in the
+     * spelling the shape stores.
+     */
+    std::string component_value;
+    /** The first market instant of the range, inclusive. */
+    std::chrono::system_clock::time_point from_instant;
+    /** The last market instant of the range, inclusive. */
+    std::chrono::system_clock::time_point to_instant;
+};
+
+/**
+ * @brief The component at each instant in the range.
+ *
+ * The ladder is stated once, because it belongs to the shape and not to the
+ * points: coordinates holds the declared values of the axis the component
+ * varies over, in the order the shape stores them, and every instant's values
+ * are index for index with it.
+ */
+struct get_series_slice_response {
+    bool success = false;
+    /**
+     * @brief Why the read was refused, when it was.
+     *
+     * A component the shape does not declare is refused here, naming the axis or
+     * the value that is missing.
+     */
+    std::string message;
+    /**
+     * @brief The axis the component varies over, an oresmd field code such as
+     * expiry.
+     *
+     * Empty when the response holds no instant.
+     */
+    std::string coordinate_field;
+    /**
+     * @brief The declared values of the coordinate field, in the order the shape
+     * stores them.
+     *
+     * Every instant's values are index for index with this.
+     */
+    std::vector<std::string> coordinates;
+    /** Oldest first, one entry per distinct market instant in the range. */
+    std::vector<series_slice_instant> instants;
+};
+
+/**
  * @brief Request to import ORE market.txt and/or fixings.txt content.
  *
  * The service parses both files, names each key and index through the ORE

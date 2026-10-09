@@ -285,6 +285,88 @@ export interface GetCurveSnapshotBucketsResponse {
 }
 
 /**
+ * @brief One instant of a slice: the object as it stood then.
+ */
+export interface SeriesSliceInstant {
+    as_of: string;
+    /**
+     * @brief The value at each declared coordinate, index for index with the
+     * response's coordinates.
+     *
+     * The empty string is a hole: the shape declares the coordinate and no point
+     * holds a value for it at this instant. A short vector would be read as a
+     * shorter object, which is the mistake the aligned shape exists to prevent.
+     */
+    values: string[];
+}
+
+/**
+ * @brief Requests one component of a composite object over a range of
+ * instants.
+ *
+ * The object is named the way the resolver names one, so no caller builds an
+ * oresmd URI and no caller matches on one. The component is the value the
+ * object holds on one of its axes; an object with a single axis has one
+ * component, the whole object, and leaves the component field empty.
+ */
+export interface GetSeriesSliceRequest {
+    /** The object, as the typed identity the resolver already takes. */
+    identity: ResolveSeriesIdentityRequest;
+    /**
+     * @brief The axis the component fixes, an oresmd field code such as
+     * strike_label.
+     *
+     * Empty for an object with one coordinate axis, whose one component is the
+     * whole object.
+     */
+    component_field: string;
+    /**
+     * @brief The value the component fixes on that axis, such as ATM, in the
+     * spelling the shape stores.
+     */
+    component_value: string;
+    /** The first market instant of the range, inclusive. */
+    from_instant: string;
+    /** The last market instant of the range, inclusive. */
+    to_instant: string;
+}
+
+/**
+ * @brief The component at each instant in the range.
+ *
+ * The ladder is stated once, because it belongs to the shape and not to the
+ * points: coordinates holds the declared values of the axis the component
+ * varies over, in the order the shape stores them, and every instant's values
+ * are index for index with it.
+ */
+export interface GetSeriesSliceResponse {
+    success: boolean;
+    /**
+     * @brief Why the read was refused, when it was.
+     *
+     * A component the shape does not declare is refused here, naming the axis or
+     * the value that is missing.
+     */
+    message: string;
+    /**
+     * @brief The axis the component varies over, an oresmd field code such as
+     * expiry.
+     *
+     * Empty when the response holds no instant.
+     */
+    coordinate_field: string;
+    /**
+     * @brief The declared values of the coordinate field, in the order the shape
+     * stores them.
+     *
+     * Every instant's values are index for index with this.
+     */
+    coordinates: string[];
+    /** Oldest first, one entry per distinct market instant in the range. */
+    instants: SeriesSliceInstant[];
+}
+
+/**
  * @brief Request to import ORE market.txt and/or fixings.txt content.
  *
  * The service parses both files, names each key and index through the ORE
@@ -576,6 +658,7 @@ export const subjects = {
     compute_curve_request: 'marketdata.v1.ops.compute_curve',
     get_curve_snapshot_request: 'marketdata.v1.curve_snapshot.get',
     get_curve_snapshot_buckets_request: 'marketdata.v1.ops.get_curve_snapshot_buckets',
+    get_series_slice_request: 'marketdata.v1.ops.get_series_slice',
     import_market_data_request: 'marketdata.v1.ops.import_market_data',
     start_feeds_under_folder_request: 'marketdata.v1.ops.start_feeds_under_folder',
     stop_feeds_under_folder_request: 'marketdata.v1.ops.stop_feeds_under_folder',
@@ -598,6 +681,7 @@ export const requiresSession = {
     compute_curve_request: true,
     get_curve_snapshot_request: true,
     get_curve_snapshot_buckets_request: true,
+    get_series_slice_request: true,
     import_market_data_request: true,
     start_feeds_under_folder_request: true,
     stop_feeds_under_folder_request: true,

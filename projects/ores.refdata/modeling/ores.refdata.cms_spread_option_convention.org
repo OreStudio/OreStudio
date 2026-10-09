@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8A064230-CC5F-4671-86D1-002231BF880E
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.cms_spread_option_convention
 #+description: Codegen entity model for the refdata =cms_spread_option_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

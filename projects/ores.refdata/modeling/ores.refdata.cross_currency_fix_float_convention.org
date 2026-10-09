@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 42B27F4A-F09C-4DBC-9B9B-F9EFE601E2EA
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.cross_currency_fix_float_convention
 #+description: Codegen entity model for the refdata =cross_currency_fix_float_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

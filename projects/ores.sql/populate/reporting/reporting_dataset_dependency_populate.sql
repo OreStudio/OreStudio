@@ -45,4 +45,14 @@ BEGIN
 
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ore.risk_report_configs', 'testdata.books', 'book_population_source');
+
+    -- The canonical instrument conventions are party-scoped reference data a
+    -- run resolves by id. Both reporting datasets run in party_essentials
+    -- after the conventions, so the dependency is declared here even though
+    -- the bundle display_order already puts them in the right order.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ore.report_definitions', 'ore.conventions', 'convention_source');
+
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ore.risk_report_configs', 'ore.conventions', 'convention_source');
 END $$;

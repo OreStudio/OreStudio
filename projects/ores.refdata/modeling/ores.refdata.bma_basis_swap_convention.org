@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 0C86648F-4E99-4FC2-B46C-C563C217F3CE
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.bma_basis_swap_convention
 #+description: Codegen entity model for the refdata =bma_basis_swap_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

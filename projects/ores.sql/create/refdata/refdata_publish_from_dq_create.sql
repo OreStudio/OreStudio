@@ -4789,3 +4789,140 @@ begin
     where v_deleted > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Instrument Conventions: refdata.v1.ops.publish_conventions_from_dq
+-- =============================================================================
+
+-- One dataset owns every convention kind: one artefact table per live
+-- convention table, 24 of them. There is no per-kind publish body. The
+-- function walks the kind list and dispatches by name transform,
+-- ores_dq_<x>_conventions_artefact_tbl to ores_refdata_<x>_conventions_tbl,
+-- so a new kind costs one array entry and one artefact table, not a function.
+-- The copied column list is read from the live table itself, so there is no
+-- second per-kind list to keep in step either.
+--
+-- Rows the target party already carries are skipped, so a republish converges
+-- on the same set. Ids the engine does not ask for are inert: the engine
+-- resolves a convention by id.
+--
+-- The oresmd_uri column is copied through as staged. It is null in the seed:
+-- no offline tool turns an ORE index name into an oresmd URI today. See the
+-- README under tools/ore_conventions/.
+create or replace function ores_refdata_publish_conventions_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_kind text;
+    v_artefact text;
+    v_target text;
+    v_has_party boolean;
+    v_cols text;
+    v_party_target text;
+    v_party_expr text;
+    v_party_cond text;
+    v_commentary text;
+    v_staged bigint;
+    v_inserted bigint;
+    v_total_inserted bigint := 0;
+    v_total_staged bigint := 0;
+    v_kinds text[] := array[
+        'average_ois', 'bma_basis_swap', 'bond_yield', 'cds',
+        'cms_spread_option', 'commodity_forward', 'commodity_future',
+        'cross_currency_basis', 'cross_currency_fix_float', 'deposit', 'fra',
+        'future', 'fx_option', 'ibor_index', 'inflation_swap',
+        'intraday_power_load', 'ois', 'overnight_index', 'swap', 'swap_index',
+        'tenor_basis_swap', 'tenor_basis_two_swap', 'zero',
+        'zero_inflation_index'];
+begin
+    perform ores_utility_allow_version_replace_fn();
+
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    v_commentary := 'Imported from DQ dataset: ' || v_dataset_name;
+
+    foreach v_kind in array v_kinds loop
+        v_artefact := format('ores_dq_%s_conventions_artefact_tbl', v_kind);
+        v_target := format('ores_refdata_%s_conventions_tbl', v_kind);
+
+        select exists (
+            select 1 from information_schema.columns c
+            where c.table_schema = 'public'
+              and c.table_name = v_target
+              and c.column_name = 'party_id') into v_has_party;
+
+        -- The live table's own data columns, in table order, less the columns
+        -- this function stamps. A nullable column, such as oresmd_uri, is
+        -- copied as a value rather than dropped.
+        select string_agg(format('%I', c.column_name), ', ' order by c.ordinal_position)
+               || ','
+        into v_cols
+        from information_schema.columns c
+        where c.table_schema = 'public'
+          and c.table_name = v_target
+          and c.column_name not in ('tenant_id', 'version', 'party_id',
+              'modified_by', 'performed_by', 'change_reason_code',
+              'change_commentary', 'valid_from', 'valid_to');
+
+        if v_has_party then
+            v_party_target := 'party_id,';
+            v_party_expr := format('%L::uuid,', v_party_id);
+            v_party_cond := format(' and o.party_id = %L::uuid', v_party_id);
+        else
+            v_party_target := '';
+            v_party_expr := '';
+            v_party_cond := '';
+        end if;
+
+        execute format('select count(*) from %I where dataset_id = $1', v_artefact)
+            into v_staged using p_dataset_id;
+        v_total_staged := v_total_staged + v_staged;
+
+        -- The publish's own parameters cannot stay bare identifiers in an
+        -- EXECUTE string: format() interpolates them as literals instead.
+        execute format(
+            'insert into %1$I (tenant_id, %2$s version, %3$s modified_by, '
+                'performed_by, change_reason_code, change_commentary) '
+            'select %8$L::uuid, %4$s 0, %3$s '
+                'coalesce(ores_iam_current_service_fn(), current_user), current_user, '
+                '''system.external_data_import'', %5$L '
+            'from %6$I a '
+            'where a.dataset_id = %9$L::uuid '
+              'and not exists (select 1 from %1$I o '
+                  'where o.tenant_id = %8$L::uuid%7$s '
+                    'and o.id = a.id '
+                    'and o.valid_to = ores_utility_infinity_timestamp_fn())',
+            v_target, v_party_target, v_cols, v_party_expr, v_commentary,
+            v_artefact, v_party_cond,
+            p_target_tenant_id::text, p_dataset_id::text);
+
+        get diagnostics v_inserted = row_count;
+        v_total_inserted := v_total_inserted + v_inserted;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_total_inserted
+    where v_total_inserted > 0
+    union all select 'skipped'::text, v_total_staged - v_total_inserted
+    where v_total_staged - v_total_inserted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;

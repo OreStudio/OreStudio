@@ -156,6 +156,34 @@ TEST_CASE("read_own_access_returns_roles_with_permissions_and_assignment_tail", 
     CHECK(entry.assigned_at.time_since_epoch().count() != 0);
 }
 
+TEST_CASE("read_account_access_is_denied_for_a_caller_holding_only_member", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    auto other = write_account(h, gen);
+    auto r = write_role_bundling(h, gen, std::string(permissions::accounts_read));
+    assign(h, gen, other, r);
+
+    /*
+     * The accounts trigger gives this caller Member and nothing else, which is
+     * what every person holds. Member bundles no code that reads another
+     * account: the role and permission catalogues are open reads, so no grant
+     * is needed for them, and another account's access stays out of reach.
+     */
+    authorization_service svc(h.context());
+    const auto access = assigned(svc.read_account_access(caller.id, other.id));
+
+    BOOST_LOG_SEV(lg, debug) << "Denied access rows: " << access.roles.size();
+
+    CHECK(access.result.outcome == outcome::denied);
+    CHECK(access.result.code == permissions::roles_read);
+    CHECK_FALSE(access.result.message.empty());
+    CHECK(access.roles.empty());
+}
+
 TEST_CASE("read_account_access_is_denied_without_the_read_permission", tags) {
     auto lg(make_logger(test_suite));
 
@@ -167,12 +195,11 @@ TEST_CASE("read_account_access_is_denied_without_the_read_permission", tags) {
     auto r = write_role_bundling(h, gen, std::string(permissions::accounts_read));
     assign(h, gen, other, r);
 
-    // Every person account holds Member from its first version, and Member
-    // bundles iam::roles:read -- the role catalogue is what a member reads to
-    // decide what to ask for. A caller that may not read another account's
-    // access therefore has to hold nothing, so the Member the trigger gave it
-    // is taken back before the call. This is the state an administrator leaves
-    // behind, not a fiction: the trigger gives Member once and never again.
+    /*
+     * A caller that holds no role at all is the state an administrator leaves
+     * behind by taking Member back -- the trigger gives Member once and never
+     * again -- so the gate is asked about that caller here.
+     */
     account_role_repository(h.context()).remove_all_for_account(caller.id);
 
     authorization_service svc(h.context());

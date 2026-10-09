@@ -8,12 +8,12 @@
 #+filetags: :implement_membership_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-where-i-work-screen
-#+pr:
+#+pr: 2995
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,38 +26,64 @@ A member opens Where I work from the account menu, reads the parties they work i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next          | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- The screen runs in =ores.web= on the accepted variant A: one card per party, with the switch and the default on the card they change.
+- The party the session acts for and the stored default are stated apart, on every card.
+- A member reaches it from the account menu, at =/where-i-work=.
+- Setting and clearing the default, and switching the party the session acts for, all work from the screen; a refusal is stated in the server's words.
+- The one-party case says there is nothing to switch; a party the server cannot name is stated rather than drawn nameless.
+- The screen passes its own tests, and the route is covered by the route table test.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Build the screen on the accepted variant A, reading the parties from the
+   read the group's server task landed.
+2. Take the acting party and the switch action from the route rather than from
+   the session context, so the screen is a render of what it is given and its
+   tests need no running session.
+3. Add the account-menu entry and the route.
+4. Test what the screen promises: the naming, the two states stated apart, the
+   actions offered where they belong, the one-party case, and the fallback
+   when the account read is refused.
+5. Check the route table test reaches it, because a screen nobody can get to is
+   a screen nobody has.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web suite after this change | 474 tests in 45 files | =npm test --workspace @ores/web= | (branch tip) |
+| Screen cases | 4 | =npm test --workspace @ores/web -- membership= | (branch tip) |
 
 * Notes
+
+- *The screen carries no "not available" panel, because the gaps it stated are
+  closed.* The prototype drew four gaps: no read named a party, set-default had
+  no route, the default could not be cleared, and the association read had no
+  client wrapper. The group's server tasks closed all four, so the accepted
+  screen is drawn whole. The only state left is a party the server cannot name,
+  which is drawn as a stated gap because the read can still return one.
+- *The acting party and the switch come from the route, not the session
+  context.* A screen that reaches for =useSession= cannot be rendered in the
+  suite's static markup, and the screens here are renders of what they are
+  given. The shell now carries =onSwitchParty= beside =onSignOut=, which is the
+  same shape: the session owns the action, the route hands it to the screen.
+- *The identity panel falls back rather than failing.* The shell already reads
+  the signed-in person's own account for its menu, and this is the same query,
+  so both share one answer. A member who may not hold the account read keeps
+  the username the session states; the panel is not the screen's error.
+- *The account menu, not the area menu, is the entry point.* The journey says a
+  member opens *Where I work* from their own name, so it sits with Profile,
+  Access and Security rather than in the areas across the header.
+
 
 * Test Scenarios
 
@@ -74,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2995][#2995]] | [web] Build the Where I work screen |
 
 * Review
 
@@ -83,3 +109,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done 2026-10-09.
+
+*Where I work* runs in =ores.web= on the accepted variant A:
+
+| Layer | What landed |
+|-------+-------------|
+| Screen | =membership/WhereIWorkPage.tsx=: the identity panel, the party the session acts for, and one card per party with the switch and the default on the card they change. |
+| Route | =/where-i-work=, behind the signed-in gate, reached from the account menu. |
+| Shell | =onSwitchParty= travels with the other shell actions, so the route hands the screen the session's switch. |
+| Labels | The =membership.where= group and the menu entry in English, French and Portuguese. |
+| Tests | Four screen cases and one route case. |
+
+*Verification.* The web suite passes, 474 tests in 45 files, of which four are
+the screen's own and one is the route table reaching it from the account menu.
+The three TypeScript packages typecheck.
+
+*Limitation.* The screen is not walked by hand against a running installation
+in this task: the environment's database was recreated for the group's SQL
+change, so no tenant with members exists to sign in as. The data path it reads
+is covered end to end by the server suite, the BFF cases and the screen cases;
+the walk belongs to the story's end-to-end check.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |

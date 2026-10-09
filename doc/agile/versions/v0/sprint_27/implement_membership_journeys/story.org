@@ -21,11 +21,11 @@ The two Membership journeys run in ores.web against the real server. The member 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Both prototypes are accepted, and the seven build tasks are written from them: five server tasks and one screen task per journey. No build work has started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start [[id:B168458B-DAB9-4847-823F-2B75DBC3FA38][Read a member's parties with their names]]. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-09                               |
 
 * Acceptance
@@ -46,9 +46,9 @@ The two Membership journeys run in ores.web against the real server. The member 
 | [[id:15DE5A7E-1FC8-4535-A374-A42ADD73242F][Let a member set and clear their default party]] | DONE | 2026-10-09 | 2026-10-09 | iam.v1.ops.set_my_default_party exists on the server and no BFF route, client method or control reaches it, and the request cannot say 'no default'. Wire the write end to end and make clearing the default expressible. |
 | [[id:F94A08FD-E7EB-4793-9163-50E24AE2F94E][Refuse a reporting line that would make a loop]] | DONE | 2026-10-09 | 2026-10-09 | Nothing refuses A reports to B when B already reports to A. The server accepts the pair and the result is a cycle with no root. Add the check where the write happens and test it. |
 | [[id:A14D41EC-1F1E-4B73-9BC0-838C4F9FB923][Give the reporting line its own write]] | DONE | 2026-10-09 | 2026-10-09 | Setting one field means sending the whole update_account_request, so a concurrent edit to another field is silently overwritten by the stale copy the screen holds. Add a narrow write that carries the manager and the change reason, with the account version as a precondition. |
-| [[id:ACB6A715-22A1-4529-8F38-F29EF20BCDBB][Read the reporting tree]] | BACKLOG | | | The server answers one flat page of accounts with reports_to_account_id repeated per row, so the screen reads the whole roster and nests it in the browser. Give the tenant administrator a read of the reporting shape: each account's manager and depth, so a large tenant can page a branch. |
-| [[id:A74DE5A9-2B43-49FB-9F47-C6E33290F38A][Build the Where I work screen]] | BACKLOG | | | Build the accepted variant A of doc/prototypes/membership/where-i-work/: a card per party with the switch and the default on the card, the identity summary, and the account-menu entry point. Every gap the prototype states is either closed by this story's server tasks or stated on the screen. |
-| [[id:49D54B4B-4ACE-4EB7-B24A-349934DAF4A8][Build the Reporting lines screen]] | BACKLOG | | | Build the accepted variant A of doc/prototypes/membership/reporting-lines/: the indented tree with the selected person beside it, the manager picker that cannot offer a descendant, and the change reason. The absent approval is stated, not built. |
+| [[id:ACB6A715-22A1-4529-8F38-F29EF20BCDBB][Read the reporting tree]] | DONE | 2026-10-09 | 2026-10-09 | The server answers one flat page of accounts with reports_to_account_id repeated per row, so the screen reads the whole roster and nests it in the browser. Give the tenant administrator a read of the reporting shape: each account's manager and depth, so a large tenant can page a branch. |
+| [[id:A74DE5A9-2B43-49FB-9F47-C6E33290F38A][Build the Where I work screen]] | DONE | 2026-10-09 | 2026-10-09 | Build the accepted variant A of doc/prototypes/membership/where-i-work/: a card per party with the switch and the default on the card, the identity summary, and the account-menu entry point. Every gap the prototype states is either closed by this story's server tasks or stated on the screen. |
+| [[id:49D54B4B-4ACE-4EB7-B24A-349934DAF4A8][Build the Reporting lines screen]] | DONE | 2026-10-09 | 2026-10-09 | Build the accepted variant A of doc/prototypes/membership/reporting-lines/: the indented tree with the selected person beside it, the manager picker that cannot offer a descendant, and the change reason. The absent approval is stated, not built. |
 
 * Plan
 
@@ -122,3 +122,42 @@ it.
 | [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] | knowledge | The only inventory of prototypes, and the one way to add one. |
 | [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] | knowledge | The checklist every TypeScript package in the tree passes, which the build tasks follow. |
 
+* Result
+
+Done 2026-10-09. Seven tasks, seven PRs, all merged.
+
+| Task | PR | What landed |
+|------+----+-------------|
+| Read a member's parties with their names | #2974 | =iam.v1.ops.get_my_parties=, named from IAM's party cache, with the stored default; reached at =GET /api/me/parties= and by a generated shell command. |
+| Let a member set and clear their default party | #2981 | An empty party clears the default; the service stores "no default"; reached at =POST /api/me/default-party=. |
+| Refuse a reporting line that would make a loop | #2985 | =:prevent_cycle:= on the reporting line, so the generated trigger walks the manager chain and refuses a ring. |
+| Give the reporting line its own write | #2987 | =iam.v1.ops.set_reporting_line=: one field, the version the caller read, a reason, and a refusal on a stale version. |
+| Read the reporting tree | #2994 | =iam.v1.ops.get_reporting_tree=: manager, depth and direct reports, for the tenant or one branch; reached at =GET /api/reporting-tree=. |
+| Build the Where I work screen | #2995 | The member's screen on the accepted variant A, reached from the account menu. |
+| Build the Reporting lines screen | #2998 | The administrator's screen on the accepted variant A, reached from the people list. |
+
+*Every gap the two journeys record is closed or stated*, which the acceptance
+requires:
+
+- *Closed*: a party now reads as a name on both screens; set-default has a
+  route; clearing the default is expressible; the association read has a client
+  wrapper; the reporting tree is one read rather than the browser nesting a flat
+  roster; the server refuses a ring; the reporting line has a write that names
+  one field and records a reason; the switch has a screen to use it from.
+- *Stated on the screen*: the office each person works in is not readable from
+  the reporting screen, a reporting-line change is a proposal whose approval
+  nothing holds, and the line has no history there.
+- *Still recorded on the journey documents*: the extraction pass owns those
+  documents, so the two corrections the prototypes proved — the switch is wired
+  end to end, and =TopBar.tsx= is not in the tree — stand recorded on the two
+  prototype tasks for it to fold in.
+
+*Verification.* Every task carries its own evidence: the IAM core suite (267
+cases, 955 assertions at the last run of that task), the shell IAM suite (405
+cases), the BFF membership cases (10), the web suite (479 tests in 46 files),
+the component-drift gate and clang-format. What the group did *not* do is walk
+either screen by hand against a running installation: the environment's
+database was recreated twice for SQL the group landed, and no tenant with
+members exists to sign in as. Both screens' data paths are covered end to end by
+the server suites, the BFF cases and the screens' own cases, and the walk is the
+one thing a reviewer should do before the group is called finished.

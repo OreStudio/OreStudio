@@ -152,6 +152,7 @@ select ores_utility_allow_version_replace_fn();
 \ir ../refdata/refdata_regulatory_book_types_populate.sql
 \ir ../refdata/refdata_book_purpose_types_populate.sql
 \ir ../refdata/refdata_ledger_feed_types_populate.sql
+\ir ../refdata/refdata_sub_periods_coupon_types_populate.sql
 
 -- Product catalogue: asset_class_codes and curve_roles before instrument_codes (FK).
 \ir ../refdata/refdata_asset_class_codes_populate.sql

@@ -8,12 +8,12 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/search-the-convention-list-validate-its-terms-and-return-its-draft-history
-#+pr:
+#+pr: 2997
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-09
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,36 +26,49 @@ Journey 8 finds a convention by a term it carries, is refused when a term does n
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- The sub-period coupon type the journey draws as a pick is a list the server
+  serves, seeded with the values the models themselves name, rather than free
+  text.
+- The other four units the task description names are either built or filed with
+  the reason they are not, and the finding each rests on is written down.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Five units, and they are five different kinds of change rather than one:
+
+1. The sub-period coupon type list. A new =simple-lookup= entity, in the shape
+   the other term lists already have.
+2. The term filter on the convention lists. A codegen decision before it is code.
+3. The term validation on write. A name-to-validator map over 29 models.
+4. The family-to-entity mapping. A new entity whose rows the journey already
+   writes out.
+5. The draft version in the history view. A premise to test before any code.
+
+Units 2, 3, 4 and 5 were filed as
+[[id:ABEC57F4-A85F-4D0E-83F6-1FC9C7C891AB][Serve the convention family
+mapping, its term filter and term rules]], with the reconnaissance each needs.
+Unit 1 is built here. The reason for the split is that unit 1 is additive and
+touches nothing else, while units 2 and 3 change every convention's protocol and
+unit 5 may not be a server concern at all.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Convention models in the tree | 29 | =ls projects/ores.refdata/modeling/ores.refdata.*convention*.org \| wc -l= | =2a0c6342f0= |
+| Of those, the ones that validated any column before this | 3 | =for f in ...; do grep -q '^\\*\\* Validations' $f && echo $f; done \| wc -l= | =2a0c6342f0= |
+| Distinct text term column names across the conventions | 36 | the census in the sibling task's Notes | =2a0c6342f0= |
+| Files the new entity generates | 51 | =git status --short --untracked-files=all \| grep -c sub_periods= | =2a0c6342f0= |
+| Shell scripts after the tangle | 3398 | =./compass.sh build --direct tangle_shell_scripts= | =2a0c6342f0= |
 
 * Notes
 
@@ -74,7 +87,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2997][#2997]] | [agile] Record the green build on the convention task |
+| [[https://github.com/OreStudio/OreStudio/pull/2993][#2993]] | [refdata] Serve the sub-periods coupon type list |
 
 * Review
 
@@ -83,3 +97,74 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+One of the five units is built. The other four are filed as
+[[id:ABEC57F4-A85F-4D0E-83F6-1FC9C7C891AB][Serve the convention family
+mapping, its term filter and term rules]], each with the reconnaissance it needs
+rather than a guess.
+
+*What landed.*
+
+- *The sub-periods coupon type is a list the server serves.*
+  =refdata.v1.sub_periods_coupon_types.list= and its neighbours now exist, in the
+  shape every other convention term list has: a =simple-lookup= entity, versioned,
+  with a history provider, a shell command set and a TypeScript twin. It is seeded
+  with the two values the =swap_convention= and =tenor_basis_swap_convention=
+  models' own =sub_periods_coupon_type= column descriptions name -- =Compounding=
+  and =Averaging= -- so the pick the journey draws offers them instead of free
+  text. The table is wired into the create and drop aggregators, the seed is wired
+  into the foundation populate, and the three =refdata::sub_periods_coupon_types=
+  permissions are seeded. Journey 8's row for it reads =exists=.
+
+*Why the other four are filed rather than built.*
+
+They are not one unit with the first; they are four different kinds of change,
+and two of them change every convention rather than adding to the tree.
+
+- *The term filter* needs a codegen decision first. A generated =list= derives
+  =id_one_of=, and a =list_by_<column>= only for a column the model marked
+  =:list_by:= or =:list_by_uuid:=. The journey wants a convention reachable by an
+  index, a calendar or a day count, and those are unmarked text columns. Whether
+  the answer is a per-column opt-in of the existing kind or one free-text term
+  filter decides the protocol of all 29 conventions, so it is a decision before
+  it is an edit.
+- *The term validation* is feasible as a codemod -- the sibling task records the
+  name-to-validator census -- but the mappings must be verified column by column,
+  because a validator that reads the wrong lookup would be worse than none. Only
+  three of the 29 conventions carry a =* Validations= table today, so the codemod
+  adds the section as well as the rows.
+- *The family mapping* is a new entity, and the journey already writes out all 28
+  of its rows in the table under /Choose the instrument/. What is missing is the
+  entity, and the question of whether the family is its own concept or derivable.
+- *The draft history version* rests on a premise that does not hold as stated.
+  =build_entity_history_versions= builds one entry per row the repository returns,
+  and the repository reads newest-first, so the reply already carries the record
+  as it stands. If the journey's *now* row is the record, the server provides it;
+  if it is the unsaved form state, no server can. The sibling task records that the
+  prototype must be read before this one is written, and that it may be dropped.
+
+*Verification.*
+
+The new entity's subject matches the one journey 8 names, exactly. Ten checks that
+a new entity must satisfy were run and all ten pass: subject-conformance,
+handler-permissions, open-reads, sql-reachability, populate-refs, protocol-twins,
+generated-column-refs, sql-hygiene, format and reachability. =sql-reachability=
+caught the one real omission on the way -- the two generated drop files were not
+wired into the drop aggregator -- and the fix is in.
+
+Journey 8's table went from one =missing= row to none, and its /What is missing/
+drops the unit this change built while keeping the four that remain.
+
+The branch builds green. The first attempt failed, and not on this change: the
+branch point could not build the web client, because PR #2987's merge left
+=projects/ores.web/packages/web/src/api/client.ts= importing =ReportingLineWrite=
+from the =browser= entry while that entry did not export it. Trunk gained the fix
+as =6edc28defd= ("[web] Export the reporting line write from the browser entry"),
+and the branch was merged up to it before the build was rerun.
+
+*What is not verified.* No database test exercises the new entity: the box shares
+one PostgreSQL across eleven worktrees, so =compass db recreate= would disrupt the
+others, and the local =.env= is at format version 27 against a required 29. The
+entity is verified by its generated subject, its regression through the ten
+checks, and the shape it
+copies from 25 siblings.

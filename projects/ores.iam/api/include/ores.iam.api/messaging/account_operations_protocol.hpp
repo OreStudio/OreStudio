@@ -603,6 +603,66 @@ struct set_reporting_line_response {
 };
 
 /**
+ * @brief One account in the tenant's reporting shape.
+ *
+ * The depth counts from a root: a root is 0, its reports are 1, and so on.
+ * When the read names a root, that root is 0 in the answer. An account that
+ * does not reach any root — a manager who is missing, or a ring the store
+ * accepted before the guard existed — is answered with depth -1 and counted in
+ * the response's unrooted total.
+ *
+ * Declared before the response that carries it, because the generators emit
+ * the messages in the order this file states them.
+ */
+struct reporting_tree_node {
+    std::string account_id;
+    std::string username;
+    std::string full_name;
+    std::string job_title;
+    /**
+     * @brief The manager's account id, or empty when the account is a root.
+     */
+    std::string reports_to_account_id;
+    /**
+     * @brief The number of managers between this account and a root, or -1 when it
+     * reaches none.
+     */
+    int depth;
+    int direct_reports;
+};
+
+/**
+ * @brief The tenant's reporting shape in one read.
+ *
+ * The read answers the tenant's own accounts, which row-level security bounds,
+ * and needs =iam::accounts:read=. An empty =root_account_id= asks for the whole
+ * tenant, ordered by depth; a stated root asks for that account's branch, so a
+ * screen can open one part of a large organisation without carrying the rest.
+ */
+struct get_reporting_tree_request {
+    using response_type = struct get_reporting_tree_response;
+    static constexpr std::string_view nats_subject = "iam.v1.ops.get_reporting_tree";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string root_account_id;
+};
+
+struct get_reporting_tree_response {
+    ores::utility::domain::result result;
+    std::vector<reporting_tree_node> nodes;
+    /**
+     * @brief How many accounts in the tenant reach no root. Stated so the screen
+     * can say the shape is broken rather than draw a tree that is missing people.
+     */
+    int unrooted;
+};
+
+/**
  * @brief Reconciles the accounts a tenant holds with the pictures they name.
  *
  * Every account that names a picture code and carries no picture gets one:

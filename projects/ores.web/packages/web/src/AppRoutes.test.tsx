@@ -137,6 +137,7 @@ function render(
     sessionState: SessionState,
     overrides: Partial<AppRoutesProps> = {},
     permissionCodes: readonly string[] = [],
+    seed?: (client: QueryClient) => void,
 ): string {
     const client = new QueryClient();
     /*
@@ -157,6 +158,7 @@ function render(
             },
         ],
     });
+    seed?.(client);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -172,6 +174,7 @@ function render(
                         journeyInProgress={false}
                         onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
                         onChooseParty={async () => undefined}
+                        onSwitchParty={async () => undefined}
                         onSignOut={() => undefined}
                         onEnterTenant={async () => undefined}
                         onLeaveTenant={() => undefined}
@@ -316,6 +319,56 @@ describe('the route table once the flag is clear', () => {
 
         expect(html).not.toContain('/tenants/new');
         expect(html).toContain('href="/security"');
+        expect(html).toContain('href="/where-i-work"');
+    });
+
+    it('offers the reporting tree from the people list, and opens it', () => {
+        const html = render('/people', ready, authenticated, {}, [], (client) =>
+            client.setQueryData(['records', 'people', '', 'page', 0], {
+                accounts: [],
+                totalCount: 0,
+            }),
+        );
+        expect(html).toContain('href="/reporting-lines"');
+
+        const tree = render('/reporting-lines', ready, authenticated, {}, [], (client) =>
+            client.setQueryData(['reporting-tree'], {
+                unrooted: 0,
+                nodes: [
+                    {
+                        accountId: '11111111-1111-1111-1111-111111111111',
+                        username: 'ada.lovelace',
+                        fullName: 'Ada Lovelace',
+                        jobTitle: 'Head of Desk',
+                        reportsToAccountId: null,
+                        depth: 0,
+                        directReports: 0,
+                    },
+                ],
+            }),
+        );
+        expect(tree).toContain('Reporting lines');
+        expect(tree).toContain('Ada Lovelace');
+    });
+
+    it('opens Where I work at its own route, and names the parties there', () => {
+        const html = render('/where-i-work', ready, authenticated, {}, [], (client) =>
+            client.setQueryData(['my-parties'], {
+                defaultPartyId: '33333333-3333-3333-3333-333333333333',
+                parties: [
+                    {
+                        partyId: '33333333-3333-3333-3333-333333333333',
+                        name: 'ACME Corporation US Inc',
+                        shortCode: 'ACCOUS',
+                        partyCategory: 'Operational',
+                        businessCenterCode: 'USNY',
+                    },
+                ],
+            }),
+        );
+
+        expect(html).toContain('Where I work');
+        expect(html).toContain('ACME Corporation US Inc');
     });
 });
 

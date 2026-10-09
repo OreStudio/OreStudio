@@ -86,6 +86,7 @@ export const en: SourceCatalogue = {
             roles: 'Roles',
             refdata: 'Reference data',
             access: 'My access',
+            whereIWork: 'Where I work',
             profile: 'My profile',
         },
     },
@@ -126,6 +127,7 @@ export const en: SourceCatalogue = {
             jobTitle: 'Job title',
             title: 'People',
             lead: 'Who can sign in to this tenant, and the roles each one holds.',
+            leadNoRoles: 'Who can sign in to this tenant.',
             person: 'Person',
             roles: 'Roles',
             noRole: 'No role',
@@ -136,6 +138,7 @@ export const en: SourceCatalogue = {
                 contact: 'Contact',
                 roles: 'Roles',
                 signIns: 'Sign-ins',
+                timeline: 'Timeline',
             },
             notFound: 'No account has this username.',
             give: 'Give a role',
@@ -1493,6 +1496,26 @@ export const en: SourceCatalogue = {
         valueDiff: 'Value diff',
     },
 
+    timeline: {
+        empty: 'Nothing has happened to this yet.',
+        field: 'Field',
+        notRevertible: 'This entry records something that happened, so there is nothing to revert.',
+        changeNotOffered: 'Putting a changed field back is not offered here.',
+        kind: {
+            raised: 'Created',
+            changed: 'Changed',
+            asked: 'Asked for a role',
+            told: 'Told',
+            decided: 'Answered',
+            granted: 'Granted',
+            signed_in: 'Signed in',
+            sign_in_failed: 'Sign-in refused',
+            signed_out: 'Signed out',
+            refreshed: 'Session renewed',
+            noticed: 'Recorded',
+        },
+    },
+
     validation: {
         required: 'This field is required.',
     },
@@ -2134,6 +2157,64 @@ export const en: SourceCatalogue = {
             conventionHistory: 'Convention',
             removeWarning:
                 'Removing the pair removes its convention too. Nothing checks whether trades still use the pair.',
+        },
+    },
+
+    membership: {
+        where: {
+            title: 'Where I work',
+            lead: 'The parties your account works in, in {tenant}.',
+            acting: 'You are acting for',
+            actingUnknown:
+                'The session is acting for a party this list does not hold. Sign in again to renew the session.',
+            actingNote: 'Every screen reads this party’s data until you switch.',
+            parties: 'Your parties',
+            oneParty:
+                'Your account works in one party, so there is nothing to switch. Every account must work in at least one party: an account with none is refused at sign-in.',
+            code: 'Code',
+            where: 'Where',
+            category: 'Category',
+            unnamed: 'A party this build cannot name',
+            switch: 'Switch to this party',
+            setDefault: 'Set as default',
+            clearDefault: 'Clear default',
+            actingTag: 'Acting for',
+            defaultTag: 'Default',
+            thisIsIt: 'This is the party your session is acting for.',
+            footnote:
+                'Switching issues a fresh sign-in token, so every screen reads the party you chose. The default is what quick sign-in picks next time.',
+        },
+        reporting: {
+            title: 'Reporting lines',
+            lead: 'Who reports to whom, and the one line this screen changes.',
+            tree: 'Reporting tree',
+            people: '{count} people',
+            reports: '{count} reporting',
+            expandAll: 'Expand all',
+            collapseAll: 'Collapse all',
+            expand: 'Expand',
+            collapse: 'Collapse',
+            pickSomeone: 'Pick a person in the tree to read their line.',
+            reportsTo: 'Reports to',
+            noManager: 'No manager (a root)',
+            directReports: 'Direct reports',
+            depth: 'Depth',
+            reachesNoRoot: 'Reaches no root',
+            manager: 'Manager',
+            reason: 'Reason',
+            commentary: 'Note',
+            save: 'Save line',
+            clear: 'Clear line',
+            noVersion: 'The account could not be read, so the write states no version.',
+            unrooted:
+                '{count} people reach no root: their manager is gone, or the line that holds them is broken. They are left out of the tree rather than drawn as roots.',
+            gaps: 'What this screen cannot do',
+            gapOffice:
+                'The office each person works in is not readable here: the account-party read carries an identifier and no name.',
+            gapApproval:
+                'A reporting-line change a person asks for is a proposal that their senior or the tenant administrator approves, and nothing in the platform holds such an approval, so the line does not move.',
+            gapHistory:
+                'The line has no history on this screen. The account is versioned, so a past line is recoverable, and this screen states none of it.',
         },
     },
 

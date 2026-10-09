@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: C59EC6BD-7DAD-40B7-9649-756CFA5A1DC4
+:END:
+#+title: Task: Implement Hotfix: the seeded books have no purpose
+#+description: Initial task for: Hotfix: the seeded books have no purpose
+#+type: task
+#+level: s1
+#+filetags: :the_seeded_books_have_no_purpose:sprint_27:v0:
+#+owner: marco
+#+branch: feature/implement-the-seeded-books-have-no-purpose
+#+pr: 3003
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:17C335A5-1311-4FA4-B24F-04B1A7892AC5][Hotfix: the seeded books have no purpose]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give =ores_dq_books_artefact_tbl='s two new not-null columns the defaults
+their own model prose already promises, so the five book seeds insert
+without naming them and =compass db recreate= completes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:17C335A5-1311-4FA4-B24F-04B1A7892AC5][Hotfix: the seeded books have no purpose]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The generated artefact DDL carries =default 'Trading'= and =default 'None'=.
+- Regenerating the model reproduces the file: no hand-edited generated SQL.
+- =compass db recreate -y -k= exits 0 and stamps the schema fingerprint.
+
+* Plan
+
+The artefact column list under =* Artefact columns= in
+=projects/ores.refdata/modeling/ores.refdata.book.org= is hand-maintained and
+duplicates each column's SQL-side default. =is_sweepable= carries
+=:default: false= there; =book_purpose_type= and =ledger_feed_type= carried
+nothing, so =sql_schema_domain_entity_artefact_create.mustache= emitted them
+as bare =not null=.
+
+The defaults live in two different keys, and confusing them is what caused
+this. =:default:= is the SQL default the templates render as a DEFAULT
+clause; =:default_value:= is the C++ member initialiser. The book's *columns*
+carry =:default_value: "Trading"= (a string default, correctly quoted for
+C++), which is why the model read as if the default was already stated. Both
+columns are text, so =org_loader._column_node_to_dict= SQL-quotes the
+artefact-side =:default:= for us: the model writes the plain code, and the
+single quotes are the template's business. =:default: 'Trading'= is also
+accepted, and is the form =ores.refdata.currency.org= uses.
+
+So the fix is to mirror the defaults in the artefact list, regenerate
+=ores.sql.schema= for the book entity, and change nothing else. Fixing it in
+the model rather than in the five seeds keeps the seeds honest -- they insert
+a book, not a book plus two columns the database can already supply -- and it
+repairs the four ACME seeds without touching them.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Book seeds omitting both columns | 5 of 5 | =grep -c book_purpose_type= over =populate/testdata/testdata_books_artefact_populate.sql= and the four =populate/acme/acme_*_books_artefact_populate.sql= | =49f67f3647= |
+| Generated files changed | 2 | =git diff --stat= | =49f67f3647= |
+| Populate INSERTs the census still reports, after the fix | 6 | =python3 evidence/check_artefact_seeds.py .= | =49f67f3647= |
+| Of those, reachable by =compass db recreate= | 0 | as above, minus the trigger-filled columns and the WIRE-gate-ignored manual entry point | =49f67f3647= |
+| =compass db recreate -y -k= | exit 0 | bare command | =49f67f3647= |
+
+* Notes
+
+=compass db recreate -y -k= was run against this tree and exited 0, printing
+its full populate summary. That is the acceptance criterion met on the real
+artefact rather than on a proxy.
+
+A static check written to find this class of break -- a populate =INSERT= that
+omits a not-null, no-default column -- reports 597 hits naively, 10 once the
+columns a BEFORE INSERT trigger fills (=valid_from=, =valid_to=,
+=performed_by=, =modified_by=, ...) are set aside, and 0 for a recreate's
+reachable seeds once the check is made comment- and quote-aware. Two of the
+six surviving hits are trigger-filled after all (=version= on
+=scheduler_job_definitions=, =codename= on =parties=); one is a manual psql
+entry point the WIRE gate ignores (=ip2country_import.sql=, which inserts
+=(ip_range, country_code)= into a table whose =tenant_id= is not-null and has
+no default, and so cannot run as written); and the rest insert into tables
+whose =version= arrives from the same trigger machinery. The check is not
+landed with this fix -- it wants its own gate and its own story -- but it is
+what shows this break is alone, and the =ip2country= finding is recorded here
+so it is not lost.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| Rebuild the database from scratch | Written | =compass db recreate -y -k= exits 0 and stamps the fingerprint. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3003][#3003]] | [refdata] Give the seeded books their purpose and their ledger feed |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=compass db recreate -y -k= completes on this tree and stamps the schema
+fingerprint, which is the thing no checkout of =main= could do before. The
+change is two lines of model and the two DEFAULT clauses they render; the
+four ACME book seeds and the testdata seed are untouched and now insert as
+written.
+
+The diagnosis worth keeping is the two-key trap. =:default_value:= is the C++
+member initialiser and =:default:= is the SQL default, and the book stated
+the first while the generated table needed the second. The model read as
+though the default was already declared, so nothing looked missing -- the
+same silent shape that =test_quoted_scalar_default.py= guards from the other
+side.
+
+Two things fell out and are not fixed here. The seed census kept beside this
+task is not landed as a gate; a populate =INSERT= that omits a not-null,
+no-default column is exactly the break this task repairs, and CI cannot see
+it. And =populate/ip2country/ip2country_import.sql= cannot run as written: it
+inserts =(ip_range, country_code)= into a table whose =tenant_id= is
+not-null and has no default, and no gate reads it because =WIRE_001= lists it
+as a manual entry point. Both want their own story.

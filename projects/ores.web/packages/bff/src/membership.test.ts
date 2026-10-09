@@ -341,4 +341,114 @@ describe('membership routes', () => {
         expect(response.statusCode).toBeGreaterThanOrEqual(400);
         expect(response.body).toContain('changed since');
     });
+
+    it('answers the reporting shape with each person\u2019s manager and depth', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.get_reporting_tree': {
+                result: { outcome: 'ok' },
+                unrooted: 0,
+                nodes: [
+                    {
+                        account_id: PRIYA,
+                        username: 'priya',
+                        full_name: 'Priya Raman',
+                        job_title: 'Head of Desk',
+                        reports_to_account_id: '',
+                        depth: 0,
+                        direct_reports: 1,
+                    },
+                    {
+                        account_id: UK,
+                        username: 'uk.person',
+                        full_name: 'UK Person',
+                        job_title: 'Analyst',
+                        reports_to_account_id: PRIYA,
+                        depth: 1,
+                        direct_reports: 0,
+                    },
+                ],
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/reporting-tree',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(calls).toEqual([
+            { subject: 'iam.v1.ops.get_reporting_tree', body: { root_account_id: '' } },
+        ]);
+        expect(response.json()).toEqual({
+            unrooted: 0,
+            nodes: [
+                {
+                    accountId: PRIYA,
+                    username: 'priya',
+                    fullName: 'Priya Raman',
+                    jobTitle: 'Head of Desk',
+                    reportsToAccountId: null,
+                    depth: 0,
+                    directReports: 1,
+                },
+                {
+                    accountId: UK,
+                    username: 'uk.person',
+                    fullName: 'UK Person',
+                    jobTitle: 'Analyst',
+                    reportsToAccountId: PRIYA,
+                    depth: 1,
+                    directReports: 0,
+                },
+            ],
+        });
+    });
+
+    it('asks for one branch when a root is named, and states the unrooted count', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.get_reporting_tree': {
+                result: { outcome: 'ok' },
+                unrooted: 1,
+                nodes: [
+                    {
+                        account_id: UK,
+                        username: 'uk.person',
+                        full_name: 'UK Person',
+                        job_title: 'Analyst',
+                        reports_to_account_id: '',
+                        depth: -1,
+                        direct_reports: 0,
+                    },
+                ],
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/reporting-tree?root=${UK}`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(calls).toEqual([
+            { subject: 'iam.v1.ops.get_reporting_tree', body: { root_account_id: UK } },
+        ]);
+        expect(response.json()).toEqual({
+            unrooted: 1,
+            nodes: [
+                {
+                    accountId: UK,
+                    username: 'uk.person',
+                    fullName: 'UK Person',
+                    jobTitle: 'Analyst',
+                    reportsToAccountId: null,
+                    depth: -1,
+                    directReports: 0,
+                },
+            ],
+        });
+    });
 });

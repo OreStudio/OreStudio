@@ -80,6 +80,7 @@ const fr: SourceCatalogue = {
             roles: 'Rôles',
             refdata: 'Données de référence',
             access: 'Mes accès',
+            whereIWork: 'Où je travaille',
             profile: 'Mon profil',
         },
     },
@@ -120,6 +121,7 @@ const fr: SourceCatalogue = {
             jobTitle: 'Fonction',
             title: 'Personnes',
             lead: 'Qui peut se connecter à ce locataire, et les rôles de chacun.',
+            leadNoRoles: 'Qui peut se connecter à ce locataire.',
             person: 'Personne',
             roles: 'Rôles',
             noRole: 'Aucun rôle',
@@ -130,6 +132,7 @@ const fr: SourceCatalogue = {
                 contact: 'Contact',
                 roles: 'Rôles',
                 signIns: 'Connexions',
+                timeline: 'Chronologie',
             },
             notFound: 'Aucun compte n’a cet identifiant.',
             give: 'Accorder un rôle',
@@ -1510,6 +1513,26 @@ const fr: SourceCatalogue = {
         valueDiff: 'Différence',
     },
 
+    timeline: {
+        empty: 'Rien ne lui est encore arrivé.',
+        field: 'Champ',
+        notRevertible: 'Cette entrée relate un fait, il n’y a donc rien à rétablir.',
+        changeNotOffered: 'Rétablir un champ modifié n’est pas proposé ici.',
+        kind: {
+            raised: 'Créé',
+            changed: 'Modifié',
+            asked: 'Rôle demandé',
+            told: 'Notifié',
+            decided: 'Répondu',
+            granted: 'Accordé',
+            signed_in: 'Connexion',
+            sign_in_failed: 'Connexion refusée',
+            signed_out: 'Déconnexion',
+            refreshed: 'Session renouvelée',
+            noticed: 'Enregistré',
+        },
+    },
+
     validation: {
         required: 'Ce champ est obligatoire.',
     },
@@ -2166,6 +2189,66 @@ const fr: SourceCatalogue = {
             conventionHistory: 'Convention',
             removeWarning:
                 'Supprimer la paire supprime aussi sa convention. Rien ne vérifie si des opérations utilisent encore la paire.',
+        },
+    },
+
+    membership: {
+        where: {
+            title: 'Où je travaille',
+            lead: 'Les parties dans lesquelles votre compte travaille, dans {tenant}.',
+            acting: 'Vous agissez pour',
+            actingUnknown:
+                'La session agit pour une partie que cette liste ne contient pas. Reconnectez-vous pour renouveler la session.',
+            actingNote:
+                'Tous les écrans lisent les données de cette partie jusqu’à ce que vous changiez.',
+            parties: 'Vos parties',
+            oneParty:
+                'Votre compte travaille dans une seule partie, il n’y a donc rien à changer. Chaque compte doit travailler dans au moins une partie : un compte sans partie est refusé à la connexion.',
+            code: 'Code',
+            where: 'Lieu',
+            category: 'Catégorie',
+            unnamed: 'Une partie que cette version ne peut pas nommer',
+            switch: 'Basculer vers cette partie',
+            setDefault: 'Définir par défaut',
+            clearDefault: 'Effacer le défaut',
+            actingTag: 'Agit pour',
+            defaultTag: 'Par défaut',
+            thisIsIt: 'C’est la partie pour laquelle votre session agit.',
+            footnote:
+                'Le basculement émet un nouveau jeton de connexion : tous les écrans lisent la partie choisie. Le défaut est ce que la connexion rapide choisit la prochaine fois.',
+        },
+        reporting: {
+            title: 'Lignes hiérarchiques',
+            lead: 'Qui rend compte à qui, et la seule ligne que cet écran modifie.',
+            tree: 'Arborescence hiérarchique',
+            people: '{count} personnes',
+            reports: '{count} rattachés',
+            expandAll: 'Tout déplier',
+            collapseAll: 'Tout replier',
+            expand: 'Déplier',
+            collapse: 'Replier',
+            pickSomeone: 'Choisissez une personne dans l’arborescence pour lire sa ligne.',
+            reportsTo: 'Rend compte à',
+            noManager: 'Aucun responsable (racine)',
+            directReports: 'Rattachements directs',
+            depth: 'Profondeur',
+            reachesNoRoot: 'N’atteint aucune racine',
+            manager: 'Responsable',
+            reason: 'Motif',
+            commentary: 'Note',
+            save: 'Enregistrer la ligne',
+            clear: 'Effacer la ligne',
+            noVersion:
+                'Le compte n’a pas pu être lu : l’écriture n’indique donc aucune version.',
+            unrooted:
+                '{count} personnes n’atteignent aucune racine : leur responsable a disparu, ou la ligne qui les porte est rompue. Elles sont laissées hors de l’arborescence plutôt que dessinées comme racines.',
+            gaps: 'Ce que cet écran ne peut pas faire',
+            gapOffice:
+                'Le bureau de chaque personne n’est pas lisible ici : la lecture des parties de compte porte un identifiant et aucun nom.',
+            gapApproval:
+                'Une demande de changement de ligne est une proposition que valide le supérieur ou l’administrateur du locataire, et rien dans la plateforme ne porte une telle approbation : la ligne ne bouge pas.',
+            gapHistory:
+                'La ligne n’a pas d’historique sur cet écran. Le compte est versionné, donc une ligne passée est récupérable, et cet écran n’en montre rien.',
         },
     },
 

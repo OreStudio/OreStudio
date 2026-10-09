@@ -194,6 +194,9 @@ describe('A person', () => {
         return render(
             (client) => {
                 client.setQueryData(['account', 'daniel'], daniel);
+                client.setQueryData(['my-access'], {
+                    roles: [held(ADMIN, 'TenantAdmin', ['*'])],
+                });
                 client.setQueryData(['account-access', daniel.id], {
                     roles: [held(TRADING, 'Trading', ['refdata::currencies:read'])],
                 });
@@ -203,8 +206,49 @@ describe('A person', () => {
         );
     }
 
+    /**
+     * A member reads who a colleague is and nothing else about them. The tabs
+     * that read a colleague's grants, address and sign-ins are not offered,
+     * because each of those reads is a permission they do not hold and a tab
+     * that answers with a refusal is worse than an absent tab.
+     */
+    function member(me: string, path = '/people/daniel'): string {
+        return render(
+            (client) => {
+                client.setQueryData(['account', 'daniel'], daniel);
+                client.setQueryData(['my-access'], {
+                    roles: [held(TRADING, 'Trading', ['refdata::currencies:read'])],
+                });
+            },
+            path,
+            <Route path="/people/:username" element={<PersonPage me={me} />} />,
+        );
+    }
+
+    it('offers a member only what a member may read', () => {
+        const html = member('priya');
+
+        expect(html).toContain('>Details<');
+        expect(html).toContain('>Timeline<');
+        expect(html).not.toMatch(/>Contact</);
+        expect(html).not.toMatch(/>Roles</);
+        expect(html).not.toMatch(/>Sign-ins</);
+    });
+
+    /**
+     * A person's own contact record is read through their session, so it needs
+     * no permission and the empty record is a form waiting to be filled. Hiding
+     * it because they may not read a colleague's would take away the only place
+     * they can put their own address.
+     */
+    it("offers a member their own contact record", () => {
+        const html = member('daniel', '/people/daniel');
+
+        expect(html).toContain('>Contact<');
+    });
+
     it('marks their details read only for a viewer who may not change them', () => {
-        const html = person('priya', '/people/daniel');
+        const html = member('priya', '/people/daniel');
         expect(html).toContain('Read only');
         expect(html).not.toContain('iam::');
     });

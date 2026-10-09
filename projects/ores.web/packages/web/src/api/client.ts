@@ -30,6 +30,7 @@ import {
     imageUploadPolicyViewSchema,
     imageUploadViewSchema,
     myPartiesSchema,
+    reportingTreeSchema,
     type AccountContactInformation,
     type AccountSignIns,
     type AccountWriteView,
@@ -40,6 +41,7 @@ import {
     type ImageUploadView,
     type MyParties,
     type ReportingLineWrite,
+    type ReportingTree,
     type ProfileWrite,
     permissionEntrySchema,
     roleSummarySchema,
@@ -52,10 +54,12 @@ import {
     inboxRequestQueueSchema,
     inboxRequestStorySchema,
     inboxRequestViewSchema,
+    timelineSchema,
     type BadgePresentation,
     type ClassificationList,
     type ClassificationRow,
     type HistoryVersion,
+    type Timeline,
     type InboxNotificationView,
     type InboxPage,
     type InboxRequestQueue,
@@ -539,6 +543,17 @@ export const api = {
     },
 
     /**
+     * The tenant's reporting shape, or one account's branch of it. The server
+     * needs iam::accounts:read.
+     */
+    async reportingTree(rootAccountId = ''): Promise<ReportingTree> {
+        const query = rootAccountId === '' ? '' : `?root=${encodeURIComponent(rootAccountId)}`;
+        return reportingTreeSchema.parse(
+            await request(`/api/reporting-tree${query}`, { method: 'GET' }),
+        );
+    },
+
+    /**
      * Sets or clears the party quick sign-in uses. An empty id clears it, and
      * the server refuses a party the account does not work in.
      */
@@ -992,6 +1007,19 @@ export const api = {
         return z
             .object({ versions: z.array(historyVersionSchema) })
             .parse(await request(`/api/history?${query.toString()}`, { method: 'GET' })).versions;
+    },
+
+    /**
+     * One subject's whole story, newest first.
+     *
+     * The subject is what a screen knows: a person it is looking at, or a
+     * request it opened. Which rows make up the story is the server's to
+     * decide, so the browser never names an entity type here.
+     */
+    async timeline(subject: 'person' | 'request', id: string): Promise<Timeline> {
+        const query = new URLSearchParams({ subject, id });
+        const answer = await request(`/api/timeline?${query.toString()}`, { method: 'GET' });
+        return timelineSchema.parse(answer);
     },
 
     /** The tenant's roles, each with the permissions it grants. */

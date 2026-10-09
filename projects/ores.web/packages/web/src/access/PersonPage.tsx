@@ -34,6 +34,8 @@ import { SignInsPanel } from './SignIns.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { ContactTab, IdentityTab } from './PersonForms.js';
+import { Timeline } from '../timeline/Timeline.js';
+import { useHolds } from './holds.js';
 import { RecordHeader } from '../refdata/records.js';
 import { useTabs } from '../ui/Tabs.js';
 
@@ -77,18 +79,55 @@ function Person({
     const queries = useQueryClient();
     const [giving, setGiving] = useState(false);
     const [taking, setTaking] = useState<HeldRole | null>(null);
+    /*
+     * Each tab reads something of its own, and each of those reads is its own
+     * permission. A member may open a colleague's page to see who they are,
+     * which is the account read, and may not read their grants, their address
+     * or their sign-ins. A tab the caller cannot read is not offered: showing a
+     * tab and then answering it with a refusal teaches them only that something
+     * is broken.
+     */
+    const holds = useHolds();
+    const mayReadRoles = holds('iam::roles:read');
+    const mayReadContact = holds('iam::account_contact_informations:read');
+    const mayReadSignIns = holds('iam::sessions:read');
+    /*
+     * Your own contact record is read and written through the session, not
+     * through your account id, so it needs no permission at all: a person who
+     * may read no colleague's address still owns their own, and an empty record
+     * is a form waiting to be filled rather than an absence.
+     */
+    const maySeeContact = mayReadContact || self;
     const access = useQuery({
         queryKey: ['account-access', account.id],
         queryFn: () => api.accountAccess(account.id),
+        enabled: mayReadRoles,
     });
     const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
+    const story = useQuery({
+        queryKey: ['timeline', 'person', account.username],
+        queryFn: () => api.timeline('person', account.username),
+    });
     const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
     const name = displayName(account, account.username);
-    const refresh = () => queries.invalidateQueries({ queryKey: ['account-access', account.id] });
+    const refresh = () => {
+        void queries.invalidateQueries({ queryKey: ['account-access', account.id] });
+        /*
+         * A grant taken away is read back as a closed one, which the stream
+         * does not carry, so the story is read again rather than patched.
+         */
+        void queries.invalidateQueries({ queryKey: ['timeline', 'person', account.username] });
+    };
 
     const { tab, bar } = useTabs({
         label: name,
-        tabs: ['details', 'contact', 'roles', 'signIns'],
+        tabs: [
+            'details',
+            ...(maySeeContact ? ['contact'] : []),
+            ...(mayReadRoles ? ['roles'] : []),
+            ...(mayReadSignIns ? ['signIns'] : []),
+            'timeline',
+        ],
         titleOf: (part) => t(`access.person.tabs.${part}`),
     });
     const roles = access.data?.roles ?? [];
@@ -126,6 +165,39 @@ function Person({
                     queryKey={['account-sign-ins', account.username]}
                     read={(page) => api.accountSignIns(account.username, page)}
                 />
+            )}
+            {tab === 'timeline' && (
+                <>
+                    {story.isPending && (
+                        <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                    )}
+                    {story.isError && <Notice tone="error">{story.error.message}</Notice>}
+                    {story.data !== undefined && (
+                        <Timeline
+                            timeline={story.data}
+                            /*
+                             * A grant is the one entry on this stream a screen
+                             * can act on: taking a role away closes the grant,
+                             * which is the write the roles tab already makes.
+                             * A field change has no revert offered here, and
+                             * the stream says so rather than showing a dead
+                             * control.
+                             */
+                            renderActions={(event) => {
+                                if (event.kind !== 'granted') return undefined;
+                                const held = roles.find((role) => role.roleId === event.entityId);
+                                if (held === undefined) return undefined;
+                                return (
+                                    <div className="mt-2 flex justify-end">
+                                        <Button size="sm" onClick={() => setTaking(held)}>
+                                            {t('access.person.takeAway')}
+                                        </Button>
+                                    </div>
+                                );
+                            }}
+                        />
+                    )}
+                </>
             )}
             {tab === 'roles' && (
                 <div className="space-y-4">

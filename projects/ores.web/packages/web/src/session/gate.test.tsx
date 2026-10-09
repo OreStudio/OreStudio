@@ -137,6 +137,7 @@ function render(path: string, gate: BootstrapState, session: SessionState): stri
                         journeyInProgress={false}
                         onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
                         onChooseParty={async () => undefined}
+                        onSwitchParty={async () => undefined}
                         onSignOut={() => undefined}
                         onRetryBootstrap={() => undefined}
                     />

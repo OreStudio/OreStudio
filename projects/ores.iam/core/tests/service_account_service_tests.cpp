@@ -50,6 +50,40 @@ namespace {
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[service]");
 
+/** The depth the tree states for one account, or a value no depth can be. */
+int tree_depth(const ores::iam::messaging::get_reporting_tree_response& tree,
+               const boost::uuids::uuid& id) {
+    const auto wanted = boost::uuids::to_string(id);
+    for (const auto& node : tree.nodes) {
+        if (node.account_id == wanted) {
+            return node.depth;
+        }
+    }
+    return -100;
+}
+
+/** How many report directly to one account, as the tree states it. */
+int tree_direct_reports(const ores::iam::messaging::get_reporting_tree_response& tree,
+                        const boost::uuids::uuid& id) {
+    const auto wanted = boost::uuids::to_string(id);
+    for (const auto& node : tree.nodes) {
+        if (node.account_id == wanted) {
+            return node.direct_reports;
+        }
+    }
+    return -100;
+}
+
+/** Sets one account's manager through the narrow write, which must succeed. */
+void set_manager(ores::iam::service::account_operations_service& sut,
+                 const boost::uuids::uuid& account_id,
+                 const boost::uuids::uuid& manager_id) {
+    ores::iam::messaging::set_reporting_line_request req;
+    req.account_id = boost::uuids::to_string(account_id);
+    req.reports_to_account_id = boost::uuids::to_string(manager_id);
+    REQUIRE(sut.set_reporting_line(req).result.outcome == ores::utility::domain::outcome::ok);
+}
+
 }
 
 using namespace ores::iam;
@@ -611,6 +645,118 @@ TEST_CASE("set_reporting_line_clears_the_line_and_refuses_self_reporting", tags)
     const auto self = sut.set_reporting_line(req);
     CHECK(self.result.outcome == ores::utility::domain::outcome::invalid);
     CHECK(self.result.code == "self_reporting");
+}
+
+TEST_CASE("get_reporting_tree_answers_depth_and_the_direct_reports", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const std::string password = faker::internet::password();
+    const auto e = [&] {
+        const auto generated = generate_synthetic_account(ctx);
+        return sut.create_account(
+            generated.username, generated.email, password, generated.modified_by);
+    };
+    const auto boss = e();
+    const auto first = e();
+    const auto second = e();
+    const auto junior = e();
+
+    set_manager(sut, first.id, boss.id);
+    set_manager(sut, second.id, boss.id);
+    set_manager(sut, junior.id, first.id);
+
+    ores::iam::messaging::get_reporting_tree_request req;
+    const auto tree = sut.get_reporting_tree(req);
+
+    REQUIRE(tree.result.outcome == ores::utility::domain::outcome::ok);
+    CHECK(tree_depth(tree, boss.id) == 0);
+    CHECK(tree_depth(tree, first.id) == 1);
+    CHECK(tree_depth(tree, second.id) == 1);
+    CHECK(tree_depth(tree, junior.id) == 2);
+    CHECK(tree_direct_reports(tree, boss.id) == 2);
+    CHECK(tree_direct_reports(tree, first.id) == 1);
+    CHECK(tree_direct_reports(tree, junior.id) == 0);
+
+    // Shallowest first, so a reader meets the shape in the order it is drawn.
+    // The unrooted rows come last by design, so the run stops at the first.
+    for (std::size_t i = 1; i < tree.nodes.size(); ++i) {
+        if (tree.nodes[i].depth < 0) {
+            break;
+        }
+        CHECK(tree.nodes[i - 1].depth <= tree.nodes[i].depth);
+    }
+}
+
+TEST_CASE("get_reporting_tree_answers_one_branch_from_a_stated_root", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const std::string password = faker::internet::password();
+    const auto e = [&] {
+        const auto generated = generate_synthetic_account(ctx);
+        return sut.create_account(
+            generated.username, generated.email, password, generated.modified_by);
+    };
+    const auto boss = e();
+    const auto first = e();
+    const auto other = e();
+    const auto junior = e();
+
+    set_manager(sut, first.id, boss.id);
+    set_manager(sut, other.id, boss.id);
+    set_manager(sut, junior.id, first.id);
+
+    ores::iam::messaging::get_reporting_tree_request req;
+    req.root_account_id = boost::uuids::to_string(first.id);
+    const auto tree = sut.get_reporting_tree(req);
+
+    REQUIRE(tree.result.outcome == ores::utility::domain::outcome::ok);
+    REQUIRE(tree.nodes.size() == 2);
+    CHECK(tree_depth(tree, first.id) == 0);
+    CHECK(tree_depth(tree, junior.id) == 1);
+    // The branch is the branch: what sits above the root, and what belongs to
+    // no root elsewhere in the tenant, is not part of this answer.
+    CHECK(tree_depth(tree, boss.id) == -100);
+    CHECK(tree_depth(tree, other.id) == -100);
+}
+
+TEST_CASE("get_reporting_tree_counts_an_account_whose_manager_is_gone", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const std::string password = faker::internet::password();
+    const auto e = [&] {
+        const auto generated = generate_synthetic_account(ctx);
+        return sut.create_account(
+            generated.username, generated.email, password, generated.modified_by);
+    };
+    const auto boss = e();
+    const auto report = e();
+    set_manager(sut, report.id, boss.id);
+
+    // The manager leaves. The line still names them, and the read states that
+    // the person reaches no root rather than drawing them as one.
+    repository::account_repository accounts;
+    accounts.remove(h.context(), boost::uuids::to_string(boss.id));
+
+    ores::iam::messaging::get_reporting_tree_request req;
+    const auto tree = sut.get_reporting_tree(req);
+
+    REQUIRE(tree.result.outcome == ores::utility::domain::outcome::ok);
+    // The suite shares a tenant, so the total is a floor rather than a count:
+    // what matters is that the person with the vanished manager is in it.
+    CHECK(tree.unrooted >= 1);
+    CHECK(tree_depth(tree, report.id) == -1);
 }
 
 TEST_CASE("a_reporting_line_may_not_close_a_cycle", tags) {

@@ -198,6 +198,13 @@ void account_operations_operations_commands::register_commands(cli::Menu& root_m
         "<change_reason_code> <change_commentary>");
 
     menu->Insert(
+        "get-reporting-tree",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_reporting_tree(std::ref(out), std::ref(session), std::move(args));
+        },
+        "get-reporting-tree <root_account_id>");
+
+    menu->Insert(
         "attach-account-pictures",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_attach_account_pictures(std::ref(out), std::ref(session), std::move(args));
@@ -1064,6 +1071,58 @@ void account_operations_operations_commands::process_set_reporting_line(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::iam::messaging::set_reporting_line_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void account_operations_operations_commands::process_get_reporting_tree(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-reporting-tree request.";
+
+    using request_type = ores::iam::messaging::get_reporting_tree_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-reporting-tree." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 1;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.root_account_id = parsed->positionals[next++];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::get_reporting_tree_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::get_reporting_tree_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::get_reporting_tree_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

@@ -85,6 +85,7 @@ const pt: SourceCatalogue = {
             roles: 'Papéis',
             refdata: 'Dados de referência',
             access: 'O meu acesso',
+            whereIWork: 'Onde trabalho',
             profile: 'O meu perfil',
         },
     },
@@ -125,6 +126,7 @@ const pt: SourceCatalogue = {
             jobTitle: 'Cargo',
             title: 'Pessoas',
             lead: 'Quem pode iniciar sessão neste inquilino, e os papéis de cada um.',
+            leadNoRoles: 'Quem pode iniciar sessão neste inquilino.',
             person: 'Pessoa',
             roles: 'Papéis',
             noRole: 'Sem papel',
@@ -135,6 +137,7 @@ const pt: SourceCatalogue = {
                 contact: 'Contacto',
                 roles: 'Funções',
                 signIns: 'Entradas',
+                timeline: 'Cronologia',
             },
             notFound: 'Nenhuma conta tem este nome de utilizador.',
             give: 'Dar um papel',
@@ -1503,6 +1506,26 @@ const pt: SourceCatalogue = {
         valueDiff: 'Diferença',
     },
 
+    timeline: {
+        empty: 'Ainda nada lhe aconteceu.',
+        field: 'Campo',
+        notRevertible: 'Esta entrada regista um facto, por isso não há nada a reverter.',
+        changeNotOffered: 'Repor um campo alterado não é oferecido aqui.',
+        kind: {
+            raised: 'Criado',
+            changed: 'Alterado',
+            asked: 'Papel pedido',
+            told: 'Notificado',
+            decided: 'Respondido',
+            granted: 'Concedido',
+            signed_in: 'Sessão iniciada',
+            sign_in_failed: 'Sessão recusada',
+            signed_out: 'Sessão terminada',
+            refreshed: 'Sessão renovada',
+            noticed: 'Registado',
+        },
+    },
+
     validation: {
         required: 'Este campo é obrigatório.',
     },
@@ -2151,6 +2174,65 @@ const pt: SourceCatalogue = {
             conventionHistory: 'Convenção',
             removeWarning:
                 'Remover o par remove também a sua convenção. Nada verifica se há operações que ainda usem o par.',
+        },
+    },
+
+    membership: {
+        where: {
+            title: 'Onde trabalho',
+            lead: 'As partes em que a sua conta trabalha, em {tenant}.',
+            acting: 'Está a atuar por',
+            actingUnknown:
+                'A sessão atua por uma parte que esta lista não contém. Inicie sessão de novo para renovar a sessão.',
+            actingNote: 'Todos os ecrãs leem os dados desta parte até mudar.',
+            parties: 'As suas partes',
+            oneParty:
+                'A sua conta trabalha numa única parte, por isso não há nada para mudar. Cada conta tem de trabalhar em pelo menos uma parte: uma conta sem parte é recusada no início de sessão.',
+            code: 'Código',
+            where: 'Local',
+            category: 'Categoria',
+            unnamed: 'Uma parte que esta versão não consegue nomear',
+            switch: 'Mudar para esta parte',
+            setDefault: 'Definir como predefinida',
+            clearDefault: 'Limpar a predefinição',
+            actingTag: 'A atuar por',
+            defaultTag: 'Predefinida',
+            thisIsIt: 'É a parte por que a sua sessão está a atuar.',
+            footnote:
+                'A mudança emite um novo token de sessão, por isso todos os ecrãs leem a parte que escolheu. A predefinição é o que o início de sessão rápido escolhe da próxima vez.',
+        },
+        reporting: {
+            title: 'Linhas de reporte',
+            lead: 'Quem reporta a quem, e a única linha que este ecrã altera.',
+            tree: 'Árvore de reporte',
+            people: '{count} pessoas',
+            reports: '{count} a reportar',
+            expandAll: 'Expandir tudo',
+            collapseAll: 'Fechar tudo',
+            expand: 'Expandir',
+            collapse: 'Fechar',
+            pickSomeone: 'Escolha uma pessoa na árvore para ler a sua linha.',
+            reportsTo: 'Reporta a',
+            noManager: 'Sem gestor (raiz)',
+            directReports: 'Reportes diretos',
+            depth: 'Profundidade',
+            reachesNoRoot: 'Não alcança nenhuma raiz',
+            manager: 'Gestor',
+            reason: 'Motivo',
+            commentary: 'Nota',
+            save: 'Guardar a linha',
+            clear: 'Limpar a linha',
+            noVersion:
+                'A conta não pôde ser lida, por isso a escrita não indica versão.',
+            unrooted:
+                '{count} pessoas não alcançam nenhuma raiz: o gestor desapareceu, ou a linha que as sustenta está quebrada. Ficam fora da árvore em vez de serem desenhadas como raízes.',
+            gaps: 'O que este ecrã não pode fazer',
+            gapOffice:
+                'O escritório de cada pessoa não é legível aqui: a leitura das partes da conta traz um identificador e nenhum nome.',
+            gapApproval:
+                'Um pedido de alteração da linha é uma proposta que o superior ou o administrador do locatário aprova, e nada na plataforma guarda essa aprovação, por isso a linha não muda.',
+            gapHistory:
+                'A linha não tem histórico neste ecrã. A conta é versionada, por isso uma linha passada é recuperável, e este ecrã não mostra nada disso.',
         },
     },
 

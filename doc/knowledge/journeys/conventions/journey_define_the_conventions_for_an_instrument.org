@@ -213,7 +213,7 @@ either.
 | Author its terms | Fill the floating index picker | =refdata.v1.floating_index_types.list= | exists |
 | Author its terms | Fill the payment frequency picker | =refdata.v1.payment_frequencies.list= | exists |
 | Author its terms | Fill the currency picker | =refdata.v1.currencies.list= | exists |
-| Author its terms | Fill the sub-period coupon type picker | =refdata.v1.sub_periods_coupon_types.list= | missing |
+| Author its terms | Fill the sub-period coupon type picker | =refdata.v1.sub_periods_coupon_types.list= | exists |
 | Author its terms | Read every version with its diff | =refdata.v1.history.get= (=entity_type= = ores.refdata.<entity>=) | partial |
 | Review | Nothing is written until the person confirms | none | n/a |
 | Save | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
@@ -254,8 +254,10 @@ to name the offending field itself. See /What is missing/.
    per convention entity, so nothing lets a client ask "which convention serves
    this instrument family". The mapping is the screen's. The candidate is a
    refdata list that names the family and the entity it resolves to, so the
-   journey and any other client agree. Until then the list is authored once, in
-   the application.
+   journey and any other client agree. The journey already writes the mapping
+   out in full, in the table under /Choose the instrument/, so the rows a
+   server-side list would carry are known and only the list is missing. Until
+   then it is authored once, in the application.
 5. *No convention field validates its term.* A convention's term columns are
    plain text, and the models declare no foreign key and no lookup check on
    them. The server therefore stores any text, and a term that references a
@@ -263,16 +265,13 @@ to name the offending field itself. See /What is missing/.
    is the same existence check the other refdata writes make. Until then the
    refusal in /Steps/ describes a check the server does not make, and the screen
    offers only codes it has read from the lists.
-6. *The sub-period coupon type list does not exist.* The prototype draws the
-   field as a pick from =refdata.v1.sub_periods_coupon_types.list=, and no such
-   list is in the tree: =sub_periods_coupon_type= is a text column on the swap
-   and tenor basis swap conventions, whose own description names its two values,
-   =Compounding= and =Averaging=. The candidate is to author the list, as the
-   other term lists were authored, so the value is a pick like its neighbours and
-   not a free text. Until then the screen offers the two values the model's own
-   description names.
-7. *Only a tenant administrator can run this journey.* No role below
+6. *Only a tenant administrator can run this journey.* No role below
    =TenantAdmin= holds these permissions.
+
+The sub-periods coupon type list this section used to carry is built:
+=refdata.v1.sub_periods_coupon_types.list= exists, seeded with the two values
+the swap and tenor basis swap models' own column descriptions name, so the pick
+is a pick and not free text.
 
 ** The workspace note does not apply
 

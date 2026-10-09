@@ -30,6 +30,7 @@ import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
 import { registerClassificationRoutes } from './classifications.js';
 import { registerAuditRoutes } from './audit.js';
+import { registerTimelineRoutes } from './timeline.js';
 import { registerInboxRoutes } from './inbox.js';
 import { registerOperationsRoutes } from './operations.js';
 import { registerRecordRoutes } from './records.js';
@@ -52,7 +53,9 @@ import {
     removeTenant,
     accountAccessSchema,
     accountSchema,
+    readReportingTree,
     reportingLineRequestSchema,
+    reportingTreeSchema,
     setReportingLine,
     deleteRole,
     giveRole,
@@ -1086,9 +1089,17 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 'A reportsToAccountId is required. Send an empty string to clear the line.',
             );
         }
-        return accountSchema.parse(
-            await setReportingLine(session.client, accountId, parsed.data),
-        );
+        return accountSchema.parse(await setReportingLine(session.client, accountId, parsed.data));
+    });
+
+    /**
+     * The tenant's reporting shape in one read, or one account's branch of it
+     * when a root is named. The server needs iam::accounts:read.
+     */
+    server.get('/api/reporting-tree', async (request) => {
+        const session = requireSession(request);
+        const { root } = request.query as { root?: string };
+        return reportingTreeSchema.parse(await readReportingTree(session.client, root ?? ''));
     });
 
     /** The roles one account holds. The server allows it to a holder of iam::roles:read. */
@@ -2370,6 +2381,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
     registerAuditRoutes(server, requireSession);
+    registerTimelineRoutes(server, requireSession);
     registerOperationsRoutes(
         server,
         requireSession,

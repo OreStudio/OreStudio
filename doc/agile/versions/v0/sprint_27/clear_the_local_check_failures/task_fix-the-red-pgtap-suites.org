@@ -8,7 +8,7 @@
 #+filetags: :clear_the_local_check_failures:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/fix-the-red-pgtap-suites
-#+pr:
+#+pr: 2975
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -126,7 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2975][#2975]] | [sql] Repair and modernise the red pgTAP suites |
 
 * Review
 

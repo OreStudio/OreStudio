@@ -52,9 +52,10 @@ begin
     insert into ores_dq_books_artefact_tbl (
         dataset_id, tenant_id, id, version, name,
         parent_portfolio_id, functional_currency, gl_account_ref, cost_center,
-        book_status, regulatory_book_type, is_sweepable, rates_centre_code
+        book_status, regulatory_book_type, is_sweepable, rates_centre_code,
+        book_purpose_type, ledger_feed_type
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'dc895200-ea7f-557d-b23b-bbde41a848bd', 0, 'Group Intercompany Loans', '05e93bbe-2a59-5432-8a4d-43b26d3d33cf', 'GBP', 'GL-TREAS-001', 'CC-GROUP-TREASURY', 'Active', 'Banking', false, 'GBLO'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '22461eee-0110-53cb-bac0-d3dec0225487', 0, 'Group FX Hedges', '05e93bbe-2a59-5432-8a4d-43b26d3d33cf', 'GBP', 'GL-TREAS-002', 'CC-GROUP-TREASURY', 'Active', 'Banking', false, 'GBLO');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'dc895200-ea7f-557d-b23b-bbde41a848bd', 0, 'Group Intercompany Loans', '05e93bbe-2a59-5432-8a4d-43b26d3d33cf', 'GBP', 'GL-TREAS-001', 'CC-GROUP-TREASURY', 'Active', 'Banking', false, 'GBLO', 'Trading', 'None'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '22461eee-0110-53cb-bac0-d3dec0225487', 0, 'Group FX Hedges', '05e93bbe-2a59-5432-8a4d-43b26d3d33cf', 'GBP', 'GL-TREAS-002', 'CC-GROUP-TREASURY', 'Active', 'Banking', false, 'GBLO', 'Trading', 'None');
 end $$;

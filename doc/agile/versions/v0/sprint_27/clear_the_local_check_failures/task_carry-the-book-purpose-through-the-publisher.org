@@ -8,7 +8,7 @@
 #+filetags: :clear_the_local_check_failures:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/carry-the-book-purpose-through-the-publisher
-#+pr:
+#+pr: 3013
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -26,11 +26,11 @@ book_purpose_type and ledger_feed_type became non-nullable on the book, the arte
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3013][#3013]] | [refdata] Carry the book's purpose and ledger feed through the publisher |
 
 * Review
 

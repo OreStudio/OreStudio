@@ -19,22 +19,7 @@
  *
  */
 
-import {
-    ArrowLeftRight,
-    Building2,
-    Database,
-    GitBranch,
-    KeyRound,
-    LifeBuoy,
-    LineChart,
-    Lock,
-    LogIn,
-    PieChart,
-    Plus,
-    ShieldCheck,
-    TrendingUp,
-    Users,
-} from 'lucide-react';
+import { type IconName } from '../ui/Icon.js';
 import { useHolds } from '../access/holds.js';
 import { displayName } from '../access/names.js';
 import { useQuery } from '@tanstack/react-query';
@@ -53,7 +38,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
 import { PaintedValue } from './TenantParts.js';
-import { Tiles, type Tile } from '../ui/Tiles.js';
+import { Tiles, TilesSection, type Tile } from '../ui/Tiles.js';
 
 /**
  * Where a signed-in person lands.
@@ -382,62 +367,64 @@ function TenantHome({
             title: t('home.tenant.parties'),
             body: t('home.tenant.partiesBody'),
             to: '/parties',
-            icon: Building2,
+            icon: 'party',
         },
         {
             title: t('home.tenant.people'),
             body: t('home.tenant.peopleBody'),
             to: '/people',
-            icon: Users,
+            icon: 'people',
         },
         {
             title: t('home.tenant.roles'),
             body: t('home.tenant.rolesBody'),
             to: '/roles',
-            icon: ShieldCheck,
+            icon: 'access',
         },
         {
             title: t('home.party.refdata'),
             body: t('home.party.refdataBody'),
             to: '/refdata',
-            icon: Database,
+            icon: 'database',
         },
         {
             title: t('home.tenant.newParty'),
             body: t('home.tenant.newPartyBody'),
             to: '/parties/new',
-            icon: Plus,
+            icon: 'add',
         },
         {
             title: t('home.tenant.rescue'),
             body: t('home.tenant.rescueBody'),
             to: '/rescue',
-            icon: LifeBuoy,
+            icon: 'unlock',
         },
         {
             title: t('home.tenant.audit'),
             body: t('home.tenant.auditBody'),
             to: '/audit',
-            icon: LogIn,
+            icon: 'record',
         },
         {
             title: t('home.tenant.versions'),
             body: t('home.tenant.versionsBody'),
             to: '/operations/versions',
-            icon: GitBranch,
+            icon: 'history',
         },
         {
             title: t('home.tenant.security'),
             body: t('home.tenant.securityBody'),
             to: '/security',
-            icon: Lock,
+            icon: 'locked',
         },
     ];
 
     return (
         <div className="space-y-6">
             <PageHeader title={tenantName} description={t('home.tenant.lead', { name })} />
-            <Tiles tiles={tiles} />
+            <TilesSection title={t('home.activeModules')} icon="apps">
+                <Tiles tiles={tiles} />
+            </TilesSection>
         </div>
     );
 }
@@ -451,12 +438,63 @@ function PartyHome({
 }): ReactNode {
     const { t } = useTranslation();
     const holds = useHolds();
-    const comingIcons = { marketdata: LineChart, trading: TrendingUp, reporting: PieChart };
+    const comingIcons: Record<'marketdata' | 'trading' | 'reporting', IconName> = {
+        marketdata: 'chart',
+        trading: 'trend',
+        reporting: 'document',
+    };
     const coming: Tile[] = (['marketdata', 'trading', 'reporting'] as const).map((area) => ({
         title: t(`home.party.${area}`),
         body: t(`home.party.${area}Body`),
         icon: comingIcons[area],
     }));
+
+    /*
+     * The places this person can go. The directory is offered only to somebody
+     * who may read accounts, so the run is built rather than written out.
+     */
+    const active: Tile[] = [
+        ...(holds('iam::accounts:read')
+            ? ([
+                  {
+                      title: t('home.tenant.people'),
+                      body: t('home.tenant.peopleBody'),
+                      to: '/people',
+                      icon: 'people',
+                  },
+              ] satisfies Tile[])
+            : []),
+        {
+            title: t('home.party.refdata'),
+            body: t('home.party.refdataBody'),
+            to: '/refdata',
+            icon: 'database',
+        },
+        {
+            title: t('home.party.security'),
+            body: t('home.party.securityBody'),
+            to: '/security',
+            icon: 'locked',
+        },
+        {
+            title: t('home.tenant.access'),
+            body: t('home.tenant.accessBody'),
+            to: '/access',
+            icon: 'person',
+        },
+        {
+            title: t('home.tenant.audit'),
+            body: t('home.tenant.auditBody'),
+            to: '/audit',
+            icon: 'record',
+        },
+        {
+            title: t('home.tenant.versions'),
+            body: t('home.tenant.versionsBody'),
+            to: '/operations/versions',
+            icon: 'history',
+        },
+    ];
 
     return (
         <div className="space-y-6">
@@ -464,52 +502,12 @@ function PartyHome({
                 title={t('home.welcome', { name })}
                 description={t('home.party.lead', { party: partyName })}
             />
-            <Tiles
-                tiles={[
-                    ...(holds('iam::accounts:read')
-                        ? [
-                              {
-                                  title: t('home.tenant.people'),
-                                  body: t('home.tenant.peopleBody'),
-                                  to: '/people',
-                                  icon: Users,
-                              },
-                          ]
-                        : []),
-                    {
-                        title: t('home.party.refdata'),
-                        body: t('home.party.refdataBody'),
-                        to: '/refdata',
-                        icon: Database,
-                    },
-                    {
-                        title: t('home.party.security'),
-                        body: t('home.party.securityBody'),
-                        to: '/security',
-                        icon: Lock,
-                    },
-                    {
-                        title: t('home.tenant.access'),
-                        body: t('home.tenant.accessBody'),
-                        to: '/access',
-                        icon: KeyRound,
-                    },
-                    {
-                        title: t('home.tenant.audit'),
-                        body: t('home.tenant.auditBody'),
-                        to: '/audit',
-                        icon: LogIn,
-                    },
-                    {
-                        title: t('home.tenant.versions'),
-                        body: t('home.tenant.versionsBody'),
-                        to: '/operations/versions',
-                        icon: GitBranch,
-                    },
-                ]}
-            />
-            <Notice tone="info">{t('home.party.note')}</Notice>
-            <Tiles tiles={coming} later={t('home.party.comingLater')} />
+            <TilesSection title={t('home.activeModules')} icon="apps">
+                <Tiles tiles={active} />
+            </TilesSection>
+            <TilesSection title={t('home.upcomingModules')} icon="chart">
+                <Tiles tiles={coming} later={t('home.party.comingLater')} />
+            </TilesSection>
         </div>
     );
 }

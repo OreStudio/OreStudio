@@ -19,7 +19,6 @@
  *
  */
 
-import { ArrowLeftRight, Briefcase, Calendar, Coins, Tags } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { PageHeader } from '../ui/Primitives.js';
@@ -28,10 +27,10 @@ import { Crumbs, classificationsPath } from './shared.js';
 
 /** The screens built, with their addresses. */
 const BUILT = [
-    { screen: 'calendars', to: '/refdata/calendars', icon: Calendar },
-    { screen: 'currencies', to: '/refdata/currencies', icon: Coins },
-    { screen: 'currencyPairs', to: '/refdata/currency-pairs', icon: ArrowLeftRight },
-    { screen: 'deskGroups', to: '/refdata/desk-groups', icon: Briefcase },
+    { screen: 'calendars', to: '/refdata/calendars', icon: 'calendar' },
+    { screen: 'currencies', to: '/refdata/currencies', icon: 'currency' },
+    { screen: 'currencyPairs', to: '/refdata/currency-pairs', icon: 'pairs' },
+    { screen: 'deskGroups', to: '/refdata/desk-groups', icon: 'desk' },
 ] as const;
 
 /**
@@ -58,7 +57,7 @@ export function RefdataPage(): ReactNode {
                         title: t('refdata.classifications.title'),
                         body: t('refdata.area.classificationsBody'),
                         to: classificationsPath(),
-                        icon: Tags,
+                        icon: 'classification',
                     },
                 ]}
             />

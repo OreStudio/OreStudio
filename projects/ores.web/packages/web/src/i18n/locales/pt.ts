@@ -903,6 +903,8 @@ const pt: SourceCatalogue = {
     },
 
     home: {
+        activeModules: 'Módulos ativos',
+        upcomingModules: 'Módulos futuros / Pré-visualização do roteiro',
         welcome: 'Bem-vindo, {name}',
         system: {
             lead: {
@@ -972,7 +974,6 @@ const pt: SourceCatalogue = {
         },
         party: {
             lead: 'A trabalhar para {party}',
-            note: 'Os ecrãs de trading ainda não fazem parte desta versão. As áreas abaixo mostram o que vem a seguir.',
             comingLater: 'Mais tarde',
             refdata: 'Dados de referência',
             refdataBody: 'Moedas, calendários, convenções e as contrapartes com quem negoceia.',

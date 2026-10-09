@@ -21,6 +21,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it } from 'vitest';
+import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { Account } from '@ores/wire-protocol/browser';
@@ -149,6 +150,26 @@ describe('the public shell', () => {
         );
 
         expect(html).toContain('environment unknown');
+    });
+
+    it('offers what the screen asks beside the mark, and nothing when it asks for nothing', () => {
+        const header = (html: string): string =>
+            html.slice(html.indexOf('<header'), html.indexOf('</header>'));
+        const shell = (actions?: ReactNode): string =>
+            renderToStaticMarkup(
+                <QueryClientProvider client={new QueryClient()}>
+                    <TranslationProvider>
+                        <MemoryRouter>
+                            <PublicShell {...(actions !== undefined && { actions })}>
+                                <p>the screen</p>
+                            </PublicShell>
+                        </MemoryRouter>
+                    </TranslationProvider>
+                </QueryClientProvider>,
+            );
+
+        expect(header(shell(<a href="/out">Sign out</a>))).toContain('Sign out');
+        expect(header(shell())).not.toContain('Sign out');
     });
 });
 

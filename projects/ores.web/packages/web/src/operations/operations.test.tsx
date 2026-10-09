@@ -117,6 +117,10 @@ const READY: BootstrapState = {
     hasTenant: true,
     onboardingComplete: true,
     onboardingTenantComplete: true,
+    // Every route here is asserted for a signed-in session, and `sessionWith`
+    // always holds this account, so the answer names it.
+    accountId: '3f1e2d4c-0000-4000-8000-000000000001',
+    sessionPresent: true,
     message: '',
     version: 'v0.0.25 (test)',
 };

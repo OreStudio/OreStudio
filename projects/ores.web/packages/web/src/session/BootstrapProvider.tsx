@@ -67,6 +67,26 @@ export type BootstrapState =
            * unset is held on the tenant setup screen.
            */
           readonly onboardingTenantComplete: boolean;
+          /**
+           * The account those two flags were read for, or empty.
+           *
+           * They are settings, and settings are not readable without a session,
+           * while the rest of this answer is read without one. Comparing this
+           * with the session in hand is how a screen tells an answer about the
+           * visitor from one about the account that has just signed in.
+           */
+          readonly accountId: string;
+          /**
+           * Whether the request that answered carried a session cookie.
+           *
+           * The two flags above are read through a session, and a browser whose
+           * session has ended still presents one. A screen reads this beside the
+           * account: nothing presented means the answer is about the visitor and
+           * is asked for again once somebody signs in, while something presented
+           * that resolves to no account means the browser's session is over and
+           * it belongs at the sign-in form.
+           */
+          readonly sessionPresent: boolean;
           readonly message: string;
           /** The build the deployment answered with, which every shell states. */
           readonly version: string;
@@ -127,6 +147,8 @@ export function BootstrapProvider({ children }: { readonly children: ReactNode }
                 hasTenant: data.hasTenant,
                 onboardingComplete: data.onboardingComplete,
                 onboardingTenantComplete: data.onboardingTenantComplete,
+                accountId: data.accountId,
+                sessionPresent: data.sessionPresent,
                 message: data.message,
                 version: data.version,
             },

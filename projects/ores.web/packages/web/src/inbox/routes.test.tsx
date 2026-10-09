@@ -85,6 +85,10 @@ const gate: BootstrapState = {
     hasTenant: true,
     onboardingComplete: true,
     onboardingTenantComplete: true,
+    // The route is asserted for a signed-in person, so the answer names the
+    // account its two settings flags were read through.
+    accountId: session.session.accountId,
+    sessionPresent: true,
     message: '',
     version: 'v0.0.25 (test)',
 };

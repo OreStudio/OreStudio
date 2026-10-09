@@ -8,7 +8,7 @@
 #+filetags: :give-every-prototype-its-design-note:sprint_27:v0:
 #+owner: marco
 #+branch: feature/write-the-market-data-design-notes
-#+pr:
+#+pr: 2972
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2972][#2972]] | [doc] Give the market data prototypes their design notes |
 
 * Review
 

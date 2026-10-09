@@ -30,7 +30,8 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
-#include "ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
+#include "ores.synthetic.api/messaging/simulate_paths_common.hpp"
 #include <algorithm>
 #include <map>
 #include <optional>
@@ -116,7 +117,7 @@ public:
             if (req->entries.empty())
                 throw std::invalid_argument("at least one Curve Template entry is required");
             if (req->entries.size() >
-                static_cast<std::size_t>(preview_ir_curve_shape_request::max_entries))
+                static_cast<std::size_t>(max_preview_curve_entries))
                 throw std::invalid_argument("too many Curve Template entries");
 
             auto refctx = build_ir_curve_refdata_context(ctx, "RATES_SPOT_FORWARD");

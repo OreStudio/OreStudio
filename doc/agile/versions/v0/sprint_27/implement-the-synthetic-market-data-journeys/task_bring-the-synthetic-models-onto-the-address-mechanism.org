@@ -2,7 +2,7 @@
 :ID: 0091F10A-AC68-4C12-8536-F72E371E4E61
 :END:
 #+title: Task: Close M06, the synthetic TypeScript twin
-#+description: Synthetic has no committed TypeScript protocol, which the clean standard tracks as M06 and no gate can see. Generate the twin, commit it, and wire the check.
+#+description: Synthetic had no committed TypeScript protocol. Generate the twins, model the four operation surfaces the twin gate then demands, and commit both.
 #+type: task
 #+level: s1
 #+filetags: :implement-the-synthetic-market-data-journeys:sprint_27:v0:
@@ -20,53 +20,124 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every synthetic protocol header has its TypeScript twin committed, and the twin-coverage check covers the component.
+Every synthetic protocol header has its TypeScript twin committed, both sides
+generated from an org model, and the twin-coverage check covers the component.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Complete. 21 TypeScript modules are committed under =generated/synthetic/=: 9 domain twins and 12 protocol twins, all generated from the models. The four non-entity operation surfaces are operation models now, so no hand-written protocol header remains. The drift gate and the twin gate both cover the component. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
 
-- Nine twins exist under packages/wire-protocol/src/generated/synthetic/protocol/, generated and not hand-written.
-- check_protocol_twin_coverage.py passes with synthetic among the covered components.
-- The component drift gate still regenerates every address and reports no drift, so the twin cannot go stale silently.
+- Every synthetic protocol header has a committed TypeScript twin: 12 protocol
+  modules under =packages/wire-protocol/src/generated/synthetic/protocol/=
+  and the 9 domain modules they import.
+- Every one of those twins is generated from an org model. The four non-entity
+  operation surfaces are operation models, so no hand-written protocol header
+  remains in the component.
+- =check_protocol_twin_coverage.py= passes with synthetic among the covered
+  components.
+- =check_component_drift.py --component synthetic= regenerates every address
+  and reports no drift, so a twin cannot go stale silently.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three steps, in the order the gates forced them.
+
+** Generate the entity twins
+
+The nine entity models produce 9 protocol twins and, because each protocol twin
+imports its entity's interface, the =ores.ts.domain= facet produces the 9 domain
+twins they name. The protocol twin alone does not compile: the domain facet is
+part of the same job.
+
+** Model the four operation surfaces
+
+Committing the twins is what makes the twin gate cover the component, and the
+gate then demands a twin for =every= =*_protocol.hpp=, not only the entity
+ones. Four hand-written headers had none:
+=feed_config_protocol.hpp=, =simulate_fx_spot_paths_protocol.hpp=,
+=simulate_ir_curve_paths_protocol.hpp= and =preview_ir_curve_shape_protocol.hpp=.
+They are the operation surfaces the clean standard's P04 recorded as staying
+hand-written. The estate has two precedents, and =iam= is the other one: its
+non-entity operation surfaces are operation models
+(=ores.iam.*_operations.org=, =ores.iam.*_messages.org=) whose C++ header and
+TypeScript twin both generate.
+
+We took the iam precedent. Modelling them is the only way both sides generate
+from one source, and a hand-written TypeScript twin would have mirrored a
+hand-written C++ header with nothing keeping the two in step. This supersedes
+the P04 exception for this component.
+
+=parameter_spec= is carried by both the simulate and the preview request, and a
+payload type is resolved inside its own protocol, so it cannot be declared in
+two models without either duplicating the C++ struct or leaving the TypeScript
+side naming a type no module exports. The two IR operations therefore share one
+model, =ores.synthetic.ir_curve_operations=, and one generated header.
+
+The batch bounds stay out of the protocol. =max_simulate_num_ticks=,
+=max_simulate_num_paths= and =max_preview_curve_entries= are the service's
+clamps, not wire fields, so =simulate_paths_common.hpp= remains a hand-written
+header and the request structs no longer alias two of them as unused members.
+
+**Migrate the consumers and regenerate
+
+Eight consumer files re-point at the merged header, =component_files.cmake= is
+regenerated from the tree scan, and the two superseded headers are deleted.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| TypeScript modules generated for synthetic | 9 domain + 12 protocol = 21 | =check_component_drift.py --component synthetic= | this branch |
+| Synthetic protocol headers | 12, all generated | =ls projects/ores.synthetic/api/include/ores.synthetic.api/messaging/*_protocol.hpp= | this branch |
+| Protocol twin coverage | 417 headers in 18 components, no model opts out | =check_protocol_twin_coverage.py= | this branch |
+| Drift at every synthetic address | no drift | =check_component_drift.py --component synthetic= | this branch |
+| Twins the scaffold predicted | 9, protocol only | =check_component_drift.py --component synthetic --address ores.ts.protocol --dry-run= | 1df1a9af30 |
 
 * Notes
 
-* Test Scenarios
+- The scaffold's acceptance was wrong twice, and both corrections are worth
+  keeping. It said nine twins, but the request that proved it named only the
+  =ores.ts.protocol= address: the domain facet is required too, because a
+  protocol twin imports its entity's interface.
+- The scaffold also named the wrong blocker: it said the models needed the
+  =* Physical space= address mechanism before their TypeScript could be
+  generated. They do not, and a targeted run created all nine entity twins from
+  the models as they stood.
+- The drift gate needed no change. =_committed_ts_facets= scopes a TypeScript
+  facet by whether its output directory exists, so committing the twins puts
+  =ores.ts.domain=, =ores.ts.protocol= and =ores.ts.trade_type= into the address
+  set on their own.
+- An earlier claim that the drift gate cannot see untracked generated files was
+  wrong. It diffs the tree with =git diff=, but it also records the untracked set
+  before regenerating and fails on anything regeneration materialises
+  (check_component_drift.py, "untracked file(s) materialized by regeneration").
+  The gate that let M06 hide is the twin gate's scoping, not this one: both
+  gates agree there is nothing to check until a component's first twin lands.
+- =component_registry.py= carried a stale paragraph saying synthetic "is not
+  listed yet" while the tuple lists it. Corrected here to record the M06
+  closure and the four items still open.
+- clever_dijkstra owns the clean-standard record, =task_clean_synthetic.org=,
+  and its M06, P04, V05 and V06 rows still read as open or held. The file is on
+  main, so the rows were struck here rather than handed over in a message:
+  M06 is closed, P04 records that the operation surfaces are modelled now, and
+  V05 and V06 drop the twin from their open lists. This is the one file this
+  branch edits that another environment owns.
+- V06's row claimed =COMPONENTS_UNDER_TEST= stays =("iam",)=, which is false:
+  the tuple carries =synthetic=. Corrected to say that the registry lists a
+  component with four items still open. That disagreement is a gate question in
+  its own right -- the registry asserts every item passes while the record says
+  four do not, and nothing cross-checks the two -- but it is out of scope here.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -85,3 +156,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Synthetic speaks TypeScript. 21 generated modules are committed: the 9 domain
+interfaces and the 12 protocol modules, each protocol module the twin of a
+generated C++ header. The four hand-written operation headers are gone, replaced
+by three operation models from which both sides generate, and the two IR
+operation surfaces share one model so =parameter_spec= is declared once. The
+drift gate regenerates every address and reports no drift, and the twin gate now
+covers the component. The M06 item on the clean standard is closed; P04 is
+superseded for synthetic.

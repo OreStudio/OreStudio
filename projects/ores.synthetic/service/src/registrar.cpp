@@ -23,7 +23,7 @@
 #include "ir_curve_preview_handler.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
-#include "ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "simulate_handler.hpp"
 #include "vintage_validity_handler.hpp"
 

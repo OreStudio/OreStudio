@@ -64,12 +64,11 @@ from dataclasses import dataclass
 # an un-regenerated component's whole backlog rides along with any model
 # change to it.
 #
-# synthetic is not listed yet: its regeneration is byte-identical and
-# idempotent and all four of its test suites pass, but five checklist items are
-# open (B06 and V08, the two surveys; M06, no TypeScript twin; P03, the
-# messaging reference is stale; V04, no live fleet). The standard keeps a
-# component out until every item passes or its exceptions are accepted, so add
-# it once they are.
+# synthetic is listed, and its M06 item -- no TypeScript twin -- is closed:
+# the four non-entity operation surfaces are operation models now, so every
+# protocol header generates both its C++ and its TypeScript side and no
+# hand-written protocol header remains. B06, V08, P03 and V04 are still open
+# and are recorded on its clean-standard task.
 
 # workflow joins on the same terms at the end of its clean-standard pass: its
 # tree was regenerated from its two entity models, the drift check is

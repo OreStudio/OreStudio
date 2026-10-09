@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,19 +19,9 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_SYNTHETIC_API_MESSAGING_FEED_CONFIG_PROTOCOL_HPP
-#define ORES_SYNTHETIC_API_MESSAGING_FEED_CONFIG_PROTOCOL_HPP
-
-#include <cstdint>
-#include <string>
-#include <string_view>
-#include <vector>
-
-namespace ores::synthetic::messaging {
-
 /**
  * @brief Request to start one feed on demand, keyed by config_id.
  *
@@ -43,26 +33,17 @@ namespace ores::synthetic::messaging {
  * the per-kind start requests (market_feed_config's client-supplied-params
  * pass-through and ir_curve_feed_config's config_id request).
  */
-struct start_feed_request {
-    using response_type = struct start_feed_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.ops.start_feed";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string config_id;
-};
+export interface StartFeedRequest {
+    config_id: string;
+}
 
 /**
  * @brief Whether the feed started, and why not when it did not.
  */
-struct start_feed_response {
-    bool success = false;
-    std::string message;
-};
+export interface StartFeedResponse {
+    success: boolean;
+    message: string;
+}
 
 /**
  * @brief Request to stop running feed(s), identified by config_id or source_name.
@@ -73,53 +54,46 @@ struct start_feed_response {
  * both config_id and source_name are empty, stops all running feeds of every
  * kind.
  */
-struct stop_feed_request {
-    using response_type = struct stop_feed_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.ops.stop_feed";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
+export interface StopFeedRequest {
     /** @brief Preferred: resolved server-side to source_name. */
-    std::string config_id;
+    config_id: string;
     /** @brief Used only if config_id is empty; empty too stops every feed. */
-    std::string source_name;
-};
+    source_name: string;
+}
 
 /**
  * @brief Whether the feed stopped, and why not when it did not.
  */
-struct stop_feed_response {
-    bool success = false;
-    std::string message;
-};
+export interface StopFeedResponse {
+    success: boolean;
+    message: string;
+}
 
 /**
  * @brief Request the set of currently running feed source_names, every kind.
  */
-struct list_feeds_request {
-    using response_type = struct list_feeds_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.feed_configs.list";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-};
+export interface ListFeedsRequest {}
 
 /**
  * @brief The running feeds' source_names, and whether the read succeeded.
  */
-struct list_feeds_response {
-    bool success = false;
-    std::vector<std::string> running_source_names;
-};
-
+export interface ListFeedsResponse {
+    success: boolean;
+    running_source_names: string[];
 }
 
-#endif
+export const subjects = {
+    start_feed_request: 'synthetic.v1.ops.start_feed',
+    stop_feed_request: 'synthetic.v1.ops.stop_feed',
+    list_feeds_request: 'synthetic.v1.feed_configs.list',
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    start_feed_request: true,
+    stop_feed_request: true,
+    list_feeds_request: true,
+} as const;

@@ -23,14 +23,19 @@
 namespace ores::synthetic::messaging {
 
 /**
- * @brief Batch bounds every simulate_paths request shares: the service clamps
- * to them and a UI spinner offers them as its maxima.
+ * @brief The batch bounds the synthetic previews share: the service clamps to
+ * them and a UI spinner offers them as its maxima.
  *
  * One pair of numbers for FX spot and IR curve alike, so the two envelopes
- * cannot drift apart.
+ * cannot drift apart, plus the curve-shape preview's entry ceiling.
+ *
+ * These are service-side clamps rather than wire fields: no request carries
+ * them, so they are not part of any generated protocol header, and a caller
+ * that needs a bound reads it here.
  */
 inline constexpr int max_simulate_num_ticks = 5000;
 inline constexpr int max_simulate_num_paths = 50;
+inline constexpr int max_preview_curve_entries = 50;
 
 }
 

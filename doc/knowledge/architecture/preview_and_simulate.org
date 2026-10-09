@@ -56,15 +56,16 @@ stopped.
 
 ** How the counts are bounded
 
-=simulate_paths_common.hpp= declares =max_simulate_num_ticks = 5000= and
-=max_simulate_num_paths = 50= once. Each request type aliases them as
-=max_num_ticks= and =max_num_paths= so the wire shape does not change, and the
-shared =run_simulate_paths()= applies them with =std::clamp= before generating
-anything, so a UI bug cannot ask for a runaway batch. The UI spinners read the
-same two names, which keeps the wire limit and the widget limit one number.
+=simulate_paths_common.hpp= declares the bounds once:
+=max_simulate_num_ticks = 5000=, =max_simulate_num_paths = 50= and
+=max_preview_curve_entries = 50=. They are service-side clamps rather than wire
+fields, so no request carries them, and the shared =run_simulate_paths()=
+applies the first two with =std::clamp= before generating anything, so a UI bug
+cannot ask for a runaway batch. A screen that advertises a limit reads the same
+header, which keeps the service limit and the widget limit one number.
 
-=preview_ir_curve_shape_request= declares =max_entries = 50= and the handler
-rejects an empty entry list and a list above the ceiling.
+=ir_curve_preview_handler= rejects an empty entry list and a list above
+=max_preview_curve_entries=.
 
 ** Where each read gets its numbers
 
@@ -136,6 +137,9 @@ operation permission exists.
   per-kind entries both read are in
   =projects/ores.synthetic/service/src/feed_kind_registry.hpp=.
 - The wire shapes and their bounds are
-  =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp=
+  =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp=,
+  =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp=
   and
-  =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp=.
+  =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/simulate_paths_common.hpp=.
+  The first two are generated from =projects/ores.synthetic/modeling/=; the last
+  is hand-written, because a clamp is not a wire field.

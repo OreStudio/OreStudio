@@ -1,0 +1,305 @@
+:PROPERTIES:
+:ID: 8d59e5dc-164b-402f-92ca-3bf9ccc2a1ff
+:END:
+#+title: ores.synthetic.ir_curve_operations
+#+description: Codegen operation model for the IR curve simulation and shape preview.
+#+type: ores.codegen.operation
+#+component: synthetic
+#+subcomponent: api
+#+entity_singular: ir_curve_operations
+#+namespace: ores::synthetic::messaging
+#+brief: IR curve sample-path simulation and shape preview.
+#+filetags: :model:operation:synthetic:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+The two dry-run previews an IR curve editor asks for before it saves or
+starts anything.
+
+=simulate_ir_curve_paths= builds the real short-rate process and steps it, so
+a screen can see the configured process behaviour over time.
+=preview_ir_curve_shape= derives the rate each Curve Template row implies from
+the process's current state, with no ticking, so a screen can see the curve it
+would publish.
+
+Both are stateless: nothing is persisted and nothing is published.
+
+The two share one payload type, =parameter_spec=, so they share one model and
+one generated header. A payload type is named unqualified inside its own
+protocol and is resolved there, so declaring =parameter_spec= in a second model
+would either duplicate the C++ struct or leave the TypeScript side naming a
+type no module exports.
+
+The batch bounds are not part of this protocol. They are the service's clamp
+and a screen's spinner maxima, so they are declared once, in
+=simulate_paths_common.hpp=, beside the FX spot bounds two of them share.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** parameter_spec
+#+begin_src cpp :name comment
+/**
+ * @brief One named process parameter, as edited in an IR curve editor's
+ * parameter table.
+ *
+ * The wire-shaped analogue of a {parameter_definition_id, value} row: the
+ * row-based store joins values onto the system-tenant parameter definitions
+ * catalogue, but a stateless preview request carries the name itself, because
+ * the screen already has the definitions on screen, and lets the handler
+ * re-materialise the catalogue entry on the fly.
+ */
+#+end_src
+
+*** parameter_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** parameter_value
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+** simulate_ir_curve_paths_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.simulate_ir_curve_paths
+:response: simulate_ir_curve_paths_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request a batch (dry-run) simulation of short-rate sample paths.
+ *
+ * The IR curve analogue of simulate_fx_spot_paths_request. Stateless: the
+ * caller names the process parameters rather than a stored config, so an
+ * unsaved editor can preview what it is about to save.
+ */
+#+end_src
+
+*** process_type
+:PROPERTIES:
+:cpp_type: std::string
+:default: "vasicek"
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Short-rate process engine: "vasicek", "cox_ingersoll_ross",
+ * "hull_white", or "two_factor_gaussian".
+ */
+#+end_src
+
+*** parameters
+:PROPERTIES:
+:cpp_type: std::vector<parameter_spec>
+:END:
+#+begin_src cpp :name comment
+/** @brief The process's named parameters, one entry per parameter. */
+#+end_src
+
+*** num_ticks
+:PROPERTIES:
+:cpp_type: int
+:default: 100
+:END:
+#+begin_src cpp :name comment
+/** @brief Number of ticks (steps) to generate per path. */
+#+end_src
+
+*** num_paths
+:PROPERTIES:
+:cpp_type: int
+:default: 5
+:END:
+#+begin_src cpp :name comment
+/** @brief Number of independent sample paths to generate (for contrast). */
+#+end_src
+
+*** seed
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 1
+:END:
+#+begin_src cpp :name comment
+/** @brief Base RNG seed; path i uses seed + i. Change to reseed. */
+#+end_src
+
+** simulate_ir_curve_paths_response
+#+begin_src cpp :name comment
+/**
+ * @brief The generated batch, and why it is empty when it is.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** paths
+:PROPERTIES:
+:cpp_type: std::vector<std::vector<double>>
+:END:
+#+begin_src cpp :name comment
+/** @brief num_paths series, each of num_ticks short-rate values. */
+#+end_src
+
+** preview_ir_curve_template_row
+#+begin_src cpp :name comment
+/**
+ * @brief One (possibly unsaved) Curve Template row, as edited in an IR curve
+ * editor's Curve Template tab.
+ *
+ * Deliberately not the persisted ir_curve_template_entry domain struct: a row
+ * being edited has no id, party_id or tenant_id yet.
+ */
+#+end_src
+
+*** sequence_index
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** start_tenor_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** end_tenor_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** instrument_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** preview_ir_curve_shape_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.preview_ir_curve_shape
+:response: preview_ir_curve_shape_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request a stateless preview of the curve shape (rate per Curve
+ * Template entry) implied by the given process parameters and template rows.
+ *
+ * Derives each row's rate the same way ir_curve_feed does
+ * (IYieldCurveProcess::discount_factor() + curve_instrument_pricer, via the
+ * shared price_ir_curve_entry()), from the process's current state, with no
+ * ticking, so an editor can show "if I save these parameters and this
+ * template, here is the curve you would publish" before committing anything.
+ * Nothing is persisted or published.
+ */
+#+end_src
+
+*** process_type
+:PROPERTIES:
+:cpp_type: std::string
+:default: "vasicek"
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Short-rate process engine: "vasicek", "cox_ingersoll_ross",
+ * "hull_white", or "two_factor_gaussian".
+ */
+#+end_src
+
+*** parameters
+:PROPERTIES:
+:cpp_type: std::vector<parameter_spec>
+:END:
+#+begin_src cpp :name comment
+/** @brief The process's named parameters, one entry per parameter. */
+#+end_src
+
+*** fixed_leg_payment_frequency_code
+:PROPERTIES:
+:cpp_type: std::string
+:default: "Annual"
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief References ores.refdata.payment_frequency.code; needed to build a
+ * Swap row's fixed-leg schedule.
+ */
+#+end_src
+
+*** entries
+:PROPERTIES:
+:cpp_type: std::vector<preview_ir_curve_template_row>
+:END:
+#+begin_src cpp :name comment
+/** @brief The template rows to price, in the order the editor shows them. */
+#+end_src
+
+** preview_ir_curve_shape_point
+#+begin_src cpp :name comment
+/**
+ * @brief One priced Curve Template row.
+ */
+#+end_src
+
+*** sequence_index
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** start_tenor_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** end_tenor_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+** preview_ir_curve_shape_response
+#+begin_src cpp :name comment
+/**
+ * @brief The priced curve, and why it is empty when it is.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** points
+:PROPERTIES:
+:cpp_type: std::vector<preview_ir_curve_shape_point>
+:END:
+#+begin_src cpp :name comment
+/** @brief One point per request entry, sorted by sequence_index. */
+#+end_src

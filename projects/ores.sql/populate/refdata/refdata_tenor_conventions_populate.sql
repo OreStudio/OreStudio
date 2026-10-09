@@ -28,6 +28,11 @@
  * period offset, then one roll-quarter step); its measured_from stays NONE,
  * with the resolution rows anchoring at SPOT.
  *
+ * The roll rule is stated per convention, because the column is non-nullable
+ * and the insert trigger validates it: the two rates conventions take the
+ * market default (ModifiedFollowing) and the two schedule-step conventions
+ * take Following, which is what the knowledge doc states for the CDS roll.
+ *
  * This script is idempotent - uses INSERT ON CONFLICT DO UPDATE.
  */
 
@@ -35,24 +40,25 @@
 
 insert into ores_refdata_tenor_conventions_tbl (
     tenant_id, code, version, description, measured_from, resolution_algorithm,
+    business_day_convention_type,
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
     (ores_utility_system_tenant_id_fn(), 'RATES_SPOT_FORWARD', 0,
      'Standard convention used by most FX and interest rate curves: regular tenors measured from spot.',
-     'SPOT', 'ANCHOR_OFFSET',
+     'SPOT', 'ANCHOR_OFFSET', 'ModifiedFollowing',
      current_user, current_user, 'system.initial_load', 'Initial population of tenor conventions'),
     (ores_utility_system_tenant_id_fn(), 'FX_SWAP_NEAR_LEG', 0,
      'Short-dated FX swap quotation, in terms of the near leg. Tenor set typically runs up to S/N.',
-     'NONE', 'ANCHOR_OFFSET',
+     'NONE', 'ANCHOR_OFFSET', 'ModifiedFollowing',
      current_user, current_user, 'system.initial_load', 'Initial population of tenor conventions'),
     (ores_utility_system_tenant_id_fn(), 'CREDIT_CDS_IMM', 0,
      'Credit/CDS curves: tenors resolve to the first business day following the appropriate IMM roll date, not a fixed offset from an anchor.',
-     'NONE', 'SCHEDULE_STEP',
+     'NONE', 'SCHEDULE_STEP', 'Following',
      current_user, current_user, 'system.initial_load', 'Initial population of tenor conventions'),
     (ores_utility_system_tenant_id_fn(), 'RATES_SPOT_FOMC', 0,
      'FOMC-dated OIS curves: 1F..nF tenors resolve to the n-th FOMC meeting on-or-after spot, walking the FOMC_MEETING schedule (story: FOMC-dated OIS short end).',
-     'SPOT', 'SCHEDULE_STEP',
+     'SPOT', 'SCHEDULE_STEP', 'ModifiedFollowing',
      current_user, current_user, 'system.initial_load', 'Initial population of tenor conventions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -60,6 +66,7 @@ do update set
     description = excluded.description,
     measured_from = excluded.measured_from,
     resolution_algorithm = excluded.resolution_algorithm,
+    business_day_convention_type = excluded.business_day_convention_type,
     modified_by = current_user,
     performed_by = current_user,
     change_reason_code = 'system.initial_load',

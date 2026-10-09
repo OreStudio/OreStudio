@@ -685,10 +685,12 @@ begin
     -- Tenor conventions (e.g. RATES_SPOT_FORWARD, FX_SWAP_NEAR_LEG, CREDIT_CDS_IMM)
     insert into ores_refdata_tenor_conventions_tbl (
         code, tenant_id, version, description, measured_from, resolution_algorithm,
+        business_day_convention_type,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
         code, v_tenant_id, 0, description, measured_from, resolution_algorithm,
+        business_day_convention_type,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_tenor_conventions_tbl t

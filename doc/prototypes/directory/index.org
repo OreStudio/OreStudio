@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: F8394068-3430-471B-BC65-C1F3035E2E29
+:END:
+#+title: Directory prototypes
+#+description: The prototypes that answer to the Directory journeys: what each argues, and the Gemini review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:directory:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+* Summary
+
+The account roster, and bringing a person in.
+
+One prototype answers to this group. Each one is a static page under
+=doc/prototypes/=, opens with no build and no session, and reads mock data
+only. The table below opens each one and says what it argues. Where a
+prototype carries a Gemini review, the last column opens it: a review is a
+generated alternative kept beside the agreed design, never instead of it.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype                            | What it argues | Open it | Review |
+|--------------------------------------+----------------+---------+--------|
+| [[file:the-people-timeline.org][One person's timeline]] | A person has no history screen. One dated stream over the account, its contact details, its parties, its roles and its sign-ins, drawn the way a pull request reads: the existing green and red widget for each field that changed, a revert at each point, and a quieter rendering for the events that changed no field. A role request is the second case, and the same stream draws it. | [[file:the-people-timeline/][prototype]] | none |
+
+* Adding a prototype
+
+Create =doc/prototypes/directory/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Open the page with
+the links table every prototype carries, and leave its review row at
+=none=. Add a row to the table above, with the design note beside the
+prototype when there is one. Stop there: the site build finds every
+prototype under this tree, so no build file names it.
+
+A review goes at =doc/prototypes/directory/<name>/review/=, with an
+=index.html= that lists its screens. The row names it, and the
+prototype's review row points at it. [[file:../index.org][Prototypes]] states the
+whole method and the rules that hold for every group.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
+- [[file:../../knowledge/journeys/directory/directory.org][Directory journeys]] — the journeys these prototypes answer.

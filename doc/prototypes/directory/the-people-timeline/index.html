@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One person's timeline prototype — Directory journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+ *{box-sizing:border-box}[hidden]{display:none!important}
+ html,body{background:var(--bg);color:var(--ink)}
+ body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 11rem}
+ h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+ h3{font-size:.8rem}
+ p{margin:0}ul,ol,dl{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+ .mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+ .wrap{max-width:1120px;margin:0 auto;display:grid;gap:14px}
+ .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+ .face{width:48px;height:48px;border-radius:999px;display:grid;place-items:center;background:var(--panel-2);border:1px solid var(--line);font-weight:600;color:var(--ink-dim)}
+ .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+ .panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+ .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+ .field{display:grid;gap:4px;min-width:130px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+ .field .value{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+ .btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:4px 9px;font-size:.78rem}
+ .btn:hover{border-color:var(--accent)}
+ .btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+ .btn.danger{color:var(--bad);border-color:#5a2320}
+ .tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim);white-space:nowrap}
+ .tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}.tag.acc{color:var(--accent);border-color:#1f3d5c}
+ .notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+ .notice strong{color:var(--ink)}
+ .proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+ .proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:61;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:96vw;flex-wrap:wrap;justify-content:center}
+ .proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+ .proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+ .proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+ .proto-state{position:fixed;left:50%;bottom:72px;transform:translateX(-50%);z-index:60;width:min(1120px,calc(100vw - 2rem));max-height:34vh;overflow-y:auto;background:#0b0e13;border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 30px rgba(0,0,0,.6);padding:.7rem 1rem;font-size:12px;color:var(--ink-dim);display:grid;gap:.35rem}
+ .proto-state b{color:var(--ink)}
+ .proto-state .log{font-family:var(--mono);color:var(--ink-faint)}
+
+ /* the stream: a rail of dated entries, the shape a pull request uses */
+ .stream{display:grid;gap:0}
+ .day{display:grid;grid-template-columns:5.6rem 1.6rem 1fr;margin-top:6px}
+ .day .label{grid-column:2/4;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);border-bottom:1px solid var(--line-soft);padding:2px 0 4px 6px}
+ .ev{display:grid;grid-template-columns:5.6rem 1.6rem 1fr}
+ .ev .at{font-family:var(--mono);font-size:.72rem;color:var(--ink-faint);padding-top:9px;text-align:right;padding-right:.6rem}
+ .ev .rail{position:relative;display:flex;justify-content:center}
+ .ev .rail::before{content:"";position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+ .ev:first-child .rail::before{top:12px}
+ .ev:last-child .rail::before{bottom:calc(100% - 12px)}
+ .ev .dot{position:relative;z-index:1;width:9px;height:9px;border-radius:999px;margin-top:9px;background:var(--panel-2);border:1px solid var(--line)}
+ .ev.k-change .dot{border-color:var(--accent);background:#123054}
+ .ev.k-event .dot{border-color:var(--ink-faint)}
+ .ev.k-granted .dot{border-color:var(--ok);background:#0f2d16}
+ .ev.k-closed .dot{border-color:var(--warn);background:#33280d}
+ .ev.k-decide .dot{border-color:var(--warn);background:#33280d}
+ .ev .body{padding:4px 0 14px 6px;display:grid;gap:6px;min-width:0}
+ .ev .head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+ .ev .who{font-weight:600}
+ .ev.quiet .head .who{font-weight:500;color:var(--ink-dim)}
+ .ev.quiet .body{opacity:.92}
+ .ev .head .when{margin-left:auto}
+ /* the green and red widget, as projects/ores.web/packages/web/src/ui/Diff.tsx draws it */
+ .diffs{display:grid;gap:3px}
+ .dl{display:grid;grid-template-columns:1.1rem 1fr auto;gap:6px;align-items:baseline;border-radius:4px;padding:2px 6px}
+ .dl.old{background:rgba(248,81,73,.13)}.dl.new{background:rgba(63,185,80,.13)}
+ .dl mark{background:rgba(248,81,73,.45);color:inherit;border-radius:2px}
+ .dl.new mark{background:rgba(63,185,80,.45)}
+ .dl .sign{color:var(--ink-faint)}
+ .diffs-wrap table{width:100%;border-collapse:collapse;font-size:.84rem}
+ .diffs-wrap th,.diffs-wrap td{text-align:left;padding:3px 8px;border-bottom:1px solid var(--line-soft)}
+ .diffs-wrap th{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+ tr.changed td:first-child{box-shadow:inset 3px 0 0 var(--warn);padding-left:10px}
+ .facts{display:grid;gap:2px;font-size:.8rem;border-left:2px solid var(--line-soft);padding-left:10px;margin-left:2px}
+ .facts div{display:flex;gap:8px;flex-wrap:wrap}
+ .facts dt{font-family:var(--mono);font-size:.72rem;color:var(--ink-faint);min-width:15rem}
+ .facts dd{color:var(--ink-dim)}
+ .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+ .note{font-size:.78rem;color:var(--ink-faint)}
+ .confirm{display:grid;gap:8px;border:1px solid var(--warn);border-radius:var(--radius);background:#1d1a10;padding:10px 12px;font-size:.82rem}
+ .confirm .why{color:var(--ink-dim)}
+ .legend{width:100%;border-collapse:collapse;font-size:.8rem}
+ .legend th,.legend td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+ .legend th{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+ .legend td.mono{font-family:var(--mono);font-size:.74rem}
+ .legend tr:last-child td{border-bottom:none}
+ .legend .no{color:var(--warn)}
+ .elapsed{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline}
+ .elapsed b{font-family:var(--mono);font-size:1rem}
+ .bar-fill{height:6px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden}
+ .bar-fill i{display:block;height:100%;background:var(--accent)}
+ @media (max-width:760px){.ev,.day{grid-template-columns:3.4rem 1.4rem 1fr}.facts dt{min-width:0}}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The question: there is no history screen for a person. Should one person's
+  whole story -- the account, its contact details, its parties, its roles and
+  its sign-ins -- read as one dated stream, the way a pull request's
+  conversation reads, with the existing green and red widget for each field
+  that changed and a revert at each point?
+
+  States with ?state=trail|revert|service|case. Order with ?order=new|old.
+  One entity at a time with ?entity=<name>. Nothing here calls a service.
+
+  Where every entry comes from, and which of them have a read today, is on the
+  screen itself -- see the "Where each entry comes from" table. The generalised
+  case -- the same stream over a role request -- is the ?state=case state.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-state" id="statebar" hidden></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const STATE = params.get('state') || 'trail';
+const ORDER = params.get('order') || 'new';
+const ENTITY_FILTER = params.get('entity') || 'all';
+
+/* The four states. Each names what it argues in one line, because the bottom
+ * bar is where a reader switches and the note strip only has room for the id. */
+const STATES = {
+  trail: {
+    name: 'A person, changes and events',
+    gist: 'Tomás Ribeiro. The account, its contact details, its parties, its roles and its sign-ins in one stream. Field changes carry the green and red widget; events do not carry one, because nothing changed.'
+  },
+  revert: {
+    name: 'A revert, as of a point',
+    gist: 'The same person with the revert affordances shown: a field reverted on its own record, a role taken away as a further act, and an "as of this point" restore that no operation can make today.'
+  },
+  service: {
+    name: 'A service account',
+    gist: 'ores.iam.service owns no name, no address and no party. The same stream over an account whose story is its sign-ins, and almost nothing on it can be reverted.'
+  },
+  case: {
+    name: 'A case file (the generalisation)',
+    gist: 'The same stream over a multi-step activity instead of a person: one role request, every row the six tables wrote, and how long the answer took.'
+  }
+};
+
+/* Every entity the stream can draw, the table each entry is a version of, and
+ * whether any screen serves that version today. `read` is the finding: the
+ * stream is only as buildable as the reads behind it. */
+const ENTITY = {
+  account: {
+    label: 'account', table: 'ores_iam_accounts_tbl', tone: 'acc',
+    read: 'Versioned, and IAM keeps the versions. The web serves no history for it: /api/history?entityType=ores.iam.account answers 404.'
+  },
+  contact: {
+    label: 'contact', table: 'ores_iam_account_contact_informations_tbl', tone: '',
+    read: 'Versioned, and IAM has the history provider. Not served to the web today.'
+  },
+  parties: {
+    label: 'parties', table: 'ores_iam_account_parties_tbl', tone: '',
+    read: 'A versioned row, but the protocol calls the junction "no versions, no events", so a closed party link has no read today.'
+  },
+  roles: {
+    label: 'roles', table: 'ores_iam_account_roles_tbl', tone: 'ok',
+    read: 'The grants held now are read, with assigned_by and assigned_at. A grant closed by valid_to is read by nothing.'
+  },
+  'sign-ins': {
+    label: 'sign-ins', table: 'ores_iam_auth_events_tbl', tone: 'warn',
+    read: '/api/auth-events serves them to Audit, filtered by period and event type only -- never by account. 90-day retention, no row-level security.'
+  },
+  'approval_request': {
+    label: 'approval_request', table: 'ores_inbox_approval_requests_tbl', tone: 'acc',
+    read: 'Versioned, and read by the request story accepted on 2026-10-08.'
+  },
+  'role_grant_request': {
+    label: 'role_grant_request', table: 'ores_iam_role_grant_requests_tbl', tone: '',
+    read: 'Versioned. No read ties the request row to the account it is for today.'
+  },
+  'role_grant_request_role': {
+    label: 'role_grant_request_role', table: 'ores_iam_role_grant_request_roles_tbl', tone: '',
+    read: 'iam.v1.ops.get_request_roles answers each role with when it was asked for and when it was applied.'
+  },
+  'approval_decision': {
+    label: 'approval_decision', table: 'ores_inbox_approval_decisions_tbl', tone: 'warn',
+    read: 'Read by the request story. The decisions another person took are not the asker\'s to read, so a member\'s stream has a hole there.'
+  },
+  'account_role': {
+    label: 'account_role', table: 'ores_iam_account_roles_tbl', tone: 'ok',
+    read: 'The grant an approved request applied, read as a role the person now holds.'
+  },
+  'notification': {
+    label: 'notification', table: 'ores_inbox_notifications_tbl', tone: '',
+    read: 'Read by the inbox. Its recipients are an audience permission code, not a list of people.'
+  }
+};
+
+/* One person, Tomás Ribeiro, in Acme Corporation. The names, the tenant, the
+ * roles and the parties are the ones the Access prototype already uses. */
+const TOMAS = {
+  kind: 'person',
+  name: 'Tomás Ribeiro',
+  initials: 'TR',
+  username: 'tomas',
+  accountId: '7c1f0e5a-3b2d-4a91-8f6e-0d5c1a9b7e42',
+  tenant: 'Acme Corporation',
+  party: 'Acme London',
+  status: 'active',
+  version: 4,
+  entities: ['account', 'contact', 'parties', 'roles', 'sign-ins'],
+  events: [
+    { at: '2026-09-15 09:20:11.204', entity: 'sign-ins', kind: 'event', tone: 'quiet',
+      actor: 'tomas.ribeiro', head: 'signed up', tag: 'signup_success',
+      facts: [['event_type', 'signup_success'], ['username', 'tomas'],
+              ['address', '192.0.2.90'], ['error_detail', '']],
+      revert: 'none',
+      cannot: 'A sign-up happened. There is no field here and nothing to undo.' },
+
+    { at: '2026-09-15 09:20:11.500', entity: 'account', row: '7c1f0e5a', version: 1, kind: 'change',
+      actor: 'ores.iam.service', head: 'created the account', reason: 'system.new_record',
+      fields: [['username', '', 'tomas'], ['account_type', '', 'user'],
+               ['account_status', '', 'active'], ['full_name', '', 'Tomás Ribeiro'],
+               ['email', '', 'tomas.ribeiro@acme.example'], ['job_title', '', 'Support analyst']],
+      revert: 'none' },
+
+    { at: '2026-09-15 09:21:40.001', entity: 'contact', row: 'b41d9f20', version: 1, kind: 'change',
+      actor: 'tomas.ribeiro', head: 'recorded the contact details', reason: 'system.new_record',
+      fields: [['street_line_1', '', '12 Rua da Prata'], ['city', '', 'Lisbon'],
+               ['postal_code', '', '1100-052'], ['country_code', '', 'PT'],
+               ['phone', '', '+351 21 000 0000'], ['email', '', 'tomas.ribeiro@acme.example']],
+      revert: 'none' },
+
+    { at: '2026-09-15 09:25:02.000', entity: 'roles', kind: 'event',
+      actor: 'priya.natarajan', head: 'gave the role Support', tag: 'granted',
+      facts: [['role_id', '4d2a7e18 (Support)'], ['assigned_by', 'priya.natarajan'],
+              ['assigned_at', '2026-09-15 09:25'], ['change_reason_code', 'access.new_joiner']],
+      revert: 'close',
+      cannot: 'Giving a role is a new grant row. It is undone by a further act, taking the role away, which closes the grant rather than deleting it.' },
+
+    { at: '2026-09-15 09:26:10.000', entity: 'parties', kind: 'event',
+      actor: 'priya.natarajan', head: 'linked the party Acme London', tag: '',
+      facts: [['party_id', '2b8d4c07 (Acme London)'], ['valid_from', '2026-09-15 09:26'],
+              ['change_reason_code', 'access.new_joiner']],
+      revert: 'none',
+      cannot: 'The party link closes rather than deletes, but the account_parties protocol carries no version read, so neither its history nor its closure is reachable from here today.' },
+
+    { at: '2026-09-22 11:05:00.000', entity: 'account', row: '7c1f0e5a', version: 2, kind: 'change',
+      actor: 'priya.natarajan', head: 'changed the job title', reason: 'access.role_change',
+      comment: 'Moved from the support desk',
+      fields: [['job_title', 'Support analyst', 'Operations analyst'],
+               ['reports_to_account_id', '', '8a1c0d44 (Priya Natarajan)']],
+      revert: 'field' },
+
+    { at: '2026-09-22 11:06:30.000', entity: 'roles', kind: 'event',
+      actor: 'priya.natarajan', head: 'gave the role Operations', tag: 'granted',
+      facts: [['role_id', '9a3c1b55 (Operations)'], ['assigned_by', 'priya.natarajan'],
+              ['assigned_at', '2026-09-22 11:06'], ['change_reason_code', 'access.role_change'],
+              ['change_commentary', 'Moved from the support desk']],
+      revert: 'close',
+      cannot: 'A further grant, undone the same way: by closing it.' },
+
+    { at: '2026-09-22 11:20:00.000', entity: 'roles', kind: 'event',
+      actor: 'priya.natarajan', head: 'took the role Support away', tag: 'closed',
+      facts: [['role_id', '4d2a7e18 (Support)'], ['held_from', '2026-09-15 09:25'],
+              ['closed_at', '2026-09-22 11:20'], ['held_for', '7 days 1 hour']],
+      revert: 'none',
+      cannot: 'The grant is closed, not deleted, so who held the role and when stays on record. Reopening it would be a new grant.' },
+
+    { at: '2026-09-30 16:48:12.000', entity: 'contact', row: 'b41d9f20', version: 2, kind: 'change',
+      actor: 'tomas.ribeiro', head: 'changed the phone number', reason: 'common.non_material_update',
+      fields: [['phone', '+351 21 000 0000', '+351 21 000 0958']],
+      revert: 'field' },
+
+    { at: '2026-10-01 09:02:44.000', entity: 'sign-ins', kind: 'event', tone: 'quiet',
+      actor: 'tomas.ribeiro', head: 'signed in', tag: 'login_success',
+      facts: [['event_type', 'login_success'], ['address', '192.0.2.19'],
+              ['party_id', '2b8d4c07 (Acme London)'], ['session_id', '5f1b0a2c']],
+      revert: 'none',
+      cannot: 'A sign-in is a fact about the past. It is corrected by saying so, not by editing it.' },
+
+    { at: '2026-10-02 17:44:03.000', entity: 'sign-ins', kind: 'event', tone: 'quiet',
+      actor: 'tomas.ribeiro', head: 'failed to sign in', tag: 'login_failure',
+      facts: [['event_type', 'login_failure'], ['address', '198.51.100.7'],
+              ['error_detail', 'Invalid password'], ['failed_logins', '1']],
+      revert: 'none',
+      cannot: 'A failed sign-in happened. The account\'s own login_info carries the count, and that is a different record.' },
+
+    { at: '2026-10-03 10:15:00.000', entity: 'account', row: '7c1f0e5a', version: 3, kind: 'change',
+      actor: 'tomas.ribeiro', head: 'changed the mail address', reason: 'system.update',
+      focus: true,
+      fields: [['email', 'tomas.ribeiro@acme.example', 'tomas.ribeiro@acme.co.uk']],
+      revert: 'field' },
+
+    { at: '2026-10-04 08:12:30.000', entity: 'account', row: '7c1f0e5a', version: 4, kind: 'change',
+      actor: 'priya.natarajan', head: 'changed the job title', reason: 'common.non_material_update',
+      comment: 'Title corrected on the desk lead\'s advice',
+      fields: [['job_title', 'Operations analyst', 'Senior operations analyst']],
+      revert: 'field' },
+
+    { at: '2026-10-05 09:12:00.000', entity: 'roles', kind: 'event',
+      actor: 'tomas.ribeiro', head: 'asked for the role Data publisher', tag: 'asked', caseFor: 'request',
+      facts: [['request_id', '01a11bc3-6ffd-74ac-9fdf-34f3c144813c'], ['kind_code', 'iam.role_grant'],
+              ['state_code', 'waiting'], ['reason', 'I publish the curve sets the desk reads.'],
+              ['expires_at', '2026-10-19 09:12']],
+      revert: 'none',
+      cannot: 'An ask is a row of the request, not of the person. Its own stream is the case file -- open it below.' },
+
+    { at: '2026-10-06 07:53:02.000', entity: 'roles', kind: 'event',
+      actor: 'ores.iam.service', head: 'gave the role Data publisher', tag: 'granted',
+      facts: [['role_id', 'c7e1d904 (Data publisher)'], ['assigned_by', 'ores.iam.service'],
+              ['assigned_at', '2026-10-06 07:53'], ['change_reason_code', 'access.access_review'],
+              ['request_id', '01a11bc3'], ['the answer took', '22h 41m 2s']],
+      revert: 'close',
+      cannot: 'The grant the approved request applied. Undoing it is the decision type reverse, not an edit.' }
+  ]
+};
+
+/* A service account: the same stream, over an account whose story is its
+ * sign-ins. It is the state that shows the stream is not only for people. */
+const SERVICE = {
+  kind: 'service',
+  name: 'ores.iam.service',
+  initials: 'SV',
+  username: 'ores.iam.service',
+  accountId: 'd0f1a2b3-4c5d-4e6f-8a90-1b2c3d4e5f60',
+  tenant: 'Acme Corporation',
+  party: 'None',
+  status: 'active',
+  version: 1,
+  entities: ['account', 'roles', 'sign-ins'],
+  events: [
+    { at: '2026-09-12 08:00:00.000', entity: 'account', row: 'd0f1a2b3', version: 1, kind: 'change',
+      actor: 'ores.iam.service', head: 'created the service account', reason: 'system.new_record',
+      fields: [['username', '', 'ores.iam.service'], ['account_type', '', 'service'],
+               ['account_status', '', 'active'], ['email', '', 'ores.iam.service@acme.example']],
+      revert: 'none' },
+
+    { at: '2026-09-12 08:00:02.000', entity: 'roles', kind: 'event',
+      actor: 'ores.iam.service', head: 'was given the role Tenant administrator', tag: 'granted',
+      facts: [['role_id', '1e5f8a02 (Tenant administrator)'], ['assigned_by', 'ores.iam.service'],
+              ['change_reason_code', 'system.initial_load']],
+      revert: 'close',
+      cannot: 'A grant, taken away the same way a person\'s is.' },
+
+    { at: '2026-10-06 12:00:00.000', entity: 'sign-ins', kind: 'event', tone: 'quiet',
+      actor: 'ores.iam.service', head: 'signed in', tag: 'login_success',
+      facts: [['event_type', 'login_success'], ['address', '10.0.4.11'], ['session_id', 'aa71c0e2']],
+      revert: 'none',
+      cannot: 'A service signs in every few seconds. The stream is a log, and a log is not reverted.' },
+
+    { at: '2026-10-06 12:00:03.140', entity: 'sign-ins', kind: 'event', tone: 'quiet',
+      actor: 'ores.iam.service', head: 'signed in', tag: 'login_success',
+      facts: [['event_type', 'login_success'], ['address', '10.0.4.11'], ['session_id', 'bb82d1f3']],
+      revert: 'none',
+      cannot: 'Two sign-ins three seconds apart. The stream answers what a page per record cannot: the rate.' },
+
+    { at: '2026-10-06 12:00:06.290', entity: 'sign-ins', kind: 'event', tone: 'quiet',
+      actor: 'ores.iam.service', head: 'refreshed its token', tag: 'token_refresh',
+      facts: [['event_type', 'token_refresh'], ['address', '10.0.4.11'], ['session_id', 'bb82d1f3']],
+      revert: 'none',
+      cannot: 'A refresh. Nothing on this stream is the person\'s to change.' }
+  ]
+};
+
+/* The case file: the same stream over the request Tomás raised, newest first,
+ * every row the six tables wrote, and how long the answer took. */
+const REQUEST = {
+  kind: 'request',
+  name: 'Role request: Data publisher',
+  initials: 'RR',
+  requestId: '01a11bc3-6ffd-74ac-9fdf-34f3c144813c',
+  kindCode: 'iam.role_grant',
+  kindName: 'Role request',
+  forName: 'Tomás Ribeiro',
+  forUsername: 'tomas',
+  roleName: 'Data publisher',
+  state: 'approved',
+  askedAt: '2026-10-05 09:12:00.000',
+  answeredAt: '2026-10-06 07:53:02.000',
+  elapsed: '22h 41m 2s',
+  entities: ['approval_request', 'role_grant_request', 'role_grant_request_role',
+             'approval_decision', 'account_role', 'notification'],
+  events: [
+    { at: '2026-10-05 09:12:00.000', entity: 'approval_request', row: '01a11bc3', version: 1, kind: 'change',
+      actor: 'tomas.ribeiro', head: 'raised the request', reason: 'system.new_record',
+      fields: [['kind_code', '', 'iam.role_grant'], ['state_code', '', 'waiting'],
+               ['requested_by', '', '7c1f0e5a (Tomás Ribeiro)'],
+               ['reason', '', 'I publish the curve sets the desk reads.'],
+               ['expires_at', '', '2026-10-19 09:12:00Z']],
+      revert: 'none' },
+
+    { at: '2026-10-05 09:12:00.010', entity: 'role_grant_request', row: '01a11bc3', version: 1, kind: 'change',
+      actor: 'tomas.ribeiro', head: 'recorded who would hold it', reason: 'system.new_record',
+      fields: [['account_id', '', '7c1f0e5a (Tomás Ribeiro)']],
+      revert: 'none' },
+
+    { at: '2026-10-05 09:12:00.020', entity: 'role_grant_request_role', row: '01a11bc3|c7e1d904', version: 1, kind: 'change',
+      actor: 'tomas.ribeiro', head: 'recorded the role asked for', reason: 'system.new_record',
+      fields: [['role_id', '', 'c7e1d904 (Data publisher)'], ['applied_at', '', '']],
+      revert: 'none' },
+
+    { at: '2026-10-05 09:12:00.100', entity: 'notification', row: 'f0a1...', version: 1, kind: 'change',
+      actor: 'ores.inbox.service', head: 'told whoever may decide it', reason: 'system.new_record',
+      fields: [['kind_code', '', 'notification.inbox.approval_waiting'],
+               ['audience_permission_code', '', 'iam::roles:assign'],
+               ['link_route', '', '/requests'], ['link_id', '', '01a11bc3']],
+      revert: 'none' },
+
+    { at: '2026-10-06 07:53:02.000', entity: 'approval_decision', row: '3c7e9b10', version: 1, kind: 'change',
+      actor: 'priya.natarajan', head: 'approved the request', tag: 'decide', reason: 'system.new_record',
+      fields: [['decision_code', '', 'approve'], ['decided_by', '', '8a1c0d44 (Priya Natarajan)'],
+               ['decided_at', '', '2026-10-06 07:53:02'], ['comment', '', 'Desk lead confirmed.']],
+      revert: 'reverse' },
+
+    { at: '2026-10-06 07:53:02.010', entity: 'approval_request', row: '01a11bc3', version: 2, kind: 'change',
+      actor: 'priya.natarajan', head: 'closed it as approved', reason: 'system.update',
+      comment: 'Decision: approve',
+      fields: [['state_code', 'waiting', 'approved']],
+      revert: 'reverse' },
+
+    { at: '2026-10-06 07:53:02.500', entity: 'account_role', row: 'c7e1d904', version: 1, kind: 'change',
+      actor: 'ores.iam.service', head: 'gave Tomás Ribeiro the role', reason: 'access.access_review',
+      fields: [['role_id', '', 'c7e1d904 (Data publisher)'], ['assigned_by', '', 'ores.iam.service'],
+               ['assigned_at', '', '2026-10-06 07:53:02']],
+      revert: 'reverse' },
+
+    { at: '2026-10-06 07:53:02.600', entity: 'role_grant_request_role', row: '01a11bc3|c7e1d904', version: 2, kind: 'change',
+      actor: 'ores.iam.service', head: 'marked the role applied', reason: 'system.update',
+      fields: [['applied_at', '', '2026-10-06 07:53:02']],
+      revert: 'none' },
+
+    { at: '2026-10-06 07:53:03.000', entity: 'notification', row: 'f0b2...', version: 1, kind: 'change',
+      actor: 'ores.inbox.service', head: 'told Tomás Ribeiro it was approved', reason: 'system.new_record',
+      fields: [['kind_code', '', 'notification.inbox.approval_decided'],
+               ['audience_permission_code', '', '(the requester)'],
+               ['link_route', '', '/requests'], ['link_id', '', '01a11bc3']],
+      revert: 'none' }
+  ]
+};
+
+const SUBJECT = STATE === 'service' ? SERVICE : STATE === 'case' ? REQUEST : TOMAS;
+
+/* --------------------------------------------------------------- helpers */
+
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"]/g,
+    (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+}
+
+const tag = (text, tone) => `<span class="tag ${tone || ''}">${escapeHtml(text)}</span>`;
+
+/*
+ * The green and red widget, copied from
+ * projects/ores.web/packages/web/src/ui/Diff.tsx: the value as it was, in
+ * red, and as it is, in green, with only the characters that moved marked.
+ * The prototype reuses the product's own split so the two cannot drift.
+ */
+function splitValue(before, after) {
+  let prefix = 0;
+  while (prefix < before.length && prefix < after.length && before[prefix] === after[prefix]) prefix += 1;
+  let suffix = 0;
+  while (suffix < before.length - prefix && suffix < after.length - prefix &&
+         before[before.length - 1 - suffix] === after[after.length - 1 - suffix]) suffix += 1;
+  const parts = (text) => [text.slice(0, prefix), text.slice(prefix, text.length - suffix), text.slice(text.length - suffix)];
+  return { old: parts(before), new: parts(after) };
+}
+
+function diffLine(sign, parts, tone) {
+  const [a, b, c] = parts.map(escapeHtml);
+  return `<div class="dl ${tone}"><span class="sign">${sign}</span>` +
+         `<span class="mono">${a}${b !== '' ? `<mark>${b}</mark>` : ''}${c}</span>` +
+         `<span></span></div>`;
+}
+
+function diffLines(before, after) {
+  const parts = splitValue(before, after);
+  return diffLine('&minus;', parts.old, 'old') + diffLine('+', parts.new, 'new');
+}
+
+/* ------------------------------------------------------------ the stream */
+
+const visible = (events) =>
+  events.filter((e) => ENTITY_FILTER === 'all' || e.entity === ENTITY_FILTER);
+
+const ordered = (events) => ORDER === 'old' ? events : [...events].reverse();
+
+function dayLabel(at) { return at.slice(0, 10); }
+
+/*
+ * What a revert would be, per entry. A field change on a versioned record is
+ * the only thing with a revert the record screens already name. A grant is
+ * undone by a further act. A decision is undone by a further decision. A
+ * sign-in is not undone at all. Drawing one button for all four would say they
+ * are the same write.
+ */
+function acts(e) {
+  if (e.revert === 'field') {
+    return `<div class="acts">` +
+      `<button class="btn" data-point="${e.entity}|${e.version}">Restore as of this point</button>` +
+      `<span class="note">Reverting writes the values of version ${e.version} back as a new version ${e.version + 1}.</span>` +
+      `</div>`;
+  }
+  if (e.revert === 'close') {
+    return `<div class="acts"><button class="btn danger">Take away</button>` +
+      `<span class="note">${escapeHtml(e.cannot)}</span></div>`;
+  }
+  if (e.revert === 'reverse') {
+    return `<div class="acts"><button class="btn danger">Reverse</button>` +
+      `<span class="note">Undo an approval; the owning component undoes what it applied. A reverse requires a comment.</span></div>`;
+  }
+  return e.cannot
+    ? `<div class="acts"><span class="note">No revert. ${escapeHtml(e.cannot)}</span></div>`
+    : '';
+}
+
+function fieldRow(e, name, before, after) {
+  const changed = before !== after;
+  const revert = !changed || e.revert !== 'field' ? '' :
+    `<button class="btn" data-revert="${e.entity}|${e.version}|${name}">Revert to v${e.version - 1}</button>`;
+  return `<tr class="${changed ? 'changed' : ''}">
+    <td class="mono faint">${escapeHtml(name)}</td>
+    <td>${changed ? `<div class="diffs">${diffLines(before, after)}</div>` : `<span class="muted">${escapeHtml(after)}</span>`}</td>
+    <td style="width:1%">${revert}</td>
+  </tr>`;
+}
+
+function confirmPanel() {
+  const name = SUBJECT.kind === 'person' ? SUBJECT.name : SUBJECT.forName;
+  return `<div class="confirm">
+    <span>Are you sure you want to revert &lsquo;${escapeHtml(name)}&rsquo; from version 3 back to version 2? This will create a new version with the data from version 2.</span>
+    <span class="why">One record, one write. Reverting the account does not move its contact details or its party links, because those are other records with their own versions.</span>
+    <span class="acts"><button class="btn primary">Revert</button><button class="btn" data-close="1">Cancel</button>
+    <span class="note">The prototype writes nothing.</span></span>
+  </div>`;
+}
+
+function entryBody(e, showConfirm) {
+  const openCase = e.caseFor
+    ? `<div class="acts"><button class="btn primary" data-go="${e.caseFor}">Open the case file</button>
+       <span class="note">This entry is one step of a multi-step activity. Its own stream is the case file.</span></div>` : '';
+  if (e.kind === 'event' || e.fields === undefined) {
+    const facts = e.facts.map(([k, v]) =>
+      `<div><dt>${escapeHtml(k)}</dt><dd>${v === '' ? '<span class="faint">empty</span>' : escapeHtml(v)}</dd></div>`).join('');
+    return `<dl class="facts">${facts}</dl>${acts(e)}${openCase}`;
+  }
+  const rows = e.fields.map(([name, before, after]) => fieldRow(e, name, before, after)).join('');
+  const commentary = e.comment
+    ? `<div class="note">change commentary &middot; <span class="mono">${escapeHtml(e.comment)}</span></div>` : '';
+  const reason = e.reason
+    ? `<div class="note">reason &middot; <span class="mono">${escapeHtml(e.reason)}</span></div>` : '';
+  return `<div class="diffs-wrap"><table>
+      <thead><tr><th style="width:15rem">Field</th><th>Value</th><th></th></tr></thead>
+      <tbody>${rows}</tbody></table>${reason}${commentary}</div>
+    ${showConfirm ? '' : acts(e)}${openCase}`;
+}
+
+function entryTone(e) {
+  if (e.tag === 'granted') return 'k-granted';
+  if (e.tag === 'closed') return 'k-closed';
+  if (e.tag === 'decide') return 'k-decide';
+  return e.kind === 'event' ? 'k-event' : 'k-change';
+}
+
+function entry(e, focusConfirm) {
+  const meta = ENTITY[e.entity] || { label: e.entity, tone: '' };
+  const rowId = e.row ? ` ${e.row}` : '';
+  const version = e.version ? ` v${e.version}` : '';
+  const tone = entryTone(e);
+  const quiet = e.kind === 'event' ? ' quiet' : '';
+  const showConfirm = focusConfirm && e.focus === true;
+  const tagText = e.tag ? tag(e.tag, e.tag === 'granted' ? 'ok' : e.tag === 'closed' ? 'warn' : e.tag === 'login_failure' ? 'bad' : e.tag === 'decide' ? 'warn' : '') : '';
+  return `<li class="ev ${tone}${quiet}">
+    <div class="at">${e.at.slice(11, 19)}</div>
+    <div class="rail"><span class="dot"></span></div>
+    <div class="body">
+      <div class="head">
+        <span class="tag ${meta.tone}">${escapeHtml(meta.label)}</span>
+        <span class="mono faint">${escapeHtml(rowId.trim())}${escapeHtml(version)}</span>
+        ${tagText}
+        <span class="who">${escapeHtml(e.actor)}</span>
+        <span>${escapeHtml(e.head)}</span>
+        <span class="faint when">${escapeHtml(e.at.slice(0, 10))}</span>
+      </div>
+      ${showConfirm ? confirmPanel() : ''}
+      ${entryBody(e, showConfirm)}
+    </div>
+  </li>`;
+}
+
+function stream() {
+  const events = ordered(visible(SUBJECT.events));
+  let lastDay = '';
+  return events.map((e) => {
+    const day = dayLabel(e.at);
+    const divider = day === lastDay ? '' : `<li class="day"><span class="label">${escapeHtml(day)}</span></li>`;
+    lastDay = day;
+    return divider + entry(e, STATE === 'revert');
+  }).join('');
+}
+
+/* -------------------------------------------------------------- the page */
+
+function personHeader() {
+  return `<div class="top">
+    <span class="face">${escapeHtml(SUBJECT.initials)}</span>
+    <div>
+      <h1>${escapeHtml(SUBJECT.name)}</h1>
+      <p class="muted">${escapeHtml(SUBJECT.username || '')}${SUBJECT.forUsername ? ` &middot; asked for ${escapeHtml(SUBJECT.roleName)}` : ''}</p>
+    </div>
+    ${tag(SUBJECT.status || SUBJECT.state, 'ok')}
+    <span class="faint" style="margin-left:auto">Account v${SUBJECT.version}</span>
+  </div>
+  <div class="panel">
+    <h2>${SUBJECT.kind === 'person' ? 'The person, as the tabs read it today' : 'What is true now'}</h2>
+    <div class="row">
+      <div class="field"><label>Tenant</label><div class="value">${escapeHtml(SUBJECT.tenant)}</div></div>
+      <div class="field"><label>Party</label><div class="value">${escapeHtml(SUBJECT.party)}</div></div>
+      <div class="field"><label>Entities in the stream</label><div class="value">${SUBJECT.entities.length}</div></div>
+      <div class="field"><label>Entries</label><div class="value">${SUBJECT.events.length}</div></div>
+      <div class="field"><label>Changes</label><div class="value">${SUBJECT.events.filter((e) => e.kind !== 'event').length}</div></div>
+      <div class="field"><label>Events</label><div class="value">${SUBJECT.events.filter((e) => e.kind === 'event').length}</div></div>
+    </div>
+    <div class="notice">The person screen already answers what is true now, one tab at a time:
+    Details, Contact, Roles, Sign-ins. This screen answers how it got that way. It reads the same
+    rows and adds no store.</div>
+  </div>`;
+}
+
+function requestHeader() {
+  return `<div class="top">
+    <span class="face">${escapeHtml(SUBJECT.initials)}</span>
+    <div>
+      <h1>${escapeHtml(SUBJECT.name)}</h1>
+      <p class="muted">${escapeHtml(SUBJECT.kindCode)} &middot; ${escapeHtml(SUBJECT.kindName)} &middot; for ${escapeHtml(SUBJECT.forName)} (${escapeHtml(SUBJECT.forUsername)})</p>
+    </div>
+    ${tag(SUBJECT.state, 'ok')}
+    <span class="faint mono" style="margin-left:auto">${escapeHtml(SUBJECT.requestId)}</span>
+  </div>
+  <div class="panel">
+    <h2>The case file</h2>
+    <div class="row">
+      <div class="field"><label>Asked</label><div class="value mono">${escapeHtml(SUBJECT.askedAt.slice(0, 19))}</div></div>
+      <div class="field"><label>Answered</label><div class="value mono">${escapeHtml(SUBJECT.answeredAt.slice(0, 19))}</div></div>
+      <div class="field"><label>The answer took</label><div class="value">${escapeHtml(SUBJECT.elapsed)}</div></div>
+      <div class="field"><label>Tables written</label><div class="value">${SUBJECT.entities.length}</div></div>
+      <div class="field"><label>Rows written</label><div class="value">${SUBJECT.events.length}</div></div>
+    </div>
+    <div class="elapsed"><b>${escapeHtml(SUBJECT.elapsed)}</b><span class="muted">from the ask to the grant. A person's stream has no such number, because it has neither a beginning nor an end.</span></div>
+    <div class="bar-fill"><i style="width:100%"></i></div>
+    <div class="notice"><strong>This is the same stream.</strong> The rail, the entries, the
+    green and red widget and the revert column are the person screen's. Only the header, the
+    entities the badge names, and what a revert means have changed. The kind
+    <span class="mono">iam.role_grant</span> allows no hold
+    (<span class="mono">allows_hold = false</span>), so no hold step appears here: the decision
+    types hold and resume exist, but this kind cannot use them.</div>
+  </div>`;
+}
+
+function provenance() {
+  const seen = [];
+  for (const e of SUBJECT.events) if (seen.indexOf(e.entity) < 0) seen.push(e.entity);
+  const rows = seen.map((name) => {
+    const meta = ENTITY[name];
+    return `<tr>
+      <td><span class="tag ${meta.tone}">${escapeHtml(meta.label)}</span></td>
+      <td class="mono">${escapeHtml(meta.table)}</td>
+      <td>${escapeHtml(meta.read)}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="panel">
+    <h2>Where each entry comes from</h2>
+    <table class="legend">
+      <thead><tr><th>Entity</th><th>Table it is a version of</th><th>Read today</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="notice">Every entry here is a version with an actor and a time, so the stream
+    needs no new store: it is a read across the histories the components already keep. Three of
+    those reads do not exist yet, and each is named in the third column rather than drawn as
+    though it did.</div>
+  </div>`;
+}
+
+function stateNotice() {
+  const s = STATES[STATE];
+  if (STATE === 'revert') {
+    return `<div class="panel">
+      <h2>What a revert is, on a person</h2>
+      <div class="notice">Three different writes are drawn on this screen, and they are not the
+      same write. A field on a versioned record is reverted by writing its older value back as a
+      new version. A role grant is taken away, which closes it. A sign-in is not undone at all.
+      The green and red widget is the same in every case; the button beside it is not, because
+      the permission and the operation are not. Only the first has an operation today: the
+      account is written by <span class="mono">iam.v1.accounts.update</span>, and no screen
+      offers a revert of it.</div>
+      <div class="acts"><span class="note">The entry on 2026-10-03 is shown with its confirmation
+      open. &lsquo;Restore as of this point&rsquo; is drawn on every change and can restore
+      nothing: no operation writes one person's account, contact details and party links back to
+      one instant together.</span></div>
+    </div>`;
+  }
+  if (STATE === 'service') {
+    return `<div class="panel"><h2>Why this state exists</h2>
+      <div class="notice">A service account is an account of the same table, so the same stream
+      draws it. It is the state that tests the design: a service owns no name, no address and no
+      party, so almost every entry is a sign-in with no revert. If the stream only reads well
+      for people, it is not the general screen the request asked for.</div></div>`;
+  }
+  if (STATE === 'case') {
+    return `<div class="panel"><h2>What generalises, and what does not</h2>
+      <div class="notice">
+      <strong>Generalises:</strong> the rail, the day dividers, the entity badge, the
+      quiet rendering for an entry with no diff, the green and red widget for a field that
+      changed, and the rule that a revert is offered only where a write exists to serve it.
+      <br><br>
+      <strong>Does not:</strong> the header (a request has a kind, a state and an asker, not a
+      face); elapsed time (a request has a beginning and an end, a person does not); and what a
+      revert means (a step is a decision, undone by a further decision with its own permission).
+      None of those live in the stream, so the stream carries across unchanged.
+      </div></div>`;
+  }
+  return '';
+}
+
+function stateBar() {
+  const s = STATES[STATE];
+  return `<span><b>State ${STATE}</b> &mdash; ${escapeHtml(s.name)}</span>
+    <span>${escapeHtml(s.gist)}</span>
+    <span class="log">order=${ORDER} &middot; entity=${ENTITY} &middot; subject=${SUBJECT.kind} &middot; mock data, no service is called</span>`;
+}
+
+/* ------------------------------------------------------------------ wire */
+
+function render() {
+  document.getElementById('app').innerHTML =
+    (SUBJECT.kind === 'request' ? requestHeader() : personHeader()) +
+    stateNotice() +
+    `<div class="panel">
+      <h2>${ORDER === 'old' ? 'The story, oldest first' : 'The story, newest first'}</h2>
+      <ul class="stream">${stream()}</ul>
+      <div class="notice">${ORDER === 'old'
+        ? 'Oldest first reads as a case file: the person arrives and the story accumulates. It puts what is true now at the far end of a long scroll.'
+        : 'Newest first reads from what is true now backwards, and agrees with the record screens, whose history is newest first, and with the request story accepted on 2026-10-08. It puts the answer to &ldquo;how did we get here&rdquo; immediately under the current state.'}
+      </div>
+    </div>` +
+    provenance();
+
+  const s = STATES[STATE];
+  document.getElementById('note').textContent =
+    `PROTOTYPE \u00b7 one ${SUBJECT.kind}'s timeline \u00b7 state ${STATE} \u00b7 ` +
+    `${s.name} \u00b7 mock data, no service is called`;
+  document.getElementById('statebar').hidden = false;
+  document.getElementById('statebar').innerHTML = stateBar();
+  document.getElementById('bar').innerHTML =
+    `<span class="label">State</span>` +
+    Object.keys(STATES).map((k) =>
+      `<button data-state="${k}" class="${k === STATE ? 'on' : ''}">${k}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Order</span>` +
+    ['new', 'old'].map((o) =>
+      `<button data-order="${o}" class="${o === ORDER ? 'on' : ''}">${o === 'new' ? 'newest first' : 'oldest first'}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Entity</span>` +
+    ['all'].concat(SUBJECT.entities).map((n) =>
+      `<button data-entity="${n}" class="${n === ENTITY_FILTER ? 'on' : ''}">${n}</button>`).join('');
+  wire();
+}
+
+function go(key, value) {
+  const p = new URLSearchParams(location.search);
+  p.set(key, value);
+  location.search = p.toString();
+}
+
+function wire() {
+  document.querySelectorAll('#bar [data-state]').forEach((b) =>
+    b.onclick = () => go('state', b.dataset.state));
+  document.querySelectorAll('#bar [data-order]').forEach((b) =>
+    b.onclick = () => go('order', b.dataset.order));
+  document.querySelectorAll('#bar [data-entity]').forEach((b) =>
+    b.onclick = () => go('entity', b.dataset.entity));
+  document.querySelectorAll('#app [data-go]').forEach((b) =>
+    b.onclick = () => go('state', b.dataset.go));
+  let pending = null;
+  document.querySelectorAll('#app [data-revert]').forEach((b) =>
+    b.onclick = () => {
+      if (pending) pending.textContent = 'Revert to v' + (b.dataset.revert.split('|')[1] * 1 - 1);
+      b.textContent = 'Reverting is not wired in a prototype.';
+      b.classList.add('danger');
+      pending = b;
+    });
+  document.querySelectorAll('#app [data-point]').forEach((b) =>
+    b.onclick = () => {
+      b.textContent = 'No operation writes several records to one instant.';
+      b.classList.add('danger');
+    });
+}
+
+render();
+</script>
+</body>
+</html>

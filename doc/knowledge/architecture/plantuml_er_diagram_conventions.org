@@ -26,8 +26,13 @@ another file.
 |-----------+--------------------------------------|
 | Index     | [[proj:projects/ores.sql/modeling/ores_schema.puml][=projects/ores.sql/modeling/ores_schema.puml=]] — every group, its file, and its tables |
 | Group     | =projects/ores.sql/modeling/ores_schema.<group>.puml= — one per package, committed |
-| Rendered  | [[proj:projects/ores.sql/modeling/ores_schema.png][=projects/ores.sql/modeling/ores_schema.png=]] (committed) |
+| Drawn     | =projects/ores.sql/modeling/ores_schema*.svg= — one per file, *not* committed |
 | CMakeLists | [[proj:projects/ores.sql/modeling/CMakeLists.txt][=projects/ores.sql/modeling/CMakeLists.txt=]] |
+
+The =.puml= files are the artefacts. An image is drawn on demand, as SVG:
+the schema has no raster budget left, and PlantUML bakes the installed
+build's layout into any image it draws, so an image cannot be regenerated
+identically on another machine and is not committed.
 
 * Generation pipeline
 
@@ -44,7 +49,7 @@ The pipeline has three stages, all driven by
 |----------+--------------------------------------------------------+----------------------------------------------+---------------------------------|
 | Parse    | =projects/ores.sql/create/**/*.sql=                    | [[proj:projects/ores.codegen/src/plantuml_er_parse_sql.py][=projects/ores.codegen/src/plantuml_er_parse_sql.py=]] | =build/output/codegen/plantuml_er_model.json= |
 | Render   | the intermediate JSON + a mustache template per group, and one for the index | [[proj:projects/ores.codegen/src/plantuml_er_generate.py][=projects/ores.codegen/src/plantuml_er_generate.py=]] (pystache) | =projects/ores.sql/modeling/ores_schema.<group>.puml=, and the index at =ores_schema.puml= |
-| Diagram  | the =.puml= files                                      | PlantUML (system =plantuml=, or =plantuml.jar=) | [[proj:projects/ores.sql/modeling/ores_schema.png][=projects/ores.sql/modeling/ores_schema.png=]] |
+| Draw     | the =.puml= files                                      | PlantUML (system =plantuml=, or =plantuml.jar=) | =projects/ores.sql/modeling/ores_schema*.svg= (untracked) |
 
 The intermediate model file is *not* committed and *not* literate. It
 lives under =build/output/= (gitignored) because it is regenerated on
@@ -54,9 +59,10 @@ doesn't benefit from org-mode literate prose, drawers, or block-paste
 mechanisms — those are reserved for the *authored* models humans
 maintain (under each component's =modeling/= directory).
 
-The =.puml= files and the =.png= are committed because reviewers and
-readers benefit from seeing schema-shape diffs in PRs and viewing a
-group without rebuilding.
+The =.puml= files are committed because reviewers and readers benefit
+from seeing schema-shape diffs in PRs. The images are not: a reader who
+wants one draws it with the same script a build runs, and the drawing is
+a click away rather than a several-megabyte file in every checkout.
 
 * Skeleton
 

@@ -86,7 +86,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
 
 =ores_geo_ip2country_lookup_fn= ignored the tenant whose ranges it searched
 and returned the first match in the table. It now takes the tenant, so the

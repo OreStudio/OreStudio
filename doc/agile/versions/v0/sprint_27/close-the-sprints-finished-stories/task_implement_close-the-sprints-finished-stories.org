@@ -8,7 +8,7 @@
 #+filetags: :close-the-sprints-finished-stories:sprint_27:v0:
 #+owner: marco
 #+branch: feature/close-the-sprints-finished-stories
-#+pr:
+#+pr: 2928
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -79,7 +79,7 @@ so a reader is not misled into thinking somebody re-verified the goals.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2928][#2928]] | [agile] Close the sprint's finished stories |
 
 * Review
 

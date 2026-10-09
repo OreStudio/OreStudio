@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 774AD81D-E286-4A5D-BBDE-4188CAAE7023
+:END:
+#+title: Story: Implement the membership journeys in ores.web
+#+description: The two Membership journeys run in ores.web: the member picks the party they act for and switches between them, and the tenant administrator reads and corrects the reporting line.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:journeys:membership:v0:sprint_27:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The two Membership journeys run in ores.web against the real server. The member reads the parties their account works in, sets the party quick sign-in uses, and switches the party the session acts for. The tenant administrator reads the reporting line as a tree and corrects it, with every change recorded and no loop.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Both prototypes are built and accepted by the product owner on 2026-10-09: Where I work variant A, Reporting lines variant A. |
+| Waiting on    | Nothing.                               |
+| Next          | Write the build tasks from the accepted prototypes. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- Every Membership journey in the catalogue runs in ores.web against the real server.
+- A party reads as a name, never as a bare identifier, on both journeys.
+- The server refuses a reporting-line change that would make a loop, and the tree screen states the refusal.
+- Every gap a journey document records is closed or stated on the screen, and the statement is recorded on this story.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4CEC2C02-B400-4B4D-B72C-27B0E8F5CED2][Scaffold story: Implement the membership journeys in ores.web]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B3D7CFB5-753F-41E1-9545-89B271D5D1A6][Prototype Where I work]] | DONE | 2026-10-09 | 2026-10-09 | [wayfinder:prototype] The member's screen: the identity summary, the parties the account works in, the default party, the switch, and the gap where no client path exists. |
+| [[id:08E9CD97-DE62-4F88-95BB-E26A5703DD8D][Prototype Reporting lines]] | DONE | 2026-10-09 | 2026-10-09 | [wayfinder:prototype] The administrator's screen: the reporting tree, the selected account's line, the manager picker with a change reason, and the gap where no approval exists. |
+
+* Plan
+
+The prototypes come first, because the screen decides what the server must
+serve. Both journeys carry gaps no screen can be sized around without seeing it:
+neither can name a party today, the reporting line has no tree read and no cycle
+guard, and a change to it has no approval. A prototype shows the shape, the copy
+and the empty states, and it makes the server work visible before anybody plans
+it.
+
+| # | Step | What it leaves behind |
+|---+------+-----------------------|
+| 1 | Scaffold the story and wire it into the programme | The story, the two prototype tasks, the sprint row and the programme's order table. |
+| 2 | Prototype Where I work | The member's screen, three variants on one static page, each stating the gaps the journey records. |
+| 3 | Prototype Reporting lines | The administrator's tree, three variants on one static page, each stating the gaps the journey records. |
+| 4 | The product owner signs both off | The accepted variants, recorded on the two tasks and in this story's =* Decisions=. |
+| 5 | Write the build tasks from the accepted prototypes | One task per screen and one per server gap, each naming the accepted prototype as its design record. |
+
+* Decisions
+
+- *The accepted variants are A on both screens.* Where I work puts a card per
+  party with both actions on the card they change, so nothing depends on a
+  selection made elsewhere. Reporting lines puts the indented tree beside the
+  selected person, with the whole tenant on one screen and the controls in a
+  fixed place. Each prototype task's =* Result= records what the accepted
+  variant settles and what the rejected ones gave up.
+- *The prototypes precede the build.* A screen with three missing operations
+  cannot be sized from its document alone. The prototype shows the layout, the
+  copy and the empty states, and the build tasks are written from what the
+  product owner accepts.
+- *A prototype is a static page under =doc/prototypes/membership/=.* React is
+  for the product. The
+  [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] page states the one
+  way to add one, and nothing here adds a second.
+- *A party reads as a name on both journeys.* The account-party association
+  carries =party_id= alone and no read outside sign-in turns it into a name.
+  Both screens show a party, so the lookup is one server gap and not two, and
+  the prototypes state the gap rather than inventing a name in a panel the
+  server cannot fill.
+- *The journey documents stay with the extraction pass.* Where a prototype
+  disproves a claim in a journey document, the correction is recorded on the
+  task and on this story, and lands in the document with
+  [[id:1BDBC708-2749-41D0-9E2F-6B0EB7FBE645][Extract the remaining component
+  user journeys]].
+- *The reporting-line approval is stated, not built, unless the build carries
+  it.* The journey makes a change a proposal that a superior or a tenant
+  administrator approves, and nothing in the platform holds an approval. The
+  prototype states who approves and draws the line still, so the gap is visible
+  in the design rather than discovered during the build.
+
+* Out of scope
+
+- The journey extraction, which is
+  [[id:1BDBC708-2749-41D0-9E2F-6B0EB7FBE645][Extract the remaining component
+  user journeys]].
+- The other journey groups, Directory among them, each of which has its own
+  story in the programme's order table.
+- The delivery machinery for an approval — a request, a queue, a notification
+  and a decision — which is platform work rather than a Membership screen.
+
+* Documents
+
+| Document | Kind | Purpose |
+|----------+------+---------|
+| [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] | knowledge | The catalogue this story implements. |
+| [[id:EC3EDE29-5A12-44C0-80A5-D96ADAF2898F][Membership journeys]] | knowledge | The group: the two journeys and the rules that frame them. |
+| [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]] | user_journey | The member's journey, and the gaps the first prototype answers. |
+| [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] | user_journey | The administrator's journey, and the gaps the second prototype answers. |
+| [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] | knowledge | The only inventory of prototypes, and the one way to add one. |
+| [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] | knowledge | The checklist every TypeScript package in the tree passes, which the build tasks follow. |
+

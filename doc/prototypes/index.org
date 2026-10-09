@@ -34,7 +34,7 @@ This page is the top of the tree and the only inventory.
 | [[file:profile/][Profile]] | How a person is represented: name, photo, job title, contact details | 1 |
 | [[file:credentials/][Credentials]] | Passwords, sign-in state, and the audit of who signed in | 3 |
 | [[file:access/][Access]] | Roles, and the permissions each role bundles | 3 |
-| [[file:../knowledge/journeys/membership/membership.org][Membership]] | Which parties a person works in, and who they report to | none yet |
+| [[file:membership/][Membership]] | Which parties a person works in, and who they report to | 2 |
 | [[file:../knowledge/journeys/directory/directory.org][Directory]] | The account roster, and bringing accounts in | none yet |
 | [[file:tenancy/][Tenancy]] | The tenant itself, its lifecycle, and the lookups that classify things | 2 |
 | [[file:operations/][Operations]] | The installation's own life: the services running, the compute grid, the message bus, the logs, and the versions and database under them | 6 |
@@ -48,7 +48,7 @@ This page is the top of the tree and the only inventory.
 | [[file:tenors/][Tenors]] | Tenor codes and the resolution the system computes from them | 1 |
 | [[file:market_data/][Market data]] | Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time | 21 |
 
-Four groups have no prototype yet: Membership, Directory, Currencies and FX,
+Three groups have no prototype yet: Directory, Currencies and FX,
 and Calendars. Their journeys are the first place a new prototype would go.
 
 * Where a prototype sits

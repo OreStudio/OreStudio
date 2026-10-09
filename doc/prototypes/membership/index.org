@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 2FB1764D-58C7-4006-8053-6025BD855BBF
+:END:
+#+title: Membership prototypes
+#+description: The prototypes that answer to the Membership journeys: what each argues, and the Gemini review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:membership:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+* Summary
+
+Which parties a person works in, and who they report to.
+
+2 prototypes answer to this group. Each one is a static page under
+=doc/prototypes/=, opens with no build and no session, and reads mock data
+only. The table below opens each one and says what it argues. Where a
+prototype carries a Gemini review, the last column opens it: a review is a
+generated alternative kept beside the agreed design, never instead of it.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype                              | What it argues | Open it | Review |
+|----------------------------------------+----------------+---------+--------|
+| [[file:where-i-work.org][Where I work]] | The member's screen for the parties their account works in: one place each, one list with an action bar, or two columns of "where I am" and "where I can be". Every variant states that no read can name a party yet and that the default cannot be cleared. | [[file:where-i-work/][prototype]] | none |
+| [[file:reporting-lines.org][Reporting lines]] | The administrator's view of who reports to whom: an indented tree, a chart of boxes, or a table by depth. Every variant nests the flat roster in the browser, refuses a manager who would close a loop, and states that no approval exists. | [[file:reporting-lines/][prototype]] | none |
+
+* Adding a prototype
+
+Create =doc/prototypes/membership/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Open the page with
+the links table every prototype carries, and leave its review row at
+=none=. Add a row to the table above, with the design note beside the
+prototype when there is one. Stop there: the site build finds every
+prototype under this tree, so no build file names it.
+
+A review goes at =doc/prototypes/membership/<name>/review/=, with an
+=index.html= that lists its screens. The row names it, and the
+prototype's review row points at it. [[file:../index.org][Prototypes]] states the
+whole method and the rules that hold for every group.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
+- [[file:../../knowledge/journeys/membership/membership.org][Membership journeys]] — the journeys these prototypes answer.

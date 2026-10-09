@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  "Reporting lines": the tenant administrator reads the shape of the
+  organisation and corrects who reports to whom. Three variants on one static
+  page, switched from the bar at the foot. Every panel states the gap the
+  journey document records, and the roster is read flat and nested here,
+  because the server serves no tree.
+-->
+<title>ORE Studio · Reporting lines</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+/* Colour and type are the web app's tokens (projects/ores.web/packages/web/src/styles.css). */
+:root {
+  color-scheme: dark;
+  --bg: #121214; --raised: #1a1a1e; --overlay: #26262b;
+  --line-subtle: #21262d; --line: #30363d; --line-strong: #4a5568;
+  --ink: #e3e3e6; --ink-muted: #a1a1aa; --ink-faint: #71717a; --ink-inverse: #0d1117;
+  --accent: #58a6ff; --accent-bright: #8ab4f8; --accent-dim: #1b2a3d;
+  --up: #3fb950; --up-strong: #238636; --down: #f85149; --warn: #d29922; --purple: #8957e5;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --radius: 0.5rem;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); color: var(--ink); }
+body { margin: 0; font: 14px/1.5 var(--sans); padding-bottom: 8rem; }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--accent); text-decoration: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.01em; }
+h1 { font-size: 1.375rem; } h2 { font-size: 1rem; } h3 { font-size: 0.875rem; }
+p { margin: 0; }
+.muted { color: var(--ink-muted); } .faint { color: var(--ink-faint); }
+.code { font-family: var(--mono); font-size: 12px; }
+.mini { font-size: 12px; }
+
+/* Header */
+.top { position: sticky; top: 0; z-index: 5; background: var(--raised); border-bottom: 1px solid var(--line); }
+.top-inner { max-width: 78rem; margin: 0 auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.brand { font-weight: 700; letter-spacing: 0.02em; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+.brand-mark { width: 1.25rem; height: 1.25rem; border-radius: 4px; background: linear-gradient(135deg, var(--accent), #1f6feb); }
+.place { font-size: 12px; color: var(--ink-muted); border-left: 1px solid var(--line); padding-left: 1rem; white-space: nowrap; }
+.menu { display: flex; gap: 0.25rem; flex-wrap: wrap; flex: 1; min-width: 0; }
+.menu button { background: none; border: 0; padding: 0.375rem 0.625rem; border-radius: 6px; color: var(--ink-muted); cursor: pointer; }
+.menu button:hover { background: var(--overlay); color: var(--ink); }
+.menu button[aria-current="page"] { color: var(--ink); background: var(--overlay); }
+.me { display: flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid transparent; border-radius: 999px; padding: 0.125rem 0.625rem 0.125rem 0.125rem; cursor: default; }
+.avatar { width: 1.75rem; height: 1.75rem; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--accent-dim); color: var(--accent-bright); }
+
+/* Page */
+main { max-width: 78rem; margin: 0 auto; padding: 1.5rem 1rem; display: grid; gap: 1.25rem; }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.head > div { min-width: 0; display: grid; gap: 0.25rem; }
+.crumbs { font-size: 12px; color: var(--ink-faint); display: flex; gap: 0.375rem; }
+section.card { background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); }
+.card.pad { padding: 1rem; }
+.grid { display: grid; gap: 1rem; }
+.split { grid-template-columns: minmax(0, 1.35fr) minmax(20rem, 1fr); align-items: start; }
+@media (max-width: 60rem) { .split { grid-template-columns: 1fr; } }
+.toolbar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.625rem 1rem; border-bottom: 1px solid var(--line); }
+.toolbar .spacer { margin-left: auto; }
+
+/* Chips and buttons */
+.chip { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 11px; padding: 0.1rem 0.45rem; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap; }
+.chip.warn { border-color: var(--warn); color: var(--warn); }
+.chip.up { border-color: var(--up-strong); color: var(--up); }
+.btn { border: 1px solid var(--line); background: var(--raised); padding: 0.375rem 0.75rem; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.btn:hover:not(:disabled) { border-color: var(--line-strong); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--ink-inverse); font-weight: 600; }
+.btn.primary:hover:not(:disabled) { background: var(--accent-bright); border-color: var(--accent-bright); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.small { padding: 0.25rem 0.5rem; font-size: 12px; }
+select, input[type="text"] { background: var(--overlay); border: 1px solid var(--line); border-radius: 6px; padding: 0.35rem 0.5rem; }
+label.field { display: grid; gap: 0.25rem; }
+label.field > span { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); }
+
+/* Tree */
+.tree-scroll { max-height: 34rem; overflow: auto; padding: 0.75rem 0.5rem 1rem; }
+ul.tree, ul.tree ul { list-style: none; margin: 0; padding: 0; }
+ul.tree ul { margin-left: 1.35rem; border-left: 1px solid var(--line-subtle); }
+ul.tree li { position: relative; }
+.node { display: flex; align-items: center; gap: 0.5rem; width: 100%; text-align: left; background: none; border: 1px solid transparent; border-radius: 6px; padding: 0.3rem 0.5rem; cursor: pointer; }
+.node:hover { background: var(--overlay); }
+.node[aria-selected="true"] { background: var(--accent-dim); border-color: var(--accent); }
+.node .twist { width: 1rem; text-align: center; color: var(--ink-faint); flex: none; }
+.node .twist.leaf { visibility: hidden; }
+.node .who { min-width: 0; display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.node .nm { font-weight: 600; white-space: nowrap; }
+.node .ttl { font-size: 12px; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.node .depth { margin-left: auto; }
+.gapline { border-bottom: 1px dotted var(--warn); cursor: help; }
+
+/* Chart */
+.chart-scroll { overflow: auto; padding: 1rem; }
+.org { display: inline-block; }
+.org ul { display: flex; justify-content: center; gap: 1rem; list-style: none; margin: 0; padding: 1.25rem 0 0; position: relative; }
+.org ul::before { content: ""; position: absolute; top: 0; left: 50%; border-left: 1px solid var(--line-strong); height: 1.25rem; }
+.org li { position: relative; padding-top: 0; text-align: center; }
+.org li::before { content: ""; position: absolute; top: -1.25rem; left: 50%; border-left: 1px solid var(--line-strong); height: 1.25rem; }
+.org li:only-child::before { display: none; }
+.org > ul { padding-top: 0; }
+.org > ul::before { display: none; }
+.box { display: inline-grid; gap: 0.125rem; min-width: 11rem; max-width: 13rem; text-align: left; background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.5rem 0.625rem; cursor: pointer; }
+.box:hover { border-color: var(--line-strong); }
+.box[aria-selected="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.box .nm { font-weight: 600; }
+.box .ttl { font-size: 11px; color: var(--ink-muted); }
+.box .off { font-size: 11px; color: var(--ink-faint); }
+.box .kids { font-size: 11px; color: var(--ink-faint); }
+
+/* Table */
+.table-wrap { overflow-x: auto; max-height: 34rem; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--line-subtle); vertical-align: middle; }
+th { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; position: sticky; top: 0; background: var(--raised); }
+tbody tr:last-child td { border-bottom: 0; }
+tr.picked { background: var(--overlay); }
+.indent { display: inline-block; width: 1rem; color: var(--ink-faint); }
+
+/* Inspector */
+.inspector { display: grid; gap: 1rem; }
+.person { display: flex; gap: 0.75rem; align-items: center; }
+.avatar-lg { width: 2.5rem; height: 2.5rem; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--accent-dim); color: var(--accent-bright); flex: none; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.75rem 1rem; }
+.fact { display: grid; gap: 0.125rem; }
+.fact .label { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); }
+.controls { display: grid; gap: 0.75rem; border-top: 1px solid var(--line-subtle); padding-top: 0.875rem; }
+.controls .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: end; }
+.warnbox { border: 1px solid var(--warn); border-left-width: 3px; border-radius: var(--radius); padding: 0.625rem 0.75rem; display: grid; gap: 0.25rem; }
+.okbox { border: 1px solid var(--up-strong); border-left-width: 3px; border-radius: var(--radius); padding: 0.625rem 0.75rem; display: grid; gap: 0.25rem; }
+.hint { font-size: 12px; color: var(--ink-muted); }
+
+/* Gaps and bar */
+.gaps { border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 1rem; display: grid; gap: 0.5rem; }
+.gaps h2 { display: flex; align-items: center; gap: 0.5rem; }
+.gaps ol { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.375rem; }
+.gaps li { color: var(--ink-muted); }
+.proto-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--overlay); border-top: 1px solid var(--line); display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.5rem 1rem; }
+.proto-bar .who { font-weight: 600; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { background: none; border: 0; padding: 0.3rem 0.7rem; cursor: pointer; color: var(--ink-muted); }
+.seg button[aria-pressed="true"] { background: var(--accent-dim); color: var(--accent-bright); }
+.spacer { margin-left: auto; }
+#notes { position: fixed; left: 1rem; right: 1rem; bottom: 3.75rem; z-index: 11; max-width: 78rem; margin: 0 auto; max-height: 60vh; overflow: auto; background: var(--overlay); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 1rem 1.25rem; box-shadow: 0 16px 48px rgba(0,0,0,0.5); display: grid; gap: 0.75rem; }
+#notes ul { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.375rem; }
+#notes li { color: var(--ink-muted); }
+.toast { position: fixed; bottom: 3.75rem; left: 50%; transform: translateX(-50%); z-index: 12; background: var(--overlay); border: 1px solid var(--line-strong); border-radius: 999px; padding: 0.4rem 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <span class="brand"><span class="brand-mark" aria-hidden="true"></span>ORE Studio</span>
+    <span class="place">Acme Corporation</span>
+    <nav class="menu" aria-label="Areas">
+      <button>Home</button>
+      <button>Parties</button>
+      <button aria-current="page">People</button>
+      <button>Reference data</button>
+      <button>Trading</button>
+      <button>Reporting</button>
+    </nav>
+    <span class="me">
+      <span class="avatar" aria-hidden="true">LS</span>
+      <span>Leanne Shaw</span>
+      <span class="faint">· Tenant administrator</span>
+    </span>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer class="proto-bar">
+  <span class="who">Prototype · Reporting lines</span>
+  <div class="seg" id="variant-seg" role="group" aria-label="Variant"></div>
+  <div class="seg" id="case-seg" role="group" aria-label="Case"></div>
+  <span class="spacer"></span>
+  <button class="btn small" id="notes-btn" aria-expanded="false">What this prototype argues</button>
+</footer>
+
+<div id="notes" hidden>
+  <h2>What this prototype argues</h2>
+  <p class="muted">One screen, three panels: the shape, the selected person, and the controls that change the line. The journey document fixes the panels; the variants decide how the shape is drawn.</p>
+  <ul>
+    <li><strong>A · Tree and inspector (recommended).</strong> An indented tree with expand and collapse, and the selected person beside it. It shows depth and branches plainly, keeps the whole tenant on one screen, and gives the controls a fixed place.</li>
+    <li><strong>B · Chart of boxes.</strong> The same tree as boxes with connector lines. It reads as an organisation chart, and it stops working past a few hundred people and on a narrow window.</li>
+    <li><strong>C · Table by depth.</strong> A flat table, indented, one row per person. Best for search and for reading a manager column; the shape has to be inferred from the indentation.</li>
+    <li><strong>Nothing here is a tree read.</strong> The server answers one flat page of accounts with <span class="code">reports_to_account_id</span> per row, so this page nests the flat list in the browser and says so. A large tenant needs the tree read the journey proposes.</li>
+    <li><strong>The server accepts a loop.</strong> Nothing refuses <em>A reports to B</em> when <em>B</em> already reports to <em>A</em>. The picker leaves out the people who would close the cycle, and states that the screen is doing the check the server does not.</li>
+    <li><strong>There is no reporting-line-only write.</strong> Saving sends the whole account, so a concurrent edit to the job title is overwritten by the copy this screen holds.</li>
+    <li><strong>No approval exists.</strong> A person's proposal to change their line has no request, no queue, no notification and no decision, so the screen states who approves and the line does not move for a proposal.</li>
+    <li><strong>An office cannot be named yet.</strong> The card would show the party a person works in, and the association read carries <span class="code">party_id</span> alone. Values underlined in amber are mock.</li>
+    <li><strong>The line has no history here.</strong> The account is versioned, so a change is recoverable, and this screen states none of it.</li>
+    <li>The signed-in administrator is a mock persona. The journey's actor is the tenant administrator; the name in the header is for the picture.</li>
+  </ul>
+</div>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const PEOPLE = [ { "id": "adrian.vance", "name": "Adrian Vance", "title": "Group Chief Executive Officer", "party": "Acme Corporation Plc", "centre": "London", "mgr": null, "initials": "AV" }, { "id": "leanne.shaw", "name": "Leanne Shaw", "title": "Country Head", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "adrian.vance", "initials": "LS" }, { "id": "sam.turnbull", "name": "Sam Turnbull", "title": "COO", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "leanne.shaw", "initials": "ST" }, { "id": "vanessa.walker", "name": "Vanessa Walker", "title": "Head of Risk", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "leanne.shaw", "initials": "VW" }, { "id": "joshua.brown", "name": "Joshua Brown", "title": "Head of Trading", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "leanne.shaw", "initials": "JB" }, { "id": "diane.kay", "name": "Diane Kay", "title": "Head of Desk", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "joshua.brown", "initials": "DK" }, { "id": "william.thomson", "name": "William Thomson", "title": "Senior Trader", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "diane.kay", "initials": "WT" }, { "id": "hazel.jennings", "name": "Hazel Jennings", "title": "Junior Trader", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "diane.kay", "initials": "HJ" }, { "id": "shane.butcher", "name": "Shane Butcher", "title": "Head of Desk", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "joshua.brown", "initials": "SB" }, { "id": "molly.quinn", "name": "Molly Quinn", "title": "Senior Trader", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "shane.butcher", "initials": "MQ" }, { "id": "steven.davies", "name": "Steven Davies", "title": "Junior Trader", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "shane.butcher", "initials": "SD" }, { "id": "harriet.french", "name": "Harriet French", "title": "Head of Desk", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "joshua.brown", "initials": "HF" }, { "id": "martyn.collins", "name": "Martyn Collins", "title": "Senior Trader", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "harriet.french", "initials": "MC" }, { "id": "megan.pugh", "name": "Megan Pugh", "title": "Junior Trader", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "harriet.french", "initials": "MP" }, { "id": "lawrence.davis", "name": "Lawrence Davis", "title": "Head of Middle Office", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "sam.turnbull", "initials": "LD" }, { "id": "kathryn.haynes", "name": "Kathryn Haynes", "title": "Senior Analyst", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "lawrence.davis", "initials": "KH" }, { "id": "matthew.day", "name": "Matthew Day", "title": "Junior Analyst", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "lawrence.davis", "initials": "MD" }, { "id": "eleanor.jackson", "name": "Eleanor Jackson", "title": "Head of Market Risk", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "vanessa.walker", "initials": "EJ" }, { "id": "howard.scott", "name": "Howard Scott", "title": "Senior Analyst", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "eleanor.jackson", "initials": "HS" }, { "id": "maureen.palmer", "name": "Maureen Palmer", "title": "Junior Analyst", "party": "ACME Corporation UK plc", "centre": "London", "mgr": "eleanor.jackson", "initials": "MP" }, { "id": "mindy.adams", "name": "Mindy Adams", "title": "Country Head", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "adrian.vance", "initials": "MA" }, { "id": "david.reeves", "name": "David Reeves", "title": "COO", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "mindy.adams", "initials": "DR" }, { "id": "emily.sanford", "name": "Emily Sanford", "title": "Head of Risk", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "mindy.adams", "initials": "ES" }, { "id": "paul.armstrong", "name": "Paul Armstrong", "title": "Head of Trading", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "mindy.adams", "initials": "PA" }, { "id": "yesenia.choi", "name": "Yesenia Choi", "title": "Head of Desk", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "paul.armstrong", "initials": "YC" }, { "id": "timothy.adams", "name": "Timothy Adams", "title": "Senior Trader", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "yesenia.choi", "initials": "TA" }, { "id": "elizabeth.barrett", "name": "Elizabeth Barrett", "title": "Junior Trader", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "yesenia.choi", "initials": "EB" }, { "id": "john.robinson", "name": "John Robinson", "title": "Head of Desk", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "paul.armstrong", "initials": "JR" }, { "id": "sandra.green", "name": "Sandra Green", "title": "Senior Trader", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "john.robinson", "initials": "SG" }, { "id": "henry.jones", "name": "Henry Jones", "title": "Junior Trader", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "john.robinson", "initials": "HJ" }, { "id": "laura.carlson", "name": "Laura Carlson", "title": "Head of Desk", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "paul.armstrong", "initials": "LC" }, { "id": "corey.gross", "name": "Corey Gross", "title": "Senior Trader", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "laura.carlson", "initials": "CG" }, { "id": "shirley.stevens", "name": "Shirley Stevens", "title": "Junior Trader", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "laura.carlson", "initials": "SS" }, { "id": "mark.reid", "name": "Mark Reid", "title": "Head of Middle Office", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "david.reeves", "initials": "MR" }, { "id": "elizabeth.franklin", "name": "Elizabeth Franklin", "title": "Senior Analyst", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "mark.reid", "initials": "EF" }, { "id": "john.sullivan", "name": "John Sullivan", "title": "Junior Analyst", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "mark.reid", "initials": "JS" }, { "id": "stacy.lopez", "name": "Stacy Lopez", "title": "Head of Market Risk", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "emily.sanford", "initials": "SL" }, { "id": "charles.nelson", "name": "Charles Nelson", "title": "Senior Analyst", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "stacy.lopez", "initials": "CN" }, { "id": "ashley.moore", "name": "Ashley Moore", "title": "Junior Analyst", "party": "ACME Corporation US Inc", "centre": "New York", "mgr": "stacy.lopez", "initials": "AM" }, { "id": "wai.ming.chan", "name": "Wai Ming Chan", "title": "Country Head", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "adrian.vance", "initials": "WM" }, { "id": "siu.fung.wong", "name": "Siu Fung Wong", "title": "COO", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "wai.ming.chan", "initials": "SF" }, { "id": "ka.yee.lee", "name": "Ka Yee Lee", "title": "Head of Risk", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "wai.ming.chan", "initials": "KY" }, { "id": "chi.wing.cheung", "name": "Chi Wing Cheung", "title": "Head of Trading", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "wai.ming.chan", "initials": "CW" }, { "id": "man.yee.ng", "name": "Man Yee Ng", "title": "Head of Desk", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "chi.wing.cheung", "initials": "MY" }, { "id": "tsz.ching.lau", "name": "Tsz Ching Lau", "title": "Senior Trader", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "man.yee.ng", "initials": "TC" }, { "id": "ho.yin.tang", "name": "Ho Yin Tang", "title": "Junior Trader", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "man.yee.ng", "initials": "HY" }, { "id": "ying.ying.lam", "name": "Ying Ying Lam", "title": "Head of Desk", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "chi.wing.cheung", "initials": "YY" }, { "id": "kwok.wing.yip", "name": "Kwok Wing Yip", "title": "Senior Trader", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "ying.ying.lam", "initials": "KW" }, { "id": "suet.ying.ho", "name": "Suet Ying Ho", "title": "Junior Trader", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "ying.ying.lam", "initials": "SY" }, { "id": "hoi.yan.chan", "name": "Hoi Yan Chan", "title": "Head of Desk", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "chi.wing.cheung", "initials": "HY" }, { "id": "chun.kit.wong", "name": "Chun Kit Wong", "title": "Senior Trader", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "hoi.yan.chan", "initials": "CK" }, { "id": "wai.ming.lee", "name": "Wai Ming Lee", "title": "Junior Trader", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "hoi.yan.chan", "initials": "WM" }, { "id": "siu.fung.cheung", "name": "Siu Fung Cheung", "title": "Head of Middle Office", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "siu.fung.wong", "initials": "SF" }, { "id": "ka.yee.ng", "name": "Ka Yee Ng", "title": "Senior Analyst", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "siu.fung.cheung", "initials": "KY" }, { "id": "chi.wing.lau", "name": "Chi Wing Lau", "title": "Junior Analyst", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "siu.fung.cheung", "initials": "CW" }, { "id": "man.yee.tang", "name": "Man Yee Tang", "title": "Head of Market Risk", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "ka.yee.lee", "initials": "MY" }, { "id": "tsz.ching.lam", "name": "Tsz Ching Lam", "title": "Senior Analyst", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "man.yee.tang", "initials": "TC" }, { "id": "ho.yin.yip", "name": "Ho Yin Yip", "title": "Junior Analyst", "party": "ACME Corporation HK Ltd", "centre": "Hong Kong", "mgr": "man.yee.tang", "initials": "HY" } ];
+
+  const REASONS = ['New joiner', 'Desk change', 'Promotion', 'Leaver', 'Correction'];
+
+  const byId = (id) => PEOPLE.find((p) => p.id === id);
+  const childrenOf = (id) => PEOPLE.filter((p) => p.mgr === id);
+  const roots = () => state.occasion === 'flat' ? PEOPLE.slice() : PEOPLE.filter((p) => !p.mgr || !byId(p.mgr));
+
+  const params = new URLSearchParams(location.search);
+  const state = {
+    variant: params.get('variant') || 'a',
+    occasion: params.get('case') || 'clean',
+    selected: params.get('person') || 'joshua.brown',
+    reason: REASONS[0],
+    manager: null,
+    collapsed: new Set(),
+    toast: '',
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function toast(message) {
+    state.toast = message;
+    render();
+    clearTimeout(toast.t);
+    toast.t = setTimeout(() => { state.toast = ''; render(); }, 2800);
+  }
+
+  const selected = () => byId(state.selected) || PEOPLE[0];
+
+  /* Descendants of a person: choosing one as their manager would close a loop. */
+  function descendants(id, seen = new Set()) {
+    for (const c of childrenOf(id)) { if (!seen.has(c.id)) { seen.add(c.id); descendants(c.id, seen); } }
+    return seen;
+  }
+
+  function managerOptions(person) {
+    const forbidden = descendants(person.id);
+    forbidden.add(person.id);
+    const none = `<option value="" ${person.mgr ? '' : 'selected'}>No manager</option>`;
+    const options = PEOPLE
+      .filter((p) => !forbidden.has(p.id))
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((p) => `<option value="${esc(p.id)}" ${person.mgr === p.id ? 'selected' : ''}>${esc(p.name)} — ${esc(p.title)}</option>`)
+      .join('');
+    return `<select id="mgr">${none}${options}</select>`;
+  }
+
+  function save() {
+    const person = selected();
+    const pick = $('mgr') ? $('mgr').value : '';
+    if (pick && descendants(person.id).has(pick)) {
+      toast('That would make a loop: ' + byId(pick).name + ' reports to ' + person.name + ' already.');
+      return;
+    }
+    if (pick === (person.mgr || '')) { toast('No change to save.'); return; }
+    person.mgr = pick || null;
+    toast(`Saved with reason "${state.reason}". A new account version was written.`);
+  }
+
+  function clearLine() {
+    const person = selected();
+    if (!person.mgr) { toast(person.name + ' has no manager to clear.'); return; }
+    person.mgr = null;
+    toast(`Cleared with reason "${state.reason}". ${person.name} is a root now.`);
+  }
+
+  /* ---------- shape helpers ---------- */
+  function treeHtml(person) {
+    const kids = state.occasion === 'flat' ? [] : childrenOf(person.id);
+    const hasKids = kids.length > 0;
+    const open = !state.collapsed.has(person.id);
+    return `
+      <li>
+        <button class="node" data-pick="${esc(person.id)}" aria-selected="${state.selected === person.id}">
+          <span class="twist ${hasKids ? '' : 'leaf'}" data-twist="${esc(person.id)}" aria-hidden="true">${open ? '▾' : '▸'}</span>
+          <span class="who">
+            <span class="nm">${esc(person.name)}</span>
+            <span class="ttl">${esc(person.title)}</span>
+          </span>
+          <span class="chip depth">${kids.length ? kids.length + ' report' + (kids.length === 1 ? '' : 's') : 'no reports'}</span>
+        </button>
+        ${hasKids && open ? `<ul>${kids.map(treeHtml).join('')}</ul>` : ''}
+      </li>`;
+  }
+
+  function boxHtml(person) {
+    const kids = state.occasion === 'flat' ? [] : childrenOf(person.id);
+    return `
+      <li>
+        <button class="box" data-pick="${esc(person.id)}" aria-selected="${state.selected === person.id}">
+          <span class="nm">${esc(person.name)}</span>
+          <span class="ttl">${esc(person.title)}</span>
+          <span class="off"><span class="gapline" title="The party's name is not readable by this screen today.">${esc(person.centre)}</span></span>
+          ${kids.length ? `<span class="kids">${kids.length} reporting</span>` : ''}
+        </button>
+        ${kids.length ? `<ul>${kids.map(boxHtml).join('')}</ul>` : ''}
+      </li>`;
+  }
+
+  function depthOf(person) {
+    let d = 0, p = person, guard = 0;
+    while (p && p.mgr && byId(p.mgr) && guard++ < 64) { d++; p = byId(p.mgr); }
+    return d;
+  }
+
+  /* ---------- variants ---------- */
+  function panelTree() {
+    return `
+      <section class="card">
+        <div class="toolbar">
+          <h2>Reporting tree</h2>
+          <span class="chip">${PEOPLE.length} people</span>
+          <span class="chip ${roots().length > 1 ? 'warn' : ''}">${roots().length} with no manager</span>
+          <span class="spacer"></span>
+          <button class="btn small" id="expand">Expand all</button>
+          <button class="btn small" id="collapse">Collapse all</button>
+        </div>
+        <div class="tree-scroll"><ul class="tree">${roots().map(treeHtml).join('')}</ul></div>
+      </section>`;
+  }
+
+  function panelChart() {
+    return `
+      <section class="card">
+        <div class="toolbar">
+          <h2>Organisation chart</h2>
+          <span class="chip">${PEOPLE.length} people</span>
+          <span class="spacer"></span>
+          <span class="mini faint">Drawn from the same flat read</span>
+        </div>
+        <div class="chart-scroll"><div class="org"><ul>${roots().map(boxHtml).join('')}</ul></div></div>
+      </section>`;
+  }
+
+  function panelTable() {
+    const rows = PEOPLE.slice().sort((a, b) => depthOf(a) - depthOf(b) || a.name.localeCompare(b.name));
+    return `
+      <section class="card">
+        <div class="toolbar">
+          <h2>Everyone, by depth</h2>
+          <span class="chip">${PEOPLE.length} people</span>
+          <span class="spacer"></span>
+          <span class="mini faint">The shape is in the indentation</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Person</th><th>Job title</th><th>Office</th><th>Reports to</th><th></th></tr></thead>
+            <tbody>
+              ${rows.map((p) => `
+                <tr class="${state.selected === p.id ? 'picked' : ''}">
+                  <td><span class="indent">${'&nbsp;'.repeat(depthOf(p) * 2)}</span><button class="linkish" data-pick="${esc(p.id)}">${esc(p.name)}</button></td>
+                  <td class="muted">${esc(p.title)}</td>
+                  <td><span class="gapline" title="The party's name is not readable by this screen today.">${esc(p.centre)}</span></td>
+                  <td>${p.mgr ? esc(byId(p.mgr).name) : '<span class="faint">No manager</span>'}</td>
+                  <td>${state.selected === p.id ? '<span class="chip">Selected</span>' : ''}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </section>`;
+  }
+
+  function inspector() {
+    const p = selected();
+    const mgr = p.mgr ? byId(p.mgr) : null;
+    const reports = childrenOf(p.id).length;
+    const forbidden = descendants(p.id);
+    const propose = state.occasion === 'proposal';
+    return `
+      <section class="card pad inspector">
+        <div class="person">
+          <span class="avatar-lg" aria-hidden="true">${esc(p.initials)}</span>
+          <div style="min-width:0">
+            <h2>${esc(p.name)}</h2>
+            <p class="muted">${esc(p.title)}</p>
+          </div>
+        </div>
+        <div class="facts">
+          <div class="fact"><span class="label">Reports to</span><span>${mgr ? esc(mgr.name) : 'No manager (a root)'}</span></div>
+          <div class="fact"><span class="label">Direct reports</span><span>${reports}</span></div>
+          <div class="fact"><span class="label">Depth</span><span>${depthOf(p)}</span></div>
+          <div class="fact"><span class="label">Office</span><span class="gapline" title="The party's name is not readable by this screen today.">${esc(p.centre)} · ${esc(p.party)}</span></div>
+        </div>
+        ${propose ? `
+        <div class="warnbox">
+          <strong>A proposal is waiting</strong>
+          <span class="hint">The person asked to report to <strong>${esc(childrenOf(p.id)[0] ? childrenOf(p.id)[0].name : 'a colleague')}</strong> on 8 Oct 2026. Nothing in the platform holds an approval, so this screen states who decides: a hierarchical superior or a tenant administrator. The line does not move until one of them does.</span>
+          <div class="row" style="margin-top:.25rem"><button class="btn small primary" data-approve="1">Approve (not available yet)</button><button class="btn small" data-refuse="1">Refuse</button></div>
+        </div>` : ''}
+        ${forbidden.size ? `
+        <div class="okbox">
+          <strong>Not offered as a manager</strong>
+          <span class="hint">${forbidden.size} ${forbidden.size === 1 ? 'person reports' : 'people report'} to ${esc(p.name)}, directly or through others. Choosing one would make a loop, and the server would accept it, so the picker leaves them out and the screen says why.</span>
+        </div>` : ''}
+        <div class="controls">
+          <div class="row">
+            <label class="field" style="flex:1 1 14rem"><span>Manager</span>${managerOptions(p)}</label>
+            <label class="field" style="flex:1 1 12rem"><span>Change reason</span>
+              <select id="reason">${REASONS.map((r) => `<option ${r === state.reason ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select>
+            </label>
+          </div>
+          <div class="row">
+            <button class="btn primary" id="save">Save line</button>
+            <button class="btn" id="clear">Clear line</button>
+            <span class="hint">Saving writes a new account version with the reason recorded.</span>
+          </div>
+          <p class="hint">The save sends the whole account, so a job title changed elsewhere since this page read it would be overwritten.</p>
+        </div>
+      </section>`;
+  }
+
+  function gaps() {
+    return `
+      <section class="gaps">
+        <h2><span class="chip warn">Not available yet</span> What this screen cannot do</h2>
+        <ol>
+          <li><strong>There is no tree read.</strong> The server answers one flat page of accounts, so this page reads the roster and nests it in the browser. A large tenant cannot page a branch.</li>
+          <li><strong>The server accepts a loop.</strong> Nothing refuses <span class="code">A reports to B</span> when <span class="code">B</span> already reports to <span class="code">A</span>. The screen detects it and shows it instead.</li>
+          <li><strong>There is no reporting-line-only write.</strong> One field means sending the whole <span class="code">update_account_request</span>, so a concurrent edit is silently overwritten.</li>
+          <li><strong>No office can be named.</strong> The association read carries <span class="code">party_id</span> alone. Office values marked in amber are mock, and the same gap is on <em>Where I work</em>.</li>
+          <li><strong>The line has no history here.</strong> The account is versioned and this screen states none of it.</li>
+          <li><strong>There is no approval.</strong> A reporting-line change is a proposal that a superior or a tenant administrator answers, and nothing in the platform holds one: no request, no queue, no notification and no decision.</li>
+          <li><strong>This screen does not exist in the web client.</strong> The Qt client's <span class="code">OrgChartWidget</span> drew it and was removed with the rest of <span class="code">ores.qt</span>.</li>
+        </ol>
+      </section>`;
+  }
+
+  function render() {
+    const body = state.variant === 'b' ? panelChart() : state.variant === 'c' ? panelTable() : panelTree();
+    $('app').innerHTML = `
+      <div class="crumbs"><span>People</span><span aria-hidden="true">›</span><span>Reporting lines</span></div>
+      <div class="head">
+        <div><h1>Reporting lines</h1><p class="muted">Everyone who can sign in to Acme Corporation, and who they report to.</p></div>
+      </div>
+      ${state.occasion === 'flat' ? '<div class="warnbox"><strong>Nobody reports to anyone</strong><span class="hint">This tenant has no reporting line yet. Every person is a root, and the screen offers each of them as a manager.</span></div>' : ''}
+      <div class="grid split">${body}${inspector()}</div>
+      ${gaps()}
+      <p class="mini faint">Mock data from the ACME demo dataset. No server is read and no write leaves this page.</p>`;
+
+    $('variant-seg').innerHTML = [['a', 'A · Tree'], ['b', 'B · Chart'], ['c', 'C · Table']]
+      .map(([id, label]) => `<button data-variant="${id}" aria-pressed="${state.variant === id}">${esc(label)}</button>`).join('');
+    $('case-seg').innerHTML = [['clean', 'Clean tree'], ['flat', 'No lines'], ['proposal', 'A proposal']]
+      .map(([id, label]) => `<button data-case="${id}" aria-pressed="${state.occasion === id}">${esc(label)}</button>`).join('');
+
+    const t = $('toast');
+    t.hidden = !state.toast;
+    t.textContent = state.toast;
+
+    bind();
+  }
+
+  function bind() {
+    document.querySelectorAll('[data-pick]').forEach((el) => {
+      el.onclick = (e) => {
+        const tw = e.target.closest('[data-twist]');
+        if (tw) {
+          const id = tw.dataset.twist;
+          if (state.collapsed.has(id)) state.collapsed.delete(id); else state.collapsed.add(id);
+          render();
+          return;
+        }
+        state.selected = el.dataset.pick;
+        render();
+      };
+    });
+    const ex = $('expand'); if (ex) ex.onclick = () => { state.collapsed.clear(); render(); };
+    const co = $('collapse'); if (co) co.onclick = () => { state.collapsed = new Set(PEOPLE.map((p) => p.id)); render(); };
+    const rs = $('reason'); if (rs) rs.onchange = () => { state.reason = rs.value; };
+    const sv = $('save'); if (sv) sv.onclick = save;
+    const cl = $('clear'); if (cl) cl.onclick = clearLine;
+    document.querySelectorAll('[data-approve],[data-refuse]').forEach((el) => {
+      el.onclick = () => toast(el.dataset.approve ? 'No approval path exists in the platform yet.' : 'A refusal would notify the person. Nothing sends it yet.');
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    const v = e.target.closest('[data-variant]');
+    if (v) {
+      state.variant = v.dataset.variant;
+      if (state.variant === 'c') state.collapsed.clear();
+      sync(); render(); return;
+    }
+    const c = e.target.closest('[data-case]');
+    if (c) {
+      state.occasion = c.dataset.case;
+      if (c.dataset.case === 'proposal') { state.selected = 'kathryn.haynes'; }
+      if (c.dataset.case === 'flat') { state.selected = 'adrian.vance'; }
+      sync(); render(); return;
+    }
+  });
+
+  $('notes-btn').onclick = () => {
+    const open = $('notes').hidden;
+    $('notes').hidden = !open;
+    $('notes-btn').setAttribute('aria-expanded', String(open));
+    $('notes-btn').textContent = open ? 'Hide what this prototype argues' : 'What this prototype argues';
+  };
+
+  function sync() {
+    const u = new URL(location.href);
+    u.searchParams.set('variant', state.variant);
+    u.searchParams.set('case', state.occasion);
+    u.searchParams.set('person', state.selected);
+    history.replaceState(null, '', u);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

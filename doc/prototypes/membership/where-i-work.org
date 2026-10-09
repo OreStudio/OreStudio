@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 0EFF4748-4DDE-4C22-8F28-373F1E992671
+:END:
+#+title: Where I work prototype
+#+description: The member's screen for the parties their account works in: three ways to arrange the identity, the list and the actions, and the gaps each one states.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:membership:journeys:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                        |
+|---------------+----------------------------------------------|
+| Prototype     | [[file:where-i-work/][the prototype]]             |
+| Gemini review | none                                         |
+| Group         | [[file:index.org][Membership prototypes]]               |
+| Journey       | [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]] |
+
+* Summary
+
+A member works in one or more parties. The journey answers two questions on one
+screen: where am I acting, and where can I be. The prototype puts the identity,
+the party the session is acting for, and the list of the account's parties on
+one page, and compares three arrangements of those panels.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data.
+
+Open the [[file:where-i-work/][prototype]].
+
+* Detail
+
+** The verdict
+
+Accepted on 2026-10-09: variant A, one card per party, with the two actions a
+member takes — act for it, or make it the default — on the card they change.
+The rejected shapes stay in the prototype, switchable from the bar at the foot
+of the page.
+
+** The three variants
+
+| Variant | Shape | What it settles | What it gives up |
+|---------+-------+-----------------+------------------|
+| A · One place each | A card per party, each carrying "Switch to this party" and "Set as default" | The two actions sit with the place they change, so nothing depends on a selection made elsewhere | It is the tallest of the three when a member works in many parties |
+| B · One list, one action bar | A table of parties and a bar of actions under it | Compact for many parties, and one place where an action happens | The member must hold a selection in mind while reading the bar |
+| C · Two columns | "You are acting for" and the identity on the left, the list on the right | Best when a member switches often; the acting party stays in view | It repeats the acting party in both columns |
+
+** The acting party is not the default party
+
+The screen separates two things a person can easily run together. The party the
+session *acts for* decides what the screens read now, and it changes when the
+member switches. The *default* decides what quick sign-in picks next time, and
+it changes when the member sets it. The prototype draws both states on every
+party, so the difference is visible rather than explained.
+
+** The cases the bar switches
+
+- *Three parties* is the ordinary case: one acting, one default, one other.
+- *One party* is the empty state of the journey. The screen says there is
+  nothing to switch rather than drawing a disabled control, and it states the
+  rule it obeys: an account with no party is refused at sign-in, so the list is
+  never empty.
+
+** What the screen cannot do, and says
+
+1. *The parties cannot be named.* The association read answers with =party_id=
+   and no read this screen may call turns an id into a name. The names on the
+   page are mock.
+2. *Set as default has no path.* =iam.v1.ops.set_my_default_party= exists on
+   the server and no BFF route, client method or control reaches it.
+3. *Clearing the default cannot be stated.* =set_my_default_party_request=
+   carries a party id and no "none", so the build draws no *Clear default*.
+4. *The switch is wired and no screen offers it.* =POST
+   /api/session/switch-party=, =api/client.ts= and =SessionProvider.switchParty=
+   exist end to end, and the new-party journey is their only caller.
+5. *The association read has no client wrapper.*
+   =account_parties.list_by_account_id= is generated and nothing in the BFF or
+   the wire client speaks it.
+
+** Document claims the tree contradicts
+
+- The journey document says "nothing in the web client switches party". The call
+  is wired from the BFF route through the client and the session provider, and
+  the new-party journey calls it. What is missing is the member's screen and the
+  account-menu entry point. The correction belongs to the extraction pass, which
+  owns the document.
+- The journey document names =TopBar.tsx= as the place that leaves party
+  switching with the account. No =TopBar.tsx= is in the tree; the shell is
+  =AppRoutes.tsx= and the session provider.
+
+* See also
+
+- [[file:reporting-lines.org][Reporting lines prototype]] — the other half of a person's place in an organisation.
+- [[file:index.org][Membership prototypes]] — the group page.
+- [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]] — the journey this answers.

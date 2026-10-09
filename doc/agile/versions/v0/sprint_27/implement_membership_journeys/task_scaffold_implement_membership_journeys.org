@@ -8,7 +8,7 @@
 #+filetags: :implement_membership_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-membership-journeys
-#+pr:
+#+pr: 2969
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2969][#2969]] | [agile] Open the membership journeys with the two accepted prototypes |
 
 * Review
 

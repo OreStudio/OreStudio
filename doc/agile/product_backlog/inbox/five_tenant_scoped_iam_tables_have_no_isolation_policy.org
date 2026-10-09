@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 9229A315-797C-4BBC-8CFA-000034798349
+:END:
+#+title: Five tenant-scoped IAM tables carry a tenant and no isolation policy
+#+description: iam_rls_policies_create.sql covers the IAM tables a person would list from memory, but five tables that carry a tenant_id have no policy at all and no mention in that file: seed_profiles, seed_profile_steps, seed_profile_parameters, auth_events and run_token_issues. The seed profiles are platform configuration that any tenant can currently read across the boundary, and auth_events is audit data. Whether the generator never emitted them, an exemption list names them, or the file predates them is not yet known.
+#+type: capture
+#+level: cross
+#+filetags: :sql:iam:security:codegen:rls:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.sql/create/iam/iam_rls_policies_create.sql= enforces tenant
+isolation for accounts, account credentials, account parties, account roles,
+login info, roles, permissions, role permissions, sessions, session samples,
+run grants, role grant requests and tenants. Five IAM tables that carry a
+=tenant_id= are not mentioned in it and have no policy at all:
+
+| Table | What it holds |
+|-------+----------------|
+| =ores_iam_seed_profiles_tbl= | the starting points a tenant is built from |
+| =ores_iam_seed_profile_steps_tbl= | the steps each starting point orders |
+| =ores_iam_seed_profile_parameters_tbl= | the values each starting point declares |
+| =ores_iam_auth_events_tbl= | authentication audit |
+| =ores_iam_run_token_issues_tbl= | run-token audit |
+
+The four closed vocabularies (=account_statuses=, =account_types=,
+=tenant_statuses=, =tenant_types=) are also without policies and plausibly
+belong that way. These five are not obviously in that category: the seed
+profiles are the platform's own configuration, and any tenant can currently
+read them across the boundary.
+
+Found while chasing a first-run screen that offered one starting point
+instead of four. That turned out to be an unrelated client-side fault; the
+census was a side effect of checking whether row-level security explained it,
+and it does not.
+
+* Why
+
+A tenant-scoped table without a policy is readable across the tenant boundary
+by any role that holds =select= on it, which is the state every other IAM
+table's policy exists to prevent. Whether that reach is a defect or a
+deliberate exemption has not been established, and the answer decides two very
+different pieces of work:
+
+- if the generator is meant to emit a policy per tenant-scoped entity and never
+  did for these, the hole is in the generator and every future entity inherits
+  it;
+- if =iam_rls_policies_create.sql= is hand-written and simply predates them,
+  the work is five policies and a note about how the next entity gets covered.
+
+The seed profiles are the ones worth deciding first: they are read by the
+super administrator during setup, so a policy would have to admit the system
+tenant without pretending the rows belong to the caller.
+
+* What to find out
+
+- Whether the RLS script is generated at all, and if so from what: the entity
+  models carry a tenant flag, and something must decide whether a policy is
+  emitted.
+- Whether an exemption list names these entities, and who put them there.
+- Why =auth_events= and =run_token_issues= are unprotected while the rest of
+  the session and audit tables are not.
+
+* References
+
+- =projects/ores.sql/create/iam/iam_rls_policies_create.sql=
+- =projects/ores.codegen/tests/test_rls_isolation.py= and
+  =test_rls_own_or_system_tenant_rows.py= — whatever these assert, they pass
+  with the five unprotected.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]]

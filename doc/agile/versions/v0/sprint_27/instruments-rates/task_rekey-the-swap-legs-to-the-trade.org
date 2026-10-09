@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/rekey-the-swap-legs-to-the-trade
-#+pr:
+#+pr: 2948
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -158,7 +158,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2948][#2948]] | [codegen,trading] Re-key the swap legs to the trade |
 
 * Review
 

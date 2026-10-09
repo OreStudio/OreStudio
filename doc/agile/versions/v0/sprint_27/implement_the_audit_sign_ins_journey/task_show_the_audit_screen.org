@@ -8,7 +8,7 @@
 #+filetags: :implement_the_audit_sign_ins_journey:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-the-audit-sign-ins-journey
-#+pr:
+#+pr: 2932
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2932][#2932]] | [iam,geo,web] Build the audit sign-ins journey |
 
 * Review
 

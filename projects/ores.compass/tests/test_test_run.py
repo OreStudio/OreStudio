@@ -58,6 +58,8 @@ def test_run_degrades_without_fcntl(monkeypatch):
 
     monkeypatch.setattr(compass, "_acquire_build_lock", fake_acquire)
     monkeypatch.setattr(compass, "_tr_read_preset", fake_preset)
+    # This test is the lock's degradation, not the broker's presence.
+    monkeypatch.setattr(compass, "_test_run_preflight", lambda: True)
     monkeypatch.setattr(compass.subprocess, "run", fake_run)
 
     rc = compass.cmd_test(["run", "--preset", "test-preset"])

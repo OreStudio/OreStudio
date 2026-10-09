@@ -5245,6 +5245,42 @@ def _test_run_command(preset, cdash_group, extra):
     return ["ctest", "--preset", preset] + extra
 
 
+def _broker_is_listening(port: int) -> bool:
+    """True when something LISTENs on the broker's port.
+
+    An ss probe and not a TCP connect: the server requires client
+    certificates, so a plain connect is refused before it can say the port
+    is open.
+    """
+    out = subprocess.run(["ss", "-tlnH", f"sport = :{port}"],
+                         capture_output=True, text=True)
+    return bool(out.stdout.strip())
+
+
+def _test_run_preflight() -> bool:
+    """Check the prerequisites a test run has, and name the fix when one is absent.
+
+    The eventing integration tests need the broker, and a run without it
+    reports 'NATS connect failed' on a rotating set of entities, which reads
+    like a regression and costs a diagnosis every time. Refusing here instead
+    names the fix.
+    """
+    port = _read_env_map().get("ORES_NATS_PORT", "4222")
+    try:
+        port_number = int(port)
+    except ValueError:
+        return True
+    if _broker_is_listening(port_number):
+        return True
+    print(f"❌ The NATS broker is not listening on port {port_number}.\n"
+          "   The eventing integration tests need it, and without it they fail\n"
+          "   with 'NATS connect failed', which reads like a regression.\n"
+          "   Fix: compass services start\n"
+          "   See doc/llm/memory/start_the_fleet_before_running_tests.org.",
+          file=sys.stderr)
+    return False
+
+
 def _cmd_test_run(args):
     """compass test run — run ctest under the host-wide build lock.
 
@@ -5273,6 +5309,9 @@ def _cmd_test_run(args):
         cmd = _test_run_command(preset, args.cdash, extra)
     except ValueError as exc:
         print(f"❌ {exc}", file=sys.stderr)
+        return 1
+
+    if not args.cdash and not _test_run_preflight():
         return 1
 
     lock_file, slot_name, _ = _acquire_build_lock()

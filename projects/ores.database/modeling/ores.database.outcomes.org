@@ -137,6 +137,46 @@ rather than only that the choice was wrong.
 The {entity} states {field} at level {expected}, and its parent unit is at level {current}. A child level must be greater than its parent's.
 #+end_src
 
+** status_transition_not_allowed
+:PROPERTIES:
+:code: status_transition_not_allowed
+:outcome: invalid
+:producer: store
+:sqlstate: 22023
+:args: entity, field, expected, current
+:END:
+
+A write moves a row's status along an edge the lifecycle does not draw. The write
+states the status it moves to in =expected= and the store holds the status the row
+is at in =current=, the pair the version refusal already uses for what the write
+believes and what the store holds.
+
+The message names the field and both statuses, so a screen can say which move it
+refused rather than only that the write was wrong. A move to the status a row
+already holds is not a move and is not refused.
+
+#+begin_src text :name message
+The {entity} cannot move {field} from {current} to {expected}.
+#+end_src
+
+** unit_outside_ancestry
+:PROPERTIES:
+:code: unit_outside_ancestry
+:outcome: invalid
+:producer: store
+:sqlstate: 23503
+:args: entity, field, value
+:END:
+
+A write names an owning unit that the row's own ancestry chain never names. The
+chain is walked from the row upwards and the refused unit is reported in =value=;
+the chain itself is not a value one argument could carry, and the screen already
+draws it.
+
+#+begin_src text :name message
+The {entity} names {field} {value}, and that unit is not in the ancestry chain above it.
+#+end_src
+
 ** not_found
 :PROPERTIES:
 :code: not_found

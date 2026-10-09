@@ -151,15 +151,15 @@ screen; see /What is missing/.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| See the counterparties | List the counterparties with their identifiers and contacts | =refdata.v1.counterparties.list=, =refdata.v1.counterparty_identifiers.list_by_counterparty_id=, =refdata.v1.counterparty_contact_informations.list_by_counterparty_id= | partial |
+| See the counterparties | List the counterparties, then the page's identifiers and contacts | =refdata.v1.counterparties.list=, then =refdata.v1.counterparty_identifiers.list= and =refdata.v1.counterparty_contact_informations.list= with =counterparty_id_one_of= set to the page | exists |
 | Identity | Offer the party types | =refdata.v1.party_types.list= | exists |
 | Identity | Offer the party statuses | =refdata.v1.party_statuses.list= | exists |
 | Identity | Offer the business centres | =refdata.v1.business_centres.list= | exists |
 | Identity | Offer the parent counterparties | =refdata.v1.counterparties.list= | exists |
 | Identifiers | Offer the identifier schemes | =refdata.v1.party_id_schemes.list= | exists |
 | Identifiers | Read the identifiers | =refdata.v1.counterparty_identifiers.list_by_counterparty_id= | exists |
-| Identifiers | Read who can see this counterparty | =refdata.v1.party_counterparties.list_by_party_id= | partial |
-| Identifiers | Read who can see it, from the counterparty side | (no subject; candidate =refdata.v1.party_counterparties.list_by_counterparty_id=) | missing |
+| Identifiers | Read who can see this counterparty | =refdata.v1.party_counterparties.list_by_party_id= | exists |
+| Identifiers | Read who can see it, from the counterparty side | =refdata.v1.party_counterparties.list_by_counterparty_id= | exists |
 | Contacts | Offer the contact types | =refdata.v1.contact_types.list= | exists |
 | Legal agreements | List the counterparty's agreements and their sets | =refdata.v1.netting_agreements.list_by_counterparty_id=, =refdata.v1.netting_sets.list_by_netting_agreement_id= | partial |
 | Legal agreements | List a set's identifiers | =refdata.v1.netting_set_identifiers.list_by_netting_set_id= | exists |
@@ -175,78 +175,45 @@ screen; see /What is missing/.
 | Confirm | Write the collateral terms | =refdata.v1.csas.put= | exists |
 | Confirm | Write the eligible currencies | =refdata.v1.csa_eligible_currencies.put_many= | exists |
 | Confirm | Record which parties can see it | =refdata.v1.party_counterparties.put= | exists |
-| Confirm | Stage the eight writes as one act | (no subject; candidate is a composite write) | missing |
+| Confirm | Stage the eight writes as one act | =refdata.v1.ops.put_counterparty_composite= | exists |
 | Check the history | List the versions | =refdata.v1.counterparties_versions.list= | exists |
 | Check the history | Read one version | =refdata.v1.counterparties_versions.get= | exists |
-| Check the history | Read the composite as of a version | =refdata.v1.counterparties.composite_as_of= | exists |
+| Check the history | Read the composite as of a version | =refdata.v1.ops.get_counterparty_composite_as_of= | exists |
 | Check the history | Read the identifiers' versions | =refdata.v1.counterparty_identifiers_versions.list= | exists |
 | Check the history | Read the contacts' versions | =refdata.v1.counterparty_contact_informations_versions.list= | exists |
-| Check the history | Read the field-level difference in one reply | (no subject; candidate is a diff reply) | missing |
+| Check the history | Read the field-level difference in one reply | =refdata.v1.history.get= (=entity_type= =ores.refdata.counterparty=, =ores.refdata.counterparty_identifier=, =ores.refdata.counterparty_contact_information=) | exists |
 | Check the history | Revert by writing the old values | =refdata.v1.counterparties.put= | exists |
-| Handle a refusal | Read the record, the version and the field the refusal left behind | the error on the subject that failed | missing |
+| Handle a refusal | Read the record, the version and the field the refusal left behind | =result.code= and =result.message= on the subject that failed | exists |
 
 The review step sends no operation of its own: it shows what the confirm will
-send. The child rows also register history providers, so
+send.
+
+The field-level difference is read, not computed: =refdata.v1.history.get=
+returns every version of the record with the fields that changed from the
+version before, and the same request serves the child rows under their own
+=entity_type=. A child row's own versions are also readable from
 =refdata.v1.counterparty_identifiers_versions.list= and
-=refdata.v1.counterparty_contact_informations_versions.list= carry a child row's
-own versions.
+=refdata.v1.counterparty_contact_informations_versions.list=, which return the
+raw rows.
+
+The landing list is read in one call per child type per page: the counterparty
+list, then =refdata.v1.counterparty_identifiers.list= and
+=refdata.v1.counterparty_contact_informations.list= with
+=counterparty_id_one_of= set to the identifiers on the page. A single reply that
+carried the counterparty with its identifiers and contacts was the other
+candidate, and it is dropped: it would give one entity's list reply a shape no
+other entity's list reply has, and the filtered child read already costs one
+call per child type per page rather than one per row.
 
 * What is missing
 
-1. *No authoritative-identifier flag exists.* The model stores no flag that
-   names the identifier the tenant resolves a counterparty by, so the screen
-   infers one: the LEI first, then the BIC. If the tenant must state which
-   identifier is authoritative, the column does not exist. The candidate is a
-   flag on =counterparty_identifier=, with the precedence as its default. Until
-   then the screen shows the inferred one and says it is inferred.
-2. *A counterparty carries one business centre.* The journey must show every
-   centre the counterparty deals through, and there is no counterparty-to-centre
-   row. Either the single column is the answer, or a junction like
-   =party_country_junction= is needed. A second centre is drawn as a gap, not as
-   a field. Until a junction exists the screen offers the one column and says
-   so.
-3. *No counterparty-side call reads the party-counterparty junction.* The
-   junction calls =refdata.v1.party_counterparties.put= and
-   =refdata.v1.party_counterparties.list_by_party_id= exist, but the subject
-   reads by party, and the junction's right column carries no read of its own.
-   The counterparty protocol has no call that reads the rows from the
-   counterparty side, so the screen cannot list the parties that may trade with
-   this counterparty. The candidate is
-   =refdata.v1.party_counterparties.list_by_counterparty_id= and an index on the
-   junction's counterparty column to serve it. Until then the screen shows the
-   parties it already knows.
-4. *The confirm is one act over eight subjects, with no composite write and no
-   rollback.* The review draws the write as one act over the counterparty and
-   its seven owned subjects. The server offers each write alone, so a failure
-   half way leaves a counterparty with some of its rows. The prototype draws the
-   outcome as one act; the server cannot yet promise it. The candidate is a
-   composite write that stages the eight, or a rollback that closes the rows
-   already written. The visibility row is a ninth write, and it is not part of
-   the eight.
-5. *No field-level diff in any reply.* Version history is read with
-   =refdata.v1.counterparties_versions.list= and
-   =refdata.v1.counterparties_versions.get=, and the screen computes the
-   difference from the version before. No reply carries it. The child rows have
-   their own history subjects, so a full difference of identifiers and contacts
-   needs a read each. The candidate is a reply that carries the field-level
-   difference. Until then the screen computes the difference and the child reads
-   are one call each.
-6. *A refusal names neither the record, the version, nor the field.* Each
-   refusal arrives as a plain error on one subject. No reply names the record,
-   the version it left behind, or the field that collided, so the refused screen
-   composes those three from the step that failed. The candidate is a typed
-   refusal that carries them.
-7. *The landing list carries the counterparty alone.* The identifier and
-   contact columns read from the owning rows, one call per row. The candidate is
-   a list reply that carries the counterparty with its identifiers and contacts,
-   or a filtered child read per page. Until then the screen pages through the
-   child rows once.
-8. *A counterparty's agreements and sets are not read in one reply.* The screen
+1. *A counterparty's agreements and sets are not read in one reply.* The screen
    reads the agreements, then one call per agreement for its sets, then one call
    per set for its identifiers, its CSA and the CSA's eligible currencies. The
    candidate is a composite read of the counterparty's agreements, sets and
-   collateral terms.
-9. *Only a tenant administrator can run this journey.* No role below
+   collateral terms. =refdata.v1.ops.get_counterparty_composite_as_of= carries
+   the counterparty, its identifiers and its contacts, and not these.
+2. *Only a tenant administrator can run this journey.* No role below
    =TenantAdmin= holds the counterparty permissions; =Operations= holds the
    currency permissions and no counterparty permission.
 

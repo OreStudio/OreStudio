@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: EC06D83B-9725-4F33-8626-61A4CBF47238
+:END:
+#+title: Task: Scaffold story: Restore the trading guards the versioned model dropped
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :restore-the-trading-guards:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/restore-the-trading-guards
+#+pr: 2977
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BF504294-2A1D-413A-84C8-262575DEBC9D][Restore the trading guards the versioned model dropped]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Open the story the pgTAP repair found two missing guards for, so the
+guarantees are recorded rather than asserted away.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BF504294-2A1D-413A-84C8-262575DEBC9D][Restore the trading guards the versioned model dropped]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2977][#2977]] | [agile] File the trading guards the versioned model dropped |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story is in the sprint with two tasks, neither started. The guards came
+out of repairing the pgTAP suites on PR #2975: one case had proved that a
+trade is reported only in its own party's portfolios, and the check behind it
+is gone from the generated SQL, so the report is now accepted. The second is
+the unguarded version rewrite, where a raw update changes every version of a
+row in place. The story also carries two smaller consequences of the same
+refactor: the purge switch is inert for trading, and the structures
+self-parent check is unreachable behind the parent lookup.
+
+The finder is on the merged PR #2975, whose summary and task record name both
+guards. This scaffold PR carries the documents only.

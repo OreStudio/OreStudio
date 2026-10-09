@@ -8,7 +8,7 @@
 #+filetags: :the-trading-children-write-outside-the-session-party:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-trading-children-write-outside-the-session-party
-#+pr:
+#+pr: 2909
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -87,7 +87,7 @@ So the missing piece was the session party, not the seed.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2909][#2909]] | [codegen] Keep the trade's children inside the session party |
 
 * Review
 

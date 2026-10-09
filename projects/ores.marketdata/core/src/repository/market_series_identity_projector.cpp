@@ -23,6 +23,9 @@
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
+#include <array>
+#include <boost/uuid/uuid_io.hpp>
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -218,6 +221,52 @@ void assign(domain::market_series_identity& row, field f, const std::string& tex
     }
 }
 
+/**
+ * Writes a fixing's own field @p name into the projection column that holds it.
+ *
+ * A fixing's URI is written from the index grammar, whose field names are its
+ * own -- name, tag, source, unit, security, contract, family -- and not the
+ * instrument schema's. The projection's columns belong to the schema, so the
+ * pairing is stated here, once. The index family itself is the URI's =index=
+ * key and lands in the =index= column, so a convention's fixing URI decomposes
+ * onto the same columns the row carries.
+ *
+ * Two names have no column and are not projected. The FX =source= is part of
+ * the fixing's identity (FX-ECB-EUR-USD and FX-TR20H-EUR-USD are two rates)
+ * and the CMB =family= is the subject, but the projection declares one column
+ * per schema identity field and neither name is one; a row that carried them
+ * would need a column of its own. The remaining names -- expiry, delivery,
+ * start and end -- are points within the fixing, which the projection holds no
+ * column for by design. unprojected_index_names lists all of them, so the
+ * check that holds this mapping to the index grammar sees the whole set.
+ */
+void assign_index(domain::market_series_identity& row,
+                  std::string_view name,
+                  const std::string& text) {
+    if (name == "ccy")
+        row.ccy = text;
+    else if (name == "tenor")
+        row.tenor = text;
+    else if (name == "name")
+        row.index_name = text;
+    else if (name == "tag")
+        row.quote_tag = text;
+    else if (name == "unit")
+        row.unit_ccy = text;
+    else if (name == "security")
+        row.security_id = text;
+    else if (name == "contract")
+        row.contract = text;
+}
+
+/**
+ * The index grammar's names the projection has no column for, beside every name
+ * assign_index does place. The check reads both against the grammar, so a field
+ * a family gains cannot be dropped without a failure.
+ */
+[[maybe_unused]] constexpr std::array<std::string_view, 6> unprojected_index_names{
+    "source", "family", "expiry", "delivery", "start", "end"};
+
 /// The projection of one series, and whether the codec could state it at all.
 struct projection {
     domain::market_series_identity row;
@@ -246,13 +295,19 @@ projection project_one(ores::database::context& ctx, const domain::market_series
     }
 
     // An index URI names a fixing rather than one of the composite objects this
-    // projection is for. Its fields have their own vocabulary, so the row
-    // records the kind and the asset class and no field value: the identity is
-    // findable, and nothing is invented for it.
+    // projection is for. The index grammar has its own field vocabulary, so the
+    // fields arrive through assign_index rather than the schema switch above;
+    // the family is the URI's index key and lands in the index column, and the
+    // subject and the family's own fields fill what the projection declares.
     if (const auto ix = datum::oresmd_uri_codec::read_index(series.oresmd_uri); ix) {
         p.understood = true;
         row.identity_kind = std::string(kind_index);
-        row.asset_class = std::string(datum::name_of(datum::index_row_of(ix->family()).asset));
+        const auto& ir = datum::index_row_of(ix->family());
+        row.asset_class = std::string(datum::name_of(ir.asset));
+        row.index = std::string(datum::name_of(ix->family()));
+        assign_index(row, ir.subject, ix->subject());
+        for (const auto& fv : ix->fields())
+            assign_index(row, fv.name, fv.text);
     }
     return p;
 }
@@ -275,6 +330,39 @@ market_series_identity_projector::project(ores::database::context ctx,
     }
     market_series_identity_repository{}.write(ctx, rows);
     return unknown;
+}
+
+market_series_identity_projector::reprojection_result
+market_series_identity_projector::reproject(ores::database::context ctx,
+                                            const std::vector<domain::market_series>& series) {
+    reprojection_result result;
+    if (series.empty())
+        return result;
+
+    // One read of what the table already holds, keyed by series: the comparison
+    // is what makes the call idempotent, and a series it has no row for is one
+    // the write path never projected.
+    std::map<std::string, domain::market_series_identity> stored;
+    for (const auto& row : market_series_identity_repository{}.read_latest(ctx))
+        stored[boost::uuids::to_string(row.series_id)] = row;
+
+    std::vector<domain::market_series_identity> changed;
+    changed.reserve(series.size());
+    for (const auto& s : series) {
+        auto p = project_one(ctx, s);
+        if (!p.understood)
+            ++result.unreadable;
+        const auto it = stored.find(boost::uuids::to_string(s.id));
+        if (it != stored.end() && it->second == p.row) {
+            ++result.unchanged;
+            continue;
+        }
+        changed.push_back(std::move(p.row));
+    }
+    if (!changed.empty())
+        market_series_identity_repository{}.write(ctx, changed);
+    result.written = changed.size();
+    return result;
 }
 
 }

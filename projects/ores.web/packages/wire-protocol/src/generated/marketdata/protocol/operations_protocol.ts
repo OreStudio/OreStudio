@@ -561,11 +561,12 @@ export interface ExportMarketDataToStorageResponse {
 }
 
 /**
- * @brief Projects the identity of every series that has none.
+ * @brief Projects the identity of every series whose stored row is stale.
  *
  * The projection is written by the series write path, so only rows that
- * predate it or that were written outside it are missing. This finds those
- * and writes them, and touches nothing that already has a row.
+ * predate it, that were written outside it, or that an earlier projector
+ * spelled differently are stale. This compares each series' fresh projection
+ * with the stored row and writes only the difference.
  */
 export interface BackfillSeriesIdentityRequest {
     /**
@@ -580,10 +581,14 @@ export interface BackfillSeriesIdentityResponse {
     message: string;
     /**
      * @brief How many series were projected by this call.
+     *
+     * A series whose stored row already matched the fresh projection is not
+     * counted: only the rows this call wrote are.
      */
     projected_count: number;
     /**
-     * @brief How many current series already carried a projection.
+     * @brief How many current series already carried the projection this call
+     * would write.
      */
     already_projected_count: number;
     /**

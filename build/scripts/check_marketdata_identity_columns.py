@@ -10,6 +10,9 @@ so the two can drift with nothing failing. This check closes that gap:
   is.
 - The projector's switch must place every field the schema declares: an
   identity field writes its own column, a coordinate field writes nothing.
+- The projector must account for every name the index grammar declares, placing
+  it in a column or listing it among the names the projection has no column
+  for, so a fixing's field cannot be dropped without a word.
 
 Run it bare. A finding is a mismatch, and the message names the column and the
 direction each way.
@@ -27,6 +30,7 @@ SCHEMA = REPO_ROOT / "projects/ores.marketdata/api/include/ores.marketdata.api/d
 PROJECTOR = REPO_ROOT / "projects/ores.marketdata/core/src/repository/market_series_identity_projector.cpp"
 CREATE_SQL = REPO_ROOT / "projects/ores.sql/create/marketdata/marketdata_market_series_identity_create.sql"
 VIEWS_SQL = REPO_ROOT / "projects/ores.sql/create/marketdata/marketdata_series_identity_views_create.sql"
+INDEX_GRAMMAR = REPO_ROOT / "projects/ores.marketdata/api/include/ores.marketdata.api/datum/market_index.hpp"
 
 # The columns every asset-class view carries beside its class's own fields.
 VIEW_COLUMNS = (
@@ -55,6 +59,22 @@ VIEW = re.compile(
     re.S,
 )
 VIEW_NAME = re.compile(r"^ores_marketdata_series_identity_(\w+)_vw$")
+
+# An index row names its family, its asset class, its subject and its field
+# array: {index_family::ibor, asset_class::ir, "ccy", detail::ibor_fields}
+INDEX_ROW = re.compile(
+    r"\{index_family::(\w+),\s*asset_class::(\w+),\s*\"(\w+)\",\s*detail::(\w+)\}"
+)
+# A family's field array lists its fields as {{"name", optional}, ...}.
+INDEX_FIELD_ARRAY = re.compile(
+    r"inline constexpr std::array<index_field_spec, \d+> (\w+)\{(.*?)\};", re.S
+)
+INDEX_FIELD_NAME = re.compile(r"\{\"(\w+)\",\s*(?:true|false)\}")
+# The projector places an index field with a name comparison, and lists the
+# names it leaves unprojected in one array.
+INDEX_PLACED = re.compile(r'name == "(\w+)"')
+UNPROJECTED_ARRAY = re.compile(r"unprojected_index_names\{(.*?)\};", re.S)
+UNPROJECTED_NAME = re.compile(r'"(\w+)"')
 
 # The entity's schema identifier, which the field's own name must not be:
 # a field called table would collide with the statement's own words otherwise.
@@ -206,6 +226,46 @@ def projector_switch() -> dict[str, str]:
     }
 
 
+def index_grammar_names() -> set[str]:
+    """Every name the index grammar declares: each family's subject and fields."""
+    text = INDEX_GRAMMAR.read_text()
+    arrays = {
+        m.group(1): set(INDEX_FIELD_NAME.findall(m.group(2)))
+        for m in INDEX_FIELD_ARRAY.finditer(text)
+    }
+    names: set[str] = set()
+    for _family, _asset, subject, array in INDEX_ROW.findall(text):
+        names.add(subject)
+        names.update(arrays.get(array, set()))
+    if not names:
+        raise SystemExit(
+            f"FAIL: parsed no index names from {INDEX_GRAMMAR.relative_to(REPO_ROOT)}; "
+            "the check needs fixing."
+        )
+    return names
+
+
+def projector_index_mapping() -> tuple[set[str], set[str]]:
+    """(placed, unprojected): the index names the projector accounts for."""
+    text = PROJECTOR.read_text()
+    if "void assign_index(" not in text:
+        raise SystemExit(
+            f"FAIL: {PROJECTOR.relative_to(REPO_ROOT)} no longer defines assign_index; "
+            "this check reads the index mapping through it."
+        )
+    body = text[text.index("void assign_index(") :]
+    body = body[: body.index("\n}\n")]
+    placed = set(INDEX_PLACED.findall(body))
+    listed = UNPROJECTED_ARRAY.search(text)
+    unprojected = set(UNPROJECTED_NAME.findall(listed.group(1))) if listed else set()
+    if not placed or not unprojected:
+        raise SystemExit(
+            f"FAIL: {PROJECTOR.relative_to(REPO_ROOT)} no longer names the index mapping in "
+            "the shape this check reads."
+        )
+    return placed, unprojected
+
+
 def main() -> int:
     identity, coordinate, every = schema_fields()
     problems: list[str] = []
@@ -271,12 +331,35 @@ def main() -> int:
                 "series are missing from it."
             )
 
+    # 4. The projector accounts for every name the index grammar declares: it
+    #    places the name in a column, or lists it as one the projection has no
+    #    column for. A fixing is projected from that grammar, so a name neither
+    #    placed nor listed would be dropped without a word.
+    index_names = index_grammar_names()
+    index_placed, index_unprojected = projector_index_mapping()
+    for both in sorted(index_placed & index_unprojected):
+        problems.append(f"the projector both places index name '{both}' and lists it unprojected.")
+    for missing in sorted(index_names - index_placed - index_unprojected):
+        problems.append(
+            f"the projector names no column and no reason for index name '{missing}', "
+            "which an index family declares."
+        )
+    for extra in sorted(index_placed - index_names):
+        problems.append(
+            f"the projector places index name '{extra}', which no index family declares."
+        )
+    for extra in sorted(index_unprojected - index_names):
+        problems.append(
+            f"the projector lists index name '{extra}' as unprojected, which no index "
+            "family declares."
+        )
+
     if problems:
         return fail(problems)
     print(
         f"OK: {len(identity)} identity fields, {len(columns)} columns, "
-        f"{len(placed)} switch cases and {len(found)} asset-class views agree with "
-        f"{SCHEMA.relative_to(REPO_ROOT)}."
+        f"{len(placed)} switch cases, {len(found)} asset-class views and "
+        f"{len(index_names)} index names agree with the models."
     )
     return 0
 

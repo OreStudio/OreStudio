@@ -184,6 +184,14 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
         "Write the tenant's market data back out as ORE market.txt/fixings.txt files",
         {"[--market-data <path>] [--fixings <path>]"});
 
+    marketdata_menu->Insert(
+        "backfill-identity",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_backfill_identity(std::ref(out), std::ref(session), args);
+        },
+        "Re-project the tenant's series identities, writing only the rows that changed",
+        {"[--party <party_id>]"});
+
     marketdata_menu->Insert("stream",
                             [&session](std::ostream& out, std::vector<std::string> args) {
                                 process_stream(std::ref(out), std::ref(session), args);
@@ -332,6 +340,42 @@ void marketdata_commands::process_export(std::ostream& out,
     BOOST_LOG_SEV(lg(), info) << "Export succeeded: " << result->series_count << " series, "
                               << result->observation_count << " observations, "
                               << result->fixing_count << " fixings.";
+}
+
+void marketdata_commands::process_backfill_identity(std::ostream& out,
+                                                    nats_client& session,
+                                                    const std::vector<std::string>& args) {
+    auto parsed =
+        parse_args(args, {{.name = "party", .requires_value = true, .default_value = ""}});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    const auto& party = parsed->flag("party");
+    BOOST_LOG_SEV(lg(), info) << "Re-projecting series identities (party: "
+                              << (party.empty() ? "all" : party) << ")";
+    out << "Re-projecting series identities..." << std::endl;
+
+    marketdata::messaging::backfill_series_identity_request req;
+    req.party_id = party;
+    auto result = do_auth_request<marketdata::messaging::backfill_series_identity_response>(
+        out, session, std::string(req.nats_subject), req, bulk_transfer_timeout);
+    if (!result)
+        return;
+
+    if (!result->success) {
+        fail(out) << "Failed to re-project the series identities: " << result->message << std::endl;
+        return;
+    }
+
+    out << "✓ " << result->message << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Identity backfill succeeded: " << result->message;
 }
 
 std::expected<stream_watch, std::string> marketdata_commands::stream_subjects(

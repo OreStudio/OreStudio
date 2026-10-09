@@ -46,7 +46,7 @@ import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
 import { JourneyPage } from './JourneyPage.js';
 import { JourneyHeader } from './parts.js';
-import { indexOfStep } from './runtime.js';
+import { indexOfStep, type StepId } from './runtime.js';
 import { firstRunSteps, type AdministratorDraft, type FirstRunChoice } from './firstRunSteps.js';
 import type { JourneyServer } from './server.js';
 import { useNewTenant } from './state.js';
@@ -66,6 +66,23 @@ const DEFAULT_EMAIL = 'super_admin@system.ores';
 
 function reasonOf(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * The step a first run opens on.
+ *
+ * A deployment with no administrator opens at the welcome, because the person
+ * has to be told what they are starting. A deployment that has one, and a
+ * browser that is not signed in as it, opens at the administrator: the account
+ * exists, and only its owner may carry on. A browser already signed in has
+ * nothing to authenticate, so the rail resumes at the starting point, which is
+ * the first question that is genuinely open.
+ */
+export function startStep(signInRequired: boolean, signedIn: boolean): StepId {
+    if (signInRequired) {
+        return 'administrator';
+    }
+    return signedIn ? 'profile' : 'welcome';
 }
 
 /**
@@ -229,6 +246,16 @@ export interface FirstRunJourneyProps {
      * administrator, the other signs in as the one it has.
      */
     readonly inBootstrapMode: boolean;
+    /**
+     * Whether this browser is already signed in.
+     *
+     * A deployment that has its administrator, and a browser already signed in
+     * as it, is a journey with nothing to authenticate: the person either made
+     * that account a moment ago or signed in before the page was reloaded, and
+     * asking them for the credentials again asks for a session they hold. The
+     * rail therefore resumes at the starting point instead of the administrator.
+     */
+    readonly signedIn: boolean;
     /** Called once the journey owns the rail, so the route table stays on it. */
     readonly onStarted: () => void;
     /** Called when the person is done, so the route table hands the browser over. */
@@ -238,6 +265,7 @@ export interface FirstRunJourneyProps {
 export function FirstRunJourney({
     server,
     inBootstrapMode,
+    signedIn,
     onStarted,
     onFinished,
 }: FirstRunJourneyProps): ReactNode {
@@ -273,9 +301,11 @@ export function FirstRunJourney({
      * on this rail while the deployment is rebuilt underneath it holds a stale
      * one, and would ask for a sign-in to a deployment that is waiting for its
      * first administrator. A deployment that says it is in bootstrap mode has
-     * nobody to sign in as, so that answer is taken as it stands.
+     * nobody to sign in as, so that answer is taken as it stands. And a browser
+     * that is already signed in is not asked at all: the rail asks for a
+     * session, and it has one.
      */
-    const signInRequired = startedWithAdministrator && !inBootstrapMode;
+    const signInRequired = startedWithAdministrator && !inBootstrapMode && !signedIn;
     /*
      * What the installation is left with. The ordinary ending is the default,
      * and the choice lives here rather than on the server because it is the
@@ -454,7 +484,7 @@ export function FirstRunJourney({
     return (
         <JourneyPage
             steps={steps}
-            at={at ?? indexOfStep(steps, signInRequired ? 'administrator' : 'welcome')}
+            at={at ?? indexOfStep(steps, startStep(signInRequired, signedIn))}
             onMove={setAt}
             header={<JourneyHeader tenant={describedTenant} />}
         />

@@ -51,6 +51,8 @@ struct book_write {
     std::string cost_center;
     std::string book_status;
     std::string regulatory_book_type;
+    std::string book_purpose_type;
+    std::string ledger_feed_type;
     bool is_sweepable;
     std::string rates_centre_code;
     std::optional<boost::uuids::uuid> sandbox_id;

@@ -62,6 +62,8 @@ domain::book book_mapper::map(const book_entity& v) {
     r.cost_center = v.cost_center.value_or("");
     r.book_status = v.book_status;
     r.regulatory_book_type = v.regulatory_book_type;
+    r.book_purpose_type = v.book_purpose_type;
+    r.ledger_feed_type = v.ledger_feed_type;
     r.is_sweepable = v.is_sweepable;
     r.rates_centre_code = v.rates_centre_code;
     r.sandbox_id = v.sandbox_id.has_value() ?
@@ -99,6 +101,8 @@ book_entity book_mapper::map(const domain::book& v) {
     r.cost_center = v.cost_center.empty() ? std::nullopt : std::optional(v.cost_center);
     r.book_status = v.book_status;
     r.regulatory_book_type = v.regulatory_book_type;
+    r.book_purpose_type = v.book_purpose_type;
+    r.ledger_feed_type = v.ledger_feed_type;
     r.is_sweepable = v.is_sweepable;
     r.rates_centre_code = v.rates_centre_code;
     r.sandbox_id = v.sandbox_id.has_value() ?

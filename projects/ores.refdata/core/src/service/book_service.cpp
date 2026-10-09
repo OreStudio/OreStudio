@@ -112,6 +112,8 @@ domain::book to_domain(const messaging::book_write& write) {
     v.cost_center = write.cost_center;
     v.book_status = write.book_status;
     v.regulatory_book_type = write.regulatory_book_type;
+    v.book_purpose_type = write.book_purpose_type;
+    v.ledger_feed_type = write.ledger_feed_type;
     v.is_sweepable = write.is_sweepable;
     v.rates_centre_code = write.rates_centre_code;
     v.sandbox_id = write.sandbox_id;

@@ -58,6 +58,8 @@ struct book_entity {
     std::optional<std::string> cost_center;
     std::string book_status = "Active";
     std::string regulatory_book_type = "Trading";
+    std::string book_purpose_type = "Trading";
+    std::string ledger_feed_type = "None";
     bool is_sweepable = false;
     std::string rates_centre_code = "WRLD";
     std::optional<std::string> sandbox_id;

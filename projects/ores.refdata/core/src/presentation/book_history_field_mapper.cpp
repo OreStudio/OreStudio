@@ -51,6 +51,8 @@ std::vector<ores::diff::domain::field_value> render_book_fields(const domain::bo
     fields.push_back({.name = "Cost Center", .value = v.cost_center});
     fields.push_back({.name = "Book Status", .value = v.book_status});
     fields.push_back({.name = "Regulatory Book Type", .value = v.regulatory_book_type});
+    fields.push_back({.name = "Book Purpose Type", .value = v.book_purpose_type});
+    fields.push_back({.name = "Ledger Feed Type", .value = v.ledger_feed_type});
     fields.push_back({.name = "Is Sweepable", .value = v.is_sweepable ? "true" : "false"});
     fields.push_back({.name = "Rates Centre Code", .value = v.rates_centre_code});
     fields.push_back(

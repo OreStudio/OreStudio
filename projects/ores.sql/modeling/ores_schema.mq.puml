@@ -1,0 +1,139 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — mq
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: mq
+Tables: 4
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== mq (Message Queue) ====================
+'
+package "mq" #FBE9E7 {
+    entity ores_mq_message_archive_tbl  #F7E5FF {
+        * id : bigint <<PK>>
+        * archived_at : timestamptz <<PK>>
+        --
+        * queue_id : uuid <<FK>>
+          tenant_id : uuid <<FK>>
+          party_id : uuid <<FK>>
+        * message_type : text
+        * payload_type : text
+          payload : jsonb
+          raw_payload : bytea
+        * final_status : text
+        * created_at : timestamptz
+        * read_count : int
+        * error_message : text
+    }
+
+    note right of ores_mq_message_archive_tbl
+    MQ message archive table.
+    Stores acknowledged messages. TimescaleDB hypertable on archived_at when
+    available; degrades gracefully to a plain table.
+    Partitioned by archived_at with 1-day chunks and 90-day retention.
+    end note
+
+    entity ores_mq_messages_tbl  #F7E5FF {
+        --
+          id : bigserial
+        * queue_id : uuid <<FK>>
+          tenant_id : uuid <<FK>>
+          party_id : uuid <<FK>>
+        * message_type : text
+        * payload_type : text
+          payload : jsonb
+          raw_payload : bytea
+        * status : text
+        * visible_after : timestamptz
+        * created_at : timestamptz
+        * updated_at : timestamptz
+        * read_count : int
+        * error_message : text
+    }
+
+    note right of ores_mq_messages_tbl
+    MQ task queue messages table.
+    Regular (non-hypertable) table for pending and in-flight task messages.
+    end note
+
+    entity ores_mq_queue_stats_tbl  #F7E5FF {
+        * queue_id : uuid <<PK, FK>>
+        * recorded_at : timestamptz <<PK>>
+        --
+          tenant_id : uuid <<FK>>
+          party_id : uuid <<FK>>
+        * pending_count : bigint
+        * processing_count : bigint
+        * total_archived : bigint
+    }
+
+    note right of ores_mq_queue_stats_tbl
+    MQ queue statistics time-series table.
+    Populated by ores_mq_queue_stats_scrape_fn() via an ores.scheduler job.
+    TimescaleDB hypertable when available; degrades gracefully to a plain table.
+    Partitioned by recorded_at with 1-day chunks and 30-day retention.
+    end note
+
+    entity ores_mq_queues_tbl  #F7E5FF {
+        --
+        * id : uuid
+        * scope_type : text
+        * queue_type : text
+        * name : text
+        * description : text
+        * created_at : timestamptz
+        * modified_at : timestamptz
+        * modified_by : text
+        * is_active : boolean
+    }
+
+    note right of ores_mq_queues_tbl
+    MQ queue definitions table.
+    Supports party, tenant and system scope; task and channel queue types.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+ores_mq_queues_tbl ||--o{ ores_mq_messages_tbl : "has"
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.mq.puml"
+' End:
+@enduml

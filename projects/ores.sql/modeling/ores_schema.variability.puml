@@ -1,0 +1,93 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — variability
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: variability
+Tables: 1
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== variability (Feature Flags) ====================
+'
+package "variability" #E8F5E9 {
+    entity ores_variability_system_settings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * party_id : uuid <<FK>>
+        * value : text
+        * data_type : text
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_variability_system_settings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    System Setting Table
+    A system setting is a named configuration value the platform reads while it
+    runs, such as system.bootstrap_mode or onboarding.party. The value is
+    stored as text and data_type says how to read it, because one table carries
+    every type rather than one table per type.
+    A setting is scoped to a tenant and a party. Tenant-wide settings live under
+    the tenant's system party, and a party-specific setting such as
+    onboarding.party lives under that party's own id. The pair is what makes a
+    setting name unique: the same name may hold different values for two parties
+    in one tenant, so a caller always reads within a scope.
+    The table is bitemporal like every other entity, so a setting's history is
+    kept and a configuration change is auditable and reversible. The name is the
+    natural key callers use; id is the surrogate the store keeps for
+    foreign-key stability.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.variability.puml"
+' End:
+@enduml

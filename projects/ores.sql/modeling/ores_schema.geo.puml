@@ -1,0 +1,67 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — geo
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: geo
+Tables: 1
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== geo (Geolocation) ====================
+'
+package "geo" #FFF9C4 {
+    entity ores_geo_ip2country_tbl  #F7E5FF {
+        --
+        * ip_range : int8range
+        * tenant_id : uuid <<FK>>
+        * country_code : text <<FK>>
+    }
+
+    note right of ores_geo_ip2country_tbl
+    IP range to country code mapping.
+    Uses GiST index for fast lookups.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.geo.puml"
+' End:
+@enduml

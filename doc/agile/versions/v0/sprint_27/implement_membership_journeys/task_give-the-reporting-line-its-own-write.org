@@ -8,7 +8,7 @@
 #+filetags: :implement_membership_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/give-the-reporting-line-its-own-write
-#+pr:
+#+pr: 2987
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2987][#2987]] | [iam] Give the reporting line its own write |
 
 * Review
 

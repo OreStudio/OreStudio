@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/resolve-a-tenor-over-the-wire-and-make-the-tenor-machinery-writable
-#+pr: 3002
+#+pr: 3009
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -108,6 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3009][#3009]] | [agile] Record the green build on the tenor task |
 | [[https://github.com/OreStudio/OreStudio/pull/3002][#3002]] | [refdata] Give the convention its roll rule and the resolution junction its writes |
 
 * Review
@@ -183,4 +184,4 @@ and the resolved-dates step -- and the refusal that operation would carry.
 *What is not verified.* No database or C++ test exercises the new column or the
 new writes: the box shares one PostgreSQL across eleven worktrees, so =compass db
 recreate= would disrupt the others, and the local =.env= is at format version 27
-against a required 29. The build result is recorded when it lands.
+against a required 29. The branch builds green.

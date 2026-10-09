@@ -34,15 +34,11 @@ export interface SwaptionInstrumentKey {
 
 export interface SwaptionInstrumentWrite {
     trade_id: string;
-    trade_type_code: string;
     trade_activity_id: string;
     expiry_date: string;
     exercise_type: string;
     settlement_type: string;
     long_short: string;
-    start_date: string | null;
-    maturity_date: string | null;
-    description: string;
 }
 
 export interface SwaptionInstrumentChange {

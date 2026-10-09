@@ -1,0 +1,320 @@
+:PROPERTIES:
+:ID: 3c359729-0dd2-43d3-9b8c-a1ecd270ec36
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.rate_instruments
+#+description: Codegen entity model for the trading =rate_instruments= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The rates family header: one row per interest-rates trade, keyed by trade_id, owning the family's facts, legs and children.
+#+entity_singular: rate_instrument
+#+entity_plural: rate_instruments
+#+entity_title: Rate Instrument
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+One row per interest-rates trade, the family's own header. It holds what
+every product in the family states the same way: the trade it belongs to,
+the trade type code, the party, the activity that wrote the version, the
+instrument's start and maturity dates and its description. It holds no
+product economics.
+
+The header exists for two reasons. It is the family's *coverage*: the
+=trade_type_code= check that the routed-instrument template generates from
+=ores.trading.trade_type_catalogue= lists exactly the codes routed here, so
+the family's codes sit in one table and no product table repeats the
+identity columns. And it is the family's *owner*: the =* Delete cascade=
+section below names every table the family writes, so the delete rule closes
+the legs, leg children and facts with the header instead of leaving them
+behind (finding R6 of the family's design).
+
+The products' own fields stay in their fact tables, keyed by the same trade
+and joined to this row by the trade id, exactly as =bond_instruments= joins
+its facts. A fact table carries no =party_id= and no =trade_type_code=: the
+header is the family's party boundary and its routing boundary, so a fact
+row reaches its tenant and its code through the header (design decision D3).
+
+The dates are the family's *common dates*. Each product used to state them
+under its own name — =start_date=, =maturity_date=, =expiry_date=,
+=end_date= — so nothing could read one date column across the family
+(finding R9). The two columns here are the one set of names; a product that
+means something else by a date keeps that date in its own fact table.
+
+=InflationSwap= is a member until an inflation family is scaffolded. The
+taxonomy already calls it an inflation product, and its columns move here
+with the rest of the family's so that its rows are owned and routed like
+every other rates row. It leaves with its own family's rework.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:          trading-instrument
+:END:
+
+* Columns
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+One of the family's codes; the coverage check the routed-instrument
+template generates from the trade-type catalogue lists all of them.
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument. The family's party boundary: the fact and
+child rows carry no party of their own.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:       identity
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The trade this instrument belongs to, and the instrument's own key.
+
+The trade id identifies both the trade and its instrument, so the header
+carries no identity of its own: this column is the key, and the trade it
+names gives the instrument its scope. Every fact and child row of the
+family names the same trade.
+
+** trade_activity_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that wrote this version.
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+The instrument's start date.
+
+Null when the product states none: a swaption states the underlying swap's
+dates only when the document carries them.
+
+ISO 8601 date string (YYYY-MM-DD).
+
+** maturity_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+The instrument's maturity date. A forward rate agreement's end date is this
+column: the family states one name for the date, and the product's own
+spelling is not carried.
+
+Null with =start_date=, and for the same reason.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+* Delete cascade
+
+The rows a rates instrument owns. Each is keyed by the instrument's own
+trade id, so the delete rule closes them all with one statement per table
+and the family does not outlive its header.
+
+The shared children the family writes — =instrument_strikes=,
+=instrument_schedules= and the option block — join here when the cap/floor
+and swaption conversions land.
+
+** swap_legs
+:PROPERTIES:
+:table:  ores_trading_swap_legs_tbl
+:column: trade_id
+:END:
+
+** swap_leg_amounts
+:PROPERTIES:
+:table:  ores_trading_swap_leg_amounts_tbl
+:column: trade_id
+:END:
+
+** swap_leg_rates
+:PROPERTIES:
+:table:  ores_trading_swap_leg_rates_tbl
+:column: trade_id
+:END:
+
+** callable_swap_call_dates
+:PROPERTIES:
+:table:  ores_trading_callable_swap_call_dates_tbl
+:column: trade_id
+:END:
+
+** vanilla_swap_instruments
+:PROPERTIES:
+:table:  ores_trading_vanilla_swap_instruments_tbl
+:column: trade_id
+:END:
+
+** fra_instruments
+:PROPERTIES:
+:table:  ores_trading_fra_instruments_tbl
+:column: trade_id
+:END:
+
+** cap_floor_instruments
+:PROPERTIES:
+:table:  ores_trading_cap_floor_instruments_tbl
+:column: trade_id
+:END:
+
+** swaption_instruments
+:PROPERTIES:
+:table:  ores_trading_swaption_instruments_tbl
+:column: trade_id
+:END:
+
+** balance_guaranteed_swap_instruments
+:PROPERTIES:
+:table:  ores_trading_balance_guaranteed_swap_instruments_tbl
+:column: trade_id
+:END:
+
+** callable_swap_instruments
+:PROPERTIES:
+:table:  ores_trading_callable_swap_instruments_tbl
+:column: trade_id
+:END:
+
+** knock_out_swap_instruments
+:PROPERTIES:
+:table:  ores_trading_knock_out_swap_instruments_tbl
+:column: trade_id
+:END:
+
+** inflation_swap_instruments
+:PROPERTIES:
+:table:  ores_trading_inflation_swap_instruments_tbl
+:column: trade_id
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_rate_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "maturity_date" is null or "start_date" is null or "maturity_date" > "start_date" |
+
+** Indexes
+
+| name       | columns                    | unique | current_only | where_extra |
+|------------+----------------------------+--------+--------------+-------------|
+| party      | tenant_id, party_id        | false  | true         |             |
+| trade_type | tenant_id, trade_type_code | false  | true         |             |
+
+The tenant isolation and the party isolation policies are hand-written in
+=trading_rls_policies_create.sql=, as =bond_instruments=' are: the header
+carries =party_id=, so it needs the restrictive party policy beside the
+tenant policy, and the generated =:rls_tenant_isolation:= form states the
+tenant policy alone.
+
+* C++
+
+The C++ domain class nests the scaffolding columns and the columns marked
+=:group: identity= below into an =instrument_identity identity;= member
+(see the ores.trading.instrument_identity field-group model), the implicit
+audit columns fold into an =ores::dq::domain::audit_record audit;= member
+(see the ores.dq.audit_record field-group model), and the dates and the
+description stay flat in between. The SQL schema, DB entity and column
+lists are unaffected. The entity templates consume these annotations;
+domain and repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:        true
+:generator_facet_name:  generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: rate_instrument
+:entity_plural_short:   rate_instruments
+:entity_singular_words: rate instrument
+:entity_plural_words:   rate instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ri
+:END:
+
+** Table display
+
+| column                   | header       |
+|--------------------------+--------------|
+| identity.trade_id        | ID           |
+| identity.trade_type_code | Type         |
+| start_date               | Start Date   |
+| maturity_date            | Maturity Date |
+| description              | Description  |
+| identity.version         | Version      |
+| audit.recorded_at        | Recorded At  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][ores.trading.trade_type_catalogue]] — the routing this header's check is generated from.

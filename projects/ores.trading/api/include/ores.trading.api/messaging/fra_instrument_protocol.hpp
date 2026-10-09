@@ -41,16 +41,12 @@ struct fra_instrument_key {
 
 struct fra_instrument_write {
     boost::uuids::uuid trade_id;
-    std::string trade_type_code;
     boost::uuids::uuid trade_activity_id;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day end_date;
     std::string currency;
     std::string rate_index;
     std::string long_short;
     double strike;
     ores::utility::decimal::decimal notional;
-    std::string description;
 };
 
 struct fra_instrument_change {

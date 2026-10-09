@@ -134,7 +134,12 @@
 \ir ./trading_swap_leg_rates_create.sql
 \ir ./trading_swap_leg_rates_notify_trigger_create.sql
 
--- Rates instruments (depend on swap_legs and reference data above)
+-- Rates instruments (depend on swap_legs and reference data above). The
+-- header goes first: it owns the family's rows, and its delete rule's cascade
+-- function names every fact and child below.
+\ir ./trading_rate_instruments_create.sql
+\ir ./trading_rate_instruments_notify_trigger_create.sql
+
 \ir ./trading_fra_instruments_create.sql
 \ir ./trading_fra_instruments_notify_trigger_create.sql
 

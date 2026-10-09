@@ -1489,3 +1489,7 @@ tangled into the runnable script library
 * Structure Members
 
 - [[id:CE98CDD4-CE4B-5A6F-85C7-4248B5E85F0C][How do I run the structure_members commands from the shell?]]
+
+* Rate Instruments
+
+- [[id:328EE706-8152-5080-B0F3-5D9F66551372][How do I run the rate_instruments commands from the shell?]]

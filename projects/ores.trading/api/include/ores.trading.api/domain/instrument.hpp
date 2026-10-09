@@ -27,7 +27,8 @@
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
-#include "ores.trading.api/domain/rates_instrument_variant.hpp"
+#include "ores.trading.api/domain/rate_instrument.hpp"
+#include "ores.trading.api/domain/rates_fact_variant.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
@@ -39,12 +40,21 @@
 
 namespace ores::trading::domain {
 
-// Every instrument type carries instrument_identity + audit_record; the
-// flat-field era (and the FlatInstrument concept that bridged the
-// incremental migration in tasks 12-15) is over.
+// The rates family's header and every other instrument type carries
+// instrument_identity, so the trade id is reached through it. The header is
+// the one row of the family that does: the fact tables carry the trade id
+// flat and are keyed by TradeKeyed instead.
 template <typename T>
 concept Instrument = requires(T t) {
     { t.identity.trade_id } -> std::convertible_to<boost::uuids::uuid>;
+};
+
+// A rates fact row: the product's own fields, keyed by the flat trade id
+// that joins it to the header.
+template <typename T>
+concept TradeKeyed = requires(T t) {
+    { t.trade_id } -> std::convertible_to<boost::uuids::uuid>;
+    { t.trade_activity_id } -> std::convertible_to<boost::uuids::uuid>;
 };
 
 // Retained as an alias for call sites written during the migration.
@@ -57,14 +67,16 @@ struct with_legs {
     std::vector<Leg> legs;
 };
 
-// The rates family states a leg collection and, for a callable swap, the
-// schedule of dates its owner may exercise the call on. Both are
-// collections that belong to the instrument, so the family carrier holds
-// them beside each other and each call date travels with the instrument
-// it belongs to. A leaf that states no schedule leaves the collection
-// empty.
+// The rates family states one header row, the product's own fact row, a leg
+// collection, and for a callable swap the schedule of dates its owner may
+// exercise the call on. The header holds the identity, the dates and the
+// description; the fact variant holds the fields that belong to the product
+// alone. Both are keyed by the same trade, so a rates instrument in memory
+// is the header plus its fact plus its children. A leaf that states no
+// schedule leaves the collection empty.
 struct swap_instrument_data {
-    rates_instrument_variant instrument;
+    rate_instrument header;
+    rates_fact_variant facts;
     std::vector<swap_leg> legs;
     std::vector<swap_leg_amount> leg_amounts;
     std::vector<swap_leg_rate> leg_rates;
@@ -99,12 +111,26 @@ void stamp_ids(T& instr, boost::uuids::uuid trade_id, boost::uuids::uuid activit
     instr.identity.trade_activity_id = activity_id;
 }
 
+template <TradeKeyed T>
+void stamp_ids(T& fact, boost::uuids::uuid trade_id, boost::uuids::uuid activity_id = {}) {
+    fact.trade_id = trade_id;
+    fact.trade_activity_id = activity_id;
+}
+
 template <typename... Ts>
     requires(Instrument<Ts> && ...)
 void stamp_ids(std::variant<Ts...>& v,
                boost::uuids::uuid trade_id,
                boost::uuids::uuid activity_id = {}) {
     std::visit([&](auto& instr) { stamp_ids(instr, trade_id, activity_id); }, v);
+}
+
+template <typename... Ts>
+    requires(TradeKeyed<Ts> && ...)
+void stamp_ids(std::variant<Ts...>& v,
+               boost::uuids::uuid trade_id,
+               boost::uuids::uuid activity_id = {}) {
+    std::visit([&](auto& fact) { stamp_ids(fact, trade_id, activity_id); }, v);
 }
 
 template <typename T, typename Leg>
@@ -121,22 +147,20 @@ void stamp_ids(with_legs<T, Leg>& data,
 inline void stamp_ids(swap_instrument_data& data,
                       boost::uuids::uuid trade_id,
                       boost::uuids::uuid activity_id = {}) {
-    stamp_ids(data.instrument, trade_id, activity_id);
+    stamp_ids(data.header, trade_id, activity_id);
+    stamp_ids(data.facts, trade_id, activity_id);
     for (auto& leg : data.legs) {
         leg.identity.trade_id = trade_id;
         leg.identity.trade_activity_id = activity_id;
     }
     for (auto& amount : data.leg_amounts) {
-        amount.trade_id = trade_id;
-        amount.trade_activity_id = activity_id;
+        stamp_ids(amount, trade_id, activity_id);
     }
     for (auto& rate : data.leg_rates) {
-        rate.trade_id = trade_id;
-        rate.trade_activity_id = activity_id;
+        stamp_ids(rate, trade_id, activity_id);
     }
     for (auto& call_date : data.call_dates) {
-        call_date.trade_id = trade_id;
-        call_date.trade_activity_id = activity_id;
+        stamp_ids(call_date, trade_id, activity_id);
     }
 }
 

@@ -33,13 +33,12 @@ std::string convert_to_table(const std::vector<knock_out_swap_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Type" << "Start Date" << "Maturity Date" << "Barrier From"
-          << "Barrier Level" << "Barrier Type" << "Recorded At" << fort::endr;
+    table << fort::header << "ID" << "Barrier From" << "Barrier Level" << "Barrier Type"
+          << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& ko : v) {
-        table << ko.identity.trade_id << ko.identity.trade_type_code << ko.start_date
-              << ko.maturity_date << ko.barrier_start_date << ko.barrier_level << ko.barrier_type
-              << ko.audit.recorded_at << fort::endr;
+        table << ko.trade_id << ko.barrier_start_date << ko.barrier_level << ko.barrier_type
+              << ko.modified_by << ko.version << fort::endr;
     }
     return table.to_string();
 }

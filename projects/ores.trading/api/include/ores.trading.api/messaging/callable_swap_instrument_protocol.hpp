@@ -41,11 +41,7 @@ struct callable_swap_instrument_key {
 
 struct callable_swap_instrument_write {
     boost::uuids::uuid trade_id;
-    std::string trade_type_code;
     boost::uuids::uuid trade_activity_id;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
-    std::string description;
 };
 
 struct callable_swap_instrument_change {

@@ -30,9 +30,16 @@ table the type routes to. RiskParticipationAgreement is a credit product
 whose importer has always written the credit table, so it is classified
 =credit= and routed there; its columns on the old =rpa_instruments= table
 were never written by any mapper. InflationSwap is an inflation product
-whose importer writes =inflation_swap_instruments=; it stays classified
-=swap= until an inflation family is scaffolded, and the reason is recorded
-on the rates story.
+whose importer writes the rates family's tables; it stays classified
+=swap= and routed to =rate_instruments= until an inflation family is
+scaffolded, and the reason is recorded on the rates story.
+
+The rates family routes every one of its codes to =rate_instruments=, the
+family's header. A product's own fields live in the family's fact tables,
+which the header's =* Delete cascade= names and the export carries as child
+arrays; the fact tables are not routed instruments, because one trade type
+resolves to one instrument table and the header is that table for the whole
+family.
 
 The =Failed= type ORE uses for a trade it could not load is deliberately
 absent: it is a placeholder, not a product.
@@ -45,17 +52,17 @@ absent: it is a placeholder, not a product.
 | RateDigitalOption                   | Rate Digital Option                          | swap         | true        | false         |                                    |
 | SwaptionStraddle                    | Swaption Straddle                            | swap         | true        | false         |                                    |
 | ForwardVolatilityAgreement          | Forward Volatility Agreement                 | swap         | true        | false         |                                    |
-| Swap                                | Interest Rate Swap                           | swap         | false       | false         | vanilla_swap_instrument            |
-| CrossCurrencySwap                   | Cross Currency Swap                          | swap         | false       | false         | vanilla_swap_instrument            |
-| ForwardRateAgreement                | Forward Rate Agreement                       | swap         | false       | true          | fra_instrument                     |
-| CapFloor                            | Cap or Floor                                 | swap         | false       | false         | cap_floor_instrument               |
-| Swaption                            | Swaption                                     | swap         | false       | false         | swaption_instrument                |
-| FlexiSwap                           | Flexi Swap                                   | swap         | false       | false         | vanilla_swap_instrument            |
-| BalanceGuaranteedSwap               | Balance Guaranteed Swap                      | swap         | false       | true          | balance_guaranteed_swap_instrument |
-| CallableSwap                        | Callable Swap                                | swap         | false       | true          | callable_swap_instrument           |
-| KnockOutSwap                        | Knock-Out Swap                               | swap         | false       | true          | knock_out_swap_instrument          |
+| Swap                                | Interest Rate Swap                           | swap         | false       | false         | rate_instrument                    |
+| CrossCurrencySwap                   | Cross Currency Swap                          | swap         | false       | false         | rate_instrument                    |
+| ForwardRateAgreement                | Forward Rate Agreement                       | swap         | false       | true          | rate_instrument                    |
+| CapFloor                            | Cap or Floor                                 | swap         | false       | false         | rate_instrument                    |
+| Swaption                            | Swaption                                     | swap         | false       | false         | rate_instrument                    |
+| FlexiSwap                           | Flexi Swap                                   | swap         | false       | false         | rate_instrument                    |
+| BalanceGuaranteedSwap               | Balance Guaranteed Swap                      | swap         | false       | true          | rate_instrument                    |
+| CallableSwap                        | Callable Swap                                | swap         | false       | true          | rate_instrument                    |
+| KnockOutSwap                        | Knock-Out Swap                               | swap         | false       | true          | rate_instrument                    |
 | RiskParticipationAgreement          | Risk Participation Agreement                 | credit       | false       | true          | credit_instrument                  |
-| InflationSwap                       | Inflation Swap                               | swap         | false       | true          | inflation_swap_instrument          |
+| InflationSwap                       | Inflation Swap                               | swap         | false       | true          | rate_instrument                    |
 | FxForwardVolatilityAgreement        | FX Forward Volatility Agreement              | fx           | true        | false         |                                    |
 | FxForward                           | FX Forward                                   | fx           | false       | false         | fx_forward_instrument              |
 | FxSwap                              | FX Swap                                      | fx           | false       | false         | fx_forward_instrument              |
@@ -188,13 +195,21 @@ trade's rows from the array with no second lookup structure.
 
 | child                             |
 |-----------------------------------|
+| balance_guaranteed_swap_instrument |
 | callable_swap_call_date           |
+| callable_swap_instrument          |
+| cap_floor_instrument              |
 | commodity_basket_constituent      |
 | composite_leg                     |
 | equity_position_option_underlying |
+| fra_instrument                    |
+| inflation_swap_instrument         |
+| knock_out_swap_instrument         |
 | swap_leg                          |
 | swap_leg_amount                   |
 | swap_leg_rate                     |
+| swaption_instrument               |
+| vanilla_swap_instrument           |
 
 * See also
 

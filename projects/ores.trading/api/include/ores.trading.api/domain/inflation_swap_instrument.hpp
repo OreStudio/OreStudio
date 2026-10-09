@@ -25,9 +25,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_INFLATION_SWAP_INSTRUMENT_HPP
 #define ORES_TRADING_API_DOMAIN_INFLATION_SWAP_INSTRUMENT_HPP
 
-#include "ores.dq.api/domain/audit_record.hpp"
-#include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -38,23 +39,36 @@ namespace ores::trading::domain {
  *
  * Represents an inflation-linked swap where one leg pays a fixed or floating
  * rate and the other is linked to an inflation index (e.g., CPI, RPI).
+ *
+ * This row is the family's fact table, not its identity. The header,
+ * ores.trading.rate_instruments, holds the trade type code, the party, the
+ * instrument's start and maturity dates and its description; this table holds
+ * only the product's own fields, and joins the header by trade_id.
  */
 struct inflation_swap_instrument final {
-    instrument_identity identity;
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
 
     /**
-     * @brief Swap effective start date.
-     *
-     * ISO 8601 date string (YYYY-MM-DD).
+     * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::chrono::year_month_day start_date;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Swap maturity date.
+     * @brief The trade this instrument belongs to, and the instrument's own key.
      *
-     * Must be after start_date.
+     * The trade id identifies both the trade and its instrument, so the instrument carries no
+     * identity of its own: this column is the key, and the trade it names gives the instrument its
+     * scope.
      */
-    std::chrono::year_month_day maturity_date;
+    boost::uuids::uuid trade_id;
+
+    /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
 
     /**
      * @brief Inflation index code.
@@ -78,13 +92,38 @@ struct inflation_swap_instrument final {
     std::string lag_convention;
 
     /**
-     * @brief Optional free-text description.
-     *
-     * Human-readable notes about this instrument.
+     * @brief Username of the person who last modified this inflation swap instrument.
      */
-    std::string description;
+    std::string modified_by;
 
-    ores::dq::domain::audit_record audit;
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+
     /**
      * @brief Value equality.
      *

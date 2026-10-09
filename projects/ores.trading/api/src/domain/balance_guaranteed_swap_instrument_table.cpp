@@ -46,12 +46,11 @@ std::string convert_to_table(const std::vector<balance_guaranteed_swap_instrumen
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Type" << "Start Date" << "Maturity Date" << "Lockout Days"
-          << "Recorded At" << fort::endr;
+    table << fort::header << "ID" << "Lockout Days" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& bg : v) {
-        table << bg.identity.trade_id << bg.identity.trade_type_code << bg.start_date
-              << bg.maturity_date << opt_str(bg.lockout_days) << bg.audit.recorded_at << fort::endr;
+        table << bg.trade_id << opt_str(bg.lockout_days) << bg.modified_by << bg.version
+              << fort::endr;
     }
     return table.to_string();
 }

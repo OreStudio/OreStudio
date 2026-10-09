@@ -25,13 +25,16 @@ namespace ores::trading::domain {
 namespace {
 
 /**
- * A rates leaf and the children it owns, which are the parts of the family
- * carrier the batch stores separately.
+ * A rates header, the product's fact row and the children the family owns,
+ * which are the parts of the family carrier the batch stores separately.
  */
 template <typename Leaf>
-swap_instrument_data
-as_swap(const instrument_batch& batch, const Leaf& leaf, boost::uuids::uuid trade_id) {
-    return swap_instrument_data{leaf,
+swap_instrument_data as_swap(const instrument_batch& batch,
+                             const rate_instrument& header,
+                             const Leaf& leaf,
+                             boost::uuids::uuid trade_id) {
+    return swap_instrument_data{header,
+                                leaf,
                                 find_all(batch.swap_legs, trade_id),
                                 find_all(batch.swap_leg_amounts, trade_id),
                                 find_all(batch.swap_leg_rates, trade_id),
@@ -65,7 +68,8 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
             if constexpr (std::is_same_v<T, std::monostate>) {
                 return;
             } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
-                append_variant(batch, v.instrument);
+                append(batch, v.header);
+                append_variant(batch, v.facts);
                 batch.swap_legs.insert(batch.swap_legs.end(), v.legs.begin(), v.legs.end());
                 batch.swap_leg_amounts.insert(
                     batch.swap_leg_amounts.end(), v.leg_amounts.begin(), v.leg_amounts.end());
@@ -99,22 +103,26 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
 }
 
 trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids::uuid trade_id) {
-    if (const auto* v = find(batch.fra_instruments, trade_id))
-        return as_swap(batch, *v, trade_id);
-    if (const auto* v = find(batch.vanilla_swap_instruments, trade_id))
-        return as_swap(batch, *v, trade_id);
-    if (const auto* v = find(batch.cap_floor_instruments, trade_id))
-        return as_swap(batch, *v, trade_id);
-    if (const auto* v = find(batch.swaption_instruments, trade_id))
-        return as_swap(batch, *v, trade_id);
-    if (const auto* v = find(batch.balance_guaranteed_swap_instruments, trade_id))
-        return as_swap(batch, *v, trade_id);
-    if (const auto* v = find(batch.callable_swap_instruments, trade_id))
-        return as_swap(batch, *v, trade_id);
-    if (const auto* v = find(batch.knock_out_swap_instruments, trade_id))
-        return as_swap(batch, *v, trade_id);
-    if (const auto* v = find(batch.inflation_swap_instruments, trade_id))
-        return as_swap(batch, *v, trade_id);
+    // The family header states whether a rates instrument exists at all; a
+    // fact row without one belongs to no instrument.
+    if (const auto* header = find(batch.rate_instruments, trade_id)) {
+        if (const auto* v = find(batch.fra_instruments, trade_id))
+            return as_swap(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.vanilla_swap_instruments, trade_id))
+            return as_swap(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.cap_floor_instruments, trade_id))
+            return as_swap(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.swaption_instruments, trade_id))
+            return as_swap(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.balance_guaranteed_swap_instruments, trade_id))
+            return as_swap(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.callable_swap_instruments, trade_id))
+            return as_swap(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.knock_out_swap_instruments, trade_id))
+            return as_swap(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.inflation_swap_instruments, trade_id))
+            return as_swap(batch, *header, *v, trade_id);
+    }
 
     if (const auto* v = find(batch.fx_forward_instruments, trade_id))
         return fx_instrument_variant{*v};

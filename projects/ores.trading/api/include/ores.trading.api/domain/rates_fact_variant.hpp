@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_RATES_INSTRUMENT_VARIANT_HPP
-#define ORES_TRADING_DOMAIN_RATES_INSTRUMENT_VARIANT_HPP
+#ifndef ORES_TRADING_DOMAIN_RATES_FACT_VARIANT_HPP
+#define ORES_TRADING_DOMAIN_RATES_FACT_VARIANT_HPP
 
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
@@ -32,14 +32,23 @@
 
 namespace ores::trading::domain {
 
-using rates_instrument_variant = std::variant<fra_instrument,
-                                              vanilla_swap_instrument,
-                                              cap_floor_instrument,
-                                              swaption_instrument,
-                                              balance_guaranteed_swap_instrument,
-                                              callable_swap_instrument,
-                                              knock_out_swap_instrument,
-                                              inflation_swap_instrument>;
+/**
+ * @brief The rates family's fact rows, one alternative per product table.
+ *
+ * The alternatives carry the product's own fields only: the identity, the
+ * dates and the description belong to the family header,
+ * ores.trading.rate_instruments, and join by the trade id the fact row
+ * carries flat. The family's legs, leg amounts, leg rates and call dates
+ * sit beside this variant in swap_instrument_data.
+ */
+using rates_fact_variant = std::variant<fra_instrument,
+                                        vanilla_swap_instrument,
+                                        cap_floor_instrument,
+                                        swaption_instrument,
+                                        balance_guaranteed_swap_instrument,
+                                        callable_swap_instrument,
+                                        knock_out_swap_instrument,
+                                        inflation_swap_instrument>;
 
 } // namespace ores::trading::domain
 

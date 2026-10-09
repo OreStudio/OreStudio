@@ -87,26 +87,24 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_id> <trade_type_code> <trade_activity_id> <start_date> <maturity_date>
-     * <inflation_index_code> <base_cpi> <lag_convention> <description> <reason> <commentary>
+     * @brief add <trade_id> <trade_activity_id> <inflation_index_code> <base_cpi> <lag_convention>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <trade_type_code> <trade_activity_id> <start_date> <maturity_date>
-     * <inflation_index_code> <base_cpi> <lag_convention> <description> <reason> <commentary>
-     * [--version <n>]
+     * @brief set <trade_id> <trade_activity_id> <inflation_index_code> <base_cpi> <lag_convention>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <start_date>
-     * <maturity_date> <inflation_index_code> <base_cpi> <lag_convention> <description> <reason>
-     * <commentary>
+     * @brief put-many --count <n> <trade_id> <trade_activity_id> <inflation_index_code> <base_cpi>
+     * <lag_convention> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

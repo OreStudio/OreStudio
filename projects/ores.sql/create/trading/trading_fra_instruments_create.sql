@@ -26,23 +26,23 @@
  *
  * Represents a Forward Rate Agreement instrument that fixes a future
  * interest rate for a notional principal amount over a specified period.
+ *
+ * This row is the family's fact table, not its identity. The header,
+ * ores.trading.rate_instruments, holds the trade type code, the party, the
+ * instrument's start and maturity dates and its description; this table holds
+ * only the product's own fields, and joins the header by trade_id.
  */
 
 create table if not exists "ores_trading_fra_instruments_tbl" (
     "trade_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "trade_type_code" text not null,
-    "party_id" uuid not null,
     "trade_activity_id" uuid not null,
-    "start_date" date not null,
-    "end_date" date not null,
     "currency" text not null,
     "rate_index" text not null,
     "long_short" text not null,
     "strike" numeric(18, 10) not null,
     "notional" numeric(28, 10) not null,
-    "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -57,8 +57,6 @@ create table if not exists "ores_trading_fra_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('ForwardRateAgreement')),
-    check ("end_date" > "start_date"),
     check ("notional" > 0),
     check ("currency" <> ''),
     check ("rate_index" <> ''),
@@ -78,10 +76,6 @@ create index if not exists fra_instruments_tenant_idx
 on "ores_trading_fra_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists fra_instruments_party_idx
-on "ores_trading_fra_instruments_tbl" (tenant_id, party_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_trading_fra_instruments_insert_fn()
 returns trigger as $$
 declare
@@ -89,9 +83,6 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-
-    -- Set party_id from session context
-    NEW.party_id := current_setting('app.current_party_id')::uuid;
 
     -- Validate trade_id (soft FK to ores_trading_trades_tbl)
     if not exists (
@@ -186,4 +177,21 @@ on delete to "ores_trading_fra_instruments_tbl" do instead (
     where tenant_id = OLD.tenant_id
       and trade_id = OLD.trade_id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Row-level security: tenant isolation for FRA Instrument
+-- =============================================================================
+alter table ores_trading_fra_instruments_tbl enable row level security;
+
+drop policy if exists fra_instruments_tbl_tenant_isolation_policy
+    on ores_trading_fra_instruments_tbl;
+
+create policy fra_instruments_tbl_tenant_isolation_policy
+on ores_trading_fra_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
 );

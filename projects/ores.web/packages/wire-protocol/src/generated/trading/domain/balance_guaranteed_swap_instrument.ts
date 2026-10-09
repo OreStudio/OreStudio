@@ -22,8 +22,6 @@
  * Template: domain_types.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { InstrumentIdentity } from './instrument_identity.js';
-import type { AuditRecord } from '../../dq/domain/audit_record.js';
 /**
  * The balance guaranteed swap instrument wire shape.
  *
@@ -33,10 +31,14 @@ import type { AuditRecord } from '../../dq/domain/audit_record.js';
  * See the sibling protocol module for the messages that carry this type.
  */
 export interface BalanceGuaranteedSwapInstrument {
-    identity: InstrumentIdentity;
-    start_date: string;
-    maturity_date: string;
+    version: number;
+    tenant_id: string;
+    trade_id: string;
+    trade_activity_id: string;
     lockout_days: number | null;
-    description: string;
-    audit: AuditRecord;
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+    recorded_at: string;
 }

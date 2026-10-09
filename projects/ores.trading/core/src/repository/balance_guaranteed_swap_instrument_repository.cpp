@@ -115,11 +115,11 @@ std::optional<sqlgen::dynamic::Condition> filter_condition(
 
 ores::utility::domain::precondition balance_guaranteed_swap_instrument_repository::replace_claim(
     context ctx, const domain::balance_guaranteed_swap_instrument& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.trade_id));
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
-            static_cast<std::uint32_t>(current.front().identity.version)};
+            static_cast<std::uint32_t>(current.front().version)};
 }
 
 domain::balance_guaranteed_swap_instrument
@@ -133,18 +133,18 @@ balance_guaranteed_swap_instrument_repository::apply_claim(
         case precondition_kind::must_not_exist:
             // Zero states that no current row exists, which is the one meaning the
             // store gives a zero version.
-            t.identity.version = 0;
+            t.version = 0;
             break;
         case precondition_kind::must_match_version:
-            t.identity.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
         case precondition_kind::any: {
             // A caller that claims nothing still has to say what it replaces, so
             // the row is read and its version stated. A row that moved on between
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.trade_id));
-            t.identity.version = current.empty() ? 0 : current.front().identity.version;
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
+            t.version = current.empty() ? 0 : current.front().version;
             break;
         }
     }
@@ -170,7 +170,7 @@ void balance_guaranteed_swap_instrument_repository::write(
     const domain::balance_guaranteed_swap_instrument& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap instrument. "
-                               << "trade_id: " << v.identity.trade_id;
+                               << "trade_id: " << v.trade_id;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(ctx,
                         balance_guaranteed_swap_instrument_mapper::map(t),
@@ -295,13 +295,13 @@ balance_guaranteed_swap_instrument_repository::remove(context ctx,
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
     // int, so the comparison states the conversion rather than relying on one.
-    if (version && static_cast<std::uint32_t>(current.front().identity.version) != *version)
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
-    const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<balance_guaranteed_swap_instrument_entity> |
                        where("tenant_id"_c == tid && "trade_id"_c == trade_id &&

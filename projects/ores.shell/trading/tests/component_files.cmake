@@ -65,6 +65,7 @@ set(files
     "party_role_type_commands_tests.cpp"
     "payoff_type_commands_tests.cpp"
     "price_type_commands_tests.cpp"
+    "rate_instrument_commands_tests.cpp"
     "return_type_commands_tests.cpp"
     "rpa_instrument_commands_tests.cpp"
     "scripted_instrument_commands_tests.cpp"

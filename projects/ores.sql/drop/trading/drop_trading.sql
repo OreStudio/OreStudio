@@ -59,6 +59,12 @@
 \ir ./trading_trade_link_types_notify_trigger_drop.sql
 \ir ./trading_trade_link_types_drop.sql
 
+-- Rates family header. Its delete rule calls a cascade function that names
+-- every fact, leg and child below, so the header goes before the rows it
+-- owns and before the legs.
+\ir ./trading_rate_instruments_notify_trigger_drop.sql
+\ir ./trading_rate_instruments_drop.sql
+
 \ir ./trading_swap_leg_amounts_notify_trigger_drop.sql
 \ir ./trading_swap_leg_amounts_drop.sql
 

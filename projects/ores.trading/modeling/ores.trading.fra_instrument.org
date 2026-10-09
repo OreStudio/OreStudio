@@ -17,47 +17,23 @@
 Represents a Forward Rate Agreement instrument that fixes a future
 interest rate for a notional principal amount over a specified period.
 
+This row is the family's fact table, not its identity. The header,
+=ores.trading.rate_instruments=, holds the trade type code, the party, the
+instrument's start and maturity dates and its description; this table holds
+only the product's own fields, and joins the header by =trade_id=.
+
 * Flags
 :PROPERTIES:
 :schema:           public
 :product:          ores
 :component:        trading
-:profile:          trading-instrument
+:has_tenant_id:    true
 :END:
-
-* Natural keys
 
 * Columns
 
-** trade_type_code
-:PROPERTIES:
-:group:    identity
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Trade type code (soft FK to ores_trading_trade_types_tbl).
-
-#+begin_src cpp :name generator
-std::string("ForwardRateAgreement")
-#+end_src
-
-** party_id
-:PROPERTIES:
-:group:    identity
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:END:
-
-Party that owns this instrument.
-
-Set from session variable app.current_party_id.
-
 ** trade_id
 :PROPERTIES:
-:group:       identity
 :primary_key: true
 :supplied_by:  user
 :type:        uuid
@@ -73,43 +49,12 @@ trade it names gives the instrument its scope.
 
 ** trade_activity_id
 :PROPERTIES:
-:group:    identity
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
 :END:
 
 The activity that wrote this version.
-
-** start_date
-:PROPERTIES:
-:type:     date
-:cpp_type: std::chrono::year_month_day
-:nullable: false
-:END:
-
-FRA start date.
-
-ISO 8601 date string (YYYY-MM-DD).
-
-#+begin_src cpp :name generator
-std::chrono::year_month_day{std::chrono::year{2024}/1/15}
-#+end_src
-
-** end_date
-:PROPERTIES:
-:type:     date
-:cpp_type: std::chrono::year_month_day
-:nullable: false
-:END:
-
-FRA end date.
-
-Must be after start_date.
-
-#+begin_src cpp :name generator
-std::chrono::year_month_day{std::chrono::year{2025}/1/15}
-#+end_src
 
 ** currency
 :PROPERTIES:
@@ -191,17 +136,6 @@ Must be positive.
 ores::utility::decimal::decimal::from_string("1000000").value()
 #+end_src
 
-** description
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-Optional free-text description.
-
-Human-readable notes about this instrument.
-
 * Foreign keys
 
 ** trade_id
@@ -225,7 +159,7 @@ its trade, so a row cannot exist without one.
         auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
         anchor.party_id = *party_ctx.party_id();
         ores::trading::repository::trade_repository().write(party_ctx, anchor);
-        v.identity.trade_id = anchor.id;
+        v.trade_id = anchor.id;
     }
 #+end_src
 
@@ -249,7 +183,7 @@ is immutable.
         auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
         activity.party_id = *party_ctx.party_id();
         ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
-        v.identity.trade_activity_id = activity.id;
+        v.trade_activity_id = activity.id;
     }
 #+end_src
 
@@ -258,45 +192,32 @@ is immutable.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_fra_instruments_tbl
-:routed_by:     ores.trading.trade_type_catalogue
-:routed_column: trade_type_code
+:rls_tenant_isolation: true
 :END:
 
 ** Checks
 
 | expression |
 |------------|
-| "end_date" > "start_date" |
 | "notional" > 0 |
 | "currency" <> '' |
 | "rate_index" <> '' |
 | "long_short" in ('Long', 'Short') |
 
-** Indexes
-
-| name     | columns              | unique | current_only | where_extra          |
-|----------+----------------------+--------+--------------+----------------------|
-| party    | tenant_id, party_id  | false  | true         |                      |
 * C++
 
-The C++ domain class is decomposed into nested sub-structs (the C1202
-pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
-columns (version, tenant_id, the primary key) and the
-columns marked =:group: identity= below fold into an
-=instrument_identity identity;= member (see the
-ores.trading.instrument_identity field-group model), the implicit audit
-columns fold into an =ores::dq::domain::audit_record audit;= member (see
-the ores.dq.audit_record field-group model), and the remaining columns
-stay flat in between. The SQL schema, DB entity and column lists are
-unaffected — only the domain class and the mapper's domain-side accesses
-nest. The entity templates consume these annotations; domain and
-repository profiles regenerate correctly.
+The C++ domain class is a fact table's: the two keys stay flat, the
+implicit scaffolding columns carry the version and the tenant, and the
+columns below are the product's own fields. The row carries no
+=instrument_identity= and no audit member, because it carries neither the
+identity nor the party: the header, =ores.trading.rate_instruments=, owns
+both and this row joins it by =trade_id=. The SQL schema, DB entity and
+column lists are unaffected. The entity templates consume these
+annotations; domain and repository profiles regenerate correctly.
 
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
-:domain_identity_group: ores.trading.instrument_identity
-:domain_audit_group:    ores.dq.audit_record
 :has_batch_read:       true
 :generator_facet_name: generators
 :END:
@@ -313,6 +234,7 @@ repository profiles regenerate correctly.
 
 #+begin_src cpp :name includes
 #include <string>
+#include <boost/uuid/uuid.hpp>
 #include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
@@ -323,18 +245,16 @@ repository profiles regenerate correctly.
 
 ** Table display
 
-|  column                    |  header       |
-|--------------------------|-------------|
-|  identity.trade_id    |  ID           |
-|  identity.trade_type_code  |  Type         |
-|  start_date                |  Start Date   |
-|  end_date                  |  End Date     |
-|  currency                  |  Currency     |
-|  rate_index                |  Rate Index   |
-|  long_short                |  Long/Short   |
-|  strike                    |  Strike       |
-|  notional                  |  Notional     |
-|  audit.recorded_at         |  Recorded At  |
+| column      | header      |
+|-------------+-------------|
+| trade_id    | ID          |
+| currency    | Currency    |
+| rate_index  | Rate Index  |
+| long_short  | Long/Short  |
+| strike      | Strike      |
+| notional    | Notional    |
+| modified_by | Modified By |
+| version     | Version     |
 
 ** Custom repository methods
 

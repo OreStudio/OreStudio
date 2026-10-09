@@ -45,15 +45,10 @@ struct inflation_swap_instrument_entity {
     sqlgen::PrimaryKey<std::string> trade_id;
     std::string tenant_id;
     int version = 0;
-    std::string trade_type_code;
-    std::string party_id;
     std::string trade_activity_id;
-    std::string start_date;
-    std::string maturity_date;
     std::string inflation_index_code;
     std::optional<double> base_cpi;
     std::optional<std::string> lag_convention;
-    std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

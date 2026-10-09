@@ -8,7 +8,7 @@
 #+filetags: :restore-the-trading-guards:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/restore-the-trading-guards
-#+pr:
+#+pr: 2977
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2977][#2977]] | [agile] File the trading guards the versioned model dropped |
 
 * Review
 

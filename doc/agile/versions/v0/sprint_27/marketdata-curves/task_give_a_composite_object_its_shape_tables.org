@@ -119,10 +119,11 @@ What landed:
 
 Limitations:
 
-- Nothing was compiled and no test was run. The build and the suites are swift curie's
-  hourly validation.
-- Two tables are added, so the schema fingerprint moves and =compass db recreate= must run
-  before the test binaries will start.
+- The branch was landed before each environment built its own tree, so it was never
+  compiled on its own. Trunk now carries the proof and the marketdata suites pass.
+- Two tables were added, so the schema fingerprint moved. =compass db recreate= has run
+  and reports the fingerprint matching the checkout, and the test binaries start against
+  it.
 - Nothing reads the shape yet. A repository read is available through the generated
   repositories; no operation and no consumer use it, so the tables are written and not
   yet drawn from.

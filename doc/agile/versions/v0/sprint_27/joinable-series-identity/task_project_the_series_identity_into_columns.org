@@ -144,8 +144,16 @@ Not done, and why:
 
 Limitations:
 
-- Nothing was compiled and no test was run, by the hourly-build workflow. The
-  build and the suites are swift curie's validation.
+- The branch was landed before each environment built its own tree, so it was
+  never compiled on its own. Trunk now carries the proof. =compass build -j 3=
+  links every service binary and the marketdata test binaries, =compass db
+  recreate= reports the schema fingerprint matching the checkout, and the five
+  marketdata suites pass.
+- The core suite is the end-to-end case, because it writes market series through
+  =market_series_repository::write= and every such write projects the identity.
+  An =EXPLAIN= of the generated 52-column upsert resolves the conflict to an
+  =UPDATE= on =ores_marketdata_market_series_identity_tbl_pkey=. That is the
+  statement the unquoted reserved word made fail, and it now plans.
 - The projection is one statement after the series write. It joins the caller's
   transaction when the context carries one and is a transaction of its own
   otherwise, because the codegen write helpers cannot take dynamic SQL. No

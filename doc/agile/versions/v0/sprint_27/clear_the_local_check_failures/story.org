@@ -71,3 +71,17 @@ manifest checks. Two failures remain and neither is this change's: =lint= and
 =projects/ores.iam/modeling/ores.iam.account_credential.org=, which PR #2730
 introduced. The model's prose is emitted into generated SQL and C++, so
 correcting it is its own change.
+
+The story closed with one check left red. pgtap failed on ten of its
+thirty-two suites, six of which ran no test at all, and the cause was the
+trading model rather than the suites: no trading entity has been immutable
+since the model became versioned, and the trade's children stopped copying the
+party, so twenty-one fixtures named no audit column and thirteen named a column
+that no longer existed. Every suite passes now, and the cases that proved the
+removed guarantees are rewritten to the versioned behaviour.
+
+One of them could not be. Nothing refuses a report into another party's
+portfolio any more: the check and its message are gone from the generated SQL,
+so the guarantee is missing rather than the test stale. That and the unguarded
+version rewrite are filed on their own story. The same sweep found the ER
+diagram stale after the rates-family header, and it is regenerated here.

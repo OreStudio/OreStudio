@@ -40,9 +40,22 @@ Running the local gate with the heavy tier on main reports pgtap red: ten of the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The suites fail for three different reasons, and the reasons hide each other. A
+suite whose fixture cannot write its first row reports zero tests run, so its
+assertions are never reached and whatever is wrong behind them stays invisible
+until the fixture is repaired. The order is therefore: make every suite run,
+then repair what each one says once it does.
+
+Reproduce first. Recreate the database before believing any failure, so the
+verdict comes from the tree and not from what the last run left in the
+database. =compass db recreate --yes= wants no service up and no other
+argument.
+
+Then take a census instead of chasing failures one at a time. Hold every
+insert's column list against the columns the generated DDL declares, and every
+fixture's session context against the policies its table carries. A census
+finds a whole class at once, which matters when the only feedback is a
+fourteen-second suite run.
 
 * Measurements
 
@@ -56,9 +69,47 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Suites failing | 10, six of which ran no test at all | =./compass.sh check --only pgtap= | 14846266d5 |
+| Suites failing | 0, across 32 files and 298 tests | =./compass.sh check --only pgtap= | d5b6bdc878 |
+| Tests the suites reach | 226 before the repair, 298 after | =./compass.sh check --only pgtap= | d5b6bdc878 |
+| Trading inserts naming no audit column | 21 | census, see Notes | 7008a3a6f7 |
+| Trading inserts naming a column the table dropped | 13 | census, see Notes | 7008a3a6f7 |
+| Stale cases left after the fixtures were repaired | 22, across 8 suites | =./compass.sh check --only pgtap= | 7008a3a6f7 |
+| Tables the ER diagram carries | 463 before, 464 after | =projects/ores.codegen/plantuml_er_generate.sh= | d5b6bdc878 |
 
 * Notes
+
+The insert census holds each insert's column list against the columns the
+generated DDL declares for its table:
+
+#+begin_example
+python3 - <<'PY'
+import re, pathlib, collections
+cols = collections.defaultdict(set)
+for p in pathlib.Path('projects/ores.sql/create').rglob('*.sql'):
+    for m in re.finditer(r'create table if not exists "(\w+)"\s*\((.*?)\n\);', p.read_text(), re.S):
+        for line in m.group(2).split('\n'):
+            c = re.match(r'\s*"(\w+)"\s+\w', line)
+            if c: cols[m.group(1)].add(c.group(1))
+for p in sorted(pathlib.Path('projects/ores.sql/test').glob('*_test.sql')):
+    text = p.read_text()
+    for m in re.finditer(r'insert into (\w+)\s*\((.*?)\)', text, re.S):
+        tbl = m.group(1)
+        if tbl not in cols: continue
+        unknown = [c.strip() for c in m.group(2).split(',')
+                   if re.fullmatch(r'\w+', c.strip()) and c.strip() not in cols[tbl]]
+        if unknown:
+            print(p.name, text[:m.start()].count('\n') + 1, tbl, unknown)
+PY
+#+end_example
+
+The repairs were then driven from the suites rather than from the census: every
+run reports the first error of each suite, so a fixture repair uncovers the
+next one behind it. That is why the counts above fall in layers.
+
+The helper functions that used to pin a child's party still take arguments the
+tables no longer carry. The cases that passed them are the ones withdrawn, and
+the helpers are left with the shape their remaining callers use.
 
 * Test Scenarios
 
@@ -84,3 +135,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every pgTAP suite passes. Ten failed and six of those ran no test at all,
+because a fixture that cannot write its first row takes the rest of the suite
+with it. The suites now reach 298 tests, against 226.
+
+Three defects sat behind the failures, and each one hid the next:
+
+- Twenty-one inserts into trades, trade activities, structures and their
+  children named no audit columns. The tables require four, so every insert
+  died on the not-null constraint and the suite reported nothing.
+- Thirteen inserts named =party_id= or =counterparty_id= on a child of the
+  trade. Those columns went when a child stopped copying the party and started
+  reading it through the trade.
+- =ores_refdata_publish_lei_counterparties_from_dq_fn= created its centre-map
+  temp table without dropping it first, so a second call in one transaction
+  failed. The uuid map beside it has the drop and the comment that explains
+  why; the centre map was added later without either.
+
+Repairing the fixtures then exposed twenty-two cases that were stale rather
+than broken. No trading entity has been immutable since the model became
+versioned, and the children stopped copying the party; the suites were never
+revisited. Each case now proves what the schema does, and a versioned write or
+delete replaces the immutability it lost.
+
+One case was withdrawn rather than rewritten. Nothing refuses a report into
+another party's portfolio any more: the check and its message are gone from the
+generated SQL. That is a missing guarantee rather than a stale test, so it is
+filed on its own story instead of asserted away. The same refactor left the
+purge switch inert for trading, and the structures self-parent check
+unreachable behind the parent lookup; both are recorded on that story.
+
+The rates-family header left the ER diagram stale, so the diagram and the SVGs
+are regenerated here.

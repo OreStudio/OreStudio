@@ -34,6 +34,7 @@ import { SignInsPanel } from './SignIns.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { ContactTab, IdentityTab } from './PersonForms.js';
+import { Timeline } from '../timeline/Timeline.js';
 import { RecordHeader } from '../refdata/records.js';
 import { useTabs } from '../ui/Tabs.js';
 
@@ -82,13 +83,17 @@ function Person({
         queryFn: () => api.accountAccess(account.id),
     });
     const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
+    const story = useQuery({
+        queryKey: ['timeline', 'person', account.username],
+        queryFn: () => api.timeline('person', account.username),
+    });
     const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
     const name = displayName(account, account.username);
     const refresh = () => queries.invalidateQueries({ queryKey: ['account-access', account.id] });
 
     const { tab, bar } = useTabs({
         label: name,
-        tabs: ['details', 'contact', 'roles', 'signIns'],
+        tabs: ['details', 'contact', 'roles', 'signIns', 'timeline'],
         titleOf: (part) => t(`access.person.tabs.${part}`),
     });
     const roles = access.data?.roles ?? [];
@@ -126,6 +131,15 @@ function Person({
                     queryKey={['account-sign-ins', account.username]}
                     read={(page) => api.accountSignIns(account.username, page)}
                 />
+            )}
+            {tab === 'timeline' && (
+                <>
+                    {story.isPending && (
+                        <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                    )}
+                    {story.isError && <Notice tone="error">{story.error.message}</Notice>}
+                    {story.data !== undefined && <Timeline timeline={story.data} />}
+                </>
             )}
             {tab === 'roles' && (
                 <div className="space-y-4">

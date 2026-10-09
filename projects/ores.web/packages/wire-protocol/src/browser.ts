@@ -297,3 +297,14 @@ export type {
     InboxStoryField,
     RequestViewer,
 } from './inbox.js';
+
+// The timeline the browser parses: the entries, and what the stream cannot show.
+export {
+    TIMELINE_PROVENANCE_FIELDS,
+    fieldValue,
+    timelineEventSchema,
+    timelineFieldSchema,
+    timelineGapSchema,
+    timelineSchema,
+} from './timeline.js';
+export type { Timeline, TimelineEvent, TimelineField, TimelineGap } from './timeline.js';

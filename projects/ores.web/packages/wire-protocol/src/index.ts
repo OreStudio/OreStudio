@@ -558,3 +558,19 @@ export type {
     InboxStoryField,
     RequestViewer,
 } from './inbox.js';
+
+// The timeline. One subject's story in one stream, whichever subject it is.
+export {
+    ACCOUNT_ENTITY,
+    AUTH_EVENT_ENTITY,
+    CONTACT_ENTITY,
+    TIMELINE_PROVENANCE_FIELDS,
+    fieldValue,
+    orderTimeline,
+    readPersonTimeline,
+    timelineEventSchema,
+    timelineFieldSchema,
+    timelineGapSchema,
+    timelineSchema,
+} from './timeline.js';
+export type { Timeline, TimelineEvent, TimelineField, TimelineGap } from './timeline.js';

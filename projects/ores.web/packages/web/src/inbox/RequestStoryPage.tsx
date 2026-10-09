@@ -27,9 +27,9 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { askedFor, sourceLabel, stateLabel } from './words.js';
 import { formatDateTime } from '../ui/Time.js';
-import { DiffLines } from '../ui/Diff.js';
 import { AccountPicture } from '../ui/Images.js';
 import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Timeline, kindTone } from '../timeline/Timeline.js';
 
 /**
  * One request's whole story, newest first.
@@ -105,122 +105,40 @@ export function RequestStoryPage({ me }: { readonly me: string }): ReactNode {
                 <Notice tone="warn">{t('inbox.story.answerNotShown')}</Notice>
             )}
 
-            <ol>
-                {events.map((event, index) => (
-                    <StoryRow
-                        key={`${event.entityType}:${event.entityId}:${event.kind}:${event.version}:${index}`}
-                        event={event}
-                        before={previousOf(events, index)}
-                    />
-                ))}
-            </ol>
+            <Timeline
+                timeline={{ subject: 'request', id, events, gaps: [] }}
+                renderHead={(event) => <RequestEventHead event={event} />}
+            />
         </div>
     );
 }
 
 /**
- * The older event of the same record, which is the one to draw a change
- * against. The stream is newest first, so it is the next event after this one
- * that names the same row; the oldest event of a record has none, and every
- * field it carries is therefore new.
+ * What a request's entry says about itself.
+ *
+ * A request names its own entries rather than drawing the row they came from:
+ * what a reader is following is the act — raised, asked, told, answered — and
+ * the person who did it, which is why their picture is here and not on a
+ * person's stream.
  */
-function previousOf(
-    events: readonly InboxStoryEvent[],
-    index: number,
-): InboxStoryEvent | undefined {
-    const event = events[index];
-    if (event === undefined) return undefined;
-    return events
-        .slice(index + 1)
-        .find(
-            (candidate) =>
-                candidate.entityType === event.entityType && candidate.entityId === event.entityId,
-        );
-}
-
-/** What each kind of event is, and the tint that says it without a word. */
-function kindTone(kind: string): 'neutral' | 'accent' | 'warn' | 'up' {
-    if (kind === 'granted') return 'up';
-    if (kind === 'decided') return 'warn';
-    if (kind === 'raised') return 'accent';
-    return 'neutral';
-}
-
-function dotClass(kind: string): string {
-    if (kind === 'granted') return 'border-up/60 bg-up/20';
-    if (kind === 'decided') return 'border-warn/60 bg-warn/20';
-    if (kind === 'raised') return 'border-accent/60 bg-accent/20';
-    return 'border-line bg-surface-overlay';
-}
-
-function StoryRow({
-    event,
-    before,
-}: {
-    readonly event: InboxStoryEvent;
-    readonly before: InboxStoryEvent | undefined;
-}): ReactNode {
+function RequestEventHead({ event }: { readonly event: InboxStoryEvent }): ReactNode {
     const { t, language } = useTranslation();
-    const changed = event.fields.filter(
-        (field) =>
-            (before?.fields.find((older) => older.name === field.name)?.value ?? '') !==
-            field.value,
-    );
-
     return (
-        <li className="grid grid-cols-[1rem_1fr]">
-            <div className="relative flex justify-center">
-                <span className="absolute inset-y-0 w-px bg-line" aria-hidden />
-                <span
-                    className={`relative z-10 mt-3.5 h-2.5 w-2.5 rounded-full border ${dotClass(event.kind)}`}
-                    aria-hidden
-                />
-            </div>
-            <div className="min-w-0 pb-5 pl-3">
-                <div className="flex flex-wrap items-baseline gap-2 pt-2.5 text-sm">
-                    <Tag tone={kindTone(event.kind)}>{t(`inbox.story.kind.${event.kind}`)}</Tag>
-                    {/* An event that names nobody draws nobody. The ask that
-                        precedes a role is made by the person who raised the
-                        request, and naming them here would say they acted
-                        twice. */}
-                    {event.actor !== '' && (
-                        <>
-                            <AccountPicture username={event.actor} name={event.actor} size="sm" />
-                            <span className="font-medium">{event.actor}</span>
-                        </>
-                    )}
-                    <span className="text-ink-muted">{sourceLabel(t, event.entityType)}</span>
-                    <span className="text-xs tabular-nums text-ink-faint">
-                        {formatDateTime(event.at, language)}
-                    </span>
-                    {event.commentary !== '' && (
-                        <span className="text-xs text-ink-muted italic">“{event.commentary}”</span>
-                    )}
-                </div>
-                {changed.length > 0 && (
-                    <table className="mt-1.5 w-full text-left text-sm">
-                        <tbody>
-                            {changed.map((field) => (
-                                <tr key={field.name} className="align-top">
-                                    <td className="w-44 py-1 pr-3 text-xs text-ink-muted">
-                                        {field.name}
-                                    </td>
-                                    <td className="py-1">
-                                        <DiffLines
-                                            before={
-                                                before?.fields.find(
-                                                    (older) => older.name === field.name,
-                                                )?.value ?? ''
-                                            }
-                                            after={field.value}
-                                        />
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
-        </li>
+        <div className="flex flex-wrap items-baseline gap-2 text-sm">
+            <Tag tone={kindTone(event.kind)}>{t(`inbox.story.kind.${event.kind}`)}</Tag>
+            {/* An event that names nobody draws nobody. The ask that precedes a
+                role is made by the person who raised the request, and naming
+                them here would say they acted twice. */}
+            {event.actor !== '' && (
+                <>
+                    <AccountPicture username={event.actor} name={event.actor} size="sm" />
+                    <span className="font-medium">{event.actor}</span>
+                </>
+            )}
+            <span className="text-ink-muted">{sourceLabel(t, event.entityType)}</span>
+            <span className="text-xs tabular-nums text-ink-faint">
+                {formatDateTime(event.at, language)}
+            </span>
+        </div>
     );
 }

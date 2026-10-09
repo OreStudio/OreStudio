@@ -130,6 +130,7 @@ const fr: SourceCatalogue = {
                 contact: 'Contact',
                 roles: 'Rôles',
                 signIns: 'Connexions',
+                timeline: 'Chronologie',
             },
             notFound: 'Aucun compte n’a cet identifiant.',
             give: 'Accorder un rôle',
@@ -1508,6 +1509,14 @@ const fr: SourceCatalogue = {
         revertTo: 'Rétablir v{version}',
         value: 'Valeur',
         valueDiff: 'Différence',
+    },
+
+    timeline: {
+        by: 'Par {who}',
+        empty: 'Rien ne lui est encore arrivé.',
+        field: 'Champ',
+        gapsTitle: 'Ce que ce flux ne porte pas',
+        notRevertible: 'Cette entrée relate un fait, il n’y a donc rien à rétablir.',
     },
 
     validation: {

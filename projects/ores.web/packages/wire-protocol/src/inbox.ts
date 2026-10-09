@@ -58,6 +58,13 @@ import {
     type RequestedRole,
 } from './generated/iam/protocol/role_request_operations_protocol.js';
 import { resultEnvelopeSchema } from './operations.js';
+import {
+    orderTimeline,
+    timelineEventSchema,
+    timelineFieldSchema,
+    type TimelineEvent,
+    type TimelineField,
+} from './timeline.js';
 
 /**
  * The inbox: asking for roles, answering the requests, and reading the
@@ -378,31 +385,14 @@ export const inboxRequestQueueSchema = z.object({
 });
 
 /** One field of one event in a request's story, as a screen draws it. */
-export const inboxStoryFieldSchema = z.object({
-    name: z.string().default(''),
-    value: z.string().default(''),
-});
-
-/**
- * One thing that happened to a request, drawn as a row of its story.
- *
- * `entityType` and `entityId` name the row the event came from, so the screen
- * can pair consecutive events of the same entity and diff them. `kind` is what
- * the event is, already decided: raising the request, moving it, answering it,
- * telling somebody, asking for a role, or granting one. The screen names and
- * tints from it rather than working it out again.
+/*
+ * A request's story is an instance of the general timeline, so the entry model
+ * itself lives in `timeline.ts` and these names point at it. The request keeps
+ * the field names its readers already use; what it no longer keeps is a second
+ * copy of the model, which would drift from the person's.
  */
-export const inboxStoryEventSchema = z.object({
-    entityType: z.string().default(''),
-    entityId: z.string().default(''),
-    kind: z.string().default(''),
-    at: z.string().default(''),
-    actor: z.string().default(''),
-    version: z.int().nonnegative().default(0),
-    reasonCode: z.string().default(''),
-    commentary: z.string().default(''),
-    fields: z.array(inboxStoryFieldSchema).default([]),
-});
+export const inboxStoryFieldSchema = timelineFieldSchema;
+export const inboxStoryEventSchema = timelineEventSchema;
 
 /** One request's whole story, newest first. */
 export const inboxRequestStorySchema = z.object({
@@ -411,8 +401,8 @@ export const inboxRequestStorySchema = z.object({
 });
 
 /** The types a screen reads, as the schemas above describe them. */
-export type InboxStoryField = z.infer<typeof inboxStoryFieldSchema>;
-export type InboxStoryEvent = z.infer<typeof inboxStoryEventSchema>;
+export type InboxStoryField = TimelineField;
+export type InboxStoryEvent = TimelineEvent;
 export type InboxRequestStory = z.infer<typeof inboxRequestStorySchema>;
 export type InboxRequestRoleView = z.infer<typeof inboxRequestRoleViewSchema>;
 export type InboxRequestDecisionView = z.infer<typeof inboxRequestDecisionViewSchema>;
@@ -972,32 +962,10 @@ async function readDecisionsAbout(
 /**
  * How late in a second an event of each kind lands.
  *
- * The timestamps on the wire carry whole seconds, and a request is raised,
- * recorded, asked for and told about inside one of them. Ties are therefore
- * the common case rather than the exception, and the order among them is
- * chosen to read as the order the acts happened in: the request is raised, the
- * roles are recorded, the notices go out, an answer is given, the role is
- * applied.
+ * The ranking is the general timeline's, because a request's events are a
+ * subset of the kinds any stream can carry and a request read beside a person
+ * must not order ties by a different rule.
  */
-const KIND_RANK: Readonly<Record<string, number>> = {
-    raised: 10,
-    changed: 20,
-    asked: 30,
-    told: 40,
-    decided: 50,
-    granted: 60,
-};
-
-/** Newest first, and within one second, the later act first. */
-function orderStory(events: readonly InboxStoryEvent[]): InboxStoryEvent[] {
-    return [...events].sort((left, right) => {
-        if (left.at !== right.at) return left.at < right.at ? 1 : -1;
-        const rank = (KIND_RANK[right.kind] ?? 0) - (KIND_RANK[left.kind] ?? 0);
-        if (rank !== 0) return rank;
-        if (left.entityId !== right.entityId) return left.entityId < right.entityId ? -1 : 1;
-        return right.version - left.version;
-    });
-}
 
 /**
  * One request's whole story, newest first.
@@ -1028,7 +996,7 @@ export async function readRequestStory(
 
     return {
         requestId,
-        events: orderStory([...history, ...roleEvents(roles ?? []), ...decisions, ...notices]),
+        events: orderTimeline([...history, ...roleEvents(roles ?? []), ...decisions, ...notices]),
     };
 }
 

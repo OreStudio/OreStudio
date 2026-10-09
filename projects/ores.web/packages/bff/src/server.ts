@@ -30,6 +30,7 @@ import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
 import { registerClassificationRoutes } from './classifications.js';
 import { registerAuditRoutes } from './audit.js';
+import { registerTimelineRoutes } from './timeline.js';
 import { registerInboxRoutes } from './inbox.js';
 import { registerOperationsRoutes } from './operations.js';
 import { registerRecordRoutes } from './records.js';
@@ -2330,6 +2331,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
     registerAuditRoutes(server, requireSession);
+    registerTimelineRoutes(server, requireSession);
     registerOperationsRoutes(
         server,
         requireSession,

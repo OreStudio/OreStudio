@@ -135,6 +135,7 @@ const pt: SourceCatalogue = {
                 contact: 'Contacto',
                 roles: 'Funções',
                 signIns: 'Entradas',
+                timeline: 'Cronologia',
             },
             notFound: 'Nenhuma conta tem este nome de utilizador.',
             give: 'Dar um papel',
@@ -1501,6 +1502,14 @@ const pt: SourceCatalogue = {
         revertTo: 'Reverter para v{version}',
         value: 'Valor',
         valueDiff: 'Diferença',
+    },
+
+    timeline: {
+        by: 'Por {who}',
+        empty: 'Ainda nada lhe aconteceu.',
+        field: 'Campo',
+        gapsTitle: 'O que este fluxo não contém',
+        notRevertible: 'Esta entrada regista um facto, por isso não há nada a reverter.',
     },
 
     validation: {

@@ -8,7 +8,7 @@
 #+filetags: :the-marketdata-offset-field-has-no-name:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-marketdata-offset-field-has-no-name
-#+pr:
+#+pr: 2905
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2905][#2905]] | [marketdata] Name the spread offset field the model gives it |
 
 * Review
 

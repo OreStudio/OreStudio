@@ -322,16 +322,23 @@ export function IdentityPanel({
                     </>
                 )}
                 {manager !== null && (
+                    /*
+                     * A link rather than plain text: the point of naming the
+                     * person is that a reader can go and look at them, and a
+                     * reader who cannot see that it is a link will not try.
+                     */
                     <Link
                         to={personPath(manager.username)}
-                        className="flex w-fit items-center gap-2 text-sm hover:underline"
+                        className="flex w-fit items-center gap-2 text-sm text-ink"
                     >
                         <AccountPicture
                             username={manager.username}
                             name={displayName(manager, manager.username)}
                             size="sm"
                         />
-                        <span>{displayName(manager, manager.username)}</span>
+                        <span className="underline decoration-line-strong underline-offset-2 hover:decoration-accent">
+                            {displayName(manager, manager.username)}
+                        </span>
                     </Link>
                 )}
                 <div className="flex flex-wrap items-center gap-3">

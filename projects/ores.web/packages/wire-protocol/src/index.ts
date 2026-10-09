@@ -243,10 +243,13 @@ export {
     accountUsernameRequestSchema,
     accountWriteReplySchema,
     activeSessionsReplySchema,
+    authEventListSchema,
     changePasswordRequestSchema,
     changePasswordResultSchema,
     decidedResultSchema,
     emptyRequestSchema,
+    endSessionReplySchema,
+    lookupCountryReplySchema,
     httpInfoResponseSchema,
     listAccountsRequestSchema,
     listLoginInfoRequestSchema,
@@ -262,6 +265,7 @@ export {
     partyResponseSchema,
     refreshResponseSchema,
     sessionPageSchema as wireSessionPageSchema,
+    sessionStatisticsListSchema,
     wirePartySchema,
 } from './operations.js';
 export type {
@@ -451,15 +455,20 @@ export type {
 
 export {
     CREDENTIAL_SUBJECTS,
+    endSession,
     readAccount,
     readAccountSignIns,
     readAccountsPage,
     readActiveSessions,
+    readAuthEvents,
     readLoginInfo,
+    lookupCountry,
     readLoginInfoPage,
+    readSessionStatistics,
     readSessionsPage,
     setAccountLocked,
 } from './credentials.js';
+export type { AuditWindow } from './credentials.js';
 
 // The HTTP contract shared by the BFF and the browser. Both sides parse with
 // these definitions, so the network boundary is checked at runtime.

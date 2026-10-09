@@ -242,6 +242,12 @@ export type { LoginInfo, LoginInfoPage } from './domain.js';
 export { sessionPageSchema, sessionSchema } from './domain.js';
 export type { Session, SessionPage } from './domain.js';
 
+// The authentication events and the session statistics the audit screen reads.
+// An event's account and session are text: a failed login carries no account,
+// only the username it was tried for.
+export { authEventSchema, sessionStatisticsSchema } from './domain.js';
+export type { AuthEvent, SessionStatisticsRow } from './domain.js';
+
 // The inbox: the requests screen, the requests queue and the notification
 // bell. The BFF drives the transports, so the browser receives only the
 // answers these schemas describe, the operations that name them, and the

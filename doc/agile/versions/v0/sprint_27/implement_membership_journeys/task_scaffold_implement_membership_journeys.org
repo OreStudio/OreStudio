@@ -20,7 +20,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Land the story that owns the
+[[id:EC3EDE29-5A12-44C0-80A5-D96ADAF2898F][Membership]] journey group: the
+story page, the two prototype tasks, the sprint row and the programme's order
+table.
+
+The group had no prototype, so this task carries more than a scaffold: both
+prototypes are built here, put to the product owner, and accepted in the same
+PR. The build tasks are deliberately absent, because they are written from the
+accepted prototypes.
 
 * Status
 
@@ -35,36 +43,48 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The story exists in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]], and the sprint's =* Stories= table links it.
+- The programme's order table names this story against the Membership group, in place of "not yet scaffolded".
+- Each of the two Membership journeys has a prototype task under the story, and both prototypes are accepted by the product owner.
+- Both prototypes are static pages under =doc/prototypes/membership/=, registered on the group page and in the [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] inventory.
+- The two journey documents carry their =* Prototype= section, naming the accepted page, the variant and the commit.
+- =compass lint= passes and =build/scripts/check_prototype_inventory.py= passes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Scaffold the story with =compass story new=.
+2. Write the goal, the acceptance, the plan, the decisions, the out-of-scope list and the documents.
+3. Add the two prototype tasks with =compass task new=; both share the story branch.
+4. Wire the story into the sprint's =* Stories= table and into the programme's order table.
+5. Build both prototypes as static pages and register them.
+6. Put them to the product owner; on acceptance record the verdict on each task and on the story.
+7. Raise the scaffold PR, having closed the three tasks, and merge it.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Membership journeys in the catalogue | 2 | =ls doc/knowledge/journeys/membership/journey_*.org= | 9520f4d635 |
+| Membership prototypes before this task | 0 | =ls doc/prototypes/membership= | 9520f4d635 |
+| Prototypes in the inventory after it | 50 in 15 groups | =python3 build/scripts/check_prototype_inventory.py= | 15a9f9f5dc |
+| Accounts in the Reporting lines mock data | 58 | =projects/ores.seeder/datasets/acme_corporation/accounts.json= | 15a9f9f5dc |
 
 * Notes
 
-* Test Scenarios
+- The group is the sixth in
+  [[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]],
+  after Access and before Directory. Both of its journeys were written in
+  sprint 25 and carry =#+updated: 2026-09-23=, so they are stale against the
+  tree; the prototypes check every claim they render and the story records what
+  they find.
+- The tree at the branch point already carries the journey runtime from the
+  Setup group, but nothing here uses it: since
+  [[id:E85DFD5F-6C33-4EA7-AEC5-0346B5E70260][One way to keep a prototype]] a
+  prototype is a static page, and no prototype is a route in =ores.web=.
+- Both prototype tasks share the story branch, so one PR lands the story, the
+  prototypes and their acceptance.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -83,3 +103,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done 2026-10-09. PR #2969.
+
+The Membership group has a story, two prototype tasks and two accepted
+prototypes:
+
+| Artefact | Id |
+|----------+----|
+| Story: Implement the membership journeys in ores.web | 774AD81D-E286-4A5D-BBDE-4188CAAE7023 |
+| Task: Prototype Where I work | B3D7CFB5-753F-41E1-9545-89B271D5D1A6 |
+| Task: Prototype Reporting lines | 08E9CD97-DE62-4F88-95BB-E26A5703DD8D |
+
+The product owner accepted variant A on both screens on 2026-10-09. The story's
+=* Decisions= records the accepted shapes, and each prototype task's =* Result=
+records what its accepted variant settles and what the rejected ones gave up.
+
+One fact was checked while scaffolding and it shaped the task: the group had no
+prototype at all. =doc/prototypes/index.org= listed Membership among the groups
+with "none yet", so the prototypes were built here rather than left to a later
+pass. The top page now lists the group with two prototypes, and the number of
+groups without one falls from four to three.
+
+Verification: =compass lint= passes on this branch (filetags and generator
+markers valid; the durable-document link advisory stands). The prototype
+inventory gate passes, 50 prototypes in 15 groups. A CDP run in headless Chrome
+drove both pages through every variant and case and read each result back, 26
+checks, all passing (=build/evidence/prototype_check.mjs=).

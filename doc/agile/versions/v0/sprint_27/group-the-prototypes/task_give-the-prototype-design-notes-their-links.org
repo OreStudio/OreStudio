@@ -26,16 +26,19 @@ A reader who lands on a prototype's design note can open the prototype and its G
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:855D0907-26E3-48B9-A59F-5FEBE54C328C][Group the prototypes and add the Gemini reviews]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- Every design note carries a table linking its prototype and its Gemini
+  review, or =none= where there is no review.
+- Nothing changes in a prototype page or a review page.
+- The links resolve and the site renders the table on the note's page.
 
 * Plan
 
@@ -55,7 +58,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Design notes carrying the table | 9 of 9 | =grep -c 'Gemini review' doc/prototypes/*/*.org= | ec90a07291 |
+| Design notes whose review row is a link | 3: access, profile, tenancy/navigation | =find doc/prototypes -type d -name review= | ec90a07291 |
+| Pages published by the site build | 38 files, 0 failures | =compass site page= | ec90a07291 |
+| org-links | pass, 2.7 s | =compass check --only org-links= | ec90a07291 |
+| site-page | pass, 27.6 s | =compass check --only site-page= | ec90a07291 |
 
 * Notes
 
@@ -83,3 +90,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Nine design notes carry the table: three under access, and one each under
+books, classifications, entry, profile and tenancy. Each names the
+prototype, the Gemini review where one exists, and the group page the
+note answers to. Three notes link a review: =access=, =profile= and
+=tenancy/navigation=. The other six say =none=.
+
+It is an org table rather than the export block the earlier attempt used.
+The earlier version was raw HTML with inline styles, which no org buffer
+renders and no link check reads; this one is the same table in the org
+file and on the site, and its links are org links, so =org-links= covers
+them. The styling it gives up was the reason the block existed, and the
+group page already carries the register for anyone who wants the styled
+view.
+
+Nothing changed in a prototype page or a review page, which stay
+byte-identical to what their author wrote. Only the notes changed.

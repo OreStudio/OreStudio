@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: D9258D1F-25B8-40B8-A97C-E179C87E9422
+:END:
+#+title: Story: Guard the curve-snapshot reads
+#+description: curve_snapshot_handler checked no permission and no curve-snapshot read code was seeded, so any authenticated caller could read every tenant's curve points. The republish and compute handlers did check marketdata::curve_bootstrap:republish and :compute, so this was an oversight on the read side.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The curve-snapshot reads answer only a caller that holds the read permission, and the permission is seeded, so a signed-in member cannot read every tenant's curve points.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- curve_snapshot_handler checks marketdata::curve_snapshots:read.
+- The permission is seeded in the IAM permission catalogue.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-10-06 in the product backlog; promoted preserving the UUID.
+
+** What
+
+=curve_snapshot_handler= checked no permission and no curve-snapshot read code
+was seeded in =iam_permissions_populate.sql=, so any authenticated caller could
+read every tenant's curve points. The republish and compute handlers did check
+=marketdata::curve_bootstrap:republish= and =:compute=, so this was an oversight
+on the read side.
+
+** Resolution
+
+The defect was closed before the capture was promoted.
+=projects/ores.marketdata/service/include/ores.marketdata.service/messaging/curve_snapshot_handler.hpp=
+checks =marketdata::curve_snapshots:read= at =:81-85= and =:121-125=, and
+=projects/ores.sql/populate/iam/iam_permissions_populate.sql:1519= seeds it. The
+story is closed on that evidence and carries no tasks, because no work was left
+to do when it was promoted.
+
+* Result
+
+Nothing was built under this story. It exists so the capture that found the
+defect has a story to close against, and so the sprint does not carry a defect
+record in the inbox after the defect is gone.
+
+Both acceptance criteria were already met when the capture was promoted:
+
+- =curve_snapshot_handler.hpp= checks =marketdata::curve_snapshots:read= at
+  =:81-85= and =:121-125=.
+- =iam_permissions_populate.sql:1519= seeds the code.
+
+The evidence is the story's own =** Resolution= above, which the
+marketdata-curves story's /What the tree has moved since the earlier passes/
+section recorded first. No task was opened, because the work the capture asked
+for was done.
+
+The capture =doc/agile/product_backlog/inbox/curve-snapshot-reads-are-unauthenticated.org=
+was removed when the story was promoted, so the inbox no longer offers work that
+is finished.

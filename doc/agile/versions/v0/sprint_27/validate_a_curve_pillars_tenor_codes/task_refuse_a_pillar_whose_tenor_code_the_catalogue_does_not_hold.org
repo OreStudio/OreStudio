@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: F04D9F04-034F-4454-A27A-EE387DFD38C6
+:END:
+#+title: Task: Refuse a pillar whose tenor code the catalogue does not hold
+#+description: Check ir_curve_bootstrap_pillar.start_tenor_code and end_tenor_code against refdata_tenors when a pillar is saved, as the pillar already checks its curve_role_code.
+#+type: task
+#+level: s1
+#+filetags: :validate_a_curve_pillars_tenor_codes:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A6472918-1412-4456-B80A-922EEA6795C9][Validate a curve pillar's tenor codes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A pillar whose start or end tenor code is not a reference tenor is refused when it is saved, with the code named, instead of throwing inside the bootstrap resolver later.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A6472918-1412-4456-B80A-922EEA6795C9][Validate a curve pillar's tenor codes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The save path refuses a start_tenor_code or end_tenor_code that refdata_tenors does not hold.
+- The refusal names the offending code and the pillar.
+- The check reads the catalogue the pillar already consults for its curve role, so the two cannot disagree.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

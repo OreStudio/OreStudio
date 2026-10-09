@@ -828,9 +828,11 @@ named under each item. Item nine closed before it was ever a task.
    Task [[id:86B41936-1186-4FEC-B001-C62F59DF0013][Resolve a composite object from its typed identity]], DONE.
 2. The shape tables: the per-object axes and their ordered values, written
    from the recipe's pillars by a build and from the declaration by an import,
-   with every term value validated against =refdata_tenors= (which also closes
-   capture =A6472918= on the recipe side) and a write-time check that refuses a
-   point whose coordinate is not a declared axis value.
+   with every term value validated against =refdata_tenors= and a write-time
+   check that refuses a point whose coordinate is not a declared axis value.
+   That validation is of a declared shape, not of a pillar a person saved, so it
+   does not close capture =A6472918=. The capture is promoted to its own story,
+   [[id:A6472918-1412-4456-B80A-922EEA6795C9][Validate a curve pillar's tenor codes]], which stays open.
    Tasks [[id:3500444B-673D-49F4-BFD9-15AE96DA65AA][Give a composite object its shape tables]],
    [[id:94DE4430-5770-4A6E-943A-C2FF7B5DC35C][Refuse a point its shape does not declare]] and
    [[id:8055844A-9594-4133-A7A2-E62F59805DD0][Let an import declare the shape it carries]], all DONE.

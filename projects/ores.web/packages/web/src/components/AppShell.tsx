@@ -259,6 +259,9 @@ function AccountMenu({
                     <Link to="/access" role="menuitem" className={item} onClick={close}>
                         {t('shell.menu.access')}
                     </Link>
+                    <Link to="/where-i-work" role="menuitem" className={item} onClick={close}>
+                        {t('shell.menu.whereIWork')}
+                    </Link>
                     <Link to="/security" role="menuitem" className={item} onClick={close}>
                         {t('nav.security')}
                     </Link>

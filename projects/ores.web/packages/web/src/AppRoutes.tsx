@@ -50,6 +50,7 @@ import { VersionsPage } from './operations/VersionsPage.js';
 import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
 import { MyAccessPage } from './access/MyAccessPage.js';
+import { WhereIWorkPage } from './membership/WhereIWorkPage.js';
 import { PeoplePage } from './access/PeoplePage.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
@@ -158,6 +159,7 @@ export interface AppRoutesProps {
     readonly onSignIn: SignInPageProps['onSignIn'];
     readonly onChooseParty: SignInPageProps['onChooseParty'];
     readonly onSignOut: () => void;
+    readonly onSwitchParty: (partyId: string) => Promise<void>;
     readonly onRetryBootstrap: () => void;
 }
 
@@ -175,9 +177,10 @@ export function AppRoutes({
     onSignIn,
     onChooseParty,
     onSignOut,
+    onSwitchParty,
     onRetryBootstrap,
 }: AppRoutesProps): ReactNode {
-    const shell: ShellActions = { onSignOut, self: self ?? null, environment };
+    const shell: ShellActions = { onSignOut, onSwitchParty, self: self ?? null, environment };
     const { t } = useTranslation();
 
     if (gate.status === 'loading' || session.status === 'loading') {
@@ -514,6 +517,23 @@ export function AppRoutes({
                     <MyAccessPage tenantName={view.tenantName} />
                 ))}
             />
+            {/*
+             * Membership: the parties the signed-in person works in. The
+             * reporting line is the tenant administrator's screen and sits
+             * beside this one.
+             */}
+            <Route
+                path="/where-i-work"
+                element={signedIn(gate.version, session, shell, (view) => (
+                    <WhereIWorkPage
+                        tenantName={view.tenantName}
+                        username={view.username}
+                        email={view.email}
+                        actingPartyId={view.party.id}
+                        onSwitchParty={shell.onSwitchParty}
+                    />
+                ))}
+            />
             <Route
                 path="/people"
                 element={signedIn(
@@ -764,7 +784,7 @@ export function AppRoutes({
 /** The wiring: the two states, and the actions the screens can take. */
 export function ConnectedApp(): ReactNode {
     const { state: gate, recheck, reading } = useBootstrap();
-    const { state: session, signIn, chooseParty, refresh, signOut } = useSession();
+    const { state: session, signIn, chooseParty, switchParty, refresh, signOut } = useSession();
     const { environment } = useSite();
     const { t } = useTranslation();
     const server = useJourneyServer();
@@ -908,6 +928,7 @@ export function ConnectedApp(): ReactNode {
                     onSignOut={() => {
                         void signOut();
                     }}
+                    onSwitchParty={switchParty}
                     onRetryBootstrap={() => {
                         void recheck();
                     }}
@@ -926,6 +947,12 @@ export function ConnectedApp(): ReactNode {
 /** What the shell around every signed-in screen knows and can do. */
 interface ShellActions {
     readonly onSignOut: () => void;
+    /**
+     * Re-scopes the open session to another of the person's own parties. The
+     * Where I work screen is the caller: switching is the session's, so the
+     * screen is handed the action rather than reaching for the context.
+     */
+    readonly onSwitchParty: (partyId: string) => Promise<void>;
     readonly self: Account | null;
     /** The environment the deployment serves, which every shell states. */
     readonly environment: EnvironmentView | undefined;

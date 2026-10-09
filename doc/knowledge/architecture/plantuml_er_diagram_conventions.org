@@ -34,7 +34,8 @@ a reader opens, so both are committed. The drawing is SVG because the
 schema has no raster budget left: the single 463-table diagram overflowed
 a 32-bit pixel count before it was split.
 
-Below is the index, then one image per group.
+Below is the index; every group's image is on
+[[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][the ores.sql component page]].
 
 [[proj:projects/ores.sql/modeling/ores_schema.svg]]
 
@@ -42,31 +43,8 @@ Below is the index, then one image per group.
 
 The groups are the model's packages. A package holds its tables and the
 keys that stay inside it; a key that leaves is named in the note beside
-the group it reaches.
-
-| Group | Diagram | Tables |
-|-------+---------+--------|
-| iam | [[proj:projects/ores.sql/modeling/ores_schema.iam.svg]] | 24 |
-| assets | [[proj:projects/ores.sql/modeling/ores_schema.assets.svg]] | 3 |
-| refdata | [[proj:projects/ores.sql/modeling/ores_schema.refdata.svg]] | 153 |
-| dq_staging | [[proj:projects/ores.sql/modeling/ores_schema.dq_staging.svg]] | 57 |
-| dq_datasets | [[proj:projects/ores.sql/modeling/ores_schema.dq_datasets.svg]] | 6 |
-| dq_methodology | [[proj:projects/ores.sql/modeling/ores_schema.dq_methodology.svg]] | 4 |
-| dq_metadata | [[proj:projects/ores.sql/modeling/ores_schema.dq_metadata.svg]] | 15 |
-| variability | [[proj:projects/ores.sql/modeling/ores_schema.variability.svg]] | 1 |
-| telemetry | [[proj:projects/ores.sql/modeling/ores_schema.telemetry.svg]] | 5 |
-| geo | [[proj:projects/ores.sql/modeling/ores_schema.geo.svg]] | 1 |
-| trading | [[proj:projects/ores.sql/modeling/ores_schema.trading.svg]] | 99 |
-| mq | [[proj:projects/ores.sql/modeling/ores_schema.mq.svg]] | 4 |
-| scheduler | [[proj:projects/ores.sql/modeling/ores_schema.scheduler.svg]] | 2 |
-| reporting | [[proj:projects/ores.sql/modeling/ores_schema.reporting.svg]] | 20 |
-| compute | [[proj:projects/ores.sql/modeling/ores_schema.compute.svg]] | 12 |
-| workflow | [[proj:projects/ores.sql/modeling/ores_schema.workflow.svg]] | 4 |
-| database | [[proj:projects/ores.sql/modeling/ores_schema.database.svg]] | 1 |
-| marketdata | [[proj:projects/ores.sql/modeling/ores_schema.marketdata.svg]] | 10 |
-| analytics | [[proj:projects/ores.sql/modeling/ores_schema.analytics.svg]] | 20 |
-| synthetic | [[proj:projects/ores.sql/modeling/ores_schema.synthetic.svg]] | 9 |
-| inbox | [[proj:projects/ores.sql/modeling/ores_schema.inbox.svg]] | 13 |
+the group it reaches. The model's =packages= list is what names them, so
+a group cannot drift from the schema.
 
 * Generation pipeline
 

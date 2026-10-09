@@ -126,6 +126,7 @@ public:
     std::optional<domain::rate_instrument>
     read_at_version(context ctx, const std::string& trade_id, std::uint32_t version);
 
+
     /**
      * @brief Whether a list of rate instruments can be ordered by a field.
      *

@@ -16,9 +16,16 @@ looks/. The schema lives in [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]
 
 * File location
 
+The schema outgrew one picture, so the diagram is one file per group and
+an index over them. A group is a package: its tables and the keys it
+holds inside itself. A key that leaves the group is named in the group's
+note, with the group it belongs to, because its other end is drawn in
+another file.
+
 | Item      | Value                                |
 |-----------+--------------------------------------|
-| Diagram   | [[proj:projects/ores.sql/modeling/ores_schema.puml][=projects/ores.sql/modeling/ores_schema.puml=]] |
+| Index     | [[proj:projects/ores.sql/modeling/ores_schema.puml][=projects/ores.sql/modeling/ores_schema.puml=]] — every group, its file, and its tables |
+| Group     | =projects/ores.sql/modeling/ores_schema.<group>.puml= — one per package, committed |
 | Rendered  | [[proj:projects/ores.sql/modeling/ores_schema.png][=projects/ores.sql/modeling/ores_schema.png=]] (committed) |
 | CMakeLists | [[proj:projects/ores.sql/modeling/CMakeLists.txt][=projects/ores.sql/modeling/CMakeLists.txt=]] |
 
@@ -36,8 +43,8 @@ The pipeline has three stages, all driven by
 | Stage    | Reads                                                  | Tool                                         | Writes                          |
 |----------+--------------------------------------------------------+----------------------------------------------+---------------------------------|
 | Parse    | =projects/ores.sql/create/**/*.sql=                    | [[proj:projects/ores.codegen/src/plantuml_er_parse_sql.py][=projects/ores.codegen/src/plantuml_er_parse_sql.py=]] | =build/output/codegen/plantuml_er_model.json= |
-| Render   | the intermediate JSON + a mustache template            | [[proj:projects/ores.codegen/src/plantuml_er_generate.py][=projects/ores.codegen/src/plantuml_er_generate.py=]] (pystache) | [[proj:projects/ores.sql/modeling/ores_schema.puml][=projects/ores.sql/modeling/ores_schema.puml=]] |
-| Diagram  | the =.puml=                                            | PlantUML (system =plantuml=, or =plantuml.jar=) | [[proj:projects/ores.sql/modeling/ores_schema.png][=projects/ores.sql/modeling/ores_schema.png=]] |
+| Render   | the intermediate JSON + a mustache template per group, and one for the index | [[proj:projects/ores.codegen/src/plantuml_er_generate.py][=projects/ores.codegen/src/plantuml_er_generate.py=]] (pystache) | =projects/ores.sql/modeling/ores_schema.<group>.puml=, and the index at =ores_schema.puml= |
+| Diagram  | the =.puml= files                                      | PlantUML (system =plantuml=, or =plantuml.jar=) | [[proj:projects/ores.sql/modeling/ores_schema.png][=projects/ores.sql/modeling/ores_schema.png=]] |
 
 The intermediate model file is *not* committed and *not* literate. It
 lives under =build/output/= (gitignored) because it is regenerated on
@@ -47,9 +54,9 @@ doesn't benefit from org-mode literate prose, drawers, or block-paste
 mechanisms — those are reserved for the *authored* models humans
 maintain (under each component's =modeling/= directory).
 
-The =.puml= and =.png= are committed because reviewers and readers
-benefit from seeing schema-shape diffs in PRs and viewing the diagram
-without rebuilding.
+The =.puml= files and the =.png= are committed because reviewers and
+readers benefit from seeing schema-shape diffs in PRs and viewing a
+group without rebuilding.
 
 * Skeleton
 

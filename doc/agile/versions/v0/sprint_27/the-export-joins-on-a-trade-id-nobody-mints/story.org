@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 2E3F547C-5016-4E47-83A4-09B0591B98C6
+:END:
+#+title: Story: Hotfix: the export joins on a trade id nobody mints
+#+description: export_portfolio joins each trade to its instrument by item.anchor.id while the instrument batch is keyed by trade_id, and two payload builders bypass the planner that mints them, so every id was nil and every trade joined whatever row rebuild_instrument found first: a CapFloor resolved to another trade's swap, an Ascot resolved to a swap, and the exporter tests fed duplicate nil ids.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ores.ore:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let the XML roundtrip walk and the exporter tests join each trade to its own
+instrument, so the ORE corpus imports stop resolving a trade onto another
+trade's instrument.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- =xml::roundtrip()= mints a trade id per trade and stamps it on the instrument.
+- The exporter tests build their payloads through one helper that does the same.
+- The importer's nil-id contract is unchanged.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:64871679-3493-4443-9EB2-C2BAA9DAB1E3][Scaffold story: Hotfix: the export joins on a trade id nobody mints]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9C358136-8FC8-48F7-83EA-20F2DDAD49AC][Implement Hotfix: the export joins on a trade id nobody mints]] | DONE | | 2026-10-09 | Initial task for: Hotfix: the export joins on a trade id nobody mints |
+
+* Decisions
+
+- *Mint in the two builders that bypass the planner, and leave the importer
+  alone.* The importer leaving ids unset is a contract
+  =xml_trade_import_tests= asserts; the planner is what fills them on the
+  import path. The roundtrip walk and the exporter tests have no planner, so
+  they mint their own, mirroring what it does.
+
+* Out of scope
+
+- The importer's nil-id contract.
+- =trade_export_item.anchor.id= being the join key while the batch is keyed by
+  =trade_id=. The two are made equal here; whether one should be derived from
+  the other is a change of its own.
+
+* Result
+
+Done. =xml::roundtrip()= stamps a minted id onto each instrument, and the
+exporter tests share a =make_export_payload= helper with their assertions
+unchanged.

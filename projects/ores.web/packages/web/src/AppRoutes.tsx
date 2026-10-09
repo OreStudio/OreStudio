@@ -27,6 +27,7 @@ import { useTranslation } from './i18n/Provider.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
 import { useSite } from './session/SiteProvider.js';
+import { setupAnswerStep } from './session/setupAnswer.js';
 import { useJourneyServer } from './journeys/server.js';
 import { FirstRunJourney } from './journeys/FirstRunJourney.js';
 import { NewTenantJourney } from './journeys/NewTenantJourney.js';
@@ -758,7 +759,7 @@ export function AppRoutes({
 
 /** The wiring: the two states, and the actions the screens can take. */
 export function ConnectedApp(): ReactNode {
-    const { state: gate, recheck } = useBootstrap();
+    const { state: gate, recheck, reading } = useBootstrap();
     const { state: session, signIn, chooseParty, signOut } = useSession();
     const { environment } = useSite();
     const server = useJourneyServer();
@@ -787,18 +788,22 @@ export function ConnectedApp(): ReactNode {
     const signedInAs = session.status === 'authenticated' ? session.session.accountId : '';
     const askedFor = useRef<string | undefined>(undefined);
     useEffect(() => {
-        if (gate.status !== 'ready' || gate.accountId === signedInAs) {
-            return;
-        }
-        if (askedFor.current !== signedInAs) {
+        const step = setupAnswerStep({
+            answerAccountId: gate.status === 'ready' ? gate.accountId : signedInAs,
+            signedInAs,
+            reading,
+            asked: askedFor.current === signedInAs,
+            authenticated: session.status === 'authenticated',
+        });
+        if (step === 'ask') {
             askedFor.current = signedInAs;
             void recheckNow.current();
             return;
         }
-        if (session.status === 'authenticated') {
+        if (step === 'sign-out') {
             void signOut();
         }
-    }, [gate, session, signedInAs, signOut]);
+    }, [gate, session, signedInAs, signOut, reading]);
     /*
      * The rail belongs to a setup that has not finished. Once the deployment
      * records that it has, this browser is done with the wizard whatever the tab

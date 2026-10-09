@@ -136,7 +136,7 @@ function steps(
         readonly onCreateAdministrator?: () => Promise<void>;
         readonly onAdministratorEntered?: () => Promise<void>;
         readonly onCompleteSystemOnboarding?: () => Promise<void>;
-        readonly onSignOutAfterBootstrap?: () => Promise<void>;
+        readonly onFinished?: () => void;
     } = {},
 ) {
     return firstRunSteps({
@@ -165,7 +165,7 @@ function steps(
         onAdministratorEntered: overrides.onAdministratorEntered ?? vi.fn(async () => undefined),
         onCompleteSystemOnboarding:
             overrides.onCompleteSystemOnboarding ?? vi.fn(async () => undefined),
-        onSignOutAfterBootstrap: overrides.onSignOutAfterBootstrap ?? vi.fn(async () => undefined),
+        onFinished: overrides.onFinished ?? vi.fn(),
     });
 }
 
@@ -363,34 +363,35 @@ describe('an installation that keeps the system tenant alone', () => {
         const onCompleteSystemOnboarding = vi.fn(async () => {
             order.push('complete');
         });
-        const onSignOutAfterBootstrap = vi.fn(async () => {
-            order.push('signed-out');
+        const onFinished = vi.fn(() => {
+            order.push('handed-over');
         });
 
         const tenantReady = steps({
             choice: 'first-tenant',
             onCompleteSystemOnboarding,
-            onSignOutAfterBootstrap,
+            onFinished,
         }).find((step) => step.id === 'ready');
         await tenantReady?.next?.run?.();
         /*
          * The flag is what releases the gate, so it is written before the
-         * hand-over. Bootstrap runs as the tenant's system party, and that is
-         * no party to leave somebody sitting in, so both rails end at the
-         * sign-in screen.
+         * hand-over. The person is not signed out: the browser is already signed
+         * in as the administrator this deployment was just given, and the party
+         * the setup wrote from is the one their own sign-in lands in, so a
+         * second sign-in would be a second sign-in for no second session.
          */
-        expect(order).toEqual(['complete', 'signed-out']);
+        expect(order).toEqual(['complete', 'handed-over']);
 
         order.length = 0;
         const systemReady = steps({
             choice: 'system-only',
             onCompleteSystemOnboarding,
-            onSignOutAfterBootstrap,
+            onFinished,
         }).find((step) => step.id === 'ready');
         await systemReady?.next?.run?.();
-        expect(order).toEqual(['complete', 'signed-out']);
+        expect(order).toEqual(['complete', 'handed-over']);
         expect(onCompleteSystemOnboarding).toHaveBeenCalledTimes(2);
-        expect(onSignOutAfterBootstrap).toHaveBeenCalledTimes(2);
+        expect(onFinished).toHaveBeenCalledTimes(2);
     });
 
     it('allows a step back from the administrator', () => {

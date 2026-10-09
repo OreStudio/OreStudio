@@ -85,6 +85,7 @@ const pt: SourceCatalogue = {
             roles: 'Papéis',
             refdata: 'Dados de referência',
             access: 'O meu acesso',
+            whereIWork: 'Onde trabalho',
             profile: 'O meu perfil',
         },
     },
@@ -2161,6 +2162,32 @@ const pt: SourceCatalogue = {
             conventionHistory: 'Convenção',
             removeWarning:
                 'Remover o par remove também a sua convenção. Nada verifica se há operações que ainda usem o par.',
+        },
+    },
+
+    membership: {
+        where: {
+            title: 'Onde trabalho',
+            lead: 'As partes em que a sua conta trabalha, em {tenant}.',
+            acting: 'Está a atuar por',
+            actingUnknown:
+                'A sessão atua por uma parte que esta lista não contém. Inicie sessão de novo para renovar a sessão.',
+            actingNote: 'Todos os ecrãs leem os dados desta parte até mudar.',
+            parties: 'As suas partes',
+            oneParty:
+                'A sua conta trabalha numa única parte, por isso não há nada para mudar. Cada conta tem de trabalhar em pelo menos uma parte: uma conta sem parte é recusada no início de sessão.',
+            code: 'Código',
+            where: 'Local',
+            category: 'Categoria',
+            unnamed: 'Uma parte que esta versão não consegue nomear',
+            switch: 'Mudar para esta parte',
+            setDefault: 'Definir como predefinida',
+            clearDefault: 'Limpar a predefinição',
+            actingTag: 'A atuar por',
+            defaultTag: 'Predefinida',
+            thisIsIt: 'É a parte por que a sua sessão está a atuar.',
+            footnote:
+                'A mudança emite um novo token de sessão, por isso todos os ecrãs leem a parte que escolheu. A predefinição é o que o início de sessão rápido escolhe da próxima vez.',
         },
     },
 

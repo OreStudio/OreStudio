@@ -131,6 +131,7 @@ function render(path: string, permissionCodes: readonly string[]): string {
                         journeyInProgress={false}
                         onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
                         onChooseParty={async () => undefined}
+                        onSwitchParty={async () => undefined}
                         onSignOut={() => undefined}
                         onRetryBootstrap={() => undefined}
                     />

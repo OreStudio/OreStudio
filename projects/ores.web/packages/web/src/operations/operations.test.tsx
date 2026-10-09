@@ -171,6 +171,7 @@ function renderRoute(
             journeyInProgress={false}
             onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
             onChooseParty={async () => undefined}
+                        onSwitchParty={async () => undefined}
             onSignOut={() => undefined}
             onRetryBootstrap={() => undefined}
         />,

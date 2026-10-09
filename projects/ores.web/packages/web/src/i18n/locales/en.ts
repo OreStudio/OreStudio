@@ -86,6 +86,7 @@ export const en: SourceCatalogue = {
             roles: 'Roles',
             refdata: 'Reference data',
             access: 'My access',
+            whereIWork: 'Where I work',
             profile: 'My profile',
         },
     },
@@ -2144,6 +2145,32 @@ export const en: SourceCatalogue = {
             conventionHistory: 'Convention',
             removeWarning:
                 'Removing the pair removes its convention too. Nothing checks whether trades still use the pair.',
+        },
+    },
+
+    membership: {
+        where: {
+            title: 'Where I work',
+            lead: 'The parties your account works in, in {tenant}.',
+            acting: 'You are acting for',
+            actingUnknown:
+                'The session is acting for a party this list does not hold. Sign in again to renew the session.',
+            actingNote: 'Every screen reads this party’s data until you switch.',
+            parties: 'Your parties',
+            oneParty:
+                'Your account works in one party, so there is nothing to switch. Every account must work in at least one party: an account with none is refused at sign-in.',
+            code: 'Code',
+            where: 'Where',
+            category: 'Category',
+            unnamed: 'A party this build cannot name',
+            switch: 'Switch to this party',
+            setDefault: 'Set as default',
+            clearDefault: 'Clear default',
+            actingTag: 'Acting for',
+            defaultTag: 'Default',
+            thisIsIt: 'This is the party your session is acting for.',
+            footnote:
+                'Switching issues a fresh sign-in token, so every screen reads the party you chose. The default is what quick sign-in picks next time.',
         },
     },
 

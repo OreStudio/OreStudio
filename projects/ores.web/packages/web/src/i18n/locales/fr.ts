@@ -80,6 +80,7 @@ const fr: SourceCatalogue = {
             roles: 'Rôles',
             refdata: 'Données de référence',
             access: 'Mes accès',
+            whereIWork: 'Où je travaille',
             profile: 'Mon profil',
         },
     },
@@ -2176,6 +2177,33 @@ const fr: SourceCatalogue = {
             conventionHistory: 'Convention',
             removeWarning:
                 'Supprimer la paire supprime aussi sa convention. Rien ne vérifie si des opérations utilisent encore la paire.',
+        },
+    },
+
+    membership: {
+        where: {
+            title: 'Où je travaille',
+            lead: 'Les parties dans lesquelles votre compte travaille, dans {tenant}.',
+            acting: 'Vous agissez pour',
+            actingUnknown:
+                'La session agit pour une partie que cette liste ne contient pas. Reconnectez-vous pour renouveler la session.',
+            actingNote:
+                'Tous les écrans lisent les données de cette partie jusqu’à ce que vous changiez.',
+            parties: 'Vos parties',
+            oneParty:
+                'Votre compte travaille dans une seule partie, il n’y a donc rien à changer. Chaque compte doit travailler dans au moins une partie : un compte sans partie est refusé à la connexion.',
+            code: 'Code',
+            where: 'Lieu',
+            category: 'Catégorie',
+            unnamed: 'Une partie que cette version ne peut pas nommer',
+            switch: 'Basculer vers cette partie',
+            setDefault: 'Définir par défaut',
+            clearDefault: 'Effacer le défaut',
+            actingTag: 'Agit pour',
+            defaultTag: 'Par défaut',
+            thisIsIt: 'C’est la partie pour laquelle votre session agit.',
+            footnote:
+                'Le basculement émet un nouveau jeton de connexion : tous les écrans lisent la partie choisie. Le défaut est ce que la connexion rapide choisit la prochaine fois.',
         },
     },
 

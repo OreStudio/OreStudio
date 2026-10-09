@@ -23,7 +23,7 @@ Gemini review beside it, and every index page says which prototypes have one.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
@@ -47,6 +47,7 @@ Gemini review beside it, and every index page says which prototypes have one.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:4BC92424-C73B-4E74-ABEA-5F0A979AD91C][Group the prototypes and add the Gemini reviews]] | DONE | 2026-10-08 | 2026-10-08 | Move every prototype under its journey group, add the group and top-level index pages, copy the Gemini review screens beside the prototypes they review, and update the guard, the site build and every document that names a prototype path. |
+| [[id:D411C79B-184D-44AA-82CE-CF9379461A65][Give the prototype design notes their links]] | STARTED | 2026-10-09 | | Task for: Group the prototypes and add the Gemini reviews |
 
 * Decisions
 

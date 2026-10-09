@@ -32,11 +32,11 @@ pass 1 task moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Give the seven orphan artefact tables a model, or a recorded reason, and keep the component regenerating byte-identically. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-05                               |
 
 * Acceptance
@@ -56,10 +56,14 @@ pass 1 task moved here.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][Model the handcrafted ores.dq code and generate the artefact tables]] | STARTED | 2026-09-26 | | Author models for every handcrafted ores.dq table and function, automate the artefact tables, and keep the component regenerating byte-identically. |
+| [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][Model the handcrafted ores.dq code and generate the artefact tables]] | DONE | 2026-09-26 | 2026-10-09 | Author models for every handcrafted ores.dq table and function, automate the artefact tables, and keep the component regenerating byte-identically. |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+Closed on the tasks' state, in the sprint's bookkeeping pass: every task is DONE with its work merged, and the tasks carry the outcomes.

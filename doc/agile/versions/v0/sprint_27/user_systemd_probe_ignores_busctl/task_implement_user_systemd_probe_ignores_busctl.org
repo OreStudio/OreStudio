@@ -30,9 +30,9 @@ unscoped when the busctl transport is the only way to reach the manager.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:1621610D-032C-400F-B842-92B99FD63972][Hotfix: The user systemd probe ignores the busctl transport]] |
-| Now          | Done. A sandboxed build prints the cmake command with no systemd-run prefix.                       |
+| Now          | Nothing.                                                                                           |
 | Waiting on   | Nothing.                               |
-| Next         | PR.                  |
+| Next         | Nothing.             |
 | Last touched | 2026-10-06                               |
 
 * Acceptance

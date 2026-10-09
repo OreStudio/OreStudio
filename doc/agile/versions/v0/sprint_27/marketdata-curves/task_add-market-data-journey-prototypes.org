@@ -34,7 +34,7 @@ the one inventory and published by the site build.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Complete.                              |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-10-06                             |

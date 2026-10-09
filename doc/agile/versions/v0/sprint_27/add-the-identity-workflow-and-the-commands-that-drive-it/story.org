@@ -31,11 +31,11 @@ identity workflow and the commands that drive it moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Build the identity workflow, then the commands that drive it. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-05                               |
 
 * Acceptance
@@ -52,10 +52,14 @@ identity workflow and the commands that drive it moved here.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][Add the identity workflow and the commands that drive it]] | BACKLOG | | | Give the workflow component a fixture it can run against itself: an identity workflow whose steps the request declares, plus the shell commands that start it and read the engine back. |
+| [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][Add the identity workflow and the commands that drive it]] | DONE | | 2026-10-09 | Give the workflow component a fixture it can run against itself: an identity workflow whose steps the request declares, plus the shell commands that start it and read the engine back. |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+Closed on the tasks' state, in the sprint's bookkeeping pass: every task is DONE with its work merged, and the tasks carry the outcomes.

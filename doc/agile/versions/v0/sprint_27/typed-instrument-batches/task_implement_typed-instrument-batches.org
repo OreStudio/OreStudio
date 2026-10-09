@@ -31,9 +31,9 @@ from the trade-type catalogue. =instrument_payload= and its codec are deleted.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:27A66639-45CC-4C4F-A545-5BFD15DFC1CF][Carry every trading instrument as a typed batch]] |
-| Now          | Complete. The wire carries generated typed arrays and the payload is deleted. |
+| Now          | Nothing.                                                                      |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR and merge.                |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-08                               |
 
 * Acceptance

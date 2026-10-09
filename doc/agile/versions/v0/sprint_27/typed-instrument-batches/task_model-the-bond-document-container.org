@@ -31,9 +31,9 @@ then carry the bond family as a generated type.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:27A66639-45CC-4C4F-A545-5BFD15DFC1CF][Carry every trading instrument as a typed batch]] |
-| Now          | Complete. The container is generated, the gates pass, and the batch task can carry the bond family. |
+| Now          | Nothing.                                                                                            |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR and merge.                |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-08                               |
 
 * Acceptance

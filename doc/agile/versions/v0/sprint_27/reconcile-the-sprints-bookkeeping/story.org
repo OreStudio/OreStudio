@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: F1FA6A9D-A2FD-4A32-8D2D-EA68DAA60385
+:END:
+#+title: Story: Reconcile the sprint's bookkeeping
+#+description: The sprint audit reports 41 findings: a story ready to close, eight tasks whose pull requests have all merged but which are still open, seven rows where the sprint table disagrees with the story file, and twenty-five closed documents whose Now is not Nothing. Reconcile all of them without losing a word.
+#+type: story
+#+level: s2
+#+filetags: :agile:bookkeeping:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Take the sprint audit from 41 findings to the two that are real open work, and
+lose no record doing it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- One story and six tasks that had finished are closed.
+- No sprint table row disagrees with its story file.
+- No closed document carries a Now other than =Nothing.=, and no outcome text is lost.
+- What stays open is open on purpose and says why.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4881A109-8508-4F70-ACFB-75D3D5D04183][Scaffold story: Reconcile the sprint's bookkeeping]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:20C7AF56-E90D-45D4-BA9C-4B6B91EF700C][Implement Reconcile the sprint's bookkeeping]] | DONE | | 2026-10-09 | Initial task for: Reconcile the sprint's bookkeeping |
+
+* Decisions
+
+- *A merged pull request does not close a task by itself.* Two of the eight the
+  audit flagged are not finished. =Bring ores.synthetic to the clean standard=
+  waits on five open items (B06, V08, M06, P03, V04) and on a decision to accept
+  any of them as an exception, and =Split every codegen template org into
+  commented literate blocks= is BLOCKED behind the refdata entity model drift.
+  Both are left open, and the audit's merged-PR rule is what produced the false
+  positives.
+- *The story file is the record and the table is a view.* Where the two
+  disagreed, the table was moved to match the story file. Five rows were edited
+  directly because compass has no verb that starts a story, only =story done=.
+- *A closed document's outcome moves to its Result before its Now is blanked.*
+  Six of the twenty-five closed documents had no Result at all, so their Now
+  held the only record. Blanking those would have destroyed it.
+
+* Out of scope
+
+- The two findings left open. They need their owners, not a bookkeeping pass.
+
+* Result
+
+Done. The audit reports two findings, both deliberate: the synthetic clean-up
+task that still has five open items, and the blocked literate-blocks task. One
+story and six tasks were closed, five sprint rows were reconciled, and
+twenty-five closed documents had their outcome moved into a Result before their
+Now was blanked.

@@ -23,9 +23,9 @@ Make the identity of a market series queryable in the database. Today the identi
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Done. The projection table, the writer, the check, the backfill and the asset-class views have landed. |
+| Now           | Nothing.                                                                                               |
 | Waiting on    | Nothing.                               |
-| Next          | The identity read of the typed-identity slice consumes the projection. |
+| Next          | Nothing.                                                               |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -112,3 +112,7 @@ on each run would be simpler and would rewrite rows that are already correct.
   query needs it.
 - Replacing the URI. The URI stays the identity. The projection is a second,
   derived representation beside it, not a replacement.
+
+* Result
+
+Done. The projection table, the writer, the check, the backfill and the asset-class views have landed.

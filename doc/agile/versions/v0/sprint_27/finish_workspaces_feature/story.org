@@ -87,7 +87,7 @@ workspace activation in the Qt client.
 |---------------+----------------------------------------|
 | State         | ABANDONED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Nothing. Abandoned; see Decisions.     |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-10-05                               |
@@ -233,3 +233,7 @@ workspace activation in the Qt client.
 
 - Track 2 / production live trade import mechanics themselves --
   tracked in the separate, dependent [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story.
+
+* Result
+
+Nothing. Abandoned; see Decisions.

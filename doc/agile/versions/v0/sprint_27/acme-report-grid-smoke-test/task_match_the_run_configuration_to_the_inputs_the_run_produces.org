@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment: bright_faraday
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -46,11 +46,11 @@ it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | The market data and the fixings are implemented: the gather step stores both ORE bodies, and the packaging step places each at the path the run document names. PR 2857 does the same for the portfolio, which completes all three of the run's own data files. |
+| Now          | Nothing. |
 | Waiting on   | The hourly validation build, then a run, to confirm the engine reads all three and stops no later than the analytics that need the compute packages. |
-| Next         | Re-run and read where the engine now stops. |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance

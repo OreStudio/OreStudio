@@ -25,9 +25,9 @@ whenever it drives systemd over busctl.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Done. The probe answers for systemd-run; a sandboxed build runs unscoped. |
+| Now           | Nothing.                                                                  |
 | Waiting on    | Nothing.                               |
-| Next          | PR.            |
+| Next          | Nothing.       |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -62,3 +62,7 @@ whenever it drives systemd over busctl.
 - The other systemd binaries the services pillar shells out to for =tree=
   and =top= (=systemd-cgls=, =systemd-cgtop=). They read cgroup files
   rather than the manager bus, so the transport does not apply.
+
+* Result
+
+Done. The probe answers for systemd-run; a sandboxed build runs unscoped.

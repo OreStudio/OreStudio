@@ -27,7 +27,7 @@ main rather than a branch that may disappear.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Done. Main carries every prototype, and the hub answers every route. |
+| Now           | Nothing.                                                             |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-10-05                               |

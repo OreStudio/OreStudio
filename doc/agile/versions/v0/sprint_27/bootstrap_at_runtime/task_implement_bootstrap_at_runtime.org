@@ -30,9 +30,9 @@ helper that publishes the datasets a test needs.
 |--------------+----------------------------------------+
 | State        | DONE                              |
 | Parent story | [[id:8606AB12-826D-4F23-A779-35307A23B5AF][Bootstrap the system at runtime]] |
-| Now          | Done. The recreate publishes nothing and the suite is green.                       |
+| Now          | Nothing.                                                                           |
 | Waiting on   | Nothing.                               |
-| Next         | PR.                  |
+| Next         | Nothing.             |
 | Last touched | 2026-10-06                               |
 
 * Acceptance

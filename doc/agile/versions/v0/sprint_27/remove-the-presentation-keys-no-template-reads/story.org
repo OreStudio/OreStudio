@@ -30,11 +30,11 @@ Remove the presentation keys no template reads moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Remove the unread keys and their helpers, prove the regeneration is output-neutral, and correct the documents. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-05                               |
 
 * Acceptance
@@ -52,10 +52,14 @@ Remove the presentation keys no template reads moved here.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:54AEFA10-CE27-4878-B692-4CD1A109FF84][Remove the presentation keys no template reads]] | STARTED | 2026-09-23 | | Initial task for: Remove the legacy Qt remnants |
+| [[id:54AEFA10-CE27-4878-B692-4CD1A109FF84][Remove the presentation keys no template reads]] | DONE | 2026-09-23 | 2026-10-09 | Initial task for: Remove the legacy Qt remnants |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+Closed on the tasks' state, in the sprint's bookkeeping pass: every task is DONE with its work merged, and the tasks carry the outcomes.

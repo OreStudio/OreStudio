@@ -29,7 +29,7 @@ that a fresh database is made usable by the runtime ACME provisioning.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:8606AB12-826D-4F23-A779-35307A23B5AF][Bootstrap the system at runtime]] |
-| Now          | Done.                       |
+| Now          | Nothing.                    |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                  |
 | Last touched | 2026-10-06                               |

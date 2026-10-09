@@ -31,7 +31,7 @@ input now passes, read as minute, hour, day, month, weekday and year.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Done. The parser refuses any count but five fields. |
+| Now           | Nothing.                                            |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
@@ -65,3 +65,7 @@ input now passes, read as minute, hour, day, month, weekday and year.
 * Out of scope
 
 -
+
+* Result
+
+Done. The parser refuses any count but five fields.

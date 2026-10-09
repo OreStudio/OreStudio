@@ -33,7 +33,7 @@ tasks moved here.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Done: every group of the pattern language is written, and a design names its patterns by rule. |
+| Now           | Nothing.                                                                                       |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-10-05                               |
@@ -65,3 +65,7 @@ tasks moved here.
 * Out of scope
 
 -
+
+* Result
+
+Done: every group of the pattern language is written, and a design names its patterns by rule.

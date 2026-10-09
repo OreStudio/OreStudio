@@ -26,16 +26,20 @@ codegen-tests fails seven cases and er-diagram is stale on trunk. Repair the sta
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
-| Now          | Not yet started.                       |
+| Now          | Merged in PR #2924. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- =codegen-tests= passes.
+- =er-diagram= passes.
+- No case loses what it proved: the fixtures gain the columns the flags
+  they set actually read, and the immutable-target case keeps its claim.
+- =handler-permissions= and =entity-writes= stay green.
 
 * Plan
 
@@ -55,7 +59,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| codegen-tests | pass, 1288 cases, 53.4 s | =compass check --only codegen-tests= | 2d80324d0f |
+| er-diagram | pass, 2.6 s | =compass check --only er-diagram= | 2d80324d0f |
+| The four checks the report named | 4/4 | =compass check --only codegen-tests --only er-diagram --only handler-permissions --only entity-writes= | 2d80324d0f |
 
 * Notes
 
@@ -83,3 +89,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Seven cases failed for three reasons, none of them a codegen defect.
+
+Five were fixtures that predate =d16b253c21=, which made
+=validate_rls_isolation= refuse tenant isolation without =has_tenant_id=
+and party isolation without a =party_id= column. The fixtures now declare
+both where their flags read them; no assertion changed. The same column
+went into the name-base fixture, whose party policy is the subject of the
+truncation case.
+
+The seventh named =ores_trading_trades_tbl= as immutable, and
+=a2dcf034fa= made every trading entity a regular versioned table, so the
+target is temporal and the check correctly emits the current-version
+filter. No soft FK left in the tree points at an immutable entity -- the
+one model that declares =:immutable:= has its only soft FK enforced, so
+it renders no trigger check -- so the case points the table-to-org lookup
+at that model and keeps its claim.
+
+=er-diagram= was stale by =output_storage_key : text=, added by
+=fd06ab945a= and never regenerated. The =.puml= now carries it. The PNG
+is left as committed: PlantUML cannot paint this diagram here, failing in
+=EmptyImageBuilder= with =NegativeArraySizeException= and writing
+different bytes on each run, and the check reads the =.puml= alone.
+
+Story's =* Decisions= is not touched: the task settles stale fixtures, not
+a design question.

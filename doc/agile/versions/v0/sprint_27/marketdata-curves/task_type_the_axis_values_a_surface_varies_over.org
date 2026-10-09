@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/type-the-axis-values-a-surface-varies-over
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A composite object's axis values carry a typed, validated code rather than free 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | The plan is written. The codec value type is being added. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Add datum::strike_label, wire the kind through the codec, and move field::strike_label onto it. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -44,9 +44,69 @@ A composite object's axis values carry a typed, validated code rather than free 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The axis value vocabulary becomes a typed value on the codec. It does not
+become a table.
+
+1. A new value type, =datum::strike_label=, joins =value.hpp=. It holds the
+   label's form (ATM, a delta call, a delta put, a risk reversal, a butterfly or
+   a level) and its number. =parse= reads the grammar, and it returns the
+   canonical spelling of the label.
+2. =value_kind::strike_label= joins the kind enum. =kind_of=, =kind_type=,
+   =holds_kind=, =parse_value= and =text_of= all handle it. The kind has no
+   closed token list, so =codes_of= stays empty for it and the existing
+   invariant holds unchanged.
+3. =field::strike_label= moves from =value_kind::text= to the new kind. The
+   schema then states that the codec checks the field.
+4. The two key readers that fill the field, =read_fx= and the correlation
+   reader, parse the token through the new type. They no longer store free
+   text.
+5. The tests cover the parse, the canonical spelling, a refused label, and the
+   components of an FX option surface read from the declared shape.
+6. No table, no refdata code list, and no shape change.
+
+The decision that this is a codec type and not a table is recorded below,
+because the journey that owns the surface framework proposes the other answer.
+
+** The grammar is ORE's allow-list for an FX option quote
+
+=parseStrike= in ORE accepts more forms than an FX option quote may hold.
+=FXOptionQuote= refuses any strike whose type is not =DeltaCall=, =DeltaPut=,
+=ATM=, =BF=, =RR= or =Absolute= (=marketdatum.hpp:1247-1257=). The new type
+accepts exactly that set, so the codec refuses what ORE refuses. =ATMF= and
+=25D= are therefore refused: ORE's strike grammar reads them, and its FX option
+quote then throws.
+
+** The canonical spelling, and what it does not rewrite
+
+The canonical label fixes the case of the suffix and drops a leading =+=. A
+fraction of zeros is dropped, so =25.0RR= and =25RR= are one component. The
+digits are otherwise kept as the key wrote them, because rewriting a number is
+a change of value and not a change of spelling.
+
+The stored =oresmd_uri= therefore carries the canonical label, and two files
+that spell one component differently declare one axis value. Every label in the
+seed and in the ORE example corpus is already canonical, so no stored value
+moves.
+
+** Why not a reference-data code list
+
+The surface journey proposes one: "No code list or table names =ATM=, =25RR=
+or =25BF= ... The candidate is a reference-data strike or delta label list"
+(=journey_author-a-surfaces-framework.org:157-160=). Three facts argue against
+it here.
+
+- The delta number is open. ORE accepts any number before =RR= and =BF=, so a
+  closed list refuses valid market data. That is the defect the import path
+  already met with tenors, which is why =series_shape_writer::declare= takes its
+  term check as an argument.
+- The vocabulary belongs to the grammar ORE's parser runs, which is what
+  =codes_of= already holds for every other checked field. A table would be a
+  second vocabulary that could disagree with the parser.
+- The journey that owns the surface framework, journey 2, is deferred to its
+  own story (story.org:912). A table here would pull that story forward.
+
+The quoting convention a label implies, the ATM type and the delta type, is
+stated once beside the parser. A per-surface convention is journey 2's work.
 
 * Measurements
 
@@ -63,6 +123,19 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The field is shared. =fx_option= and =correlation= both carry
+  =strike_label=, and the schema states the kind per field, not per type, so a
+  correlation strike is checked by the same grammar. Every correlation point in
+  the ORE example corpus writes =ATM=.
+- The grammar is narrower than ORE's =parseStrike= and exactly as narrow as
+  =FXOptionQuote=. ORE's strike grammar reads =ATMF=, =25D= and =ATM+0.5=, and
+  its FX option quote then throws on each. The codec refuses them at the key.
+- The seed and the corpus already spell every label canonically, so the change
+  writes no stored value differently. The corpus carries five distinct labels:
+  =ATM=, =25RR=, =25BF=, =10RR= and =10BF=.
+- No table, no refdata code list and no migration. The shape tables and the
+  point check are unchanged.
 
 * Test Scenarios
 

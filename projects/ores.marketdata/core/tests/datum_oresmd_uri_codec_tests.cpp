@@ -203,6 +203,35 @@ TEST_CASE("a_quote_uri_has_the_agreed_shape", tags) {
           "&expiry=5Y&term=2Y&dimension=ATM");
 }
 
+TEST_CASE("an_fx_option_strike_label_uri_carries_the_canonical_spelling", tags) {
+    // The label is a component of the surface, so two spellings of one
+    // component must be one axis value whatever the key said.
+    const auto canonical = ore_key_codec::read("FX_OPTION/RATE_LNVOL/EUR/USD/1Y/25RR");
+    REQUIRE(canonical);
+    CHECK(oresmd_uri_codec::write(*canonical) ==
+          "oresmd://fx/EUR?type=quote&instrument=fx_option&quote=rate_lnvol"
+          "&ccy=USD&expiry=1Y&strike_label=25RR");
+
+    for (const auto* key : {"FX_OPTION/RATE_LNVOL/EUR/USD/1Y/25rr",
+                            "FX_OPTION/RATE_LNVOL/EUR/USD/1Y/+25RR",
+                            "FX_OPTION/RATE_LNVOL/EUR/USD/1Y/25.0RR"}) {
+        INFO("key: " << key);
+        const auto d = ore_key_codec::read(key);
+        REQUIRE(d);
+        CHECK(*d == *canonical);
+    }
+}
+
+TEST_CASE("a_strike_label_ore_refuses_is_refused_by_the_key_reader", tags) {
+    for (const auto* key : {"FX_OPTION/RATE_LNVOL/EUR/USD/1Y/ATMF",
+                            "FX_OPTION/RATE_LNVOL/EUR/USD/1Y/25D",
+                            "FX_OPTION/RATE_LNVOL/EUR/USD/1Y/FLY",
+                            "FX_OPTION/RATE_LNVOL/EUR/USD/1Y/BF"}) {
+        INFO("key: " << key);
+        CHECK_FALSE(ore_key_codec::read(key));
+    }
+}
+
 TEST_CASE("a_series_uri_holds_the_identity_fields_only", tags) {
     const auto cds = ore_key_codec::read("CDS/CREDIT_SPREAD/ACME/SNRFOR/USD/XR14/5Y");
     REQUIRE(cds);

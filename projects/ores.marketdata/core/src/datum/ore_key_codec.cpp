@@ -121,6 +121,13 @@ strike base_strike(std::string_view t) {
     return std::move(*parsed);
 }
 
+strike_label strike_label_of(std::string_view t) {
+    auto parsed = strike_label::parse(t);
+    if (!parsed)
+        refuse(parsed.error());
+    return std::move(*parsed);
+}
+
 std::string join(tokens parts) {
     std::string out;
     for (std::size_t i = 0; i < parts.size(); ++i) {

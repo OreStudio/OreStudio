@@ -86,6 +86,10 @@ private:
 /// only the equity option reader adds.
 [[nodiscard]] strike base_strike(std::string_view t);
 
+/// An FX option strike label in its canonical spelling: ATM, 25RR, 25BF, 25C,
+/// 25P or a level.
+[[nodiscard]] strike_label strike_label_of(std::string_view t);
+
 /// @p parts joined with '/'.
 [[nodiscard]] std::string join(tokens parts);
 

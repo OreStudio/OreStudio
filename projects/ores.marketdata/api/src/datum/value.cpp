@@ -37,6 +37,14 @@ bool all_digits(std::string_view s) {
     return !s.empty() && std::ranges::all_of(s, is_digit);
 }
 
+// ASCII only, so the result does not depend on the program's locale.
+std::string upper(std::string_view s) {
+    std::string out(s);
+    std::ranges::transform(
+        out, out.begin(), [](char c) { return c >= 'a' && c <= 'z' ? char(c - 'a' + 'A') : c; });
+    return out;
+}
+
 int to_int(std::string_view s) {
     int result = 0;
     for (const char c : s)
@@ -116,6 +124,19 @@ constexpr std::array<std::string_view, 2> moneyness_types{"Spot", "Fwd"};
 
 std::unexpected<std::string> refuse(std::string_view what, std::string_view text) {
     return std::unexpected(std::format("'{}' is not {}", text, what));
+}
+
+// A label number with its redundant spelling removed: a leading + goes, and so
+// does a fraction of zeros. The digits are otherwise kept as written, because
+// rewriting a number changes the value and not only its spelling.
+std::string canonical_number(std::string_view text) {
+    if (!text.empty() && text.front() == '+')
+        text.remove_prefix(1);
+    const auto dot = text.find('.');
+    if (dot != std::string_view::npos &&
+        std::ranges::all_of(text.substr(dot + 1), [](char c) { return c == '0'; }))
+        text = text.substr(0, dot);
+    return std::string(text);
 }
 
 }
@@ -225,6 +246,60 @@ std::string strike::text() const {
     return std::visit(writer{}, form_);
 }
 
+strike_label::strike_label(form f, std::string number)
+    : form_(f)
+    , number_(std::move(number)) {}
+
+std::expected<strike_label, std::string> strike_label::parse(std::string_view text) {
+    if (text.empty())
+        return refuse("a strike label", text);
+    if (upper(text) == "ATM")
+        return strike_label(form::at_the_money, {});
+
+    // The suffix names the wing, and ORE reads it in either case. The two-letter
+    // suffixes come first, so RR is never read as a put on an 'R' delta.
+    const struct {
+        std::string_view token;
+        form kind;
+    } suffixes[] = {{"RR", form::risk_reversal},
+                    {"BF", form::butterfly},
+                    {"C", form::delta_call},
+                    {"P", form::delta_put}};
+    for (const auto& suffix : suffixes) {
+        if (text.size() <= suffix.token.size())
+            continue;
+        if (upper(text.substr(text.size() - suffix.token.size())) != suffix.token)
+            continue;
+        const auto number = decimal::parse(text.substr(0, text.size() - suffix.token.size()));
+        if (!number)
+            return refuse("a strike label", text);
+        return strike_label(suffix.kind, canonical_number(number->text()));
+    }
+
+    const auto level = decimal::parse(text);
+    if (!level)
+        return refuse("a strike label", text);
+    return strike_label(form::level, canonical_number(level->text()));
+}
+
+std::string strike_label::text() const {
+    switch (form_) {
+        case form::at_the_money:
+            return "ATM";
+        case form::delta_call:
+            return number_ + "C";
+        case form::delta_put:
+            return number_ + "P";
+        case form::risk_reversal:
+            return number_ + "RR";
+        case form::butterfly:
+            return number_ + "BF";
+        case form::level:
+            return number_;
+    }
+    return {};
+}
+
 std::string text_of(const value& v) {
     struct writer {
         std::string operator()(none_t) const {
@@ -244,6 +319,9 @@ std::string text_of(const value& v) {
         }
         std::string operator()(const code& c) const {
             return c.text();
+        }
+        std::string operator()(const strike_label& l) const {
+            return l.text();
         }
     };
     return std::visit(writer{}, v);

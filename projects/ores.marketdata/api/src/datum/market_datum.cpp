@@ -40,6 +40,8 @@ bool holds_kind(value_kind kind, const value& v) {
             return std::holds_alternative<strike>(v);
         case value_kind::code:
             return std::holds_alternative<code>(v);
+        case value_kind::strike_label:
+            return std::holds_alternative<strike_label>(v);
     }
     return false;
 }
@@ -213,6 +215,9 @@ std::expected<value, std::string> parse_value(field f, std::string_view text) {
             return strike::parse(text).transform([](strike s) { return value(std::move(s)); });
         case value_kind::code:
             return code::parse(text).transform([](code c) { return value(std::move(c)); });
+        case value_kind::strike_label:
+            return strike_label::parse(text).transform(
+                [](strike_label l) { return value(std::move(l)); });
     }
     return std::unexpected(std::string("unknown value kind"));
 }

@@ -167,9 +167,12 @@ TEST_CASE("write_notification_preference_publishes_an_event", tags) {
         REQUIRE_FALSE(channel_code_catalogue.empty());
         v.channel_code = channel_code_catalogue.front().code;
     }
+    // The row's storage key in text: every key parameter the repository and
+    // the service take is text, so each part states its own conversion here,
+    // a uuid through to_string and a number through std::to_string. The notify
+    // trigger emits one entity_id per key column, so a notification belongs to
+    // this row only when every key part is in it.
     const auto id_str = boost::uuids::to_string(v.account_id);
-    // The notify trigger emits one entity_id per key column, so a
-    // notification belongs to this row only when every key part is in it.
     const std::vector<std::string> key_parts = {id_str, v.kind_code, v.channel_code};
     BOOST_LOG_SEV(lg, debug) << "Notification Preference: " << v;
 

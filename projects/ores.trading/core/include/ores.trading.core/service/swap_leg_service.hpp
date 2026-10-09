@@ -140,23 +140,23 @@ public:
      * @param version The version to fetch.
      * @return The swap leg at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::swap_leg> get_swap_leg_at_version(const boost::uuids::uuid& id,
+    std::optional<domain::swap_leg> get_swap_leg_at_version(const std::string& trade_id,
+                                                            const std::string& leg_number,
                                                             std::uint32_t version);
 
     /**
      * @brief Retrieves a single swap leg by its primary key.
      *
-     * The storage key is a uuid, so the signature says which key is meant and
-     * the human-readable key cannot be passed here by mistake.
-     *
      * @return The swap leg if found, std::nullopt otherwise.
      */
-    std::optional<domain::swap_leg> get_swap_leg(const boost::uuids::uuid& id);
+    std::optional<domain::swap_leg> get_swap_leg(const std::string& trade_id,
+                                                 const std::string& leg_number);
 
     /**
      * @brief Retrieves a batch of swap legs by primary key.
      */
-    std::vector<domain::swap_leg> get_swap_legs(const std::vector<std::string>& ids);
+    std::vector<domain::swap_leg> get_swap_legs(const std::vector<std::string>& trade_ids,
+                                                const std::vector<std::string>& leg_numbers);
 
     /**
      * @brief Saves a swap leg (creates or updates).
@@ -179,19 +179,21 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_swap_leg(const boost::uuids::uuid& id);
+    void delete_swap_leg(const std::string& trade_id, const std::string& leg_number);
 
     /**
      * @brief Deletes swap legs by their primary keys.
      */
-    void delete_swap_legs(const std::vector<std::string>& ids);
+    void delete_swap_legs(const std::vector<std::string>& trade_ids,
+                          const std::vector<std::string>& leg_numbers);
 
     /**
      * @brief Retrieves all historical versions of a swap leg.
      *
      * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::swap_leg> get_swap_leg_history(const std::string& id);
+    std::vector<domain::swap_leg> get_swap_leg_history(const std::string& trade_id,
+                                                       const std::string& leg_number);
 
 private:
     context ctx_;

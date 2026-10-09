@@ -56,11 +56,6 @@ struct swap_leg_identity {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID uniquely identifying this leg row.
-     */
-    boost::uuids::uuid id;
-
-    /**
      * @brief Party that owns this leg record.
      */
     boost::uuids::uuid party_id;

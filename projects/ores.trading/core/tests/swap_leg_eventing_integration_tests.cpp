@@ -162,7 +162,13 @@ TEST_CASE("write_swap_leg_publishes_an_event", tags) {
         ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
         v.identity.trade_activity_id = activity.id;
     }
-    const auto id_str = boost::uuids::to_string(v.identity.id);
+    // The row's storage key in text: every key parameter the repository and
+    // the service take is text, so each part states its own conversion here,
+    // a uuid through to_string and a number through std::to_string. The notify
+    // trigger emits one entity_id per key column, so a notification belongs to
+    // this row only when every key part is in it.
+    const auto id_str = boost::uuids::to_string(v.identity.trade_id);
+    const std::vector<std::string> key_parts = {id_str, std::to_string(v.identity.leg_number)};
     BOOST_LOG_SEV(lg, debug) << "Swap Leg: " << v;
 
     swap_leg_repository repo;
@@ -191,7 +197,8 @@ TEST_CASE("write_swap_leg_publishes_an_event", tags) {
                 auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
                 // The event carries the row's own key record, so the row under
                 // test is recognised by comparing it with the row written.
-                if (decoded && decoded->key.id == v.identity.id)
+                if (decoded && decoded->key.trade_id == v.identity.trade_id &&
+                    decoded->key.leg_number == v.identity.leg_number)
                     received.push_back(msg);
             }
         }
@@ -203,7 +210,8 @@ TEST_CASE("write_swap_leg_publishes_an_event", tags) {
         // Exhausted the budget: report what the observer did see so a
         // genuinely broken chain is diagnosable, not a bare empty check.
         const auto final_snapshot = observer.snapshot();
-        BOOST_LOG_SEV(lg, error) << "No notification for swap_leg " << id_str << " after "
+        BOOST_LOG_SEV(lg, error) << "No notification for swap_leg " << id_str << "/"
+                                 << std::to_string(v.identity.leg_number) << " after "
                                  << max_attempts << " writes; observer received "
                                  << final_snapshot.size() << " message(s) in total";
         for (const auto& msg : final_snapshot)
@@ -212,7 +220,8 @@ TEST_CASE("write_swap_leg_publishes_an_event", tags) {
     }
     REQUIRE_FALSE(received.empty());
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
-                            << " matching NATS notification(s) for swap_leg " << id_str;
+                            << " matching NATS notification(s) for swap_leg " << id_str << "/"
+                            << std::to_string(v.identity.leg_number);
 
     // 5. CRUD round trip on the same row: update through the
     // repository, read the version history through the service, and
@@ -230,15 +239,16 @@ TEST_CASE("write_swap_leg_publishes_an_event", tags) {
         v.audit.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);
 
-        auto versions = svc.get_swap_leg_history(id_str);
+        auto versions = svc.get_swap_leg_history(id_str, std::to_string(v.identity.leg_number));
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().audit.change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_swap_leg(v.identity.id);
+        svc.delete_swap_leg(id_str, std::to_string(v.identity.leg_number));
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(svc.get_swap_leg(v.identity.id).has_value());
-        REQUIRE(svc.get_swap_leg_history(id_str).size() == versions.size());
+        REQUIRE_FALSE(svc.get_swap_leg(id_str, std::to_string(v.identity.leg_number)).has_value());
+        REQUIRE(svc.get_swap_leg_history(id_str, std::to_string(v.identity.leg_number)).size() ==
+                versions.size());
     }
 }

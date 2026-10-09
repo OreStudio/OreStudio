@@ -42,13 +42,12 @@ struct swap_leg_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_swap_legs_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    sqlgen::PrimaryKey<std::string> trade_id;
+    sqlgen::PrimaryKey<std::string> leg_number;
     std::string tenant_id;
     int version = 0;
     std::string party_id;
-    std::string trade_id;
     std::string trade_activity_id;
-    int leg_number = 0;
     std::optional<bool> payer;
     std::string leg_type_code;
     std::string day_count_fraction_code;

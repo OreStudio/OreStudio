@@ -41,9 +41,12 @@
  * step. A single column cannot hold a schedule, and the two arms of a stepping
  * leg were flattened into one until these children landed.
  *
- * The row keeps its own id surrogate and names the parent through trade_id.
- * The instrument is keyed by its trade, so all nine rates families name the one
- * parent the trades table holds rather than a table per family.
+ * The row is keyed by the trade and the leg's ordinal, (trade_id, leg_number),
+ * and names its parent through trade_id. Nothing mints a surrogate: the import
+ * reads the parent instrument it was given, and the trade plus the ordinal
+ * already identify the row. The instrument is keyed by its trade, so all nine
+ * rates families name the one parent the trades table holds rather than a table
+ * per family.
  *
  * It binds :profile: trading-instrument, like the nine instrument sub-types
  * whose legs it holds. Two table features justify the bind: the table is
@@ -60,13 +63,12 @@
  */
 
 create table if not exists "ores_trading_swap_legs_tbl" (
-    "id" uuid not null,
+    "trade_id" uuid not null,
+    "leg_number" integer not null default 1,
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid not null,
-    "trade_id" uuid not null,
     "trade_activity_id" uuid not null,
-    "leg_number" integer not null default 1,
     "payer" boolean null,
     "leg_type_code" text not null,
     "day_count_fraction_code" text not null,
@@ -80,25 +82,26 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, id, valid_from, valid_to),
+    primary key (tenant_id, trade_id, leg_number, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        id WITH =,
+        trade_id WITH =,
+        leg_number WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("leg_number" >= 1),
     check ("currency" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists swap_legs_version_uniq_idx
-on "ores_trading_swap_legs_tbl" (tenant_id, id, version)
+on "ores_trading_swap_legs_tbl" (tenant_id, trade_id, leg_number, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists swap_legs_id_uniq_idx
-on "ores_trading_swap_legs_tbl" (tenant_id, id)
+on "ores_trading_swap_legs_tbl" (tenant_id, trade_id, leg_number)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists swap_legs_tenant_idx
@@ -175,7 +178,7 @@ begin
     select version into current_version
     from "ores_trading_swap_legs_tbl"
     where tenant_id = NEW.tenant_id
-      and id = NEW.id
+      and trade_id = NEW.trade_id and leg_number = NEW.leg_number
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -189,13 +192,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'swap_leg',
-                    'id');
+                    'trade_id');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'swap_leg',
-                'id',
+                'trade_id',
                 NEW.version::text,
                 current_version::text);
         end if;
@@ -208,7 +211,7 @@ begin
         update "ores_trading_swap_legs_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and id = NEW.id
+          and trade_id = NEW.trade_id and leg_number = NEW.leg_number
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -232,6 +235,6 @@ on delete to "ores_trading_swap_legs_tbl" do instead (
     update "ores_trading_swap_legs_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and id = OLD.id
+      and trade_id = OLD.trade_id and leg_number = OLD.leg_number
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

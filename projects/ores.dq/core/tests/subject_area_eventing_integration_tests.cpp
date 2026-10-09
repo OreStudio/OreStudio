@@ -116,9 +116,12 @@ TEST_CASE("write_subject_area_publishes_an_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_subject_area(ctx);
     v.change_reason_code = "system.test";
+    // The row's storage key in text: every key parameter the repository and
+    // the service take is text, so each part states its own conversion here,
+    // a uuid through to_string and a number through std::to_string. The notify
+    // trigger emits one entity_id per key column, so a notification belongs to
+    // this row only when every key part is in it.
     const auto id_str = v.name;
-    // The notify trigger emits one entity_id per key column, so a
-    // notification belongs to this row only when every key part is in it.
     const std::vector<std::string> key_parts = {id_str, v.domain_name};
     BOOST_LOG_SEV(lg, debug) << "Subject Area: " << v;
 

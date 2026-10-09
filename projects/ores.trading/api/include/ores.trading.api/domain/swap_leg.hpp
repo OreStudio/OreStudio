@@ -55,9 +55,12 @@ namespace ores::trading::domain {
  * step. A single column cannot hold a schedule, and the two arms of a stepping
  * leg were flattened into one until these children landed.
  *
- * The row keeps its own id surrogate and names the parent through trade_id.
- * The instrument is keyed by its trade, so all nine rates families name the one
- * parent the trades table holds rather than a table per family.
+ * The row is keyed by the trade and the leg's ordinal, (trade_id, leg_number),
+ * and names its parent through trade_id. Nothing mints a surrogate: the import
+ * reads the parent instrument it was given, and the trade plus the ordinal
+ * already identify the row. The instrument is keyed by its trade, so all nine
+ * rates families name the one parent the trades table holds rather than a table
+ * per family.
  *
  * It binds :profile: trading-instrument, like the nine instrument sub-types
  * whose legs it holds. Two table features justify the bind: the table is

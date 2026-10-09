@@ -101,7 +101,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| marketdata suites | 5 of 5 pass: api, client, core, core.corpus, service. The corpus took 2757 s on a loaded box against a fresh database. | =ctest --test-dir build/output/linux-clang-debug-make -R "^ores\.marketdata\." --output-on-failure= | =9c9933410e= |
+| new evolution cases | 5 cases, 46 assertions, all pass | =publish/bin/ores.marketdata.core.tests "[series_evolution_reader]"= | =9c9933410e= |
+| marketdata codegen drift | none | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component marketdata --dry-run= | =9c9933410e= |
+| local checks, branch against =origin/main= | 28 of 30 pass. =codegen-tests= and =event-registrars= are the same failure, and it is not this branch's: =ores.refdata= does not compose the =sub_periods_coupon_type= registrar. | =python3 build/scripts/local_checks.py --exclude-heavy --base origin/main --jobs 2= | =9c9933410e= |
 
 * Notes
 

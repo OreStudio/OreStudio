@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-tenor_conventions add <code> <description> <measured_from> <resolution_algorithm> <oresmd_uri> <reason> <commentary>
+tenor_conventions add <code> <description> <measured_from> <resolution_algorithm> <business_day_convention_type> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.tenor_conventions.put=.
 
 #+name: tenor_conventions-add
 #+begin_src ores-shell :tangle tenor_conventions-add.ores :exports none
-tenor_conventions add __none__ __none__ __none__ __none__ - system.new_record generated_script
+tenor_conventions add __none__ __none__ __none__ __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-tenor_conventions set <code> <description> <measured_from> <resolution_algorithm> <oresmd_uri> <reason> <commentary> [--version <n>]
+tenor_conventions set <code> <description> <measured_from> <resolution_algorithm> <business_day_convention_type> <oresmd_uri> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.tenor_conventions.put=.
 
 #+name: tenor_conventions-set
 #+begin_src ores-shell :tangle tenor_conventions-set.ores :exports none
-tenor_conventions set __none__ __none__ __none__ __none__ - system.new_record generated_script
+tenor_conventions set __none__ __none__ __none__ __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-tenor_conventions put-many --count <n> <code> <description> <measured_from> <resolution_algorithm> <oresmd_uri> <reason> <commentary>
+tenor_conventions put-many --count <n> <code> <description> <measured_from> <resolution_algorithm> <business_day_convention_type> <oresmd_uri> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.tenor_conventions.put_many=.
 
 #+name: tenor_conventions-put-many
 #+begin_src ores-shell :tangle tenor_conventions-put-many.ores :exports none
-tenor_conventions put-many --count 1 __none__ __none__ __none__ __none__ - system.new_record generated_script
+tenor_conventions put-many --count 1 __none__ __none__ __none__ __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =delete=

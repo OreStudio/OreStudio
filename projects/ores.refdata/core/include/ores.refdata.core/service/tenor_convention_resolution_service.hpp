@@ -80,6 +80,15 @@ public:
         const messaging::get_tenor_convention_resolution_request& request);
     messaging::get_many_tenor_convention_resolutions_response get_many_tenor_convention_resolutions(
         const messaging::get_many_tenor_convention_resolutions_request& request);
+    messaging::put_tenor_convention_resolution_response put_tenor_convention_resolution(
+        const messaging::put_tenor_convention_resolution_request& request);
+    messaging::put_many_tenor_convention_resolutions_response put_many_tenor_convention_resolutions(
+        const messaging::put_many_tenor_convention_resolutions_request& request);
+    messaging::delete_tenor_convention_resolution_response delete_tenor_convention_resolution(
+        const messaging::delete_tenor_convention_resolution_request& request);
+    messaging::delete_many_tenor_convention_resolutions_response
+    delete_many_tenor_convention_resolutions(
+        const messaging::delete_many_tenor_convention_resolutions_request& request);
     messaging::list_by_convention_code_tenor_convention_resolutions_response
     list_by_convention_code_tenor_convention_resolutions(
         const messaging::list_by_convention_code_tenor_convention_resolutions_request& request);
@@ -88,6 +97,24 @@ public:
 private:
     context ctx_;
     repository::tenor_convention_resolution_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::tenor_convention_resolution_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::tenor_convention_resolution& out);
 };
 
 }

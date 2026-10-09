@@ -1550,6 +1550,8 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenant_types:read', 'View tenant types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::delivery_outcome_types:read', 'View delivery outcome types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_convention_resolutions:read', 'View tenor convention resolutions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_convention_resolutions:write', 'Add and change tenor convention resolutions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_convention_resolutions:delete', 'Remove tenor convention resolutions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::folders:read', 'View folders');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::ir_curve_generation_config_process_parameter_values:read', 'View ir curve generation config process parameter values');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::yield_curve_process_parameter_definitions:read', 'View yield curve process parameter definitions');

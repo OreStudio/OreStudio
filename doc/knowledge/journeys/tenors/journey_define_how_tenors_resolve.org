@@ -150,33 +150,41 @@ it.
 | See the tenors | Resolve each row for the resolution column | no operation (a resolve operation would be needed) | missing |
 | Open the tenor | Read the row | =refdata.v1.tenors.get= | exists |
 | Open the tenor | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
-| Open the tenor | Write the row | =refdata.v1.tenors.put= | partial |
+| Open the tenor | Write the row | =refdata.v1.tenors.put= | exists |
 | Its resolution | List the conventions | =refdata.v1.tenor_conventions.list= | exists |
 | Its resolution | Read the convention's tenor set | =refdata.v1.tenor_convention_resolutions.list_by_convention_code= | exists |
 | Its resolution | Fill the anchor picker | =refdata.v1.tenor_anchors.list= | exists |
 | Its resolution | Fill the algorithm picker | =refdata.v1.tenor_resolution_algorithms.list= | exists |
-| Its resolution | Write the convention | =refdata.v1.tenor_conventions.put= | partial |
-| Its resolution | Write the set membership, the anchor override or the offsets | no operation (the junction is read-only) | missing |
+| Its resolution | Fill the roll-rule picker | =refdata.v1.business_day_convention_types.list= | exists |
+| Its resolution | Write the convention | =refdata.v1.tenor_conventions.put= | exists |
+| Its resolution | Write the set membership, the anchor override or the offsets | =refdata.v1.tenor_convention_resolutions.put=, =.delete= | exists |
 | The schedule | List the schedule axes | =refdata.v1.tenor_schedules.list= | exists |
 | The schedule | List the events an event-lookup axis reads | =refdata.v1.calendar_events.list= | partial |
 | The resolved dates | Resolve the tenor to a date | no operation (a resolve operation would be needed) | missing |
 | The resolved dates | Offer the roll rules | =refdata.v1.business_day_convention_types.list= | exists |
 | The resolved dates | Read the calendar a date rolls on | =refdata.v1.calendars.list= | exists |
-| Review and write | Write the tenor | =refdata.v1.tenors.put= | partial |
-| Review and write | Write the convention | =refdata.v1.tenor_conventions.put= | partial |
-| Review and write | Write the membership row | no operation (the junction is read-only) | missing |
+| Review and write | Write the tenor | =refdata.v1.tenors.put= | exists |
+| Review and write | Write the convention | =refdata.v1.tenor_conventions.put= | exists |
+| Review and write | Write the membership row | =refdata.v1.tenor_convention_resolutions.put= | exists |
 | Check the history | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.tenor=) | exists |
 | Check the history | List the version rows | =refdata.v1.tenors_versions.list= | exists |
-| Check the history | Revert by writing the old values | =refdata.v1.tenors.put= | partial |
+| Check the history | Revert by writing the old values | =refdata.v1.tenors.put= | exists |
 | The refusal | Carry the refusal to the screen | no message (the server throws) | missing |
 
-Five coverage rows are =missing=, and they name three things the server does
-not carry: an operation that resolves a tenor over the wire, a write for the
-resolution junction, and a refusal message. The resolution column and the
-resolved-dates step need the same missing operation, and the resolution step
-and the write step need the same missing junction write.
+Two coverage rows are =missing=, and both need one thing the server does not
+carry: an operation that resolves a tenor over the wire. The resolution column
+and the resolved-dates step are the same missing operation, drawn in two
+places. A third row is =missing= for the refusal that operation would carry.
+
+The =partial= rows are gone. Every one of them was waiting on something this
+journey's own work has since built: the resolution junction was read-only and
+now takes =put= and =.delete=, the convention had no roll rule and now carries
+one, and the tenor write was thought to carry no change reason and in fact
+carries one already, in the =change_intent= every refdata write takes.
 
 * What is missing
+
+Three items, and two of them are the same operation seen from two sides.
 
 1. *No operation resolves a tenor over the wire.* The resolution lives in
    =resolve_end_date=, a domain function in
@@ -186,41 +194,37 @@ and the write step need the same missing junction write.
    and the prototype draws the reply one would return. The candidate is a
    =refdata.v1.tenors.resolve= request whose reply carries the anchor date, the
    date before the roll, the adjusted date, the roll rule and the calendar.
-   Until then the screen cannot show a resolved date the server confirmed.
-2. *=tenor_convention= has no roll-rule column.* A convention carries its
-   anchor and its algorithm, and nothing that says how a resolved date is
-   adjusted. The =business_day_convention_type= lookup holds the four roll rules
-   the prototype draws, and no column in =tenor_convention= points at it. The
-   candidate is a =business_day_convention_type= column on =tenor_convention=,
-   with the same foreign key the other lookups use. Until then the roll rule is
-   a choice on the screen with no row behind it, and the write cannot store it.
-3. *=tenor_convention_resolutions= is read-only.* The server serves
-   =refdata.v1.tenor_convention_resolutions.list=, =.get= and
-   =.list_by_convention_code=, and there is no =.put= and no =.delete=. The
-   resolution step can show membership and cannot change it: the anchor
-   override, the SPECIAL tenor's offset and a SCHEDULE_STEP row's schedule code
-   and step count all have no write. The candidate is the =.put= and =.delete=
-   pair with the version check the other refdata writes make. Until then the
-   screen shows the set and says it cannot change it.
-4. *The refusal is a thrown exception with no message on the wire.*
+   Until then the screen cannot show a resolved date the server confirmed. The
+   convention now carries the roll rule this reply would report, and the
+   resolution junction now takes writes, so the operation is the only piece
+   left.
+2. *The refusal is a thrown exception with no message on the wire.*
    =resolve_end_date= throws =std::invalid_argument= or =std::logic_error=, and
    no operation carries either to a screen. A screen must show the step that
    refused, the dates it counted and the row that owns the fault. The prototype
    draws that payload. The candidate is a refusal message, either a failure
    reply on the resolve operation or a typed error the handler maps. Until then
    a refused resolution is a 500-class failure with nothing a person can read.
-5. *The tenor write carries no change reason and no commentary.* The body of
-   =refdata.v1.tenors.put= carries code, display name, description, sort order,
-   kind, unit and multiplier. It carries no change reason and no commentary,
-   although the row is validated by =ores_dq_validate_change_reason_fn=. The
-   screen draws both fields because the journey needs them. The candidate is the
-   two columns on =tenor_write=, as the other refdata writes carry them.
-6. *A swap's rolls are not a refdata row.* =tenor_schedule= names the axis and
-   the dates it produces, and nothing stores a ladder. The rolls a swap needs
-   are computed where the swap is built. The closed-form axis is evaluated
-   code-side, and an event-lookup axis reads =calendar_event= rows. The schedule
-   step draws the expansion so a reviewer can see the axis working, and it is
-   not a write target.
+   This belongs with item 1: the operation is what would carry the refusal.
+3. *A swap's rolls are not a refdata row, and are not meant to be.*
+   =tenor_schedule= names the axis and the dates it produces, and nothing stores
+   a ladder. The rolls a swap needs are computed where the swap is built. The
+   closed-form axis is evaluated code-side, and an event-lookup axis reads
+   =calendar_event= rows. The schedule step draws the expansion so a reviewer can
+   see the axis working, and it is not a write target. That is recorded here as
+   the answer rather than left open, because the journey's own text says so and a
+   repository of swap ladders would be a second source of truth for a date the
+   schedule already derives.
+
+The two items this section used to carry are built. =tenor_convention= gained its
+=roll rule=, referencing =business_day_convention_types= and defaulting to
+=ModifiedFollowing=, so the choice the screen draws has a row behind it.
+=tenor_convention_resolutions= is no longer read-only, so the anchor override, the
+SPECIAL tenor's offset and a SCHEDULE_STEP row's schedule code and step count all
+write. And one item is withdrawn rather than built: the tenor write was recorded
+as carrying no change reason, and it carries one already, because every refdata
+write takes an =intent= whose =reason_code= and =commentary= the service copies
+onto the row.
 
 * Related journeys
 

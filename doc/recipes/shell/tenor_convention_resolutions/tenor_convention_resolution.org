@@ -75,6 +75,111 @@ It is addressed at =refdata.v1.tenor_convention_resolutions.get_many=.
 tenor_convention_resolutions get-many __none__ __none__
 #+end_src
 
+** =add=
+:PROPERTIES:
+:ID: 45D11EBB-EE50-5E81-8309-AEAD9CFD7AF9
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_convention_resolutions add <convention_code> <tenor_code> <anchor_override> <offset_unit> <offset_multiplier> <schedule_code> <schedule_step_count> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_convention_resolutions.put=.
+
+#+name: tenor_convention_resolutions-add
+#+begin_src ores-shell :tangle tenor_convention_resolutions-add.ores :exports none
+tenor_convention_resolutions add __none__ __none__ - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6F2DA835-F589-553C-9363-943E1C4C00D7
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_convention_resolutions set <convention_code> <tenor_code> <anchor_override> <offset_unit> <offset_multiplier> <schedule_code> <schedule_step_count> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_convention_resolutions.put=.
+
+#+name: tenor_convention_resolutions-set
+#+begin_src ores-shell :tangle tenor_convention_resolutions-set.ores :exports none
+tenor_convention_resolutions set __none__ __none__ - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: C0131B5E-6EFE-5B57-A69E-521FD6605258
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_convention_resolutions put-many --count <n> <convention_code> <tenor_code> <anchor_override> <offset_unit> <offset_multiplier> <schedule_code> <schedule_step_count> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_convention_resolutions.put_many=.
+
+#+name: tenor_convention_resolutions-put-many
+#+begin_src ores-shell :tangle tenor_convention_resolutions-put-many.ores :exports none
+tenor_convention_resolutions put-many --count 1 __none__ __none__ - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 0962C1A7-C523-50CB-807D-BDEE7EC1DAF9
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_convention_resolutions delete <convention_code> <tenor_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_convention_resolutions.delete=.
+
+#+name: tenor_convention_resolutions-delete
+#+begin_src ores-shell :tangle tenor_convention_resolutions-delete.ores :exports none
+tenor_convention_resolutions delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 09127181-00BF-5998-B1F0-FAB36A60D0F7
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_convention_resolutions delete-many <convention_code> <tenor_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_convention_resolutions.delete_many=.
+
+#+name: tenor_convention_resolutions-delete-many
+#+begin_src ores-shell :tangle tenor_convention_resolutions-delete-many.ores :exports none
+tenor_convention_resolutions delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
 ** =by-convention-code=
 :PROPERTIES:
 :ID: 133714A4-F588-5BE5-BDE0-FD6BBC799F15

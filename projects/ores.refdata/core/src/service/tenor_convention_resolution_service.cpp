@@ -28,6 +28,7 @@
 #include "ores.refdata.api/messaging/tenor_convention_resolution_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <utility>
@@ -61,6 +62,40 @@ std::vector<domain::tenor_convention_resolution>
 read_one(repository::tenor_convention_resolution_repository& repo,
          const messaging::tenor_convention_resolution_key& key) {
     return repo.read_latest(key.convention_code, key.tenor_code);
+}
+
+/**
+ * @brief The key a domain object states, so a written row can be read back.
+ *
+ * A create states its own key in the write record, so the key of the row a
+ * write produced is the one the object carries.
+ */
+messaging::tenor_convention_resolution_key key_from(const domain::tenor_convention_resolution& v) {
+    messaging::tenor_convention_resolution_key key;
+    key.convention_code = v.convention_code;
+    key.tenor_code = v.tenor_code;
+    return key;
+}
+
+/**
+ * @brief Builds the domain object a write record states.
+ *
+ * The record carries the two halves of the key and the junction's own
+ * columns and nothing else: tenancy, provenance, the version and the
+ * validity window are the service's and the database's to state, and are
+ * set after this conversion.
+ */
+domain::tenor_convention_resolution
+to_domain(const messaging::tenor_convention_resolution_write& write) {
+    domain::tenor_convention_resolution v;
+    v.convention_code = write.convention_code;
+    v.tenor_code = write.tenor_code;
+    v.anchor_override = write.anchor_override;
+    v.offset_unit = write.offset_unit;
+    v.offset_multiplier = write.offset_multiplier;
+    v.schedule_code = write.schedule_code;
+    v.schedule_step_count = write.schedule_step_count;
+    return v;
 }
 
 }
@@ -142,6 +177,178 @@ tenor_convention_resolution_service::get_many_tenor_convention_resolutions(
         response.entries.push_back(std::move(entry));
     }
     return response;
+}
+
+messaging::put_tenor_convention_resolution_response
+tenor_convention_resolution_service::put_tenor_convention_resolution(
+    const messaging::put_tenor_convention_resolution_request& request) {
+    messaging::put_tenor_convention_resolution_response response;
+    domain::tenor_convention_resolution value;
+    response.result = prepare_change(request.change, request.intent, value);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    repo_.write(value, request.change.precondition);
+    auto written = read_one(repo_, key_from(value));
+    if (!written.empty())
+        response.tenor_convention_resolution = std::move(written.front());
+    return response;
+}
+
+messaging::put_many_tenor_convention_resolutions_response
+tenor_convention_resolution_service::put_many_tenor_convention_resolutions(
+    const messaging::put_many_tenor_convention_resolutions_request& request) {
+    messaging::put_many_tenor_convention_resolutions_response response;
+    std::vector<domain::tenor_convention_resolution> batch;
+    batch.reserve(request.changes.size());
+    for (const auto& change : request.changes) {
+        domain::tenor_convention_resolution value;
+        const auto result = prepare_change(change, request.intent, value);
+        if (result.outcome != ores::utility::domain::outcome::ok) {
+            // Nothing has been written: the whole set is checked before any
+            // of it lands, so a refused element refuses the batch.
+            response.result = result;
+            return response;
+        }
+        batch.push_back(std::move(value));
+    }
+    // One statement, so the set lands together. The store checks each row's
+    // claim inside that statement, which is what makes the check above and the
+    // write one decision rather than two.
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        claims.push_back(change.precondition);
+    repo_.write(batch, claims);
+    response.tenor_convention_resolutions.reserve(batch.size());
+    for (const auto& value : batch) {
+        auto written = read_one(repo_, key_from(value));
+        response.tenor_convention_resolutions.push_back(
+            written.empty() ? value : std::move(written.front()));
+    }
+    return response;
+}
+
+messaging::delete_tenor_convention_resolution_response
+tenor_convention_resolution_service::delete_tenor_convention_resolution(
+    const messaging::delete_tenor_convention_resolution_request& request) {
+    messaging::delete_tenor_convention_resolution_response response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
+        response.result = refuse(outcome_code::precondition_not_supported);
+        return response;
+    }
+    std::optional<std::uint32_t> expected;
+    if (request.removal.precondition.kind == precondition_kind::must_match_version) {
+        if (!request.removal.precondition.version) {
+            response.result = refuse(outcome_code::precondition_incomplete);
+            return response;
+        }
+        expected = request.removal.precondition.version;
+    }
+    switch (repo_.remove(
+        request.removal.key.convention_code, request.removal.key.tenor_code, expected)) {
+        case repository::tenor_convention_resolution_repository::remove_status::removed:
+            break;
+        case repository::tenor_convention_resolution_repository::remove_status::missing:
+            response.result =
+                refuse(outcome_code::not_found, {.entity = "tenor_convention_resolution"});
+            break;
+        case repository::tenor_convention_resolution_repository::remove_status::conflicting: {
+            // The junction's removal states neither version, so the row is read for
+            // the one it now holds. The sentence carries what the caller stated and
+            // what the store holds.
+            const auto live = read_one(repo_, request.removal.key);
+            response.result = refuse(
+                outcome_code::version_conflict,
+                {.entity = "tenor_convention_resolution",
+                 .field = "convention_code",
+                 .expected = expected ? std::to_string(*expected) : std::string{},
+                 .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
+            break;
+        }
+        case repository::tenor_convention_resolution_repository::remove_status::unsupported:
+            response.result = refuse(outcome_code::precondition_not_supported);
+            break;
+    }
+    return response;
+}
+
+messaging::delete_many_tenor_convention_resolutions_response
+tenor_convention_resolution_service::delete_many_tenor_convention_resolutions(
+    const messaging::delete_many_tenor_convention_resolutions_request& request) {
+    messaging::delete_many_tenor_convention_resolutions_response response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    for (const auto& removal : request.removals) {
+        if (removal.precondition.kind != precondition_kind::any) {
+            // The store removes a set in one statement, which carries no
+            // per-row version. Refusing is the only answer that keeps the
+            // batch atomic: serving it as a sequence of single removals would
+            // leave a partial batch behind as soon as one row had moved on.
+            response.result = refuse(outcome_code::batch_removal_is_unconditional);
+            return response;
+        }
+    }
+    if (request.removals.empty())
+        return response;
+    std::vector<std::string> convention_code_keys;
+    convention_code_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        convention_code_keys.push_back(removal.key.convention_code);
+    std::vector<std::string> tenor_code_keys;
+    tenor_code_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        tenor_code_keys.push_back(removal.key.tenor_code);
+    repo_.remove(convention_code_keys, tenor_code_keys);
+    return response;
+}
+
+ores::utility::domain::result tenor_convention_resolution_service::prepare_change(
+    const messaging::tenor_convention_resolution_change& change,
+    const ores::utility::domain::change_intent& intent,
+    domain::tenor_convention_resolution& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain(change.write);
+    const auto current = read_one(repo_, key_from(out));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty())
+                return refuse(
+                    outcome_code::already_exists,
+                    {.entity = "tenor_convention_resolution", .field = "convention_code"});
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty())
+                return refuse(outcome_code::not_found, {.entity = "tenor_convention_resolution"});
+            // The protocol states the version as a uint32 and the row carries it
+            // as an int, so the comparison states the conversion.
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "tenor_convention_resolution",
+                               .field = "convention_code",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    // The version is the repository's to state, from the claim: it is the one
+    // thing the store's arbiter reads, and stating it in two places is how the
+    // two come to disagree.
+    stamp(out,
+          ctx_,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    return result;
 }
 
 }

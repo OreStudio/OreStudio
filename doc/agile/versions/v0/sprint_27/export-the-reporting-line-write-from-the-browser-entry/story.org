@@ -44,3 +44,9 @@ The web bundle builds from main.
 * Out of scope
 
 -
+
+* Result
+
+The web bundle builds from main again: =npm run build= succeeds in
+=projects/ores.web/packages/web=.
+

@@ -83,3 +83,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The browser entry point now re-exports =ReportingLineWrite=, so the web
+client's import resolves and the bundle builds.
+

@@ -727,6 +727,215 @@ Requests a curve-evolution view: =bucket_count= as-of snapshots, one every
 :cpp_type: std::string
 :END:
 
+** series_slice_instant
+
+One instant of a slice: the object as it stood then, one value per declared
+coordinate of the axis the component varies over.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One instant of a slice: the object as it stood then.
+ */
+#+end_src
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The market instant this row is the object at.
+
+*** values
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+Index for index with the response's =coordinates=.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The value at each declared coordinate, index for index with the
+ * response's coordinates.
+ *
+ * The empty string is a hole: the shape declares the coordinate and no point
+ * holds a value for it at this instant. A short vector would be read as a
+ * shorter object, which is the mistake the aligned shape exists to prevent.
+ */
+#+end_src
+
+** get_series_slice_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_series_slice
+:response: get_series_slice_response
+:END:
+
+Requests one component of a composite object as a term structure over a range
+of instants: the ATM ladder of a volatility surface, say. The object is named
+by a typed identity and the component by an axis field and a value, so no
+caller builds an oresmd URI.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Requests one component of a composite object over a range of
+ * instants.
+ *
+ * The object is named the way the resolver names one, so no caller builds an
+ * oresmd URI and no caller matches on one. The component is the value the
+ * object holds on one of its axes; an object with a single axis has one
+ * component, the whole object, and leaves the component field empty.
+ */
+#+end_src
+
+*** identity
+:PROPERTIES:
+:cpp_type: resolve_series_identity_request
+:END:
+
+The object, as the typed identity the resolver already takes.
+
+#+begin_src cpp :name comment
+/** The object, as the typed identity the resolver already takes. */
+#+end_src
+
+*** component_field
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The axis the component fixes, an oresmd field code such as =strike_label=.
+Empty for an object with one coordinate axis, whose one component is the whole
+object.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The axis the component fixes, an oresmd field code such as
+ * strike_label.
+ *
+ * Empty for an object with one coordinate axis, whose one component is the
+ * whole object.
+ */
+#+end_src
+
+*** component_value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The value the component fixes on that axis, such as =ATM=, in the spelling the
+shape stores.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The value the component fixes on that axis, such as ATM, in the
+ * spelling the shape stores.
+ */
+#+end_src
+
+*** from_instant
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The first market instant of the range, inclusive.
+
+#+begin_src cpp :name comment
+/** The first market instant of the range, inclusive. */
+#+end_src
+
+*** to_instant
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The last market instant of the range, inclusive.
+
+#+begin_src cpp :name comment
+/** The last market instant of the range, inclusive. */
+#+end_src
+
+** get_series_slice_response
+
+The component at each instant in the range, drawn against one ladder.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The component at each instant in the range.
+ *
+ * The ladder is stated once, because it belongs to the shape and not to the
+ * points: coordinates holds the declared values of the axis the component
+ * varies over, in the order the shape stores them, and every instant's values
+ * are index for index with it.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Why the read was refused, when it was. A component the shape does not declare
+is refused here, naming the axis or the value that is missing.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the read was refused, when it was.
+ *
+ * A component the shape does not declare is refused here, naming the axis or
+ * the value that is missing.
+ */
+#+end_src
+
+*** coordinate_field
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The axis the component varies over, an oresmd field code such as =expiry=.
+Empty when the response holds no instant.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The axis the component varies over, an oresmd field code such as
+ * expiry.
+ *
+ * Empty when the response holds no instant.
+ */
+#+end_src
+
+*** coordinates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The declared values of =coordinate_field=, in the order the shape stores them.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The declared values of the coordinate field, in the order the shape
+ * stores them.
+ *
+ * Every instant's values are index for index with this.
+ */
+#+end_src
+
+*** instants
+:PROPERTIES:
+:cpp_type: std::vector<series_slice_instant>
+:END:
+
+Oldest first, one entry per distinct market instant the object holds in the
+range.
+
+#+begin_src cpp :name comment
+/** Oldest first, one entry per distinct market instant in the range. */
+#+end_src
+
 ** import_market_data_request
 :PROPERTIES:
 :subject: marketdata.v1.ops.import_market_data

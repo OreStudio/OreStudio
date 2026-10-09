@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-one-slice-of-a-composite-object-over-time
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A caller asks for one component of a composite object over a range and gets a te
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | The plan is written. The wire operation is being added. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Add the operation, the as-of instant read, the handler and the tests. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -42,9 +42,56 @@ A caller asks for one component of a composite object over a range and gets a te
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The slice read is a new wire operation. It resolves the object, reads the shape
+the object declares, and returns one component as a term structure at each
+instant in a range. No table is added.
+
+1. A new operation in =ores.marketdata.operations=,
+   =get_series_slice_request= and =get_series_slice_response=, generates the C++
+   protocol and the TypeScript twin.
+2. The request carries the typed identity the resolver already takes, the
+   component as an axis field and a value, and the instant range. It carries no
+   URI, so the caller never builds one.
+3. The response is an aligned matrix. It states the varying axis's declared
+   values once, in the shape's order, and one row per instant whose values are
+   index for index with them. An empty value is a hole: a node the shape
+   declares and no point fills.
+4. A new repository read, =read_as_of_instants=, returns each distinct instant
+   the series holds in the range, with the rows that were current at it. It is
+   =read_as_of_buckets= with the boundaries drawn from the data rather than from
+   a fixed grid, in one statement over the same index.
+5. The handler validates the component against the shape before it reads a
+   point. An axis the shape does not declare, a value the axis does not hold, or
+   an object with more than two axes, is refused with the reason.
+6. The permission is the existing =marketdata::curve_snapshots:read=. A slice is
+   the same read of the same data as the snapshot it belongs to, so it adds no
+   permission and no seed.
+
+** Every instant is a term structure, so the read is as-of
+
+The instants are the distinct ones the series holds in the range, and each one
+carries the object as it stood at that instant. A point that did not move at an
+instant keeps the value it last held, which is what =read_as_of_records= already
+means. The alternative, returning only the points written at each instant, would
+answer with a different set of nodes per instant and no node would be a term
+structure. The evolution task owns the report of nodes added, dropped and
+persistent; this task returns the declared ladder and a hole where a node has no
+value.
+
+** The ladder is the shape's, not the points'
+
+The nodes of the term structure are the declared values of the varying axis, in
+the order the shape stores them, so two instants are drawn against one ladder and
+a missing quote is a hole rather than a shorter curve. A caller that wants only
+the points present drops the empty values.
+
+** One or two axes
+
+A term structure has one ladder. An object with one coordinate axis is the whole
+component, so the request names no component field. An object with two axes is a
+component once one axis is fixed, and the other axis is the ladder. An object
+with three axes is a surface of surfaces and its slice is not a term structure,
+so the read refuses it with that reason rather than inventing a shape.
 
 * Measurements
 
@@ -61,6 +108,27 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The request embeds the resolver's typed identity rather than repeating its
+  fields, so the slice read cannot drift from the way every other typed read
+  names a series.
+- The instants are the object's and not the component's. An instant at which
+  only another component moved still appears, with this component carried
+  forward. That is what makes each instant a term structure rather than a
+  different set of nodes.
+- The read is one statement. The instants come from the data and the per-instant
+  reduction is the same =LATERAL= and =DISTINCT ON= the bucket read uses, over
+  the same index, so a busy range costs one round trip and not one query per
+  instant.
+- The permission is the snapshot family's, =marketdata::curve_snapshots:read=.
+  A slice is the same read of the same data, so a second permission would split
+  one grant across two subjects.
+- The ceiling is 200 instants, enforced server-side like the bucket read's
+  ceiling on its bucket count. A refused range names the ceiling instead of
+  truncating the answer.
+- The labels the tests import go through the canonical strike label the previous
+  task added, so =25RR= and =ATM= are one component each in the shape the slice
+  read walks.
 
 * Test Scenarios
 

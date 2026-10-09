@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-09
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,38 +26,72 @@ A person who is not a tenant administrator can reach the counterparty and conven
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- A person holding =Operations= can run the counterparty onboarding journey
+  without a tenant administrator's permissions.
+- A person holding =Operations= can run the instrument convention journey over
+  every convention family the picker offers, and not only the ones they happen
+  to hold.
+- Journey 5's and journey 8's tables and /What is missing/ reflect that, and
+  name the role rather than the person.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The mechanism is one function: =ores_iam_role_permissions_assign_fn(tenant,
+role, permission_code)=, called once per grant in
+=projects/ores.sql/populate/iam/iam_roles_populate.sql=. The work is therefore
+deciding the set and generating the calls, not writing a mechanism.
+
+1. Enumerate the permission codes for every entity journey 5 and journey 8 name,
+   and check each exists in the permissions seed before granting it. A grant that
+   names a code nobody seeds is an error the database will not report at load.
+2. Compute the delta against what =Operations= already holds -- the currency
+   family and its junctions -- so the new block adds without duplicating.
+3. Generate the block grouped by journey, with a comment per group saying which
+   journey needs it and why, because a wall of 171 identical lines is unreadable
+   without them.
+4. Correct the two journeys: the actor is no longer only a tenant administrator,
+   and the gap each one carries about it is closed rather than left implying the
+   screens are unreachable.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =refdata= permission codes seeded | 417 | =grep -oE "'\\''refdata::[a-z_]+:(read\|write\|delete)'\\''" projects/ores.sql/populate/iam/iam_permissions_populate.sql \| sort -u \| wc -l= | =75e7ee6980= |
+| Codes journeys 5 and 8 need | 174 | the entity list in the plan, three verbs each | =75e7ee6980= |
+| Of those, codes that are not seeded | 0 | =comm -23= against the permission seed | =75e7ee6980= |
+| Codes =Operations= held before | 17 | =grep "'\\''Operations'\\''" projects/ores.sql/populate/iam/iam_roles_populate.sql \| grep -c refdata::= | =75e7ee6980= |
+| Codes =Operations= holds after | 186 | same command | =75e7ee6980= |
+| Duplicate grants in the Operations block | 0 | =grep "'\\''Operations'\\''" ... \| sort \| uniq -d \| wc -l= | =75e7ee6980= |
 
 * Notes
+
+Every code granted was checked against the permissions seed before it was
+written, and the block was generated rather than typed: a hand-written wall of
+171 near-identical lines is where a typo hides, and a typo here is a grant that
+silently does nothing because =ores_iam_role_permissions_assign_fn= looks the
+code up. The generator and its inputs are recorded in the sibling evidence, and
+the set is reproducible from the two journeys' own coverage tables.
+
+=Operations= already held the currency family: =currencies=, =currency_calendars=,
+=currency_countries=, =currency_currency_groups= and
+=currency_pair_convention_calendars=, each read, write and delete. Those grants
+are kept as they were and the new ones sit beside them under their own comment.
+
+The role's own description still reads "Operations - currency management and
+account viewing". That is left alone deliberately: this task grants the
+permissions, and rewording the role is a decision about what the role is for
+rather than about what it can reach. It is worth a follow-up if the name is now
+too narrow.
 
 * Test Scenarios
 
@@ -83,3 +117,57 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=Operations= now holds what the two journeys need, and the journeys say so.
+
+*What landed.*
+
+- *The counterparty onboarding journey is reachable.* =Operations= gained the
+  counterparty itself, its identifiers and contacts, the centres it deals
+  through, the parties that may see it, the agreements and netting sets beneath
+  it, the collateral terms and their eligible currencies, and the parties,
+  party types, party statuses, identifier schemes, contact types, business
+  centres and business units the onboarding forms pick from. Before, it held the
+  currency permissions and no counterparty permission, so the journey was a
+  tenant administrator's alone.
+- *The instrument convention journey is reachable over every family.* All 25
+  convention families, so a person can author any convention the picker offers
+  and not only the ones they happen to hold, plus the term lists every
+  convention's pickers read: calendars and calendar names, business day
+  convention types, day count fraction types, floating index types, payment
+  frequencies, the sub-periods coupon types this story added, currency pairs,
+  calendar events, tenor anchors, resolution algorithms, schedules and tenors.
+- *Both journeys' documents were corrected.* The actor is now the person who
+  maintains the tenant's reference data -- an =Operations= holder or a tenant
+  administrator -- and each journey's /What is missing/ loses the item that said
+  only a tenant administrator could run it.
+
+*How it was done.* =ores_iam_role_permissions_assign_fn= is the whole mechanism;
+the work was deciding the set. The 174 codes the two journeys need were derived
+from their own coverage tables, every one was checked against the permissions
+seed before being written, and the 171 that =Operations= did not already hold
+were generated rather than typed. A hand-written wall of 171 near-identical lines
+is where a typo hides, and a typo here is silent: the assign function looks the
+code up, so a misspelled grant succeeds and grants nothing. The block is grouped
+and commented by journey for the same reason.
+
+*Verification.*
+
+Eight checks pass: populate-refs, sql-hygiene, rls-widenings, entity-writes,
+subject-conformance, sql-reachability, format and reachability. Every one of the
+174 codes resolves against the permissions seed, and the =comm= against the
+existing =Operations= grants shows the delta was added and nothing was
+duplicated. The block carries 186 distinct permissions in 186 grants, with no
+duplicate line.
+
+*What is not verified.* The seed was not executed: the box shares one PostgreSQL
+across eleven worktrees, so =compass db recreate= would disrupt the others, and
+the local =.env= is at format version 27 against a required 29. What is verified
+is that every code granted exists in the seed that creates the permissions, which
+is the failure this kind of change actually has. The build result is recorded
+when it lands.
+
+*One thing deliberately left alone.* The role's description still reads
+"Operations - currency management and account viewing", which the grants have
+outgrown. Rewording it is a decision about what the role is for rather than about
+what it can reach, so it is not bundled here.

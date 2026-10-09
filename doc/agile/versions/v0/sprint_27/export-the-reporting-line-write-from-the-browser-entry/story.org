@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 0BF0B497-C184-4534-8DD6-F0978E83B8D2
+:END:
+#+title: Story: Export the reporting line write from the browser entry
+#+description: The web client imports ReportingLineWrite from the wire protocol's browser entry point, which never re-exported it, so the web bundle does not build on main.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The web bundle builds from main.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- npm run build succeeds in the web package.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:631731F9-159B-4EA5-84F3-D58B9889ADC4][Scaffold story: Export the reporting line write from the browser entry]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:3E5B7404-98A7-4A56-A425-C28CE78A506D][Export the reporting line write]] | DONE | | 2026-10-09 | Initial task for: Export the reporting line write from the browser entry |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The web bundle builds from main again: =npm run build= succeeds in
+=projects/ores.web/packages/web=.
+

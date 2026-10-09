@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 3E5B7404-98A7-4A56-A425-C28CE78A506D
+:END:
+#+title: Task: Export the reporting line write
+#+description: Initial task for: Export the reporting line write from the browser entry
+#+type: task
+#+level: s1
+#+filetags: :export-the-reporting-line-write-from-the-browser-entry:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr: 2989
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BF0B497-C184-4534-8DD6-F0978E83B8D2][Export the reporting line write from the browser entry]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The web bundle builds from main.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0BF0B497-C184-4534-8DD6-F0978E83B8D2][Export the reporting line write from the browser entry]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- npm run build succeeds in the web package.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2989][#2989]] | [web] Export the reporting line write from the browser entry |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The browser entry point now re-exports =ReportingLineWrite=, so the web
+client's import resolves and the bundle builds.
+

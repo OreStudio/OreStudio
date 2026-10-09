@@ -26,11 +26,11 @@ The cap/floor strikes and schedules and the swaption's option block sit on the s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Stage 1 merged as PR #2986: the header's cascade names the seven children, the catalogue carries them as child arrays, and the schedule check accepts the rates owner role. The retyping, the fourth option child and the mapper, handler and export wiring are stage 2. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Retype the option block and add instrument_option_exercise_price, then wire the mapper, the import handler and the export. |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance

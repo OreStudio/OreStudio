@@ -60,6 +60,26 @@ describe('the answer a screen acts on', () => {
         ).toBe('ask');
     });
 
+    it('asks rather than signing out over a stale answer that claims a cookie was presented', () => {
+        // The regression a first-run walk hit. The browser arrived holding a
+        // cookie the deployment no longer knows, so the wizard's read before
+        // signing in answered "a cookie was presented and it names nobody".
+        // Signing in replaced that cookie, and the answer describing the one it
+        // replaced was judged as a verdict about the session just opened, which
+        // signed the browser out of the account it had that instant been given.
+        expect(
+            setupAnswerStep(
+                state({
+                    answerAccountId: '',
+                    answerSessionPresent: true,
+                    signedInAs: ACCOUNT,
+                    asked: false,
+                    reading: false,
+                }),
+            ),
+        ).toBe('ask');
+    });
+
     it('signs out when the deployment says it does not know the cookie', () => {
         expect(
             setupAnswerStep(

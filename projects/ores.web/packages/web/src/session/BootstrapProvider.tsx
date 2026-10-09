@@ -20,7 +20,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { createContext, use, useMemo, type ReactNode } from 'react';
+import { createContext, use, useMemo, useState, type ReactNode } from 'react';
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 
@@ -133,12 +133,29 @@ export function BootstrapProvider({ children }: { readonly children: ReactNode }
 
     const { data, isPending, isError, isFetching, error, refetch } = query;
 
+    /*
+     * Whether an answer has been asked for and has not arrived yet.
+     *
+     * `isFetching` alone turns true only once the fetch has started, so a screen
+     * that read it on the render after the ask was made would be told nothing is
+     * being read while the answer it is about to judge is already on its way.
+     * This is set where the ask is made, so `reading` covers the whole of the
+     * wait and no screen judges the answer it asked to replace.
+     */
+    const [asking, setAsking] = useState(false);
+    const reading = isFetching || asking;
+
     const value = useMemo<BootstrapContextValue>(() => {
         const recheck = async (): Promise<void> => {
-            await refetch();
+            setAsking(true);
+            try {
+                await refetch();
+            } finally {
+                setAsking(false);
+            }
         };
         if (isPending) {
-            return { state: { status: 'loading' }, recheck, reading: isFetching };
+            return { state: { status: 'loading' }, recheck, reading };
         }
         if (isError) {
             const reason =
@@ -147,7 +164,7 @@ export function BootstrapProvider({ children }: { readonly children: ReactNode }
                     : error instanceof Error
                       ? error.message
                       : String(error);
-            return { state: { status: 'unreachable', reason }, recheck, reading: isFetching };
+            return { state: { status: 'unreachable', reason }, recheck, reading };
         }
         return {
             state: {
@@ -162,9 +179,9 @@ export function BootstrapProvider({ children }: { readonly children: ReactNode }
                 version: data.version,
             },
             recheck,
-            reading: isFetching,
+            reading,
         };
-    }, [data, isPending, isError, isFetching, error, refetch]);
+    }, [data, isPending, isError, error, refetch, reading]);
 
     return <BootstrapContext value={value}>{children}</BootstrapContext>;
 }

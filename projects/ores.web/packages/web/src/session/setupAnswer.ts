@@ -42,15 +42,22 @@ export interface SetupAnswerState {
     readonly signedInAs: string;
     /** Whether a fresh answer is being read right now. */
     readonly reading: boolean;
-    /** Whether a fresh answer has already been asked for, for this session. */
+    /**
+     * Whether a fresh answer has already been asked for, for this session.
+     *
+     * It is what makes the rest of the answer judgeable. Until it is set, the
+     * answer on screen was read for whatever the browser held before this
+     * session, and no verdict is taken from it.
+     */
     readonly asked: boolean;
     /**
      * Whether the answer says the request carried a session cookie.
      *
-     * This is what makes `sign-out` mean something. A cookie the deployment
-     * does not know is evidence that the browser's session is over; an answer
-     * that merely fails to name the account is evidence of nothing, because it
-     * may have been read before the cookie existed.
+     * This is what makes `sign-out` mean something, read from an answer that
+     * was asked for: a cookie the deployment does not know is evidence that the
+     * browser's session is over. The same field read from an answer taken
+     * before the sign-in says nothing, because the cookie it describes is the
+     * one the sign-in replaced.
      */
     readonly answerSessionPresent: boolean;
 }
@@ -75,21 +82,30 @@ export function setupAnswerStep(state: SetupAnswerState): SetupAnswerStep {
         return 'wait';
     }
     /*
-     * Only the deployment saying it does not know the cookie the browser
-     * presented is a reason to sign out, and that is a fact it can only state
-     * about a session it was offered. An answer that names nobody while
-     * claiming no cookie was presented says nothing about the sign-in that has
-     * just happened: it was read before the cookie existed.
+     * Only an answer that was asked for is judged, and the asking is what makes
+     * the evidence in it a fact about the session in hand rather than a fact
+     * about whatever cookie the browser carried when the screen last read it.
      *
-     * Demanding that evidence matters because the asking is not synchronous.
-     * `reading` turns true on the render after the refetch is asked for, so a
-     * pass slips between the two with `asked` set and `reading` clear — and
-     * signing out on that pass tore down the session the person had just been
-     * given, which then read as the deployment asking them to sign in to the
-     * account they had just made.
+     * This is the whole of the bug the rule kept being loosened for. The
+     * wizard reads the deployment again before it signs in, and a browser that
+     * arrived holding a cookie the deployment does not know gets an answer
+     * saying a cookie was presented that names nobody. Signing in then replaces
+     * that cookie, and the answer on screen describes the one it replaced: read
+     * as a verdict about the session that has just been opened, it says the
+     * deployment does not know the browser, and the browser signs out of the
+     * account it has this instant been given. Asking first means the verdict is
+     * only ever reached from an answer read for the session it is about.
+     */
+    if (!state.asked) {
+        return 'ask';
+    }
+    /*
+     * The deployment was shown a cookie and named nobody, and that answer is
+     * the one asked for about the session in hand: it does not know this
+     * browser, and the browser belongs at the sign-in form.
      */
     if (state.answerSessionPresent && state.answerAccountId === '') {
         return 'sign-out';
     }
-    return state.asked ? 'current' : 'ask';
+    return 'current';
 }

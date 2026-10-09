@@ -162,6 +162,7 @@ set(files
     "sandbox_member_eventing_integration_tests.cpp"
     "series_subclass_code_eventing_integration_tests.cpp"
     "service_calendar_materialisation_service_tests.cpp"
+    "sub_periods_coupon_type_eventing_integration_tests.cpp"
     "swap_convention_eventing_integration_tests.cpp"
     "swap_index_convention_eventing_integration_tests.cpp"
     "swaption_volatility_config_eventing_integration_tests.cpp"

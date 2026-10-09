@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: CC6297F5-7EDB-5F9F-8520-8A50E4FAE1D2
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the sub_periods_coupon_types commands from the shell?
+#+description: Every command the sub_periods_coupon_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:sub_periods_coupon_types:
+
+This file documents the sub_periods_coupon_types resource at the shell, one section per command. Every command is a subcommand of =sub_periods_coupon_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 3680A18A-66CB-59C5-B0BB-CE2D85274AAA
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+sub_periods_coupon_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.sub_periods_coupon_types.list=.
+
+#+name: sub_periods_coupon_types-list
+#+begin_src ores-shell :tangle sub_periods_coupon_types-list.ores :exports none
+sub_periods_coupon_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 8859FACE-7352-51DC-B514-E26D1D850755
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sub_periods_coupon_types get <code>
+#+end_example
+
+It is addressed at =refdata.v1.sub_periods_coupon_types.get=.
+
+#+name: sub_periods_coupon_types-get
+#+begin_src ores-shell :tangle sub_periods_coupon_types-get.ores :exports none
+sub_periods_coupon_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: DAA5141C-51F5-5330-823D-7C5EA8498030
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sub_periods_coupon_types get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.sub_periods_coupon_types.get_many=.
+
+#+name: sub_periods_coupon_types-get-many
+#+begin_src ores-shell :tangle sub_periods_coupon_types-get-many.ores :exports none
+sub_periods_coupon_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B14BFE4C-753D-5711-828E-C22A8DC4E6D3
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sub_periods_coupon_types add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.sub_periods_coupon_types.put=.
+
+#+name: sub_periods_coupon_types-add
+#+begin_src ores-shell :tangle sub_periods_coupon_types-add.ores :exports none
+sub_periods_coupon_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 7F826F9C-1C5F-56AA-AEE5-DE46E5D602F4
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+sub_periods_coupon_types set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.sub_periods_coupon_types.put=.
+
+#+name: sub_periods_coupon_types-set
+#+begin_src ores-shell :tangle sub_periods_coupon_types-set.ores :exports none
+sub_periods_coupon_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 5879FDB3-C4EE-5119-9190-4FFA0178FF5B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sub_periods_coupon_types put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.sub_periods_coupon_types.put_many=.
+
+#+name: sub_periods_coupon_types-put-many
+#+begin_src ores-shell :tangle sub_periods_coupon_types-put-many.ores :exports none
+sub_periods_coupon_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 93C9A8A0-D3C6-5A62-B6FC-BFC8CB54190B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+sub_periods_coupon_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.sub_periods_coupon_types.delete=.
+
+#+name: sub_periods_coupon_types-delete
+#+begin_src ores-shell :tangle sub_periods_coupon_types-delete.ores :exports none
+sub_periods_coupon_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 47BDB96E-DF52-53AF-A549-2C56E02EAB20
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sub_periods_coupon_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.sub_periods_coupon_types.delete_many=.
+
+#+name: sub_periods_coupon_types-delete-many
+#+begin_src ores-shell :tangle sub_periods_coupon_types-delete-many.ores :exports none
+sub_periods_coupon_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 2D4C5566-2C89-5D2F-B46D-E231B82EAF36
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+sub_periods_coupon_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.sub_periods_coupon_types_versions.list=.
+
+#+name: sub_periods_coupon_types-versions
+#+begin_src ores-shell :tangle sub_periods_coupon_types-versions.ores :exports none
+sub_periods_coupon_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 8454B8CF-3D22-5ACB-BADF-CC1551A0CDB9
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sub_periods_coupon_types version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.sub_periods_coupon_types_versions.get=.
+
+#+name: sub_periods_coupon_types-version
+#+begin_src ores-shell :tangle sub_periods_coupon_types-version.ores :exports none
+sub_periods_coupon_types version __none__ --version 1
+#+end_src
+

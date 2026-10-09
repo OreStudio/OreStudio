@@ -124,6 +124,8 @@
 \ir ./refdata_book_purpose_types_notify_trigger_create.sql
 \ir ./refdata_ledger_feed_types_create.sql
 \ir ./refdata_ledger_feed_types_notify_trigger_create.sql
+\ir ./refdata_sub_periods_coupon_types_create.sql
+\ir ./refdata_sub_periods_coupon_types_notify_trigger_create.sql
 
 -- Product catalogue: asset_class_codes and curve_roles before instrument_codes (FK).
 \ir ./refdata_asset_class_codes_create.sql

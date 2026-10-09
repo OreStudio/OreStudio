@@ -27,11 +27,11 @@ one subject scoped to the caller, and reach it from the browser.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] |
-| Now          | The read, its browser path, the generated shell command and the tests are all in; the suites pass. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next          | Close the task, then [[id:15DE5A7E-1FC8-4535-A374-A42ADD73242F][Let a member set and clear their default party]]. |
+| Next          | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -65,6 +65,9 @@ one subject scoped to the caller, and reach it from the browser.
 | Accounts with an association in the demo tenant | 60 | =select count(distinct account_id) from ores_iam_account_parties_tbl= | 4a0d83eabd |
 | Parties the demo tenant's administrator works in | 5 | =select count(distinct party_id) from ores_iam_account_parties_tbl ap join ores_iam_accounts_tbl a on a.id = ap.account_id where a.username = 'tenant_admin'= | 4a0d83eabd |
 | Parties a demo staff account works in | 1 | the same query for =ashley.moore= | 4a0d83eabd |
+| IAM core suite after this change | 259 cases, 791 assertions | =bash build/evidence/run_case.sh ores.iam.core.tests= | dfc7882530 |
+| Shell IAM suite after this change | 405 cases, 1055 assertions | =bash build/evidence/run_case.sh ores.shell.iam.tests= | dfc7882530 |
+| BFF membership cases | 3 | =npm test --workspace @ores/bff -- membership= | dfc7882530 |
 
 * Notes
 
@@ -113,3 +116,43 @@ one subject scoped to the caller, and reach it from the browser.
 |   |                 |      |          |       |
 
 * Result
+
+Done 2026-10-09.
+
+A member's own parties are now readable with their names, from one subject, on
+both clients:
+
+| Layer | What landed |
+|-------+-------------|
+| Message | =iam.v1.ops.get_my_parties=, its response and =my_party= in =ores.iam.account_messages.org=. |
+| Server | =account_operations_handler::get_my_parties=, served from the session token and registered in =registrar.cpp=. |
+| Browser | =readMyParties= in =wire-protocol/src/membership.ts=, =GET /api/me/parties=, and =api.myParties()=. |
+| Shell | =account_operations get-my-parties= and its =doc/recipes= page, emitted by codegen from the declaration. |
+| Tests | Two C++ cases for the naming rule, three BFF cases for the route and its refusal. |
+
+The naming rule is a pure helper, =acct_project_my_party=, so the rule is
+tested without a database: a known party is named, and a party the cache cannot
+name projects empty strings rather than a half-read row.
+
+*What the task found.* The response was first declared above the =my_party= it
+carries, and the generators emit a model's types in the order the file states
+them, so the generated header referenced a type that did not exist yet. Every
+documentation gate passed and the compiler was the only signal. The order is
+fixed here and the gap is captured at
+[[id:8D5AA7C2-0D67-4348-9562-D128D3B7ADFB][A message may name a type declared
+later in its model]].
+
+*Verification.* =check_component_drift.py --component iam= reports no drift;
+=check_subject_conformance=, =check_route_auth_declarations=,
+=check_handler_permissions=, =check_open_reads=,
+=check_test_case_reachability= and =check_exported_types_are_compiled= pass;
+clang-format over the changed C++ is clean; the three TypeScript packages
+typecheck. The IAM core suite passes (259 cases, 791 assertions), the shell IAM
+suite passes (405 cases, 1055 assertions), and the three new BFF cases pass.
+The database was recreated for this build, because the recorded schema
+fingerprint was stale — a pre-existing condition, not this change.
+
+One failure is pre-existing and outside this change:
+=check_protocol_twin_coverage= reports the =synthetic= and =scheduler=
+components missing their TypeScript twins. Those files are untracked in this
+worktree and absent from =origin/main=, so the gate fails on the trunk too.

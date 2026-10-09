@@ -1440,9 +1440,9 @@ const pt: SourceCatalogue = {
                 tenant: 'Criar o primeiro inquilino',
                 tenantBody:
                     'O primeiro inquilino, criado no servidor a partir de um ponto de partida.',
-                signIn: 'Iniciar sessão',
-                signInBody:
-                    'O primeiro início de sessão do administrador do inquilino, com uma palavra-passe própria.',
+                handOver: 'Entregar o inquilino',
+                handOverBody:
+                    'O administrador do inquilino inicia sessão e conclui a configuração do seu inquilino.',
             },
         },
 
@@ -1558,28 +1558,6 @@ const pt: SourceCatalogue = {
             readFailed: 'A execução da configuração não pôde ser lida. {message}',
             noRun: 'A configuração deste inquilino ainda não foi iniciada. O administrador da instalação tem de a iniciar.',
             enter: 'Ir para a aplicação',
-        },
-
-        signIn: {
-            title: 'Primeiro início de sessão',
-            lead: 'O administrador do inquilino inicia sessão pela primeira vez.',
-            systemLead: 'O administrador da instalação inicia sessão, e a instalação fica pronta.',
-            administrator:
-                'A conta que inicia sessão é {principal}, o administrador que esta instalação acabou de receber.',
-            username: 'Nome de utilizador',
-            password: 'Palavra-passe',
-            submit: 'Iniciar sessão',
-            submitting: 'A iniciar sessão...',
-            choosePartyHint: 'Escolha a entidade em que quer trabalhar.',
-            done: 'Sessão iniciada como {principal}.',
-        },
-
-        change: {
-            required: 'Esta conta define a sua própria palavra-passe antes de continuar.',
-            new: 'Nova palavra-passe',
-            submit: 'Definir palavra-passe',
-            submitting: 'A definir...',
-            done: 'A sua palavra-passe está definida e tem a sessão iniciada como {principal}.',
         },
 
         ready: {

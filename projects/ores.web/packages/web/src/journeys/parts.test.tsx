@@ -23,7 +23,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ReactNode } from 'react';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { FirstSignIn, signInComplete } from './FirstSignIn.js';
 import { ProfileCards, RunStep, TenantForm, TenantSummary } from './parts.js';
 import type { JourneyServer } from './server.js';
 import { detailsFor, type TenantDetails } from './state.js';
@@ -398,93 +397,6 @@ describe('the review', () => {
     });
 });
 
-describe('the first sign-in', () => {
-    const server = fakeServer();
-
-    it('asks a person who was handed the account for its credentials', () => {
-        const html = render(
-            <FirstSignIn
-                server={server}
-                policy={policy}
-                entry={{
-                    kind: 'sign-in',
-                    principal: 'northwind_admin@northwind.example.com',
-                    password: '',
-                }}
-                onDone={() => undefined}
-            />,
-        );
-
-        expect(html).toContain('current-password');
-        expect(html).toContain('northwind_admin@northwind.example.com');
-    });
-
-    it('offers the parties to work in when the account works in more than one', () => {
-        const html = render(
-            <FirstSignIn
-                server={server}
-                policy={policy}
-                entry={{
-                    kind: 'party',
-                    principal: 'northwind_admin@northwind.example.com',
-                    password: 'Chosen-Password-2',
-                    resetRequired: false,
-                    parties: [
-                        {
-                            id: '22222222-2222-2222-2222-222222222222',
-                            name: 'Northwind Capital',
-                            partyCategory: 'Operational',
-                            businessCenterCode: 'GBLO',
-                        },
-                    ],
-                }}
-                onDone={() => undefined}
-            />,
-        );
-
-        expect(html).toContain('Northwind Capital');
-        expect(html).not.toContain('type="password"');
-    });
-
-    it('asks for a password of the person\u2019s own when the account must change it', () => {
-        const html = render(
-            <FirstSignIn
-                server={server}
-                policy={policy}
-                entry={{
-                    kind: 'active',
-                    principal: 'northwind_admin@northwind.example.com',
-                    password: 'Issued-Password-1',
-                    resetRequired: true,
-                }}
-                onDone={() => undefined}
-            />,
-        );
-
-        expect(html).toContain('This account sets a password of its own');
-        expect(html).toContain('new-password');
-    });
-
-    it('shows no password field when no change is outstanding', () => {
-        const html = render(
-            <FirstSignIn
-                server={server}
-                policy={policy}
-                entry={{
-                    kind: 'active',
-                    principal: 'northwind_admin@northwind.example.com',
-                    password: 'Issued-Password-1',
-                    resetRequired: false,
-                }}
-                onDone={() => undefined}
-            />,
-        );
-
-        expect(html).toContain('Signed in as northwind_admin@northwind.example.com.');
-        expect(html).not.toContain('type="password"');
-    });
-});
-
 describe("a run's step", () => {
     const step = {
         id: '11111111-1111-1111-1111-111111111111',
@@ -541,45 +453,5 @@ describe("a run's step", () => {
         const html = render(<RunStep step={step} words={(sentence) => `[${sentence}]`} />);
 
         expect(html).toContain('[Import the legal entities]');
-    });
-});
-
-describe('when the first sign-in is finished', () => {
-    const tenant = 'tenant_admin@northwind.example.com';
-
-    it('is finished when the account is signed in and owes nothing', () => {
-        expect(
-            signInComplete(
-                { kind: 'active', principal: tenant, password: 'p', resetRequired: false },
-                false,
-            ),
-        ).toBe(true);
-    });
-
-    it('is not finished while a party is still to be chosen', () => {
-        expect(
-            signInComplete(
-                {
-                    kind: 'party',
-                    principal: tenant,
-                    password: 'p',
-                    parties: [],
-                    resetRequired: false,
-                },
-                false,
-            ),
-        ).toBe(false);
-    });
-
-    it('is not finished until a required password change has happened', () => {
-        const active = {
-            kind: 'active',
-            principal: tenant,
-            password: 'p',
-            resetRequired: true,
-        } as const;
-
-        expect(signInComplete(active, false)).toBe(false);
-        expect(signInComplete(active, true)).toBe(true);
     });
 });

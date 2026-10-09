@@ -1447,9 +1447,9 @@ const fr: SourceCatalogue = {
                 tenant: 'Créer le premier locataire',
                 tenantBody:
                     'Le premier locataire, construit sur le serveur à partir d’un point de départ.',
-                signIn: 'Se connecter',
-                signInBody:
-                    "La première connexion de l'administrateur du locataire, avec son propre mot de passe.",
+                handOver: 'Passer le locataire',
+                handOverBody:
+                    "L'administrateur du locataire se connecte et termine la configuration de son locataire.",
             },
         },
 
@@ -1564,29 +1564,6 @@ const fr: SourceCatalogue = {
             readFailed: "L'exécution de configuration n'a pas pu être lue. {message}",
             noRun: "La configuration de ce locataire n'a pas été lancée. L'administrateur du déploiement doit la lancer.",
             enter: "Accéder à l'application",
-        },
-
-        signIn: {
-            title: 'Première connexion',
-            lead: "L'administrateur du locataire se connecte pour la première fois.",
-            systemLead:
-                "L'administrateur de l'installation se connecte, et l'installation est prête.",
-            administrator:
-                "Le compte qui se connecte est {principal}, l'administrateur que cette installation vient de recevoir.",
-            username: "Nom d'utilisateur",
-            password: 'Mot de passe',
-            submit: 'Se connecter',
-            submitting: 'Connexion...',
-            choosePartyHint: "Choisissez l'entité dans laquelle travailler.",
-            done: 'Connecté en tant que {principal}.',
-        },
-
-        change: {
-            required: 'Ce compte définit son propre mot de passe avant de continuer.',
-            new: 'Nouveau mot de passe',
-            submit: 'Définir le mot de passe',
-            submitting: 'Définition...',
-            done: 'Votre mot de passe est défini et vous êtes connecté en tant que {principal}.',
         },
 
         ready: {

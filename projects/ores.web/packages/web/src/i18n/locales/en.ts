@@ -1429,9 +1429,9 @@ export const en: SourceCatalogue = {
                 adminBody: 'The account that owns this installation.',
                 tenant: 'Create the first tenant',
                 tenantBody: 'The first tenant, built from a starting point on the server.',
-                signIn: 'Sign in',
-                signInBody:
-                    "The tenant administrator's first sign-in, with a password of their own.",
+                handOver: 'Hand the tenant over',
+                handOverBody:
+                    "The tenant's administrator signs in and finishes the tenant's own setup.",
             },
         },
 
@@ -1545,28 +1545,6 @@ export const en: SourceCatalogue = {
             readFailed: 'The setup run could not be read. {message}',
             noRun: "This tenant's setup has not been started. The deployment administrator has to start it.",
             enter: 'Go to the application',
-        },
-
-        signIn: {
-            title: 'First sign-in',
-            lead: 'The tenant administrator signs in for the first time.',
-            systemLead: 'The installation administrator signs in, and the installation is ready.',
-            administrator:
-                'The account that signs in is {principal}, the administrator this installation was just given.',
-            username: 'Username',
-            password: 'Password',
-            submit: 'Sign in',
-            submitting: 'Signing in...',
-            choosePartyHint: 'Choose the party to work in.',
-            done: 'Signed in as {principal}.',
-        },
-
-        change: {
-            required: 'This account sets a password of its own before it goes on.',
-            new: 'New password',
-            submit: 'Set password',
-            submitting: 'Setting...',
-            done: 'Your password is set, and you are signed in as {principal}.',
         },
 
         ready: {

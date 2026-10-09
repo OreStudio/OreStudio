@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Journey 7 classifies a book with every field the screen draws, and a close or a 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,13 +35,76 @@ Journey 7 classifies a book with every field the screen draws, and a close or a 
 
 * Acceptance
 
--
+- A book carries its =book_purpose_type= and its =ledger_feed_type=, and saves
+  both, so the classification step's two fields are not read-only.
+- A status move outside the rule the journey draws is refused, and =Closed= is
+  terminal.
+- Closing a book that still holds open activity is refused with a reason that
+  names what is open, rather than accepted.
+- An =owner_unit_id= outside the book's portfolio ancestry chain is refused.
+- Journey 7's coverage table and /What is missing/ reflect what is built, and
+  anything declined records why.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Four units, in this order. The first is mechanical and independent; the third
+carries a design question that must be settled before it is written.
+
+1. *The two classification columns.* Add =book_purpose_type= and
+   =ledger_feed_type= to =ores.refdata.book= as non-nullable text columns,
+   mirroring =regulatory_book_type= in every respect, and add each to the insert
+   trigger's =* Validations= table. Both validators already exist
+   (=ores_refdata_validate_book_purpose_type_fn= and
+   =ores_refdata_validate_ledger_feed_type_fn=, rendered in
+   =refdata_book_purpose_types_create.sql= and
+   =refdata_ledger_feed_types_create.sql=), so this unit adds no SQL of its own.
+   Check what default each lookup's reference entity carries before choosing
+   =default_value=, and whether the write may leave either unset.
+2. *The status transition rule.* The rule the journey draws: =Active= to
+   =Frozen= or =Closed=, =Frozen= back to =Active= only, =Closed= terminal. Put
+   it in the book insert trigger, refused from the outcome catalogue rather than
+   with a bare =raise exception= — the same shape the business-unit level rule
+   now uses. That means a new catalogue entry, since =level_violation= names a
+   hierarchy level and this names two statuses; a =status_transition_not_allowed=
+   with =expected= carrying the status the move goes to and =current= the status
+   the row holds fits the raiser's positional arguments.
+3. *The close with open activity.* This unit needs a decision before it needs
+   code. The journey wants the refusal to name the open trades, unsettled cash
+   flows and open positions the book still holds, and those live in the
+   =trading= component's tables (=trading_trade_activities= and its siblings),
+   not in =refdata=. A refdata trigger that reads trading tables inverts the
+   component dependency, so the alternatives are a service-side check on the
+   refdata write path, a check owned by trading and reached over the wire, or a
+   deliberately-inverted read with the reason recorded. Weigh them and record
+   the choice; do not let the trigger quietly acquire a cross-component join.
+4. *The owner unit against the ancestry chain.* The model says =owner_unit_id=
+   must name a unit in the book's portfolio ancestry chain, and the insert
+   trigger checks only the sandbox today. Walk the =parent_portfolio_id= chain
+   and refuse a unit outside it, from the catalogue.
+5. *The documents.* Correct journey 7's coverage table and narrow
+   /What is missing/ to what is still open. Gap 4, the rights panel, is out of
+   scope by the story's own decision and stays.
+
+* Notes
+
+Reconnaissance at =f782c45687= (trunk), before any edit. Journey 7's gaps 1, 2, 3
+and 5 are this task; gap 4 is the rights panel, which the story assigns to the
+Access group.
+
+What the model already carries: =book_status= and =regulatory_book_type= are
+non-nullable text columns validated by function, not by foreign key — the
+=* Foreign keys= section names only =functional_currency=, =party_id=,
+=parent_portfolio_id=, =owner_unit_id= and =sandbox_id=. So the two new columns
+follow the validation-function shape and not the FK shape, which is why the
+validators matter more than the lookups' tables.
+
+The insert trigger's sandbox and virtual-book block is a named src block
+declaring =:implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e=, the same insert
+trigger requirement the business-unit level block declares. A new block in this
+trigger should declare it too.
+
+=owner_unit_id= is nullable and its foreign key has no ancestry check, only an
+active-row check.
 
 * Measurements
 

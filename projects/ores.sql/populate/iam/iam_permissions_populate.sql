@@ -610,6 +610,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ledger_feed_types:write',                  'Create and modify ledger feed types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ledger_feed_types:delete',                 'Delete ledger feed types');
 
+    -- Sub-periods coupon type permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::sub_periods_coupon_types:read',            'View sub-periods coupon types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::sub_periods_coupon_types:write',           'Create and modify sub-periods coupon types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::sub_periods_coupon_types:delete',          'Delete sub-periods coupon types');
+
     -- Leg types permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::leg_types:read',                           'View leg types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::leg_types:write',                          'Create and modify leg types');

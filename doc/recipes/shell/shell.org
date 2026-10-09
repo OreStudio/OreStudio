@@ -1505,3 +1505,7 @@ tangled into the runnable script library
 * Session Statistics Operations
 
 - [[id:D16E5E5E-8232-5B61-85B9-3D9D49EF5EF6][How do I run the session_statistics_operations commands from the shell?]]
+
+* Sub Periods Coupon Types
+
+- [[id:CC6297F5-7EDB-5F9F-8520-8A50E4FAE1D2][How do I run the sub_periods_coupon_types commands from the shell?]]

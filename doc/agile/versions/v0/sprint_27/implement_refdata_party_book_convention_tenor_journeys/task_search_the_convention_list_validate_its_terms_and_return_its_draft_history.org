@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/search-the-convention-list-validate-its-terms-and-return-its-draft-history
-#+pr:
+#+pr: 2993
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2993][#2993]] | [refdata] Serve the sub-periods coupon type list |
 
 * Review
 

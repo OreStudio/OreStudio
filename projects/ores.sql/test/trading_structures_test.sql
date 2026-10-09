@@ -76,9 +76,11 @@ create or replace function pg_temp.structure(p_id uuid, p_parent uuid default nu
     p_kind text default 'Strategy', p_template text default 'Straddle')
 returns void as $$
     insert into ores_trading_structures_tbl (id, tenant_id, party_id, counterparty_id,
-        kind, template_code, parent_structure_id)
+        kind, template_code, parent_structure_id,
+        modified_by, performed_by, change_reason_code, change_commentary)
     select p_id, ores_utility_system_tenant_id_fn(), party_id, counterparty_id,
-        p_kind, p_template, p_parent
+        p_kind, p_template, p_parent,
+        current_user, current_user, 'system.new_record', 'Structure pgTAP fixture'
     from t_ctx;
 $$ language sql;
 

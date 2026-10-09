@@ -71,45 +71,54 @@ select (select id from ores_refdata_parties_tbl
           and valid_to = ores_utility_infinity_timestamp_fn()) as counterparty_id;
 
 insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
-    trade_type, counterparty_scope, booking_nature, entry_channel)
+    trade_type, counterparty_scope, booking_nature, entry_channel,
+    modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000cc001', ores_utility_system_tenant_id_fn(), party_id,
-    counterparty_id, 'Swap', 'external', 'actual', 'manual'
+    counterparty_id, 'Swap', 'external', 'actual', 'manual',
+    current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
 from t_ctx;
 
 insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
-    trade_type, counterparty_scope, booking_nature, entry_channel)
+    trade_type, counterparty_scope, booking_nature, entry_channel,
+    modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000cc002', ores_utility_system_tenant_id_fn(), party_id,
-    counterparty_id, 'Swap', 'external', 'actual', 'manual'
+    counterparty_id, 'Swap', 'external', 'actual', 'manual',
+    current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
 from t_ctx;
 
 -- A straddle allows one role holding exactly two legs; a butterfly allows a
 -- body of exactly one.
 insert into ores_trading_structures_tbl (id, tenant_id, party_id, counterparty_id,
-    kind, template_code, parent_structure_id)
+    kind, template_code, parent_structure_id,
+    modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000cd001', ores_utility_system_tenant_id_fn(), party_id,
-    counterparty_id, 'Strategy', 'Straddle', null
+    counterparty_id, 'Strategy', 'Straddle', null,
+    current_user, current_user, 'system.new_record', 'Structure pgTAP fixture'
 from t_ctx;
 
 insert into ores_trading_structures_tbl (id, tenant_id, party_id, counterparty_id,
-    kind, template_code, parent_structure_id)
+    kind, template_code, parent_structure_id,
+    modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000cd002', ores_utility_system_tenant_id_fn(), party_id,
-    counterparty_id, 'Strategy', 'Butterfly', null
+    counterparty_id, 'Strategy', 'Butterfly', null,
+    current_user, current_user, 'system.new_record', 'Structure pgTAP fixture'
 from t_ctx;
 
 insert into ores_trading_structures_tbl (id, tenant_id, party_id, counterparty_id,
-    kind, template_code, parent_structure_id)
+    kind, template_code, parent_structure_id,
+    modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000cd003', ores_utility_system_tenant_id_fn(), party_id,
-    counterparty_id, 'Package', null, null
+    counterparty_id, 'Package', null, null,
+    current_user, current_user, 'system.new_record', 'Structure pgTAP fixture'
 from t_ctx;
 
 create or replace function pg_temp.link(p_trade uuid, p_structure uuid, p_role text,
     p_party uuid default null)
 returns void as $$
     insert into ores_trading_structure_members_tbl (trade_id, structure_id, role,
-        sequence_number, tenant_id, version, party_id, counterparty_id,
+        sequence_number, tenant_id, version,
         modified_by, performed_by, change_reason_code, change_commentary)
-    select p_trade, p_structure, p_role, 1, ores_utility_system_tenant_id_fn(), 0,
-        coalesce(p_party, party_id), counterparty_id, current_user, current_user,
+    select p_trade, p_structure, p_role, 1, ores_utility_system_tenant_id_fn(), 0, current_user, current_user,
         'system.new_record', 'test'
     from t_ctx;
 $$ language sql;

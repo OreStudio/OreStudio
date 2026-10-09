@@ -69,9 +69,11 @@ create or replace function pg_temp.anchor(p_id uuid, p_counterparty uuid, p_scop
     p_trade_type text default 'Swap', p_party uuid default null)
 returns void as $$
     insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
-        trade_type, counterparty_scope, booking_nature, entry_channel)
+        trade_type, counterparty_scope, booking_nature, entry_channel,
+        modified_by, performed_by, change_reason_code, change_commentary)
     select p_id, ores_utility_system_tenant_id_fn(), coalesce(p_party, party_id),
-        p_counterparty, p_trade_type, p_scope, p_nature, p_channel
+        p_counterparty, p_trade_type, p_scope, p_nature, p_channel,
+        current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
     from t_ctx;
 $$ language sql;
 

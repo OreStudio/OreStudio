@@ -88,29 +88,33 @@ declare
     v_activity_id uuid := gen_random_uuid();
 begin
     insert into ores_trading_trades_tbl (id, tenant_id, party_id, trade_type,
-        counterparty_scope, booking_nature, entry_channel)
+        counterparty_scope, booking_nature, entry_channel,
+        modified_by, performed_by, change_reason_code, change_commentary)
     select p_id, ores_utility_system_tenant_id_fn(), party_id, 'Swap',
-        'intra_entity', 'actual', 'manual'
+        'intra_entity', 'actual', 'manual',
+        current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
     from t_ctx;
 
     insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,
-        activity_type_code, actor, occurred_at, comment)
+        activity_type_code, actor, occurred_at, comment,
+        modified_by, performed_by, change_reason_code, change_commentary)
     select v_activity_id, ores_utility_system_tenant_id_fn(), party_id,
-        'new_booking', owner_name, now(), 'booked by test'
+        'new_booking', owner_name, now(), 'booked by test',
+        current_user, current_user, 'system.new_record', 'Trade activity pgTAP fixture'
     from t_ctx;
 
     insert into ores_trading_trade_bookings_tbl (trade_id, trade_activity_id, tenant_id,
-        version, party_id, book_id, modified_by, performed_by, change_reason_code,
+        version, book_id, modified_by, performed_by, change_reason_code,
         change_commentary)
-    select p_id, v_activity_id, ores_utility_system_tenant_id_fn(), 0, party_id,
+    select p_id, v_activity_id, ores_utility_system_tenant_id_fn(), 0,
         '00000000-0000-0000-0000-0000000ab000', owner_name, owner_name,
         'system.new_record', 'booked by test'
     from t_ctx;
 
     insert into ores_trading_trade_states_tbl (trade_id, trade_activity_id, tenant_id,
-        version, party_id, status_id, modified_by, performed_by, change_reason_code,
+        version, status_id, modified_by, performed_by, change_reason_code,
         change_commentary)
-    select p_id, v_activity_id, ores_utility_system_tenant_id_fn(), 0, party_id,
+    select p_id, v_activity_id, ores_utility_system_tenant_id_fn(), 0,
         ores_utility_nil_uuid_fn(), owner_name, owner_name, 'system.new_record', 'test'
     from t_ctx;
 
@@ -138,10 +142,10 @@ select results_eq(
 
 select throws_ok(
     $$insert into ores_trading_trade_identifiers_tbl (trade_id, trade_activity_id, id_type,
-          tenant_id, version, party_id, id_value, modified_by, performed_by,
+          tenant_id, version, id_value, modified_by, performed_by,
           change_reason_code, change_commentary)
       select '00000000-0000-0000-0000-0000000aa001', '00000000-0000-0000-0000-0000000ad0ff',
-          'UTI', ores_utility_system_tenant_id_fn(), 0, party_id, 'UTI-ACTTEST', owner_name,
+          'UTI', ores_utility_system_tenant_id_fn(), 0, 'UTI-ACTTEST', owner_name,
           owner_name, 'system.new_record', 'test'
       from t_ctx$$,
     '23503',
@@ -181,9 +185,11 @@ select (select count(*) from ores_trading_trade_bookings_tbl
         where trade_id = '00000000-0000-0000-0000-0000000aa001') as states;
 
 insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,
-    activity_type_code, actor, occurred_at, comment)
+    activity_type_code, actor, occurred_at, comment,
+    modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000ad001', ores_utility_system_tenant_id_fn(), party_id,
-    'null_amend', owner_name, now(), 'entered the values already held'
+    'null_amend', owner_name, now(), 'entered the values already held',
+    current_user, current_user, 'system.new_record', 'Trade activity pgTAP fixture'
 from t_ctx;
 
 select is(
@@ -202,9 +208,11 @@ select results_eq(
 
 select throws_ok(
     $$insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,
-          activity_type_code, actor, occurred_at, comment)
+          activity_type_code, actor, occurred_at, comment,
+          modified_by, performed_by, change_reason_code, change_commentary)
       select '00000000-0000-0000-0000-0000000ad002', ores_utility_system_tenant_id_fn(),
-          party_id, 'no_such_activity', owner_name, now(), 'test'
+          party_id, 'no_such_activity', owner_name, now(), 'test',
+          current_user, current_user, 'system.new_record', 'Trade activity pgTAP fixture'
       from t_ctx$$,
     '23503',
     null,

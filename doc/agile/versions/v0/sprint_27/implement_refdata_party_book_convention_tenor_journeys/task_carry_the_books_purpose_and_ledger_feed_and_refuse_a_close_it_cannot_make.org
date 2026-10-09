@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/carry-the-books-purpose-and-ledger-feed-and-refuse-a-close-it-cannot-make
-#+pr:
+#+pr: 2978
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -146,7 +146,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2978][#2978]] | [refdata] Carry the book's purpose and ledger feed |
 
 * Review
 

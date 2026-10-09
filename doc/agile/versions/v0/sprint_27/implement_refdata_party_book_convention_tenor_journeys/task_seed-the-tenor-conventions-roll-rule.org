@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/seed-the-tenor-conventions-roll-rule
-#+pr:
+#+pr: 3014
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3014][#3014]] | [database] Seed the tenor conventions' roll rule |
 
 * Review
 

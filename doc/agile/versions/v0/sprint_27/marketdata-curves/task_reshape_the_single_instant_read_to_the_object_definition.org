@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/reshape-the-single-instant-read-to-the-object-definition
+#+pr: 3034
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ One object definition serves all three reads, so a single instant and an evoluti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -42,9 +42,23 @@ One object definition serves all three reads, so a single instant and an evoluti
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Move the node grid out of the evolution reader into =series_grid= beside the
+   shape, so every read that returns nodes takes them from one place. The slice
+   reader takes =coordinate_of= from there too.
+2. Add =service::series_snapshot_reader=. It resolves the typed identity, reads
+   the shape, builds the grid and places each as-of point at its node.
+3. Change =get_curve_snapshot_request= to carry the typed identity and the
+   response to carry the axes, the nodes, a value and a record time per node,
+   and the staleness figures. The header and its TypeScript twin generate from
+   =ores.marketdata.operations.org=, so the change is made in the model.
+4. Make =curve_snapshot_handler= a thin wrapper, as the evolution handler is.
+5. Test the reader, including a test that the snapshot and the evolution agree.
+
+Decision: the snapshot keeps the as-of read. It carries the latest value of a
+node forward from before the instant, and the evolution states only what an
+instant states. The three reads agree on the object and on its nodes. They do
+not agree on a value the evolution holds as a hole, and that difference is the
+meaning of the two reads, not drift.
 
 * Measurements
 
@@ -58,7 +72,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| marketdata core suite | 158 test cases, 2308 assertions, all pass | =ores.marketdata.core.tests= on a recreated database | =efa0aab1c2= plus the working tree |
+| marketdata codegen drift | none | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component marketdata --dry-run= | =efa0aab1c2= plus the working tree |
+| component docs | 41 of 41 pass | =projects/ores.codegen/validate_docs.sh= | =efa0aab1c2= plus the working tree |
 
 * Notes
 
@@ -77,12 +93,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3034][#3034]] | [marketdata] Reshape the single-instant read to the object definition |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A hole is an empty string and the epoch, with no presence flag | series_snapshot_reader.cpp | Declined | The operations model documents the rule on =values= and =recorded_at=, and the evolution read uses the same empty-string hole. A flag here would make the two reads differ. |
+| 2 | The staleness counts records no node uses | series_snapshot_reader.cpp | Accepted | The summary now takes the placed records only. |
+| 3 | Two records for one node: the last wins | series_snapshot_reader.cpp | Accepted | The read returns one record per URI and the URIs of a series differ in their coordinates. A comment states it. No test, because the shape enforcement refuses a point with an undeclared coordinate, so the case cannot be written. |
+| 4 | Handler control flow differs from the old shape | curve_snapshot_handler.hpp | Declined | It matches =series_evolution_handler=, which is the shape the task asked for. |
+| 5 | =series_grid= copies the shape | series_shape.hpp | Declined | The copy is small and the grid is built once per read. |
 
 * Result
+
+The single-instant read now answers on the object definition the slice and the
+evolution reads use.
+
+- =get_curve_snapshot_request= takes the typed identity, not an =oresmd_uri=.
+  The response states the axis names and the declared nodes once, then one value
+  and one record time per node, with the staleness figures as before.
+- =series_grid= in =series_shape= builds the nodes and places a point at its
+  node. The snapshot and the evolution both use it, so they cannot disagree about
+  the nodes. The slice reader shares =coordinate_of=.
+- =series_snapshot_reader= holds the read, and =curve_snapshot_handler= is a thin
+  wrapper, as the evolution handler is.
+- An object that declares no axis is refused, as it is for the other two reads.
+- The header and its TypeScript twin are regenerated from the operations model.
+
+A test shows that a snapshot and an evolution for one object give the same axes
+and nodes, and the same value wherever the evolution states one. The snapshot
+may hold a value where the evolution holds a hole, because it carries the latest
+value forward and the evolution states only what an instant states.

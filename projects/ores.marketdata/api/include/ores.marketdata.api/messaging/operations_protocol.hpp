@@ -261,77 +261,6 @@ struct compute_curve_response {
 };
 
 /**
- * @brief Requests the latest-as-of snapshot of a curve/grid series: one
- * observation per point_id, reconstructed from independently-ticking
- * market_observation rows.
- *
- * oresmd_uri identifies the series, the same identity every market_series
- * row is keyed by and the one the feed's ticks land under -- the caller does
- * not need to know the internal series_id, and it does not need the
- * registry's decomposition of the key either. Always "latest" (now) for the
- * as-of time; no as-of-in-the-past parameter yet.
- */
-struct get_curve_snapshot_request {
-    using response_type = struct get_curve_snapshot_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.curve_snapshot.get";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string oresmd_uri;
-};
-
-struct get_curve_snapshot_response {
-    std::vector<ores::marketdata::domain::market_observation> observations;
-    /**
-     * @brief The instant the snapshot is as of, which is what an age is measured
-     * from.
-     *
-     * Without it a reader measures an age from its own clock, so clock skew shows
-     * up as staleness that is not in the curve.
-     */
-    std::chrono::system_clock::time_point as_of;
-    /** When each point was recorded, index-for-index with observations: the
-     * bitemporal valid_from of the row it was read from. Two ages are readable
-     * from a point and they answer different questions: the snapshot instant
-     * minus the point's instant is market staleness, the age of the market state
-     * it belongs to; now minus its record time is record staleness, how long ago
-     * the value arrived.
-     */
-    std::vector<std::chrono::system_clock::time_point> recorded_at;
-    /**
-     * @brief The age of the snapshot's oldest point, in seconds.
-     *
-     * Market staleness, not record staleness: the age of the market state the
-     * point belongs to, which is what decides whether a drawn curve is one market
-     * read or a stitching of several. Zero for an empty snapshot.
-     */
-    std::int64_t oldest_age_seconds = 0;
-    /**
-     * @brief The spread between the oldest and the newest point, in seconds.
-     *
-     * The number that measures the mixing: points that share one instant have a
-     * spread of zero however old that instant is, and a curve stitched across
-     * market horizons does not. A point whose instant is after the snapshot
-     * instant carries no age at all, and one exactly at it is age zero and counts.
-     */
-    std::int64_t spread_seconds = 0;
-    /**
-     * @brief Whether the snapshot is mixed enough that a view must not draw it
-     * silently.
-     *
-     * The threshold is stated by the evolution journey, not by this message: the
-     * read reports the crossing, and the view decides what to show.
-     */
-    bool warning = false;
-    bool success = false;
-    std::string message;
-};
-
-/**
  * @brief One instant of a slice: the object as it stood then.
  */
 struct series_slice_instant {
@@ -521,6 +450,99 @@ struct get_series_evolution_response {
     std::vector<evolution_node> nodes;
     /** Oldest first, one entry per distinct market instant read. */
     std::vector<evolution_instant> instants;
+};
+
+/**
+ * @brief Requests a composite object as it stands now, as one instant by nodes.
+ *
+ * The object is named the way the resolver names one, as the slice read and the
+ * evolution read name it, so the three cannot disagree about what the object is.
+ * The instant is always now; there is no as-of-in-the-past parameter, because the
+ * evolution read answers that question.
+ */
+struct get_curve_snapshot_request {
+    using response_type = struct get_curve_snapshot_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.curve_snapshot.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** The object, as the typed identity the resolver already takes. */
+    resolve_series_identity_request identity;
+};
+
+/**
+ * @brief The object at one instant, against the same grid of declared nodes the
+ * evolution read states.
+ *
+ * The evolution read of that object gives the same coordinate fields and the same
+ * nodes. The snapshot carries the latest value of a node forward from before the
+ * instant, which the evolution does not, and adds the age of each value, because a
+ * composite of several market states must not be taken for one.
+ */
+struct get_curve_snapshot_response {
+    bool success = false;
+    /** Why the read was refused, when it was. */
+    std::string message;
+    /**
+     * @brief The instant the snapshot is as of, which is what an age is measured
+     * from.
+     *
+     * Without it a reader measures an age from its own clock, so clock skew shows
+     * up as staleness that is not in the curve.
+     */
+    std::chrono::system_clock::time_point as_of;
+    /** The axis names, in the order the shape stores them. */
+    std::vector<std::string> coordinate_fields;
+    /**
+     * @brief The declared grid, with the last axis varying fastest.
+     *
+     * The status of a node is empty: one instant shows no change.
+     */
+    std::vector<evolution_node> nodes;
+    /**
+     * @brief The value at each node, index for index with nodes.
+     *
+     * The empty string is a hole: the shape declares the node and no point held a
+     * value for it.
+     */
+    std::vector<std::string> values;
+    /** When each point was recorded, index-for-index with observations: the
+     * bitemporal valid_from of the row it was read from. Two ages are readable
+     * from a point and they answer different questions: the snapshot instant
+     * minus the point's instant is market staleness, the age of the market state
+     * it belongs to; now minus its record time is record staleness, how long ago
+     * the value arrived.
+     */
+    std::vector<std::chrono::system_clock::time_point> recorded_at;
+    /**
+     * @brief The age of the snapshot's oldest point, in seconds.
+     *
+     * Market staleness, not record staleness: the age of the market state the
+     * point belongs to, which is what decides whether a drawn curve is one market
+     * read or a stitching of several. Zero for an empty snapshot.
+     */
+    std::int64_t oldest_age_seconds = 0;
+    /**
+     * @brief The spread between the oldest and the newest point, in seconds.
+     *
+     * The number that measures the mixing: points that share one instant have a
+     * spread of zero however old that instant is, and a curve stitched across
+     * market horizons does not. A point whose instant is after the snapshot
+     * instant carries no age at all, and one exactly at it is age zero and counts.
+     */
+    std::int64_t spread_seconds = 0;
+    /**
+     * @brief Whether the snapshot is mixed enough that a view must not draw it
+     * silently.
+     *
+     * The threshold is stated by the evolution journey, not by this message: the
+     * read reports the crossing, and the view decides what to show.
+     */
+    bool warning = false;
 };
 
 /**

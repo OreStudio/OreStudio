@@ -38,7 +38,7 @@ person leaves the evolution view.
 
 A curve and a surface are not types at the wire. A curve is one of the market
 series the =oresmd_uri= names, and the screen is keyed by that URI: the
-snapshot reads carry an =oresmd_uri=, not a curve id. See /What is missing/.
+the three reads name the object by typed identity fields, not by a curve id. See /What is missing/.
 
 * Steps
 
@@ -164,11 +164,11 @@ derived.
 | Name the added and dropped nodes | Read each node's change over the range | =marketdata.v1.ops.get_series_evolution= | exists |
 | Compare two instants | Read the difference between two instants | no subject | missing |
 
-The snapshot read is keyed by the =oresmd_uri=, not by an internal series id, so
-the screen never needs the id the registry holds. The evolution read names the
-object by typed identity fields, so it needs no URI either, and it returns
-instants by nodes in one round trip, each node carrying its change over the
-range. The lineage read is keyed by the lineage row's id, not by the
+The snapshot and the evolution reads name the object by typed identity fields, so
+the screen needs neither a URI nor the id the registry holds. Both return the
+same nodes. The snapshot returns one value per node with its age. The evolution
+returns instants by nodes in one round trip, each node carrying its change over
+the range. The lineage read is keyed by the lineage row's id, not by the
 observation, so the screen can read it only when it already has the id; see
 /What is missing/.
 

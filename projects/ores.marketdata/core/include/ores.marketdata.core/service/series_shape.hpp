@@ -21,9 +21,12 @@
 #define ORES_MARKETDATA_CORE_SERVICE_SERIES_SHAPE_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <cstddef>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -44,6 +47,50 @@ struct ORES_MARKETDATA_CORE_EXPORT series_shape final {
 
     /// The values each axis declares, in the order the shape stores them.
     std::map<datum::field, std::vector<std::string>> values;
+};
+
+/**
+ * @brief The value @p point holds on @p axis, or nothing when it holds none.
+ */
+ORES_MARKETDATA_CORE_EXPORT std::optional<std::string>
+coordinate_of(const datum::market_datum& point, datum::field axis);
+
+/**
+ * @brief The grid a shape declares: every combination of the declared values of
+ * its axes, in the order the shape stores the axes and with the last axis
+ * varying fastest.
+ *
+ * A node is a position in the grid. Every read that returns a composite object
+ * as nodes takes its nodes from here, so a single-instant read and an evolution
+ * read cannot disagree about which node a point is or where it sits.
+ */
+class ORES_MARKETDATA_CORE_EXPORT series_grid final {
+public:
+    explicit series_grid(const series_shape& shape);
+
+    /// The axes, in the order the shape stores them.
+    const std::vector<datum::field>& axes() const {
+        return shape_.axes;
+    }
+
+    /// The number of nodes, which is the product of the declared value counts.
+    std::size_t size() const {
+        return size_;
+    }
+
+    /// The label of each axis for node @p index, index for index with axes().
+    std::vector<std::string> coordinates(std::size_t index) const;
+
+    /**
+     * @brief The node @p point belongs to, or nothing when it leaves an axis out
+     * or holds a value the shape does not declare.
+     */
+    std::optional<std::size_t> node_of(const datum::market_datum& point) const;
+
+private:
+    series_shape shape_;
+    std::vector<std::size_t> strides_;
+    std::size_t size_ = 1;
 };
 
 /**

@@ -41,4 +41,5 @@ set(files
     "service_ore_export_tests.cpp"
     "service_series_evolution_reader_tests.cpp"
     "service_series_slice_reader_tests.cpp"
+    "service_series_snapshot_reader_tests.cpp"
 )

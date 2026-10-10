@@ -7,40 +7,55 @@
 #+level: cross
 #+filetags: :marketdata:storage:snapshot:cut:
 #+created: 2026-10-06
-#+updated: 2026-10-09
+#+updated: 2026-10-10
 
 * Summary
 
 Three read-only operations answer questions about observations that are already
 stored. =marketdata.v1.curve_snapshot.get= returns the latest value of every
-point of one series, as of now. =marketdata.v1.ops.get_series_slice= returns one
+node of one composite object, as of now. =marketdata.v1.ops.get_series_slice= returns one
 component of a composite object at each instant in a range.
 =marketdata.v1.ops.get_series_evolution= returns the whole object as a matrix of
 instants by nodes, with the change each node shows.
 
 The snapshot is served by =curve_snapshot_handler=, the slice by
 =series_slice_handler= and the evolution by =series_evolution_handler=, all in
-=projects/ores.marketdata/core/include/ores.marketdata.core/messaging/=.
+=projects/ores.marketdata/core/include/ores.marketdata.core/messaging/=. Each
+handler calls a reader in =ores.marketdata.core/service/=:
+=series_snapshot_reader=, =series_slice_reader= and =series_evolution_reader=.
 
 * Detail
 
 ** The snapshot
 
-=get_curve_snapshot_request= carries one field, the =oresmd_uri= of the
-series, which is
-[[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]].
-The handler resolves the series id server side from that URI through
-=market_series_repository::read_latest_by_uri=, so a caller never handles an
-internal series id and never decomposes the key. It then calls
-=market_observation_repository::read_as_of_records= with the series id and the
-service's current time, and returns one observation per point.
+=get_curve_snapshot_request= carries one field, the typed identity the resolver
+takes, as the slice and the evolution requests do. A caller never builds an
+oresmd URI and never handles an internal series id.
+[[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]] stays
+the key of the series underneath.
 
-A series that does not exist yet is not an error. A feed that has not
+=series_snapshot_reader= resolves the series, reads its declared shape and
+builds the grid with =series_grid=, the same grid the evolution reader builds.
+It then calls =market_observation_repository::read_as_of_records= with the
+handler's current time. It places each point at its node with the same
+=series_grid::node_of= the evolution uses. The response states the axis names
+and the nodes once, then one value and one record time per node. A node that no
+point states is a hole: the empty string and the epoch. An evolution returns the
+same axes and the same nodes. The two differ in one way. The snapshot carries the
+latest value of a node forward from before the instant, and the evolution states
+only what an instant states. Where the evolution holds a value, the snapshot
+holds the same one, and a test checks it.
+
+The staleness figures (oldest age, spread and the warning) are measured over
+every point the read returns.
+
+An object that declares no axis is refused, as it is for the slice and the
+evolution. A series that does not exist yet is not an error. A feed that has not
 published leaves an empty snapshot with =success = true=, because an empty
 curve is a normal state and not a failure.
 
-The request comment states the limit directly. The as-of time is always now,
-and there is no parameter for an as-of instant in the past.
+The as-of time is always now. There is no parameter for an instant in the past:
+the evolution read answers that question with a stated set of instants.
 
 ** The slice and the evolution
 

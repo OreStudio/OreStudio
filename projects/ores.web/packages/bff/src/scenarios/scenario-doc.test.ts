@@ -47,7 +47,6 @@ const template = join(
 
 function run(steps: StepOutcome[], overrides: Partial<RunInput> = {}): RunInput {
     return {
-        state: 'FAILED',
         steps,
         completedAt: '2026-10-11T09:00:00Z',
         branch: 'feature/x',
@@ -173,9 +172,7 @@ describe('a scenario made by the current compass template', () => {
         expect(first).toBeDefined();
         const done = recordRun(
             text,
-            run([outcome(null, first?.title ?? '', 'PASS', 'Logged in.')], {
-                state: 'PENDING',
-            }),
+            run([outcome(null, first?.title ?? '', 'PASS', 'Logged in.')]),
         );
         const back = parseScenario(done.text);
         expect(back.steps[0]?.status).toBe('PASS');
@@ -221,6 +218,53 @@ describe('writing a run into a scenario', () => {
         expect(done.changed.map((c) => c.title)).toEqual(titles.slice(0, 4));
     });
 
+    it('leaves the scenario open while a step is pending, with no completion time', () => {
+        const done = recordRun(multi, run([outcome('blue', 'Read', 'PASS')]));
+        expect(done.state).toBe('PENDING');
+        const back = parseScenario(done.text);
+        expect(back.state).toBe('PENDING');
+        expect(back.run.status).toBe('PENDING');
+        expect(back.run.completedAt).toBe('');
+        expect(back.run.branch).toBe('feature/x');
+        expect(done.text).toMatch(/\| State\s+\| PENDING/);
+    });
+
+    it('closes a scenario as PASSED when every step passes', () => {
+        const titles = parseScenario(single).steps.map((s) => s.title);
+        const done = recordRun(single, run(all(null, titles, 'PASS')));
+        expect(done.state).toBe('PASSED');
+        expect(parseScenario(done.text).run.completedAt).toBe('2026-10-11T09:00:00Z');
+    });
+
+    it('closes a scenario as FAILED when no step is pending and one failed', () => {
+        const first = parseScenario(single).steps[0]?.title ?? '';
+        expect(recordRun(single, run([outcome(null, first, 'FAIL')])).state).toBe('FAILED');
+    });
+
+    it('keeps a scenario open when every step is dropped, and closes it when the rest passed', () => {
+        const titles = parseScenario(single).steps.map((s) => s.title);
+        const dropped = recordRun(single, run(all(null, titles, 'DROPPED')));
+        expect(dropped.state).toBe('PENDING');
+        expect(parseScenario(dropped.text).run.completedAt).toBe('');
+        const mixed = recordRun(
+            single,
+            run([
+                ...all(null, titles.slice(0, 1), 'PASS'),
+                ...all(null, titles.slice(1), 'DROPPED'),
+            ]),
+        );
+        expect(mixed.state).toBe('PASSED');
+    });
+
+    it('opens a closed scenario again when a step goes back to pending', () => {
+        const first = parseScenario(single).steps[0]?.title ?? '';
+        const done = recordRun(single, run([outcome(null, first, 'PENDING')]));
+        const back = parseScenario(done.text);
+        expect(back.state).toBe('PENDING');
+        expect(back.run.completedAt).toBe('');
+        expect(back.steps[0]?.status).toBe('PENDING');
+    });
+
     it('leaves every other line as it was', () => {
         const titles = parseScenario(multi).steps.map((s) => s.title);
         const done = recordRun(multi, run([outcome('blue', titles[1] ?? '', 'PASS', 'ok')]));
@@ -247,10 +291,7 @@ describe('writing a run into a scenario', () => {
 
     it('adds a Result to a step that has none', () => {
         const text = fromTemplate();
-        const done = recordRun(
-            text,
-            run([outcome(null, 'Log in as <persona>', 'PASS')], { state: 'PENDING' }),
-        );
+        const done = recordRun(text, run([outcome(null, 'Log in as <persona>', 'PASS')]));
         expect(done.text).toMatch(
             /\*\*\* Result\n\n\| Field {2}\| Value \|\n\|-+\+-+\|\n\| Status \| PASS \|\n/,
         );
@@ -366,7 +407,6 @@ describe('every scenario doc in the repository', () => {
             expect(scenario.steps.length, file).toBeGreaterThan(0);
             const input = run(
                 scenario.steps.map((s) => outcome(s.client, s.title, 'PASS', 'again')),
-                { state: 'PASSED' },
             );
             let done;
             try {

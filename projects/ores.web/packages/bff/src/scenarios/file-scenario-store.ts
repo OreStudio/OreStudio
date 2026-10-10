@@ -158,10 +158,13 @@ export class FileScenarioStore implements ScenarioStore {
         const key = normalise(id);
         const found = await this.resolve(key);
         if (found === null) return null;
+        // The title and the type come from the text just read, because the
+        // index can be a scan old.
+        const head = parseOrg(found.text);
         return {
             id: key,
-            title: found.entry.title,
-            type: found.entry.type,
+            title: head.keywords.get('title') ?? '',
+            type: head.keywords.get('type') ?? null,
             path: found.entry.path,
             text: found.text,
         };
@@ -169,10 +172,9 @@ export class FileScenarioStore implements ScenarioStore {
 
     async record(id: string, input: RunInput): Promise<RecordResult> {
         const key = normalise(id);
-        const entry = this.index.get(key);
-        // Saves to one doc share a queue. A cold index has no path yet, so the
-        // id stands in until the first save has filled the index.
-        const queueKey = entry?.path ?? key;
+        // Saves to one doc share a queue. An id names one indexed path, so the
+        // id is the key from the first save, on a cold index or a warm one.
+        const queueKey = key;
         const previous = this.queues.get(queueKey) ?? Promise.resolve();
         const next = previous.catch(() => undefined).then(() => this.write(key, input));
         this.queues.set(queueKey, next);

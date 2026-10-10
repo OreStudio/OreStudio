@@ -53,6 +53,7 @@ moved here.
 | [[id:FBD721CE-F97F-4F40-BBE3-908781628425][Bring the record screens to the standard]] | DONE | 2026-10-05 | 2026-10-05 | Close the remaining gaps the standard lists: related records as tabs, Delete and Remove words, icons, the last-changed line, reasons filtered by change, unsaved changes, sorting, the column menu, and shared parts for the tenant and party screens. |
 | [[id:BB15DD97-53FF-47AE-AAA1-8675BCFB9882][Bring the role screens to the standard]] | BACKLOG | | | Move the roles list and role page onto the shared record parts, with paged server reads for roles and for the people who hold a role. |
 | [[id:5917BF2F-CC4C-4223-9E4C-BE1607BBD527][Address the review of the people screens]] | STARTED | 2026-10-10 | | Work through the product owner's review of the people functionality: the organisation hub, staff, hierarchy, person page and my profile. Every comment is a row in the task's Review table, so none is lost. |
+| [[id:6EBDB18A-E19D-4BC8-BD42-D6207E8BB120][Approve a reporting line change by the proposed manager]] | BACKLOG | | | A change to a person's reporting line is proposed, and the person it would make their manager approves it, like a role request. Today anyone with the update permission changes it directly. |
 
 * Decisions
 

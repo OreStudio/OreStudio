@@ -54,9 +54,45 @@ declined with a reason, or deferred to a named task.
 * Checklist
 
 Tick a box when its change has landed. Add =declined= or =deferred= with the
-reason beside any box that does not.
+reason beside any box that does not. The groups are the order of work.
 
-- [ ] (no comments entered yet)
+** Questions to settle first
+- [ ] P8 Sign out when the window closes: beacon, or a shorter idle lifetime?
+- [ ] P9 My access in two places: which two, and which one stays?
+- [ ] P14 Requests: one place for every request type?
+
+** Staff and person
+- [ ] P1 Party column in the staff list
+- [ ] P2 Address for Adrian Vance and the others who have none
+- [ ] P7 Can I... on the staff person page
+
+** Access and roles
+- [ ] P3 Page the permissions a role grants
+- [ ] P4 Select the permission area (Reference data, Data quality, ...)
+- [ ] P10 Requests visible to every member
+- [ ] P6 Protect my account refused for Adrian Vance
+
+** Profile
+- [ ] P5 History on My profile
+- [ ] P9 My access in one place (after the question)
+- [ ] P8 Sign out on close (after the question)
+
+** Requests
+- [ ] P12 Answered by: name, with username, as a link
+- [ ] P13 Approved by: the same
+- [ ] P14 Scope of Requests (after the question)
+
+** History
+- [ ] P15 Header line per event, details on demand
+- [ ] P16 Username links to the person
+- [ ] P17 Hierarchy history: recent changes list, then one person's history
+
+** Shell
+- [ ] P19 Current tenant and party as pills; explain or drop the Application pill
+- [ ] P11 Live notifications (deferred to Hear a change on the server and offer a refresh)
+
+** Own task
+- [ ] P18 Approve a reporting line change by the proposed manager (task_approve_a_reporting_line_change_by_the_proposed_manager)
 
 * Measurements
 
@@ -93,8 +129,28 @@ via its "Verifies task" field.
 
 * Review
 
+The batch from 2026-10-10, in the order given. Decisions: accept, question (needs an answer), defer (another task owns it), split (its own task).
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| P1 | Party should be a column in the staff list. | membership/StaffOfMyParties.tsx, access/PeoplePage.tsx | accept | The member list already shows parties as tags. The administrator list needs the column too, which needs each person's parties in its read. |
+| P2 | Adrian Vance has no address. | ores.seeder acme_corporation accounts.json | accept | The group head has no street, city or country in the seed data. Give the group head, and anyone else with none, an address. |
+| P3 | What these roles let them do needs paging. | access/PersonPage.tsx, access role panels | accept | The permission list under a role on the person's access tab is unpaged. |
+| P4 | Also select Reference data, Data quality and the other areas. | access role panels | accept | Same panel as P3: the area filter the roles list already has. |
+| P5 | My profile has no history, unlike the person page reached from staff. | pages/ProfilePage.tsx | accept | Show the same History tab for the signed-in person's own account. |
+| P6 | Protect my account as Adrian Vance gives 'You do not have access to this'. | pages/AccountDoors.tsx, security screen | accept (find cause) | Adrian holds the Operations role. Find which read the screen makes and whether it belongs on the authorised-reads allow-list as a self read. |
+| P7 | There is no 'Can I...?' in staff. | access/PersonPage.tsx, staff list | accept | Add the Can I check to the staff person page, as it is on my access. |
+| P8 | Closing the window does not sign out. | session/SessionProvider.tsx, bff sessions | question | Closing a tab is not a reliable signal. Options: a pagehide beacon that ends the session, or a shorter idle lifetime. Needs your call. |
+| P9 | My access is in two places. | pages/ProfilePage.tsx access tab, /access | question | Which two? The Access tab of My profile and the My access page both list roles. Proposal: keep the page and make the tab a link. |
+| P10 | Adrian Vance cannot see Requests. All members should. | shell/areas.ts, requests screens | accept | Requests should not need an administrator permission. A member sees their own requests and those addressed to them. |
+| P11 | A notification needs a refresh to show. | notification bell, query refresh | defer | Belongs to the story Hear a change on the server and offer a refresh. Link it there; check the bell polls meanwhile. |
+| P12 | Requests: 'Answered adrian.vance' cannot be clicked and is not the person's name. | requests list | accept | Show the full name, with the username in brackets, as a link to the person where the reader may open them. |
+| P13 | Requests: 'approved by' shows a raw identifier. | requests list | accept | Resolve the approver the same way as P12. |
+| P14 | Requests: is this the place for all requests or only role requests? | requests list | question | Proposal: the one place for every request type. Reporting line proposals (P18) would appear here. |
+| P15 | History everywhere: show the header, not every detail; expand on demand. | timeline/Timeline.tsx | accept | One line per event: time, what happened, record and version, reason, who, and the note. Details open on demand. |
+| P16 | History: the username should link to the person. | timeline/Timeline.tsx | accept | Where the reader may open the person. |
+| P17 | Hierarchy history: remove the person card. List the people whose line changed recently, then show one person's history. | membership/ReportingLinesPage.tsx | accept | Needs a read of recent reporting line changes across the tenant, or a client-side pass over the account history. |
+| P18 | Changing the hierarchy is not four-eyes. The proposed new manager should approve, like a role request. | server + web | split | Own task: Approve a reporting line change by the proposed manager. |
+| P19 | What does the 'Application' pill mean? Show the current party and tenant, very visibly, perhaps as pills at the bottom. | components/AppShell.tsx | accept | Explain or remove the Application pill. Add tenant and party pills to the footer. |
 
 * Result

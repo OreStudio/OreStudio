@@ -22,11 +22,13 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/request_helpers.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/login_helpers.hpp"
 #include "ores.shell/app/repl.hpp"
 #include "ores.utility/version/version.hpp"
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 namespace ores::shell::app {
 
@@ -139,6 +141,12 @@ void application::run() {
             BOOST_LOG_SEV(lg(), info) << "Running script: " << *script_path_;
             std::istringstream in("load " + *script_path_ + "\nexit\n");
             client_repl.run(in, std::cout);
+            // A script that aborted marked the failure flag and the REPL read
+            // on to `exit`, so batch mode ends here. Turn that into a non-zero
+            // exit: a caller that drives a script (CI, provisioning) must be
+            // able to tell a clean run from one that stopped on an error.
+            if (command_feedback::failed())
+                throw std::runtime_error("script aborted: " + *script_path_);
         } else {
             client_repl.run();
         }

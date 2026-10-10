@@ -223,13 +223,74 @@ Two kinds in the corpus are not seeded:
 ### `oresmd_uri`
 
 Every convention table carries a nullable `oresmd_uri` column, and the artefact
-tables mirror it. The seed leaves it null on every row. There is no offline
-tool that turns an ORE index name (`EUR-EURIBOR-6M`, the value the corpus
-holds) into an oresmd URI. The two codecs that can do it,
-`ore_index_codec::read` then `oresmd_uri_codec::write`, live in
-`projects/ores.marketdata/core` and have no command-line entry point. Building
-one is a task of its own. See `doc/knowledge/domain/market_data_urn.org` for
-the format. The column is left explicit in the seed so the gap is visible.
+tables mirror it. The generator writes the oresmd **fixing** URI of the ORE index
+the row names, read from `oresmd_index_map.tsv` (below). A row whose kind names
+no index (a *requirement*, per the model doc string) carries `null`.
+
+The URI comes from the codecs, never from a rule typed into the generator: an
+ORE index name becomes a URI only through `ore_index_codec::read` then
+`oresmd_uri_codec::write_index`, both in `projects/ores.marketdata/core`. The
+product owner rejected a Python binding to the C++ codec, so the mapping is a
+fixed table held in this tool. It is not hand-typed: it is generated once from
+the codec, committed as data, and round-tripped by a marketdata test, so it
+cannot silently drift. See
+`doc/knowledge/domain/market_data_urn.org` for the URI format.
+
+A name the map does not hold **fails generation and is named**. The generator
+never writes a null for a name it looked up and never invents a URI.
+
+### `oresmd_index_map.tsv`
+
+`ore_name<TAB>oresmd_uri`, one row per ORE index name the canonical set
+references, sorted by name, UTF-8 with LF. There is no comment header: the file
+is parsed by both this tool and a C++ test, so a header would be data to one of
+them. This README is its documentation.
+
+The canonical set is every value of an index-name field the kind map writes
+(`Index`, `BMAIndex`, `FlatIndex`, `SpreadIndex`, `IndexName`, `PayIndex`,
+`ReceiveIndex`, `LongIndex`, `ShortIndex`) plus the id of every kind whose id
+*is* the index name (`IborIndex`, `OvernightIndex`, `ZeroInflationIndex`,
+`SwapIndex`). That is 622 names in the current corpus, and every one resolves.
+
+Two kinds of value are deliberately excluded, and neither is an index name:
+
+- A field that mentions "index" but holds a parameter: `IndexBased`,
+  `IndexPaymentLag`, `IndexSettlementDays`, `IndexPaymentPeriod`,
+  `FlatIndexIsResettable`, `OvernightIndexTenor`,
+  `OvernightIndexFutureNettingType`. A naive scan for fields named like
+  "index" picks these up, and their values (`true`, `0`, `2`, `1M`) are not
+  index names.
+- The peak and off-peak power indices nested in `OffPeakPowerIndexData`
+  (`ICE:UNP`, `ICE:DPN`, ...). A power index needs a delivery date the
+  convention does not state, so the codec would read the bare name as an
+  inflation index; writing that URI would invent an address. They are written to
+  the `off_peak_index` and `peak_index` columns as the corpus spells them, with
+  no URI.
+
+#### How it is generated, and how to regenerate it when ORE adds an index
+
+The codec is the only thing that turns a name into a URI, and it has one
+command-line entry point: the shell's offline `marketdata oresmd-index` verb.
+The verb is pure — no NATS connection, no session, no database — and its only
+job is the chain `ore_index_codec::read` then `oresmd_uri_codec::write_index`.
+It reads names one per line from `--in` (or stdin) and writes
+`ore_name<TAB>oresmd_uri` to `--out` (or stdout), sorted and de-duplicated. A
+name the codec rejects makes the command fail, names the name and its line
+number, and writes no output.
+
+1. `extract.py` writes `tmp/ore_conventions/conventions-canonical.tsv`.
+2. `generate_dq_seed.py --dump-index-names tmp/ore_conventions/index_names_to_resolve.txt`
+   writes the sorted canonical index set the seeded rows reference.
+3. `./compass.sh shell -f tools/ore_conventions/generate_oresmd_index_map.ores`
+   runs `marketdata oresmd-index --in … --out oresmd_index_map.tsv`.
+4. Regenerate the seed SQL and run the guard test.
+
+The whole shell run exits non-zero when the verb rejects a name, so a stale or
+hand-edited input cannot slip an empty URI into the table. The verb never writes
+an empty URI and never invents one.
+
+The guard test runs the same codecs over every committed row, so a codec change
+that moved a URI fails the suite instead of the seed.
 
 ### Publishing
 

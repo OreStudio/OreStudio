@@ -31,6 +31,12 @@ The mapping and the value normalisers mirror
 projects/ores.ore/core/src/domain/conventions_mapper.cpp, which is the
 authority for how an ORE convention reaches the store. A value the mapper would
 not accept makes this generator fail loudly instead of writing a bad row.
+
+Each seeded row's oresmd_uri comes from oresmd_index_map.tsv in this directory:
+the ORE index name the row carries, mapped to the oresmd fixing URI the codecs
+produce for it. The map is generated once from the codecs and checked by the
+marketdata codec tests, so it cannot drift from them silently. A name the map
+does not hold fails the run and is named.
 """
 
 import argparse
@@ -475,6 +481,95 @@ CUT_KINDS = {
 # Columns that are world data: the live table has no party_id.
 WORLD_KINDS = {"ibor_index", "overnight_index"}
 
+# --- The oresmd index map ---------------------------------------------------
+# Every ORE index name the canonical set references maps to the oresmd fixing
+# URI the two codecs produce for it:
+# ore_index_codec::read(name) then oresmd_uri_codec::write_index(index), both in
+# projects/ores.marketdata/core. The map is generated once from the codecs,
+# committed beside this script, and round-tripped by the marketdata codec tests,
+# so a codec change that moved a URI fails that test rather than the seed.
+
+DEFAULT_MAP = Path(__file__).resolve().parent / "oresmd_index_map.tsv"
+
+# The signature fields that hold an ORE index name, and the kinds whose id is
+# the index name itself. Together they are the canonical index reference set the
+# map must cover.
+INDEX_FIELDS = ("Index", "BMAIndex", "FlatIndex", "SpreadIndex", "IndexName",
+                "PayIndex", "ReceiveIndex", "LongIndex", "ShortIndex")
+INDEX_KINDS = ("IborIndex", "OvernightIndex", "ZeroInflationIndex", "SwapIndex")
+
+# The field a row's single oresmd_uri is written from, in priority order, when
+# the kind does not define the index in its id. The model doc string names the
+# same field. A kind absent here names no index, so its rows carry no URI: it is
+# a requirement, per the model doc string.
+PRIMARY_INDEX = {
+    "AverageOIS": ("Index",),
+    "BMABasisSwap": ("Index", "BMAIndex"),
+    "CommodityFuture": ("IndexName",),
+    "CrossCurrencyBasis": ("FlatIndex", "SpreadIndex"),
+    "CrossCurrencyFixFloat": ("Index",),
+    "Deposit": ("Index",),
+    "FRA": ("Index",),
+    "Future": ("Index",),
+    "InflationSwap": ("Index",),
+    "OIS": ("Index",),
+    "Swap": ("Index",),
+    "TenorBasisSwap": ("PayIndex", "ReceiveIndex", "LongIndex", "ShortIndex"),
+    "TenorBasisTwoSwap": ("LongIndex", "ShortIndex"),
+}
+
+
+def load_index_map(path):
+    """The committed ore_name -> oresmd URI table, or why it cannot be read."""
+    try:
+        lines = Path(path).read_text(encoding="utf-8").splitlines()
+    except OSError as exc:
+        raise GenError(f"cannot read the index map {path}: {exc}")
+    index_map = {}
+    for number, line in enumerate(lines, 1):
+        if not line.strip():
+            continue
+        parts = line.split("\t")
+        if len(parts) != 2 or not parts[0] or not parts[1]:
+            raise GenError(
+                f"{path}:{number}: not 'ore_name<TAB>oresmd_uri': {line!r}")
+        index_map[parts[0]] = parts[1]
+    return index_map
+
+
+def primary_index_name(kind, id_value, fields):
+    """The index name one row's oresmd_uri is written from, or None."""
+    if kind in INDEX_KINDS:
+        return id_value
+    for field in PRIMARY_INDEX.get(kind, ()):
+        if fields.get(field, "").strip():
+            return fields[field]
+    return None
+
+
+def referenced_index_names(kind, id_value, fields):
+    """Every index name one canonical row references."""
+    names = {fields[f] for f in INDEX_FIELDS if fields.get(f, "").strip()}
+    if kind in INDEX_KINDS:
+        names.add(id_value)
+    return names
+
+
+def check_index_references(rows, index_map):
+    """Fail on any index name a seeded row references but the map omits."""
+    missing = {}
+    for row in rows:
+        kind = row["kind"]
+        if kind not in KINDS:
+            continue
+        fields = parse_signature(row["signature"])
+        for name in referenced_index_names(kind, row["id"], fields):
+            if name not in index_map:
+                missing.setdefault(name, f"{kind} {row['id']}")
+    if missing:
+        detail = ", ".join(f"{n!r} ({w})" for n, w in sorted(missing.items()))
+        raise GenError("index names not in the map: " + detail)
+
 
 def parse_signature(signature):
     """Split a signature into {field: value}. The tool joins fields with ' ; '."""
@@ -635,7 +730,7 @@ def sql_literal(value):
     return "'" + value.replace("'", "''") + "'"
 
 
-def build_rows(rows, kind, spec):
+def build_rows(rows, kind, spec, index_map):
     """Return [(id, {column: sql literal})] for one kind."""
     stem, mapping = spec
     nested = NESTED.get(kind)
@@ -657,13 +752,40 @@ def build_rows(rows, kind, spec):
         if nested:
             for column, raw in nested(fields).items():
                 values[column] = sql_literal(raw)
+        name = primary_index_name(kind, row["id"], fields)
+        if name is not None:
+            if name not in index_map:
+                raise GenError(
+                    f"{kind} {row['id']}: index {name!r} is not in the index "
+                    f"map {DEFAULT_MAP.name}; regenerate it from the codec")
+            values["oresmd_uri"] = sql_literal(index_map[name])
         out.append((row["id"], values, stem))
     return out
 
 
-def generate(tsv_path):
+def all_referenced_index_names(rows):
+    """Every index name the seeded kinds reference, sorted and unique.
+
+    This is the canonical set the index map must cover, and the input the
+    shell's offline codec command turns into the map.
+    """
+    names = set()
+    for row in rows:
+        kind = row["kind"]
+        if kind not in KINDS:
+            continue
+        fields = parse_signature(row["signature"])
+        names |= referenced_index_names(kind, row["id"], fields)
+    return sorted(names)
+
+
+def read_canonical_rows(tsv_path):
     with open(tsv_path, newline="", encoding="utf-8") as fh:
-        rows = [r for r in csv.DictReader(fh, delimiter="\t") if r.get("kind")]
+        return [r for r in csv.DictReader(fh, delimiter="\t") if r.get("kind")]
+
+
+def generate(tsv_path, index_map_path=DEFAULT_MAP):
+    rows = read_canonical_rows(tsv_path)
     kinds = sorted({r["kind"] for r in rows})
     unknown = [k for k in kinds if k not in KINDS and k not in CUT_KINDS]
     if unknown:
@@ -671,9 +793,12 @@ def generate(tsv_path):
             "kinds with no mapping: " + ", ".join(unknown)
             + "; add them to KINDS or CUT_KINDS in generate_dq_seed.py")
 
+    index_map = load_index_map(index_map_path)
+    check_index_references(rows, index_map)
+
     seeded = [k for k in kinds if k in KINDS]
     seeded.sort()
-    per_kind = {k: build_rows(rows, k, KINDS[k]) for k in seeded}
+    per_kind = {k: build_rows(rows, k, KINDS[k], index_map) for k in seeded}
     return seeded, per_kind
 
 
@@ -706,9 +831,10 @@ HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*
 -- The single ore.conventions dataset carries the one canonical instrument
 -- convention set. One artefact table per convention kind holds the rows; the
 -- publish function ores_refdata_publish_conventions_from_dq_fn resolves each
--- artefact table to its live table by name. The oresmd_uri column is left null
--- on every row: no offline tool turns an ORE index name into an oresmd URI
--- today (see the README under tools/ore_conventions/).
+-- artefact table to its live table by name. Each row's oresmd_uri is the oresmd
+-- fixing URI of the ORE index the row names, read from
+-- tools/ore_conventions/oresmd_index_map.tsv; a kind that names no index (a
+-- requirement) carries null.
 
 """
 
@@ -823,19 +949,33 @@ begin
     return "".join(out)
 
 
-def main():
+def main(argv=None):
     default_tsv = "tmp/ore_conventions/conventions-canonical.tsv"
     default_out = ("projects/ores.sql/populate/refdata/"
                    "refdata_conventions_seed_populate.sql")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tsv", default=default_tsv,
                         help=f"canonical TSV (default {default_tsv})")
+    parser.add_argument("--map", default=str(DEFAULT_MAP),
+                        help=f"ore_name to oresmd URI map (default {DEFAULT_MAP})")
     parser.add_argument("--out", default=default_out,
                         help=f"SQL output (default {default_out})")
-    args = parser.parse_args()
+    parser.add_argument("--dump-index-names",
+                        help="write the sorted index names the canonical set "
+                             "references and exit; feed the file to "
+                             "'ores.shell marketdata oresmd-index' to rebuild "
+                             "the map")
+    args = parser.parse_args(argv)
+
+    if args.dump_index_names:
+        names = all_referenced_index_names(read_canonical_rows(args.tsv))
+        Path(args.dump_index_names).write_text(
+            "".join(f"{name}\n" for name in names), encoding="utf-8")
+        print(f"wrote {args.dump_index_names}: index names={len(names)}")
+        return 0
 
     try:
-        seeded, per_kind = generate(args.tsv)
+        seeded, per_kind = generate(args.tsv, args.map)
     except GenError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

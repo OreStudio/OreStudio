@@ -1,0 +1,12 @@
+# Regenerate the committed ORE index name to oresmd URI map.
+#
+# The input is the sorted canonical index set the seeded convention rows
+# reference, which generate_dq_seed.py writes:
+#
+#   ./projects/ores.codegen/venv/bin/python tools/ore_conventions/generate_dq_seed.py \
+#       --dump-index-names tmp/ore_conventions/index_names_to_resolve.txt
+#
+# Then run this script. The verb is offline: it needs no NATS connection, no
+# login and no database, so it works with the services down. It exits non-zero
+# and writes nothing if the codec rejects any name.
+marketdata oresmd-index --in tmp/ore_conventions/index_names_to_resolve.txt --out tools/ore_conventions/oresmd_index_map.tsv

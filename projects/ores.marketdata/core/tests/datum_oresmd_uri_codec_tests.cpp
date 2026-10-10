@@ -384,10 +384,21 @@ TEST_CASE("every_quote_uri_the_sql_seeds_hold_is_the_codecs_spelling", tags) {
             if (!uri.contains('?'))
                 continue;
             INFO(entry.path().filename().string() << ": " << uri);
-            const auto d = oresmd_uri_codec::read(uri);
-            CHECK(d);
-            if (!d)
-                UNSCOPED_INFO(d.error());
+            // A fixing URI is not a quote URI. The convention seed writes the
+            // index URI of a convention that names an index, and the index
+            // reader is the one that admits it; a quote URI still goes through
+            // the datum reader.
+            if (uri.contains("type=fixing")) {
+                const auto ix = oresmd_uri_codec::read_index(uri);
+                CHECK(ix);
+                if (!ix)
+                    UNSCOPED_INFO(ix.error());
+            } else {
+                const auto d = oresmd_uri_codec::read(uri);
+                CHECK(d);
+                if (!d)
+                    UNSCOPED_INFO(d.error());
+            }
             ++checked;
         }
     }

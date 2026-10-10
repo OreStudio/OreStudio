@@ -35,6 +35,7 @@
 #include "ores.shell/app/commands/marketdata/market_series_asset_class_commands.hpp"
 #include "ores.shell/app/commands/marketdata/market_series_commands.hpp"
 #include "ores.shell/app/commands/marketdata/observation_lineage_commands.hpp"
+#include "ores.shell/app/commands/marketdata/oresmd_index_commands.hpp"
 #include "ores.shell/app/commands/marketdata/series_classification_rule_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
@@ -198,6 +199,10 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
                             },
                             "Watch one oresmd on the republished tick stream until Ctrl-C",
                             {"<oresmd-uri> [--csv <path>]"});
+
+    // The codec utility is offline, so it hangs off the same menu but takes
+    // no session and answers with no service up.
+    oresmd_index_commands::register_verb(*marketdata_menu);
 
     ores::shell::app::insert_menu(root_menu, std::move(marketdata_menu));
 }

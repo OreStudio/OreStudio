@@ -2,13 +2,13 @@
 :ID: C4C3CBF2-92CC-4E8A-808E-78BA430544E0
 :END:
 #+title: ores.shell.marketdata
-#+description: The shell's marketdata adapter part. Holds the generated command units that project the market-data domain onto the REPL menu.
+#+description: The shell's marketdata adapter part. Holds the generated command units that project the market-data domain onto the REPL menu, plus one hand-written offline codec verb.
 #+type: ores.codegen.component
 #+component_kind: adapter
 #+level: cross
 #+filetags: :shell:repl:marketdata:component:
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-10-10
 #+name: shell.marketdata
 #+full_name: ores.shell.marketdata
 #+brief: Shell marketdata command units
@@ -22,6 +22,11 @@ rendering the reply as a table. The units are generated from the
 market-data models, so the commands a user can type and the operations the
 service offers cannot drift apart.
 
+=oresmd_index_commands= is hand-written, because no entity model declares a
+pure codec. It turns an ORE index name into an oresmd fixing URI through
+=ores.marketdata.core='s two codecs and needs no session, so the convention
+extractor can rebuild =oresmd_index_map.tsv= with the services down.
+
 * Diagram
 
 #+attr_html: :width 100% :alt ores.shell.marketdata component diagram
@@ -31,11 +36,14 @@ service offers cannot drift apart.
 * Inputs
 
 - A logged-in session's authenticated NATS connection.
+- An ORE index name and the two codecs, for the offline verb; it reads no
+  connection.
 
 * Outputs
 
-- Command units: =market_series_commands=, =observation_lineage_commands=
-  and =series_classification_rule_commands=.
+- Command units: =market_series_commands=, =observation_lineage_commands=,
+  =series_classification_rule_commands= and the hand-written
+  =oresmd_index_commands=.
 
 * Entry points
 
@@ -45,6 +53,8 @@ service offers cannot drift apart.
 
 - =ores.shell.api= for the command framework and request helpers.
 - =ores.marketdata.api= for the protocol types the units speak.
+- =ores.marketdata.core= for the ORE index and oresmd URI codecs the offline
+  verb runs.
 
 * See also
 

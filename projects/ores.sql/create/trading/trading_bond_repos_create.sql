@@ -41,7 +41,7 @@ create table if not exists "ores_trading_bond_repos_tbl" (
     "version" integer not null,
     "trade_activity_id" uuid not null,
     "repo_type" text not null,
-    "repo_rate" numeric(28, 10) null,
+    "repo_rate" numeric(38, 12) null,
     "repo_index" text null,
     "modified_by" text not null,
     "performed_by" text not null,

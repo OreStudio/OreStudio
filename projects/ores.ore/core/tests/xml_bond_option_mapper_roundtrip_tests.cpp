@@ -121,7 +121,7 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_trs", tags) {
     REQUIRE(r.trs.has_value());
     CHECK(r.trs->return_type == "Total");
     CHECK(r.trs->funding_leg_type == "Fixed");
-    CHECK(r.trs->funding_rate == Approx(-0.0055).epsilon(0.0001));
+    CHECK(r.trs->funding_rate->to_double() == Approx(-0.0055).epsilon(0.0001));
 
     // Reverse roundtrip
     const auto rt = bond_instrument_mapper::reverse_bond_trs(r);
@@ -134,7 +134,7 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_trs", tags) {
     REQUIRE(funding_leg.legDataType->FixedLegData.operator bool());
     REQUIRE(!funding_leg.legDataType->FixedLegData->Rates.Rate.empty());
     CHECK(static_cast<double>(funding_leg.legDataType->FixedLegData->Rates.Rate.front()) ==
-          Approx(r.trs->funding_rate).epsilon(0.0001));
+          Approx(r.trs->funding_rate->to_double()).epsilon(0.0001));
 
     BOOST_LOG_SEV(lg, info) << "BondTRS roundtrip passed. Funding type: "
                             << r.trs->funding_leg_type;

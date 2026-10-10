@@ -25,6 +25,7 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CSA_HPP
 #define ORES_REFDATA_API_DOMAIN_CSA_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -133,21 +134,21 @@ struct csa final {
      *
      * Not negative.
      */
-    std::optional<double> minimum_transfer_amount_pay;
+    std::optional<ores::utility::decimal::decimal> minimum_transfer_amount_pay;
 
     /**
      * @brief The smallest transfer the counterparty makes.
      *
      * Not negative.
      */
-    std::optional<double> minimum_transfer_amount_receive;
+    std::optional<ores::utility::decimal::decimal> minimum_transfer_amount_receive;
 
     /**
      * @brief The independent amount held.
      *
      * ORE's IndependentAmountHeld.
      */
-    std::optional<double> independent_amount_held;
+    std::optional<ores::utility::decimal::decimal> independent_amount_held;
 
     /**
      * @brief How the independent amount is expressed.
@@ -182,14 +183,14 @@ struct csa final {
      *
      * ORE's CollateralCompoundingSpreadReceive.
      */
-    std::optional<double> collateral_compounding_spread_receive;
+    std::optional<ores::utility::decimal::decimal> collateral_compounding_spread_receive;
 
     /**
      * @brief The spread on collateral the firm posts.
      *
      * ORE's CollateralCompoundingSpreadPay.
      */
-    std::optional<double> collateral_compounding_spread_pay;
+    std::optional<ores::utility::decimal::decimal> collateral_compounding_spread_pay;
 
     /**
      * @brief Whether initial margin applies.

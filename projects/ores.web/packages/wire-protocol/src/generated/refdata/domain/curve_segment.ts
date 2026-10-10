@@ -58,7 +58,7 @@ export interface CurveSegment {
     ibor_index: string | null;
     rfr_curve: string | null;
     rfr_index: string | null;
-    spread: number | null;
+    spread: string | null;
     base_curve: string | null;
     base_curve_currency: string | null;
     numerator_curve: string | null;

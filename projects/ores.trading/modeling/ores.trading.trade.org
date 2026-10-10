@@ -138,6 +138,48 @@ How the trade reached the firm's books: =manual=, =stp=, =ecn= or
 ores::trading::domain::entry_channel::manual
 #+end_src
 
+** external_version
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 0
+:END:
+
+The version the customer's records match. It moves when the economics the
+trade holds change, and never for an internal reason: a null amend, an
+operational authorisation or any other change the customer did not agree to
+leaves it alone.
+
+It is not the =version= every entity carries. That one is the audit trail and
+moves on every recorded change; this one is the commercial record. See
+[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]].
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** economic_digest
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      true
+:END:
+
+The SHA-256 of the economics the trade holds, folded from its own economic
+fields and from every component's, in hex. Stored rather than recomputed on
+read, so a change is one comparison rather than a walk of the whole shape.
+
+A null amend leaves it unchanged, which is what makes the external version
+rule enforceable at all. A change to a field the customer did not agree to
+leaves it unchanged too, because the digest covers declared economic fields
+and nothing else. See
+[[id:B9DAC38A-BEB1-4658-87BC-DFF901033E84][Exact Numbers and Economic Change]].
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
 * Foreign keys
 
 ** party_id

@@ -50,6 +50,8 @@ domain::trade generate_synthetic_trade(utility::generation::generation_context& 
     r.counterparty_scope = ores::trading::domain::counterparty_scope::intra_entity;
     r.booking_nature = ores::trading::domain::booking_nature::test;
     r.entry_channel = ores::trading::domain::entry_channel::manual;
+    r.external_version = 0;
+    r.economic_digest = std::string("");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

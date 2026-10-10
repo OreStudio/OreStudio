@@ -56,11 +56,11 @@ fx_accumulator_instrument make_instrument(database_helper& h) {
     r.identity.trade_type_code = "FxAccumulator";
     r.currency = "JPY";
     r.fixing_amount = ores::utility::decimal::decimal::from_string("350000").value();
-    r.strike = 122.0;
+    r.strike = ores::utility::decimal::decimal::from_string("122.0").value();
     r.underlying_code = "TR20H-EUR-JPY";
     r.long_short = "Long";
     r.start_date = ores::platform::time::datetime::from_iso8601_date("2026-01-12");
-    r.knock_out_barrier = 126.0;
+    r.knock_out_barrier = ores::utility::decimal::decimal::from_string("126.0").value();
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
     r.audit.change_reason_code = "system.external_data_import";
@@ -89,12 +89,12 @@ TEST_CASE("fx_accumulator_instrument_write_and_read_latest", tags) {
     CHECK(read[0].identity.trade_type_code == "FxAccumulator");
     CHECK(read[0].currency == "JPY");
     CHECK(read[0].fixing_amount.to_double() == 350000.0);
-    CHECK(read[0].strike == 122.0);
+    CHECK(read[0].strike == ores::utility::decimal::decimal::from_string("122.0").value());
     CHECK(read[0].underlying_code == "TR20H-EUR-JPY");
     CHECK(read[0].long_short == "Long");
     CHECK(read[0].start_date == ores::platform::time::datetime::from_iso8601_date("2026-01-12"));
     REQUIRE(read[0].knock_out_barrier.has_value());
-    CHECK(*read[0].knock_out_barrier == 126.0);
+    CHECK(*read[0].knock_out_barrier == ores::utility::decimal::decimal::from_string("126.0").value());
     BOOST_LOG_SEV(lg, debug) << "Read FX accumulator instrument: " << read[0];
 }
 

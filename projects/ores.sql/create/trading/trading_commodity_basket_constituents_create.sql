@@ -47,7 +47,7 @@ create table if not exists "ores_trading_commodity_basket_constituents_tbl" (
     "version" integer not null,
     "trade_activity_id" uuid not null,
     "underlying_code" text not null,
-    "weight" numeric(28, 10) null,
+    "weight" double precision null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

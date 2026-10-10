@@ -29,7 +29,7 @@ block beside them is optional.
 
 ** amount
 :PROPERTIES:
-:cpp_type: double
+:cpp_type:      ores::utility::decimal::decimal
 :END:
 
 The premium amount.

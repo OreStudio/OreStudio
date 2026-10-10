@@ -49,6 +49,9 @@ domain::bond_forward generate_synthetic_bond_forward(utility::generation::genera
     r.amount = ores::utility::decimal::decimal::from_string(
                    std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                    .value();
+    r.lock_rate = ores::utility::decimal::decimal::from_string(
+                      std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                      .value();
     r.dv01 = ores::utility::decimal::decimal::from_string(
                  std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                  .value();

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.api/generators/csa_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>

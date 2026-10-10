@@ -46,7 +46,7 @@ render_credit_instrument_fields(const domain::credit_instrument& v) {
     fields.push_back({.name = "Reference Entity", .value = v.reference_entity});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Notional", .value = v.notional.to_string()});
-    fields.push_back({.name = "Spread", .value = std::to_string(v.spread)});
+    fields.push_back({.name = "Spread", .value = v.spread.to_string()});
     fields.push_back({.name = "Recovery Rate", .value = std::to_string(v.recovery_rate)});
     fields.push_back({.name = "Tenor", .value = v.tenor});
     fields.push_back({.name = "Start Date",
@@ -68,7 +68,7 @@ render_credit_instrument_fields(const domain::credit_instrument& v) {
                       ores::platform::time::datetime::to_iso8601_date(*v.option_expiry_date) :
                       std::string{}});
     fields.push_back({.name = "Option Strike",
-                      .value = v.option_strike ? std::to_string(*v.option_strike) : std::string{}});
+                      .value = v.option_strike ? v.option_strike->to_string() : std::string{}});
     fields.push_back({.name = "Linked Asset Code", .value = v.linked_asset_code});
     fields.push_back(
         {.name = "Tranche Attachment",

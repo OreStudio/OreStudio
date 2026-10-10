@@ -1,0 +1,51 @@
+# The 37 generated ORE leaf setters that the lexical-form patch rewrites.
+#
+# Measured against domain.cpp, not inferred: 42 setters call a floating
+# setter (35 x set_float, 7 x set_double), and the five in the difference
+# are the leaves that are a plain `typedef double` rather than an
+# `xsd::base<T>` binding, so they carry no lexical form to keep. Their names
+# are positiveDecimal, correlationValue, recoveryRate, non_negative_decimal
+# and offPeakPowerIndexDataType_OffPeakHours_t; all five are continuous
+# quantities and no ores.trading model names any of them.
+#
+# Before the patch these 37 discarded the document's text. After it they
+# stash it, and exact_decimal reads it. The list is also the anchor count the
+# reapply script checks: a regeneration that changes it is a regeneration the
+# patch must be re-derived against.
+_set_stFreeStyleNumber
+_set_legData_capfloor_Notionals_t_Notional_t
+_set_zeroInflationIndexType_RebasingEvents_t_Event_t
+_set_shiftSizeEntry
+_set_optionData_ExerciseFees_t_ExerciseFee_t
+_set__CashflowData_t_Cashflow_t_Amount_t
+_set__FixedLegData_t_Rates_t_Rate_t
+_set__EquityMarginLegData_t_Rates_t_Rate_t
+_set_pricesType_Price_t
+_set_quantitiesType_Quantity_t
+_set_capFloorData_Caps_t_Cap_t
+_set_capFloorData_Floors_t_Floor_t
+_set_legData_Notionals_t_Notional_t
+_set_cbCallData_Prices_t_Price_t
+_set_cbDividendProtectionData_Thresholds_t_Threshold_t
+_set_callableBondCallData_Prices_t_Price_t
+_set_flexiSwapData_LowerNotionalBounds_t_Notional_t
+_set_tranche_Notionals_t_Notional_t
+_set_tarfData2_Strikes_t_Strike_t
+_set_swaptionvolatility_Shifts_t_Shift_t
+_set_yieldvolatility_Shifts_t_Shift_t
+_set_floatWithAttribute
+_set_tradeLevelFixings_Fixing_t
+_set__RangeAccrualLegData_t_Coupons_t_Coupon_t
+_set__RangeAccrualLegData_t_UpperBounds_t_UpperBound_t
+_set__RangeAccrualLegData_t_LowerBounds_t_LowerBound_t
+_set__CPILegData_t_Rates_t_Rate_t
+_set__ZeroCouponFixedLegData_t_Rates_t_Rate_t
+_set_cbCallData_TriggerRatios_t_TriggerRatio_t
+_set_cbConversionData_ConversionRatios_t_ConversionRatio_t
+_set_cbConversionData_FixedAmountConversion_t_Amounts_t_Amount_t
+_set_cbConversionResetData_Thresholds_t_Threshold_t
+_set_cbConversionResetData_Gearings_t_Gearing_t
+_set_loadFactorType
+_set_cbContingentConversionData_Barriers_t_Barrier_t
+_set_cbConversionResetData_Floors_t_Floor_t
+_set_cbConversionResetData_GlobalFloors_t_GloobalFloor_t

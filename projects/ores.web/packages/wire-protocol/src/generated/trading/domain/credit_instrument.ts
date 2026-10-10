@@ -37,7 +37,7 @@ export interface CreditInstrument {
     reference_entity: string;
     currency: string;
     notional: string;
-    spread: number;
+    spread: string;
     recovery_rate: number;
     tenor: string;
     start_date: string;
@@ -51,7 +51,7 @@ export interface CreditInstrument {
     description: string;
     option_type: string;
     option_expiry_date: string | null;
-    option_strike: number | null;
+    option_strike: string | null;
     linked_asset_code: string;
     tranche_attachment: number | null;
     tranche_detachment: number | null;

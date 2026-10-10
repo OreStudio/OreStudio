@@ -132,7 +132,7 @@ std::string("USD")
 
 ** notional
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :END:
@@ -145,21 +145,21 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 
 ** spread
 :PROPERTIES:
-:type:          numeric(28, 10)
-:cpp_type:      double
+:type:          numeric(38, 12)
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
+:default_value: ores::utility::decimal::decimal{}
 :END:
 
 Credit spread in basis points (e.g. 100.0 for 100 bps).
 
 #+begin_src cpp :name generator
-100.0
+ ores::utility::decimal::decimal::from_string("100.0").value()
 #+end_src
 
 ** recovery_rate
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          double precision
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
@@ -320,8 +320,8 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 
 ** option_strike
 :PROPERTIES:
-:type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -338,7 +338,7 @@ Reference asset code for CreditLinkedSwap. Empty otherwise.
 
 ** tranche_attachment
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<double>
 :nullable: true
 :END:
@@ -347,7 +347,7 @@ CBO tranche attachment point as decimal. Null when not set.
 
 ** tranche_detachment
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<double>
 :nullable: true
 :END:

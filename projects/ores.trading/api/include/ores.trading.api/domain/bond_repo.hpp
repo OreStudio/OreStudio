@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_REPO_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_REPO_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -84,7 +85,7 @@ struct bond_repo final {
     /**
      * @brief Rate of the repo leg, when the leg is fixed.
      */
-    double repo_rate = 0.0;
+    std::optional<ores::utility::decimal::decimal> repo_rate = std::nullopt;
 
     /**
      * @brief Index code of the repo leg, when the leg is floating.

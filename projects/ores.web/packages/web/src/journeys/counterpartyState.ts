@@ -767,6 +767,11 @@ function textOrNull(value: string): string | null {
     return value.trim() === '' ? null : value;
 }
 
+function decimalOrNull(value: string): string | null {
+    const trimmed = value.trim();
+    return /^[+-]?(\d+\.?\d*|\.\d+)$/.test(trimmed) ? trimmed : null;
+}
+
 function numberOrNull(value: string): number | null {
     const trimmed = value.trim();
     if (trimmed === '') {
@@ -896,15 +901,15 @@ export function compositeRequest(
             index_name: textOrNull(set.csa.indexName),
             threshold_pay: numberOrNull(set.csa.thresholdPay),
             threshold_receive: numberOrNull(set.csa.thresholdReceive),
-            minimum_transfer_amount_pay: numberOrNull(set.csa.minimumTransferAmountPay),
-            minimum_transfer_amount_receive: numberOrNull(set.csa.minimumTransferAmountReceive),
-            independent_amount_held: numberOrNull(set.csa.independentAmount),
+            minimum_transfer_amount_pay: decimalOrNull(set.csa.minimumTransferAmountPay),
+            minimum_transfer_amount_receive: decimalOrNull(set.csa.minimumTransferAmountReceive),
+            independent_amount_held: decimalOrNull(set.csa.independentAmount),
             independent_amount_type: textOrNull(set.csa.independentAmountType),
             call_frequency: textOrNull(set.csa.callFrequency),
             post_frequency: textOrNull(set.csa.postFrequency),
             margin_period_of_risk: textOrNull(set.csa.marginPeriodOfRisk),
-            collateral_compounding_spread_receive: numberOrNull(set.csa.spreadReceive),
-            collateral_compounding_spread_pay: numberOrNull(set.csa.spreadPay),
+            collateral_compounding_spread_receive: decimalOrNull(set.csa.spreadReceive),
+            collateral_compounding_spread_pay: decimalOrNull(set.csa.spreadPay),
             apply_initial_margin: set.csa.applyInitialMargin,
             initial_margin_type: textOrNull(set.csa.applyInitialMargin ? 'Bilateral' : ''),
             calculate_im_amount: set.csa.calculateImAmount,

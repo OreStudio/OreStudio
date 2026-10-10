@@ -32,6 +32,7 @@ set(files
     "market_fx_quote_convention_checker_tests.cpp"
     "market_market_data_parser_tests.cpp"
     "market_market_data_roundtrip_tests.cpp"
+    "ore_boundary_decimal_tests.cpp"
     "ore_run_document_database_roundtrip_tests.cpp"
     "party_scope_tests.cpp"
     "planner_import_planner_tests.cpp"

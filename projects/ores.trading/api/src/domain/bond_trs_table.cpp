@@ -52,7 +52,7 @@ std::string convert_to_table(const std::vector<bond_trs>& v) {
 
     for ([[maybe_unused]] const auto& bts : v) {
         table << bts.return_type << opt_str(bts.payer) << opt_str(bts.price_type)
-              << opt_str(bts.initial_price) << bts.funding_leg_type << bts.funding_rate
+              << opt_str(bts.initial_price) << bts.funding_leg_type << opt_str(bts.funding_rate)
               << bts.funding_index << bts.modified_by << bts.version << fort::endr;
     }
     return table.to_string();

@@ -343,7 +343,7 @@ TEST_CASE("equity_option_position_forward_carries_every_entry", tags) {
     CHECK(r.underlyings[1].strike.to_string() == "3400");
 
     REQUIRE(r.underlyings[0].weight.has_value());
-    CHECK(r.underlyings[0].weight->to_string() == "0.5");
+    CHECK(*r.underlyings[0].weight == 0.5);
 
     BOOST_LOG_SEV(lg, info) << "EquityOptionPosition forward passed. Entries: "
                             << r.underlyings.size();

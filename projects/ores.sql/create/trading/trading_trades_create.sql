@@ -50,6 +50,8 @@ create table if not exists "ores_trading_trades_tbl" (
     "counterparty_scope" text not null,
     "booking_nature" text not null,
     "entry_channel" text not null,
+    "external_version" integer not null,
+    "economic_digest" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

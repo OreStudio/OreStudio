@@ -28,7 +28,9 @@
 #include "ores.dq.api/domain/csa_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/csa_entity.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <optional>
 #include <vector>
 
 namespace ores::dq::repository {
@@ -48,15 +50,38 @@ domain::csa csa_mapper::map(const csa_entity& v) {
     r.index_name = v.index_name;
     r.threshold_pay = v.threshold_pay;
     r.threshold_receive = v.threshold_receive;
-    r.minimum_transfer_amount_pay = v.minimum_transfer_amount_pay;
-    r.minimum_transfer_amount_receive = v.minimum_transfer_amount_receive;
-    r.independent_amount_held = v.independent_amount_held;
+    r.minimum_transfer_amount_pay = v.minimum_transfer_amount_pay.has_value() ?
+                                        std::optional(ores::utility::decimal::decimal::from_string(
+                                                          *v.minimum_transfer_amount_pay)
+                                                          .value()) :
+                                        std::nullopt;
+    r.minimum_transfer_amount_receive =
+        v.minimum_transfer_amount_receive.has_value() ?
+            std::optional(
+                ores::utility::decimal::decimal::from_string(*v.minimum_transfer_amount_receive)
+                    .value()) :
+            std::nullopt;
+    r.independent_amount_held =
+        v.independent_amount_held.has_value() ?
+            std::optional(
+                ores::utility::decimal::decimal::from_string(*v.independent_amount_held).value()) :
+            std::nullopt;
     r.independent_amount_type = v.independent_amount_type;
     r.call_frequency = v.call_frequency;
     r.post_frequency = v.post_frequency;
     r.margin_period_of_risk = v.margin_period_of_risk;
-    r.collateral_compounding_spread_receive = v.collateral_compounding_spread_receive;
-    r.collateral_compounding_spread_pay = v.collateral_compounding_spread_pay;
+    r.collateral_compounding_spread_receive =
+        v.collateral_compounding_spread_receive.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(
+                              *v.collateral_compounding_spread_receive)
+                              .value()) :
+            std::nullopt;
+    r.collateral_compounding_spread_pay =
+        v.collateral_compounding_spread_pay.has_value() ?
+            std::optional(
+                ores::utility::decimal::decimal::from_string(*v.collateral_compounding_spread_pay)
+                    .value()) :
+            std::nullopt;
     r.apply_initial_margin = v.apply_initial_margin;
     r.initial_margin_type = v.initial_margin_type;
     r.calculate_im_amount = v.calculate_im_amount;
@@ -80,15 +105,28 @@ csa_entity csa_mapper::map(const domain::csa& v) {
     r.index_name = v.index_name;
     r.threshold_pay = v.threshold_pay;
     r.threshold_receive = v.threshold_receive;
-    r.minimum_transfer_amount_pay = v.minimum_transfer_amount_pay;
-    r.minimum_transfer_amount_receive = v.minimum_transfer_amount_receive;
-    r.independent_amount_held = v.independent_amount_held;
+    r.minimum_transfer_amount_pay = v.minimum_transfer_amount_pay.has_value() ?
+                                        std::optional(v.minimum_transfer_amount_pay->to_string()) :
+                                        std::nullopt;
+    r.minimum_transfer_amount_receive =
+        v.minimum_transfer_amount_receive.has_value() ?
+            std::optional(v.minimum_transfer_amount_receive->to_string()) :
+            std::nullopt;
+    r.independent_amount_held = v.independent_amount_held.has_value() ?
+                                    std::optional(v.independent_amount_held->to_string()) :
+                                    std::nullopt;
     r.independent_amount_type = v.independent_amount_type;
     r.call_frequency = v.call_frequency;
     r.post_frequency = v.post_frequency;
     r.margin_period_of_risk = v.margin_period_of_risk;
-    r.collateral_compounding_spread_receive = v.collateral_compounding_spread_receive;
-    r.collateral_compounding_spread_pay = v.collateral_compounding_spread_pay;
+    r.collateral_compounding_spread_receive =
+        v.collateral_compounding_spread_receive.has_value() ?
+            std::optional(v.collateral_compounding_spread_receive->to_string()) :
+            std::nullopt;
+    r.collateral_compounding_spread_pay =
+        v.collateral_compounding_spread_pay.has_value() ?
+            std::optional(v.collateral_compounding_spread_pay->to_string()) :
+            std::nullopt;
     r.apply_initial_margin = v.apply_initial_margin;
     r.initial_margin_type = v.initial_margin_type;
     r.calculate_im_amount = v.calculate_im_amount;

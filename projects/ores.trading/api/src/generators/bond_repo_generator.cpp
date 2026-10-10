@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/bond_repo_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -46,7 +47,7 @@ domain::bond_repo generate_synthetic_bond_repo(utility::generation::generation_c
     r.trade_id = ctx.generate_uuid();
     r.trade_activity_id = ctx.generate_uuid();
     r.repo_type = std::string("Fixed");
-    r.repo_rate = 0.045;
+    r.repo_rate = ores::utility::decimal::decimal::from_string("0.045").value();
     r.repo_index = std::string("SOFR");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

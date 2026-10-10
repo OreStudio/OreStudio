@@ -51,7 +51,7 @@ struct bond_forward_entity {
     std::optional<std::string> forward_settlement_date;
     std::optional<std::string> settlement;
     std::optional<std::string> amount;
-    std::optional<double> lock_rate;
+    std::optional<std::string> lock_rate;
     std::optional<std::string> dv01;
     std::optional<std::string> lock_rate_day_counter;
     std::optional<std::string> settlement_dirty;

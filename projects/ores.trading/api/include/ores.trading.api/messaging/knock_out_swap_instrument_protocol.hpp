@@ -43,7 +43,7 @@ struct knock_out_swap_instrument_write {
     boost::uuids::uuid trade_id;
     boost::uuids::uuid trade_activity_id;
     std::chrono::year_month_day barrier_start_date;
-    double barrier_level;
+    ores::utility::decimal::decimal barrier_level;
     std::string barrier_type;
 };
 

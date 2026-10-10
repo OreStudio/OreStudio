@@ -88,7 +88,7 @@ TEST_CASE("credit_mapper_roundtrip_cds", tags) {
     CHECK(!r.reference_entity.empty());
     CHECK(!r.currency.empty());
     CHECK(r.notional.to_double() > 0.0);
-    CHECK(r.spread > 0.0);
+    CHECK(r.spread > ores::utility::decimal::decimal{});
     CHECK(r.start_date.ok());
     CHECK(r.maturity_date.ok());
 

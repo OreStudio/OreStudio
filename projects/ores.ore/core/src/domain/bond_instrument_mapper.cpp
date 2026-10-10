@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/bond_instrument_mapper.hpp"
+#include "ores.ore.core/domain/ore_boundary_decimal.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <charconv>
@@ -167,18 +168,8 @@ auto& lg() {
     return instance;
 }
 
-// The schema states the future's price and lag fields as strings. A
-// value the parser cannot read leaves the column at its default rather
+// A value the parser cannot read leaves the column at its default rather
 // than failing the whole import.
-double number_of(const std::string& text, double fallback) {
-    try {
-        return std::stod(text);
-    } catch (const std::exception&) {
-        BOOST_LOG_SEV(lg(), warn) << "Unreadable number '" << text << "', using " << fallback;
-        return fallback;
-    }
-}
-
 int count_of(const std::string& text, int fallback) {
     try {
         return std::stoi(text);
@@ -455,9 +446,9 @@ bond_forward_settlement map_forward_settlement(const settlementData& s) {
     if (s.Settlement)
         result.settlement = std::string(*s.Settlement);
     if (s.Amount)
-        result.amount = static_cast<double>(*s.Amount);
+        result.amount = exact_decimal(*s.Amount);
     if (s.LockRate)
-        result.lock_rate = static_cast<double>(*s.LockRate);
+        result.lock_rate = exact_decimal(*s.LockRate);
     if (s.dv01)
         result.dv01 = static_cast<double>(*s.dv01);
     if (s.LockRateDayCounter)
@@ -473,9 +464,9 @@ settlementData reverse_forward_settlement(const bond_forward_settlement& row) {
     set_present_text(result.ForwardSettlementDate, row.forward_settlement_date);
     set_present_text(result.Settlement, row.settlement);
     if (row.amount)
-        result.Amount = static_cast<float>(*row.amount);
+        result.Amount = static_cast<float>(row.amount->to_double());
     if (row.lock_rate)
-        result.LockRate = static_cast<float>(*row.lock_rate);
+        result.LockRate = static_cast<float>(row.lock_rate->to_double());
     if (row.dv01)
         result.dv01 = static_cast<float>(*row.dv01);
     set_present_text(result.LockRateDayCounter, row.lock_rate_day_counter);
@@ -811,7 +802,7 @@ Settlement reverse_option_settlement(const bond_option_settlement& row) {
 
 bond_option_premium map_option_premium(const premiumData_Premium_t& p) {
     bond_option_premium result;
-    result.amount = static_cast<double>(p.Amount);
+    result.amount = exact_decimal(p.Amount);
     result.currency = p.Currency;
     result.pay_date = p.PayDate;
     if (p.SettlementData)
@@ -821,7 +812,7 @@ bond_option_premium map_option_premium(const premiumData_Premium_t& p) {
 
 premiumData_Premium_t reverse_option_premium(const bond_option_premium& row) {
     premiumData_Premium_t result;
-    result.Amount = static_cast<float>(row.amount);
+    result.Amount = static_cast<float>(row.amount.to_double());
     set_text(result.Currency, row.currency);
     set_text(result.PayDate, row.pay_date);
     if (row.settlement)
@@ -832,7 +823,7 @@ premiumData_Premium_t reverse_option_premium(const bond_option_premium& row) {
 
 bond_option_exercise_fee map_option_exercise_fee(const optionData_ExerciseFees_t_ExerciseFee_t& f) {
     bond_option_exercise_fee result;
-    result.amount = static_cast<double>(f);
+    result.amount = exact_decimal(f);
     if (f.type)
         result.type = std::string(*f.type);
     if (f.startDate)
@@ -845,7 +836,7 @@ bond_option_exercise_fee map_option_exercise_fee(const optionData_ExerciseFees_t
 optionData_ExerciseFees_t_ExerciseFee_t
 reverse_option_exercise_fee(const bond_option_exercise_fee& row) {
     optionData_ExerciseFees_t_ExerciseFee_t result;
-    static_cast<float&>(result) = static_cast<float>(row.amount);
+    static_cast<float&>(result) = static_cast<float>(row.amount.to_double());
     if (row.type)
         result.type = *row.type;
     if (row.start_date)
@@ -859,7 +850,7 @@ bond_option_exercise map_option_exercise(const optionExerciseData& e) {
     bond_option_exercise result;
     result.date = e.Date;
     if (e.Price)
-        result.price = *e.Price;
+        result.price = exact_decimal(*e.Price);
     return result;
 }
 
@@ -867,7 +858,7 @@ optionExerciseData reverse_option_exercise(const bond_option_exercise& row) {
     optionExerciseData result;
     set_text(result.Date, row.date);
     if (row.price)
-        result.Price = *row.price;
+        result.Price = static_cast<float>(row.price->to_double());
     return result;
 }
 
@@ -1022,12 +1013,12 @@ void reverse_option_data(const bond_option_data& row, optionData& od) {
 bond_strike_data map_strike_data(const _StrikeData_t& sd) {
     bond_strike_data result;
     if (sd.StrikePrice) {
-        result.price_value = static_cast<double>(sd.StrikePrice->Value);
+        result.price_value = exact_decimal(sd.StrikePrice->Value);
         if (sd.StrikePrice->Currency)
             result.price_currency = std::string(*sd.StrikePrice->Currency);
     }
     if (sd.StrikeYield) {
-        result.yield_value = static_cast<double>(sd.StrikeYield->Yield);
+        result.yield_value = exact_decimal(sd.StrikeYield->Yield);
         if (sd.StrikeYield->Compounding)
             result.yield_compounding = to_string(*sd.StrikeYield->Compounding);
     }
@@ -1043,7 +1034,7 @@ _StrikeData_t reverse_strike_data(const bond_strike_data& row) {
     if (row.price_value || row.price_currency) {
         strikePriceData price;
         if (row.price_value)
-            price.Value = static_cast<float>(*row.price_value);
+            price.Value = static_cast<float>(row.price_value->to_double());
         if (row.price_currency)
             price.Currency = *row.price_currency;
         result.StrikePrice = std::move(price);
@@ -1051,7 +1042,7 @@ _StrikeData_t reverse_strike_data(const bond_strike_data& row) {
     if (row.yield_value || row.yield_compounding) {
         strikeYieldData yield;
         if (row.yield_value)
-            yield.Yield = static_cast<float>(*row.yield_value);
+            yield.Yield = static_cast<float>(row.yield_value->to_double());
         if (row.yield_compounding)
             yield.Compounding =
                 parse_code(*row.yield_compounding, compounding_count, compounding::Compounded);
@@ -1147,9 +1138,7 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
     if (!bd.LegData.empty()) {
         const auto& ld = bd.LegData.front();
         if (ld.Notionals && !ld.Notionals->Notional.empty())
-            issue.face_value = ores::utility::decimal::decimal::from_double(
-                                   static_cast<double>(ld.Notionals->Notional.front()))
-                                   .value();
+            issue.face_value = exact_decimal(ld.Notionals->Notional.front());
     }
 }
 
@@ -1372,8 +1361,7 @@ bond_instrument_data bond_instrument_mapper::forward_bond_option(const trade& t,
         option.option_type = std::string(*d.OptionData.OptionType);
     if (d.strikeGroup.Strike)
         option.option_strike =
-            ores::utility::decimal::decimal::from_double(number_of(*d.strikeGroup.Strike, 0.0))
-                .value();
+            to_optional_decimal(*d.strikeGroup.Strike).value_or(ores::utility::decimal::decimal{});
     stamp_audit(option);
     result.option = option;
 
@@ -1421,7 +1409,7 @@ bond_instrument_data bond_instrument_mapper::forward_bond_trs(const trade& t,
             trs.funding_leg_type = "Fixed";
             if (!ld.legDataType->FixedLegData->Rates.Rate.empty())
                 trs.funding_rate =
-                    static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.front());
+                    exact_decimal(ld.legDataType->FixedLegData->Rates.Rate.front());
         }
     }
     stamp_audit(trs);
@@ -1430,7 +1418,7 @@ bond_instrument_data bond_instrument_mapper::forward_bond_trs(const trade& t,
     result.trs_price_type = d.TotalReturnData.PriceType;
     result.trs_payer = std::string(d.TotalReturnData.Payer);
     if (d.TotalReturnData.InitialPrice)
-        result.trs_initial_price = static_cast<double>(*d.TotalReturnData.InitialPrice);
+        result.trs_initial_price = exact_decimal(*d.TotalReturnData.InitialPrice);
     result.trs_schedule = map_schedule(d.TotalReturnData.ScheduleData);
     return result;
 }
@@ -1453,7 +1441,7 @@ bond_instrument_data bond_instrument_mapper::forward_bond_repo(const trade& t,
     if (d.RepoData.LegData.legDataType) {
         const auto& rl = d.RepoData.LegData.legDataType;
         if (rl->FixedLegData && !rl->FixedLegData->Rates.Rate.empty())
-            repo.repo_rate = static_cast<double>(rl->FixedLegData->Rates.Rate.front());
+            repo.repo_rate = exact_decimal(rl->FixedLegData->Rates.Rate.front());
         else if (rl->FloatingLegData)
             repo.repo_index = std::string(rl->FloatingLegData->Index);
     }
@@ -1478,7 +1466,7 @@ bond_instrument_data bond_instrument_mapper::forward_bond_future(const trade& t,
     bond_future future;
     future.contract_name = d.ContractName;
     future.contract_notional =
-        ores::utility::decimal::decimal::from_double(number_of(d.ContractNotional, 0.0)).value();
+        to_optional_decimal(d.ContractNotional).value_or(ores::utility::decimal::decimal{});
     future.long_short = d.LongShort;
     if (d.ApplyConversionFactor)
         future.apply_conversion_factor = *d.ApplyConversionFactor;
@@ -1638,10 +1626,10 @@ trade bond_instrument_mapper::reverse_bond_trs(const bond_instrument_data& data)
     if (fixed) {
         if (leg_type_from_row)
             d.FundingData.LegData.LegType = legType::Fixed;
-        if (data.trs && data.trs->funding_rate != 0.0) {
+        if (data.trs && data.trs->funding_rate != ores::utility::decimal::decimal{}) {
             _FixedLegData_t fld;
             _FixedLegData_t_Rates_t_Rate_t rate;
-            static_cast<float&>(rate) = static_cast<float>(data.trs->funding_rate);
+            static_cast<float&>(rate) = static_cast<float>(data.trs->funding_rate->to_double());
             fld.Rates.Rate.push_back(rate);
             legDataType_group_t ldt;
             ldt.FixedLegData = std::move(fld);
@@ -1659,7 +1647,7 @@ trade bond_instrument_mapper::reverse_bond_trs(const bond_instrument_data& data)
     if (data.trs_payer)
         set_text(d.TotalReturnData.Payer, *data.trs_payer);
     if (data.trs_initial_price)
-        d.TotalReturnData.InitialPrice = static_cast<float>(*data.trs_initial_price);
+        d.TotalReturnData.InitialPrice = static_cast<float>(data.trs_initial_price->to_double());
     d.TotalReturnData.ScheduleData = reverse_schedule(data.trs_schedule);
     t.BondTRSData = std::move(d);
     return t;
@@ -1681,10 +1669,10 @@ trade bond_instrument_mapper::reverse_bond_repo(const bond_instrument_data& data
         legDataType_group_t ldt;
         ldt.FloatingLegData = std::move(fld);
         d.RepoData.LegData.legDataType = std::move(ldt);
-    } else if (data.repo && data.repo->repo_rate != 0.0) {
+    } else if (data.repo && data.repo->repo_rate != ores::utility::decimal::decimal{}) {
         _FixedLegData_t fld;
         _FixedLegData_t_Rates_t_Rate_t rate;
-        static_cast<float&>(rate) = static_cast<float>(data.repo->repo_rate);
+        static_cast<float&>(rate) = static_cast<float>(data.repo->repo_rate->to_double());
         fld.Rates.Rate.push_back(rate);
         legDataType_group_t ldt;
         ldt.FixedLegData = std::move(fld);

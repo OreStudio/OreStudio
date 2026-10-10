@@ -29,9 +29,9 @@
  * writes. Renaming them breaks the wire silently, so they are not renamed.
  */
 export interface BondStrikeData {
-    price_value: number | null;
+    price_value: string | null;
     price_currency: string | null;
-    yield_value: number | null;
+    yield_value: string | null;
     yield_compounding: string | null;
     bare_value: number | null;
     bare_currency: string | null;

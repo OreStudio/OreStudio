@@ -95,7 +95,7 @@ std::string("US Treasury")
 
 ** face_value
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          numeric(38, 12)
 :cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable:      true
 :END:
@@ -277,9 +277,16 @@ now NULL, not an empty string.
 
 ** Indexes
 
+The index serves the lookup an import makes, and it is not unique: one
+security id may carry more than one issue, because ORE's own example corpus
+states one =SecurityId= for trades whose terms differ. An import keeps the
+issue whose terms the trade agrees with and mints another when it agrees
+with none, so the uniqueness the migration relied on is the importer's to
+hold, not the table's.
+
 | name     | columns             | unique | current_only | where_extra |
 |----------+---------------------+--------+--------------+-------------|
-| security | tenant_id, security_id | true  | true         |             |
+| security | tenant_id, security_id | false | true         |             |
 
 * Delete cascade
 

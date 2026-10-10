@@ -55,10 +55,10 @@ struct fx_digital_option_instrument_entity {
     std::optional<std::string> option_type;
     std::string expiry_date;
     std::string long_short;
-    std::optional<double> strike;
+    std::optional<std::string> strike;
     std::optional<std::string> barrier_type;
-    std::optional<double> lower_barrier;
-    std::optional<double> upper_barrier;
+    std::optional<std::string> lower_barrier;
+    std::optional<std::string> upper_barrier;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

@@ -37,7 +37,7 @@ export interface InstrumentStrike {
     trade_activity_id: string;
     price_value: string | null;
     price_currency: string | null;
-    yield_value: number | null;
+    yield_value: string | null;
     yield_compounding: string | null;
     bare_value: string | null;
     bare_currency: string | null;

@@ -292,8 +292,8 @@ std::nullopt
 
 ** running_spread
 :PROPERTIES:
-:type:     double precision
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 

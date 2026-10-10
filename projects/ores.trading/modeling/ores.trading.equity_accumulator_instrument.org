@@ -119,7 +119,7 @@ std::string("EUR")
 
 ** strike
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :END:
@@ -132,7 +132,7 @@ ores::utility::decimal::decimal::from_string("4000").value()
 
 ** fixing_amount
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :END:
@@ -197,7 +197,7 @@ std::string("Long")
 
 ** knock_out_level
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -206,7 +206,7 @@ Knock-out barrier; absent when not specified.
 
 ** target_amount
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:

@@ -118,7 +118,7 @@ std::string("EUR")
 
 ** reference_notional
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -144,7 +144,7 @@ std::string("USD")
 
 ** settlement_notional
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -194,7 +194,7 @@ Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.r
 
 ** fixing_amount
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -204,7 +204,7 @@ FxAverageForward.
 
 ** target_amount
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -213,8 +213,8 @@ Total target amount (FxTaRF-specific). Absent for FxAverageForward.
 
 ** strike
 :PROPERTIES:
-:type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 

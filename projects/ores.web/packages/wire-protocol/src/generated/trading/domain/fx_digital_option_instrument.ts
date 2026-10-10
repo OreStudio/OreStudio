@@ -41,10 +41,10 @@ export interface FxDigitalOptionInstrument {
     option_type: string;
     expiry_date: string;
     long_short: string;
-    strike: number | null;
+    strike: string | null;
     barrier_type: string;
-    lower_barrier: number | null;
-    upper_barrier: number | null;
+    lower_barrier: string | null;
+    upper_barrier: string | null;
     description: string;
     audit: AuditRecord;
 }

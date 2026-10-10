@@ -8,6 +8,8 @@
 #    include <initializer_list>
 #    include <iterator>
 #    include <string>
+#    include <type_traits>
+#    include <utility>
 #    include <vector>
 
 namespace xsd {
@@ -317,8 +319,28 @@ private:
     T* _data;
 };
 
+// The document's own digits are only worth keeping for floating-point leaves.
+// A money quantity must survive the boundary as the exact decimal the document
+// wrote, not as the binary float nearest to it.  Every other base<T> stays a
+// bare value; only the floating instantiations grow a std::string.
+template <typename T, bool = std::is_floating_point_v<T>>
+struct lexical_form {};
+
 template <typename T>
-class base {
+struct lexical_form<T, true> {
+    const std::string& lexical() const {
+        return _lexical;
+    }
+    void lexical(std::string value) {
+        _lexical = std::move(value);
+    }
+
+private:
+    std::string _lexical;
+};
+
+template <typename T>
+class base : public lexical_form<T> {
 public:
     base()
         : _value() {}

@@ -50,7 +50,7 @@ render_bond_forward_fields(const domain::bond_forward& v) {
     fields.push_back({.name = "Settlement", .value = v.settlement.value_or(std::string{})});
     fields.push_back({.name = "Amount", .value = v.amount ? v.amount->to_string() : std::string{}});
     fields.push_back(
-        {.name = "Lock Rate", .value = v.lock_rate ? std::to_string(*v.lock_rate) : std::string{}});
+        {.name = "Lock Rate", .value = v.lock_rate ? v.lock_rate->to_string() : std::string{}});
     fields.push_back({.name = "Dv01", .value = v.dv01 ? v.dv01->to_string() : std::string{}});
     fields.push_back({.name = "Lock Rate Day Counter",
                       .value = v.lock_rate_day_counter.value_or(std::string{})});

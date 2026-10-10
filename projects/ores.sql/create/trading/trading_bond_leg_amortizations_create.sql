@@ -46,7 +46,7 @@ create table if not exists "ores_trading_bond_leg_amortizations_tbl" (
     "version" integer not null,
     "trade_activity_id" uuid not null,
     "amortization_type" text not null,
-    "value" numeric(28, 10) null,
+    "value" numeric(38, 12) null,
     "start_date" text null,
     "end_date" text null,
     "frequency" text null,

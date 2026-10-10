@@ -45,7 +45,7 @@ render_instrument_strike_fields(const domain::instrument_strike& v) {
                       .value = v.price_value ? v.price_value->to_string() : std::string{}});
     fields.push_back({.name = "Price Currency", .value = v.price_currency.value_or(std::string{})});
     fields.push_back({.name = "Yield Value",
-                      .value = v.yield_value ? std::to_string(*v.yield_value) : std::string{}});
+                      .value = v.yield_value ? v.yield_value->to_string() : std::string{}});
     fields.push_back(
         {.name = "Yield Compounding", .value = v.yield_compounding.value_or(std::string{})});
     fields.push_back(

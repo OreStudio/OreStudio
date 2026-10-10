@@ -51,7 +51,7 @@ struct credit_instrument_entity {
     std::string reference_entity;
     std::string currency;
     std::string notional;
-    double spread = 0.0;
+    std::string spread;
     double recovery_rate = 0.0;
     std::string tenor;
     std::string start_date;
@@ -65,7 +65,7 @@ struct credit_instrument_entity {
     std::optional<std::string> description;
     std::optional<std::string> option_type;
     std::optional<std::string> option_expiry_date;
-    std::optional<double> option_strike;
+    std::optional<std::string> option_strike;
     std::optional<std::string> linked_asset_code;
     std::optional<double> tranche_attachment;
     std::optional<double> tranche_detachment;

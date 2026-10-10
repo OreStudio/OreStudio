@@ -58,13 +58,13 @@ struct probe {
 };
 
 const probe probes[] = {
-    {"0.1", "0.1", "0.1000000000"},
-    {"1e-10", "0.0000000001", "0.0000000001"},
-    {"0.0425", "0.0425", "0.0425000000"},
-    {"12345678.1234567890", "12345678.123456789", "12345678.1234567890"},
+    {"0.1", "0.1", "0.100000000000"},
+    {"1e-10", "0.0000000001", "0.000000000100"},
+    {"0.0425", "0.0425", "0.042500000000"},
+    {"12345678.1234567890", "12345678.123456789", "12345678.123456789000"},
     {"999999999999999999.9999999999",
      "999999999999999999.9999999999",
-     "999999999999999999.9999999999"},
+     "999999999999999999.999999999900"},
 };
 
 constexpr int probe_count = sizeof(probes) / sizeof(probes[0]);
@@ -189,12 +189,12 @@ TEST_CASE("bond_leg_amount_refuses_a_value_wider_than_the_column", tags) {
     const auto id_str = boost::uuids::to_string(trade_id);
 
     /*
-     * The value the type holds exactly, and the column cannot: 20 integer
-     * digits against numeric(28, 10)'s 18. The store refuses it, and this
+     * The value the type holds exactly, and the column cannot: 30 integer
+     * digits against numeric(38, 12)'s 26. The store refuses it, and this
      * test states the refusal rather than hiding the value behind a cast.
      */
-    const std::string too_wide = "12345678901234567890.1234567890";
-    CHECK(decimal::from_string(too_wide).value().to_string() == "12345678901234567890.123456789");
+    const std::string too_wide = "123456789012345678901234567890.123456789012";
+    CHECK(decimal::from_string(too_wide).value().to_string() == too_wide);
 
     bond_leg_amount_repository repo;
     bool refused = false;

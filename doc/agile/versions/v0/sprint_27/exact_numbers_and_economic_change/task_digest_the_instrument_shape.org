@@ -1,0 +1,225 @@
+:PROPERTIES:
+:ID: 87305402-9907-4C0D-8463-3FE03C9A1785
+:END:
+#+title: Task: Digest the instrument shape and fold it up
+#+description: An economic digest computed where the whole shape exists, stored as text, folded from components to the trade.
+#+type: task
+#+level: s1
+#+filetags: :exact_numbers_and_economic_change:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A change to any economic component changes the trade's digest, and the trade then reads as a customer-facing change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The digest covers declared economic fields only and ignores identity and audit.
+- A component write recomputes the parent digest and bumps the external version only when it differs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+*What has landed.* `economic_digest` and `trade_economic_digest` in
+`ores.trading.api/domain`, with the exclusion rule, the framing and the
+canonical rendering; the `economic_digest` text column and the
+`external_version` integer on the trade; a generic write-observer trait in
+`ores.database` with the trading specialisations in `trade_write_observation.hpp`
+reached through `export.hpp`; and a DB-backed test binary,
+`ores.trading.core.digest.tests`, registered by its own `CMakeLists.txt`.
+
+*A behaviour change to expect, and not a defect.* The refresh ends by writing
+the trade row (`trade_repository{}.write(ctx, trade)`), and a write of a
+versioned entity inserts a new version. So every write of an observed child now
+also creates a **new version of the parent trade**, in the same transaction.
+That is the design — the digest is stored on the trade, so a component change
+must touch the trade, and the internal version is supposed to move on every
+recorded change, of which this is one. Two consequences worth knowing before
+reading a test failure as a regression:
+
+- Checked, so the warning is bounded: the three suites that write an observed
+  child — `trade_booking_eventing_integration_tests`,
+  `trade_state_eventing_integration_tests` and
+  `service_trade_operations_service_tests` — assert on the *child's* history
+  (`history(id).size() == versions.size()`), not on the trade's version, so they
+  do not break on the extra parent write. The general risk stands for any future
+  test that counts a trade's versions.
+- Storage grows by one trade version per component write. Acceptable for an
+  amendment; worth a thought for a bulk import, which is another reason the
+  boundary in item 2 is the right place to make the version decision.
+
+*What is outstanding, as a work order.* Three corrections, in this order,
+because the last two depend on the first.
+
+1. **The component set is wrong in both directions.** The fold observes seven
+   entities — `trade_state`, `trade_booking`, `trade_identifier`,
+   `trade_additional_field`, `trade_portfolio`, `trade_party_role`,
+   `structure_member` — which is the *internal*-version set, not the economic
+   one. It includes a free-text comment, a lifecycle state and organisational
+   links, and it misses every instrument. The rule: a component drives the
+   digest when its fields state terms the customer agreed to. Read the
+   instrument by `instrument_table_for(trade.trade_type)` from
+   `trade_type_routing.hpp`, following `trade_export_service.cpp:96`, together
+   with its legs and amounts; drop the seven. The switch is 29 arms and its
+   skeleton is generated in `evidence/instrument_digest_skeleton.cpp`, one arm
+   per enum value. Verified against the tree: all 29 enum values have both a
+   `<family>_repository.hpp` and a `<family>.hpp`, so the skeleton names are
+   real and none is missing. Two signatures to note: an instrument repository is keyed by
+   the trade, so `read_latest(ctx, trade_id)` works; a leg table is keyed by
+   its own id and needs `read_latest_by_trade_id(...)`.
+2. **The version bump needs a boundary, not a write.** (Item 1 is done: the fold observes the 29 instrument families and reads the instrument and its children; the five non-economic children are out.) The condition is two
+   comparisons: the digest differs, *and* the change crosses a customer-visible
+   boundary. The idiom already exists in
+   `trading.v1.ops.put_composite_instrument_with_legs` — one request that
+   carries an instrument and its legs. Refresh and bump at the end of the
+   shape-carrying handler; leave the per-component observer refreshing the
+   digest only. Do not enable the bump until (1) is done *and* the stored
+   digests are reset in the same change, or the correction itself will look
+   like an economic change to every trade.
+**The child set already has readers, and enumerating them is not guesswork.**
+`projects/ores.trading/core/include/ores.trading.core/repository/parent_scoped_queries.hpp`
+exports twenty trade- or issue-scoped readers, and they are the legs and
+children the digest must fold:
+
+    read_legs_by_trade_ids            read_leg_amounts_by_trade_ids
+    read_leg_rates_by_trade_ids       read_leg_amortizations_by_trade_ids
+    read_forwards_by_trade_ids        read_strikes_by_trade_ids
+    read_options_by_trade_ids         read_option_exercise_fees_by_trade_ids
+    read_option_payment_dates_by_trade_ids   read_option_premiums_by_trade_ids
+    read_schedules_by_trade_ids       read_schedule_dates_by_trade_ids
+    read_issue_legs_by_issue_ids      read_issue_leg_amounts_by_issue_ids
+    read_issue_leg_rates_by_issue_ids read_issue_leg_amortizations_by_issue_ids
+    read_issue_schedules_by_issue_ids read_issue_schedule_dates_by_issue_ids
+    read_call_dates_by_issue_ids      read_conversion_targets_by_issue_ids
+
+The issue-scoped ones take issue ids rather than trade ids, and a bond issue is
+reached from the trade's instrument, so the read is two hops for that family.
+`swap_leg` and `composite_leg` also expose trade-scoped readers of their own.
+
+That turns correction (1) from "find fifty tables" into: one 29-arm switch for
+the instrument (skeleton generated beside this task), plus these twenty calls,
+plus the two leg repositories. Everything it needs already exists and is
+exported.
+
+**Will it compile?** Folding instrument rows instantiates `canonical_value`
+for every included field of every family, and that function ends in a
+`static_assert` on a type it cannot render — so a type it cannot handle is a
+build failure and not a silent skip. Checked, because "it will compile" is the
+claim this capability keeps disproving:
+
+- `boost::uuids::uuid` carries `using value_type = std::uint8_t;`, so the
+  sequence branch renders it as a deterministic 16-byte sequence.
+- An excluded field's type is never instantiated at all, because
+  `canonical_struct` guards the call with
+  `if constexpr (!is_identity_or_audit(...))`. So the `*_id` fields cannot
+  break the build whatever their type.
+- `security_id` is the one identifier in the allow-list and therefore *not*
+  excluded — and it is a `std::string`.
+- No trading domain type has a `std::map`, `std::unordered_map` or `std::set`
+  member, which matters because `std::pair` is not an aggregate and the
+  container branch would hand it to the `static_assert`.
+
+And it is already demonstrated rather than only argued:
+`economic_digest_ignores_identity_and_audit_fields` in
+`ores.trading.api/tests/domain_economic_digest_tests.cpp:144` digests a real
+`bond_instrument` (via its `make_bond_instrument` fixture), changes its
+identity, audit, `issue_id` and a comment, and asserts the digest is unchanged.
+That is also the coverage a reader might expect to be missing — the positive
+case for exclusion, as against the mutation proof that removing an exclusion
+breaks the suite. Both exist.
+
+3. **The tests move with the set, and they depend on it more than the first
+   read suggests.** All three cases in `trade_economic_digest_write_tests.cpp`
+   drive the mechanism through `trade_identifier`, which is leaving the fold.
+   But the *fixture* depends on it too: `prepare()` books the trade through
+   `book_trade_request`, and it is the **booking** — one of the seven — that
+   first triggers the fold and leaves a non-empty digest. `before.front()
+   .economic_digest.empty()` is asserted false at line 149 on that basis. Drop
+   the booking from the fold and every one of the three cases fails at its
+   fixture, not just the two that name `trade_identifier`. So the tests cannot
+   be patched in place; they need an instrument write in `prepare()` before
+   they assert anything. A red suite during the move is expected.
+
+   Two facts that make the move mechanical. Generators exist for every family
+   (`ores.trading.api/generators/*_instrument_generator.hpp`, 99 headers in
+   all), so the fixture does not need hand-built rows. And the family is not a
+   free choice: `generate_synthetic_trade` sets `trade_type = "Swap"`
+   (`trade_generator.cpp:49`), which routes to `vanilla_swap_instrument` through
+   `instrument_table_for`, so the fixture must write **that** family with the
+   anchor's id as its `trade_id`. Any other instrument would be read by no
+   switch arm and the digest would hold still — the same silent under-read the
+   correction exists to remove.
+
+Until all three land, the stored digest is provisional and nothing acts on it.
+The comments marking that are on the fold and on the test file.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.trading.core.digest.tests= | **19 assertions in 3 cases, all passing** — first execution | the binary, =.env= sourced, after =db recreate= | same |
+| =ores.trading.api.tests= | 400 assertions in 100 cases, all passing, digest cases included | =build/output/linux-clang-debug-make/publish/bin/ores.trading.api.tests=; binary of 22:05 | uncommitted (working tree over =ca0bea89af=) |
+| =economic_digest= unit cases | 9 cases, 14 assertions, all passing | =ores.trading.api.tests= | uncommitted (working tree over =ca0bea89af=) |
+| =trade_economic_digest= unit cases | 9 cases, 16 assertions, all passing | same | same |
+| Mutation proof of the exclusion rule | removing =modified_by= from the excluded list makes the suite fail | edit =excluded_field_names=, rerun | same |
+| Entity columns named by the field rule vs by the model | 0 named by the model today; the rule is a name list in =economic_digest.hpp= | =grep economic_digest.hpp= | same |
+| Components the fold currently observes | 7, none of them an instrument | =grep 'struct entity_write_observer<' trade_write_observation.hpp= | same |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

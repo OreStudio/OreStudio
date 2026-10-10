@@ -103,7 +103,7 @@ order.
 
 ** value
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: ores::utility::decimal::decimal
 :nullable: false
 :END:

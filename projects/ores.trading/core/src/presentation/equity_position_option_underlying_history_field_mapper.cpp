@@ -43,7 +43,8 @@ std::vector<ores::diff::domain::field_value> render_equity_position_option_under
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Underlying Name", .value = v.underlying_name});
     fields.push_back({.name = "Strike", .value = v.strike.to_string()});
-    fields.push_back({.name = "Weight", .value = v.weight ? v.weight->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Weight", .value = v.weight ? std::to_string(*v.weight) : std::string{}});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Option Type", .value = v.option_type});
     fields.push_back({.name = "Exercise Type", .value = v.exercise_type});

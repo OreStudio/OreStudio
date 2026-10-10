@@ -23,6 +23,7 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -82,13 +83,14 @@ namespace {
  * The leg's economics are rows beside it, so a test reads the child of the
  * leg it is asserting on rather than a column of the leg.
  */
-static double leg_rate(const ores::trading::domain::swap_instrument_data& data,
-                       int leg_number,
-                       const std::string& rate_role) {
+static ores::utility::decimal::decimal
+leg_rate(const ores::trading::domain::swap_instrument_data& data,
+         int leg_number,
+         const std::string& rate_role) {
     for (const auto& r : data.leg_rates)
         if (r.leg_number == leg_number && r.rate_role == rate_role)
             return r.value;
-    return 0.0;
+    return ores::utility::decimal::decimal{};
 }
 
 TEST_CASE("mapper_roundtrip_swaption_european_forward", tags) {
@@ -108,7 +110,8 @@ TEST_CASE("mapper_roundtrip_swaption_european_forward", tags) {
     CHECK(result.legs[0].floating_index_code == "EUR-EURIBOR-3M");
     // leg 1: fixed (2%)
     CHECK(result.legs[1].leg_type_code == "Fixed");
-    CHECK(leg_rate(result, 2, "fixed") == Approx(0.02).epsilon(0.0001));
+    CHECK(leg_rate(result, 2, "fixed") ==
+          ores::utility::decimal::decimal::from_string("0.02").value());
     BOOST_LOG_SEV(lg, info) << "Swaption European forward-mapper test passed";
 }
 

@@ -37,7 +37,7 @@ export interface BondTrs {
     trade_activity_id: string;
     return_type: string;
     funding_leg_type: string;
-    funding_rate: number;
+    funding_rate: string | null;
     funding_index: string;
     payer: string | null;
     price_type: string | null;

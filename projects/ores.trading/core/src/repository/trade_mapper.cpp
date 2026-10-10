@@ -64,6 +64,8 @@ domain::trade trade_mapper::map(const trade_entity& v) {
         rfl::string_to_enum<ores::trading::domain::booking_nature>(v.booking_nature).value();
     r.entry_channel =
         rfl::string_to_enum<ores::trading::domain::entry_channel>(v.entry_channel).value();
+    r.external_version = v.external_version;
+    r.economic_digest = v.economic_digest.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -89,6 +91,8 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     r.counterparty_scope = rfl::enum_to_string(v.counterparty_scope);
     r.booking_nature = rfl::enum_to_string(v.booking_nature);
     r.entry_channel = rfl::enum_to_string(v.entry_channel);
+    r.external_version = v.external_version;
+    r.economic_digest = v.economic_digest.empty() ? std::nullopt : std::optional(v.economic_digest);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -58,7 +58,7 @@ struct fx_asian_forward_instrument_entity {
     std::optional<std::string> currency;
     std::optional<std::string> fixing_amount;
     std::optional<std::string> target_amount;
-    std::optional<double> strike;
+    std::optional<std::string> strike;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

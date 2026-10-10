@@ -130,7 +130,7 @@ std::string("EUR")
 
 ** payoff_amount
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :END:
@@ -186,15 +186,15 @@ std::string("Long")
 
 ** strike
 :PROPERTIES:
-:type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
 Strike level. Absent for touch options.
 
 #+begin_src cpp :name generator
-1.1
+ ores::utility::decimal::decimal::from_string("1.1").value()
 #+end_src
 
 ** barrier_type
@@ -211,8 +211,8 @@ Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrier
 
 ** lower_barrier
 :PROPERTIES:
-:type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -220,8 +220,8 @@ Primary barrier level. Absent for plain digital options.
 
 ** upper_barrier
 :PROPERTIES:
-:type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 

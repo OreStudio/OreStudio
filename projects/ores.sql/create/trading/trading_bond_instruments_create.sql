@@ -58,7 +58,7 @@ create table if not exists "ores_trading_bond_instruments_tbl" (
     "party_id" uuid not null,
     "trade_activity_id" uuid not null,
     "issue_id" uuid not null,
-    "notional" numeric(28, 10) null,
+    "notional" numeric(38, 12) null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

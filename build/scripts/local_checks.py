@@ -441,6 +441,32 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.codegen/plantuml_er_generate.sh and commit the diagrams.",
     ),
     Check(
+        id="money-decimal-columns",
+        title="A money quantity is an exact decimal, not a binary float",
+        argv=("python3", "build/scripts/check_money_decimal_columns.py"),
+        classes=("modeling",),
+        fix="Give the column an exact decimal type and take the double out of"
+            " the domain type, or, when the column is a continuous quantity"
+            " such as a volatility, exclude its entity in the check. The rule"
+            " is in"
+            " doc/knowledge/architecture/exact_numbers_and_economic_change.org.",
+    ),
+    Check(
+        id="model-sql-types",
+        title="A column's model type is the type the table is created with",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_model_sql_types.py"),
+        classes=("modeling", "sql", "codegen"),
+        paths=(
+            "projects/*/modeling/*.org",
+            "projects/*/*/modeling/*.org",
+            "projects/ores.sql/create/*/*_create.sql",
+        ),
+        fix="Regenerate the component, then rebuild and recreate, or correct"
+            " the model's :type: when the model is the one that is wrong."
+            " model-drift compares structure and not types, so it stays green"
+            " while the two disagree.",
+    ),
+    Check(
         id="sql-hygiene",
         title="The SQL tree has no unterminated comment or repeated index",
         argv=("python3", "projects/ores.sql/utility/check_sql_hygiene.py", "projects/ores.sql"),

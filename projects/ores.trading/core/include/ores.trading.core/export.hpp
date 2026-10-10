@@ -32,4 +32,11 @@
 #    define ORES_TRADING_CORE_EXPORT BOOST_SYMBOL_IMPORT
 #endif
 
+/*
+ * The generated repositories include only this hand-written header, and the
+ * write helper's trait must be specialised before they instantiate a write.
+ * The observation is therefore declared here, after the export macro it names.
+ */
+#include "ores.trading.core/repository/trade_write_observation.hpp"
+
 #endif

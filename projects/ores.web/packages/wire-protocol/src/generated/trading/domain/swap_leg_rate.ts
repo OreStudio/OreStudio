@@ -39,7 +39,7 @@ export interface SwapLegRate {
     sequence_number: number;
     trade_activity_id: string;
     start_date: string | null;
-    value: number;
+    value: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

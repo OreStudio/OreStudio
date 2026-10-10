@@ -26,11 +26,11 @@ Every rates product the importer writes can be exported again, and the family's 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -68,6 +68,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| ORE core suite with the InflationSwap case | all passed, the corpus directory round trip included | =compass test run -- -R ore.core= | uncommitted (working tree over =fc09a30ec2=) |
+| Hand-written rates variant and wire codec still in the tree | none | =grep -rln "rates_instrument_variant\|instrument_payload" projects --include=*.cpp --include=*.hpp= | same |
 |      |       |         |        |
 
 * Notes
@@ -100,3 +102,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+One of the three products is closed. The other two are blocked on model
+fields, and the carrier question was already answered by earlier units.
+
+- *InflationSwap* has a reverse mapper, an exporter dispatch entry and a
+  round-trip case with literal values: the two legs' types, the currency, and
+  the schedule's start and end dates. The product states nothing beyond its
+  legs, so the export is complete.
+- *FlexiSwap* and *BalanceGuaranteedSwap* have no reverse mapper. I wrote
+  both and removed them. The schema requires fields the model does not hold.
+  A flexi swap needs its option long or short and its lower notional bounds;
+  the code would have written the enum's default in place of the document's
+  =Short=. A balance-guaranteed swap needs its reference security and at
+  least one tranche; with none, the corpus walk could not re-read
+  =IR_BalanceGuaranteedSwap.xml=, a document that exported as a bare trade
+  before. The two products stay unexported, as they were. The capture
+  =Carry the FlexiSwap and BalanceGuaranteedSwap product fields= holds the
+  missing model work.
+- *The carrier and the codec* needed no change here. The hand-written rates
+  variant and the hand-written payload codec are gone: unit 3 removed the
+  variant, and the export carries typed batches generated from the trade-type
+  catalogue. The remaining hand-written parts are =swap_instrument_data=, the
+  struct that groups a header with its facts and children, and the ORE mapper.
+  The grep in Measurements shows no reference left.
+- The stale =swap_instrument_data= box in the API class diagram now shows the
+  struct as it is.
+
+The acceptance holds for InflationSwap, for the carrier and for the removal.
+It does not hold for the other two products, and the capture records why.

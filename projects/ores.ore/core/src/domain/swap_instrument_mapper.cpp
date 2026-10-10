@@ -2035,4 +2035,31 @@ swap_instrument_mapper::forward_balance_guaranteed_swap(const trade& t) {
     return result;
 }
 
+// ---------------------------------------------------------------------------
+// Reverse: InflationSwap (legs only)
+// ---------------------------------------------------------------------------
+
+trade swap_instrument_mapper::reverse_inflation_swap(
+    const trading::domain::rate_instrument& header,
+    [[maybe_unused]] const inflation_swap_instrument& instr,
+    const std::vector<swap_leg>& legs,
+    const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+    const std::vector<ores::trading::domain::swap_leg_rate>& rates) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping InflationSwap";
+
+    trade t;
+    t.TradeType = oreTradeType::InflationSwap;
+
+    swapData sd;
+    for (const auto& sl : legs)
+        sd.LegData.push_back(reverse_leg(header.start_date,
+                                         header.maturity_date,
+                                         sl,
+                                         amounts_for_leg(amounts, sl.identity.leg_number),
+                                         rates_for_leg(rates, sl.identity.leg_number)));
+
+    t.InflationSwapData = std::move(sd);
+    return t;
+}
+
 } // namespace ores::ore::domain

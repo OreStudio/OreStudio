@@ -1095,9 +1095,20 @@ namespace ores #F2F2F2 {
                 +audit : ores::dq::domain::audit_record
             }
             class swap_instrument_data <<struct>> {
-                +instrument : rates_instrument_variant
+                +header : rate_instrument
+                +facts : rates_fact_variant
                 +legs : vector<swap_leg>
+                +leg_amounts : vector<swap_leg_amount>
+                +leg_rates : vector<swap_leg_rate>
                 +call_dates : vector<callable_swap_call_date>
+                +strikes : vector<instrument_strike>
+                +schedules : vector<instrument_schedule>
+                +schedule_dates : vector<instrument_schedule_date>
+                +options : vector<instrument_option>
+                +option_premiums : vector<instrument_option_premium>
+                +option_exercise_fees : vector<instrument_option_exercise_fee>
+                +option_payment_dates : vector<instrument_option_payment_date>
+                +option_exercise_prices : vector<instrument_option_exercise_price>
             }
             class commodity_instrument_data <<struct>> {
                 +instrument : commodity_instrument

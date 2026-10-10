@@ -136,7 +136,9 @@ describe('My access', () => {
         expect(html).toContain('src="/api/accounts/priya/picture"');
         expect(html).toContain('1 of 3 permissions');
         expect(html).toContain('Reference data');
-        expect(html).not.toContain('Identity and access');
+        // Only the area the role grants is drawn as a section; the others stay
+        // choices in the area filter.
+        expect(html.match(/<details/g)).toHaveLength(1);
     });
 
     it('says everything rather than ticking every permission', () => {

@@ -199,6 +199,52 @@ describe('ProfilePage', () => {
         expect(html).not.toContain('>1 Panton Street<');
     });
 
+    it('offers History only to somebody who may read accounts', () => {
+        const withRead = render((client) => {
+            client.setQueryData(['my-access'], access(['iam::accounts:read']));
+            client.setQueryData(['account', 'ada'], account);
+        });
+
+        expect(withRead).toContain('>History<');
+        expect(render(member)).not.toContain('>History<');
+    });
+
+    it('draws the person’s own story on the History tab, headers first', () => {
+        const html = render((client) => {
+            client.setQueryData(['my-access'], access(['iam::accounts:read']));
+            client.setQueryData(['timeline', 'person', 'ada'], {
+                subject: 'person',
+                id: 'ada',
+                gaps: [],
+                events: [
+                    {
+                        entityType: 'ores.iam.account',
+                        entityId: ACCOUNT_ID,
+                        kind: 'raised',
+                        at: '2026-10-05 09:30:00Z',
+                        actor: 'grace',
+                        version: 1,
+                        reasonCode: 'system.external_data_import',
+                        commentary: 'Published from organisation dataset',
+                        fields: [{ name: 'Full Name', value: 'Ada Lovelace' }],
+                    },
+                ],
+            });
+        }, '/profile?tab=history');
+
+        expect(html).toContain('system.external_data_import');
+        expect(html).toContain('Published from organisation dataset');
+        expect(html).toContain('href="/people/grace"');
+        expect(html).toContain('<details');
+    });
+
+    it('names the roles on My access only, and points there from the Access tab', () => {
+        const html = render(member, '/profile?tab=access');
+
+        expect(html).not.toContain('Roles you hold');
+        expect(html).toContain('href="/access"');
+    });
+
     it('draws the contact record on its tab, telling the two addresses apart', () => {
         const html = render(member, '/profile?tab=contact');
 

@@ -94,6 +94,7 @@ export const en: SourceCatalogue = {
     access: {
         allAreas: 'All areas',
         areaFilter: 'Area',
+        areasShowing: 'Showing {from}–{to} of {total} areas',
         hub: {
             title: 'Organisation',
             lead: 'The people of this tenant, and who they report to.',
@@ -695,6 +696,7 @@ export const en: SourceCatalogue = {
             common_other: 'Another reason',
         },
         tabs: {
+            history: 'History',
             details: 'Details',
             contact: 'Contact',
             access: 'Access',
@@ -783,7 +785,7 @@ export const en: SourceCatalogue = {
             protect: 'Protect my account',
             protectWhy: 'Your password, your sign-ins and your sessions:',
             know: 'Know what I may do',
-            knowWhy: 'What your roles let you do:',
+            knowWhy: 'The roles you hold and what they let you do:',
             failed: 'Your access could not be read, so the administrator panels are not offered. {reason}',
         },
         save: {

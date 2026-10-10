@@ -93,6 +93,7 @@ const pt: SourceCatalogue = {
     access: {
         allAreas: 'Todas as áreas',
         areaFilter: 'Área',
+        areasShowing: 'A mostrar {from}–{to} de {total} áreas',
         hub: {
             title: 'Organização',
             lead: 'As pessoas deste inquilino, e a quem reportam.',
@@ -698,6 +699,7 @@ const pt: SourceCatalogue = {
             common_other: 'Outra razão',
         },
         tabs: {
+            history: 'Histórico',
             details: 'Detalhes',
             contact: 'Contacto',
             access: 'Acesso',
@@ -787,7 +789,7 @@ const pt: SourceCatalogue = {
             protect: 'Proteger a minha conta',
             protectWhy: 'A sua palavra-passe, as suas entradas e as suas sessões:',
             know: 'Saber o que posso fazer',
-            knowWhy: 'O que os seus papéis lhe permitem fazer:',
+            knowWhy: 'As funções que tem e o que lhe permitem fazer:',
             failed: 'Não foi possível ler os seus acessos, por isso os painéis de administração não são oferecidos. {reason}',
         },
         save: {

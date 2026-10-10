@@ -21,13 +21,15 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import type { HeldRole, SessionView } from '@ores/wire-protocol/browser';
+import type { SessionView } from '@ores/wire-protocol/browser';
 import { AccountDoors } from './AccountDoors.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ContactTab, IdentityTab } from '../access/PersonForms.js';
-import { roleLabel } from '../access/words.js';
-import { Detail, Notice, PageHeader } from '../ui/Primitives.js';
+import { useHolds } from '../access/holds.js';
+import { actorPathFor } from '../access/PeoplePage.js';
+import { Timeline } from '../timeline/Timeline.js';
+import { Notice, PageHeader } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 
 /**
@@ -41,9 +43,10 @@ import { useTabs } from '../ui/Tabs.js';
 export function ProfilePage({ session }: { readonly session: SessionView }): ReactNode {
     const { t } = useTranslation();
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
+    const mayReadHistory = useHolds()('iam::accounts:read');
     const { tab, bar } = useTabs({
         label: t('profile.title.mine'),
-        tabs: ['details', 'contact', 'access'],
+        tabs: ['details', 'contact', ...(mayReadHistory ? ['history'] : []), 'access'],
         titleOf: (name) => t(`profile.tabs.${name}`),
     });
 
@@ -62,12 +65,34 @@ export function ProfilePage({ session }: { readonly session: SessionView }): Rea
             {tab === 'contact' && (
                 <ContactTab username={session.username} me fallbackEmail={session.email} />
             )}
-            {tab === 'access' && <AccessPanel roles={access.data?.roles ?? []} />}
+            {tab === 'history' && <MyHistory username={session.username} />}
+            {tab === 'access' && <AccessPanel />}
         </div>
     );
 }
 
-function AccessPanel({ roles }: { readonly roles: readonly HeldRole[] }): ReactNode {
+/** The signed-in person's own story, the same stream as on their page in the staff list. */
+function MyHistory({ username }: { readonly username: string }): ReactNode {
+    const { t } = useTranslation();
+    const story = useQuery({
+        queryKey: ['timeline', 'person', username],
+        queryFn: () => api.timeline('person', username),
+    });
+    if (story.isPending) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    if (story.isError) {
+        return <Notice tone="error">{story.error.message}</Notice>;
+    }
+    return <Timeline timeline={story.data} actorPath={actorPathFor(true)} />;
+}
+
+/**
+ * Where the rest of a person's own record lives. The roles they hold and what
+ * those let them do are on My access, so they are named in one place and not
+ * two; this tab points there.
+ */
+function AccessPanel(): ReactNode {
     const { t } = useTranslation();
     return (
         <section className="card space-y-3 p-6">
@@ -75,14 +100,6 @@ function AccessPanel({ roles }: { readonly roles: readonly HeldRole[] }): ReactN
                 <h2 className="text-lg font-medium">{t('profile.access.title')}</h2>
                 <p className="text-sm text-ink-muted">{t('profile.access.lead')}</p>
             </header>
-            <Detail
-                label={t('profile.access.roles')}
-                value={
-                    roles.length === 0
-                        ? t('profile.access.none')
-                        : roles.map((role) => roleLabel(t, role.name)).join(', ')
-                }
-            />
             <AccountDoors />
         </section>
     );

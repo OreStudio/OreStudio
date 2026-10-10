@@ -28,8 +28,7 @@ import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { Button, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
-import { areasOf, grantedBy, rolesGranting } from './catalogue.js';
-import { PermissionAreas } from './PermissionAreas.js';
+import { CanIPanel, RolesAllow } from './Allowances.js';
 import { SignInsPanel } from './SignIns.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
@@ -115,7 +114,6 @@ function Person({
         queryKey: ['timeline', 'person', account.username],
         queryFn: () => api.timeline('person', account.username),
     });
-    const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
     const name = displayName(account, account.username);
     const refresh = () => {
         void queries.invalidateQueries({ queryKey: ['account-access', account.id] });
@@ -138,7 +136,6 @@ function Person({
         titleOf: (part) => t(`access.person.tabs.${part}`),
     });
     const roles = access.data?.roles ?? [];
-    const everything = roles.find((role) => role.permissionCodes.includes('*'));
 
     return (
         <div className="space-y-4">
@@ -331,26 +328,12 @@ function Person({
                             </tbody>
                         </table>
                     </section>
+                    <CanIPanel roles={roles} catalogue={catalogue.data ?? []} />
                     <section className="space-y-3">
                         <h2 className="text-sm font-semibold">
                             {t('access.person.whatTheyAllow')}
                         </h2>
-                        {everything !== undefined ? (
-                            <p className="text-sm text-ink-muted">
-                                {t('access.everythingBy', { role: roleLabel(t, everything.name) })}
-                            </p>
-                        ) : (
-                            <PermissionAreas
-                                areas={areas}
-                                granted={grantedBy(roles)}
-                                onlyGranted
-                                explain={(code) =>
-                                    rolesGranting(roles, code)
-                                        .map((roleName) => roleLabel(t, roleName))
-                                        .join(', ')
-                                }
-                            />
-                        )}
+                        <RolesAllow roles={roles} catalogue={catalogue.data ?? []} />
                     </section>
                 </div>
             )}

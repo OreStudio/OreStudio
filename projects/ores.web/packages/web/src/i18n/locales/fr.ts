@@ -88,6 +88,7 @@ const fr: SourceCatalogue = {
     access: {
         allAreas: 'Tous les domaines',
         areaFilter: 'Domaine',
+        areasShowing: 'Affichage de {from} à {to} sur {total} domaines',
         hub: {
             title: 'Organisation',
             lead: 'Les personnes de ce locataire, et à qui elles rendent compte.',
@@ -701,6 +702,7 @@ const fr: SourceCatalogue = {
             common_other: 'Autre raison',
         },
         tabs: {
+            history: 'Historique',
             details: 'Détails',
             contact: 'Contact',
             access: 'Accès',
@@ -794,7 +796,7 @@ const fr: SourceCatalogue = {
             protect: 'Protéger mon compte',
             protectWhy: 'Votre mot de passe, vos connexions et vos sessions :',
             know: 'Savoir ce que je peux faire',
-            knowWhy: 'Ce que vos rôles vous permettent de faire :',
+            knowWhy: 'Les rôles que vous détenez et ce qu’ils vous permettent :',
             failed: "Vos accès n'ont pas pu être lus, donc les panneaux d'administration ne sont pas proposés. {reason}",
         },
         save: {

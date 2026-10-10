@@ -25,14 +25,11 @@ import { useTranslation } from '../i18n/Provider.js';
 import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { AccountPicture } from '../ui/Images.js';
-import { Button, Input, Notice, PageHeader } from '../ui/Primitives.js';
-import { areasOf, countCovered, grantedBy, rolesGranting, search } from './catalogue.js';
-import { PermissionAreas } from './PermissionAreas.js';
+import { Button, Notice, PageHeader } from '../ui/Primitives.js';
+import { areasOf, countCovered, grantedBy } from './catalogue.js';
+import { CanIPanel, RolesAllow } from './Allowances.js';
 import { roleLabel } from './words.js';
 import { AskForRoleDialog } from '../inbox/AskForRoleDialog.js';
-
-/** How many answers "Can I…?" shows at once. */
-const ANSWERS = 8;
 
 /**
  * What the signed-in person may do, and which role lets them.
@@ -45,7 +42,6 @@ const ANSWERS = 8;
  */
 export function MyAccessPage({ tenantName }: { readonly tenantName: string }): ReactNode {
     const { t, language } = useTranslation();
-    const [question, setQuestion] = useState('');
     const [asking, setAsking] = useState(false);
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
     const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
@@ -63,7 +59,6 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
     const roles = access.data.roles;
     const granted = grantedBy(roles);
     const everything = roles.find((role) => role.permissionCodes.includes('*'));
-    const answers = search(catalogue.data, question, ANSWERS);
 
     return (
         <div className="space-y-6">
@@ -110,49 +105,7 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
                 )}
             </section>
 
-            <section className="space-y-3 rounded-md border border-line bg-surface-raised p-4">
-                <h2 className="text-sm font-semibold">{t('access.mine.canI')}</h2>
-                <Input
-                    type="search"
-                    value={question}
-                    onChange={(event) => setQuestion(event.target.value)}
-                    placeholder={t('access.mine.canIHint')}
-                    aria-label={t('access.mine.canI')}
-                />
-                {question.trim() !== '' && answers.length === 0 && (
-                    <p className="text-sm text-ink-muted">{t('access.nothingMatches')}</p>
-                )}
-                <ul>
-                    {answers.map((entry) => {
-                        const by = rolesGranting(roles, entry.code);
-                        return (
-                            <li
-                                key={entry.code}
-                                className="flex items-start gap-3 border-t border-line-subtle py-2 first:border-t-0"
-                            >
-                                <span
-                                    className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${by.length > 0 ? 'bg-up' : 'bg-ink-faint'}`}
-                                />
-                                <div className="min-w-0 flex-1">
-                                    <div className="text-sm">{entry.description}</div>
-                                    <div className="font-mono text-xs text-ink-faint">
-                                        {entry.code}
-                                    </div>
-                                </div>
-                                <div className="text-sm text-ink-muted">
-                                    {by.length > 0
-                                        ? t('access.mine.yesThrough', {
-                                              roles: by
-                                                  .map((name) => roleLabel(t, name))
-                                                  .join(', '),
-                                          })
-                                        : t('access.mine.no')}
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ul>
-            </section>
+            <CanIPanel roles={roles} catalogue={catalogue.data} />
 
             <section className="space-y-3">
                 <div>
@@ -167,16 +120,7 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
                     </p>
                 </div>
                 {everything === undefined && (
-                    <PermissionAreas
-                        areas={areas}
-                        granted={granted}
-                        onlyGranted
-                        explain={(code) =>
-                            rolesGranting(roles, code)
-                                .map((name) => roleLabel(t, name))
-                                .join(', ')
-                        }
-                    />
+                    <RolesAllow roles={roles} catalogue={catalogue.data} />
                 )}
             </section>
 

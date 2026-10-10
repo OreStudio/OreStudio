@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The Updates and refresh section of the entity screen specification and the Chang
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Updates and refresh section of the entity screen specification is written: how a screen hears, Refresh, changed rows and entries, an edit in progress, and what is not heard yet. The Change notification page states what is built, corrects the stale rule (the browser's clock at both ends) and the row rule (compare with the same page read before), and lists what is open. The deviations table and the shared components table are updated.

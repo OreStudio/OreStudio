@@ -34,8 +34,8 @@ The rules in short:
   the note stands on its own line below the header.
 - A combo box offers only values that exist, and a screen that shows one value at
   a time has no "all" choice.
-- How a screen learns that something changed is not settled yet. That section is
-  a placeholder until the update and refresh story is done.
+- A screen learns that its data changed, turns Refresh gold, and waits for the
+  reader. It never reloads by itself, and it never loses an edit.
 
 * Detail
 
@@ -522,30 +522,74 @@ by a direct edit for those who hold the update permission.
 
 ** Updates and refresh
 
-This section is a placeholder. The way a screen learns that something changed is
-the subject of the story "Hear a change on the server and offer a refresh", and
-this page will be completed when that story is done.
+A screen learns that the data under it changed, says so in one place, and waits
+for the reader. Nothing reloads by itself, and nothing that the person typed is
+lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]]; this is what a screen must do.
 
-What is settled:
+*** How a screen hears
 
-- The lists and the relationship views have a Refresh button among the header's
-  actions. It is the same control (=RefreshButton=) on each. The record page's
-  own Refresh is part of the update story.
-- The notification bell reads its count on a timer, and when the count rises the
-  request lists are read again.
+- The browser holds one stream of change news for the session. It opens when
+  the first screen watches something and closes with the last, so a screen that
+  watches nothing holds no connection.
+- A screen names the entities it shows, as the services name their events: the
+  component and the events collection, such as =iam= and =accounts=. The refdata
+  registry states these, so no screen guesses a plural.
+- The news is a time and not a list. A thousand changes in one import make a
+  screen stale once.
+- A screen is stale when a change reached the browser after the load that
+  produced its data began. The comparison uses the browser's clock at both ends,
+  because the server's clock differs. A change that arrives while a load is in
+  flight counts.
 
-What is not settled, and will be specified here:
+*** Refresh
 
-- How a screen is told that a record it shows has changed on the server, and the
-  shape of that signal.
-- What the Refresh button does when the screen knows it is stale, including the
-  pulse that draws the eye to it.
-- What a screen does with an edit in progress when the record changes beneath it.
-- How a conflict between a person's edit and a newer version is shown and
-  resolved.
-- Which screens may update themselves without being asked, and which wait for the
-  reader.
-- How the recency marks of the record standard apply to an entity page.
+- Every list, relationship view and record page has a Refresh button in the
+  header's actions, the same control and the same place (=RefreshButton=).
+- When the screen is stale the button turns gold, pulses four times, and stays
+  gold until the screen loads again. Its tooltip says the data changed and gives
+  the time. A reader who asks for less motion gets the gold and no pulse.
+- The gold (=--color-stale=) means "changed on the server" and nothing else.
+- A click reads again whatever the screen shows. On a record page that is every
+  card and the history.
+- The page does not reload by itself. A list does not, a record page does not,
+  and the history does not.
+
+*** Rows and entries that changed
+
+- After a reload, a row that was not on the page before, or whose content is
+  not what it was, gets a gold left edge and pulses three times. The mark goes
+  after four seconds. The list keeps its scroll position.
+- The comparison is with the same page read before. It uses no clock, and moving
+  to another page, searching or sorting marks nothing.
+- A history entry that arrives with a read is marked the same way.
+
+*** An edit in progress
+
+- A dialog is never reloaded under the person. While it is open it listens for
+  a change to its entity and reads the record again behind the form.
+- When the record is newer than the one the edit started from, a warning above
+  the form says who saved it and which fields moved, with the old and the new
+  value. The person chooses Keep my edit or Take the new values.
+- A save claims the version the edit started from. A save made against an old
+  version is refused with a clear message, and the edit stays in the form.
+- Keep my edit makes the newest version the base, so the save replaces it
+  knowingly.
+
+*** What is not heard yet
+
+- A published event names no tenant or party. A change in another tenant can make
+  a screen stale. The task "Analyse who may listen to which tenant and party
+  events" decides how to isolate them.
+- A role granted or taken away is published inside the service only, so a person
+  page cannot hear it.
+- A reporting line has no event of its own. The staff list and the hierarchy
+  hear it when the person changes too.
+- A change to a record that a screen shows by reference, such as a country name
+  on a book, is not heard.
+- The classification lists, the staff list and the hierarchy mark no rows yet.
+- The account profile write has no version claim in its protocol. The BFF checks
+  the claim just before it writes, which leaves a very small gap.
+- The notification bell still reads its count on a timer.
 
 ** The shared components
 
@@ -566,7 +610,11 @@ What is not settled, and will be specified here:
 | Self reads | =get_my_account=, =get_my_login_info=, =get_my_sessions=, =list_my_permissions= | Exists |
 | Links for email and web | =mailto= and =webLink= in =access/PersonForms.tsx=, =Detail= in =ui/Primitives.tsx= | Exists |
 | Tenant and party in the footer | =VersionFooter= | Exists |
-| Refresh | =RefreshButton= in =ui/RefreshButton.tsx= | Exists; the stale pulse waits for the update story |
+| Refresh | =RefreshButton= in =ui/RefreshButton.tsx= | Exists; gold and pulsing when stale |
+| The change stream | =EntityEventStream=, =EntityEventsProvider= and =useEntityChangeEvents= in =events/= | Exists |
+| Knowing a screen is stale | =useEntityChanges= and =useLoadState= in =events/= | Exists |
+| Marking rows that changed | =useChangedRows= in =refdata/changedRows.ts=, the =row-changed= class | Exists |
+| An edit that learns of a newer version | =useNewerVersion= and =NewerVersionNotice= in =access/newerVersion.tsx= | Exists |
 
 ** How the Staff screens conform today
 
@@ -581,7 +629,7 @@ What is not settled, and will be specified here:
 | Words | The person page names its history tab Timeline and My profile names it History. One name, History, is the rule |
 | Photos | A history author's photo comes from the directory, so an author the reader cannot name is shown as initials, and the directory is read whole |
 | Proposals | The reporting line is not yet a proposal |
-| Updates | Not specified yet |
+| Updates | Only the person page has a Refresh that hears changes. The other record pages need the same with their own watches |
 
 Each deviation is a follow-up. None of them is a reason to copy the shortcut to
 another screen.

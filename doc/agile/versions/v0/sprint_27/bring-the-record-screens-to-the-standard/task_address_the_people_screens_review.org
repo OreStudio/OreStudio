@@ -67,7 +67,7 @@ reason beside any box that does not. The groups are the order of work.
 - [x] P7 Can I... on the staff person page
 
 ** Access and roles
-- [x] P3 Page the permissions a role grants
+- [x] P3 Page the permissions a role grants (reopened once: the first fix paged areas, the second pages the permission rows with the standard pager)
 - [x] P4 Select the permission area (Reference data, Data quality, ...)
 - [x] P10 Requests visible to every member
 - [x] P6 Protect my account: the Security page now reads sign-in state and sessions through two self reads (get_my_login_info, get_my_sessions)
@@ -112,6 +112,7 @@ task and name that file in the Command column.
 
 - Verified by the suites: web 609, BFF 347, wire-protocol 166, IAM core service 370 assertions, shell 1084. The tenant setup wizard has to be run from the browser before the staff exist, so the screens were not seen with the seeded staff in this session.
 - P18 is a change to the approval engine, which decides by permission and not by a named person. See the plan of its own task for the proposed shape.
+- Lesson from P3: a checkbox is ticked only when the screen shows what the comment says, tried against data of the real size. P3 was ticked on a reading that paged areas, and a test of that reading passed.
 - P8 waits on the choice between a close beacon and a shorter idle lifetime.
 
 * Test Scenarios
@@ -139,7 +140,7 @@ The batch from 2026-10-10, in the order given. Decisions: accept, question (need
 |---+-----------------+------+----------+-------|
 | P1 | Party should be a column in the staff list. | membership/StaffOfMyParties.tsx, access/PeoplePage.tsx | accept | The member list already shows parties as tags. The administrator list needs the column too, which needs each person's parties in its read. |
 | P2 | Adrian Vance has no address. | ores.seeder acme_corporation accounts.json | accept | The group head has no street, city or country in the seed data. Give the group head, and anyone else with none, an address. |
-| P3 | What these roles let them do needs paging. | access/PersonPage.tsx, access role panels | accept | The permission list under a role on the person's access tab is unpaged. |
+| P3 | What these roles let them do needs paging. | access/PersonPage.tsx, access role panels | accept | The permission list under a role on the person's access tab is unpaged. Reopened: the first fix paged areas, so one large area still listed every permission. Done when a role that grants one large area shows one page of rows, with the standard page sizes. |
 | P4 | Also select Reference data, Data quality and the other areas. | access role panels | accept | Same panel as P3: the area filter the roles list already has. |
 | P5 | My profile has no history, unlike the person page reached from staff. | pages/ProfilePage.tsx | accept | Show the same History tab for the signed-in person's own account. |
 | P6 | Protect my account as Adrian Vance gives 'You do not have access to this'. | pages/AccountDoors.tsx, security screen | accept (find cause) | Adrian holds the Operations role. Find which read the screen makes and whether it belongs on the authorised-reads allow-list as a self read. |

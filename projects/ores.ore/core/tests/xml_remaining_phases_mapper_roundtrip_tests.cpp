@@ -382,7 +382,7 @@ TEST_CASE("bond_repo_reverse", tags) {
     const auto r = load_and_map_bond("Cash_BondRepo_and_Bond.xml", 0);
     REQUIRE(r.repo.has_value());
     CHECK(r.repo->repo_type == "Fixed");
-    CHECK(r.repo->repo_rate == Approx(0.0178).epsilon(0.0001));
+    CHECK(r.repo->repo_rate->to_double() == Approx(0.0178).epsilon(0.0001));
 
     const auto rt = bond_instrument_mapper::reverse_bond_repo(r);
     REQUIRE(rt.BondRepoData.operator bool());
@@ -393,7 +393,7 @@ TEST_CASE("bond_repo_reverse", tags) {
     REQUIRE(leg.legDataType->FixedLegData.operator bool());
     REQUIRE(!leg.legDataType->FixedLegData->Rates.Rate.empty());
     CHECK(static_cast<double>(leg.legDataType->FixedLegData->Rates.Rate.front()) ==
-          Approx(r.repo->repo_rate).epsilon(0.0001));
+          Approx(r.repo->repo_rate->to_double()).epsilon(0.0001));
 
     BOOST_LOG_SEV(lg, info) << "BondRepo reverse test passed";
 }

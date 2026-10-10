@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/commodity_instrument_mapper.hpp"
+#include "ores.ore.core/domain/ore_boundary_decimal.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <chrono>
 #include <map>
@@ -245,8 +246,7 @@ commodity_instrument_mapper::forward_commodity_forward(const trade& t) {
     result.commodity_code = std::string(d.Name);
     result.currency = to_string(d.Currency);
     result.quantity = static_cast<double>(d.Quantity);
-    result.fixed_price =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Strike)).value();
+    result.fixed_price = exact_decimal(d.Strike);
     result.maturity_date = to_optional_domain_date(std::string(d.Maturity));
     return result;
 }
@@ -271,9 +271,7 @@ commodity_instrument_mapper::forward_commodity_option(const trade& t) {
         if (!s.empty())
             result.strike_price = ores::utility::decimal::decimal::from_string(s).value();
     } else if (d.strikeGroup.StrikeData && d.strikeGroup.StrikeData->Value) {
-        result.strike_price = ores::utility::decimal::decimal::from_double(
-                                  static_cast<double>(*d.strikeGroup.StrikeData->Value))
-                                  .value();
+        result.strike_price = exact_decimal(*d.strikeGroup.StrikeData->Value);
     }
     result.option_type = extract_option_type(d.OptionData);
     result.exercise_type = extract_exercise_style(d.OptionData);
@@ -359,8 +357,7 @@ commodity_instrument_mapper::forward_commodity_apo(const trade& t) {
     result.commodity_code = std::string(d.Name);
     result.currency = to_string(d.Currency);
     result.quantity = static_cast<double>(d.Quantity);
-    result.strike_price =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Strike)).value();
+    result.strike_price = exact_decimal(d.Strike);
     result.option_type = extract_option_type(d.OptionData);
     result.exercise_type = extract_exercise_style(d.OptionData);
     result.maturity_date = first_exercise_date(d.OptionData);
@@ -419,8 +416,7 @@ commodity_instrument_mapper::forward_commodity_basket_option(const trade& t) {
     instr.currency = to_string(d.Currency);
     instr.quantity = static_cast<double>(d.Notional);
     if (d.Strike)
-        instr.strike_price =
-            ores::utility::decimal::decimal::from_double(static_cast<double>(*d.Strike)).value();
+        instr.strike_price = exact_decimal(*d.Strike);
     instr.option_type = extract_option_type(d.OptionData);
     instr.exercise_type = extract_exercise_style(d.OptionData);
     instr.maturity_date = first_exercise_date(d.OptionData);
@@ -430,10 +426,11 @@ commodity_instrument_mapper::forward_commodity_basket_option(const trade& t) {
         commodity_basket_constituent constituent;
         constituent.sequence_number = sequence_number++;
         constituent.underlying_code = std::string(u.Name);
+        // A basket weight is a continuous quantity and not money. A later
+        // batch moves this column to double precision; this seam then
+        // becomes static_cast<double>(*u.Weight) with no decimal.
         if (u.Weight)
-            constituent.weight =
-                ores::utility::decimal::decimal::from_double(static_cast<double>(*u.Weight))
-                    .value();
+            constituent.weight = static_cast<double>(*u.Weight);
         constituent.modified_by = "ores";
         constituent.performed_by = "ores";
         constituent.change_reason_code = "system.external_data_import";
@@ -690,7 +687,7 @@ trade commodity_instrument_mapper::reverse_commodity_basket_option(
         static_cast<std::string&>(u.Type) = "Commodity";
         static_cast<std::string&>(u.Name) = constituent.underlying_code;
         if (constituent.weight)
-            u.Weight = static_cast<float>(constituent.weight->to_double());
+            u.Weight = static_cast<float>(*constituent.weight);
         d.Underlyings.Underlying.push_back(std::move(u));
     }
 

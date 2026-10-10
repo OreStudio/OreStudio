@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/netting_set_mapper.hpp"
+#include "ores.ore.core/domain/ore_boundary_decimal.hpp"
 #include "ores.ore.core/domain/ore_code_tables.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/functional/hash.hpp>
@@ -108,6 +109,25 @@ void put(xsd::optional<T>& target, const std::optional<T>& v) {
         target = *v;
 }
 
+/*
+ * The decimal arms. ORE states a CSA amount as an xs:float, and the CSA's
+ * money columns are exact decimals, so the boundary converts here rather than
+ * in the mappers that consume it.
+ */
+template <typename T>
+std::optional<ores::utility::decimal::decimal> number_decimal(const xsd::optional<T>& v) {
+    if (!v)
+        return std::nullopt;
+    return exact_decimal(*v);
+}
+
+template <typename T>
+void put_decimal(xsd::optional<T>& target,
+                 const std::optional<ores::utility::decimal::decimal>& v) {
+    if (v)
+        target = static_cast<T>(v->to_double());
+}
+
 refdata::domain::csa map_csa(const nettingsetdefinitions_NettingSet_t_CSADetails_t& d,
                              const boost::uuids::uuid& set_id,
                              const boost::uuids::uuid& party_id,
@@ -123,10 +143,10 @@ refdata::domain::csa map_csa(const nettingsetdefinitions_NettingSet_t_CSADetails
     r.index_name = text(d.Index);
     r.threshold_pay = number(d.ThresholdPay);
     r.threshold_receive = number(d.ThresholdReceive);
-    r.minimum_transfer_amount_pay = number(d.MinimumTransferAmountPay);
-    r.minimum_transfer_amount_receive = number(d.MinimumTransferAmountReceive);
+    r.minimum_transfer_amount_pay = number_decimal(d.MinimumTransferAmountPay);
+    r.minimum_transfer_amount_receive = number_decimal(d.MinimumTransferAmountReceive);
     if (d.IndependentAmount) {
-        r.independent_amount_held = d.IndependentAmount->IndependentAmountHeld;
+        r.independent_amount_held = exact_decimal(d.IndependentAmount->IndependentAmountHeld);
         r.independent_amount_type = to_string(d.IndependentAmount->IndependentAmountType);
     }
     if (d.MarginingFrequency) {
@@ -134,8 +154,8 @@ refdata::domain::csa map_csa(const nettingsetdefinitions_NettingSet_t_CSADetails
         r.post_frequency = std::string(d.MarginingFrequency->PostFrequency);
     }
     r.margin_period_of_risk = text(d.MarginPeriodOfRisk);
-    r.collateral_compounding_spread_receive = number(d.CollateralCompoundingSpreadReceive);
-    r.collateral_compounding_spread_pay = number(d.CollateralCompoundingSpreadPay);
+    r.collateral_compounding_spread_receive = number_decimal(d.CollateralCompoundingSpreadReceive);
+    r.collateral_compounding_spread_pay = number_decimal(d.CollateralCompoundingSpreadPay);
     r.apply_initial_margin = flag(d.ApplyInitialMargin);
     r.initial_margin_type = csa_type_text(d.InitialMarginType);
     r.calculate_im_amount = flag(d.CalculateIMAmount);
@@ -156,14 +176,14 @@ reverse_csa(const refdata::domain::csa& c,
     put_text(d.Index, c.index_name);
     put(d.ThresholdPay, c.threshold_pay);
     put(d.ThresholdReceive, c.threshold_receive);
-    put(d.MinimumTransferAmountPay, c.minimum_transfer_amount_pay);
-    put(d.MinimumTransferAmountReceive, c.minimum_transfer_amount_receive);
+    put_decimal(d.MinimumTransferAmountPay, c.minimum_transfer_amount_pay);
+    put_decimal(d.MinimumTransferAmountReceive, c.minimum_transfer_amount_receive);
     if (c.independent_amount_held.has_value() != c.independent_amount_type.has_value())
         throw std::runtime_error(
             "A CSA states half of its independent amount; ORE needs both the amount and its type.");
     if (c.independent_amount_held) {
         nettingsetdefinitions_NettingSet_t_CSADetails_t_IndependentAmount_t amount;
-        amount.IndependentAmountHeld = *c.independent_amount_held;
+        amount.IndependentAmountHeld = static_cast<double>(c.independent_amount_held->to_double());
         amount.IndependentAmountType = parse_independent_amount_type(*c.independent_amount_type);
         d.IndependentAmount = std::move(amount);
     }
@@ -177,8 +197,8 @@ reverse_csa(const refdata::domain::csa& c,
         d.MarginingFrequency = std::move(frequency);
     }
     put_text(d.MarginPeriodOfRisk, c.margin_period_of_risk);
-    put(d.CollateralCompoundingSpreadReceive, c.collateral_compounding_spread_receive);
-    put(d.CollateralCompoundingSpreadPay, c.collateral_compounding_spread_pay);
+    put_decimal(d.CollateralCompoundingSpreadReceive, c.collateral_compounding_spread_receive);
+    put_decimal(d.CollateralCompoundingSpreadPay, c.collateral_compounding_spread_pay);
     if (!currencies.empty()) {
         nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t collaterals;
         for (const auto* currency : currencies)

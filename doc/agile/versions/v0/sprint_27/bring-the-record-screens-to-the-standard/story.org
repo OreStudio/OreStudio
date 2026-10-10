@@ -8,7 +8,7 @@
 #+filetags: :web:ux:standards:sprint_27:v0:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment: clever_dijkstra
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -52,6 +52,7 @@ moved here.
 |------+-------+-------+-----+-------------|
 | [[id:FBD721CE-F97F-4F40-BBE3-908781628425][Bring the record screens to the standard]] | DONE | 2026-10-05 | 2026-10-05 | Close the remaining gaps the standard lists: related records as tabs, Delete and Remove words, icons, the last-changed line, reasons filtered by change, unsaved changes, sorting, the column menu, and shared parts for the tenant and party screens. |
 | [[id:BB15DD97-53FF-47AE-AAA1-8675BCFB9882][Bring the role screens to the standard]] | BACKLOG | | | Move the roles list and role page onto the shared record parts, with paged server reads for roles and for the people who hold a role. |
+| [[id:5917BF2F-CC4C-4223-9E4C-BE1607BBD527][Address the review of the people screens]] | STARTED | 2026-10-10 | | Work through the product owner's review of the people functionality: the organisation hub, staff, hierarchy, person page and my profile. Every comment is a row in the task's Review table, so none is lost. |
 
 * Decisions
 

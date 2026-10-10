@@ -94,7 +94,7 @@ export const en: SourceCatalogue = {
     access: {
         allAreas: 'All areas',
         areaFilter: 'Area',
-        areasShowing: 'Showing {from}–{to} of {total} areas',
+        permissionsShowing: 'Showing {from}–{to} of {total} permissions',
         hub: {
             title: 'Organisation',
             lead: 'The people of this tenant, and who they report to.',

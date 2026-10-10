@@ -47,12 +47,31 @@ function render(node: React.ReactNode): string {
     return renderToStaticMarkup(<TranslationProvider>{node}</TranslationProvider>);
 }
 
-describe('RolesAllow', () => {
-    it('shows a few areas at a time and says how many there are', () => {
-        const html = render(<RolesAllow roles={[role]} catalogue={catalogue} />);
+/** One area with forty resources: the shape of reference data, which one role can grant whole. */
+const BIG_AREA: readonly PermissionEntry[] = Array.from({ length: 40 }, (_unused, index) => {
+    const name = `thing_${String(index + 1).padStart(2, '0')}`;
+    return { code: `refdata::${name}:read`, description: `Read ${name}` };
+});
 
-        expect(html.match(/<details/g)).toHaveLength(5);
-        expect(html).toContain('Showing 1–5 of 7 areas');
+const refdataRole: HeldRole = { ...role, permissionCodes: ['refdata::*'] };
+
+function shownResources(html: string): number {
+    return (html.match(/>thing \d\d</g) ?? []).length;
+}
+
+describe('RolesAllow', () => {
+    it('pages the permissions of a single area, fifteen at a time', () => {
+        const html = render(<RolesAllow roles={[refdataRole]} catalogue={BIG_AREA} />);
+
+        expect(shownResources(html)).toBe(15);
+        expect(html).toContain('Showing 1–15 of 40 permissions');
+    });
+
+    it('offers the standard page sizes', () => {
+        const html = render(<RolesAllow roles={[refdataRole]} catalogue={BIG_AREA} />);
+
+        expect(html).toContain('value="25"');
+        expect(html).toContain('value="100"');
     });
 
     it('offers every area to choose from', () => {

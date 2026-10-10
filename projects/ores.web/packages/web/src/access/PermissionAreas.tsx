@@ -37,6 +37,7 @@ export function PermissionAreas({
     granted,
     onlyGranted = false,
     filter = '',
+    window,
     onToggle,
     explain,
 }: {
@@ -45,6 +46,12 @@ export function PermissionAreas({
     /** Whether to leave out what the set does not grant. */
     readonly onlyGranted?: boolean;
     readonly filter?: string;
+    /**
+     * The resources to draw, as =component::resource=, when the caller pages
+     * them. The area's counts still cover the whole area, so a page of rows does
+     * not change what an area says it holds.
+     */
+    readonly window?: ReadonlySet<string>;
     /** Present when the person may change the set. */
     readonly onToggle?: (code: string, on: boolean) => void;
     /** Names the roles behind a granted code, shown as its hover text. */
@@ -64,6 +71,8 @@ export function PermissionAreas({
                     !area.component.includes(needle) &&
                     !areaName.toLowerCase().includes(needle)
                 )
+                    return false;
+                if (window !== undefined && !window.has(`${area.component}::${resource.name}`))
                     return false;
                 if (onlyGranted)
                     return resource.actions.some((action) =>
@@ -228,6 +237,41 @@ export function PermissionAreas({
                 );
             })}
         </div>
+    );
+}
+
+/**
+ * The resources a filter would draw, in the order they are drawn, as
+ * =component::resource=. A caller that pages the rows pages this list and hands
+ * the page back as the window.
+ */
+export function permissionRows(
+    areas: readonly Area[],
+    granted: ReadonlySet<string>,
+    options: {
+        readonly onlyGranted: boolean;
+        readonly filter: string;
+        readonly areaName: (component: string) => string;
+    },
+): readonly string[] {
+    const needle = options.filter.trim().toLowerCase();
+    return areas.flatMap((area) =>
+        area.resources
+            .filter((resource) => {
+                if (
+                    needle !== '' &&
+                    !resource.name.replace(/_/g, ' ').includes(needle) &&
+                    !area.component.includes(needle) &&
+                    !options.areaName(area.component).toLowerCase().includes(needle)
+                )
+                    return false;
+                if (options.onlyGranted)
+                    return resource.actions.some((action) =>
+                        covers(granted, `${area.component}::${resource.name}:${action}`),
+                    );
+                return true;
+            })
+            .map((resource) => `${area.component}::${resource.name}`),
     );
 }
 

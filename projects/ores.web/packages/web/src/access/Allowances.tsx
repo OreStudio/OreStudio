@@ -22,17 +22,14 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import type { HeldRole, PermissionEntry } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
-import { Pager } from '../ui/Pager.js';
+import { DEFAULT_PAGE_SIZE, Pager } from '../ui/Pager.js';
 import { Input } from '../ui/Primitives.js';
 import { areasOf, grantedBy, rolesGranting, search, type Area } from './catalogue.js';
-import { AreaFilter, PermissionAreas } from './PermissionAreas.js';
+import { AreaFilter, PermissionAreas, areaLabel, permissionRows } from './PermissionAreas.js';
 import { roleLabel } from './words.js';
 
 /** How many answers "Can I…?" shows at once. */
 const ANSWERS = 8;
-
-/** How many areas of the catalogue one page of what the roles allow shows. */
-const AREAS_PER_PAGE = 5;
 
 /**
  * "Can I…?": a question about one thing, answered with the role behind a yes.
@@ -95,12 +92,13 @@ export function CanIPanel({
 }
 
 /**
- * What a set of roles lets a person do, by area, a few areas at a time.
+ * What a set of roles lets a person do, a page of permissions at a time.
  *
- * The catalogue is nearly nine hundred codes in dozens of areas, so the areas
- * are paged and a combo box picks one, such as reference data or data quality.
- * A search narrows the resources inside them. A role that grants everything
- * says so, instead of ticking every box.
+ * The catalogue is nearly nine hundred codes in dozens of areas, and a role can
+ * grant an area whole, so even one area is hundreds of rows. The rows are paged
+ * with the standard pager and its page sizes, a combo box picks one area, such
+ * as reference data or data quality, and a search narrows the rows. A role that
+ * grants everything says so, instead of listing every row.
  */
 export function RolesAllow({
     roles,
@@ -113,6 +111,7 @@ export function RolesAllow({
     const [area, setArea] = useState('');
     const [filter, setFilter] = useState('');
     const [offset, setOffset] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const areas = useMemo(() => areasOf(catalogue), [catalogue]);
     const everything = roles.find((role) => role.permissionCodes.includes('*'));
     if (everything !== undefined) {
@@ -125,7 +124,12 @@ export function RolesAllow({
     const granted = grantedBy(roles);
     const chosen: readonly Area[] =
         area === '' ? areas : areas.filter((entry) => entry.component === area);
-    const page = chosen.slice(offset, offset + AREAS_PER_PAGE);
+    const rows = permissionRows(chosen, granted, {
+        onlyGranted: true,
+        filter,
+        areaName: (component) => areaLabel(t, component),
+    });
+    const page = rows.slice(offset, offset + pageSize);
     return (
         <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
@@ -150,28 +154,33 @@ export function RolesAllow({
                 />
             </div>
             <PermissionAreas
-                areas={page}
+                areas={chosen}
                 granted={granted}
                 onlyGranted
                 filter={filter}
+                window={new Set(page)}
                 explain={(code) =>
                     rolesGranting(roles, code)
                         .map((name) => roleLabel(t, name))
                         .join(', ')
                 }
             />
-            {chosen.length > AREAS_PER_PAGE && (
+            {rows.length > 0 && (
                 <Pager
                     offset={offset}
                     shown={page.length}
-                    total={chosen.length}
-                    pageSize={AREAS_PER_PAGE}
-                    showing={t('access.areasShowing', {
+                    total={rows.length}
+                    pageSize={pageSize}
+                    showing={t('access.permissionsShowing', {
                         from: String(offset + 1),
                         to: String(offset + page.length),
-                        total: String(chosen.length),
+                        total: String(rows.length),
                     })}
                     onMove={setOffset}
+                    onPageSize={(size) => {
+                        setPageSize(size);
+                        setOffset(0);
+                    }}
                 />
             )}
         </div>

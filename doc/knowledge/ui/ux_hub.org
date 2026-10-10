@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 00BA1689-B060-4BD8-BC46-67034D663B7F
+:END:
+#+title: UX
+#+description: Structure note for the UX cluster: the design principles, the visual language, the icons and badges, the menu, the record screen and the entity screen, in the order they build on each other.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:ui:ux:structure_note:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+A screen in ORE Studio is built from decisions made at four levels. The first
+is how it looks. The second is what its marks mean. The third is where it
+lives in the application. The fourth is how it behaves for one kind of record
+and for an entity of several kinds. Read the cluster in that order, because
+each level assumes the one before it. A screen built from the behaviour rules
+alone has the right controls and the wrong colours, and a screen in the wrong
+area has the right controls and cannot be found.
+
+* Reading order
+
+** How a screen looks
+
+[[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — start here.
+The design direction, the spacing, the depth and the type. Every later page
+assumes these rules and does not repeat them.
+
+** What the marks mean
+
+[[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the meaning of colour:
+grey is inactive, orange is a missing badge definition, and green, amber and
+red are status and nothing else. It also sets the access mark, and the
+difference between History and Audit. Read it before choosing any colour or
+word for a screen.
+
+[[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] and
+[[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge catalogue]] — the two
+vocabularies that UX Language points to. One icon carries one idea. One badge
+code carries one colour. Look a mark up here before drawing a new one.
+
+** Where a screen lives
+
+[[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — the one menu for
+every person, the area each screen belongs to, and the breadcrumb that follows.
+Read it before adding a screen, because the next two pages assume the screen
+already has an area.
+
+** How a screen of one kind of record behaves
+
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the list,
+the record page, the writes, the history and the states for a currency, a
+calendar or a role. Each rule names the shared component that carries it.
+
+** How a screen of an entity behaves
+
+[[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the
+extension for a subject made of several kinds of record, such as a person. It
+adds the tabs, the cards, people as links, the timeline, and the rule that the
+pager is the request. Where it and the record standard disagree, the record
+standard rules for one kind of record and this page rules for an entity.
+
+** What the screens are for
+
+[[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the goal each
+screen serves. A journey decides which records a person works with. The pages
+above decide how each screen looks and behaves.
+
+# aside
+
+[[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]] —
+the one composite window of the desktop client. It belongs to the cluster by
+subject and not by sequence. Read it when the question is the Qt simulator, not
+when the subject advances.
+
+* What this cluster leaves out
+
+The look of the home dashboards is not here yet. Their panels, status marks
+and the one status chip follow the colour rules of UX Language, but no page
+states them. The [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]
+and the [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] cluster
+hold the screens that the menu leads to, and the cluster here does not restate
+them.
+
+* See also
+
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a structure note is and the three conventions it keeps
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index that lists this hub

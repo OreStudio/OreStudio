@@ -46,6 +46,7 @@ import type { Translator } from '../i18n/translate.js';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
 
 /** The range presets the screen offers, in the order it shows them. */
 const RANGES: readonly BusRange[] = ['15m', '1h', '6h'];
@@ -283,31 +284,34 @@ export function BusPage(): ReactNode {
 
     return (
         <div className="space-y-6">
-            <PageHeader
-                title={t('operations.bus.title')}
-                description={t('operations.bus.description')}
-                actions={
-                    <div className="flex items-end gap-3">
-                        <label className="flex flex-col gap-1 text-xs text-ink-muted">
-                            {t('operations.bus.range.label')}
-                            <Select
-                                value={range}
-                                onChange={(event) => setRange(event.target.value as BusRange)}
-                            >
-                                {RANGES.map((option) => (
-                                    <option key={option} value={option}>
-                                        {t(`operations.bus.range.${option}`)}
-                                    </option>
-                                ))}
-                            </Select>
-                        </label>
-                        <Button variant="secondary" onClick={applyRange}>
-                            {t('operations.bus.range.apply')}
-                        </Button>
-                        <OperationsBack />
-                    </div>
-                }
-            />
+            <div>
+                <AreaTrail area="operations" screen={t('operations.screens.bus')} />
+                <PageHeader
+                    title={t('operations.bus.title')}
+                    description={t('operations.bus.description')}
+                    actions={
+                        <div className="flex items-end gap-3">
+                            <label className="flex flex-col gap-1 text-xs text-ink-muted">
+                                {t('operations.bus.range.label')}
+                                <Select
+                                    value={range}
+                                    onChange={(event) => setRange(event.target.value as BusRange)}
+                                >
+                                    {RANGES.map((option) => (
+                                        <option key={option} value={option}>
+                                            {t(`operations.bus.range.${option}`)}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </label>
+                            <Button variant="secondary" onClick={applyRange}>
+                                {t('operations.bus.range.apply')}
+                            </Button>
+                            <OperationsBack />
+                        </div>
+                    }
+                />
+            </div>
 
             {bus.isPending ? (
                 <p className="text-sm text-ink-muted">{t('common.loading')}</p>

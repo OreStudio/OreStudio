@@ -19,7 +19,7 @@
  */
 
 import { fromWireTimestamp, isWireTimestamp } from '@ores/wire-protocol/browser';
-import type { BusView, GridView } from '@ores/wire-protocol/browser';
+import type { BusView, GridView, LoginInfo } from '@ores/wire-protocol/browser';
 
 /**
  * What the dashboard decides from the reads: how each panel is doing, and how
@@ -107,4 +107,19 @@ export function installationVerdict(tones: readonly StatusTone[]): Verdict {
         return { kind: 'attention', count };
     }
     return tones.some((tone) => tone === 'pending') ? { kind: 'pending' } : { kind: 'ok' };
+}
+
+/** The accounts the tenant has locked, which the People panel asks the administrator to look at. */
+export function lockedAccounts(rows: readonly LoginInfo[]): number {
+    return rows.filter((row) => row.locked).length;
+}
+
+/** The accounts with failed sign-ins since their last good one, which the Sign-ins panel asks about. */
+export function accountsWithFailedSignIns(rows: readonly LoginInfo[]): number {
+    return rows.filter((row) => row.failedLogins > 0).length;
+}
+
+/** The accounts that must set a new password at their next sign-in. */
+export function passwordResetsDue(rows: readonly LoginInfo[]): number {
+    return rows.filter((row) => row.passwordResetRequired).length;
 }

@@ -261,6 +261,9 @@ area. Tools like Supabase, Linear, and Vercel rely on a subtle border for
 separation rather than different background colors. This reduces visual weight
 and feels more unified.
 
+The entries of the navigation, and the trail each screen shows, are defined in
+[[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]].
+
 ---
 
 * Dark Mode Considerations
@@ -318,6 +321,9 @@ context-driven execution.
 
 * See also
 
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — what the navigation holds and the breadcrumb trail of a screen.
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the visual-language semantics: colour meanings,
   badge catalogue, journey screen anatomy.
 - [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] — the icon vocabulary.

@@ -26,6 +26,7 @@ import { MemoryRouter } from 'react-router';
 import type {
     Account,
     BusView,
+    LoginInfo,
     DeploymentOverview,
     GridView,
     ServiceRosterRow,
@@ -41,6 +42,7 @@ import {
 } from '../operations/InstallationHealth.js';
 import { BUS_QUERY_KEY } from '../operations/BusPage.js';
 import { GRID_QUERY_KEY } from '../operations/GridPage.js';
+import { AUDIT_ACCOUNTS_QUERY_KEY, AUDIT_SESSIONS_QUERY_KEY } from './AuditPage.js';
 import { HomePage } from './HomePage.js';
 
 /**
@@ -511,33 +513,253 @@ describe('the greeting', () => {
     });
 });
 
-describe("the tenant administrator's home", () => {
-    it("offers the tenant's own screens and no tenant management", () => {
-        const html = home('tenant-administration');
+/** What the tenant dashboard reads, for a tenant with nothing wrong. */
+function loginRow(overrides: Partial<LoginInfo> = {}): LoginInfo {
+    return {
+        tenantId: '22222222-2222-4222-8222-222222222222',
+        accountId: '11111111-1111-4111-8111-111111111111',
+        lastIp: '',
+        lastAttemptIp: '',
+        failedLogins: 0,
+        locked: false,
+        lastLogin: '',
+        online: false,
+        passwordResetRequired: false,
+        ...overrides,
+    };
+}
 
-        expect(html).toContain('Acme Corporation');
+function seedTenant(
+    options: {
+        readonly logins?: readonly LoginInfo[];
+        readonly totalLogins?: number;
+        readonly waiting?: number;
+        readonly mayAnswer?: boolean;
+    } = {},
+): (client: QueryClient) => void {
+    return (client) => {
+        client.setQueryData(['my-access'], {
+            roles: [
+                {
+                    permissionCodes:
+                        options.mayAnswer === false
+                            ? [
+                                  'iam::accounts:read',
+                                  'iam::login_info:read',
+                                  'iam::sessions:read',
+                                  'refdata::parties:read',
+                              ]
+                            : ['*'],
+                },
+            ],
+        });
+        client.setQueryData([AUDIT_ACCOUNTS_QUERY_KEY], { accounts: [], totalCount: 12 });
+        client.setQueryData(['tenant-home-logins'], {
+            loginInfo: options.logins ?? [loginRow()],
+            totalCount: options.totalLogins ?? (options.logins ?? [loginRow()]).length,
+        });
+        client.setQueryData([AUDIT_SESSIONS_QUERY_KEY], [{}, {}, {}]);
+        client.setQueryData(['tenant-home-requests'], {
+            items: [],
+            total: options.waiting ?? 0,
+            answered: [{}, {}],
+        });
+        client.setQueryData(['tenant-home-parties'], { parties: [], totalCount: 4 });
+    };
+}
+
+describe("the tenant administrator's home", () => {
+    it('says where they work, with the tabs Dashboard, Active modules and Upcoming modules', () => {
+        const html = home('application', undefined, undefined, seedTenant());
+
+        expect(html).toContain('Working for Acme London');
+        for (const title of ['Dashboard', 'Active modules', 'Upcoming modules']) {
+            expect(html).toContain(`>${title}<`);
+        }
+        expect(html).toMatch(/aria-selected="true"[^>]*>Dashboard</);
+    });
+
+    it('has a People, a Sign-ins, an Access requests and a Parties panel', () => {
+        const html = home('application', undefined, undefined, seedTenant());
+
+        for (const title of ['People', 'Sign-ins', 'Access requests', 'Parties']) {
+            expect(html).toContain(`>${title}</h2>`);
+        }
+        expect(html).toContain('href="/requests"');
+    });
+
+    it('leaves the Access requests panel out for a person who may not answer them', () => {
+        const html = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant({ mayAnswer: false }),
+        );
+
+        expect(html).not.toContain('>Access requests</h2>');
+        expect(html).not.toContain('href="/requests"');
+    });
+
+    it('states the figures behind each panel', () => {
+        const html = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant({ logins: [loginRow({ passwordResetRequired: true })], waiting: 0 }),
+        );
+
+        expect(html).toMatch(/>12<\/span><span[^>]*>Accounts</);
+        expect(html).toMatch(/>1<\/span><span[^>]*>Password reset due</);
+        expect(html).toMatch(/>3<\/span><span[^>]*>Signed in now</);
+        expect(html).toMatch(/>4<\/span><span[^>]*>Parties</);
+        expect(html).toMatch(/>2<\/span><span[^>]*>Answered</);
+    });
+
+    it('marks a count as a lower bound when the records read are not all there are', () => {
+        const html = home(
+            'application',
+            undefined,
+            undefined,
+            seedTenant({ logins: [loginRow({ locked: true })], totalLogins: 2500 }),
+        );
+
+        expect(html).toMatch(/>1\+<\/span><span[^>]*>Locked</);
+        expect(html).toMatch(/>0<\/span><span[^>]*>Password reset due</);
+    });
+
+    it('says Everything is running once, at the top, when nothing needs the person', () => {
+        const html = home('application', undefined, undefined, seedTenant());
+
+        expect(occurrences(html, `>${ALL_CLEAR}<`)).toBe(1);
+        expect(occurrences(html, `aria-label="${ALL_CLEAR}"`)).toBe(4);
+    });
+
+    it('says in the same words which panel needs the person, and counts them at the top', () => {
+        const html = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant({
+                logins: [
+                    loginRow({ locked: true, failedLogins: 5 }),
+                    loginRow({ failedLogins: 1 }),
+                    loginRow(),
+                ],
+                waiting: 3,
+            }),
+        );
+
+        expect(html).toContain('1 locked account needs attention');
+        expect(html).toContain('2 accounts with failed sign-ins need attention');
+        expect(html).toContain('3 requests need attention');
+        expect(html).toContain('3 areas need attention');
+        expect(occurrences(html, `>${ALL_CLEAR}<`)).toBe(0);
+    });
+
+    it('says nothing at the top until the panels have read', () => {
+        const html = home('application', undefined, undefined, (client) => {
+            client.setQueryData(['my-access'], { roles: [{ permissionCodes: ['*'] }] });
+        });
+
+        expect(html).not.toContain('area needs attention');
+        expect(html).not.toContain('areas need attention');
+        expect(html).not.toContain(ALL_CLEAR);
+        expect(html).toContain(enFlat['common.loading']);
+    });
+
+    it("offers the tenant's own screens on the Active modules tab, and no tenant management", () => {
+        const html = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant(),
+            '/?tab=active',
+        );
+
         for (const href of ['/parties', '/parties/new', '/rescue', '/audit', '/security']) {
             expect(html).toContain(`href="${href}"`);
         }
         expect(html).not.toContain('href="/tenants');
     });
+
+    it('marks what is still to come on the Upcoming modules tab, without a link', () => {
+        const html = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant(),
+            '/?tab=upcoming',
+        );
+
+        for (const title of ['Market data', 'Trading', 'Reporting']) {
+            expect(html).toContain(title);
+        }
+        expect(html).toContain('Coming later');
+        expect(html).not.toContain('href=');
+    });
+
+    it('shows words and never a translation key on any tab', () => {
+        for (const path of ['/', '/?tab=active', '/?tab=upcoming']) {
+            const html = home(
+                'tenant-administration',
+                undefined,
+                undefined,
+                seedTenant({ waiting: 1 }),
+                path,
+            );
+
+            expect(html).not.toMatch(/\b(home|shell|operations)\.[a-zA-Z]+\.?[a-zA-Z]*/);
+        }
+    });
 });
 
-describe("a party user's home", () => {
-    it('says where they work, offers their own screens, and marks what is coming', () => {
-        const html = home('application');
+describe("the home of the tenant's own modes", () => {
+    it('is the same for the declared tenant administration mode, which nothing produces yet', () => {
+        const html = home('tenant-administration', undefined, undefined, seedTenant());
+
+        expect(html).toContain('>People</h2>');
+        expect(html).toContain('Working for Acme London');
+    });
+});
+
+/** A member: signed in to a party, holding none of what the dashboard reads. */
+function seedMember(client: QueryClient): void {
+    client.setQueryData(['my-access'], { roles: [] });
+}
+
+describe("a member's home", () => {
+    it('lands on the Active modules tab, because nothing on the dashboard is theirs to read', () => {
+        const html = home('application', undefined, undefined, seedMember);
 
         expect(html).toContain('Working for Acme London');
-        expect(html).toContain('href="/security"');
-        expect(html).toContain('Trading');
-        expect(html).toContain('Coming later');
+        expect(html).not.toContain('>Dashboard<');
+        expect(html).toMatch(/aria-selected="true"[^>]*>Active modules</);
+        expect(html).not.toContain('area needs attention');
+        expect(html).not.toContain(ALL_CLEAR);
+    });
+
+    it('offers only the screens that are theirs', () => {
+        const html = home('application', undefined, undefined, seedMember);
+
+        for (const href of ['/security', '/access', '/refdata', '/operations/versions']) {
+            expect(html).toContain(`href="${href}"`);
+        }
+        for (const href of ['/audit', '/rescue', '/roles', '/parties/new', '/organisation']) {
+            expect(html).not.toContain(`href="${href}"`);
+        }
         expect(html).not.toContain('href="/tenants');
     });
 
-    it('offers the audit card, as the tenant home does', () => {
-        const html = home('application');
+    it('marks what is coming on the Upcoming modules tab', () => {
+        const html = home('application', undefined, undefined, seedMember, '/?tab=upcoming');
 
-        expect(html).toContain('href="/audit"');
-        expect(html).toContain('Sign-ins');
+        expect(html).toContain('Trading');
+        expect(html).toContain('Coming later');
+    });
+
+    it('reads nothing the server would refuse', () => {
+        const html = home('application', undefined, undefined, seedMember);
+
+        expect(html).not.toContain('Loading');
     });
 });

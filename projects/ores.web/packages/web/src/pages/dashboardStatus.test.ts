@@ -19,11 +19,14 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { BusView } from '@ores/wire-protocol/browser';
+import type { BusView, LoginInfo } from '@ores/wire-protocol/browser';
 import { sparklinePath } from '../ui/Sparkline.js';
 import {
+    accountsWithFailedSignIns,
     installationVerdict,
+    lockedAccounts,
     panelsNeedingAttention,
+    passwordResetsDue,
     throughputSeries,
 } from './dashboardStatus.js';
 
@@ -132,5 +135,47 @@ describe('the verdict on the whole installation', () => {
             kind: 'attention',
             count: 1,
         });
+    });
+});
+
+function login(overrides: Partial<LoginInfo> = {}): LoginInfo {
+    return {
+        tenantId: 't',
+        accountId: 'a',
+        lastIp: '',
+        lastAttemptIp: '',
+        failedLogins: 0,
+        locked: false,
+        lastLogin: '',
+        online: false,
+        passwordResetRequired: false,
+        ...overrides,
+    };
+}
+
+describe('the sign-in records of a tenant', () => {
+    const rows = [
+        login({ locked: true, failedLogins: 5 }),
+        login({ failedLogins: 1 }),
+        login({ passwordResetRequired: true }),
+        login(),
+    ];
+
+    it('counts the accounts that are locked', () => {
+        expect(lockedAccounts(rows)).toBe(1);
+    });
+
+    it('counts the accounts with failed sign-ins, locked or not', () => {
+        expect(accountsWithFailedSignIns(rows)).toBe(2);
+    });
+
+    it('counts the accounts that must set a new password', () => {
+        expect(passwordResetsDue(rows)).toBe(1);
+    });
+
+    it('counts nothing in an empty tenant', () => {
+        expect(lockedAccounts([])).toBe(0);
+        expect(accountsWithFailedSignIns([])).toBe(0);
+        expect(passwordResetsDue([])).toBe(0);
     });
 });

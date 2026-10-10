@@ -1249,13 +1249,17 @@ export const api = {
     },
 
     /** The tenant's login records, one page at a time. */
-    async loginInfoPage(): Promise<{
+    async loginInfoPage(page?: { readonly limit: number }): Promise<{
         readonly loginInfo: readonly LoginInfo[];
         readonly totalCount: number;
     }> {
+        const query =
+            page === undefined
+                ? ''
+                : `?${new URLSearchParams({ limit: String(page.limit) }).toString()}`;
         return z
             .object({ loginInfo: z.array(loginInfoSchema), totalCount: z.int().nonnegative() })
-            .parse(await request('/api/login-info', { method: 'GET' }));
+            .parse(await request(`/api/login-info${query}`, { method: 'GET' }));
     },
 
     /** The tenant's sessions, one page at a time. */

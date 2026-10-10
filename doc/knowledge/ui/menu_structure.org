@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 339F0405-43AE-4049-B6B3-EB12E5A38CA4
+:END:
+#+title: Menu structure
+#+description: The one menu of the web shell: the same entries in the same order for every person, an entry offered by the narrowest read its screens need, and the area each screen belongs to, which is the middle of its breadcrumb.
+#+type: knowledge
+#+level: cross
+#+filetags: :web:ux:standards:navigation:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+* Summary
+
+There is one menu and one set of cards. They are the same for every person.
+An area is drawn for a person who holds the read that one of its screens needs.
+A card is drawn for a person who holds the read of its screen. Nothing in the
+menu or in an area is written for a kind of user, because permissions change
+over time and a role is only a bundle of them. Every screen belongs to one
+area, and that area is the middle of its breadcrumb: Home, the area, the
+screen. A person's own pages are in the account menu and not in the menu.
+
+* Detail
+
+** Where this page applies
+
+This page governs the menu in the header of the shell, the cards on each area
+page, and the breadcrumb of every screen. A card on Home is a shortcut to a
+screen and is not a second home for it.
+
+The [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] and the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] already say that a
+breadcrumb is Home, the area, the list, then the subject, and that the menu
+offers an entry by the narrowest read the screen needs. This page names the
+areas and says which screen belongs to which.
+
+** Words
+
+| Word | Meaning |
+|------+---------|
+| /Menu/ | The list of areas in the header. It is one list |
+| /Area/ | One entry of the menu, and the page of cards it opens |
+| /Card/ | A tile on an area page. It leads to one screen of that area |
+| /Read/ | The permission a screen needs. It is the only thing that decides what is drawn |
+| /Account menu/ | The person's own pages and signing out. It is not part of the menu |
+
+** The rule
+
+- The menu is one list, in one order. It has no version for a mode, a role or
+  a kind of user.
+- An area is drawn when the person holds the read that any one of its screens
+  needs. If the person holds none, the area is not drawn. It is not disabled.
+- An area page shows the same cards to everyone. A card is drawn when the person
+  holds the read of its screen. If they do not, the card is not drawn.
+- No area, card or screen is named for a role. A role is a set of permissions
+  that changes. The screen names the read it needs, and the read decides.
+- A new screen is added to the area it belongs to. It then appears for every
+  person who holds its read, with no change to the menu.
+- The breadcrumb of a screen is Home, then its area, then the screen. A record
+  page adds the list and the subject, as the entity specification says.
+- A screen has one area. A card on Home or in another area leads to it, and the
+  screen still shows the trail of its own area.
+
+** The areas
+
+#+begin_src text
+  Home   Tenants   Parties   Organisation   Requests   Reference data   Operations
+#+end_src
+
+| Area | Screens | Drawn when the person holds the read of |
+|------+---------+------------------------------------------|
+| Home | The dashboard, Active modules, Upcoming modules | Always |
+| Tenants | The tenants, their parties and people, and onboarding | Any tenant screen |
+| Parties | The parties, their details and counterparty onboarding | Any party screen |
+| Organisation | Staff, Hierarchy, People, Roles and Rescue access | Any one of those screens |
+| Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
+| Reference data | Currencies, calendars, classifications and the other shared lists | Any list |
+| Operations | Services, the compute grid, the message queue, telemetry, versions, the database and Sign-ins | Any one of those screens |
+
+Operations is not an area of one kind of user. It holds every screen that says
+how the installation or the tenant is running. Each screen in it needs its own
+read, so a person sees the cards they may open. Versions needs no read,
+because every person must be able to report a problem to IT and says which
+build they use. So the Operations area is drawn for every person. A later screen that serves only some people is
+added to Operations and guarded by its read. It does not get an area of its own.
+
+** The account menu
+
+The account menu stands in the header with the notification bell. It holds My
+profile, My access, Where I work, Security and signing out. These are not
+areas. A person reaches each in one place, as the entity specification says.
+
+** Where a screen belongs
+
+| Screen | Area | Why |
+|--------+------+-----|
+| Staff, Hierarchy, People | Organisation | They are about the people of the tenant |
+| Roles | Organisation | A role is held by a person |
+| Rescue access | Organisation | It acts on one person's account |
+| Sign-ins | Operations | It reads sessions and failed sign-ins. It is the Audit of how the installation is used |
+| Versions and the database | Operations | They state the build and the store |
+| Requests | Requests | It is the one place for every kind of request |
+
+** How today's menus differ
+
+The menu is one list (=MENU= in =shell/areas.ts=), and an area or a card is
+drawn by the read of its screens. Sign-ins, Roles and Rescue access are in
+their areas, and each stands under its area in the breadcrumb. One difference
+is left.
+
+| Where | Today | The rule |
+|-------+-------+----------|
+| Tenants, and the Services, Grid, Message queue and Telemetry cards | Drawn only where the session acts on the deployment (the =installation= scope), because the server guards these reads by the session mode | Drawn by a read |
+| Other Operations cards | Versions needs no read. Sign-ins needs the read of sessions or sign-in records | As the rule |
+
+** Open points
+
+- The installation screens read the whole installation, and the server guards
+  them by the session mode. They need a read of their own, so that the read
+  decides who sees them. A tenant's administrator holds every read, so a read
+  that the wildcard grants would show them the installation. The new read must
+  be one that the wildcard of a tenant does not grant.
+- Whether Requests is an area or a card of Organisation.
+
+** Changing the menu
+
+Work in this order. Each step ends in something to check.
+
+1. Name the screen and the narrowest read it needs.
+2. Choose its one area from the table above. If none fits, add the area here
+   first.
+3. Add the screen to the area page as a card, drawn only for a person who holds
+   the read.
+4. Give the screen a breadcrumb of Home, the area and the screen.
+5. Check it with a person who holds the read and a person who does not. The
+   first sees the card. The second sees neither the card nor, when it was the
+   only one, the area.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the cluster this page belongs to, and the order to read it in
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the breadcrumb of a list and a page, the menu's narrowest read, and the account menu
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the addresses and the breadcrumb of a record list and page
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — History versus Audit, and the access mark
+- [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the navigation context a screen needs
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] — the screens of the Operations area
+- [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] — the journey of the Sign-ins screen
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — what each person is trying to do

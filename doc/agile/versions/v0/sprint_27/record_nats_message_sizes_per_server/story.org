@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: ABA9D173-E3EC-4F54-8E77-A15249C435F3
+:END:
+#+title: Story: Session activity: record the size of every NATS message per server
+#+description: Count the bytes of every NATS message each server receives and sends, and write the totals to the database at a fixed interval, so the session activity has samples to draw.
+#+type: story
+#+level: s2
+#+filetags: :iam:nats:telemetry:sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Session activity tab has no series to draw: ores_iam_session_samples_tbl exists with bytes_sent, bytes_received and latency_ms per session and sample time, and nothing writes a row to it. This story measures the size of every NATS message that a server receives and sends, keeps running totals in memory for each server, and writes them to the database at a fixed interval. The write must not slow the message path, and a failed write must not refuse a message. Open question for the first task: 'per server' may mean each service process that connects to NATS, or the NATS server itself. The answer decides whether the totals key on the session, the service instance, or both, and whether the existing sample table is enough or a second table is needed. The first task settles that and records the choice in Decisions.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- The size of every NATS message a server receives and sends is counted, with no message missed or counted twice.
+- The totals reach the database at a fixed interval, and the interval is a setting.
+- A failed or slow write never delays or refuses a message.
+- The Session activity tab draws the series from the samples, and states no series only when none exist.
+- The answer to what 'per server' means is recorded in Decisions.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

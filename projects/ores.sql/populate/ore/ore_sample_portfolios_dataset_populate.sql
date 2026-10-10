@@ -25,8 +25,9 @@
 -- every Envelope/PortfolioIds under external/ore/examples states, PF1 and PF2
 -- (the inventory is recorded on the task that added this script). An ORE import
 -- resolves each PortfolioId to a portfolio of the importing party by name, so
--- the party needs a portfolio of each name. Published as top-level portfolios
--- by the ore_samples bundle.
+-- the party needs a portfolio of each name. The ore_samples bundle publishes
+-- them as root portfolios of a sample sandbox it opens for the party, so no
+-- sample portfolio sits in the party's official portfolio tree.
 -- =============================================================================
 
 \echo '--- ORE Sample Portfolios Methodology ---'
@@ -35,7 +36,7 @@ do $$
 begin
     perform ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ORE Sample Portfolio Inventory',
-        'Portfolios named by the PortfolioIds of the ORE sample documents, inventoried from the samples'' trade envelopes',
+        'ORE sample data: portfolios named by the PortfolioIds of the ORE sample documents, inventoried from the samples'' trade envelopes',
         'https://github.com/OpenSourceRisk/Engine/tree/master/Examples',
         'Data Sourcing and Generation Steps:
 
@@ -46,13 +47,17 @@ begin
        Every distinct Envelope/PortfolioIds/PortfolioId is taken: PF1 and PF2.
 
     2. SYNTHESISE THE PORTFOLIOS
-       One top-level risk portfolio per name, active and not virtual, with no
-       owner unit and no aggregation currency: ORE uses the names only to
-       group trades in its reports.
+       One risk portfolio per name, active and not virtual, with no owner
+       unit and no aggregation currency: ORE uses the names only to group
+       trades in its reports. The names are ORE''s own and are kept as they
+       are, because an import resolves them by name.
 
     3. PUBLISH
        The ore_samples bundle publishes the dataset to the party named by the
-       publish parameters, adding each name the party does not hold yet.'
+       publish parameters. The publish opens a shared sample sandbox for the
+       party, anchored at its official top portfolio and owned by the
+       publishing actor, and writes each name as a root portfolio of that
+       sandbox. A name the sandbox holds already is skipped.'
     );
 end $$;
 
@@ -73,12 +78,12 @@ begin
         'Raw',
         'ORE Sample Portfolio Inventory',
         'ORE Sample Portfolios',
-        'The portfolios the ORE sample documents report their trades in.',
+        'ORE sample data: the portfolios the ORE sample documents report their trades in.',
         'ORE',
         'Portfolios for importing the ORE samples',
         '2026-10-04'::date,
         'Modified BSD License',
-        'named_portfolios'
+        'sandbox_portfolios'
     );
 
     select id into v_dataset_id from ores_dq_datasets_tbl

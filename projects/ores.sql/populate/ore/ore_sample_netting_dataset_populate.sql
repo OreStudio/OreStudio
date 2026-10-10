@@ -40,7 +40,7 @@ do $$
 begin
     perform ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ORE Sample Netting Synthesis',
-        'Synthetic netting agreements, netting sets and CSAs for the netting set ids the ORE sample documents use, built from the samples'' own netting set definitions',
+        'ORE sample data: synthetic netting agreements, netting sets and CSAs for the netting set ids the ORE sample documents use, built from the samples'' own netting set definitions',
         'https://github.com/OpenSourceRisk/Engine/tree/master/Examples',
         'Data Sourcing and Generation Steps:
 
@@ -61,11 +61,11 @@ begin
        One master agreement per bank, between the party a publish names
        and the bank: ISDA 2002 for banks under English or New York law,
        FBF for the French banks. The numbers follow the pattern
-       ACME-<type>-<bank>-<year>.
+       ORE-SAMPLE-<type>-<bank>-<year>.
 
     4. SYNTHESISE THE NETTING SETS
        One netting set per NettingSetId, opened under the agreement with its
-       counterparty''s bank, with a code of the pattern NS-<bank>-<purpose>-<n>.
+       counterparty''s bank, with a code of the pattern ORE-SAMPLE-NS-<bank>-<purpose>-<n>.
        The NettingSetId becomes the set''s ORE alias.
 
     5. TAKE THE CSA TERMS FROM ORE
@@ -98,7 +98,7 @@ begin
         'Raw',
         'ORE Sample Netting Synthesis',
         'ORE Sample Netting Agreements',
-        'A master netting agreement with each bank the ORE sample counterparties map onto.',
+        'ORE sample data: a master netting agreement with each bank the ORE sample counterparties map onto.',
         'ORE',
         'Netting agreements for importing the ORE samples',
         '2026-10-04'::date,
@@ -119,22 +119,22 @@ begin
     select v_dataset_id, ores_utility_system_tenant_id_fn(), a.agreement_number, 0,
         a.lei, a.agreement_type, a.governing_law, a.description
     from (values
-        ('ACME-ISDA-BARC-2002', 'G5GSEF7VJP5I7OUK5573', 'ISDA', 'English',
-         'ISDA 2002 Master Agreement with Barclays Bank PLC'),
-        ('ACME-ISDA-DEUT-2002', '7LTWFZYICNSX8D621K86', 'ISDA', 'English',
-         'ISDA 2002 Master Agreement with Deutsche Bank AG'),
-        ('ACME-ISDA-JPMC-2002', '7H6GLXDRUGQFU57RNE97', 'ISDA', 'New York',
-         'ISDA 2002 Master Agreement with JPMorgan Chase Bank, N.A.'),
-        ('ACME-FBF-BNPP-2013', 'R0MUWSFPU8MPRO8K5P83', 'FBF', 'French',
-         'FBF Master Agreement with BNP Paribas'),
-        ('ACME-ISDA-UBS-2002', 'BFM8T61CT2L1QCEMIK50', 'ISDA', 'English',
-         'ISDA 2002 Master Agreement with UBS AG'),
-        ('ACME-FBF-SOGE-2013', 'O2RNE8IBXP4R0TD8PU41', 'FBF', 'French',
-         'FBF Master Agreement with Societe Generale'),
-        ('ACME-ISDA-NWM-2002', 'RR3QWICWWIPCS8A4S074', 'ISDA', 'English',
-         'ISDA 2002 Master Agreement with NatWest Markets Plc'),
-        ('ACME-ISDA-BOFA-2002', 'B4TYDEB6GKMZO031MB27', 'ISDA', 'New York',
-         'ISDA 2002 Master Agreement with Bank of America, N.A.')
+        ('ORE-SAMPLE-ISDA-BARC-2002', 'G5GSEF7VJP5I7OUK5573', 'ISDA', 'English',
+         'ORE sample data: ISDA 2002 Master Agreement with Barclays Bank PLC'),
+        ('ORE-SAMPLE-ISDA-DEUT-2002', '7LTWFZYICNSX8D621K86', 'ISDA', 'English',
+         'ORE sample data: ISDA 2002 Master Agreement with Deutsche Bank AG'),
+        ('ORE-SAMPLE-ISDA-JPMC-2002', '7H6GLXDRUGQFU57RNE97', 'ISDA', 'New York',
+         'ORE sample data: ISDA 2002 Master Agreement with JPMorgan Chase Bank, N.A.'),
+        ('ORE-SAMPLE-FBF-BNPP-2013', 'R0MUWSFPU8MPRO8K5P83', 'FBF', 'French',
+         'ORE sample data: FBF Master Agreement with BNP Paribas'),
+        ('ORE-SAMPLE-ISDA-UBS-2002', 'BFM8T61CT2L1QCEMIK50', 'ISDA', 'English',
+         'ORE sample data: ISDA 2002 Master Agreement with UBS AG'),
+        ('ORE-SAMPLE-FBF-SOGE-2013', 'O2RNE8IBXP4R0TD8PU41', 'FBF', 'French',
+         'ORE sample data: FBF Master Agreement with Societe Generale'),
+        ('ORE-SAMPLE-ISDA-NWM-2002', 'RR3QWICWWIPCS8A4S074', 'ISDA', 'English',
+         'ORE sample data: ISDA 2002 Master Agreement with NatWest Markets Plc'),
+        ('ORE-SAMPLE-ISDA-BOFA-2002', 'B4TYDEB6GKMZO031MB27', 'ISDA', 'New York',
+         'ORE sample data: ISDA 2002 Master Agreement with Bank of America, N.A.')
     ) as a(agreement_number, lei, agreement_type, governing_law, description);
 
     perform ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -158,7 +158,7 @@ begin
         'Raw',
         'ORE Sample Netting Synthesis',
         'ORE Sample Netting Sets',
-        'A netting set for every netting set id the ORE sample trades use, each under the agreement with its counterparty''s bank.',
+        'ORE sample data: a netting set for every netting set id the ORE sample trades use, each under the agreement with its counterparty''s bank.',
         'ORE',
         'Netting sets for importing the ORE samples',
         '2026-10-04'::date,
@@ -178,25 +178,25 @@ begin
     select v_dataset_id, ores_utility_system_tenant_id_fn(), s.code, 0,
         s.agreement_number, s.description
     from (values
-        ('NS-BARC-CSA-01', 'ACME-ISDA-BARC-2002', 'Barclays rates and FX book under the CSA'),
-        ('NS-BARC-VMIM-01', 'ACME-ISDA-BARC-2002', 'Barclays book under the variation and initial margin CSA'),
-        ('NS-BARC-PRICING-01', 'ACME-ISDA-BARC-2002', 'Barclays pricing test book, uncollateralised'),
-        ('NS-BARC-SIMM-01', 'ACME-ISDA-BARC-2002', 'Barclays book for the SIMM sensitivities run, uncollateralised'),
-        ('NS-BARC-WRAP-01', 'ACME-ISDA-BARC-2002', 'Barclays wrapped trades, uncollateralised'),
-        ('NS-DEUT-CSA-01', 'ACME-ISDA-DEUT-2002', 'Deutsche Bank book under the CSA'),
-        ('NS-DEUT-VMIM-01', 'ACME-ISDA-DEUT-2002', 'Deutsche Bank book under the variation and initial margin CSA'),
-        ('NS-JPMC-MAIN-01', 'ACME-ISDA-JPMC-2002', 'JPMorgan main book, uncollateralised'),
-        ('NS-JPMC-CSA-01', 'ACME-ISDA-JPMC-2002', 'JPMorgan book under the CSA'),
-        ('NS-JPMC-CS-01', 'ACME-ISDA-JPMC-2002', 'JPMorgan credit book, uncollateralised'),
-        ('NS-BNPP-CSA-01', 'ACME-FBF-BNPP-2013', 'BNP Paribas book under the CSA'),
-        ('NS-BNPP-UNC-01', 'ACME-FBF-BNPP-2013', 'BNP Paribas first uncollateralised book'),
-        ('NS-BNPP-UNC-02', 'ACME-FBF-BNPP-2013', 'BNP Paribas second uncollateralised book'),
-        ('NS-UBS-CSA-01', 'ACME-ISDA-UBS-2002', 'UBS book under the CSA'),
-        ('NS-UBS-UNC-01', 'ACME-ISDA-UBS-2002', 'UBS uncollateralised book'),
-        ('NS-SOGE-01', 'ACME-FBF-SOGE-2013', 'Societe Generale book, uncollateralised'),
-        ('NS-NWM-EQ-01', 'ACME-ISDA-NWM-2002', 'NatWest first equity option book, uncollateralised'),
-        ('NS-NWM-EQ-02', 'ACME-ISDA-NWM-2002', 'NatWest second equity option book, uncollateralised'),
-        ('NS-BOFA-01', 'ACME-ISDA-BOFA-2002', 'Bank of America book, uncollateralised')
+        ('ORE-SAMPLE-NS-BARC-CSA-01', 'ORE-SAMPLE-ISDA-BARC-2002', 'ORE sample data: Barclays rates and FX book under the CSA'),
+        ('ORE-SAMPLE-NS-BARC-VMIM-01', 'ORE-SAMPLE-ISDA-BARC-2002', 'ORE sample data: Barclays book under the variation and initial margin CSA'),
+        ('ORE-SAMPLE-NS-BARC-PRICING-01', 'ORE-SAMPLE-ISDA-BARC-2002', 'ORE sample data: Barclays pricing test book, uncollateralised'),
+        ('ORE-SAMPLE-NS-BARC-SIMM-01', 'ORE-SAMPLE-ISDA-BARC-2002', 'ORE sample data: Barclays book for the SIMM sensitivities run, uncollateralised'),
+        ('ORE-SAMPLE-NS-BARC-WRAP-01', 'ORE-SAMPLE-ISDA-BARC-2002', 'ORE sample data: Barclays wrapped trades, uncollateralised'),
+        ('ORE-SAMPLE-NS-DEUT-CSA-01', 'ORE-SAMPLE-ISDA-DEUT-2002', 'ORE sample data: Deutsche Bank book under the CSA'),
+        ('ORE-SAMPLE-NS-DEUT-VMIM-01', 'ORE-SAMPLE-ISDA-DEUT-2002', 'ORE sample data: Deutsche Bank book under the variation and initial margin CSA'),
+        ('ORE-SAMPLE-NS-JPMC-MAIN-01', 'ORE-SAMPLE-ISDA-JPMC-2002', 'ORE sample data: JPMorgan main book, uncollateralised'),
+        ('ORE-SAMPLE-NS-JPMC-CSA-01', 'ORE-SAMPLE-ISDA-JPMC-2002', 'ORE sample data: JPMorgan book under the CSA'),
+        ('ORE-SAMPLE-NS-JPMC-CS-01', 'ORE-SAMPLE-ISDA-JPMC-2002', 'ORE sample data: JPMorgan credit book, uncollateralised'),
+        ('ORE-SAMPLE-NS-BNPP-CSA-01', 'ORE-SAMPLE-FBF-BNPP-2013', 'ORE sample data: BNP Paribas book under the CSA'),
+        ('ORE-SAMPLE-NS-BNPP-UNC-01', 'ORE-SAMPLE-FBF-BNPP-2013', 'ORE sample data: BNP Paribas first uncollateralised book'),
+        ('ORE-SAMPLE-NS-BNPP-UNC-02', 'ORE-SAMPLE-FBF-BNPP-2013', 'ORE sample data: BNP Paribas second uncollateralised book'),
+        ('ORE-SAMPLE-NS-UBS-CSA-01', 'ORE-SAMPLE-ISDA-UBS-2002', 'ORE sample data: UBS book under the CSA'),
+        ('ORE-SAMPLE-NS-UBS-UNC-01', 'ORE-SAMPLE-ISDA-UBS-2002', 'ORE sample data: UBS uncollateralised book'),
+        ('ORE-SAMPLE-NS-SOGE-01', 'ORE-SAMPLE-FBF-SOGE-2013', 'ORE sample data: Societe Generale book, uncollateralised'),
+        ('ORE-SAMPLE-NS-NWM-EQ-01', 'ORE-SAMPLE-ISDA-NWM-2002', 'ORE sample data: NatWest first equity option book, uncollateralised'),
+        ('ORE-SAMPLE-NS-NWM-EQ-02', 'ORE-SAMPLE-ISDA-NWM-2002', 'ORE sample data: NatWest second equity option book, uncollateralised'),
+        ('ORE-SAMPLE-NS-BOFA-01', 'ORE-SAMPLE-ISDA-BOFA-2002', 'ORE sample data: Bank of America book, uncollateralised')
     ) as s(code, agreement_number, description);
 
     perform ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -220,7 +220,7 @@ begin
         'Raw',
         'ORE Sample Netting Synthesis',
         'ORE Sample CSAs',
-        'The credit support annexes ORE defines for the sample netting sets, with the terms of each id''s most common ORE definition.',
+        'ORE sample data: the credit support annexes ORE defines for the sample netting sets, with the terms of each id''s most common ORE definition.',
         'ORE',
         'CSAs for importing the ORE samples',
         '2026-10-04'::date,
@@ -246,13 +246,13 @@ begin
         c.is_active, 'Bilateral', 'EUR', c.index_name, c.threshold, c.threshold,
         c.mta, c.mta, 0, 'FIXED', '1D', '1D', c.mpor, 0, 0, 'EUR'
     from (values
-        ('NS-BARC-CSA-01', false, 'EUR-EONIA', 100000::double precision, 0::double precision, '0W'),
-        ('NS-BARC-VMIM-01', true, 'EUR-ESTER', 0, 0, '2W'),
-        ('NS-DEUT-CSA-01', true, 'EUR-EONIA', 0, 5000000, '2W'),
-        ('NS-DEUT-VMIM-01', true, 'EUR-ESTER', 0, 0, '2W'),
-        ('NS-JPMC-CSA-01', false, 'EUR-EONIA', 0, 50000, '2W'),
-        ('NS-BNPP-CSA-01', false, 'EUR-EONIA', 0, 0, '0W'),
-        ('NS-UBS-CSA-01', false, 'EUR-EONIA', 0, 0, '2W')
+        ('ORE-SAMPLE-NS-BARC-CSA-01', false, 'EUR-EONIA', 100000::double precision, 0::double precision, '0W'),
+        ('ORE-SAMPLE-NS-BARC-VMIM-01', true, 'EUR-ESTER', 0, 0, '2W'),
+        ('ORE-SAMPLE-NS-DEUT-CSA-01', true, 'EUR-EONIA', 0, 5000000, '2W'),
+        ('ORE-SAMPLE-NS-DEUT-VMIM-01', true, 'EUR-ESTER', 0, 0, '2W'),
+        ('ORE-SAMPLE-NS-JPMC-CSA-01', false, 'EUR-EONIA', 0, 50000, '2W'),
+        ('ORE-SAMPLE-NS-BNPP-CSA-01', false, 'EUR-EONIA', 0, 0, '0W'),
+        ('ORE-SAMPLE-NS-UBS-CSA-01', false, 'EUR-EONIA', 0, 0, '2W')
     ) as c(netting_set_code, is_active, index_name, threshold, mta, mpor);
 
     perform ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -278,7 +278,7 @@ begin
         'Raw',
         'ORE Sample Netting Synthesis',
         'ORE Netting Set Aliases',
-        'The netting set ids the ORE sample documents use, mapped onto the sample netting sets by code.',
+        'ORE sample data: the netting set ids the ORE sample documents use, mapped onto the sample netting sets by code.',
         'ORE',
         'Netting set aliases for importing the ORE samples',
         '2026-10-04'::date,
@@ -298,25 +298,25 @@ begin
     select v_dataset_id, ores_utility_system_tenant_id_fn(), a.alias, 0, 'ORE', a.code,
         'Netting set id used by the ORE sample documents'
     from (values
-        ('CPTY_A', 'NS-BARC-CSA-01'),
-        ('CPTY_A_full', 'NS-BARC-VMIM-01'),
-        ('PricerStaticDate', 'NS-BARC-PRICING-01'),
-        ('CRIF_20191230', 'NS-BARC-SIMM-01'),
-        ('CPTY_A_tradeTypeWrapper', 'NS-BARC-WRAP-01'),
-        ('CPTY_B', 'NS-DEUT-CSA-01'),
-        ('CPTY_B_full', 'NS-DEUT-VMIM-01'),
-        ('NS', 'NS-JPMC-MAIN-01'),
-        ('CPTY', 'NS-JPMC-CSA-01'),
-        ('CS', 'NS-JPMC-CS-01'),
-        ('CPTY_C', 'NS-BNPP-CSA-01'),
-        ('Dummy1', 'NS-BNPP-UNC-01'),
-        ('Dummy4', 'NS-BNPP-UNC-02'),
-        ('CPTY_D', 'NS-UBS-CSA-01'),
-        ('DUMMY_NS', 'NS-UBS-UNC-01'),
-        ('1234', 'NS-SOGE-01'),
-        ('EquityOption1', 'NS-NWM-EQ-01'),
-        ('EquityOption2', 'NS-NWM-EQ-02'),
-        ('ABC1234', 'NS-BOFA-01')
+        ('CPTY_A', 'ORE-SAMPLE-NS-BARC-CSA-01'),
+        ('CPTY_A_full', 'ORE-SAMPLE-NS-BARC-VMIM-01'),
+        ('PricerStaticDate', 'ORE-SAMPLE-NS-BARC-PRICING-01'),
+        ('CRIF_20191230', 'ORE-SAMPLE-NS-BARC-SIMM-01'),
+        ('CPTY_A_tradeTypeWrapper', 'ORE-SAMPLE-NS-BARC-WRAP-01'),
+        ('CPTY_B', 'ORE-SAMPLE-NS-DEUT-CSA-01'),
+        ('CPTY_B_full', 'ORE-SAMPLE-NS-DEUT-VMIM-01'),
+        ('NS', 'ORE-SAMPLE-NS-JPMC-MAIN-01'),
+        ('CPTY', 'ORE-SAMPLE-NS-JPMC-CSA-01'),
+        ('CS', 'ORE-SAMPLE-NS-JPMC-CS-01'),
+        ('CPTY_C', 'ORE-SAMPLE-NS-BNPP-CSA-01'),
+        ('Dummy1', 'ORE-SAMPLE-NS-BNPP-UNC-01'),
+        ('Dummy4', 'ORE-SAMPLE-NS-BNPP-UNC-02'),
+        ('CPTY_D', 'ORE-SAMPLE-NS-UBS-CSA-01'),
+        ('DUMMY_NS', 'ORE-SAMPLE-NS-UBS-UNC-01'),
+        ('1234', 'ORE-SAMPLE-NS-SOGE-01'),
+        ('EquityOption1', 'ORE-SAMPLE-NS-NWM-EQ-01'),
+        ('EquityOption2', 'ORE-SAMPLE-NS-NWM-EQ-02'),
+        ('ABC1234', 'ORE-SAMPLE-NS-BOFA-01')
     ) as a(alias, code);
 
     perform ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),

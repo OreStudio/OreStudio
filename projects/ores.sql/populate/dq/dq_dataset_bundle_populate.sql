@@ -118,7 +118,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ore_samples',
         'ORE Samples',
-        'What the ORE sample documents import against: master agreements, netting sets, CSAs and netting set aliases for the netting set ids they use, built from the samples'' own netting definitions, and the portfolios their PortfolioIds name. Published once per party with a {"party_id": "..."} param, against the GLEIF banks the ORE counterparty aliases map onto.'
+        'ORE sample data, apart from the official data: what the ORE sample documents import against: master agreements, netting sets, CSAs and netting set aliases for the netting set ids they use, built from the samples'' own netting definitions, and the portfolios their PortfolioIds name, which the publish places in a sample sandbox. Published once per party with a {"party_id": "..."} param, against the GLEIF banks the ORE counterparty aliases map onto.'
     );
 END $$;
 

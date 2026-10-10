@@ -160,7 +160,7 @@ The test for a screen is one question: which topic would a person look in?
 ** The areas
 
 #+begin_src text
-  Home   Reference data   Organisation   Requests   Operations   Tenants
+  Home   Reference data   Organisation   Market data   Requests   Operations   Tenants
 #+end_src
 
 | Area | Screens | Drawn when the person holds the read of |
@@ -168,6 +168,7 @@ The test for a screen is one question: which topic would a person look in?
 | Home | The dashboard, Active modules, Upcoming modules | Always |
 | Reference data | The cards below | Always |
 | Organisation | People (Staff for a member), Hierarchy, Roles and Rescue access | Any one of those screens |
+| Market data | The prices and curves the platform receives or generates: the FX price feeds and the curve evolution | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Services, the compute grid, the message queue, telemetry, versions, the database and Sign-ins | Any one of those screens |
 | Tenants | The tenants, their parties and people, and onboarding | Any tenant screen |
@@ -221,6 +222,7 @@ areas. A person reaches each in one place, as the entity specification says.
 | Sign-ins | Operations | It reads sessions and failed sign-ins. It is the Audit of how the installation is used |
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
+| FX price feeds | Market data | A feed generates the prices that market data holds |
 | Tenants | Tenants | The roster of the installation |
 
 ** Addresses

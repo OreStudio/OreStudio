@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System administrator dashboard &mdash; Gemini review</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f1115; color: #f3f4f6; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<div style="background:#312e81;color:#e0e7ff;padding:.5rem 1rem;font:500 13px/1.6 Inter,system-ui,sans-serif;text-align:center">Gemini review &middot; a generated alternative to the agreed prototype &middot; mock data, nothing is stored &middot; <a href="../index.html" style="color:#fff;text-decoration:underline">the agreed prototype &rarr;</a></div>
+    <!-- Top Navigation -->
+    <header class="bg-[#161920] border-b border-[#222632] px-8 py-3.5 flex items-center justify-between">
+        <div class="flex items-center space-x-8">
+            <span class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                ORE Studio <span class="text-xs font-mono bg-indigo-950/60 text-indigo-400 px-2 py-0.5 rounded border border-indigo-900/50 ml-2">Super Admin</span>
+            </span>
+            <nav class="hidden md:flex items-center space-x-1 text-sm font-medium">
+                <a href="#" class="px-3 py-1.5 rounded-md text-white bg-[#1f2430] border border-[#2e3648]">Dashboard</a>
+                <a href="#" class="px-3 py-1.5 rounded-md text-gray-400 hover:text-white hover:bg-[#1f2430]">Accounts</a>
+                <a href="#" class="px-3 py-1.5 rounded-md text-gray-400 hover:text-white hover:bg-[#1f2430]">Tenants</a>
+                <a href="#" class="px-3 py-1.5 rounded-md text-gray-400 hover:text-white hover:bg-[#1f2430]">Operations</a>
+            </nav>
+        </div>
+        <div class="flex items-center space-x-3 text-gray-400">
+            <div class="flex items-center space-x-2 bg-[#1f2430] px-3 py-1.5 rounded-md border border-[#2e3648]">
+                <div class="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">SA</div>
+                <span class="text-xs font-medium text-gray-200">Super Admin</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-8 py-8 space-y-6">
+        <!-- Welcome Header -->
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-white tracking-tight">System Control Dashboard</h1>
+                <p class="text-xs text-gray-400 mt-0.5 font-mono">Environment Status · All clusters operational</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 bg-emerald-950/40 text-emerald-400 text-xs font-mono px-3 py-1.5 rounded-lg border border-emerald-900/50">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Everything is running
+                </span>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Tenants Card -->
+            <div class="bg-[#161920] border border-[#222632] rounded-xl p-6 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-base font-semibold text-white">Tenants Management</h2>
+                        <button class="bg-[#1f2430] hover:bg-[#2e3648] text-gray-200 text-xs font-medium px-3 py-1.5 rounded-md border border-[#2e3648] transition-colors">Open</button>
+                    </div>
+
+                    <!-- Metric Counters -->
+                    <div class="grid grid-cols-3 gap-4 mb-6 pt-2">
+                        <div class="bg-[#12141a] p-3 rounded-lg border border-[#222632]">
+                            <div class="text-2xl font-bold text-white">1</div>
+                            <div class="text-xs text-gray-400 mt-0.5">In service</div>
+                        </div>
+                        <div class="bg-[#12141a] p-3 rounded-lg border border-[#222632]">
+                            <div class="text-2xl font-bold text-indigo-400">1</div>
+                            <div class="text-xs text-gray-400 mt-0.5">On evaluation</div>
+                        </div>
+                        <div class="bg-[#12141a] p-3 rounded-lg border border-[#222632]">
+                            <div class="text-2xl font-bold text-gray-400">0</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Setting up</div>
+                        </div>
+                    </div>
+
+                    <!-- Tenant Table Preview -->
+                    <div class="border border-[#222632] rounded-lg overflow-hidden mb-4">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-[#12141a] text-gray-400 font-mono uppercase border-b border-[#222632]">
+                                <tr>
+                                    <th class="py-2.5 px-3">Name</th>
+                                    <th class="py-2.5 px-3">Sign-in address</th>
+                                    <th class="py-2.5 px-3">Type</th>
+                                    <th class="py-2.5 px-3 text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-[#222632] font-mono">
+                                <tr>
+                                    <td class="py-3 px-3 text-white font-sans font-medium">Acme Corporation</td>
+                                    <td class="py-3 px-3 text-gray-300">acme_corporation</td>
+                                    <td class="py-3 px-3"><span class="bg-indigo-950/60 text-indigo-300 px-2 py-0.5 rounded border border-indigo-900/50 text-[10px]">Evaluation</span></td>
+                                    <td class="py-3 px-3 text-right"><span class="bg-emerald-950/60 text-emerald-400 px-2 py-0.5 rounded border border-emerald-900/50 text-[10px]">Active</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-3 border-t border-[#222632] text-xs text-gray-400">
+                    <span>Showing 1 of 1 tenant</span>
+                    <button class="text-indigo-400 hover:underline font-medium">See all tenants →</button>
+                </div>
+            </div>
+
+            <!-- Services Cluster Card -->
+            <div class="bg-[#161920] border border-[#222632] rounded-xl p-6 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-base font-semibold text-white">Services Health</h2>
+                        <button class="bg-[#1f2430] hover:bg-[#2e3648] text-gray-200 text-xs font-medium px-3 py-1.5 rounded-md border border-[#2e3648] transition-colors">Open</button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-6 pt-2">
+                        <div class="bg-[#12141a] p-3 rounded-lg border border-[#222632]">
+                            <div class="text-2xl font-bold text-emerald-400">19 / 19</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Services running</div>
+                        </div>
+                        <div class="bg-[#12141a] p-3 rounded-lg border border-[#222632]">
+                            <div class="text-2xl font-bold text-gray-400">0</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Lost / Missing</div>
+                        </div>
+                        <div class="bg-[#12141a] p-3 rounded-lg border border-[#222632]">
+                            <div class="text-2xl font-bold text-gray-400">0</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Errors (Last hour)</div>
+                        </div>
+                        <div class="bg-[#12141a] p-3 rounded-lg border border-[#222632]">
+                            <div class="text-2xl font-bold text-gray-400">0</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Warnings (Last hour)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-[#222632] flex items-center justify-between text-xs text-gray-400 font-mono">
+                    <span>Cluster Build Version</span>
+                    <span class="text-indigo-400 font-bold bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/50">v0.0.27</span>
+                </div>
+            </div>
+
+            <!-- Compute Grid Card with Chart -->
+            <div class="bg-[#161920] border border-[#222632] rounded-xl p-6 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-base font-semibold text-white">Compute Grid & Load</h2>
+                        <button class="bg-[#1f2430] hover:bg-[#2e3648] text-gray-200 text-xs font-medium px-3 py-1.5 rounded-md border border-[#2e3648] transition-colors">Open</button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4 pt-2">
+                        <div class="bg-[#12141a] p-3 rounded-lg border border-[#222632]">
+                            <div class="text-2xl font-bold text-emerald-400">5 of 5</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Nodes online</div>
+                        </div>
+                        <div class="bg-[#12141a] p-3 rounded-lg border border-[#222632]">
+                            <div class="text-2xl font-bold text-gray-400">0</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Failed results</div>
+                        </div>
+                    </div>
+
+                    <!-- Mini Sparkline Chart for Grid Load -->
+                    <div class="bg-[#12141a] border border-[#222632] rounded-lg p-3">
+                        <div class="flex items-center justify-between text-[11px] font-mono text-gray-400 mb-1">
+                            <span>CPU Cluster Load (Last 60m)</span>
+                            <span class="text-emerald-400">Avg: 24.5%</span>
+                        </div>
+                        <svg class="w-full h-12 overflow-visible" viewBox="0 0 300 40">
+                            <path d="M 0 32 Q 50 28, 100 20 T 200 15 T 300 10" fill="none" stroke="#6366f1" stroke-width="2" />
+                            <path d="M 0 32 Q 50 28, 100 20 T 200 15 T 300 10 L 300 40 L 0 40 Z" fill="rgba(99, 102, 241, 0.1)" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="pt-3 border-t border-[#222632] text-xs text-gray-400 font-mono mt-4">
+                    Scheduler Status: <span class="text-emerald-400">Active & Synchronized</span>
+                </div>
+            </div>
+
+            <!-- Message Queue Card with Chart -->
+            <div class="bg-[#161920] border border-[#222632] rounded-xl p-6 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-base font-semibold text-white">Message Queue Activity</h2>
+                        <button class="bg-[#1f2430] hover:bg-[#2e3648] text-gray-200 text-xs font-medium px-3 py-1.5 rounded-md border border-[#2e3648] transition-colors">Open</button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4 pt-2">
+                        <div class="bg-[#12141a] p-3 rounded-lg border border-[#222632]">
+                            <div class="text-2xl font-bold text-white">24</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Connections</div>
+                        </div>
+                        <div class="bg-[#12141a] p-3 rounded-lg border border-[#222632]">
+                            <div class="text-2xl font-bold text-indigo-400 font-mono">67,150</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Messages stored</div>
+                        </div>
+                    </div>
+
+                    <!-- Mini Sparkline Chart for Message Throughput -->
+                    <div class="bg-[#12141a] border border-[#222632] rounded-lg p-3">
+                        <div class="flex items-center justify-between text-[11px] font-mono text-gray-400 mb-1">
+                            <span>Throughput (msgs/sec)</span>
+                            <span class="text-indigo-400">1.2k msg/s</span>
+                        </div>
+                        <svg class="w-full h-12 overflow-visible" viewBox="0 0 300 40">
+                            <path d="M 0 35 Q 40 25, 80 30 T 160 12 T 240 20 T 300 8" fill="none" stroke="#10b981" stroke-width="2" />
+                            <path d="M 0 35 Q 40 25, 80 30 T 160 12 T 240 20 T 300 8 L 300 40 L 0 40 Z" fill="rgba(16, 185, 129, 0.1)" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="pt-3 border-t border-[#222632] text-xs text-gray-400 font-mono mt-4">
+                    Backbone: <span class="text-gray-200">NATS Streaming Broker</span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</body>
+</html>

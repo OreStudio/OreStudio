@@ -188,6 +188,11 @@ kind:
 
 ** How an approval is applied
 
+The role request applies by reconciliation, as described below. For refdata changes the
+[[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][four-eyes framework]] applies an approved request through a workflow instead, because an
+apply is a process the engine retries and shows, while the wait for a person stays a
+record.
+
 The record never writes another component's data. When a request is approved,
 the decision publishes the request's change event, and the component that owns
 the kind applies it through its own grant: IAM grants the role as the approver,

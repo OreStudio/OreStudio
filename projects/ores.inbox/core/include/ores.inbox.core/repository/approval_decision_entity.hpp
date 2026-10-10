@@ -47,6 +47,7 @@ struct approval_decision_entity {
     int version = 0;
     std::string request_id;
     std::string decision_code;
+    std::optional<std::string> part_code;
     std::string decided_by;
     std::string decided_at;
     std::string comment;

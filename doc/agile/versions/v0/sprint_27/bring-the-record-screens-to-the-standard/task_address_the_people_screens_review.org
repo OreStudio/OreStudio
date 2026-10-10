@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: 5917BF2F-CC4C-4223-9E4C-BE1607BBD527
+:END:
+#+title: Task: Address the review of the people screens
+#+description: Work through the product owner's review of the people functionality: the organisation hub, staff, hierarchy, person page and my profile. Every comment is a row in the task's Review table, so none is lost.
+#+type: task
+#+level: s1
+#+filetags: :bring-the-record-screens-to-the-standard:sprint_27:v0:
+#+owner: marco
+#+branch: feature/address-the-people-screens-review
+#+pr: 3045
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close every comment of the product owner's review of the people screens. The Review table holds one row per comment with its decision, so the list stays complete across the many small changes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- Every comment in the Review table has a decision and a state, and each accepted one is done.
+- The changes land in one pull request, with tests passing.
+
+* Plan
+
+The review arrives as a long list, so the list is the task. Each comment gets
+one row in the =* Review= table, in the order it was given, and one checkbox in
+the =* Checklist= below. A comment is never dropped silently: it ends as done,
+declined with a reason, or deferred to a named task.
+
+1. Enter every comment of a batch in =* Review= and =* Checklist= before changing any code.
+2. Settle each comment's decision: accept, decline with a reason, or defer.
+3. Work the accepted comments in the order listed. Commit in small steps and tick the box as each lands.
+4. Run the web suites after each group, and the C++ suites when a server change is part of it.
+5. At the end every row has a decision, every accepted box is ticked, and the Result names what was declined or deferred.
+
+* Checklist
+
+Tick a box when its change has landed. Add =declined= or =deferred= with the
+reason beside any box that does not. The groups are the order of work.
+
+** Questions to settle first
+- [x] P8 Sign out when the window closes: settled as its own story, End a session when its window closes, not when it is unattended (presence heartbeat; idle sign-out optional and off by default)
+- [x] P9 My access in two places: settled by proposal. My access keeps the roles and what they allow; the profile's Access tab points to it.
+- [x] P14 Requests: settled by proposal. It is the one place for every request type; every member sees their own there, and deciders see the queue.
+
+** Staff and person
+- [x] P1 Party column in the staff list
+- [x] P2 Address for Adrian Vance and the others who have none
+- [x] P7 Can I... on the staff person page
+
+** Access and roles
+- [x] P3 Page the permissions a role grants (reopened twice: areas paged in the browser, then rows paged in the browser; now the server pages the rows and the pager is the request)
+- [x] P4 Select the permission area (Reference data, Data quality, ...)
+- [x] P10 Requests visible to every member
+- [x] P6 Protect my account: the Security page now reads sign-in state and sessions through two self reads (get_my_login_info, get_my_sessions)
+
+** Profile
+- [x] P5 History on My profile
+- [x] P9 My access in one place
+- [ ] P8 Sign out on close: build in the story End a session when its window closes (five tasks)
+
+** Requests
+- [x] P12 Answered by: name, with username, as a link
+- [x] P13 Approved by: the same
+- [x] P14 Scope of Requests
+
+** History
+- [x] P15 Header line per event, details on demand
+- [x] P16 Username links to the person
+- [x] P17 Hierarchy history: recent changes list, then one person's history
+
+** Shell
+- [x] P19 Current tenant and party as pills; explain or drop the Application pill
+- [x] P11 The bell list is polled and the request lists refresh when the count rises. A pushed update stays with Hear a change on the server and offer a refresh.
+
+** Own task
+- [ ] P18 Approve a reporting line change by the proposed manager: now its own story, approve_a_reporting_line_change_by_the_proposed_manager, with six tasks
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Verified by the suites: web 609, BFF 347, wire-protocol 166, IAM core service 370 assertions, shell 1084. The tenant setup wizard has to be run from the browser before the staff exist, so the screens were not seen with the seeded staff in this session.
+- P18 is a change to the approval engine, which decides by permission and not by a named person. See the plan of its own task for the proposed shape.
+- The roles list, the role editor and the role's Held by list page on the server (list_roles_page, list_role_permissions, list_role_holders), so the pager on each screen is the data request.
+- Lesson from P3: a checkbox is ticked only when the screen shows what the comment says, tried against data of the real size. P3 was ticked on a reading that paged areas, and a test of that reading passed.
+- P8 waits on the choice between a close beacon and a shorter idle lifetime.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3045][#3045]] | [web] Address the people screens review |
+
+* Review
+
+The batch from 2026-10-10, in the order given. Decisions: accept, question (needs an answer), defer (another task owns it), split (its own task or story).
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| P1 | Party should be a column in the staff list. | membership/StaffOfMyParties.tsx, access/PeoplePage.tsx | accept | The member list already shows parties as tags. The administrator list needs the column too, which needs each person's parties in its read. |
+| P2 | Adrian Vance has no address. | ores.seeder acme_corporation accounts.json | accept | The group head has no street, city or country in the seed data. Give the group head, and anyone else with none, an address. |
+| P3 | What these roles let them do needs paging. | access/PersonPage.tsx, access role panels | accept | The permission list under a role on the person's access tab is unpaged. Reopened: the first fix paged areas, so one large area still listed every permission. Done when a role that grants one large area shows one page of rows, with the standard page sizes. |
+| P4 | Also select Reference data, Data quality and the other areas. | access role panels | accept | Same panel as P3: the area filter the roles list already has. |
+| P5 | My profile has no history, unlike the person page reached from staff. | pages/ProfilePage.tsx | accept | Show the same History tab for the signed-in person's own account. |
+| P6 | Protect my account as Adrian Vance gives 'You do not have access to this'. | pages/AccountDoors.tsx, security screen | accept (find cause) | Adrian holds the Operations role. Find which read the screen makes and whether it belongs on the authorised-reads allow-list as a self read. |
+| P7 | There is no 'Can I...?' in staff. | access/PersonPage.tsx, staff list | accept | Add the Can I check to the staff person page, as it is on my access. |
+| P8 | Closing the window does not sign out. | session/SessionProvider.tsx, bff sessions | question | Closing a tab is not a reliable signal. Options: a pagehide beacon that ends the session, or a shorter idle lifetime. Needs your call. |
+| P9 | My access is in two places. | pages/ProfilePage.tsx access tab, /access | question | Which two? The Access tab of My profile and the My access page both list roles. Proposal: keep the page and make the tab a link. |
+| P10 | Adrian Vance cannot see Requests. All members should. | shell/areas.ts, requests screens | accept | Requests should not need an administrator permission. A member sees their own requests and those addressed to them. |
+| P11 | A notification needs a refresh to show. | notification bell, query refresh | defer | Belongs to the story Hear a change on the server and offer a refresh. Link it there; check the bell polls meanwhile. |
+| P12 | Requests: 'Answered adrian.vance' cannot be clicked and is not the person's name. | requests list | accept | Show the full name, with the username in brackets, as a link to the person where the reader may open them. |
+| P13 | Requests: 'approved by' shows a raw identifier. | requests list | accept | Resolve the approver the same way as P12. |
+| P14 | Requests: is this the place for all requests or only role requests? | requests list | question | Proposal: the one place for every request type. Reporting line proposals (P18) would appear here. |
+| P15 | History everywhere: show the header, not every detail; expand on demand. | timeline/Timeline.tsx | accept | One line per event: time, what happened, record and version, reason, who, and the note. Details open on demand. |
+| P16 | History: the username should link to the person. | timeline/Timeline.tsx | accept | Where the reader may open the person. |
+| P17 | Hierarchy history: remove the person card. List the people whose line changed recently, then show one person's history. | membership/ReportingLinesPage.tsx | accept | Needs a read of recent reporting line changes across the tenant, or a client-side pass over the account history. |
+| P18 | Changing the hierarchy is not four-eyes. The proposed new manager should approve, like a role request. | server + web | split | Own story: Approve a reporting line change by the proposed manager (six tasks in sprint 27). |
+| P19 | What does the 'Application' pill mean? Show the current party and tenant, very visibly, perhaps as pills at the bottom. | components/AppShell.tsx | accept | Explain or remove the Application pill. Add tenant and party pills to the footer. |
+
+* Result
+
+The product owner reviewed the Staff screens and accepted them. All 19 comments are decided. P8 and P18 became their own stories. Lists, the role editor and the Held by list page on the server. The timeline has a chart of events by hour or day, the author's photo beside the changes, and the current version as an emblem. The look and feel is now written down in the entity screen specification (=doc/knowledge/ui/=). Known gaps are listed in that document under how Staff conforms today.

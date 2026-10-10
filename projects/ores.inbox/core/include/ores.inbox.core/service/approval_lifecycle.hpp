@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/domain/approval_kind.hpp"
+#include "ores.inbox.api/domain/approval_part.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -121,7 +122,29 @@ public:
      */
     domain::approval_request raise(const domain::approval_kind& kind,
                                    const std::string& reason,
-                                   const boost::uuids::uuid& requested_by);
+                                   const boost::uuids::uuid& requested_by,
+                                   const std::vector<std::string>& part_codes = {});
+
+    /**
+     * @brief The parts a request needs, with the order each answers in.
+     *
+     * Empty for a request of a kind that names one decider permission and a
+     * count. Lowest answer order first, then by display order.
+     */
+    std::vector<domain::approval_part> parts_of(const std::string& request_id);
+
+    /**
+     * @brief The parts a request still waits on whose turn has come.
+     *
+     * A part is open when it has not approved and every part of an earlier
+     * answer order has.
+     */
+    std::vector<domain::approval_part> open_parts_of(const std::string& request_id);
+
+    /**
+     * @brief A part, read from the system tenant's catalogue.
+     */
+    std::optional<domain::approval_part> part(const std::string& code);
 
     /**
      * @brief Writes a decision and moves the request to the state the
@@ -131,7 +154,8 @@ public:
                            int version,
                            const std::string& decision_code,
                            const boost::uuids::uuid& decided_by,
-                           const std::string& comment);
+                           const std::string& comment,
+                           const std::string& part_code = "");
 
     /**
      * @brief The open requests of the given kinds not raised by an account,

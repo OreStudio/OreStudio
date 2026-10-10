@@ -467,6 +467,22 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Book changes (the lines of a request that proposes a change to a book)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_book_changes_tbl enable row level security;
+
+drop policy if exists book_changes_tenant_isolation_policy
+    on ores_refdata_book_changes_tbl;
+
+create policy book_changes_tenant_isolation_policy on ores_refdata_book_changes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Books
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_books_tbl enable row level security;

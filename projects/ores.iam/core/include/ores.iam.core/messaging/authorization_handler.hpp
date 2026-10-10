@@ -289,6 +289,215 @@ public:
         }
     }
 
+    /**
+     * @brief Serves iam.v1.ops.list_account_permissions: one page of what an
+     * account's roles allow. Needs roles:read, checked in the service.
+     */
+    void permissions_by_account(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
+        auto req = decode<list_account_permissions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            boost::uuids::string_generator sg;
+            service::authorization_service svc(ctx);
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      permission_page_response{
+                          .result = failed_result(std::string{no_account_answer})});
+                return;
+            }
+            const service::permission_query query{
+                .area = req->area, .search = req->search, .offset = req->offset, .limit = req->limit};
+            reply(nats_, msg, svc.read_account_permissions(*caller_id, sg(req->account_id), query));
+            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, permission_page_response{.result = failed_result(e.what())});
+        }
+    }
+
+    /**
+     * @brief Serves iam.v1.ops.list_my_permissions: one page of what the
+     * caller's own roles allow. A self read, so it needs no permission.
+     */
+    void my_permissions(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
+        auto req = decode<list_my_permissions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            service::authorization_service svc(ctx);
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      permission_page_response{
+                          .result = failed_result(std::string{no_account_answer})});
+                return;
+            }
+            const service::permission_query query{
+                .area = req->area, .search = req->search, .offset = req->offset, .limit = req->limit};
+            reply(nats_, msg, svc.read_own_permissions(*caller_id, query));
+            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, permission_page_response{.result = failed_result(e.what())});
+        }
+    }
+
+    /**
+     * @brief Serves iam.v1.ops.list_role_permissions: one page of the catalogue
+     * against what a role grants, for the role editor. Needs roles:read.
+     */
+    void role_permissions_page(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
+        auto req = decode<list_role_permissions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            boost::uuids::string_generator sg;
+            service::authorization_service svc(ctx);
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      permission_page_response{
+                          .result = failed_result(std::string{no_account_answer})});
+                return;
+            }
+            const service::permission_query query{.area = req->area,
+                                                  .search = req->search,
+                                                  .offset = req->offset,
+                                                  .limit = req->limit,
+                                                  .include_unheld = req->include_unheld};
+            reply(nats_, msg, svc.read_role_permissions(*caller_id, sg(req->role_id), query));
+            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, permission_page_response{.result = failed_result(e.what())});
+        }
+    }
+
+    /**
+     * @brief Serves iam.v1.ops.list_roles_page: one page of the tenant's roles.
+     * Needs roles:read.
+     */
+    void roles_page(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
+        auto req = decode<list_roles_page_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            service::authorization_service svc(ctx);
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      role_page_response{.result = failed_result(std::string{no_account_answer})});
+                return;
+            }
+            const service::roles_query query{.role_id = req->role_id,
+                                             .search = req->search,
+                                             .area = req->area,
+                                             .include_service = req->include_service,
+                                             .offset = req->offset,
+                                             .limit = req->limit};
+            reply(nats_, msg, svc.read_roles_page(*caller_id, query));
+            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, role_page_response{.result = failed_result(e.what())});
+        }
+    }
+
+    /**
+     * @brief Serves iam.v1.ops.list_role_holders: one page of the people who
+     * hold a role. Needs roles:read, checked in the service.
+     */
+    void role_holders(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
+        auto req = decode<list_role_holders_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            boost::uuids::string_generator sg;
+            service::authorization_service svc(ctx);
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      role_holders_response{
+                          .result = failed_result(std::string{no_account_answer})});
+                return;
+            }
+            reply(nats_,
+                  msg,
+                  svc.read_role_holders(*caller_id, sg(req->role_id), req->offset, req->limit));
+            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, role_holders_response{.result = failed_result(e.what())});
+        }
+    }
+
     void permissions(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(authorization_handler_lg(), msg);

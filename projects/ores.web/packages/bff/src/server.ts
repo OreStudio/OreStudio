@@ -62,11 +62,22 @@ import {
     reportingLineRequestSchema,
     reportingTreeSchema,
     readMyAccount,
+    readMyLoginInfo,
+    readMySessions,
     setReportingLine,
     deleteRole,
     giveRole,
     permissionEntrySchema,
     readAccountAccess,
+    readAccountPermissions,
+    readRolePermissionsPage,
+    readRolesPage,
+    readRoleHolders,
+    roleHoldersSchema,
+    changeRolePermissions,
+    rolePageSchema,
+    readMyPermissions,
+    permissionPageSchema,
     readMyAccess,
     readPermissionCatalogue,
     readRoles,
@@ -1127,6 +1138,120 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return accountAccessSchema.parse(await readAccountAccess(session.client, accountId));
     });
 
+    /** The paging a permissions page is asked for, as the browser sends it on the query. */
+    const permissionQuerySchema = z.object({
+        area: z.string().max(100).default(''),
+        search: z.string().max(200).default(''),
+        offset: z.coerce.number().int().nonnegative().default(0),
+        limit: z.coerce.number().int().positive().max(500).default(15),
+    });
+
+    /** One page of what the signed-in person's own roles let them do. A self read. */
+    server.get('/api/me/permissions', async (request) => {
+        const session = requireSession(request);
+        const query = permissionQuerySchema.safeParse(request.query);
+        if (!query.success) {
+            throw invalidRequest('The page asked for is not one.');
+        }
+        return permissionPageSchema.parse(await readMyPermissions(session.client, query.data));
+    });
+
+    /** One page of the tenant's roles. The server allows it to a holder of iam::roles:read. */
+    server.get('/api/roles/page', async (request) => {
+        const session = requireSession(request);
+        const query = z
+            .object({
+                roleId: z
+                    .string()
+                    .refine((value) => value === '' || isUuid(value))
+                    .default(''),
+                search: z.string().max(200).default(''),
+                area: z.string().max(100).default(''),
+                includeService: z
+                    .enum(['true', 'false'])
+                    .default('false')
+                    .transform((value) => value === 'true'),
+                offset: z.coerce.number().int().nonnegative().default(0),
+                limit: z.coerce.number().int().positive().max(500).default(15),
+            })
+            .safeParse(request.query);
+        if (!query.success) {
+            throw invalidRequest('The page asked for is not one.');
+        }
+        return rolePageSchema.parse(await readRolesPage(session.client, query.data));
+    });
+
+    /**
+     * One page of the catalogue against what a role grants, for the role editor.
+     * With includeUnheld the rows the role does not grant come too, to tick.
+     */
+    server.get('/api/roles/:roleId/permissions', async (request) => {
+        const session = requireSession(request);
+        const { roleId } = request.params as { roleId: string };
+        const query = permissionQuerySchema
+            .extend({
+                includeUnheld: z
+                    .enum(['true', 'false'])
+                    .default('false')
+                    .transform((value) => value === 'true'),
+            })
+            .safeParse(request.query);
+        if (!isUuid(roleId) || !query.success) {
+            throw invalidRequest('The page asked for is not one.');
+        }
+        return permissionPageSchema.parse(
+            await readRolePermissionsPage(session.client, roleId, query.data),
+        );
+    });
+
+    /** One page of the people who hold a role. The server allows it to a holder of iam::roles:read. */
+    server.get('/api/roles/:roleId/holders', async (request) => {
+        const session = requireSession(request);
+        const { roleId } = request.params as { roleId: string };
+        const page = z
+            .object({
+                offset: z.coerce.number().int().nonnegative().default(0),
+                limit: z.coerce.number().int().positive().max(500).default(15),
+            })
+            .safeParse(request.query);
+        if (!isUuid(roleId) || !page.success) {
+            throw invalidRequest('The page asked for is not one.');
+        }
+        return roleHoldersSchema.parse(await readRoleHolders(session.client, roleId, page.data));
+    });
+
+    /** Adds and removes permissions from a role, without the browser holding the whole set. */
+    server.post('/api/roles/:roleId/permissions/changes', async (request) => {
+        const session = requireSession(request);
+        const { roleId } = request.params as { roleId: string };
+        const body = z
+            .object({
+                add: z.array(z.string().min(1).max(200)).max(2000).default([]),
+                remove: z.array(z.string().min(1).max(200)).max(2000).default([]),
+                note: z.string().min(1).max(2000),
+            })
+            .safeParse(request.body);
+        if (!isUuid(roleId) || !body.success) {
+            throw invalidRequest('Send the permissions to add or remove, and why.');
+        }
+        return {
+            codes: await changeRolePermissions(session.client, roleId, body.data, body.data.note),
+        };
+    });
+
+    /** One page of what one account's roles let it do. The server allows it to a holder of iam::roles:read. */
+    server.get('/api/accounts/:accountId/permissions', async (request) => {
+        const session = requireSession(request);
+        const { accountId } = request.params as { accountId: string };
+        const query = permissionQuerySchema.safeParse(request.query);
+        if (!isUuid(accountId) || !query.success) {
+            throw invalidRequest('The page asked for is not one.');
+        }
+        return permissionPageSchema.parse(
+            await readAccountPermissions(session.client, accountId, query.data),
+        );
+    });
+
     /** What the browser sends to give a role: the role, the reason and a note. */
     const giveRoleBodySchema = z.object({
         roleId: z.string().refine(isUuid, 'A role is an identifier.'),
@@ -1504,7 +1629,14 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (!key.success) {
             throw invalidRequest('An account id is required.');
         }
-        return { loginInfo: await readLoginInfo(session.client, key.data.key.account_id) };
+        // Your own state is a self read, which needs no permission; anybody
+        // else's is the login info read, which does.
+        const own = key.data.key.account_id.toLowerCase() === session.accountId.toLowerCase();
+        return {
+            loginInfo: own
+                ? await readMyLoginInfo(session.client)
+                : await readLoginInfo(session.client, key.data.key.account_id),
+        };
     });
 
     /**
@@ -1541,17 +1673,12 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     /**
      * The signed-in person's own sessions with no end time.
      *
-     * The server answers the tenant's open sessions, the platform's own
-     * services' among them in the system tenant, so the read keeps the rows
-     * of the session's account and no other.
+     * A self read: the server answers the caller's own open sessions and no
+     * other, and it needs no permission.
      */
     server.get('/api/me/sessions', async (request) => {
         const session = requireSession(request);
-        const answer = await readActiveSessions(session.client);
-        return {
-            ...answer,
-            sessions: answer.sessions.filter((row) => row.accountId === session.accountId),
-        };
+        return readMySessions(session.client);
     });
 
     /** What the roster may ask for: a search, an order and one page of the matches. */

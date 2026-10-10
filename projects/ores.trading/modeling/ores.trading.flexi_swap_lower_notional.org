@@ -1,0 +1,268 @@
+:PROPERTIES:
+:ID: 9A4CC472-2BB6-46C2-A032-44AFCE5BA171
+:END:
+#+title: ores.trading.flexi_swap_lower_notional
+#+description: Codegen entity model for the trading =flexi_swap_lower_notional= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One lower notional bound of a flexi swap, keyed to the trade and the bound's ordinal.
+#+entity_singular: flexi_swap_lower_notional
+#+entity_plural: flexi_swap_lower_notionals
+#+entity_title: Flexi Swap Lower Notional
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+One row per notional a flexi swap's lower bound block states, keyed to the
+instrument and the notional's ordinal across the whole block.
+
+The ORE schema states the lower bounds as an unbounded list of blocks. Each
+block names a currency once and holds a list of dated notionals. The column
+=bound_number= is the block's position in the document, and the row carries the
+block's currency, so the export regroups the rows into the blocks the document
+held. A notional that states no date applies from the start of the swap, as in
+the leg notionals. The document may state a notional of zero, so the amount
+check allows it.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+The trade whose flexi swap states this lower notional.
+
+** trade_activity_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The activity that wrote this version.
+
+** sequence_number
+:PROPERTIES:
+:primary_key: true
+:type:        integer
+:cpp_type:    int
+:END:
+
+Ordinal of this notional across all the lower bound blocks, counting from one.
+
+The schema declares the lists unbounded and a document's order is the order it
+stated, so the ordinal identifies a row and preserves that order.
+** bound_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:END:
+
+Ordinal of the lower bound block this notional belongs to, counting from one.
+
+Rows that share a bound number share a block, so export writes them back under one
+=LowerNotionalBounds= element.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 2)
+#+end_src
+** currency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Currency the lower bound block states, when the document states one.
+
+Every row of a block carries the same value.
+** start_date
+:PROPERTIES:
+:type:        date
+:cpp_type:    std::optional<std::chrono::year_month_day>
+:nullable:    true
+:END:
+
+The day this notional starts to apply.
+
+Null when the document states the notional without a start date.
+** notional
+:PROPERTIES:
+:type:        numeric(28, 10)
+:cpp_type:    ores::utility::decimal::decimal
+:nullable:    false
+:END:
+
+The lower bound on the swap's notional from =start_date= onwards.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("1000000").value()
+#+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_flexi_swap_lower_notionals_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "sequence_number" > 0 |
+| "bound_number" > 0 |
+| "notional" >= 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: flexi_swap_lower_notional
+:entity_plural_short:   flexi_swap_lower_notionals
+:entity_singular_words: flexi swap lower notional
+:entity_plural_words:   flexi swap lower notionals
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: lower_notional
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| trade_id        | Instrument  |
+| bound_number    | Bound       |
+| sequence_number | Sequence    |
+| start_date      | From        |
+| notional        | Notional    |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+The trade read path fetches the lower notionals of many instruments at once
+when it assembles the export payload, and no generated read covers that.
+The batch read below is one statement over the instrument set.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: 559f09a0-f38e-4825-a414-2a9b51d83540
+:END:
+
+Reads every current flexi swap lower notional of the given instruments, ordered by
+instrument and ordinal, in one statement. An empty input reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::flexi_swap_lower_notional>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::flexi_swap_lower_notional>
+flexi_swap_lower_notional_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<flexi_swap_lower_notional_entity>> |
+                       where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "sequence_number"_c);
+    return execute_read_query<flexi_swap_lower_notional_entity, domain::flexi_swap_lower_notional>(
+        ctx,
+        query,
+        [](const auto& entities) { return flexi_swap_lower_notional_mapper::map(entities); },
+        lg(),
+        "Reading flexi swap lower notionals for multiple instruments.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:FFE4182F-0FA0-4F7C-B7F9-8DFD59141493][ores.trading.flexi_swap_instrument]] — the instrument whose lower bounds these are.

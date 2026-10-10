@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  "Test scenarios": a tester sees the scenarios waiting for them, opens one,
+  works through its steps, marks each PASS or FAIL with a note, and saves. A
+  finished scenario can be reopened and read. The story and the task that drive
+  the scenario sit beside its steps. Three arrangements of the runner on one
+  static page, switched from the bar at the foot. Every panel states the gap the
+  build must close.
+-->
+<title>ORE Studio · Test scenarios</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+/* Colour and type are the web app's tokens (projects/ores.web/packages/web/src/styles.css). */
+:root {
+  color-scheme: dark;
+  --bg: #121214; --raised: #1a1a1e; --overlay: #26262b;
+  --line-subtle: #21262d; --line: #30363d; --line-strong: #4a5568;
+  --ink: #e3e3e6; --ink-muted: #a1a1aa; --ink-faint: #71717a; --ink-inverse: #0d1117;
+  --accent: #58a6ff; --accent-bright: #8ab4f8; --accent-dim: #1b2a3d;
+  --up: #3fb950; --up-strong: #238636; --up-dim: #12261a;
+  --down: #f85149; --down-dim: #2d1517; --warn: #d29922; --purple: #8957e5;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --radius: 0.5rem;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); color: var(--ink); }
+body { margin: 0; font: 14px/1.5 var(--sans); padding-bottom: 8rem; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--accent); text-decoration: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.01em; }
+h1 { font-size: 1.375rem; } h2 { font-size: 1rem; } h3 { font-size: 0.875rem; }
+p { margin: 0; }
+.muted { color: var(--ink-muted); } .faint { color: var(--ink-faint); }
+.code { font-family: var(--mono); font-size: 12px; }
+.mini { font-size: 12px; }
+
+/* Header */
+.top { position: sticky; top: 0; z-index: 5; background: var(--raised); border-bottom: 1px solid var(--line); }
+.top-inner { max-width: 72rem; margin: 0 auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.brand { font-weight: 700; letter-spacing: 0.02em; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+.brand-mark { width: 1.25rem; height: 1.25rem; border-radius: 4px; background: linear-gradient(135deg, var(--accent), #1f6feb); }
+.place { font-size: 12px; color: var(--ink-muted); border-left: 1px solid var(--line); padding-left: 1rem; white-space: nowrap; }
+.menu { display: flex; gap: 0.25rem; flex-wrap: wrap; flex: 1; min-width: 0; }
+.menu button { background: none; border: 0; padding: 0.375rem 0.625rem; border-radius: 6px; color: var(--ink-muted); cursor: pointer; }
+.menu button[aria-current="page"] { color: var(--ink); background: var(--overlay); }
+.bell-wrap { position: relative; }
+.bell { position: relative; background: none; border: 1px solid transparent; border-radius: 999px; padding: 0.25rem 0.625rem; cursor: pointer; color: var(--ink-muted); }
+.bell:hover { border-color: var(--line); }
+.badge { position: absolute; top: -0.125rem; right: -0.125rem; min-width: 1.125rem; height: 1.125rem; padding: 0 0.25rem; border-radius: 999px; background: var(--accent); color: var(--ink-inverse); font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+.bell-menu { position: absolute; right: 0; top: 2.5rem; width: 22rem; background: var(--overlay); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.5rem; box-shadow: 0 12px 32px rgba(0,0,0,0.45); z-index: 8; display: grid; gap: 0.25rem; }
+.bell-menu .item { text-align: left; background: none; border: 0; padding: 0.5rem; border-radius: 6px; cursor: pointer; display: grid; gap: 0.125rem; }
+.bell-menu .item:hover { background: var(--raised); }
+.avatar { width: 1.75rem; height: 1.75rem; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--accent-dim); color: var(--accent-bright); }
+
+/* Page */
+main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem; display: grid; gap: 1.25rem; }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.head > div { min-width: 0; display: grid; gap: 0.25rem; }
+.crumbs { font-size: 12px; color: var(--ink-faint); display: flex; gap: 0.375rem; flex-wrap: wrap; }
+.crumbs button { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; }
+section.card { background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); }
+.pad { padding: 1rem; }
+.grid { display: grid; gap: 1rem; }
+.tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 0.5rem 0.875rem; cursor: pointer; color: var(--ink-muted); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tabs button.soon { color: var(--ink-faint); cursor: default; }
+
+/* Chips and buttons */
+.chip { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 11px; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap; }
+.chip.pass { border-color: var(--up-strong); color: var(--up); background: var(--up-dim); }
+.chip.fail { border-color: var(--down); color: var(--down); background: var(--down-dim); }
+.chip.pending { color: var(--ink-muted); }
+.chip.run { border-color: var(--accent); color: var(--accent-bright); background: var(--accent-dim); }
+.chip.client { border-color: var(--purple); color: #c4a7f5; }
+.btn { border: 1px solid var(--line); background: var(--raised); padding: 0.375rem 0.75rem; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.btn:hover:not(:disabled) { border-color: var(--line-strong); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--ink-inverse); font-weight: 600; }
+.btn.pass[aria-pressed="true"] { background: var(--up-strong); border-color: var(--up-strong); color: #fff; }
+.btn.fail[aria-pressed="true"] { background: var(--down); border-color: var(--down); color: #fff; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.small { padding: 0.25rem 0.5rem; font-size: 12px; }
+textarea { width: 100%; min-height: 4.5rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.5rem 0.625rem; resize: vertical; }
+textarea:disabled { opacity: 0.7; }
+
+/* Queue */
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 0.625rem 0.875rem; border-bottom: 1px solid var(--line-subtle); vertical-align: middle; }
+th { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr.open { cursor: pointer; }
+tbody tr.open:hover { background: var(--overlay); }
+.table-wrap { overflow-x: auto; }
+.progress { height: 0.375rem; border-radius: 999px; background: var(--line-subtle); overflow: hidden; min-width: 5rem; }
+.progress > span { display: block; height: 100%; background: var(--up); }
+.progress.bad > span { background: var(--down); }
+
+/* Runner */
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 0.75rem 1.25rem; }
+.fact { display: grid; gap: 0.125rem; }
+.fact .label { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); }
+.split { display: grid; grid-template-columns: minmax(16rem, 0.9fr) minmax(0, 1.6fr); gap: 1rem; align-items: start; }
+@media (max-width: 54rem) { .split { grid-template-columns: 1fr; } }
+.steps { display: grid; }
+.step-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.625rem; align-items: center; padding: 0.625rem 0.875rem; border: 0; border-bottom: 1px solid var(--line-subtle); background: none; text-align: left; cursor: pointer; width: 100%; }
+.step-row:last-child { border-bottom: 0; }
+.step-row[aria-current="true"] { background: var(--overlay); box-shadow: inset 3px 0 0 var(--accent); }
+.dot { width: 0.75rem; height: 0.75rem; border-radius: 50%; border: 2px solid var(--line-strong); }
+.dot.pass { background: var(--up); border-color: var(--up); }
+.dot.fail { background: var(--down); border-color: var(--down); }
+.body p { color: var(--ink-muted); margin-top: 0.5rem; }
+.body .org { border-left: 2px solid var(--line); padding-left: 0.75rem; margin-top: 0.5rem; display: grid; gap: 0.375rem; }
+.verdict { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.shots { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.shot { font-family: var(--mono); font-size: 12px; border: 1px solid var(--line); border-radius: 6px; padding: 0.125rem 0.5rem; background: var(--bg); }
+.overall { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.body p.stepper-big, .stepper-big { font-size: 1.125rem; font-weight: 600; color: var(--ink); margin: 0; }
+.doc-step { padding: 1rem; border-bottom: 1px solid var(--line-subtle); display: grid; gap: 0.625rem; }
+.doc-step:last-child { border-bottom: 0; }
+.context a { color: var(--accent); }
+.context .links { margin-top: 0.75rem; display: grid; gap: 0.25rem; }
+
+/* Gaps */
+.gaps { border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 1rem; display: grid; gap: 0.5rem; }
+.gaps ol { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.375rem; }
+.gaps li { color: var(--ink-muted); }
+
+/* Prototype bar */
+.proto-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--overlay); border-top: 1px solid var(--line); display: flex; align-items: center; gap: 1rem; padding: 0.5rem 1rem; flex-wrap: wrap; }
+.proto-bar .who { font-weight: 600; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { background: none; border: 0; padding: 0.3rem 0.7rem; cursor: pointer; color: var(--ink-muted); }
+.seg button[aria-pressed="true"] { background: var(--accent-dim); color: var(--accent-bright); }
+.spacer { margin-left: auto; }
+#notes { position: fixed; left: 1rem; right: 1rem; bottom: 3.75rem; z-index: 11; max-width: 72rem; margin: 0 auto; max-height: 60vh; overflow: auto; background: var(--overlay); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 1rem; display: grid; gap: 0.5rem; }
+#notes ul { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.375rem; }
+#notes li { color: var(--ink-muted); }
+.toast { position: fixed; bottom: 3.75rem; left: 50%; transform: translateX(-50%); z-index: 12; background: var(--overlay); border: 1px solid var(--line-strong); border-radius: 999px; padding: 0.5rem 1rem; max-width: 90vw; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <span class="brand"><span class="brand-mark" aria-hidden="true"></span>ORE Studio</span>
+    <span class="place">Acme Corporation</span>
+    <nav class="menu" aria-label="Areas">
+      <button>Home</button>
+      <button>Reference data</button>
+      <button>Market data</button>
+      <button>Trading</button>
+      <button>Reporting</button>
+      <button aria-current="page">Development</button>
+    </nav>
+    <div class="bell-wrap">
+      <button class="bell" id="bell" aria-haspopup="true" aria-expanded="false" aria-label="Notifications">Notifications<span class="badge" id="badge"></span></button>
+      <div class="bell-menu" id="bell-menu" hidden></div>
+    </div>
+    <span class="avatar" aria-hidden="true">TM</span>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer class="proto-bar">
+  <span class="who">Prototype · Test scenarios</span>
+  <div class="seg" id="variant-seg" role="group" aria-label="Runner layout"></div>
+  <div class="seg" id="case-seg" role="group" aria-label="Case"></div>
+  <span class="spacer"></span>
+  <button class="btn small" id="notes-btn" aria-expanded="false">What this prototype argues</button>
+</footer>
+
+<div id="notes" hidden>
+  <h2>What this prototype argues</h2>
+  <p class="muted">A tester has two jobs on two screens: find what is waiting, then work through one scenario. The queue is one design. The variants change only the runner, because that is where the tester spends the time.</p>
+  <ul>
+    <li><strong>Accepted on 2026-10-10: variant B.</strong> The rejected layouts stay here, switchable from the bar at the foot.</li>
+    <li><strong>A · Steps beside the detail.</strong> The steps are a list on the left and the chosen step fills the right. The tester sees where they are in the whole scenario and the whole step at once.</li>
+    <li><strong>B · One step at a time (accepted).</strong> The tester runs the scenario in one browser window and the application in another. A narrow window shows one step, a progress bar and the two verdict buttons. A Pass moves on. A Fail stays, so the tester can write the note first.</li>
+    <li><strong>C · The document.</strong> The scenario reads top to bottom like the org page, with the controls under each step. It suits a finished scenario that someone reopens to read, and a reviewer who wants every note on one page.</li>
+    <li><strong>The queue is the front door.</strong> A notification in the bell and a row in the queue open the same scenario. The bell here is mock. No notification kind exists for a waiting test.</li>
+    <li><strong>The overall result is inferred, never set.</strong> Any FAIL makes the scenario FAILED. All PASS makes it PASSED. Anything else leaves it PENDING. The tester marks steps, not the scenario.</li>
+    <li><strong>Story and Task sit beside the steps.</strong> They are the docs that drive the scenario, so the tester need not leave to recover the context. The links in them open the linked doc.</li>
+    <li><strong>A finished scenario reopens read-only.</strong> A <em>Retest</em> button clears the steps and starts again. The build must decide whether a retest overwrites the result in the org file, where git keeps the history, or keeps each run.</li>
+    <li><strong>Nothing reads or writes a scenario yet.</strong> The BFF has no scenario store. ores.web cannot rely on compass, so the BFF parses the docs that compass creates and writes the results into them itself, behind an interface that a database store can replace later.</li>
+    <li><strong>The queue has no owner.</strong> A scenario names a target dialog and an environment and no tester. The queue shows every scenario in state PENDING. Assignment comes with the tester role.</li>
+    <li><strong>A browser cannot capture the screen.</strong> The step takes a pasted or dropped image. The BFF has no upload route that saves it beside the scenario doc.</li>
+    <li><strong>The web package renders no org text.</strong> Step instructions are org. The parser in ores.org-js is the one to port.</li>
+    <li><strong>A deployed server has no work tree.</strong> The module reads and writes the checkout the BFF runs in. Whether it runs in production is open.</li>
+  </ul>
+</div>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* Mock scenarios. The titles echo real ones; every value is invented. */
+  const SCENARIOS = [
+    {
+      id: 'role-offer', title: 'A member asks only for offered roles', story: 'Land the role request journey',
+      task: 'Offer only the roles a member may ask for', target: 'AskForRoleDialog', environment: 'eager_maxwell', clients: [], updated: 'Today, 09:10',
+      steps: [
+        { title: 'Open the request dialog', body: ['Sign in as a member with no administrator role.', 'Open *Ask for a role* from the account menu.'], status: 'pass', notes: 'Dialog opened from the account menu.', shots: [] },
+        { title: 'Check the roles on offer', body: ['Open the role list in the dialog.', 'Confirm that only the roles offered to members are listed.', 'Confirm that *TenantAdmin* is absent.'], status: 'pending', notes: '', shots: [] },
+        { title: 'Ask for a role', body: ['Pick *Trader* and write a reason.', 'Send the request.', 'Confirm the request shows in *My requests* as waiting.'], status: 'pending', notes: '', shots: [] },
+        { title: 'See the decision', body: ['Sign in as the approver and approve the request.', 'Sign in as the member again.', 'Confirm the role shows under *My access*.'], status: 'pending', notes: '', shots: [] },
+      ],
+    },
+    {
+      id: 'two-clients', title: 'Two clients see a trade amendment', story: 'Run a report as its tenant and party',
+      task: 'Push trade amendments to every open window', target: 'TradeBlotter', environment: 'eager_maxwell', clients: ['blue', 'green'], updated: 'Yesterday, 17:32',
+      steps: [
+        { title: 'Open the blotter', client: 'blue', body: ['Sign in as *trader.one* and open the trade blotter.'], status: 'pending', notes: '', shots: [] },
+        { title: 'Open the blotter', client: 'green', body: ['Sign in as *trader.two* and open the trade blotter.'], status: 'pending', notes: '', shots: [] },
+        { title: 'Amend a trade', client: 'blue', body: ['Change the notional of the first trade and save.'], status: 'pending', notes: '', shots: [] },
+        { title: 'See the amendment', client: 'green', body: ['Without refreshing, confirm the first trade shows the new notional.'], status: 'pending', notes: '', shots: [] },
+      ],
+    },
+    {
+      id: 'curve-stale', title: 'Term structure staleness is visible', story: 'Add proper curve support to ores.marketdata',
+      task: 'Show how old a curve point is', target: 'CurveViewer', environment: 'prime_origin', clients: [], updated: 'Today, 08:02',
+      steps: [
+        { title: 'Open a USD curve', body: ['Open the curve viewer and pick the USD discount curve.'], status: 'pending', notes: '', shots: [] },
+        { title: 'Read the age of each point', body: ['Confirm every point shows its age.', 'Confirm a point older than a day is marked stale.'], status: 'pending', notes: '', shots: [] },
+      ],
+    },
+    {
+      id: 'run-token', title: 'Run token reads', story: 'Run a report as its tenant and party',
+      task: 'Read a run with its own token', target: 'ReportRun', environment: 'eager_maxwell', clients: [], updated: 'Yesterday, 11:48',
+      steps: [
+        { title: 'Start a run', body: ['Start the monthly risk report.'], status: 'pass', notes: 'Run started.', shots: [] },
+        { title: 'Read the result as the run', body: ['Open the result from the run page.', 'Confirm the rows belong to the acting party.'], status: 'pass', notes: 'Only the acting party.', shots: ['run_token_reads_step2_20261009_1148.png'] },
+      ],
+    },
+    {
+      id: 'new-instruments', title: 'New trading instruments CRUD', story: 'Finish the workspaces feature',
+      task: 'Create, read, update and delete a swap', target: 'InstrumentEditor', environment: 'eager_maxwell', clients: [], updated: 'Yesterday, 15:20',
+      steps: [
+        { title: 'Create a swap', body: ['Create a swap with the default terms and save.'], status: 'pass', notes: '', shots: [] },
+        { title: 'Update the fixed rate', body: ['Change the fixed rate and save.', 'Confirm the version goes up by one.'], status: 'fail', notes: 'Version stayed at 1 after the save. See the screenshot.', shots: ['new_instruments_step2_20261009_1520.png'] },
+        { title: 'Delete the swap', body: ['Delete the swap and confirm it leaves the list.'], status: 'pass', notes: '', shots: [] },
+      ],
+    },
+  ];
+
+  const clone = (s) => JSON.parse(JSON.stringify(s));
+  /* A scenario is closed when it was saved with every step decided, or arrives done. Marking steps while running never closes it. */
+  const fresh = () => SCENARIOS.map((s) => { const c = clone(s); c.closed = overall(c) !== 'pending'; return c; });
+  const CASES = [['queue', 'Queue'], ['running', 'Running'], ['reopened', 'Reopened'], ['failed', 'Failed step']];
+  const OPEN_FOR_CASE = { running: 'role-offer', reopened: 'run-token', failed: 'new-instruments' };
+
+  const q = new URLSearchParams(location.search);
+  const state = {
+    variant: q.get('variant') || 'b',
+    occasion: q.get('case') || 'queue',
+    list: fresh(),
+    openId: null,
+    stepIx: 0,
+    tab: 'steps',
+    bell: false,
+    toast: '',
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const inline = (s) => esc(s).replace(/\*([^*]+)\*/g, '<strong>$1</strong>');
+  const current = () => state.list.find((s) => s.id === state.openId);
+
+  /* The scenario's result is inferred from its steps, never set by the tester. */
+  function overall(s) {
+    if (s.steps.some((x) => x.status === 'fail')) return 'fail';
+    if (s.steps.every((x) => x.status === 'pass')) return 'pass';
+    return 'pending';
+  }
+  const label = { pass: 'PASSED', fail: 'FAILED', pending: 'PENDING' };
+  const done = (s) => s.steps.filter((x) => x.status !== 'pending').length;
+  const isReadOnly = (s) => s.closed;
+  const waiting = () => state.list.filter((s) => overall(s) === 'pending');
+
+  function openScenario(id) {
+    state.openId = id;
+    state.tab = 'steps';
+    const s = current();
+    const first = s.steps.findIndex((x) => x.status === 'pending');
+    state.stepIx = first < 0 ? 0 : first;
+    state.bell = false;
+  }
+
+  function toast(message) {
+    state.toast = message;
+    render();
+    clearTimeout(toast.t);
+    toast.t = setTimeout(() => { state.toast = ''; render(); }, 3200);
+  }
+
+  /* ---------- the queue ---------- */
+  function queue() {
+    const wait = waiting();
+    const finished = state.list.filter((s) => overall(s) !== 'pending');
+    const row = (s) => {
+      const o = overall(s);
+      const n = done(s);
+      const pct = Math.round((n / s.steps.length) * 100);
+      return `
+        <tr class="open" data-open="${esc(s.id)}" tabindex="0">
+          <td><div><strong>${esc(s.title)}</strong></div><div class="mini faint">${esc(s.story)} · ${esc(s.task)}</div></td>
+          <td><span class="code">${esc(s.target)}</span>${s.clients.length ? ` ${s.clients.map((c) => `<span class="chip client">${esc(c)}</span>`).join(' ')}` : ''}</td>
+          <td><div class="progress ${o === 'fail' ? 'bad' : ''}"><span style="width:${pct}%"></span></div><div class="mini faint">${n} of ${s.steps.length} steps</div></td>
+          <td><span class="chip ${o === 'pending' ? (n ? 'run' : 'pending') : o}">${o === 'pending' && n ? 'IN PROGRESS' : label[o]}</span></td>
+          <td class="mini muted">${esc(s.updated)}</td>
+        </tr>`;
+    };
+    const head = '<thead><tr><th>Scenario</th><th>Target</th><th>Progress</th><th>State</th><th>Updated</th></tr></thead>';
+    return `
+      <div class="crumbs"><span>Home</span><span aria-hidden="true">›</span><span>Development</span><span aria-hidden="true">›</span><span>Tests</span></div>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true">Tests</button>
+        <button role="tab" class="soon" aria-selected="false" title="Story 2 of the arc">Board</button>
+        <button role="tab" class="soon" aria-selected="false" title="Story 2 of the arc">Stories</button>
+        <button role="tab" class="soon" aria-selected="false" title="Story 2 of the arc">Tasks</button>
+      </div>
+      <section class="card">
+        <div class="pad" style="padding-bottom:.5rem"><h2>Waiting <span class="chip">${wait.length}</span></h2></div>
+        <div class="table-wrap"><table>${head}<tbody>${wait.map(row).join('') || '<tr><td colspan="5" class="muted">Nothing is waiting.</td></tr>'}</tbody></table></div>
+      </section>
+      <section class="card">
+        <div class="pad" style="padding-bottom:.5rem"><h2>Done <span class="chip">${finished.length}</span></h2></div>
+        <div class="table-wrap"><table>${head}<tbody>${finished.map(row).join('')}</tbody></table></div>
+      </section>`;
+  }
+
+  /* ---------- the runner: shared parts ---------- */
+  function runnerHead(s) {
+    const o = overall(s);
+    return `
+      <div class="crumbs"><span>Home</span><span aria-hidden="true">›</span><span>Development</span><span aria-hidden="true">›</span><button data-back="1">Tests</button><span aria-hidden="true">›</span><span>${esc(s.title)}</span></div>
+      <section class="card pad grid">
+        <div class="head">
+          <div><h1>${esc(s.title)}</h1><p class="muted">${esc(s.story)} · ${esc(s.task)}</p></div>
+          <div class="overall"><span class="chip ${o}">${label[o]}</span><span class="mini muted">${done(s)} of ${s.steps.length} steps marked</span></div>
+        </div>
+        <div class="facts">
+          <div class="fact"><span class="label">Target</span><span class="code">${esc(s.target)}</span></div>
+          <div class="fact"><span class="label">Environment</span><span class="code">${esc(s.environment)}</span></div>
+          <div class="fact"><span class="label">Clients</span><span>${s.clients.length ? s.clients.map((c) => `<span class="chip client">${esc(c)}</span>`).join(' ') : 'one'}</span></div>
+          <div class="fact"><span class="label">Last saved</span><span>${esc(s.updated)}</span></div>
+        </div>
+      </section>`;
+  }
+
+  function contextTabs(s) {
+    const tab = (id, text) => `<button role="tab" data-tab="${id}" aria-selected="${state.tab === id}">${text}</button>`;
+    return `<div class="tabs" role="tablist">${tab('steps', 'Steps')}${tab('story', 'Story')}${tab('task', 'Task')}</div>`;
+  }
+
+  function contextPanel(s, kind) {
+    const title = kind === 'story' ? s.story : s.task;
+    const text = kind === 'story'
+      ? 'The story page, rendered from its org doc: its goal, its status, its acceptance and the tasks that make it up.'
+      : 'The task page, rendered from its org doc: its goal, its acceptance, the files it changed and the pull request that carried it.';
+    return `
+      <section class="card pad context">
+        <h2>${kind === 'story' ? 'Story' : 'Task'}: ${esc(title)}</h2>
+        <p class="muted" style="margin-top:.5rem">${esc(text)}</p>
+        <div class="links">
+          <a href="#" data-link="1">Acceptance</a>
+          <a href="#" data-link="1">${kind === 'story' ? 'The tasks in this story' : 'The pull request'}</a>
+          <a href="#" data-link="1">${kind === 'story' ? 'The user journey it answers' : 'The story it belongs to'}</a>
+        </div>
+        <p class="mini faint" style="margin-top:.75rem">Rendered from the org doc. The links open the doc they point to.</p>
+      </section>`;
+  }
+
+  function stepLabel(s, st) {
+    return `${st.client ? `<span class="chip client">${esc(st.client)}</span> ` : ''}${esc(st.title)}`;
+  }
+
+  function detail(s, ix) {
+    const st = s.steps[ix];
+    const ro = isReadOnly(s);
+    return `
+      <section class="card pad grid body">
+        <div class="head"><div><h2>Step ${ix + 1} of ${s.steps.length}</h2><p class="stepper-big">${stepLabel(s, st)}</p></div><span class="chip ${st.status}">${st.status.toUpperCase()}</span></div>
+        <div class="org">${st.body.map((l) => `<p>${inline(l)}</p>`).join('')}</div>
+        <div class="verdict">
+          <button class="btn pass" data-verdict="pass" aria-pressed="${st.status === 'pass'}" ${ro ? 'disabled' : ''}>Pass</button>
+          <button class="btn fail" data-verdict="fail" aria-pressed="${st.status === 'fail'}" ${ro ? 'disabled' : ''}>Fail</button>
+          <button class="btn" data-verdict="pending" ${ro ? 'disabled' : ''}>Clear</button>
+        </div>
+        <label class="grid" style="gap:.25rem"><span class="mini muted">Note</span>
+          <textarea data-note="${ix}" ${ro ? 'disabled' : ''} placeholder="What did you see?">${esc(st.notes)}</textarea></label>
+        <div class="shots">
+          ${st.shots.map((f) => `<span class="shot">${esc(f)}</span>`).join('')}
+          <button class="btn small" data-shot="${ix}" ${ro ? 'disabled' : ''}>Paste or drop an image</button>
+        </div>
+      </section>`;
+  }
+
+  function saveBar(s) {
+    const ro = isReadOnly(s);
+    return `
+      <section class="card pad overall">
+        ${ro
+          ? `<button class="btn" data-retest="1">Retest</button><span class="mini muted">This scenario is closed. A retest clears every step and starts again.</span>`
+          : `<button class="btn primary" data-save="1">Save</button><span class="mini muted">Save writes each step's result and the overall state into the scenario doc.</span>`}
+        <span class="spacer"></span>
+        <button class="btn" data-back="1">Back to the tests</button>
+      </section>`;
+  }
+
+  /* ---------- variant A: steps beside the detail ---------- */
+  function runnerA(s) {
+    if (state.tab !== 'steps') return `${contextTabs(s)}${contextPanel(s, state.tab)}`;
+    return `${contextTabs(s)}
+      <div class="split">
+        <section class="card steps" role="list">
+          ${s.steps.map((st, i) => `
+            <button class="step-row" role="listitem" data-step="${i}" aria-current="${i === state.stepIx}">
+              <span class="dot ${st.status}"></span><span>${stepLabel(s, st)}</span><span class="chip ${st.status}">${st.status.toUpperCase()}</span>
+            </button>`).join('')}
+        </section>
+        ${detail(s, state.stepIx)}
+      </div>`;
+  }
+
+  /* ---------- variant B: one step at a time ---------- */
+  function runnerB(s) {
+    if (state.tab !== 'steps') return `${contextTabs(s)}${contextPanel(s, state.tab)}`;
+    const n = s.steps.length;
+    const pct = Math.round((done(s) / n) * 100);
+    return `${contextTabs(s)}
+      <section class="card pad grid" style="max-width:34rem;margin:0 auto;width:100%">
+        <div class="progress ${overall(s) === 'fail' ? 'bad' : ''}"><span style="width:${pct}%"></span></div>
+        <div class="overall"><button class="btn small" data-prev="1" ${state.stepIx === 0 ? 'disabled' : ''}>Back</button>
+          <span class="mini muted">Step ${state.stepIx + 1} of ${n}</span>
+          <button class="btn small" data-next="1" ${state.stepIx === n - 1 ? 'disabled' : ''}>Skip</button></div>
+      </section>
+      <div style="max-width:34rem;margin:0 auto;width:100%;display:grid;gap:1rem">${detail(s, state.stepIx)}</div>`;
+  }
+
+  /* ---------- variant C: the document ---------- */
+  function runnerC(s) {
+    const ro = isReadOnly(s);
+    return `
+      <div class="split" style="grid-template-columns:minmax(0,1.7fr) minmax(14rem,0.8fr)">
+        <section class="card">
+          ${s.steps.map((st, i) => `
+            <div class="doc-step">
+              <div class="head"><h3>${i + 1}. ${stepLabel(s, st)}</h3><span class="chip ${st.status}">${st.status.toUpperCase()}</span></div>
+              <div class="org body">${st.body.map((l) => `<p>${inline(l)}</p>`).join('')}</div>
+              <div class="verdict">
+                <button class="btn small pass" data-vi="${i}" data-verdict="pass" aria-pressed="${st.status === 'pass'}" ${ro ? 'disabled' : ''}>Pass</button>
+                <button class="btn small fail" data-vi="${i}" data-verdict="fail" aria-pressed="${st.status === 'fail'}" ${ro ? 'disabled' : ''}>Fail</button>
+                <button class="btn small" data-vi="${i}" data-verdict="pending" ${ro ? 'disabled' : ''}>Clear</button>
+                <button class="btn small" data-shot="${i}" ${ro ? 'disabled' : ''}>Add image</button>
+                ${st.shots.map((f) => `<span class="shot">${esc(f)}</span>`).join('')}
+              </div>
+              <textarea data-note="${i}" ${ro ? 'disabled' : ''} placeholder="Note">${esc(st.notes)}</textarea>
+            </div>`).join('')}
+        </section>
+        <div class="grid">${contextPanel(s, 'story')}${contextPanel(s, 'task')}</div>
+      </div>`;
+  }
+
+  function runner() {
+    const s = current();
+    const body = state.variant === 'b' ? runnerB(s) : state.variant === 'c' ? runnerC(s) : runnerA(s);
+    return `${runnerHead(s)}${body}${saveBar(s)}`;
+  }
+
+  function gaps() {
+    return `
+      <section class="gaps">
+        <h2>What the build must close</h2>
+        <ol>
+          <li><strong>No read and no write.</strong> The BFF has no scenario store. ores.web cannot rely on compass, so the BFF must parse the docs compass creates and write results into them itself, behind an interface that a database store can replace later.</li>
+          <li><strong>No notification for a waiting test.</strong> The inbox raises none. The queue here is every scenario in state PENDING.</li>
+          <li><strong>No tester on a scenario.</strong> The doc carries a target and an environment and no assignee.</li>
+          <li><strong>No image upload.</strong> A browser cannot capture the screen. The BFF needs a route that saves a pasted image beside the scenario.</li>
+          <li><strong>No org renderer in the web package.</strong> Step text and the story and task pages are org.</li>
+          <li><strong>A deployed server has no work tree.</strong> Where scenarios and results live in production is open.</li>
+        </ol>
+      </section>`;
+  }
+
+  function bellMenu() {
+    const w = waiting();
+    $('badge').textContent = w.length;
+    $('badge').hidden = !w.length;
+    $('bell-menu').hidden = !state.bell;
+    $('bell').setAttribute('aria-expanded', String(state.bell));
+    $('bell-menu').innerHTML = (w.slice(0, 3).map((s) => `
+      <button class="item" data-open="${esc(s.id)}"><strong>A test is waiting for you</strong><span class="mini muted">${esc(s.title)}</span></button>`).join('')
+      || '<span class="mini muted" style="padding:.5rem">Nothing is waiting.</span>')
+      + '<span class="mini faint" style="padding:.25rem .5rem">Mock. Nothing raises this notification yet.</span>';
+  }
+
+  function render() {
+    $('app').innerHTML = `${state.openId ? runner() : queue()}${gaps()}
+      <p class="mini faint">Mock data. No server is read and no write leaves this page. The scenarios and their steps are invented.</p>`;
+    $('variant-seg').innerHTML = [['a', 'A · Steps beside the detail'], ['b', 'B · One step at a time ✓'], ['c', 'C · The document']]
+      .map(([id, text]) => `<button data-variant="${id}" aria-pressed="${state.variant === id}" ${state.openId ? '' : 'title="Applies to the runner"'}>${esc(text)}</button>`).join('');
+    $('case-seg').innerHTML = CASES.map(([id, text]) => `<button data-case="${id}" aria-pressed="${state.occasion === id}">${esc(text)}</button>`).join('');
+    bellMenu();
+    const t = $('toast');
+    t.hidden = !state.toast;
+    t.textContent = state.toast;
+  }
+
+  function sync() {
+    const u = new URL(location.href);
+    u.searchParams.set('variant', state.variant);
+    u.searchParams.set('case', state.occasion);
+    history.replaceState(null, '', u);
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target;
+    const v = t.closest('[data-variant]');
+    if (v) { state.variant = v.dataset.variant; sync(); render(); return; }
+    const c = t.closest('[data-case]');
+    if (c) {
+      state.occasion = c.dataset.case;
+      state.list = fresh();
+      state.openId = null;
+      if (OPEN_FOR_CASE[state.occasion]) openScenario(OPEN_FOR_CASE[state.occasion]);
+      sync(); render(); return;
+    }
+    if (t.closest('#bell')) { state.bell = !state.bell; render(); return; }
+    const o = t.closest('[data-open]');
+    if (o) { openScenario(o.dataset.open); state.occasion = { pending: 'running', pass: 'reopened', fail: 'failed' }[overall(current())]; sync(); render(); return; }
+    if (t.closest('[data-back]')) { state.openId = null; state.occasion = 'queue'; sync(); render(); return; }
+    if (t.closest('[data-link]')) { e.preventDefault(); toast('The link opens the doc it points to.'); return; }
+    const tab = t.closest('[data-tab]');
+    if (tab) { state.tab = tab.dataset.tab; render(); return; }
+    const step = t.closest('[data-step]');
+    if (step) { state.stepIx = Number(step.dataset.step); render(); return; }
+    if (t.closest('[data-prev]')) { state.stepIx = Math.max(0, state.stepIx - 1); render(); return; }
+    if (t.closest('[data-next]')) { state.stepIx = Math.min(current().steps.length - 1, state.stepIx + 1); render(); return; }
+    const ver = t.closest('[data-verdict]');
+    if (ver) {
+      const s = current();
+      const ix = ver.dataset.vi !== undefined ? Number(ver.dataset.vi) : state.stepIx;
+      s.steps[ix].status = ver.dataset.verdict;
+      if (state.variant === 'b' && ver.dataset.verdict === 'pass' && ix < s.steps.length - 1) state.stepIx = ix + 1;
+      render(); return;
+    }
+    const shot = t.closest('[data-shot]');
+    if (shot) {
+      const s = current();
+      const ix = Number(shot.dataset.shot);
+      s.steps[ix].shots.push(`${s.id}_step${ix + 1}_${String(s.steps[ix].shots.length + 1).padStart(2, '0')}.png`);
+      render(); return;
+    }
+    if (t.closest('[data-save]')) {
+      const s = current();
+      s.updated = 'Just now';
+      s.closed = overall(s) !== 'pending';
+      toast(s.closed
+        ? `Saved and closed as ${label[overall(s)]}. The build records the state and each step's result in the scenario doc.`
+        : `Saved. ${s.steps.length - done(s)} steps are still to mark. The scenario stays open.`);
+      render();
+      return;
+    }
+    if (t.closest('[data-retest]')) {
+      if (!confirm('A retest clears every step and a save overwrites the earlier result. Git keeps the history. Continue?')) return;
+      const s = current();
+      s.steps.forEach((x) => { x.status = 'pending'; x.notes = ''; x.shots = []; });
+      s.closed = false;
+      state.stepIx = 0;
+      render(); return;
+    }
+    if (state.bell && !t.closest('#bell-menu')) { state.bell = false; render(); }
+  });
+
+  document.addEventListener('input', (e) => {
+    const n = e.target.closest('[data-note]');
+    if (n) current().steps[Number(n.dataset.note)].notes = n.value;
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('tr.open')) { e.preventDefault(); e.target.click(); }
+  });
+
+  $('notes-btn').onclick = () => {
+    const open = $('notes').hidden;
+    $('notes').hidden = !open;
+    $('notes-btn').setAttribute('aria-expanded', String(open));
+    $('notes-btn').textContent = open ? 'Hide what this prototype argues' : 'What this prototype argues';
+  };
+
+  if (OPEN_FOR_CASE[state.occasion]) openScenario(OPEN_FOR_CASE[state.occasion]);
+  render();
+})();
+</script>
+</body>
+</html>

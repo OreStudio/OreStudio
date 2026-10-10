@@ -2,7 +2,7 @@
 :ID: 2E2081E7-9E54-4F91-A1B3-B205E318EE90
 :END:
 #+title: Task: Raise, preview and apply a request
-#+description: Combine the generated pending changes: one typed raise for lines of several entities, a preview that writes nothing, an apply as one transaction on the last approval, an apply_failed state, and a reconciler that separates transient from permanent failures.
+#+description: Combine the generated pending changes: one typed raise for lines of several entities, a preview that writes nothing, an apply workflow started by the approval that applies every line in one transaction, an apply_failed state, and a failure policy that separates transient from permanent failures.
 #+type: task
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
@@ -35,10 +35,18 @@ A request holds typed lines for several entities, is previewed and raised with e
 
 * Acceptance
 
+- A line number is unique inside a request (partial unique index on tenant, request and line number).
+- A line cannot be written for a request that is already decided.
+- A test refuses a line for an unknown request.
+
+- The dry run runs the real service database layer for each line inside a savepoint. It returns the refusals the service gives, publishes no event and sends no notification.
+- The apply writes each line through the real service in one transaction.
+
 - Preview returns every proposed write with its part and any refusal, and writes nothing.
 - Raise runs each write in a rolled-back savepoint, writes the request, its parts and its lines, and tells the deciders of the parts that can be answered now.
-- The last approval applies every line in one transaction and marks each applied once.
-- A refusal at apply moves the request to apply_failed with the line and reason and stops the reconciler. An infrastructure failure is retried until the kind's window ends, then moves to apply_failed.
+- The last approval starts an apply workflow whose steps re-check, apply every line in one transaction, marking each applied once, and tell the maker.
+- A refusal at apply moves the request to apply_failed with the line and reason and ends the run as failed. An infrastructure failure or missed deadline stops the run, and the retry verb resumes it until the kind's window ends, then the request moves to apply_failed.
+- The run shows on the workflow screens.
 - apply_failed is final, and a new request needs every part to approve again.
 
 * Plan

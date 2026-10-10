@@ -27,6 +27,11 @@
  * Represents a Balance Guaranteed Swap instrument where the notional
  * amortises in line with an underlying pool of assets (e.g., mortgages).
  *
+ * The document names the reference security here, lists the tranches in
+ * balance_guaranteed_swap_tranche with their notionals in
+ * balance_guaranteed_swap_tranche_notional, and states the tranche schedule as
+ * an instrument_schedule row under the owner role tranches.
+ *
  * This row is the family's fact table, not its identity. The header,
  * ores.trading.rate_instruments, holds the trade type code, the party, the
  * instrument's start and maturity dates and its description; this table holds
@@ -38,6 +43,7 @@ create table if not exists "ores_trading_balance_guaranteed_swap_instruments_tbl
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_activity_id" uuid not null,
+    "reference_security" text not null,
     "lockout_days" integer null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -53,6 +59,7 @@ create table if not exists "ores_trading_balance_guaranteed_swap_instruments_tbl
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    check ("reference_security" <> ''),
     check ("lockout_days" is null or "lockout_days" >= 0)
 );
 

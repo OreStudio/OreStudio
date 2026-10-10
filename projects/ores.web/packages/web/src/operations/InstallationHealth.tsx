@@ -29,11 +29,11 @@
  */
 
 import type { ReactNode } from 'react';
-import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import type { ServiceRosterRow } from '@ores/wire-protocol/browser';
 import { api, type LogsRange } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { Metric } from '../ui/Metric.js';
 import { newestVersionOf, sameVersion } from './OperationsParts.js';
 
 /** The compute service's runner, which the grid screen owns; the wire name is the registry's. */
@@ -151,41 +151,18 @@ export function useInstallationHealth(range: LogsRange): {
     };
 }
 
-type Tone = 'good' | 'warn' | 'bad' | 'neutral';
-
-const TONE_CLASS: Readonly<Record<Tone, string>> = {
-    good: 'text-up',
-    warn: 'text-warn',
-    bad: 'text-down',
-    neutral: 'text-ink',
-};
-
-function Figure({
-    value,
-    label,
-    to,
-    tone,
-    note,
-}: {
-    readonly value: string;
-    readonly label: string;
-    readonly to: string;
-    readonly tone: Tone;
-    readonly note?: string;
-}): ReactNode {
-    return (
-        <Link to={to} className="grid gap-1 hover:text-accent-bright">
-            <span className={`text-3xl font-semibold tabular-nums ${TONE_CLASS[tone]}`}>
-                {value}
-            </span>
-            <span className="text-xs text-ink-muted">{label}</span>
-            {note !== undefined && <span className="text-xs text-warn">{note}</span>}
-        </Link>
-    );
-}
-
 /** The six figures for one range. */
-export function InstallationFigures({ range }: { readonly range: LogsRange }): ReactNode {
+export function InstallationFigures({
+    range,
+    compact = false,
+}: {
+    readonly range: LogsRange;
+    /**
+     * Four tiles in two columns, for a dashboard panel: the lost and the missing
+     * are one tile, and the release is the panel's footer.
+     */
+    readonly compact?: boolean;
+}): ReactNode {
     const { t, plural } = useTranslation();
     const { roster, rosterFailed, errors, warnings, logsFailed } = useInstallationHealth(range);
     const logsNote = logsFailed ? t('operations.overview.logsUnread') : undefined;
@@ -198,8 +175,12 @@ export function InstallationFigures({ range }: { readonly range: LogsRange }): R
     }
 
     return (
-        <div className="grid gap-6 sm:grid-cols-3 lg:grid-cols-6">
-            <Figure
+        <div
+            className={
+                compact ? 'grid grid-cols-2 gap-4' : 'grid gap-6 sm:grid-cols-3 lg:grid-cols-6'
+            }
+        >
+            <Metric
                 to="/operations/services"
                 label={t('operations.overview.running')}
                 value={
@@ -218,19 +199,32 @@ export function InstallationFigures({ range }: { readonly range: LogsRange }): R
                           : 'warn'
                 }
             />
-            <Figure
-                to="/operations/services"
-                label={t('operations.overview.lost')}
-                value={count(roster?.lost)}
-                tone={roster !== undefined && roster.lost > 0 ? 'warn' : 'neutral'}
-            />
-            <Figure
-                to="/operations/services"
-                label={t('operations.overview.missing')}
-                value={count(roster?.missing)}
-                tone={roster !== undefined && roster.missing > 0 ? 'bad' : 'neutral'}
-            />
-            <Figure
+            {compact ? (
+                <Metric
+                    to="/operations/services"
+                    label={t('operations.overview.lostOrMissing')}
+                    value={count(roster === undefined ? undefined : roster.lost + roster.missing)}
+                    tone={
+                        roster !== undefined && roster.lost + roster.missing > 0 ? 'bad' : 'neutral'
+                    }
+                />
+            ) : (
+                <>
+                    <Metric
+                        to="/operations/services"
+                        label={t('operations.overview.lost')}
+                        value={count(roster?.lost)}
+                        tone={roster !== undefined && roster.lost > 0 ? 'warn' : 'neutral'}
+                    />
+                    <Metric
+                        to="/operations/services"
+                        label={t('operations.overview.missing')}
+                        value={count(roster?.missing)}
+                        tone={roster !== undefined && roster.missing > 0 ? 'bad' : 'neutral'}
+                    />
+                </>
+            )}
+            <Metric
                 to="/operations/logs"
                 label={t('operations.overview.errors', {
                     range: t(`operations.logs.range.${range}`),
@@ -239,7 +233,7 @@ export function InstallationFigures({ range }: { readonly range: LogsRange }): R
                 {...(logsNote === undefined ? {} : { note: logsNote })}
                 tone={errors !== undefined && errors > 0 ? 'bad' : 'neutral'}
             />
-            <Figure
+            <Metric
                 to="/operations/logs"
                 label={t('operations.overview.warnings', {
                     range: t(`operations.logs.range.${range}`),
@@ -248,16 +242,18 @@ export function InstallationFigures({ range }: { readonly range: LogsRange }): R
                 {...(logsNote === undefined ? {} : { note: logsNote })}
                 tone={warnings !== undefined && warnings > 0 ? 'warn' : 'neutral'}
             />
-            <Figure
-                to="/operations/services"
-                label={
-                    roster === undefined || roster.servicesBehind === 0
-                        ? t('operations.overview.release')
-                        : plural('operations.overview.behind', roster.servicesBehind)
-                }
-                value={roster?.newest === undefined ? unread : releaseLabel(roster.newest)}
-                tone={roster !== undefined && roster.servicesBehind > 0 ? 'warn' : 'neutral'}
-            />
+            {!compact && (
+                <Metric
+                    to="/operations/services"
+                    label={
+                        roster === undefined || roster.servicesBehind === 0
+                            ? t('operations.overview.release')
+                            : plural('operations.overview.behind', roster.servicesBehind)
+                    }
+                    value={roster?.newest === undefined ? unread : releaseLabel(roster.newest)}
+                    tone={roster !== undefined && roster.servicesBehind > 0 ? 'warn' : 'neutral'}
+                />
+            )}
         </div>
     );
 }

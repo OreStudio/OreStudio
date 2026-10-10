@@ -382,7 +382,7 @@ describe('inbox routes', () => {
                     roles: [{ roleId: TRADING, name: 'Trading', description: 'Trading role' }],
                     decision: {
                         decisionCode: 'approve',
-                        decidedBy: PRIYA,
+                        decidedBy: 'priya',
                         decidedAt: '2026-10-05 10:00:00Z',
                         comment: 'Desk needs it',
                     },
@@ -649,7 +649,7 @@ describe('inbox routes', () => {
                 roles: [{ roleId: TRADING, name: 'Trading', description: 'Trading role' }],
                 decision: {
                     decisionCode: 'approve',
-                    decidedBy: PRIYA,
+                    decidedBy: 'priya',
                     decidedAt: '2026-10-05 10:00:00Z',
                     comment: 'Desk needs it',
                 },

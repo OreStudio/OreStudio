@@ -318,6 +318,22 @@ describe('the application shell', () => {
         );
     });
 
+    it('does not announce the ordinary member mode, which says nothing to them', () => {
+        const html = renderAppShell('Acme Operations', 'application');
+
+        expect(html).not.toContain('>Application<');
+        expect(renderAppShell('Acme Operations', 'tenant-administration')).toContain(
+            'Tenant administration',
+        );
+    });
+
+    it('states the tenant and the party in the footer, where they stay in view', () => {
+        const html = renderAppShell('Northwind Trading');
+
+        expect(html).toContain('Tenant: Acme Corporation');
+        expect(html).toContain('Party: Northwind Trading');
+    });
+
     it('states the environment the deployment serves', () => {
         const html = renderAppShell(
             'Acme Operations',

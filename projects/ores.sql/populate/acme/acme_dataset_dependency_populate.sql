@@ -62,6 +62,7 @@ BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(
         ores_utility_system_tenant_id_fn(), v.code, 'assets.system_avatars', 'visual_assets')
     FROM (VALUES
+        ('acme.acme_group.account_contact_informations'),
         ('acme.acme_group.accounts'),
         ('acme.acme_group.books'),
         ('acme.acme_group.business_units'),

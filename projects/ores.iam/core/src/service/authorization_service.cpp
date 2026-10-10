@@ -29,7 +29,11 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cctype>
+#include <map>
+#include <set>
 #include <stdexcept>
+#include <tuple>
 
 namespace ores::iam::service {
 
@@ -415,6 +419,294 @@ account_access authorization_service::read_account_access(const boost::uuids::uu
     }
     answer.roles = compose_account_access(account_id);
     return answer;
+}
+
+messaging::permission_page_response
+authorization_service::read_own_permissions(const boost::uuids::uuid& account_id,
+                                            const permission_query& query) {
+    return page_permissions(compose_account_access(account_id), query);
+}
+
+messaging::permission_page_response
+authorization_service::read_account_permissions(const boost::uuids::uuid& caller_id,
+                                                const boost::uuids::uuid& account_id,
+                                                const permission_query& query) {
+    auto access = read_account_access(caller_id, account_id);
+    if (access.result.outcome != ores::utility::domain::outcome::ok) {
+        messaging::permission_page_response refused;
+        refused.result = std::move(access.result);
+        return refused;
+    }
+    return page_permissions(access.roles, query);
+}
+
+messaging::permission_page_response
+authorization_service::page_permissions(const std::vector<account_access_entry>& roles,
+                                        const permission_query& query) {
+    using key = std::pair<std::string, std::string>;
+    std::map<key, messaging::permission_resource_row> rows;
+    std::map<key, std::set<std::string>> granting_roles;
+
+    const auto grants = [&](const account_access_entry& entry,
+                            const std::string& code,
+                            const std::string& component) {
+        return std::any_of(entry.permission_codes.begin(),
+                           entry.permission_codes.end(),
+                           [&](const std::string& held) {
+                               return held == "*" || held == code || held == component + "::*";
+                           });
+    };
+
+    for (const auto& permission : permission_repo_.read_latest(ctx_)) {
+        const auto& code = permission.code;
+        const auto separator = code.find("::");
+        const auto colon = code.rfind(':');
+        // A wildcard or a malformed code names no resource.
+        if (separator == std::string::npos || colon == std::string::npos || colon <= separator + 1)
+            continue;
+        const auto component = code.substr(0, separator);
+        const auto resource = code.substr(separator + 2, colon - (separator + 2));
+        const auto action = code.substr(colon + 1);
+
+        auto& row = rows[{component, resource}];
+        row.component = component;
+        row.resource = resource;
+        row.actions.push_back(action);
+        for (const auto& entry : roles) {
+            if (grants(entry, code, component)) {
+                if (std::find(row.held.begin(), row.held.end(), action) == row.held.end())
+                    row.held.push_back(action);
+                granting_roles[{component, resource}].insert(entry.role.name);
+            }
+        }
+    }
+
+    messaging::permission_page_response response;
+    std::map<std::string, int> area_counts;
+    std::vector<messaging::permission_resource_row> held_rows;
+    for (auto& [name, row] : rows) {
+        if (row.held.empty() && !query.include_unheld)
+            continue;
+        const auto& names = granting_roles[name];
+        row.roles.assign(names.begin(), names.end());
+        ++area_counts[row.component];
+        held_rows.push_back(std::move(row));
+    }
+    for (const auto& [component, count] : area_counts)
+        response.areas.push_back({.component = component, .resources = count});
+
+    response.area = !query.area.empty() ? query.area :
+        response.areas.empty()          ? std::string{} :
+                                          response.areas.front().component;
+
+    std::string needle = query.search;
+    std::transform(needle.begin(), needle.end(), needle.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
+    std::vector<messaging::permission_resource_row> matching;
+    for (auto& row : held_rows) {
+        if (row.component != response.area)
+            continue;
+        if (!needle.empty()) {
+            auto resource = row.resource;
+            std::replace(resource.begin(), resource.end(), '_', ' ');
+            if (resource.find(needle) == std::string::npos &&
+                row.resource.find(needle) == std::string::npos)
+                continue;
+        }
+        matching.push_back(std::move(row));
+    }
+
+    const auto grants_wildcard = [&](const std::string& wildcard) {
+        return std::any_of(roles.begin(), roles.end(), [&](const account_access_entry& entry) {
+            return std::find(entry.permission_codes.begin(),
+                             entry.permission_codes.end(),
+                             wildcard) != entry.permission_codes.end();
+        });
+    };
+    response.everything = grants_wildcard("*");
+    response.area_whole = response.everything || grants_wildcard(response.area + "::*");
+
+    constexpr int max_page = 500;
+    const auto limit = static_cast<std::size_t>(std::clamp(query.limit, 1, max_page));
+    const auto offset = static_cast<std::size_t>(std::max(query.offset, 0));
+    response.total_count = static_cast<int>(matching.size());
+    for (std::size_t i = offset; i < matching.size() && i < offset + limit; ++i)
+        response.rows.push_back(std::move(matching[i]));
+    return response;
+}
+
+messaging::permission_page_response
+authorization_service::read_role_permissions(const boost::uuids::uuid& caller_id,
+                                             const boost::uuids::uuid& role_id,
+                                             const permission_query& query) {
+    messaging::permission_page_response refused;
+    if (!has_permission(caller_id, domain::permissions::roles_read)) {
+        refused.result.outcome = ores::utility::domain::outcome::denied;
+        refused.result.code = domain::permissions::roles_read;
+        refused.result.message = std::string("Permission denied: ") +
+                                 std::string(domain::permissions::roles_read) + " required";
+        return refused;
+    }
+    const auto found = role_repo_.read_latest(ctx_, boost::uuids::to_string(role_id));
+    if (found.empty()) {
+        refused.result.outcome = ores::utility::domain::outcome::missing;
+        refused.result.code = "role_missing";
+        refused.result.message = "No role has this identifier.";
+        return refused;
+    }
+    // The role stands in for an account: its codes are the grants the page is read against.
+    account_access_entry entry;
+    entry.role = found.front();
+    entry.permission_codes = get_role_permissions(role_id);
+    return page_permissions({entry}, query);
+}
+
+messaging::role_page_response authorization_service::read_roles_page(
+    const boost::uuids::uuid& caller_id, const roles_query& query) {
+    messaging::role_page_response response;
+    if (!has_permission(caller_id, domain::permissions::roles_read)) {
+        response.result.outcome = ores::utility::domain::outcome::denied;
+        response.result.code = domain::permissions::roles_read;
+        response.result.message = std::string("Permission denied: ") +
+                                  std::string(domain::permissions::roles_read) + " required";
+        return response;
+    }
+
+    std::set<std::string> components;
+    for (const auto& permission : permission_repo_.read_latest(ctx_)) {
+        const auto separator = permission.code.find("::");
+        if (separator != std::string::npos)
+            components.insert(permission.code.substr(0, separator));
+    }
+
+    std::string needle = query.search;
+    std::transform(needle.begin(), needle.end(), needle.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
+    const auto lower = [](std::string text) {
+        std::transform(text.begin(), text.end(), text.begin(), [](unsigned char c) {
+            return static_cast<char>(std::tolower(c));
+        });
+        return text;
+    };
+    const auto grants_in = [&](const std::vector<std::string>& codes, const std::string& area) {
+        return std::any_of(codes.begin(), codes.end(), [&](const std::string& code) {
+            return code == "*" || code.rfind(area + "::", 0) == 0;
+        });
+    };
+
+    struct candidate {
+        domain::role role;
+        std::vector<std::string> codes;
+        bool service;
+    };
+    std::vector<candidate> kept;
+    std::map<std::string, int> area_roles;
+    const auto single = !query.role_id.empty();
+    for (auto& role : role_repo_.read_latest(ctx_)) {
+        const auto id = boost::uuids::to_string(role.id);
+        if (single && id != query.role_id)
+            continue;
+        const bool service = role.name.size() >= 7 &&
+                             role.name.compare(role.name.size() - 7, 7, "Service") == 0;
+        if (service && !query.include_service && !single) {
+            ++response.service_hidden;
+            continue;
+        }
+        auto codes = service ? std::vector<std::string>{} : get_role_permissions(role.id);
+        if (!single) {
+            // The areas on offer come from the roles on the list, before the
+            // area filter narrows them, so choosing one never leaves nothing.
+            for (const auto& component : components)
+                if (grants_in(codes, component))
+                    ++area_roles[component];
+            if (!query.area.empty() && !grants_in(codes, query.area))
+                continue;
+            if (!needle.empty() && lower(role.name).find(needle) == std::string::npos &&
+                lower(role.description).find(needle) == std::string::npos)
+                continue;
+        }
+        kept.push_back({std::move(role), std::move(codes), service});
+    }
+    for (const auto& [component, count] : area_roles)
+        response.areas.push_back({.component = component, .resources = count});
+
+    std::sort(kept.begin(), kept.end(), [](const candidate& a, const candidate& b) {
+        return std::tie(a.service, a.role.name) < std::tie(b.service, b.role.name);
+    });
+    constexpr int max_page = 500;
+    const auto limit = static_cast<std::size_t>(std::clamp(query.limit, 1, max_page));
+    const auto offset = static_cast<std::size_t>(std::max(query.offset, 0));
+    response.total_count = static_cast<int>(kept.size());
+    for (std::size_t i = offset; i < kept.size() && i < offset + limit; ++i) {
+        const auto& item = kept[i];
+        const bool everything = std::find(item.codes.begin(), item.codes.end(), "*") !=
+                                item.codes.end();
+        response.roles.push_back({.id = boost::uuids::to_string(item.role.id),
+                                  .version = item.role.version,
+                                  .name = item.role.name,
+                                  .description = item.role.description,
+                                  .service = item.service,
+                                  .registration_default = item.role.is_registration_default,
+                                  .requestable = item.role.is_requestable,
+                                  .permission_count = static_cast<int>(item.codes.size()),
+                                  .everything = everything});
+    }
+    return response;
+}
+
+messaging::role_holders_response
+authorization_service::read_role_holders(const boost::uuids::uuid& caller_id,
+                                         const boost::uuids::uuid& role_id,
+                                         int offset,
+                                         int limit) {
+    messaging::role_holders_response response;
+    if (!has_permission(caller_id, domain::permissions::roles_read)) {
+        response.result.outcome = ores::utility::domain::outcome::denied;
+        response.result.code = domain::permissions::roles_read;
+        response.result.message = std::string("Permission denied: ") +
+                                  std::string(domain::permissions::roles_read) + " required";
+        return response;
+    }
+
+    // The people are ordered by name, which needs their accounts, so the whole
+    // list of holders is named and the requested page cut from it. A role is
+    // held by tens of people, not thousands, and the screen sees one page.
+    repository::account_repository accounts;
+    struct holder {
+        messaging::role_holder row;
+        std::string sort_key;
+    };
+    std::vector<holder> named;
+    for (const auto& assignment : account_role_repo_.read_latest_by_role(role_id)) {
+        const auto found = accounts.read_latest(ctx_, boost::uuids::to_string(assignment.account_id));
+        if (found.empty())
+            continue;
+        const auto& account = found.front();
+        messaging::role_holder row;
+        row.account_id = boost::uuids::to_string(account.id);
+        row.username = account.username;
+        row.full_name = account.full_name;
+        row.image_id = account.image_id ? boost::uuids::to_string(*account.image_id) : "";
+        row.assigned_by = assignment.assigned_by;
+        auto key = account.full_name.empty() ? account.username : account.full_name;
+        std::transform(key.begin(), key.end(), key.begin(), [](unsigned char ch) {
+            return static_cast<char>(std::tolower(ch));
+        });
+        named.push_back({std::move(row), std::move(key)});
+    }
+    std::sort(named.begin(), named.end(), [](const holder& a, const holder& b) {
+        return a.sort_key < b.sort_key;
+    });
+
+    constexpr int max_page = 500;
+    const auto size = static_cast<std::size_t>(std::clamp(limit, 1, max_page));
+    const auto start = static_cast<std::size_t>(std::max(offset, 0));
+    response.total_count = static_cast<int>(named.size());
+    for (std::size_t i = start; i < named.size() && i < start + size; ++i)
+        response.holders.push_back(std::move(named[i].row));
+    return response;
 }
 
 std::vector<account_access_entry>

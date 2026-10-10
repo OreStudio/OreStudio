@@ -1,0 +1,174 @@
+:PROPERTIES:
+:ID: 0245BF99-2467-4C68-898F-9608F50CD3A9
+:END:
+#+title: Story: Approve a reporting line change by the proposed manager
+#+description: A change to someone's reporting line becomes a four-eyes decision: it is proposed, and the person it would make their manager approves or declines it, like a role request.
+#+type: story
+#+level: s2
+#+filetags: :web:iam:inbox:membership:four-eyes:sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Today anyone who holds the update permission changes a reporting line directly, with no second person. Make the change a proposal that the proposed new manager decides, as a role request is decided, so a line is never written without the person it makes responsible for someone agreeing to it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Settle the named-decider rule with the product owner, then build the tasks in order. |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- A reporting line change is a proposal that names the person, the proposed manager and a reason; nothing changes while it waits.
+- The proposed manager is the only decider. The person who proposed and the person it concerns are not the decider, and the decision is refused with a clear message when a stranger tries.
+- The proposed manager sees the proposal in Requests, is told by a notification, and approves or declines it with a reason; a decline needs a comment.
+- Only an approval writes the line, through the existing reporting line write with its loop check, and the history shows who proposed, who decided and when.
+- The proposer sees the state of their proposal in their own requests and can withdraw it while it waits.
+- The direct edit of the reporting line in the person page and the hierarchy is replaced by proposing a change.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6EBDB18A-E19D-4BC8-BD42-D6207E8BB120][Approve a reporting line change by the proposed manager]] | BACKLOG | | | A change to a person's reporting line is proposed, and the person it would make their manager approves it, like a role request. Today anyone with the update permission changes it directly. |
+| [[id:FAF58D13-1A49-470C-9744-204D71584E7A][Let an approval request name its decider]] | BACKLOG | | | The inbox decides by permission only. Add a kind rule that the decider is the person the request names, and enforce it where the decision is made. |
+| [[id:80C330F8-353A-4EA8-9EF2-9659DA03236F][Add the reporting line approval kind and its detail record]] | BACKLOG | | | A new inbox kind, iam.reporting_line, and IAM's detail record of what a request proposes: the person and the proposed manager. |
+| [[id:233C3B62-7C7D-4D90-A885-B5AE414C6AA2][Propose a reporting line change]] | BACKLOG | | | The operation a person calls to propose a line: it raises the inbox request as the proposer, records the detail, and compensates if the second half fails, as asking for a role does. |
+| [[id:B513C9F2-A789-4316-95DE-6373ED94320D][Apply an approved reporting line change]] | BACKLOG | | | When the proposed manager approves, IAM writes the line through the existing reporting line write, by reconciliation like role grants. |
+| [[id:6B654D54-9050-47E3-83C7-801960E43537][Propose and decide a reporting line change in the web]] | BACKLOG | | | Replace the direct edit of the reporting line with a proposal, and let the proposed manager decide it in Requests. |
+
+* Context
+
+This story comes from item P18 of the product owner's review of the people
+screens (task =Address the review of the people screens=). The comment, in the
+owner's words:
+
+#+begin_quote
+at the moment anyone can change hierarchy, its not 4 eyes. it should be
+approved by the superior you propose to be your new boss. it should be like a
+role request.
+#+end_quote
+
+** How it works today
+
+- A person's reporting line is the =reports_to_account_id= field of their
+  account. =iam.v1.ops.set_reporting_line= writes it on its own, with the
+  account version as a precondition and a loop check, and records a change reason.
+- The web offers it as a direct edit: *Change the reporting line* on the person
+  page and the hierarchy. Anyone who holds =iam::accounts:update= changes any
+  line at once. Nobody else sees it, and the manager it gives someone is never
+  asked.
+- The person page shows a disabled *Propose a change* button that says no
+  approval exists yet; the =Draw the reporting line= journey owns the queue, the
+  notification and the decision.
+
+** What a role request does, which this follows
+
+The inbox (=ores.inbox=) holds one record and one queue for anything that waits
+on a person: an =approval_request= header (kind, who asked, why, state), a
+decision, and a kind-owned detail table keyed by the request. A role request is
+=iam.role_grant=: IAM raises the request as the person, records the roles it asks
+for, and compensates by withdrawing the request if the second half fails. When
+the request is approved the inbox publishes a change event, and IAM applies it
+by reconciliation, so a missed event or a restart converges to the same result.
+The record enforces four-eyes (the decider is not the asker), required comments
+on a refusal, a deadline, and one open request per subject. Design:
+=doc/knowledge/architecture/approval_requests.org=.
+
+** What does not fit yet
+
+The engine decides by permission only. A kind names =decide_permission_code=, and
+anyone who holds it may decide any request of the kind. A reporting line
+proposal is decided by one person: the one it would make the new manager. That
+person holds no special permission, and no one else should be able to decide it,
+even an administrator.
+
+* Design
+
+** The shape
+
+| Part | Change |
+|------+--------|
+| Inbox, kind | =approval_kind= gains =decider_rule=: =permission= (today) or =named=. A =named= kind has no decide permission to check. |
+| Inbox, request | =approval_request= gains an optional =assigned_decider_id=, set when the request is raised and fixed for its life. |
+| Inbox, decide | For a =named= kind the decide operation accepts only the assigned decider, and still refuses the asker. The queue read offers a request to its assigned decider and to nobody else. |
+| IAM, kind | The =iam.reporting_line= kind is seeded: =named=, refusal needs a comment, a deadline, no =held= state, one approval. |
+| IAM, detail | =reporting_line_request=, keyed by the request: the account, the proposed manager, and the manager it replaces. Readable by the proposer, the person it concerns and the proposed manager. |
+| IAM, propose | =propose_reporting_line= raises the request as the proposer and records the detail, and withdraws the request if the second half fails. It refuses a loop, a self-report and a second open proposal for the person. |
+| IAM, apply | An approved, unapplied request is applied by reconciliation through =set_reporting_line=, as the decider, with the request as the change reason. The loop check runs again at apply time. |
+| Web | *Change the reporting line* becomes *Propose a change*. Requests shows the proposal to its proposed manager with Approve and Decline; the proposer sees it among their own requests and can withdraw it. |
+
+** Who may propose, who decides, who may not
+
+- *Propose:* the person whose line it is, their current manager, or a holder of
+  =iam::accounts:update=. The permission is kept for administrators; the person
+  and their manager can propose without it. (To confirm: see Decisions.)
+- *Decide:* only the proposed manager. Not the proposer, not the person, not an
+  administrator.
+- *No manager yet:* proposing a first manager for someone with none follows the
+  same rule. Clearing a line (no manager) has no one to ask, so it stays an
+  administrator's direct write, and says so.
+
+** Edge cases the build must answer
+
+- The proposed manager is out of the proposer's view (the hierarchy is party
+  scoped). The proposal names them anyway, as a person, since the proposer chose
+  them; the request detail is readable to all three parties.
+- The tree changes while a proposal waits (the manager now reports to the
+  person): the apply-time loop check refuses it and the request records why.
+- The person's account changes while a proposal waits: the apply uses the
+  current version, not the proposer's, and the loop check decides; only the
+  manager field is written.
+- The proposed manager is locked, removed or never signs in: the deadline
+  expires the request, as for any kind.
+- A second proposal for the same person while one waits is refused with a
+  pointer to the first.
+
+* Plan
+
+The engine first, because every other part rests on it, then the kind and its
+detail, then the operations, then the screens.
+
+| # | Task | Leaves behind |
+|---+------+---------------|
+| 1 | Let an approval request name its decider | The =named= rule, the assigned decider, and the decide and queue behaviour, tested. |
+| 2 | Add the reporting line approval kind and its detail record | The seeded kind and the generated detail entity. |
+| 3 | Propose a reporting line change | The propose operation, its refusals, its compensation and the notification. |
+| 4 | Apply an approved reporting line change | Reconciliation through =set_reporting_line= with the loop re-check. |
+| 5 | Propose and decide a reporting line change in the web | The proposal dialog, Requests for the decider, the proposer's view and the waiting marker. |
+| 6 | Approve a reporting line change by the proposed manager (umbrella) | The end-to-end check: propose as one person, decide as another, see the line move and the history say who. |
+
+Each server task follows the authorised-reads rules for any read it adds, and the
+codegen rules for any generated file.
+
+* Decisions
+
+- The change is a proposal decided by the proposed manager, modelled on the
+  role request. Source: the product owner, 2026-10-10.
+- The engine gains a =named= decider rule and does not get a special case for
+  this kind, because the next four-eyes kind will want it too.
+- Open: who may propose (proposed above: the person, their manager, or an
+  administrator). To settle with the product owner before task 3.
+- Open: clearing a line stays a direct administrator write (proposed above).
+  To settle with the product owner before task 5.
+
+* Out of scope
+
+- Approval by someone other than the proposed manager, such as the current
+  manager or a second approver. The =named= rule leaves room for it.
+- Changing the roles or the parties of a person. Only the reporting line.
+- Bulk reorganisations. One proposal is one person.
+- Pushed updates to the proposed manager's screen. The notification and the
+  polled lists carry it; the story =Hear a change on the server and offer a
+  refresh= owns the push.

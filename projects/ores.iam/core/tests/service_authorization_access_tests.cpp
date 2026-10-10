@@ -40,8 +40,10 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <algorithm>
 #include <vector>
 
 namespace {
@@ -123,6 +125,16 @@ role write_role_bundling(database_helper& h, generation_context& gen, const std:
     links.write(link);
 
     return r;
+}
+
+/*
+ * An area name no earlier run used. The permission catalogue and the roles that
+ * bundle it persist between runs, so a fixed name would pick up their rows.
+ */
+std::string unique_area(const std::string& prefix) {
+    auto id = boost::uuids::to_string(boost::uuids::random_generator()());
+    id.erase(std::remove(id.begin(), id.end(), '-'), id.end());
+    return prefix + id.substr(0, 10);
 }
 
 }
@@ -483,4 +495,229 @@ TEST_CASE("nobody_takes_a_role_away_from_themselves", tags) {
 
     CHECK(authorization_revoke_refusal(me, me) == "You cannot take a role away from yourself.");
     CHECK_FALSE(authorization_revoke_refusal(me, colleague).has_value());
+}
+
+/*
+ * What an account's roles let it do is paged by the server, one area at a
+ * time. The area here is made up, so the rows are exactly those the test wrote
+ * whatever else the database's catalogue holds.
+ */
+TEST_CASE("read_own_permissions_pages_the_resources_of_one_area", tags) {
+    database_helper h;
+    const auto zzpage_name = unique_area("zzpage");
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    const auto a = write_role_bundling(h, gen, zzpage_name + "::alpha_one:read");
+    const auto b = write_role_bundling(h, gen, zzpage_name + "::alpha_two:read");
+    const auto c = write_role_bundling(h, gen, zzpage_name + "::alpha_three:read");
+    assign(h, gen, caller, a);
+    assign(h, gen, caller, b);
+    assign(h, gen, caller, c);
+
+    authorization_service svc(h.context());
+    const auto first = svc.read_own_permissions(
+        caller.id, {.area = zzpage_name, .search = "", .offset = 0, .limit = 2});
+    const auto second = svc.read_own_permissions(
+        caller.id, {.area = zzpage_name, .search = "", .offset = 2, .limit = 2});
+
+    CHECK(first.result.outcome == outcome::ok);
+    CHECK(first.area == zzpage_name);
+    CHECK(first.total_count == 3);
+    CHECK(first.rows.size() == 2);
+    CHECK(second.total_count == 3);
+    CHECK(second.rows.size() == 1);
+    // Rows run in name order, so the pages do not overlap.
+    CHECK(first.rows.front().resource == "alpha_one");
+    CHECK(second.rows.front().resource == "alpha_two");
+}
+
+TEST_CASE("read_own_permissions_names_the_actions_held_and_the_role_behind_them", tags) {
+    database_helper h;
+    const auto zzheld_name = unique_area("zzheld");
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    const auto r = write_role_bundling(h, gen, zzheld_name + "::beta_one:read");
+    assign(h, gen, caller, r);
+
+    authorization_service svc(h.context());
+    const auto page = svc.read_own_permissions(caller.id, {.area = zzheld_name});
+
+    REQUIRE(page.rows.size() == 1);
+    CHECK(page.rows.front().held == std::vector<std::string>{"read"});
+    CHECK(page.rows.front().roles == std::vector<std::string>{r.name});
+}
+
+TEST_CASE("read_own_permissions_lists_only_areas_the_account_holds_something_in", tags) {
+    database_helper h;
+    const auto zzonly_name = unique_area("zzonly");
+    const auto zznothing_name = unique_area("zznothing");
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    const auto r = write_role_bundling(h, gen, zzonly_name + "::gamma_one:read");
+    assign(h, gen, caller, r);
+
+    authorization_service svc(h.context());
+    const auto page = svc.read_own_permissions(caller.id, {});
+
+    const auto holds = [&](const std::string& component) {
+        return std::any_of(page.areas.begin(), page.areas.end(), [&](const auto& area) {
+            return area.component == component;
+        });
+    };
+    CHECK(holds(zzonly_name));
+    // A made-up area nobody was given is not offered, and the chosen area is
+    // the first one listed when none was asked for.
+    CHECK(!holds(zznothing_name));
+    REQUIRE(!page.areas.empty());
+    CHECK(page.area == page.areas.front().component);
+}
+
+TEST_CASE("read_account_permissions_is_refused_without_roles_read", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    auto target = write_account(h, gen);
+
+    authorization_service svc(h.context());
+    const auto page = svc.read_account_permissions(caller.id, target.id, {});
+
+    CHECK(page.result.outcome == outcome::denied);
+    CHECK(page.rows.empty());
+}
+
+/*
+ * The role editor must offer every permission to tick, so its page carries the
+ * rows the role does not grant too, and says which of them it holds.
+ */
+TEST_CASE("read_role_permissions_includes_unheld_rows_for_the_editor", tags) {
+    database_helper h;
+    const auto zzedit_name = unique_area("zzedit");
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    const auto reader = write_role_bundling(h, gen, std::string(permissions::roles_read));
+    assign(h, gen, caller, reader);
+    const auto subject = write_role_bundling(h, gen, zzedit_name + "::delta_one:read");
+    write_role_bundling(h, gen, zzedit_name + "::delta_two:read");
+
+    authorization_service svc(h.context());
+    const auto held_only = svc.read_role_permissions(
+        caller.id, subject.id, {.area = zzedit_name, .include_unheld = false});
+    const auto everything = svc.read_role_permissions(
+        caller.id, subject.id, {.area = zzedit_name, .include_unheld = true});
+
+    CHECK(held_only.result.outcome == outcome::ok);
+    CHECK(held_only.total_count == 1);
+    CHECK(everything.total_count == 2);
+    const auto held_rows = std::count_if(
+        everything.rows.begin(), everything.rows.end(), [](const auto& row) {
+            return !row.held.empty();
+        });
+    CHECK(held_rows == 1);
+}
+
+TEST_CASE("read_role_permissions_is_refused_without_roles_read", tags) {
+    database_helper h;
+    const auto zzedit_name = unique_area("zzedit");
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    const auto subject = write_role_bundling(h, gen, zzedit_name + "::echo_one:read");
+
+    authorization_service svc(h.context());
+    const auto page = svc.read_role_permissions(caller.id, subject.id, {});
+
+    CHECK(page.result.outcome == outcome::denied);
+}
+
+TEST_CASE("read_roles_page_pages_filters_by_area_and_leaves_service_roles_out", tags) {
+    database_helper h;
+    const auto zznowhere_name = unique_area("zznowhere");
+    const auto zzlist_name = unique_area("zzlist");
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    const auto reader = write_role_bundling(h, gen, std::string(permissions::roles_read));
+    assign(h, gen, caller, reader);
+    const auto mine = write_role_bundling(h, gen, zzlist_name + "::foxtrot_one:read");
+
+    authorization_service svc(h.context());
+    const auto in_area = svc.read_roles_page(caller.id, {.area = zzlist_name});
+    const auto none = svc.read_roles_page(caller.id, {.area = zznowhere_name});
+    const auto one = svc.read_roles_page(
+        caller.id, {.role_id = boost::uuids::to_string(mine.id)});
+
+    CHECK(in_area.result.outcome == outcome::ok);
+    // A role that grants everything grants something in every area, so the
+    // roles in an area are the one that names it and those that grant it all.
+    const auto named = std::find_if(in_area.roles.begin(),
+                                    in_area.roles.end(),
+                                    [&](const auto& row) { return row.name == mine.name; });
+    REQUIRE(named != in_area.roles.end());
+    CHECK(named->permission_count == 1);
+    CHECK(std::all_of(in_area.roles.begin(), in_area.roles.end(), [&](const auto& row) {
+        return row.name == mine.name || row.everything;
+    }));
+    // An area nobody was given lists only the roles that grant everything.
+    CHECK(std::all_of(none.roles.begin(), none.roles.end(), [](const auto& row) {
+        return row.everything;
+    }));
+    // The areas on offer are those some listed role grants, whatever the filter.
+    CHECK(std::any_of(none.areas.begin(), none.areas.end(), [&](const auto& area) {
+        return area.component == zzlist_name;
+    }));
+    CHECK(one.total_count == 1);
+}
+
+TEST_CASE("read_roles_page_is_refused_without_roles_read", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    authorization_service svc(h.context());
+
+    CHECK(svc.read_roles_page(caller.id, {}).result.outcome == outcome::denied);
+}
+
+TEST_CASE("read_role_holders_pages_the_people_who_hold_a_role_by_name", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    const auto reader = write_role_bundling(h, gen, std::string(permissions::roles_read));
+    assign(h, gen, caller, reader);
+    const auto subject = write_role_bundling(h, gen, unique_area("zzheld") + "::kilo_one:read");
+    auto first = write_account(h, gen);
+    auto second = write_account(h, gen);
+    auto third = write_account(h, gen);
+    assign(h, gen, first, subject);
+    assign(h, gen, second, subject);
+    assign(h, gen, third, subject);
+
+    authorization_service svc(h.context());
+    const auto page_one = svc.read_role_holders(caller.id, subject.id, 0, 2);
+    const auto page_two = svc.read_role_holders(caller.id, subject.id, 2, 2);
+
+    CHECK(page_one.result.outcome == outcome::ok);
+    CHECK(page_one.total_count == 3);
+    CHECK(page_one.holders.size() == 2);
+    CHECK(page_two.holders.size() == 1);
+    // The pages do not overlap and each row names the person.
+    CHECK(page_one.holders.front().account_id != page_two.holders.front().account_id);
+    CHECK(!page_one.holders.front().username.empty());
+}
+
+TEST_CASE("read_role_holders_is_refused_without_roles_read", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    const auto subject = write_role_bundling(h, gen, unique_area("zzheld") + "::lima_one:read");
+    authorization_service svc(h.context());
+
+    CHECK(svc.read_role_holders(caller.id, subject.id, 0, 15).result.outcome == outcome::denied);
 }

@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: FA5C1FC4-BB15-5FD8-A522-7E21D05695E9
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the book_changes commands from the shell?
+#+description: Every command the book_changes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:book_changes:
+
+This file documents the book_changes resource at the shell, one section per command. Every command is a subcommand of =book_changes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: B0BC0F0F-6BE0-5AAE-B7E9-1613DAECB88D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_changes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.book_changes.list=.
+
+#+name: book_changes-list
+#+begin_src ores-shell :tangle book_changes-list.ores :exports none
+book_changes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 4CAFB4D5-7405-536B-BCC1-FFDB4D61E078
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_changes get <id>
+#+end_example
+
+It is addressed at =refdata.v1.book_changes.get=.
+
+#+name: book_changes-get
+#+begin_src ores-shell :tangle book_changes-get.ores :exports none
+book_changes get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 5789A5E7-AE74-590E-86B7-D29461A11F04
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_changes get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.book_changes.get_many=.
+
+#+name: book_changes-get-many
+#+begin_src ores-shell :tangle book_changes-get-many.ores :exports none
+book_changes get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 4612D7C7-709F-5F76-8FC7-087D1D400A83
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_changes versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.book_changes_versions.list=.
+
+#+name: book_changes-versions
+#+begin_src ores-shell :tangle book_changes-versions.ores :exports none
+book_changes versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 298D666C-8E5F-5DD0-9349-86F887D94286
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_changes version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.book_changes_versions.get=.
+
+#+name: book_changes-version
+#+begin_src ores-shell :tangle book_changes-version.ores :exports none
+book_changes version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

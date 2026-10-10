@@ -295,8 +295,8 @@ export interface InboxRequestedRole {
 /**
  * What was decided about a request, as the person who asked reads it.
  *
- * The decider is named by account id. A screen that shows only their own
- * requests has nobody to name but themselves.
+ * The decider is named by username when the join could read the account, and
+ * by account id when it could not.
  */
 export const inboxRequestDecisionViewSchema = z.object({
     decisionCode: z.string().default(''),
@@ -683,6 +683,15 @@ async function joinRequests(
         ? await readDecisionsByRequest(caller, requestIds)
         : new Map<string, InboxRequestDecisionView>();
 
+    // The people who decided are named in the same way as the people who asked,
+    // so a screen shows a username where it would otherwise show an account id.
+    const unnamed = [...decisionByRequest.values()]
+        .map((decision) => decision.decidedBy)
+        .filter((id) => id !== '' && !usernameByAccount.has(id));
+    for (const [id, username] of await readUsernames(caller, unnamed)) {
+        usernameByAccount.set(id, username);
+    }
+
     if (viewer.accountId !== '') usernameByAccount.set(viewer.accountId, viewer.username);
     return { rolesByRequest, accountByRequest, usernameByAccount, decisionByRequest };
 }
@@ -702,7 +711,19 @@ function toRequestView(
         reason: wire.reason,
         expiresAt: wire.expires_at ?? '',
         roles: join.rolesByRequest.get(wire.id) ?? [],
-        decision: join.decisionByRequest.get(wire.id) ?? null,
+        decision: namedDecision(join.decisionByRequest.get(wire.id), join.usernameByAccount),
+    };
+}
+
+/** The decision with its decider named by username when the join could read it. */
+function namedDecision(
+    decision: InboxRequestDecisionView | undefined,
+    usernameByAccount: ReadonlyMap<string, string>,
+): InboxRequestDecisionView | null {
+    if (decision === undefined) return null;
+    return {
+        ...decision,
+        decidedBy: usernameByAccount.get(decision.decidedBy) ?? decision.decidedBy,
     };
 }
 
@@ -1074,6 +1095,8 @@ export async function decideRequest(
         readonly version: number;
         readonly decisionCode: string;
         readonly comment: string;
+        /** The part the decider answers for; empty for a request that names none. */
+        readonly partCode?: string;
     },
 ): Promise<void> {
     const request: DecideApprovalRequestRequest = {
@@ -1081,6 +1104,7 @@ export async function decideRequest(
         version: input.version,
         decision_code: input.decisionCode,
         comment: input.comment,
+        part_code: input.partCode ?? '',
     };
     const reply = await caller.callAuthenticated(INBOX_SUBJECTS.decide, request, resultReplySchema);
     ok(INBOX_SUBJECTS.decide, reply.result);

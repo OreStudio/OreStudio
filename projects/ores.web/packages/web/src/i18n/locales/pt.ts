@@ -93,6 +93,8 @@ const pt: SourceCatalogue = {
     access: {
         allAreas: 'Todas as áreas',
         areaFilter: 'Área',
+        permissionsShowing: 'A mostrar {from}–{to} de {total} permissões',
+        resourcesHeld: '{count} recursos',
         hub: {
             title: 'Organização',
             lead: 'As pessoas deste inquilino, e a quem reportam.',
@@ -161,7 +163,6 @@ const pt: SourceCatalogue = {
             why: 'Porquê',
             noRole: 'Sem papel. Pode iniciar sessão mas ainda não pode fazer nada.',
             takeAway: 'Retirar',
-            currentVersion: 'Esta é a versão atual.',
             notYourself: 'Não pode retirar um papel a si próprio.',
             whatTheyAllow: 'O que estes papéis permitem',
             giveTitle: 'Dar um papel a {name}',
@@ -215,6 +216,7 @@ const pt: SourceCatalogue = {
             saveTitle: 'Guardar {role}?',
             andMore: 'e mais {count}',
             reaches: '{people} têm este papel. A alteração chega-lhes dentro de 30 minutos.',
+            holdersShowing: 'A mostrar {from}–{to} de {total} pessoas',
             nowAllows: 'Passa a permitir',
             noLongerAllows: 'Deixa de permitir',
             whyChange: 'Porquê a alteração',
@@ -244,6 +246,9 @@ const pt: SourceCatalogue = {
         },
     },
 
+    people: {
+        outsideView: 'Alguém fora da sua vista',
+    },
     inbox: {
         state: {
             waiting: 'À espera',
@@ -274,6 +279,8 @@ const pt: SourceCatalogue = {
             submit: 'Pedir',
         },
         mine: {
+            none: 'Não fez nenhum pedido.',
+            lead: 'Os pedidos que fez e a resposta que receberam.',
             title: 'Os seus pedidos',
             asked: 'pedido a {date}',
             youWrote: 'Escreveu: {reason}',
@@ -693,6 +700,7 @@ const pt: SourceCatalogue = {
             common_other: 'Outra razão',
         },
         tabs: {
+            history: 'Histórico',
             details: 'Detalhes',
             contact: 'Contacto',
             access: 'Acesso',
@@ -782,7 +790,7 @@ const pt: SourceCatalogue = {
             protect: 'Proteger a minha conta',
             protectWhy: 'A sua palavra-passe, as suas entradas e as suas sessões:',
             know: 'Saber o que posso fazer',
-            knowWhy: 'O que os seus papéis lhe permitem fazer:',
+            knowWhy: 'As funções que tem e o que lhe permitem fazer:',
             failed: 'Não foi possível ler os seus acessos, por isso os painéis de administração não são oferecidos. {reason}',
         },
         save: {
@@ -933,12 +941,6 @@ const pt: SourceCatalogue = {
         upcomingModules: 'Módulos futuros / Pré-visualização do roteiro',
         welcome: 'Bem-vindo, {name}',
         system: {
-            installation: 'Instalação',
-            lead: {
-                one: 'Esta instalação serve {count} inquilino.',
-                other: 'Esta instalação serve {count} inquilinos.',
-            },
-            health: 'Estado do sistema',
             inService: 'Em serviço',
             onEvaluation: 'Em avaliação',
             settingUp: 'Em criação',
@@ -983,6 +985,56 @@ const pt: SourceCatalogue = {
                 failed: '{tenant}: a criação parou após {done} de {count} passos',
                 compensating: '{tenant}: a criação está a ser desfeita',
                 compensated: '{tenant}: a criação foi desfeita',
+            },
+            tabs: {
+                label: 'Vistas da página inicial',
+                dashboard: 'Painel',
+                active: 'Módulos ativos',
+                upcoming: 'Módulos futuros',
+            },
+            panels: {
+                open: 'Abrir',
+                unread: 'Não foi possível ler',
+                sampled: 'Amostra de',
+                summary: {
+                    needAttention: {
+                        one: '{count} área precisa de atenção',
+                        other: '{count} áreas precisam de atenção',
+                    },
+                },
+                services: {
+                    title: 'Serviços',
+                    needAttention: {
+                        one: '{count} serviço precisa de atenção',
+                        other: '{count} serviços precisam de atenção',
+                    },
+                },
+                grid: {
+                    title: 'Grelha',
+                    noNodes: 'Nenhum nó se apresentou ainda',
+                    needAttention: {
+                        one: '{count} nó precisa de atenção',
+                        other: '{count} nós precisam de atenção',
+                    },
+                    online: 'Nós em linha',
+                    idle: 'Inativos',
+                    activeBatches: 'Lotes ativos',
+                    failed: 'Resultados falhados',
+                },
+                queue: {
+                    title: 'Fila de mensagens',
+                    noSample: 'Ainda sem amostra',
+                    needAttention: {
+                        one: '{count} consumidor lento precisa de atenção',
+                        other: '{count} consumidores lentos precisam de atenção',
+                    },
+                    connections: 'Ligações',
+                    slowConsumers: 'Consumidores lentos',
+                    streams: 'Fluxos',
+                    stored: 'Mensagens guardadas',
+                    throughput: 'Mensagens recebidas por segundo',
+                    perSecond: '{rate} msg/s',
+                },
             },
         },
         tenant: {
@@ -1056,6 +1108,7 @@ const pt: SourceCatalogue = {
             running: 'Serviços em execução',
             lost: 'Perdidos',
             missing: 'Em falta',
+            lostOrMissing: 'Perdidos ou em falta',
             errors: 'Erros, {range}',
             warnings: 'Avisos, {range}',
             release: 'Versão mais recente',
@@ -1569,9 +1622,9 @@ const pt: SourceCatalogue = {
 
     timeline: {
         empty: 'Ainda nada lhe aconteceu.',
+        details: 'Detalhes',
+        current: 'Versão atual',
         field: 'Campo',
-        notRevertible: 'Esta entrada regista um facto, por isso não há nada a reverter.',
-        changeNotOffered: 'Repor um campo alterado não é oferecido aqui.',
         noChanges: 'Sem alterações',
         kind: {
             raised: 'Criado',
@@ -2430,6 +2483,8 @@ const pt: SourceCatalogue = {
     },
 
     version: {
+        tenant: 'Inquilino: {name}',
+        party: 'Parte: {name}',
         client: 'Cliente: {version}',
         server: 'Servidor: {version}',
         serverUnknown: 'Servidor: desconhecido',
@@ -2892,6 +2947,8 @@ const pt: SourceCatalogue = {
             zoomReset: 'Repor',
             noReports: 'Ninguém reporta a esta pessoa.',
             findPerson: 'Procurar uma pessoa',
+            recentChanges: 'Linhas hierárquicas alteradas recentemente',
+            noRecentChanges: 'Nenhuma linha hierárquica mudou recentemente.',
             person: 'Pessoa',
             tabs: { tree: 'Árvore', chart: 'Organigrama', history: 'Histórico' },
             you: 'Você',

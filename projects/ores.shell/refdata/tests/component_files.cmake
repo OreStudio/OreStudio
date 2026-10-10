@@ -26,6 +26,7 @@ set(files
     "bma_basis_swap_convention_commands_tests.cpp"
     "bond_future_volatility_config_commands_tests.cpp"
     "bond_yield_convention_commands_tests.cpp"
+    "book_change_commands_tests.cpp"
     "book_commands_tests.cpp"
     "book_purpose_type_commands_tests.cpp"
     "book_status_commands_tests.cpp"

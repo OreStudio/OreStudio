@@ -77,6 +77,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/3061][#3061]] | [agile] Scaffold the Bring the QA validation runner to ores.web story |
+| [[https://github.com/OreStudio/OreStudio/pull/3064][#3064]] | [agile] Plan the QA runner build tasks |
 
 * Review
 
@@ -88,10 +89,10 @@ via its "Verifies task" field.
 | 4 | Scaffold task goal and acceptance are placeholders | scaffold task | Accept | Both are filled in. |
 | 5 | Prototype task copies the story's goal and acceptance | prototype task | Accept | It has its own, narrower goal and acceptance. |
 | 6 | The arc says the module replaces the old tools now | story.org | Accept | It says story 2 replaces them. |
-| 7 | Goal and decisions disagree on where results go | story.org | Accept | The goal now says compass records results and the prototype confirms it. |
+| 7 | Goal and decisions disagree on where results go | story.org | Accept | The goal said compass records results. A later correction replaced that: the BFF writes the results and compass only creates the docs. |
 | 8 | BFF never parses org, yet the browser parses it | story.org | Accept | A note separates display from parsing the tree. The verb is named as a task. |
 | 9 | Table padding is uneven | story.org | Decline | Cosmetic. Compass writes those cells. |
 
 * Result
 
-The story, its prototype task and the sprint wiring exist. The story page records the arc: a regular module for development and testing, three stories, and the decisions on compass as the only writer, on the work tree it reads and on retiring ores.org-js and ores.dsh_kanban.
+The story, its prototype task and the sprint wiring exist. The story page records the arc: a regular module for development and testing, three stories, and the decision that ores.web does not call compass and writes results into the docs itself, on the work tree it reads and on retiring ores.org-js and ores.dsh_kanban.

@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 537F5B54-7A87-4D65-AFD9-03217DCBC0CC
+:END:
+#+title: Task: File the Gemini review of the system home and take its layout
+#+description: Gemini drew the system administrator's home as a dashboard of four panels. File it as a review of the Home screen prototype, and take from it what the data supports.
+#+type: task
+#+level: s1
+#+filetags: :review_the_system_home_screen:sprint_27:v0:
+#+owner: marco
+#+branch: feature/review-the-system-home-screen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F4E0D76-607B-48BC-8824-DF1D1209FF67][Review the system administrator's home screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The review sits beside the Home screen prototype with its paperwork, and the built home takes the layout, the tiles, the footers and the single status from it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2F4E0D76-607B-48BC-8824-DF1D1209FF67][Review the system administrator's home screen]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The review is at doc/prototypes/tenancy/home/review with an index, a banner on its screen, and the group page, the design note and the inventory check agree.
+- The built home has one status at the top, boxed metric tiles, two columns and a footer on each panel.
+- The throughput curve is drawn from the server samples, and nothing is invented.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Gemini review is filed at doc/prototypes/tenancy/home/review with an index and a banner on its one screen, beside the Home screen prototype it reviews. The Tenancy group page links it from the Home row, and the design note says what it argues, what the built screen took and what it left. The prototype inventory check passes: 51 prototypes, 5 reviews.
+
+The built home took four things: one status for the whole installation at the top, boxed metric tiles, two columns so the four panels weigh the same, and a footer on each panel that says when it was read or which release it is. It left the processor load of the grid, the scheduler status, the broker name and the claim about clusters, because nothing records them. The message queue panel draws a throughput curve from the server samples it already reads, as the difference of the message counter over the seconds between two samples, so the figure is real. The web package passes 662 tests and the format check. I did not look at the home in a browser.
+

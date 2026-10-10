@@ -321,12 +321,15 @@ export function Detail({
     value,
     mono = false,
     href,
+    external = false,
 }: {
     readonly label: string;
     readonly value: string;
     readonly mono?: boolean;
     /** Makes the value a link, such as a `mailto:` address. */
     readonly href?: string;
+    /** Opens the link in a new tab, for a web address that leaves the application. */
+    readonly external?: boolean;
 }): ReactNode {
     return (
         <div className="min-w-0">
@@ -337,6 +340,7 @@ export function Detail({
                 ) : (
                     <a
                         href={href}
+                        {...(external && { target: '_blank', rel: 'noopener noreferrer' })}
                         className="underline decoration-line-strong underline-offset-2 hover:decoration-accent"
                     >
                         {value}

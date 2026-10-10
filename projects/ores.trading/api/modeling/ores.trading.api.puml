@@ -1109,6 +1109,9 @@ namespace ores #F2F2F2 {
                 +option_exercise_fees : vector<instrument_option_exercise_fee>
                 +option_payment_dates : vector<instrument_option_payment_date>
                 +option_exercise_prices : vector<instrument_option_exercise_price>
+                +lower_notionals : vector<flexi_swap_lower_notional>
+                +tranches : vector<balance_guaranteed_swap_tranche>
+                +tranche_notionals : vector<balance_guaranteed_swap_tranche_notional>
             }
             class commodity_instrument_data <<struct>> {
                 +instrument : commodity_instrument

@@ -41,6 +41,14 @@ export interface RaiseApprovalRequestRequest {
      * @brief Why the person asks, in their words.
      */
     reason: string;
+    /**
+     * @brief The parts whose approval the request needs.
+     *
+     * Empty for a kind that names one decider permission and a count. When parts
+     * are named, the request is approved once every part has approved, in the
+     * answer order the parts give.
+     */
+    part_codes: string[];
 }
 
 export interface RaiseApprovalRequestResponse {
@@ -89,6 +97,13 @@ export interface DecideApprovalRequestRequest {
      */
     decision_code: string;
     comment: string;
+    /**
+     * @brief The part the decider answers for.
+     *
+     * Required to approve or refuse a request that names parts. The decider needs
+     * the permission that part names.
+     */
+    part_code: string;
 }
 
 export interface DecideApprovalRequestResponse {

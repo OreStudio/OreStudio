@@ -28,6 +28,9 @@ import { api } from '../api/client.js';
 import { AccountPicture } from '../ui/Images.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
+import { PersonRef } from '../access/PersonRef.js';
+import { useHolds } from '../access/holds.js';
+import { MyRequests } from './MyRequests.js';
 import { RequestStateChip } from './RequestStateChip.js';
 import { askedFor } from './words.js';
 
@@ -47,7 +50,26 @@ const PAGE = 100;
  * What is waiting is the whole of `items`: the server answers no request that
  * has an answer, so there is nothing here to filter out.
  */
+/** Marks where a name goes in a translated phrase, so the name can be a link. */
+const DECIDER_SLOT = '\u0001';
+
 export function RequestsPage(): ReactNode {
+    const { t } = useTranslation();
+    const mayDecide = useHolds()('iam::roles:assign');
+    return (
+        <div className="space-y-6">
+            <PageHeader
+                title={t('inbox.queue.title')}
+                description={mayDecide ? t('inbox.queue.lead') : t('inbox.mine.lead')}
+            />
+            <MyRequests showEmpty />
+            {mayDecide && <Queue />}
+        </div>
+    );
+}
+
+/** What is waiting for this person's answer, and what was answered recently. */
+function Queue(): ReactNode {
     const { t } = useTranslation();
     const requests = useQuery({
         queryKey: ['request-queue'],
@@ -65,8 +87,7 @@ export function RequestsPage(): ReactNode {
     const answered = requests.data.answered;
 
     return (
-        <div className="space-y-6">
-            <PageHeader title={t('inbox.queue.title')} description={t('inbox.queue.lead')} />
+        <>
             <section className="rounded-md border border-line bg-surface-raised">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
@@ -114,15 +135,30 @@ export function RequestsPage(): ReactNode {
                                 />
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-center gap-2 text-sm">
-                                        <span className="font-medium">{request.requestedBy}</span>
+                                        <span className="font-medium">
+                                            <PersonRef who={request.requestedBy} />
+                                        </span>
                                         <span className="text-ink-muted">·</span>
                                         <span>{askedFor(t, request)}</span>
                                         <RequestStateChip stateCode={request.stateCode} />
                                         {request.decision !== null && (
                                             <span className="text-xs text-ink-faint">
-                                                {t('inbox.queue.by', {
-                                                    decider: request.decision.decidedBy,
-                                                })}
+                                                {t('inbox.queue.by', { decider: DECIDER_SLOT })
+                                                    .split(DECIDER_SLOT)
+                                                    .flatMap((part, index) =>
+                                                        index === 0
+                                                            ? [part]
+                                                            : [
+                                                                  <PersonRef
+                                                                      key="decider"
+                                                                      who={
+                                                                          request.decision!
+                                                                              .decidedBy
+                                                                      }
+                                                                  />,
+                                                                  part,
+                                                              ],
+                                                    )}
                                             </span>
                                         )}
                                     </div>
@@ -138,7 +174,7 @@ export function RequestsPage(): ReactNode {
                     </ul>
                 </section>
             )}
-        </div>
+        </>
     );
 }
 
@@ -158,7 +194,7 @@ function QueueRow({ request }: { readonly request: InboxRequestView }): ReactNod
                         name={request.requestedBy}
                         size="sm"
                     />
-                    {request.requestedBy}
+                    <PersonRef who={request.requestedBy} />
                 </span>
             </td>
             <td className="px-4 py-2 font-medium">{askedFor(t, request)}</td>

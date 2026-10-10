@@ -1,0 +1,203 @@
+:PROPERTIES:
+:ID: B0E12FA2-4513-5F35-950A-353FD8D8E2E3
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the approval_request_parts commands from the shell?
+#+description: Every command the approval_request_parts submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:approval_request_parts:
+
+This file documents the approval_request_parts resource at the shell, one section per command. Every command is a subcommand of =approval_request_parts=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: BAD9802A-CCC9-57B8-A07F-E512BC878236
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_parts list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_parts.list=.
+
+#+name: approval_request_parts-list
+#+begin_src ores-shell :tangle approval_request_parts-list.ores :exports none
+approval_request_parts list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0164C1D7-92CF-5CFD-937C-5B0A189221F4
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_parts get <request_id> <part_code>
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_parts.get=.
+
+#+name: approval_request_parts-get
+#+begin_src ores-shell :tangle approval_request_parts-get.ores :exports none
+approval_request_parts get 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 33501BA7-E586-58CD-B6EA-FCDD095041CE
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_parts get-many <request_id> <part_code>
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_parts.get_many=.
+
+#+name: approval_request_parts-get-many
+#+begin_src ores-shell :tangle approval_request_parts-get-many.ores :exports none
+approval_request_parts get-many 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 31C48473-CEB0-597B-BF85-420254582176
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_parts add <request_id> <part_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_parts.put=.
+
+#+name: approval_request_parts-add
+#+begin_src ores-shell :tangle approval_request_parts-add.ores :exports none
+approval_request_parts add 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 5EC8B4E7-815C-58D7-9831-6ED9CAC229CA
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_parts set <request_id> <part_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_parts.put=.
+
+#+name: approval_request_parts-set
+#+begin_src ores-shell :tangle approval_request_parts-set.ores :exports none
+approval_request_parts set 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 8C2E6EA6-4EC0-5F82-B8F5-280D78A8F4AF
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_parts put-many --count <n> <request_id> <part_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_parts.put_many=.
+
+#+name: approval_request_parts-put-many
+#+begin_src ores-shell :tangle approval_request_parts-put-many.ores :exports none
+approval_request_parts put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 3FEC02E5-11B3-5725-AF56-7564025C3FE7
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_parts delete <request_id> <part_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_parts.delete=.
+
+#+name: approval_request_parts-delete
+#+begin_src ores-shell :tangle approval_request_parts-delete.ores :exports none
+approval_request_parts delete 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: E019554E-2A94-5E55-82EE-009EBE9BD5D5
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_parts delete-many <request_id> <part_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_parts.delete_many=.
+
+#+name: approval_request_parts-delete-many
+#+begin_src ores-shell :tangle approval_request_parts-delete-many.ores :exports none
+approval_request_parts delete-many 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =by-request-id=
+:PROPERTIES:
+:ID: 5AB03E49-EE67-508E-BA9C-E420769F9007
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_parts by-request-id <request_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_parts.list_by_request_id=.
+
+#+name: approval_request_parts-by-request-id
+#+begin_src ores-shell :tangle approval_request_parts-by-request-id.ores :exports none
+approval_request_parts by-request-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

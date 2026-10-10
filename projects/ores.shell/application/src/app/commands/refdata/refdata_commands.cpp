@@ -5,6 +5,7 @@
 #include "ores.shell/app/commands/refdata/bma_basis_swap_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/bond_future_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/bond_yield_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/book_change_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_purpose_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_status_commands.hpp"
@@ -150,6 +151,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     bond_future_volatility_config_commands::register_commands(root_menu, session);
     bond_yield_convention_commands::register_commands(root_menu, session);
     book_commands::register_commands(root_menu, session);
+    book_change_commands::register_commands(root_menu, session);
     book_purpose_type_commands::register_commands(root_menu, session);
     book_status_commands::register_commands(root_menu, session);
     business_centre_commands::register_commands(root_menu, session);

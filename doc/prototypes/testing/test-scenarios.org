@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 189B52EE-7F94-4EC9-B348-B96DCF30EC5A
+:END:
+#+title: Test scenarios prototype
+#+description: The tester's queue and runner for test scenarios: three ways to arrange the runner, and the gaps each one states.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:testing:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+| Item          | Where                                        |
+|---------------+----------------------------------------------|
+| Prototype     | [[file:test-scenarios/][the prototype]]             |
+| Gemini review | none                                         |
+| Group         | [[file:index.org][Testing prototypes]]               |
+| Journey       | none yet                                     |
+
+* Summary
+
+ores.qt had a QA Validation Runner. A tester opened a =test_scenario= doc, saw
+its steps, marked each PASS or FAIL with a note, and saved. The save wrote the
+results back into the doc. The prototype brings that to the browser as a regular
+module with two screens: the queue of scenarios waiting and done, and the runner
+that works through one scenario. The story and the task that drive the scenario
+sit beside its steps.
+
+It is throwaway. It is not production code, it reads no service, and every
+value on it is mock data.
+
+Open the [[file:test-scenarios/][prototype]].
+
+* Detail
+
+** The verdict
+
+Accepted on 2026-10-10: variant B, one step at a time. A Pass moves on to the
+next step. A Fail stays on the step, so the tester can write the note first. The
+rejected layouts stay in the prototype, switchable from the bar at the foot of
+the page. The queue carries no heading of its own, because the Tests tab names it.
+
+** The queue
+
+One design, because the choice of runner layout does not change it. Waiting
+scenarios come first, then done ones. A row shows the scenario, the story and
+task behind it, its target, its progress and its state. A notification in the
+bell and a row in the queue open the same scenario.
+
+** The three runner variants
+
+| Variant | Shape | What it settles | What it gives up |
+|---------+-------+-----------------+------------------|
+| A · Steps beside the detail | A list of steps on the left, the chosen step on the right | The tester sees the whole scenario and one whole step at once | It needs a wide window |
+| B · One step at a time (accepted) | A progress bar, one step, and the verdict buttons. A Pass moves on and a Fail stays | It fits a narrow window beside the application under test | The tester sees the rest of the scenario only on request |
+| C · The document | Every step in order with its controls under it | It reads like the org page, so a finished scenario is easy to review | A long scenario makes the tester scroll |
+
+** The overall result is inferred
+
+The tester marks steps. Any FAIL makes the scenario FAILED. All PASS makes it
+PASSED. Anything else leaves it PENDING. The same rule ran in the Qt tool.
+
+** The cases the bar switches
+
+- *Queue* shows what waits and what is done.
+- *Running* opens a scenario with one step marked.
+- *Reopened* opens a passed scenario read-only, with a Retest button.
+- *Failed step* opens a scenario with a failed step, a note and a screenshot.
+
+** What the screens cannot do, and say
+
+1. *Nothing reads or writes a scenario.* The BFF has no scenario store. ores.web
+   cannot rely on compass, so the BFF must parse the docs compass creates and
+   write results into them itself, behind an interface that a database store can
+   replace later.
+2. *No notification for a waiting test.* The inbox raises none. The queue is
+   every scenario in state PENDING.
+3. *A scenario has no tester.* The doc carries a target and an environment and
+   no assignee.
+4. *No image upload.* A browser cannot capture the screen, so a step takes a
+   pasted or dropped image. No BFF route saves it beside the scenario.
+5. *No org renderer in the web package.* The parser in =ores.org-js= is the one
+   to port.
+6. *A deployed server has no work tree.* Where scenarios and results live in
+   production is open.
+7. *A retest overwrites.* It rewrites the result in the org file and git keeps
+   the history. Keeping each run is the alternative, and the prototype does not
+   choose. A retest asks for confirmation first.
+
+** A scenario closes when it is saved decided
+
+Marking steps never closes a scenario. A save closes it when no step is pending,
+and a retest opens it again. A scenario that arrives done opens closed and
+read-only. A first version of the page derived this from the steps and locked a
+scenario the moment a tester marked a step Fail. The review caught it.
+
+* See also
+
+- [[file:index.org][Testing prototypes]] — the group page.
+- [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] — the story this answers.

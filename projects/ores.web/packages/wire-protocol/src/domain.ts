@@ -522,6 +522,95 @@ export const accountAccessSchema = z.object({
 export type AccountAccess = z.infer<typeof accountAccessSchema>;
 
 /**
+ * One resource of the permission catalogue and what an account holds of it.
+ *
+ * A page of these is the server's: a screen draws a resource as a row with its
+ * actions as columns, so a page never holds half a row.
+ */
+export const permissionRowSchema = z.object({
+    component: z.string(),
+    resource: z.string(),
+    /** Every action the catalogue defines for the resource. */
+    actions: z.array(z.string()),
+    /** The actions the account's roles grant. */
+    held: z.array(z.string()),
+    /** The roles that grant any of them. */
+    roles: z.array(z.string()),
+});
+export type PermissionRow = z.infer<typeof permissionRowSchema>;
+
+/** An area in which an account holds something, and how many resources of it. */
+export const permissionAreaSchema = z.object({
+    component: z.string(),
+    resources: z.int().nonnegative(),
+});
+export type PermissionArea = z.infer<typeof permissionAreaSchema>;
+
+/**
+ * One page of what an account's roles let it do.
+ *
+ * `area` is the area the rows belong to: the one asked for, or the first the
+ * account holds something in when none was. `areas` lists only areas the
+ * account holds something in, so there is always something to see in each.
+ * `totalCount` is every row matching the area and the search, not this page.
+ */
+export const permissionPageSchema = z.object({
+    area: z.string(),
+    rows: z.array(permissionRowSchema),
+    totalCount: z.int().nonnegative(),
+    areas: z.array(permissionAreaSchema),
+    /** Whether the chosen area is granted whole, so no row needs a tick. */
+    areaWhole: z.boolean(),
+    /** Whether the roles grant everything. */
+    everything: z.boolean(),
+});
+export type PermissionPage = z.infer<typeof permissionPageSchema>;
+
+/** One role as the roles list draws it. The permissions are counted, not listed. */
+export const rolePageRowSchema = z.object({
+    id: uuidSchema,
+    version: z.int().nonnegative(),
+    name: z.string(),
+    description: z.string(),
+    service: z.boolean(),
+    registrationDefault: z.boolean(),
+    requestable: z.boolean(),
+    permissionCount: z.int().nonnegative(),
+    everything: z.boolean(),
+});
+export type RolePageRow = z.infer<typeof rolePageRowSchema>;
+
+/**
+ * One page of the tenant's roles. `areas` are those some listed role grants
+ * something in, with how many roles do; `serviceHidden` is how many of the
+ * platform's own roles were left out.
+ */
+export const rolePageSchema = z.object({
+    roles: z.array(rolePageRowSchema),
+    totalCount: z.int().nonnegative(),
+    serviceHidden: z.int().nonnegative(),
+    areas: z.array(permissionAreaSchema),
+});
+export type RolePage = z.infer<typeof rolePageSchema>;
+
+/** One person who holds a role, with what a screen needs to name and show them. */
+export const roleHolderSchema = z.object({
+    accountId: uuidSchema,
+    username: z.string(),
+    fullName: z.string(),
+    imageId: z.string().nullable(),
+    assignedBy: z.string(),
+});
+export type RoleHolder = z.infer<typeof roleHolderSchema>;
+
+/** One page of the people who hold a role, by name, and how many hold it in all. */
+export const roleHoldersSchema = z.object({
+    holders: z.array(roleHolderSchema),
+    totalCount: z.int().nonnegative(),
+});
+export type RoleHolders = z.infer<typeof roleHoldersSchema>;
+
+/**
  * One role of the tenant's catalogue.
  *
  * A service role is one the platform's own services sign in with. The seed

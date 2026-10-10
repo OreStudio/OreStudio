@@ -39,6 +39,7 @@ import arrowSync from '../assets/icons/ic_fluent_arrow_sync_20_regular.svg';
 import arrowTrending from '../assets/icons/ic_fluent_arrow_trending_20_regular.svg';
 import bus from '../assets/icons/ic_fluent_flash_flow_20_regular.svg';
 import calendar from '../assets/icons/ic_fluent_calendar_clock_20_regular.svg';
+import checkmarkCircle from '../assets/icons/ic_fluent_checkmark_circle_20_regular.svg';
 import chart from '../assets/icons/ic_fluent_chart_multiple_20_regular.svg';
 import classification from '../assets/icons/ic_fluent_classification_20_regular.svg';
 import currency from '../assets/icons/ic_fluent_currency_dollar_euro_20_regular.svg';
@@ -69,6 +70,7 @@ const ICONS = {
     cancel: dismiss,
     chart,
     classification,
+    current: checkmarkCircle,
     copy,
     currency,
     database,

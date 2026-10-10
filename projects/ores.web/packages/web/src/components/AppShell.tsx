@@ -116,12 +116,20 @@ export function AppShell({
                     {tenantName !== '' && (
                         <span className="text-sm text-ink-muted">{tenantName}</span>
                     )}
-                    <span
-                        className="rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-muted"
-                        title={t('nav.mode')}
-                    >
-                        {t(modeKey(mode))}
-                    </span>
+                    {/*
+                     * Only an administrator's mode is worth a pill: it changes
+                     * what every screen does. An ordinary member's session has
+                     * no mode to announce, and the tenant and party are in the
+                     * footer.
+                     */}
+                    {mode !== 'application' && (
+                        <span
+                            className="rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-muted"
+                            title={t('nav.mode')}
+                        >
+                            {t(modeKey(mode))}
+                        </span>
+                    )}
                     <nav aria-label={t('nav.areas')} className="flex items-center gap-1">
                         {menu.map((item) => (
                             <NavLink
@@ -162,7 +170,12 @@ export function AppShell({
             <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8">
                 <div className={`mx-auto w-full ${SHELL_WIDTHS[width]}`}>{children}</div>
             </main>
-            <VersionFooter serverVersion={serverVersion} environment={environment} />
+            <VersionFooter
+                serverVersion={serverVersion}
+                environment={environment}
+                tenantName={tenantName}
+                partyName={partyName}
+            />
         </div>
     );
 }

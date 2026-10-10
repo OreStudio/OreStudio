@@ -27,6 +27,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { askedFor, sourceLabel, stateLabel } from './words.js';
 import { formatDateTime } from '../ui/Time.js';
+import { PersonRef, useActorPictures } from '../access/PersonRef.js';
 import { AccountPicture } from '../ui/Images.js';
 import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { Timeline, kindTone } from '../timeline/Timeline.js';
@@ -47,6 +48,7 @@ import { Timeline, kindTone } from '../timeline/Timeline.js';
  * request look as if it went straight from waiting to answered.
  */
 export function RequestStoryPage({ me }: { readonly me: string }): ReactNode {
+    const actorPicture = useActorPictures();
     const { t, language } = useTranslation();
     const { id = '' } = useParams();
     const story = useQuery({
@@ -108,6 +110,7 @@ export function RequestStoryPage({ me }: { readonly me: string }): ReactNode {
             <Timeline
                 timeline={{ subject: 'request', id, events, gaps: [] }}
                 renderHead={(event) => <RequestEventHead event={event} />}
+                actorPicture={actorPicture}
             />
         </div>
     );
@@ -131,8 +134,9 @@ function RequestEventHead({ event }: { readonly event: InboxStoryEvent }): React
                 them here would say they acted twice. */}
             {event.actor !== '' && (
                 <>
-                    <AccountPicture username={event.actor} name={event.actor} size="sm" />
-                    <span className="font-medium">{event.actor}</span>
+                    <span className="font-medium">
+                        <PersonRef who={event.actor} />
+                    </span>
                 </>
             )}
             <span className="text-ink-muted">{sourceLabel(t, event.entityType)}</span>

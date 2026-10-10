@@ -151,13 +151,11 @@ describe('the requests route', () => {
         expect(html).toContain('href="/requests"');
     });
 
-    it('draws the queue even when the menu left its door out', () => {
-        // The menu is the client's structure, not the gate: a person who
-        // reaches the route still gets the screen, and the server decides on
-        // every call what they may actually do.
+    it('draws only the person’s own requests for somebody who decides nothing', () => {
         const html = render('/requests', []);
 
-        expect(html).toContain('Trading');
-        expect(html).not.toContain('href="/requests"');
+        expect(html).toContain('The requests you have made, and how they were answered.');
+        expect(html).not.toContain('Roles people in this tenant have asked for, oldest first.');
+        expect(html).toContain('href="/requests"');
     });
 });

@@ -24,6 +24,8 @@
  */
 import type { Account } from '../domain/account.js';
 import type { AccountContactInformation } from '../domain/account_contact_information.js';
+import type { LoginInfo } from '../domain/login_info.js';
+import type { Session } from '../domain/session.js';
 import type { Result } from '../../../utility/protocol.js';
 
 /**
@@ -372,6 +374,44 @@ export interface GetMyAccountResponse {
 }
 
 /**
+ * @brief A member's read of their own sign-in state.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's. The read needs no permission: it is a self
+ * read on the allow-list of Authorised reads, so a member sees whether their
+ * account is locked and when they last signed in without holding
+ * iam::login_info:read. Reading another account's is iam.v1.login_info.get,
+ * which needs that permission.
+ */
+export interface GetMyLoginInfoRequest {}
+
+export interface GetMyLoginInfoResponse {
+    result: Result;
+    /**
+     * @brief The caller's sign-in state, or nothing when none is recorded.
+     */
+    login_info: LoginInfo | null;
+}
+
+/**
+ * @brief A member's read of the places their own account is signed in.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's. The read needs no permission: it is a self
+ * read on the allow-list of Authorised reads. The tenant-wide read of open
+ * sessions is iam.v1.ops.get_active_sessions, which needs iam::sessions:read.
+ */
+export interface GetMySessionsRequest {}
+
+export interface GetMySessionsResponse {
+    result: Result;
+    /**
+     * @brief The caller's sessions with no end time, newest first.
+     */
+    sessions: Session[];
+}
+
+/**
  * @brief One party the caller's account works in, as the member's own screen
  * reads it.
  *
@@ -607,6 +647,8 @@ export const subjects = {
         'iam.v1.ops.update_self_account_contact_information',
     get_my_account_contact_information_request: 'iam.v1.ops.get_my_account_contact_information',
     get_my_account_request: 'iam.v1.ops.get_my_account',
+    get_my_login_info_request: 'iam.v1.ops.get_my_login_info',
+    get_my_sessions_request: 'iam.v1.ops.get_my_sessions',
     get_my_parties_request: 'iam.v1.ops.get_my_parties',
     set_reporting_line_request: 'iam.v1.ops.set_reporting_line',
     get_reporting_tree_request: 'iam.v1.ops.get_reporting_tree',
@@ -634,6 +676,8 @@ export const requiresSession = {
     update_self_account_contact_information_request: true,
     get_my_account_contact_information_request: true,
     get_my_account_request: true,
+    get_my_login_info_request: true,
+    get_my_sessions_request: true,
     get_my_parties_request: true,
     set_reporting_line_request: true,
     get_reporting_tree_request: true,

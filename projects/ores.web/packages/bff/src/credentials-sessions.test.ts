@@ -264,25 +264,16 @@ describe('GET /api/sessions/active', () => {
 });
 
 /*
- * A person's own screen lists their sessions only. The server answers the
- * tenant's open sessions, the platform's services' among them, so the read
- * keeps the rows of the signed-in account.
+ * A person's own screen lists their sessions only. The read is a self read:
+ * the server answers the caller's own open sessions, so the BFF asks for no
+ * tenant-wide list and filters nothing itself.
  */
 describe('GET /api/me/sessions', () => {
-    it('keeps the signed-in account sessions and drops every other account', async () => {
-        const { server, sessionId } = buildTestServer({
-            'iam.v1.ops.get_active_sessions': {
-                sessions: [
-                    wireSession,
-                    {
-                        ...wireSession,
-                        id: '99999999-9999-9999-9999-999999999999',
-                        account_id: '88888888-8888-8888-8888-888888888888',
-                        client_identifier: 'ores.service.binary',
-                    },
-                ],
-                success: true,
-                message: '',
+    it('asks the self read and returns the sessions it answers', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'iam.v1.ops.get_my_sessions': {
+                result: { outcome: 'ok', code: '', message: '' },
+                sessions: [wireSession],
             },
         });
 
@@ -298,6 +289,8 @@ describe('GET /api/me/sessions', () => {
             id: SESSION_ID,
             accountId: ACCOUNT_ID,
         });
+        expect(calls.map((call) => call.subject)).toContain('iam.v1.ops.get_my_sessions');
+        expect(calls.map((call) => call.subject)).not.toContain('iam.v1.ops.get_active_sessions');
 
         await server.close();
     });

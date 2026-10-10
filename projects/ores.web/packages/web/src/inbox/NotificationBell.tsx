@@ -80,7 +80,25 @@ export function NotificationBell(): ReactNode {
     const list = useQuery({
         queryKey: ['notifications'],
         queryFn: () => api.myNotifications({ unreadOnly: false, offset: 0, limit: LISTED }),
+        refetchInterval: POLL_MS,
     });
+    const count = unread.data ?? 0;
+
+    /*
+     * A new notification usually means a request was raised or answered, so the
+     * screens that list requests are read again when the count rises. Without
+     * this a person reads the bell, opens Requests and sees the old list until
+     * they reload.
+     */
+    const lastCount = useRef(count);
+    useEffect(() => {
+        if (count > lastCount.current) {
+            void queries.invalidateQueries({ queryKey: ['request-queue'] });
+            void queries.invalidateQueries({ queryKey: ['my-requests'] });
+            void queries.invalidateQueries({ queryKey: ['notifications'] });
+        }
+        lastCount.current = count;
+    }, [count, queries]);
 
     useEffect(() => {
         if (!open) return undefined;
@@ -110,7 +128,6 @@ export function NotificationBell(): ReactNode {
     });
 
     const items = list.data?.items ?? [];
-    const count = unread.data ?? 0;
 
     const openOne = (notification: InboxNotificationView) => {
         if (notification.readAt === '') {

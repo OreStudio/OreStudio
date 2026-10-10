@@ -174,6 +174,20 @@ public:
                                        const std::vector<std::string>& args);
 
     /**
+     * @brief get-my-login-info
+     */
+    static void process_get_my_login_info(std::ostream& out,
+                                          ores::nats::service::nats_client& session,
+                                          const std::vector<std::string>& args);
+
+    /**
+     * @brief get-my-sessions
+     */
+    static void process_get_my_sessions(std::ostream& out,
+                                        ores::nats::service::nats_client& session,
+                                        const std::vector<std::string>& args);
+
+    /**
      * @brief get-my-parties
      */
     static void process_get_my_parties(std::ostream& out,

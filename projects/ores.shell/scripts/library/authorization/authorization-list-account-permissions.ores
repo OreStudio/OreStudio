@@ -1,0 +1,6 @@
+# =list-account-permissions=
+#
+# GENERATED from doc/recipes/shell/authorization/authorization.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+authorization list-account-permissions __none__ __none__ __none__

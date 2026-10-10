@@ -112,6 +112,24 @@ function mailto(address: string): { readonly href?: string } {
     return trimmed === '' ? {} : { href: `mailto:${trimmed}` };
 }
 
+/**
+ * The link that opens a web page, present only when the value is an http or
+ * https address. A value that is not one, such as free text, stays text rather
+ * than a link that goes nowhere. It opens in a new tab and keeps the opener
+ * out of the page it opens.
+ */
+function webLink(address: string): { readonly href?: string; readonly external?: boolean } {
+    const trimmed = address.trim();
+    try {
+        const url = new URL(trimmed);
+        return url.protocol === 'http:' || url.protocol === 'https:'
+            ? { href: url.href, external: true }
+            : {};
+    } catch {
+        return {};
+    }
+}
+
 /** The wire's field name as the panel's own, so a failure lands under its input. */
 function camel(name: string): string {
     return name.replace(/_(\w)/g, (_match, letter: string) => letter.toUpperCase());
@@ -993,7 +1011,11 @@ export function ContactPanel({
                             : t('profile.contact.emailHintUnknown')}
                     </p>
                 </div>
-                <Detail label={t('profile.contact.webPage')} value={shown(contact?.webPage)} />
+                <Detail
+                    label={t('profile.contact.webPage')}
+                    value={shown(contact?.webPage)}
+                    {...webLink(contact?.webPage ?? '')}
+                />
             </dl>
 
             {editing && (

@@ -181,6 +181,60 @@ describe('the timeline', () => {
         expect(html).not.toContain('refused this caller');
     });
 
+    it('draws the author’s picture beside the time, and their initials when they have none', () => {
+        const stream: Stream = {
+            subject: 'person',
+            id: 'ana',
+            gaps: [],
+            events: [
+                event({ version: 2, actor: 'grace', fields: [{ name: 'Job Title', value: 'B' }] }),
+                event({ version: 1, actor: 'ores_iam_service', kind: 'raised' }),
+            ],
+        };
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                <Timeline
+                    timeline={stream}
+                    actorPicture={(actor) => (actor === 'grace' ? '/api/images/img-grace' : null)}
+                />
+            </TranslationProvider>,
+        );
+
+        expect(html).toContain('src="/api/images/img-grace"');
+        // A service has no picture, so it is drawn as its initials.
+        expect(html).toContain('>OI<');
+    });
+
+    it('marks the newest version of a record with an emblem beside the time, and says nothing in words', () => {
+        const html = render({
+            subject: 'person',
+            id: 'ana',
+            gaps: [],
+            events: [
+                event({ version: 2, fields: [{ name: 'Job Title', value: 'B' }] }),
+                event({ version: 1, kind: 'raised', fields: [{ name: 'Job Title', value: 'A' }] }),
+                event({ kind: 'noticed', entityType: 'ores.iam.auth_event', entityId: 'e1' }),
+            ],
+        });
+
+        // One emblem: the second version of the account. The first version and the act have none.
+        expect(html.match(/aria-label="Current version"/g)).toHaveLength(1);
+        expect(html).not.toContain('This is the current version');
+        expect(html).not.toContain('nothing to revert');
+        expect(html).not.toContain('is not offered here');
+    });
+
+    it('draws no picture when the caller offers none', () => {
+        const html = render({
+            subject: 'person',
+            id: 'ana',
+            gaps: [],
+            events: [event({ actor: 'grace' })],
+        });
+
+        expect(html).not.toContain('<img');
+    });
+
     it('separates the days the entries fall on', () => {
         const html = render({
             subject: 'person',

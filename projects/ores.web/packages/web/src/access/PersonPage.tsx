@@ -28,8 +28,7 @@ import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { Button, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
-import { areasOf, grantedBy, rolesGranting } from './catalogue.js';
-import { PermissionAreas } from './PermissionAreas.js';
+import { CanIPanel, RolesAllow } from './Allowances.js';
 import { SignInsPanel } from './SignIns.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
@@ -37,6 +36,8 @@ import { ContactTab, IdentityTab, useAccountWrites } from './PersonForms.js';
 import { ACCOUNT_ENTITY, PersonRevertDialog, isRevertable, latestVersion } from './PersonRevert.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { useHolds } from './holds.js';
+import { actorPathFor } from './PeoplePage.js';
+import { useActorPictures } from './PersonRef.js';
 import { RecordHeader } from '../refdata/records.js';
 import { useTabs } from '../ui/Tabs.js';
 import { AccountDoors } from '../pages/AccountDoors.js';
@@ -85,6 +86,7 @@ function Person({
     const [taking, setTaking] = useState<HeldRole | null>(null);
     const [reverting, setReverting] = useState<TimelineEvent | null>(null);
     const writes = useAccountWrites();
+    const actorPicture = useActorPictures();
     /*
      * Each tab reads something of its own, and each of those reads is its own
      * permission. A member may open a colleague's page to see who they are,
@@ -114,7 +116,6 @@ function Person({
         queryKey: ['timeline', 'person', account.username],
         queryFn: () => api.timeline('person', account.username),
     });
-    const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
     const name = displayName(account, account.username);
     const refresh = () => {
         void queries.invalidateQueries({ queryKey: ['account-access', account.id] });
@@ -137,7 +138,6 @@ function Person({
         titleOf: (part) => t(`access.person.tabs.${part}`),
     });
     const roles = access.data?.roles ?? [];
-    const everything = roles.find((role) => role.permissionCodes.includes('*'));
 
     return (
         <div className="space-y-4">
@@ -183,6 +183,8 @@ function Person({
                     {story.data !== undefined && (
                         <Timeline
                             timeline={story.data}
+                            actorPath={actorPathFor(holds('iam::accounts:read'))}
+                            actorPicture={actorPicture}
                             /*
                              * Two entries can be acted on. A grant is taken
                              * away, which closes it and is the write the roles
@@ -217,13 +219,8 @@ function Person({
                                     story.data?.events ?? [],
                                     event.entityType,
                                 );
-                                if (event.version >= latest) {
-                                    return (
-                                        <p className="text-[0.78rem] text-ink-faint">
-                                            {t('access.person.currentVersion')}
-                                        </p>
-                                    );
-                                }
+                                // The newest version is marked beside its time, and has nothing to revert to.
+                                if (event.version >= latest) return undefined;
                                 return (
                                     <div className="mt-2 flex justify-end">
                                         <Button
@@ -329,26 +326,18 @@ function Person({
                             </tbody>
                         </table>
                     </section>
+                    <CanIPanel roles={roles} catalogue={catalogue.data ?? []} />
                     <section className="space-y-3">
                         <h2 className="text-sm font-semibold">
                             {t('access.person.whatTheyAllow')}
                         </h2>
-                        {everything !== undefined ? (
-                            <p className="text-sm text-ink-muted">
-                                {t('access.everythingBy', { role: roleLabel(t, everything.name) })}
-                            </p>
-                        ) : (
-                            <PermissionAreas
-                                areas={areas}
-                                granted={grantedBy(roles)}
-                                onlyGranted
-                                explain={(code) =>
-                                    rolesGranting(roles, code)
-                                        .map((roleName) => roleLabel(t, roleName))
-                                        .join(', ')
-                                }
-                            />
-                        )}
+                        <RolesAllow
+                            queryKey={['account', account.id]}
+                            read={(query) => api.accountPermissions(account.id, query)}
+                            everythingBy={
+                                roles.find((role) => role.permissionCodes.includes('*'))?.name
+                            }
+                        />
                     </section>
                 </div>
             )}

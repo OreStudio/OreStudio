@@ -23,6 +23,9 @@ import { z } from 'zod';
 import { siteStateSchema, type SiteState } from '@ores/contracts';
 import {
     accountAccessSchema,
+    permissionPageSchema,
+    rolePageSchema,
+    roleHoldersSchema,
     accountSignInsSchema,
     accountWriteViewSchema,
     contactViewSchema,
@@ -66,6 +69,9 @@ import {
     type InboxRequestStory,
     type InboxRequestView,
     type AccountAccess,
+    type PermissionPage,
+    type RoleHolders,
+    type RolePage,
     type PermissionEntry,
     type RoleSummary,
     accountSchema,
@@ -182,6 +188,38 @@ export interface LogsQuery {
     readonly message: string;
     readonly offset: number;
     readonly limit: number;
+}
+
+/** Which page of a person's permissions is asked for. An empty area is the first they hold. */
+export interface PermissionPageQuery {
+    readonly area: string;
+    readonly search: string;
+    readonly offset: number;
+    readonly limit: number;
+}
+
+/** Which page of the roles is asked for. */
+export interface RolesPageQuery {
+    readonly roleId?: string;
+    readonly search: string;
+    readonly area: string;
+    readonly includeService: boolean;
+    readonly offset: number;
+    readonly limit: number;
+}
+
+/** Which page of a role's permissions the editor asks for. */
+export interface RolePermissionPageQuery extends PermissionPageQuery {
+    readonly includeUnheld: boolean;
+}
+
+function permissionParams(query: PermissionPageQuery): string {
+    return new URLSearchParams({
+        area: query.area,
+        search: query.search,
+        offset: String(query.offset),
+        limit: String(query.limit),
+    }).toString();
 }
 
 /** A page's offset and limit as a query string. */
@@ -541,6 +579,77 @@ export const api = {
     /** The roles the signed-in person holds, with who gave each one and why. */
     async myAccess(): Promise<AccountAccess> {
         return accountAccessSchema.parse(await request('/api/me/access', { method: 'GET' }));
+    },
+
+    /** One page of what the signed-in person's roles let them do. */
+    async myPermissions(query: PermissionPageQuery): Promise<PermissionPage> {
+        return permissionPageSchema.parse(
+            await request(`/api/me/permissions?${permissionParams(query)}`, { method: 'GET' }),
+        );
+    },
+
+    /** One page of the tenant's roles, filtered and paged by the server. */
+    async rolesPage(query: RolesPageQuery): Promise<RolePage> {
+        return rolePageSchema.parse(
+            await request(
+                `/api/roles/page?${new URLSearchParams({
+                    roleId: query.roleId ?? '',
+                    search: query.search,
+                    area: query.area,
+                    includeService: String(query.includeService),
+                    offset: String(query.offset),
+                    limit: String(query.limit),
+                }).toString()}`,
+                { method: 'GET' },
+            ),
+        );
+    },
+
+    /** One page of the people who hold a role, by name. */
+    async roleHolders(
+        roleId: string,
+        page: { readonly offset: number; readonly limit: number },
+    ): Promise<RoleHolders> {
+        return roleHoldersSchema.parse(
+            await request(`/api/roles/${encodeURIComponent(roleId)}/holders?${pageQuery(page)}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** One page of the catalogue against what one role grants, for the editor. */
+    async rolePermissions(roleId: string, query: RolePermissionPageQuery): Promise<PermissionPage> {
+        return permissionPageSchema.parse(
+            await request(
+                `/api/roles/${encodeURIComponent(roleId)}/permissions?${permissionParams(query)}&includeUnheld=${String(query.includeUnheld)}`,
+                { method: 'GET' },
+            ),
+        );
+    },
+
+    /** Adds and removes permissions from a role, for a reason. */
+    async changeRolePermissions(
+        roleId: string,
+        change: { readonly add: readonly string[]; readonly remove: readonly string[] },
+        note: string,
+    ): Promise<void> {
+        await request(`/api/roles/${encodeURIComponent(roleId)}/permissions/changes`, {
+            method: 'POST',
+            body: JSON.stringify({ ...change, note }),
+        });
+    },
+
+    /** One page of what one account's roles let it do. */
+    async accountPermissions(
+        accountId: string,
+        query: PermissionPageQuery,
+    ): Promise<PermissionPage> {
+        return permissionPageSchema.parse(
+            await request(
+                `/api/accounts/${encodeURIComponent(accountId)}/permissions?${permissionParams(query)}`,
+                { method: 'GET' },
+            ),
+        );
     },
 
     /** The parties the signed-in person works in, each with its name. */

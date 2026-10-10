@@ -19,15 +19,16 @@
  *
  */
 
-import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState, type ReactNode } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import type { Account, PermissionEntry, RoleSummary } from '@ores/wire-protocol/browser';
+import type { PermissionPage, RoleHolder, RolePageRow } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
+import { DEFAULT_PAGE_SIZE, Pager } from '../ui/Pager.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader } from '../ui/Primitives.js';
-import { areasOf, parseCode } from './catalogue.js';
+import { areaWildcard, type Area } from './catalogue.js';
 import { AreaFilter, PermissionAreas } from './PermissionAreas.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
@@ -36,108 +37,85 @@ import { useHolds } from './holds.js';
 /** How many added or removed permissions the save dialog lists before it counts the rest. */
 const LISTED = 8;
 
+/** How long typing pauses before a search is sent to the server. */
+const SEARCH_PAUSE_MS = 300;
+
 /**
  * One role: who holds it and what it lets people do.
  *
- * The person ticks what the role allows, an area at a time if they like; the
- * save sends the whole set, and first shows what it adds, what it takes away
- * and whose access changes. A role that grants everything, or a service's
- * role, is shown and not edited here.
+ * The role's header is one request for that role, and the permissions the
+ * editor shows are a page at a time from the server: the pager, the page size,
+ * the area and the search are the request's. What the person ticks is kept as
+ * a set of changes against what the server holds, so a change made on one page
+ * survives a move to another, and the save sends only the changes and first
+ * shows what it adds, what it takes away and whose access changes. A role that
+ * grants everything, or a service's role, is shown and not edited here.
  */
 export function RolePage(): ReactNode {
     const { t } = useTranslation();
     const { roleId = '' } = useParams();
-    const roles = useQuery({ queryKey: ['roles'], queryFn: api.roles });
-    const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
+    const header = useQuery({
+        queryKey: ['roles-page', 'one', roleId],
+        queryFn: () =>
+            api.rolesPage({
+                roleId,
+                search: '',
+                area: '',
+                includeService: true,
+                offset: 0,
+                limit: 1,
+            }),
+    });
 
-    if (roles.isPending || catalogue.isPending) {
+    if (header.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
-    if (roles.isError) {
-        return <Notice tone="error">{roles.error.message}</Notice>;
+    if (header.isError) {
+        return <Notice tone="error">{header.error.message}</Notice>;
     }
-    if (catalogue.isError) {
-        return <Notice tone="error">{catalogue.error.message}</Notice>;
-    }
-    const role = roles.data.find((candidate) => candidate.id === roleId);
+    const role = header.data.roles[0];
     if (role === undefined) {
         return <Notice tone="warn">{t('access.roles.notFound')}</Notice>;
     }
-    return <Role key={role.id + role.version} role={role} catalogue={catalogue.data} />;
+    return <Role key={role.id + String(role.version)} role={role} />;
 }
 
-/** The people who hold a role, read through each person's access. */
-function useHolders(roleId: string): readonly Account[] {
-    const holds = useHolds();
-    const mayReadRoles = holds('iam::roles:read');
-    const people = useQuery({ queryKey: ['accounts'], queryFn: api.accounts });
-    const accounts = people.data?.accounts ?? [];
-    /*
-     * Who holds a role is the grants read, and a caller who may not read grants
-     * is told so once rather than once for every person the list names.
-     */
-    const access = useQueries({
-        queries: accounts.map((account) => ({
-            queryKey: ['account-access', account.id],
-            queryFn: () => api.accountAccess(account.id),
-            enabled: mayReadRoles,
-        })),
-    });
-    if (!mayReadRoles) {
-        return [];
-    }
-    return accounts.filter((_, index) =>
-        (access[index]?.data?.roles ?? []).some((held) => held.roleId === roleId),
-    );
-}
-
-function Role({
-    role,
-    catalogue,
-}: {
-    readonly role: RoleSummary;
-    readonly catalogue: readonly PermissionEntry[];
-}): ReactNode {
+function Role({ role }: { readonly role: RolePageRow }): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const queries = useQueryClient();
-    const areas = useMemo(() => areasOf(catalogue), [catalogue]);
-    const holders = useHolders(role.id);
-    const [draft, setDraft] = useState<ReadonlySet<string>>(() => new Set(role.permissionCodes));
-    const [filter, setFilter] = useState('');
-    const [area, setArea] = useState('');
-    const [onlyAllowed, setOnlyAllowed] = useState(false);
+    const [holderOffset, setHolderOffset] = useState(0);
+    const [holderPageSize, setHolderPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const mayReadRoles = useHolds()('iam::roles:read');
+    /*
+     * Who holds the role is a page of people from the server, with their names
+     * and pictures, so the page reads nobody's access one account at a time. A
+     * reader who may not read roles is not shown a list that would be refused.
+     */
+    const held = useQuery({
+        queryKey: ['role-holders', role.id, holderOffset, holderPageSize],
+        queryFn: () => api.roleHolders(role.id, { offset: holderOffset, limit: holderPageSize }),
+        placeholderData: keepPreviousData,
+        enabled: mayReadRoles,
+    });
+    const holders: readonly RoleHolder[] = held.data?.holders ?? [];
+    const holderTotal = held.data?.totalCount ?? 0;
+    const [changes, setChanges] = useState<ReadonlyMap<string, boolean>>(new Map());
     const [saving, setSaving] = useState(false);
     const [renaming, setRenaming] = useState(false);
     const remove = useMutation({
         mutationFn: () => api.deleteRole(role.name),
         onSuccess: async () => {
+            await queries.invalidateQueries({ queryKey: ['roles-page'] });
             await queries.invalidateQueries({ queryKey: ['roles'] });
             void navigate('/roles');
         },
     });
 
-    const stored = new Set(role.permissionCodes);
-    const added = [...draft].filter((code) => !stored.has(code));
-    const removed = [...stored].filter((code) => !draft.has(code));
-    const changed = added.length > 0 || removed.length > 0;
-    const locked = role.service || stored.has('*');
-
-    const toggle = (code: string, on: boolean) => {
-        const next = new Set(draft);
-        if (on) {
-            next.add(code);
-            const { component, resource } = parseCode(code);
-            if (resource === '*') {
-                for (const held of draft) {
-                    if (held !== code && parseCode(held).component === component) next.delete(held);
-                }
-            }
-        } else {
-            next.delete(code);
-        }
-        setDraft(next);
-    };
+    const added = [...changes].filter(([, on]) => on).map(([code]) => code);
+    const removed = [...changes].filter(([, on]) => !on).map(([code]) => code);
+    const changed = changes.size > 0;
+    const locked = role.service || role.everything;
 
     return (
         <div className="space-y-6">
@@ -158,11 +136,9 @@ function Role({
                             </Button>
                             <Button
                                 variant="danger"
-                                disabled={holders.length > 0 || remove.isPending}
+                                disabled={holderTotal > 0 || remove.isPending}
                                 title={
-                                    holders.length > 0
-                                        ? t('access.roles.heldCannotDelete')
-                                        : undefined
+                                    holderTotal > 0 ? t('access.roles.heldCannotDelete') : undefined
                                 }
                                 onClick={() => remove.mutate()}
                             >
@@ -176,32 +152,53 @@ function Role({
 
             <section className="space-y-2 rounded-md border border-line bg-surface-raised p-4">
                 <h2 className="text-sm font-semibold">{t('access.roles.heldBy')}</h2>
-                {holders.length === 0 ? (
+                {held.isError ? (
+                    <Notice tone="error">{held.error.message}</Notice>
+                ) : holderTotal === 0 ? (
                     <p className="text-sm text-ink-faint">{t('access.roles.nobody')}</p>
                 ) : (
-                    <div className="flex flex-wrap gap-2">
-                        {holders.map((account) => {
-                            const name = displayName(account, account.username);
-                            return (
-                                <Link
-                                    key={account.id}
-                                    to={`/people/${encodeURIComponent(account.username)}`}
-                                    className="flex items-center gap-2 rounded-full border border-line py-0.5 pl-0.5 pr-3 text-sm hover:border-line-strong"
-                                >
-                                    <Avatar
-                                        name={name}
-                                        size="sm"
-                                        src={
-                                            account.imageId === null
-                                                ? null
-                                                : imageUrl(account.imageId)
-                                        }
-                                    />
-                                    {name}
-                                </Link>
-                            );
-                        })}
-                    </div>
+                    <>
+                        <div className="flex flex-wrap gap-2">
+                            {holders.map((holder) => {
+                                const name =
+                                    holder.fullName === '' ? holder.username : holder.fullName;
+                                return (
+                                    <Link
+                                        key={holder.accountId}
+                                        to={`/people/${encodeURIComponent(holder.username)}`}
+                                        className="flex items-center gap-2 rounded-full border border-line py-0.5 pl-0.5 pr-3 text-sm hover:border-line-strong"
+                                    >
+                                        <Avatar
+                                            name={name}
+                                            size="sm"
+                                            src={
+                                                holder.imageId === null
+                                                    ? null
+                                                    : imageUrl(holder.imageId)
+                                            }
+                                        />
+                                        {name}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                        <Pager
+                            offset={holderOffset}
+                            shown={holders.length}
+                            total={holderTotal}
+                            pageSize={holderPageSize}
+                            showing={t('access.roles.holdersShowing', {
+                                from: String(holderOffset + 1),
+                                to: String(holderOffset + holders.length),
+                                total: String(holderTotal),
+                            })}
+                            onMove={setHolderOffset}
+                            onPageSize={(size) => {
+                                setHolderPageSize(size);
+                                setHolderOffset(0);
+                            }}
+                        />
+                    </>
                 )}
             </section>
 
@@ -217,32 +214,7 @@ function Role({
                         <h2 className="text-sm font-semibold">{t('access.roles.whatItAllows')}</h2>
                         <p className="text-sm text-ink-muted">{t('access.roles.tickHint')}</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <Input
-                            type="search"
-                            className="max-w-md"
-                            value={filter}
-                            onChange={(event) => setFilter(event.target.value)}
-                            placeholder={t('access.roles.find')}
-                            aria-label={t('access.roles.find')}
-                        />
-                        <AreaFilter areas={areas} value={area} onChange={setArea} />
-                        <label className="flex items-center gap-2 text-sm text-ink-muted">
-                            <input
-                                type="checkbox"
-                                checked={onlyAllowed}
-                                onChange={(event) => setOnlyAllowed(event.target.checked)}
-                            />
-                            {t('access.roles.onlyAllowed')}
-                        </label>
-                    </div>
-                    <PermissionAreas
-                        areas={area === '' ? areas : areas.filter((a) => a.component === area)}
-                        granted={draft}
-                        filter={filter}
-                        onlyGranted={onlyAllowed}
-                        onToggle={toggle}
-                    />
+                    <RoleEditor roleId={role.id} changes={changes} onChange={setChanges} />
                     <div className="sticky bottom-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-line-strong bg-surface-overlay px-4 py-2.5">
                         <span className="text-sm">
                             {changed ? (
@@ -266,7 +238,7 @@ function Role({
                             <Button
                                 variant="ghost"
                                 disabled={!changed}
-                                onClick={() => setDraft(new Set(role.permissionCodes))}
+                                onClick={() => setChanges(new Map())}
                             >
                                 {t('access.roles.discard')}
                             </Button>
@@ -285,11 +257,11 @@ function Role({
             {saving && (
                 <SaveDialog
                     role={role}
-                    draft={draft}
                     added={added}
                     removed={removed}
                     holders={holders}
-                    catalogue={catalogue}
+                    holderTotal={holderTotal}
+                    onSaved={() => setChanges(new Map())}
                     onClose={() => setSaving(false)}
                 />
             )}
@@ -298,32 +270,193 @@ function Role({
     );
 }
 
+/**
+ * The permissions of a role, one page of the catalogue at a time, to tick.
+ *
+ * Each page is a request for that page. Ticks are kept as changes against what
+ * the server holds, keyed by code, so moving to another page or area keeps them.
+ * A tick that puts a permission back as the server holds it removes the change.
+ * The first area the catalogue has is chosen until another is; there is no "all
+ * areas", because a page is always of one area.
+ */
+function RoleEditor({
+    roleId,
+    changes,
+    onChange,
+}: {
+    readonly roleId: string;
+    readonly changes: ReadonlyMap<string, boolean>;
+    readonly onChange: (changes: ReadonlyMap<string, boolean>) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const [area, setArea] = useState('');
+    const [typed, setTyped] = useState('');
+    const [search, setSearch] = useState('');
+    const [onlyAllowed, setOnlyAllowed] = useState(false);
+    const [offset, setOffset] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+    // The search is sent when the typing pauses, so a request is not made per key.
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearch(typed);
+            setOffset(0);
+        }, SEARCH_PAUSE_MS);
+        return () => clearTimeout(timer);
+    }, [typed]);
+
+    const page = useQuery({
+        queryKey: ['role-permission-page', roleId, area, search, onlyAllowed, offset, pageSize],
+        queryFn: () =>
+            api.rolePermissions(roleId, {
+                area,
+                search,
+                offset,
+                limit: pageSize,
+                includeUnheld: !onlyAllowed,
+            }),
+        placeholderData: keepPreviousData,
+    });
+
+    if (page.isError) {
+        return <Notice tone="error">{page.error.message}</Notice>;
+    }
+    if (page.data === undefined) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    const data: PermissionPage = page.data;
+    const chosen = data.area;
+
+    // What the server holds on this page, and the person's changes laid over it.
+    const saved = new Set<string>();
+    for (const row of data.rows) {
+        for (const action of row.held) {
+            saved.add(`${row.component}::${row.resource}:${action}`);
+        }
+    }
+    const wildcard = areaWildcard(chosen);
+    if (data.areaWhole) saved.add(wildcard);
+    const draft = new Set(saved);
+    for (const [code, on] of changes) {
+        if (on) draft.add(code);
+        else draft.delete(code);
+    }
+
+    const toggle = (code: string, on: boolean): void => {
+        const next = new Map(changes);
+        if (on === saved.has(code)) next.delete(code);
+        else next.set(code, on);
+        onChange(next);
+    };
+
+    const shown: readonly Area[] =
+        data.rows.length === 0
+            ? []
+            : [
+                  {
+                      component: chosen,
+                      size: data.totalCount,
+                      resources: data.rows.map((row) => ({
+                          name: row.resource,
+                          actions: row.actions,
+                      })),
+                  },
+              ];
+
+    return (
+        <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+                <Input
+                    type="search"
+                    className="max-w-md"
+                    value={typed}
+                    onChange={(event) => setTyped(event.target.value)}
+                    placeholder={t('access.roles.find')}
+                    aria-label={t('access.roles.find')}
+                />
+                <AreaFilter
+                    areas={data.areas}
+                    value={chosen}
+                    includeAll={false}
+                    onChange={(component) => {
+                        setArea(component);
+                        setOffset(0);
+                    }}
+                />
+                <label className="flex items-center gap-2 text-sm text-ink-muted">
+                    <input
+                        type="checkbox"
+                        checked={onlyAllowed}
+                        onChange={(event) => {
+                            setOnlyAllowed(event.target.checked);
+                            setOffset(0);
+                        }}
+                    />
+                    {t('access.roles.onlyAllowed')}
+                </label>
+            </div>
+            {data.rows.length === 0 ? (
+                <p className="text-sm text-ink-muted">{t('access.nothingMatches')}</p>
+            ) : (
+                <PermissionAreas
+                    areas={shown}
+                    granted={draft}
+                    summary={t('access.resourcesHeld', { count: String(data.totalCount) })}
+                    onToggle={toggle}
+                />
+            )}
+            {data.totalCount > 0 && (
+                <Pager
+                    offset={offset}
+                    shown={data.rows.length}
+                    total={data.totalCount}
+                    pageSize={pageSize}
+                    showing={t('access.permissionsShowing', {
+                        from: String(offset + 1),
+                        to: String(offset + data.rows.length),
+                        total: String(data.totalCount),
+                    })}
+                    onMove={setOffset}
+                    onPageSize={(size) => {
+                        setPageSize(size);
+                        setOffset(0);
+                    }}
+                />
+            )}
+        </div>
+    );
+}
+
 function SaveDialog({
     role,
-    draft,
     added,
     removed,
     holders,
-    catalogue,
+    holderTotal,
+    onSaved,
     onClose,
 }: {
-    readonly role: RoleSummary;
-    readonly draft: ReadonlySet<string>;
+    readonly role: RolePageRow;
     readonly added: readonly string[];
     readonly removed: readonly string[];
-    readonly holders: readonly Account[];
-    readonly catalogue: readonly PermissionEntry[];
+    readonly holders: readonly RoleHolder[];
+    readonly holderTotal: number;
+    readonly onSaved: () => void;
     readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
     const [note, setNote] = useState('');
-    const describe = new Map(catalogue.map((entry) => [entry.code, entry.description]));
     const save = useMutation({
-        mutationFn: () => api.saveRolePermissions(role.id, [...draft], note.trim()),
+        mutationFn: () =>
+            api.changeRolePermissions(role.id, { add: added, remove: removed }, note.trim()),
         onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: ['roles'] });
+            await queries.invalidateQueries({ queryKey: ['roles-page'] });
+            await queries.invalidateQueries({ queryKey: ['role-permission-page', role.id] });
             await queries.invalidateQueries({ queryKey: ['account-access'] });
+            await queries.invalidateQueries({ queryKey: ['permission-page'] });
+            await queries.invalidateQueries({ queryKey: ['role-holders', role.id] });
+            onSaved();
             onClose();
         },
     });
@@ -331,8 +464,7 @@ function SaveDialog({
         <ul className="mt-1 space-y-0.5 pl-4 text-sm">
             {codes.slice(0, LISTED).map((code) => (
                 <li key={code}>
-                    <span className="font-mono text-xs">{code}</span>{' '}
-                    <span className="text-ink-faint">{describe.get(code) ?? ''}</span>
+                    <span className="font-mono text-xs">{code}</span>
                 </li>
             ))}
             {codes.length > LISTED && (
@@ -362,12 +494,18 @@ function SaveDialog({
             }
         >
             <div className="space-y-4">
-                {holders.length > 0 && (
+                {holderTotal > 0 && (
                     <p className="text-sm text-ink-muted">
                         {t('access.roles.reaches', {
-                            people: holders
-                                .map((account) => displayName(account, account.username))
-                                .join(', '),
+                            people:
+                                holders
+                                    .map((holder) =>
+                                        holder.fullName === '' ? holder.username : holder.fullName,
+                                    )
+                                    .join(', ') +
+                                (holderTotal > holders.length
+                                    ? ` ${t('access.roles.andMore', { count: String(holderTotal - holders.length) })}`
+                                    : ''),
                         })}
                     </p>
                 )}
@@ -396,7 +534,7 @@ function RenameDialog({
     role,
     onClose,
 }: {
-    readonly role: RoleSummary;
+    readonly role: RolePageRow;
     readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -415,6 +553,7 @@ function RenameDialog({
             }),
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['roles'] });
+            await queries.invalidateQueries({ queryKey: ['roles-page'] });
             onClose();
         },
     });

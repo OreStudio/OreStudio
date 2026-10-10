@@ -203,6 +203,12 @@ def generate_dataset_populate(companies):
         "accounts datasets.",
         "accounts"))
     body.append(dataset_upsert(
+        "acme.acme_group.account_contact_informations", "Organisation",
+        "ACME Corporation Group Account Contact Informations",
+        "The holding company's staff contact details -- the Group CEO's "
+        "address, published party-scoped like the group accounts.",
+        "account_contact_informations"))
+    body.append(dataset_upsert(
         "acme.acme_group.business_units", "Organisation",
         "ACME Corporation Group Business Units",
         "The holding company's own Group Treasury business unit -- "
@@ -728,11 +734,13 @@ def main():
         generate_accounts_populate(company, accounts[company])
         generate_account_contact_informations_populate(company, accounts[company])
 
-    # Group-level: accounts (staff, no contact informations dataset --
-    # just the fixed CEO account) plus the holding company's own Group
+    # Group-level: accounts and their contact details (just the fixed CEO
+    # account) plus the holding company's own Group
     # Treasury business unit/portfolio/books, scoped to the holding
     # company's own party.
     generate_accounts_populate("acme_group", accounts["acme_group"])
+    generate_account_contact_informations_populate(
+        "acme_group", accounts["acme_group"])
     generate_business_units_populate("acme_group", business_units["acme_group"])
     generate_portfolios_populate(
         "acme_group", portfolios["acme_group"], business_units["acme_group"])

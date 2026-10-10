@@ -71,6 +71,7 @@ const northwind = {
 };
 
 const ACCOUNT_ID = '11111111-1111-1111-1111-111111111111';
+const COLLEAGUE_ID = '22222222-2222-2222-2222-222222222222';
 const TENANT_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 
 /** One account as the server writes it, credentials absent. */
@@ -387,14 +388,14 @@ describe('GET /api/login-info/:accountId', () => {
 
         const response = await server.inject({
             method: 'GET',
-            url: `/api/login-info/${ACCOUNT_ID}`,
+            url: `/api/login-info/${COLLEAGUE_ID}`,
             cookies: { [SESSION_COOKIE]: sessionId },
         });
 
         expect(response.statusCode).toBe(200);
         expect(response.json()).toMatchObject({ loginInfo: { failedLogins: 7, locked: true } });
         expect(calls).toEqual([
-            { subject: 'iam.v1.login_info.get', body: { key: { account_id: ACCOUNT_ID } } },
+            { subject: 'iam.v1.login_info.get', body: { key: { account_id: COLLEAGUE_ID } } },
         ]);
 
         await server.close();
@@ -407,12 +408,33 @@ describe('GET /api/login-info/:accountId', () => {
 
         const response = await server.inject({
             method: 'GET',
-            url: `/api/login-info/${ACCOUNT_ID}`,
+            url: `/api/login-info/${COLLEAGUE_ID}`,
             cookies: { [SESSION_COOKIE]: sessionId },
         });
 
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({ loginInfo: null });
+
+        await server.close();
+    });
+
+    it('reads your own state through the self read, which needs no permission', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'iam.v1.ops.get_my_login_info': {
+                result: { outcome: 'ok', code: '', message: '' },
+                login_info: wireLoginInfo,
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/login-info/${ACCOUNT_ID}`,
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ loginInfo: { failedLogins: 7 } });
+        expect(calls.map((call) => call.subject)).toEqual(['iam.v1.ops.get_my_login_info']);
 
         await server.close();
     });

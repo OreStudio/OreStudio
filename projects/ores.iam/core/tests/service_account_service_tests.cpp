@@ -25,11 +25,13 @@
 #include "ores.iam.api/generators/account_contact_information_generator.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.api/generators/account_party_generator.hpp"
+#include "ores.iam.api/generators/session_generator.hpp"
 #include "ores.iam.api/generators/tenant_generator.hpp"
 #include "ores.iam.core/repository/account_contact_information_repository.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
+#include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -220,6 +222,93 @@ TEST_CASE("get_my_account_states_no_account_for_a_session_that_names_none", tags
 
     CHECK(response.result.outcome == ores::utility::domain::outcome::ok);
     CHECK(!response.account.has_value());
+}
+
+/**
+ * The own sign-in read answers the state of the account the session names and
+ * no other, and checks no permission, because it is a self read.
+ */
+TEST_CASE("get_my_login_info_reads_the_callers_own_state_and_no_other", tags) {
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto mine = generate_synthetic_account(ctx);
+    const auto theirs = generate_synthetic_account(ctx);
+    const auto a = sut.create_account(
+        mine.username, mine.email, faker::internet::password(), mine.modified_by);
+    const auto b = sut.create_account(
+        theirs.username, theirs.email, faker::internet::password(), theirs.modified_by);
+
+    repository::login_info_repository logins;
+    logins.write(h.context(),
+                 std::vector<domain::login_info>{{.account_id = a.id,
+                                                  .last_ip = {},
+                                                  .last_attempt_ip = {},
+                                                  .failed_logins = 2,
+                                                  .locked = false,
+                                                  .last_login = {},
+                                                  .online = false},
+                                                 {.account_id = b.id,
+                                                  .last_ip = {},
+                                                  .last_attempt_ip = {},
+                                                  .failed_logins = 9,
+                                                  .locked = true,
+                                                  .last_login = {},
+                                                  .online = false}});
+
+    const auto response = sut.get_my_login_info(a.id);
+
+    CHECK(response.result.outcome == ores::utility::domain::outcome::ok);
+    REQUIRE(response.login_info.has_value());
+    CHECK(response.login_info->account_id == a.id);
+    CHECK(response.login_info->failed_logins == 2);
+    CHECK(!response.login_info->locked);
+}
+
+TEST_CASE("get_my_login_info_states_nothing_for_an_account_that_never_signed_in", tags) {
+    scoped_database_helper h;
+    service::account_operations_service sut(h.context());
+
+    const auto response = sut.get_my_login_info(boost::uuids::random_generator()());
+
+    CHECK(response.result.outcome == ores::utility::domain::outcome::ok);
+    CHECK(!response.login_info.has_value());
+}
+
+/**
+ * The own sessions read keeps the caller's sessions that are still open, and
+ * nobody else's: an ended session is history, and another account's session is
+ * not the caller's to see.
+ */
+TEST_CASE("get_my_sessions_returns_only_the_callers_open_sessions", tags) {
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto mine = generate_synthetic_account(ctx);
+    const auto a = sut.create_account(
+        mine.username, mine.email, faker::internet::password(), mine.modified_by);
+
+    auto open_mine = generate_synthetic_session(ctx);
+    open_mine.account_id = a.id;
+    open_mine.end_time = "";
+    auto ended_mine = generate_synthetic_session(ctx);
+    ended_mine.account_id = a.id;
+    ended_mine.end_time = "2026-10-01 10:00:00";
+    auto open_theirs = generate_synthetic_session(ctx);
+    open_theirs.account_id = boost::uuids::random_generator()();
+    open_theirs.end_time = "";
+
+    repository::session_repository sessions;
+    for (const auto& row : {open_mine, ended_mine, open_theirs})
+        sessions.write(h.context(), row);
+
+    const auto response = sut.get_my_sessions(a.id);
+
+    CHECK(response.result.outcome == ores::utility::domain::outcome::ok);
+    REQUIRE(response.sessions.size() == 1);
+    CHECK(response.sessions.front().id == open_mine.id);
 }
 
 TEST_CASE("create_multiple_accounts", tags) {

@@ -106,6 +106,7 @@ select ores_utility_allow_version_replace_fn();
 \ir acme/acme_group_portfolios_artefact_populate.sql
 \ir acme/acme_group_books_artefact_populate.sql
 \ir acme/acme_group_accounts_artefact_populate.sql
+\ir acme/acme_group_account_contact_informations_artefact_populate.sql
 \ir acme/acme_uk_business_units_artefact_populate.sql
 \ir acme/acme_uk_portfolios_artefact_populate.sql
 \ir acme/acme_uk_books_artefact_populate.sql

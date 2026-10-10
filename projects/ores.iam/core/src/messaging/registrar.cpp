@@ -284,6 +284,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
             acth->get_my_account(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        get_my_login_info_request::nats_subject, qg, [acth](ores::nats::message msg) {
+            acth->get_my_login_info(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_my_sessions_request::nats_subject, qg, [acth](ores::nats::message msg) {
+            acth->get_my_sessions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
         get_my_parties_request::nats_subject, qg, [acth](ores::nats::message msg) {
             acth->get_my_parties(std::move(msg));
         }));
@@ -394,6 +402,26 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(
         nats.queue_subscribe(get_my_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
             rh->mine(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_account_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {
+            rh->permissions_by_account(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_my_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {
+            rh->my_permissions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_role_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {
+            rh->role_permissions_page(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_role_holders_request::nats_subject, qg, [rh](ores::nats::message msg) {
+            rh->role_holders(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_roles_page_request::nats_subject, qg, [rh](ores::nats::message msg) {
+            rh->roles_page(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         get_role_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {

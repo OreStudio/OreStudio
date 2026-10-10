@@ -327,6 +327,48 @@ It is addressed at =iam.v1.ops.get_my_account=.
 account_operations get-my-account
 #+end_src
 
+** =get-my-login-info=
+:PROPERTIES:
+:ID: 24FDEF0F-5781-5DE5-A9B6-8F960E8BAEFD
+:END:
+
+Sends =get_my_login_info_request= and prints =get_my_login_info_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations get-my-login-info
+#+end_example
+
+It is addressed at =iam.v1.ops.get_my_login_info=.
+
+#+name: account_operations-get-my-login-info
+#+begin_src ores-shell :tangle account_operations-get-my-login-info.ores :exports none
+account_operations get-my-login-info
+#+end_src
+
+** =get-my-sessions=
+:PROPERTIES:
+:ID: F8111D71-21A7-5D00-9B0A-0089CAAEB18A
+:END:
+
+Sends =get_my_sessions_request= and prints =get_my_sessions_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations get-my-sessions
+#+end_example
+
+It is addressed at =iam.v1.ops.get_my_sessions=.
+
+#+name: account_operations-get-my-sessions
+#+begin_src ores-shell :tangle account_operations-get-my-sessions.ores :exports none
+account_operations get-my-sessions
+#+end_src
+
 ** =get-my-parties=
 :PROPERTIES:
 :ID: 6FC32928-D003-5055-9849-71083524E888

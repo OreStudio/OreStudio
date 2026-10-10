@@ -492,6 +492,30 @@ public:
     messaging::get_my_account_response get_my_account(const boost::uuids::uuid& account_id);
 
     /**
+     * @brief Reads the caller's own sign-in state.
+     *
+     * The account comes from the validated token and is passed in by the
+     * handler, so the read cannot name another account's. It needs no
+     * permission: it is a self read on the allow-list of Authorised reads.
+     *
+     * @param account_id The account of the caller's session
+     * @return The shared result plus the sign-in state, or none when nothing
+     * is recorded
+     */
+    messaging::get_my_login_info_response get_my_login_info(const boost::uuids::uuid& account_id);
+
+    /**
+     * @brief Reads the caller's own open sessions, newest first.
+     *
+     * The account comes from the validated token. It needs no permission: it
+     * is a self read on the allow-list of Authorised reads.
+     *
+     * @param account_id The account of the caller's session
+     * @return The shared result plus the sessions with no end time
+     */
+    messaging::get_my_sessions_response get_my_sessions(const boost::uuids::uuid& account_id);
+
+    /**
      * @brief Authenticates a service account by the machine password it holds.
      *
      * The account is resolved by username and its credential row by the

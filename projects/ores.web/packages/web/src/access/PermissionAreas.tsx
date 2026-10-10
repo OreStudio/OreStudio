@@ -37,6 +37,7 @@ export function PermissionAreas({
     granted,
     onlyGranted = false,
     filter = '',
+    summary,
     onToggle,
     explain,
 }: {
@@ -45,6 +46,11 @@ export function PermissionAreas({
     /** Whether to leave out what the set does not grant. */
     readonly onlyGranted?: boolean;
     readonly filter?: string;
+    /**
+     * What to say about an area's size, when the rows given are one page of it
+     * and the counts the rows would give are the page's, not the area's.
+     */
+    readonly summary?: string;
     /** Present when the person may change the set. */
     readonly onToggle?: (code: string, on: boolean) => void;
     /** Names the roles behind a granted code, shown as its hover text. */
@@ -123,12 +129,14 @@ export function PermissionAreas({
                                 </label>
                             )}
                             <span className="text-xs tabular-nums text-ink-muted">
-                                {whole
-                                    ? t('access.allCount', { count: String(area.size) })
-                                    : t('access.someCount', {
-                                          held: String(held),
-                                          count: String(area.size),
-                                      })}
+                                {summary !== undefined
+                                    ? summary
+                                    : whole
+                                      ? t('access.allCount', { count: String(area.size) })
+                                      : t('access.someCount', {
+                                            held: String(held),
+                                            count: String(area.size),
+                                        })}
                             </span>
                         </summary>
                         <div className="overflow-x-auto border-t border-line">
@@ -249,10 +257,16 @@ export function AreaFilter({
     areas,
     value,
     onChange,
+    includeAll = true,
 }: {
-    readonly areas: readonly Area[];
+    readonly areas: readonly { readonly component: string }[];
     readonly value: string;
     readonly onChange: (component: string) => void;
+    /**
+     * Whether the first choice is every area. A list paged by the server shows
+     * one area at a time, so it offers none.
+     */
+    readonly includeAll?: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     const named = areas
@@ -265,7 +279,7 @@ export function AreaFilter({
             onChange={(event) => onChange(event.target.value)}
             aria-label={t('access.areaFilter')}
         >
-            <option value="">{t('access.allAreas')}</option>
+            {includeAll && <option value="">{t('access.allAreas')}</option>}
             {named.map(({ component, name }) => (
                 <option key={component} value={component}>
                     {name}

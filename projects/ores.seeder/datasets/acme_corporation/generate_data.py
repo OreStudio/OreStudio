@@ -346,6 +346,9 @@ HOLDING = {
     "name": "Acme Corporation Plc",
     "country": "GB",
     "city": "London",
+    "street": "25 Old Broad Street",
+    "postal_code": "EC2N 1HQ",
+    "phone": "+44 20 7946 0000",
 }
 
 
@@ -454,12 +457,12 @@ def build_group_accounts():
         "job_title": "Group Chief Executive Officer",
         "reports_to_username": None,
         "business_unit_code": None,
-        "street": None,
-        "city": None,
+        "street": HOLDING["street"],
+        "city": HOLDING["city"],
         "state": None,
-        "country_code": None,
-        "postal_code": None,
-        "phone": None,
+        "country_code": HOLDING["country"],
+        "postal_code": HOLDING["postal_code"],
+        "phone": HOLDING["phone"],
     }]
 
 

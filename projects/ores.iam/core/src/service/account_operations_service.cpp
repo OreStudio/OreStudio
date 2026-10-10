@@ -20,6 +20,7 @@
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.security/validation/email_validator.hpp"
@@ -695,6 +696,30 @@ account_operations_service::get_my_account(const boost::uuids::uuid& account_id)
     BOOST_LOG_SEV(lg(), debug) << "Reading own account: " << boost::uuids::to_string(account_id);
     messaging::get_my_account_response response;
     response.account = find_account_by_id(account_id);
+    return response;
+}
+
+messaging::get_my_login_info_response
+account_operations_service::get_my_login_info(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading own sign-in state: "
+                               << boost::uuids::to_string(account_id);
+    messaging::get_my_login_info_response response;
+    auto rows = login_info_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
+    if (!rows.empty())
+        response.login_info = rows.front();
+    return response;
+}
+
+messaging::get_my_sessions_response
+account_operations_service::get_my_sessions(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading own sessions: " << boost::uuids::to_string(account_id);
+    messaging::get_my_sessions_response response;
+    response.sessions = repository::session_repository{}.read_active_by_account(ctx_, account_id);
+    std::sort(response.sessions.begin(),
+              response.sessions.end(),
+              [](const domain::session& a, const domain::session& b) {
+                  return a.start_time > b.start_time;
+              });
     return response;
 }
 

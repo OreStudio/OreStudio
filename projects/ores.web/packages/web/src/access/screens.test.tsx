@@ -123,10 +123,26 @@ function render(seed: (client: QueryClient) => void, path: string, routes: React
 describe('My access', () => {
     it('names the roles held, who gave them and why, and draws only what they allow', () => {
         const html = render(
-            (client) =>
+            (client) => {
                 client.setQueryData(['my-access'], {
                     roles: [held(TRADING, 'Trading', ['refdata::currencies:read'])],
-                }),
+                });
+                // The page of permissions is the server's, read with the screen's paging.
+                client.setQueryData(['permission-page', 'me', '', '', 0, 15], {
+                    area: 'refdata',
+                    totalCount: 1,
+                    areas: [{ component: 'refdata', resources: 1 }],
+                    rows: [
+                        {
+                            component: 'refdata',
+                            resource: 'currencies',
+                            actions: ['read', 'write', 'delete'],
+                            held: ['read'],
+                            roles: ['Trading'],
+                        },
+                    ],
+                });
+            },
             '/access',
             <Route path="/access" element={<MyAccessPage tenantName="Acme" />} />,
         );
@@ -136,7 +152,9 @@ describe('My access', () => {
         expect(html).toContain('src="/api/accounts/priya/picture"');
         expect(html).toContain('1 of 3 permissions');
         expect(html).toContain('Reference data');
-        expect(html).not.toContain('Identity and access');
+        // One area is drawn, the chosen one, and the combo box has no all areas.
+        expect(html.match(/<details/g)).toHaveLength(1);
+        expect(html).not.toContain('All areas');
     });
 
     it('says everything rather than ticking every permission', () => {
@@ -154,16 +172,41 @@ describe('My access', () => {
     });
 });
 
+/** A role as the roles list's server page states it. */
+function roleRow(id: string, name: string, permissionCount: number, options = {}) {
+    return {
+        id,
+        version: 1,
+        name,
+        description: `${name} role`,
+        service: false,
+        registrationDefault: false,
+        requestable: true,
+        permissionCount,
+        everything: false,
+        ...options,
+    };
+}
+
+function rolesPage(roles: ReturnType<typeof roleRow>[], total = roles.length, hidden = 0) {
+    return {
+        roles,
+        totalCount: total,
+        serviceHidden: hidden,
+        areas: [
+            { component: 'refdata', resources: 1 },
+            { component: 'iam', resources: 1 },
+        ],
+    };
+}
+
 describe('Roles', () => {
-    it('keeps the service roles out of the list and says how many it hid', () => {
+    it('says how many service roles the server left out of the page', () => {
         const html = render(
             (client) =>
                 client.setQueryData(
-                    ['roles'],
-                    [
-                        role(TRADING, 'Trading', ['refdata::currencies:read']),
-                        role(ADMIN, 'IamService', [], true),
-                    ],
+                    ['roles-page', '', '', false, 0, 15],
+                    rolesPage([roleRow(TRADING, 'Trading', 3)], 1, 1),
                 ),
             '/roles',
             <Route path="/roles" element={<RolesPage />} />,
@@ -174,39 +217,38 @@ describe('Roles', () => {
         expect(html).toContain('1 service roles hidden');
     });
 
-    it('pages the list, and offers search and an area combo box', () => {
+    it('draws the page the server answered, with search, an area combo box of held areas and a pager', () => {
         const html = render(
-            (client) => {
+            (client) =>
                 client.setQueryData(
-                    ['roles'],
-                    [
-                        role(TRADING, 'Trading', ['refdata::currencies:read']),
-                        role(ADMIN, 'TenantAdmin', ['*']),
-                    ],
-                );
-                client.setQueryData(
-                    ['permissions'],
-                    [
-                        { code: 'refdata::currencies:read', description: 'Read currencies' },
-                        { code: 'iam::accounts:read', description: 'Read accounts' },
-                    ],
-                );
-            },
+                    ['roles-page', '', '', false, 0, 15],
+                    rolesPage(
+                        [
+                            roleRow(TRADING, 'Trading', 3),
+                            roleRow(ADMIN, 'TenantAdmin', 0, { everything: true }),
+                        ],
+                        31,
+                    ),
+                ),
             '/roles',
             <Route path="/roles" element={<RolesPage />} />,
         );
 
         expect(html).toContain('type="search"');
-        expect(html).toContain('>All areas<');
         expect(html).toContain('>Reference data<');
-        expect(html).toContain('1–2 of 2 roles');
+        expect(html).toContain('>Identity and access<');
+        expect(html).toContain('1–2 of 31 roles');
         expect(html).toContain('>Next<');
+        expect(html).toContain('value="25"');
     });
 
     it('does not edit a role that grants everything', () => {
         const html = render(
             (client) => {
-                client.setQueryData(['roles'], [role(ADMIN, 'TenantAdmin', ['*'])]);
+                client.setQueryData(
+                    ['roles-page', 'one', ADMIN],
+                    rolesPage([roleRow(ADMIN, 'TenantAdmin', 0, { everything: true })]),
+                );
                 client.setQueryData(['accounts'], { accounts: [], totalCount: 0 });
             },
             `/roles/${ADMIN}`,
@@ -215,6 +257,80 @@ describe('Roles', () => {
 
         expect(html).toContain('This role grants every permission');
         expect(html).not.toContain('type="checkbox"');
+    });
+
+    it('lists the people who hold a role a page at a time, named by the server', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(
+                    ['roles-page', 'one', TRADING],
+                    rolesPage([roleRow(TRADING, 'Trading', 3)]),
+                );
+                client.setQueryData(['my-access'], {
+                    roles: [held(ADMIN, 'TenantAdmin', ['*'])],
+                });
+                client.setQueryData(['role-holders', TRADING, 0, 15], {
+                    totalCount: 31,
+                    holders: [
+                        {
+                            accountId: '99999999-9999-9999-9999-999999999999',
+                            username: 'daniel',
+                            fullName: 'Daniel Okafor',
+                            imageId: null,
+                            assignedBy: 'priya',
+                        },
+                    ],
+                });
+            },
+            `/roles/${TRADING}`,
+            <Route path="/roles/:roleId" element={<RolePage />} />,
+        );
+
+        expect(html).toContain('Daniel Okafor');
+        expect(html).toContain('href="/people/daniel"');
+        expect(html).toContain('Showing 1–1 of 31 people');
+        // A role somebody holds cannot be deleted.
+        expect(html).toMatch(/<button[^>]*disabled=""[^>]*>(?:(?!<\/button>)[\s\S])*Delete/);
+    });
+
+    it('edits a role a page of the catalogue at a time, with no all areas', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(
+                    ['roles-page', 'one', TRADING],
+                    rolesPage([roleRow(TRADING, 'Trading', 3)]),
+                );
+                client.setQueryData(['accounts'], { accounts: [], totalCount: 0 });
+                client.setQueryData(['role-permission-page', TRADING, '', '', false, 0, 15], {
+                    area: 'refdata',
+                    totalCount: 40,
+                    areaWhole: false,
+                    everything: false,
+                    areas: [
+                        { component: 'refdata', resources: 40 },
+                        { component: 'iam', resources: 12 },
+                    ],
+                    rows: [
+                        {
+                            component: 'refdata',
+                            resource: 'currencies',
+                            actions: ['read', 'write', 'delete'],
+                            held: ['read'],
+                            roles: [],
+                        },
+                    ],
+                });
+            },
+            `/roles/${TRADING}`,
+            <Route path="/roles/:roleId" element={<RolePage />} />,
+        );
+
+        expect(html).toContain('type="checkbox"');
+        expect(html).toContain('Showing 1–1 of 40 permissions');
+        expect(html).toContain('>Reference data<');
+        expect(html).not.toContain('All areas');
+        // One area, the chosen one, is drawn.
+        expect(html.match(/<details/g)).toHaveLength(1);
     });
 });
 
@@ -339,6 +455,48 @@ describe('The people list', () => {
         expect(html).toContain('1–1 of 31');
         expect(html).toContain('Search…');
         expect(html).toContain('href="/"');
+    });
+
+    it('has a Parties column naming the parties each person works in', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(pageKey({ key: 'people' }, FIRST_PAGE), {
+                    rows: [daniel],
+                    total: 1,
+                });
+                client.setQueryData(['reporting-tree'], {
+                    unrooted: 0,
+                    parties: [
+                        {
+                            partyId: 'north',
+                            name: 'Acme North plc',
+                            shortCode: 'NORTH',
+                            parentPartyId: null,
+                        },
+                    ],
+                    nodes: [
+                        {
+                            accountId: daniel.id,
+                            username: daniel.username,
+                            fullName: daniel.fullName,
+                            jobTitle: '',
+                            accountType: 'user',
+                            imageId: null,
+                            reportsToAccountId: null,
+                            reportsOutsideScope: false,
+                            partyIds: ['north'],
+                            depth: 0,
+                            directReports: 0,
+                        },
+                    ],
+                });
+            },
+            '/people',
+            <Route path="/people" element={<PeoplePage mode="tenant-administration" />} />,
+        );
+
+        expect(html).toContain('>Parties<');
+        expect(html).toContain('Acme North plc');
     });
 
     it("names the same list as the deployment's own accounts for a system administrator", () => {

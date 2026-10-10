@@ -1,0 +1,629 @@
+:PROPERTIES:
+:ID: BD492939-118E-4B55-AE5B-300F7A1C3B41
+:END:
+#+title: Entity screen specification
+#+description: The look and feel of a screen for an entity made of several kinds of record, such as a person: list, page, edit, history, people links, photos and flags, server paging, access and states. The Staff screens are the reference.
+#+type: knowledge
+#+level: cross
+#+filetags: :web:ux:standards:entities:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+* Summary
+
+The [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] defines the screen of one kind of record: a currency, a
+calendar, a role. Some things a person works with are not one record. A person
+is an account, a contact record, the roles they hold, their sign-ins, the parties
+they work in and who they report to, and each of those has its own table, its own
+permission and its own history. This page defines the look and feel of the screen
+for such an /entity/. The Staff screens are the reference.
+
+The rules in short:
+
+- One page per subject, with one tab per aspect. A tab the reader may not read is
+  not drawn.
+- Every list pages on the server, and the pager on the screen is the request. No
+  screen reads an entity whole.
+- Every mention of a person is a link to the person, with their photo where the
+  place has room for one. An email is a =mailto:= link and a web address an
+  =http= link.
+- Every change is made in a dialog opened by an Edit button on the card it
+  changes. The reason is asked in the dialog and nowhere else.
+- History is a chart of events over time above a rail of one-line headers with
+  the detail on demand. The author's photo stands at the left of each entry, and
+  the note stands on its own line below the header.
+- A combo box offers only values that exist, and a screen that shows one value at
+  a time has no "all" choice.
+- How a screen learns that something changed is not settled yet. That section is
+  a placeholder until the update and refresh story is done.
+
+* Detail
+
+** Where this page applies
+
+An /entity screen/ is a screen whose subject is one thing made of several kinds
+of record, which a person reads and changes together. The Staff list and the page
+of one person are the reference. The tenant, the party and the role are close to
+it. Hierarchy, Requests and Where I work are screens about relationships between
+entities and follow the rules on people, history and paging here.
+
+A kind of record with one table and no aspects is still a record screen. Use the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] for it. This page adds to that standard and never
+replaces it. Where the two disagree on the same thing, the record standard rules
+for a screen of one record kind, and this page rules for an entity.
+
+** Words
+
+| Word | Meaning |
+|------+---------|
+| /Entity/ | A subject made of several kinds of record, such as a person |
+| /Aspect/ | One kind of record of an entity, or one view of it: details, contact, roles, sign-ins, history |
+| /Subject/ | The one entity a page is about |
+| /Card/ | A bordered panel holding one aspect's fields, with its title and its Edit button |
+| /Directory/ | The people the reader may name, read from the widest read they hold |
+| /Self read/ | A read of the signed-in person's own record, which needs no permission |
+| /Gap/ | A part of a stream that the server cannot answer, stated on the screen |
+| /Window/ | One page of rows, asked for by offset and limit |
+
+** The shape of an entity screen
+
+An entity has three screens, and each has one job.
+
+| Screen | Job | Address |
+|--------+-----+---------|
+| The list | Find a subject, and see enough of each to choose | =/staff= |
+| The page | Read and change one subject, one aspect per tab | =/people/:username= |
+| The relationship views | Show how subjects relate: a tree, a chart, a requests queue | =/hierarchy=, =/requests= |
+
+The list opens the page. The page links back to the list through its breadcrumb,
+and to other subjects through people links. A relationship view opens the page of
+any subject it draws.
+
+A reader sees a screen only if the menu offers it, and the menu offers it by the
+narrowest read the screen needs. A member does not hold the read of accounts, so
+Staff is a different list for them, built from the organisation read. See
+[[*Who sees what][Who sees what]].
+
+** The list
+
+#+begin_src text
+  Home › Organisation › Staff
+  Staff                                                     [↻ Refresh]
+  The people of the parties you work in, and everyone who reports to you.
+  [ 🔍 Search by name, username or job title ]
+  ──────────────────────────────────────────────────────────────────────
+   Person              Username        Kind     Job title      Parties
+  ──────────────────────────────────────────────────────────────────────
+   (photo) Ada Lovelace  ada.lovelace  Person   Head of Desk   [Acme UK]
+   …
+  ──────────────────────────────────────────────────────────────────────
+  1–15 of 58      [« First] [‹ Previous] [Next ›] [Last »]   Page size [15 ▾]
+#+end_src
+
+- The first column is the person: their photo, then their name. A name opens the
+  page. The username, the kind, the job title and the parties follow.
+- The parties are tags with the party's name, not its code. A person in several
+  parties shows each.
+- The search, the sort, the filter and the page all go to the server. The list
+  never reads every row to filter them itself.
+- The header, the table, the states and the pager are those of the record
+  standard's list. The titles are in sentence case.
+- A list for a member names what it holds in its lead sentence, because it is not
+  the whole tenant.
+
+** The page
+
+#+begin_src text
+  Home › Organisation › Staff › Adrian Vance
+  (photo)  Adrian Vance
+           1f3c…9a2e
+  [ Details ] [ Contact ] [ Roles ] [ Sign-ins ] [ History ]
+  ┌─ Photo and identity ───────────────────────────────── v7  [✎ Edit] ─┐
+  │ Full name        Job title                                          │
+  │ Adrian Vance     Group Chief Executive Officer                      │
+  │ Username         Sign-in address        Account type                │
+  │ adrian.vance     adrian.vance@…         user                        │
+  │ ─ Reporting line ───────────────────────────────────────────────── │
+  │ (photo) Grace Hopper   Chief of Staff                  [↗ Propose]  │
+  └─────────────────────────────────────────────────────────────────────┘
+#+end_src
+
+*** Header
+
+- The breadcrumb is Home, the area, the list, then the subject.
+- The photo stands large beside the title. The title is the person's name.
+- Under the title, in small subdued type, is the subject's identifier. Nothing
+  else. The version stands on each card, beside its title, because each card is a
+  different record with its own version.
+- The header carries no Edit button. Edit belongs to the card it changes.
+
+*** Tabs
+
+Tabs are held in the address (=?tab=roles=), so a link reopens the page on a tab.
+They run in this order, and a tab appears only when the reader may read it.
+
+| Tab | Holds | Shown when |
+|-----+-------+------------|
+| /Details/ | The identity card and the reporting line | Always |
+| /Contact/ | The contact record | The reader may read contact records, or it is their own |
+| /Roles/ | The roles held, then what they allow | The reader may read roles |
+| /Sign-ins/ | The sign-in state and the sessions | The reader may read sessions |
+| /History/ | The timeline | The reader may read the history of the subject. The tab is always drawn, and the timeline states what it cannot answer |
+
+A tab that would answer with a refusal is not drawn. A refusal that arrives
+anyway is stated on the tab in words, with the reason, and the page does not show
+a banner for it: the read that can be refused is made quietly, and the tab
+speaks for it.
+
+*** Cards
+
+Each aspect that a person can change is one card.
+
+- The card's title is on the left. The version of the record it shows is small and
+  subdued beside it. The Edit button is on the right.
+- The fields are read as text, not as inputs. A label stands above each value in
+  sentence case, with no colon. A value with nothing in it is a muted dash.
+- A field that is fixed once the record exists, such as the username, says why in
+  a line of small text under it: "Set when the account was made, and never
+  changed here."
+- A field that another person owns says who. The sign-in address says "An
+  administrator owns it."
+- A card the reader may not change shows the access mark, Read only, as the
+  [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] sets it.
+
+** Changing a record
+
+*** The Edit pattern
+
+- Edit is one button with an icon and the word Edit, on the card it changes. It
+  is drawn only for a person who may change that card.
+- Edit opens a dialog with the current values. The dialog is titled for the card.
+  It asks for the change reason and the commentary. The card itself asks for
+  neither, and shows no reason field beside its values.
+- Save stays disabled until a field differs from the record. The reasons offered
+  follow the change: when a field changed, "No change in substance" is not
+  offered, and when nothing changed only that reason is.
+- The write claims the version that was read. A record that has changed since is
+  refused with a conflict, and the dialog says so and offers to reload.
+- Closing the dialog with changes asks "You have unsaved changes. Close anyway?"
+- An optional field has a Clear control beside it, which writes the empty value.
+  A Clear is not a Save of a blank by accident.
+
+*** Small controls
+
+- A change that is not a form, such as the reporting line, has a small icon
+  button on the line it changes. It is drawn only when the reader may use it.
+- The photo is its own control. Clicking the photo opens the chooser to replace
+  it. There is no separate "Replace photo" button.
+- A control that proposes and does not write, such as a change that another
+  person must approve, says Propose and not Save. See
+  [[*Proposals and four-eyes][Proposals and four-eyes]].
+
+*** Changes the reader may not make
+
+The control is not drawn. A disabled button asks a question that a missing one
+does not. The server still decides every write; the screen hides only what the
+server would refuse.
+
+** People are links
+
+A person is named in many places: a manager, a holder of a role, the author of a
+history entry, the person who asked for something, the person who answered. The
+rule is the same in all of them.
+
+| What is on the screen | How it is drawn |
+|-----------------------+-----------------|
+| A person the reader can name | Their full name, then their username in brackets: "Ada Lovelace (ada.lovelace)" |
+| A person the reader may open | The name above is a link to their page |
+| A person the reader can name but not open | The same text, not a link |
+| A name that is a service | Text, not a link: a service has no page |
+| An identifier no read can resolve | "Someone outside your view". The identifier is never shown |
+| An email address | A =mailto:= link |
+| A web address | An =http= or =https= link that opens in a new tab with =rel="noopener noreferrer"= |
+| A value that is neither | Plain text. It never becomes a link that goes nowhere |
+
+- =PersonRef= draws a person from a username or an identifier. It reads the
+  directory once, and the directory is the widest read the reader holds. A reader
+  of accounts names anybody in the tenant. A reader of the organisation names the
+  people in their parties and under them. Anybody else names nobody.
+- =actorPathFor= decides whether a history author is linked.
+- A sign-in address is not a mail address and is not a =mailto:= link. Only the
+  contact record's email is.
+- The email on the contact card says which address it is, and says that it is not
+  the sign-in address.
+
+** Photos, flags and images
+
+- A person is drawn with a photo wherever there is room for one: the list, the
+  page header, a manager line, a card in a chart, a person in a picker and the
+  history rail. Where a person has no photo, their initials stand in the same
+  circle, so a list does not jump.
+- A photo is fetched by its image identifier, which the read already carries. A
+  screen never asks for a person's picture once per row by username. The image is
+  cached by its identifier for a year.
+- The sizes are small (20 pixels) in rows, pickers and the rail, medium in
+  cards, and large (56 pixels) in a page header.
+- A country, a currency, a calendar or a business centre is drawn with its flag
+  wherever its code appears. A country code on a contact card is the flag, then
+  the code. Flags come from the one map in the record standard, and a screen never
+  works out a flag itself.
+- The photo of a person who wrote a history entry stands at the left of the
+  entry, beside its header and changes. See
+  [[*History and the timeline][History and the timeline]].
+
+** Paging: the pager is the request
+
+This is the rule that matters most, and the Staff work learned it the hard way.
+
+#+begin_quote
+The paging on the screen must match the paging of the data requests.
+#+end_quote
+
+- Every list of rows asks the server for one page: =offset=, =limit=, and the
+  server's total. The pager, the page size and the "Showing 1–15 of 40" sentence
+  are the request's own numbers. A screen that reads everything and slices it in
+  the browser has a pager that is not a pager.
+- The search, the filter, the area and the sort are fields of the same request.
+  The server applies them. A new search or filter returns to the first page.
+- A search is sent when the typing pauses, not on every key.
+- The default page is 15 rows, and the sizes are those of the record standard. No
+  screen sets its own.
+- An entity is never read whole. That includes the lists a screen needs only to
+  draw something else: the permissions of a role, the people who hold a role, the
+  roles a person holds, the people a name is resolved against. Each of them is a
+  page, or a lookup of the few rows the screen draws.
+- A count that a screen needs, such as how many people hold a role, is part of
+  the answer to the page, not a second read of everything.
+- A thing that is not a list but looks like one to the reader, such as the
+  catalogue of permissions, is paged by the unit the reader sees. A row on the
+  screen is a resource with its actions, so a page is a whole number of resources
+  and never half of one.
+
+*** Combo boxes and filters
+
+A combo box that filters a paged list obeys the same rule.
+
+- It offers only the values that exist in the data, and the server says which.
+  An area no role grants something in is not offered.
+- A screen that shows one value at a time, such as one area of the permissions,
+  has no "all" choice. One value is always chosen. When the reader has not
+  chosen, the first value the server lists is chosen, and the server says which.
+- A list that narrows rows, such as the roles list, may start with "All areas",
+  because choosing none shows every row. The first choice there means no filter,
+  and it is not a page of everything.
+- A filter that matches nothing says so and offers to clear it.
+
+*** Editing across pages
+
+A change a person makes on one page must survive a move to another. The screen
+keeps the changes as a set of differences from what the server holds, keyed by
+the thing changed, and lays them over each page. A change that puts a value back
+as the server holds it removes the difference. Save sends only the differences,
+and the server applies them to what it holds. The screen never needs the whole set
+to save.
+
+** History and the timeline
+
+An entity's history is one stream. It is drawn as a chart of events over time,
+and below it a rail of entries, newest first.
+
+#+begin_src text
+  ▂ ▅ ▁   ▇ ▃          ■ Created  ■ Changed  ■ Granted  ■ Signed in
+  10 Oct ─────────── 12 Oct
+
+  Saturday, 10 October 2026
+  03:51:36 ●  (photo) [Raised] account a452db76 v1  system.external_data_import
+  ✓           ores_brave_hopper_iam_service  Published from organisation dataset
+              Attached staff photo during provisioning
+              ▸ Details
+  03:40:12 ●  (photo) [Changed] account a452db76 v2  Job Title   Rectification
+              Marco Craveiro
+              Corrected the title
+              ▸ Details
+#+end_src
+
+*** The event chart
+
+- The chart is a histogram of the entries: a bar for each hour, or for each day
+  once the history spans more than two days. Each bar is split by the kind of
+  entry, and each kind has one colour that the legend repeats.
+- Every bar has the same fixed width. A bar never stretches to fill the row, and
+  a long history scrolls sideways.
+- An hour or a day with no entries is empty space. The chart draws every bucket
+  from the first entry to the last, so a gap in time reads as a gap.
+- A bar shows its time and its count on hover, and each segment its kind and its
+  count. The first and the last time stand under the bars. The legend names the
+  kinds that appear, each with its count.
+- A click on a bar scrolls to the entry nearest that hour or day, and marks it for
+  a moment. A click on an empty bar goes to the closest entry in time.
+- The chart reads the entries the list holds. It makes no read of its own.
+
+*** One line per entry
+
+- Each entry is a header on one line: the kind, the record and its version, the
+  reason code, the author, what they did, and the time. The time and the
+  current-version emblem stand in the left gutter.
+- The note, such as "Attached staff photo during provisioning", is never on the
+  header line. It stands on its own line below the header.
+- The detail is collapsed. A field that changed is drawn as the difference, the
+  old and the new, and a first version as the whole record. A reader opens the
+  detail on demand. The first screen of a long history is a list of headers a
+  person can scan.
+- An entry that changed no field says "No changes". It has no detail to open.
+- The newest version of a record carries a small emblem next to its time, with
+  the words "Current version" as its tooltip. There is no sentence for it, and no
+  Revert button on it, because there is nothing to revert to.
+- An entry that cannot be reverted, such as a sign-in, simply offers no control.
+  The rail does not explain what is missing: no "this entry records something
+  that happened, so there is nothing to revert", and no "putting a field back is
+  not offered here". A sentence that says what is not there adds nothing.
+
+*** The author
+
+- The author's photo stands at the left of the entry, beside the header and the
+  changes, at medium size (2 rem) so that a face can be seen. Where the author has
+  no photo, their initials stand in the same circle. A service is its initials.
+- The author's name is a link to their page where the reader may open people.
+  A service is text.
+- The photo and the link come from the same directory as every other mention of
+  a person.
+
+*** One rail for several kinds of record
+
+A person's history merges the versions of the account and the contact record,
+the roles given, and the sign-ins. They share the rail, and each entry names its
+kind and its record.
+
+- Each kind of entry has its own tone: a change, a grant, an act, a decision.
+- An act that is not a version, such as a sign-in, is drawn quietly and says that
+  it cannot be reverted.
+- A version of a record that may be reverted offers Revert to the person who may
+  write it. The newest version says "Current version" and offers nothing.
+- Entries are paired with the version before them to find what changed. The
+  pairing is the screen's reading of the stream, not the server's claim.
+
+*** Gaps
+
+Some parts of a story cannot be answered, and the stream says so. A grant that was
+taken away is closed and no read returns it. A junction has no versions. The
+sign-in log keeps a window. Each such part is a gap on the answer, stated on the
+screen in words. A gap is never rounded away, and it is never shown as an empty
+list.
+
+*** Narrowed histories
+
+A history narrowed to one field, such as the reporting line, keeps every version in
+the stream so each is read against the one before, and shows only the versions
+where the field moved.
+
+*** History and Audit
+
+History is the versions of one record. A log of events that happened is Audit,
+and has a Refresh and no revert. The sign-in record is Audit. In a person's
+timeline it appears as acts.
+
+*** Relationship histories
+
+A history that spans many subjects, such as who changed their reporting line, is
+two steps and not a merged rail.
+
+1. A list of the subjects for whom the thing changed recently, newest change
+   first, each with the old value and the new one.
+2. The subject chosen from that list, drawn as its own narrowed timeline.
+
+There is no card of the person beside it. The list is the way in.
+
+** Several kinds of record in one entity
+
+- One page per subject. An aspect is a tab, not a screen of its own.
+- Each tab reads what it needs, and each read is its own permission. A reader who
+  can read an account and not its roles sees the Details tab and not the Roles
+  tab.
+- A reader sees their own record whatever they hold. The signed-in person's own
+  account, contact record, sign-in state, sessions and permissions are self reads
+  on the allow-list of [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. A page that is the reader's own uses
+  them and needs no permission. Any other person's page needs the read of that
+  aspect.
+- When the read of one aspect is refused, that aspect says so and the others
+  carry on.
+- The entity's relationships are shown where the reader needs them: a manager on
+  the identity card, the people who report to a person in the hierarchy, the
+  parties as tags in the list.
+- Do not add a tab to say that something cannot be done. Say it where the
+  control would be.
+
+** Relationship views
+
+A tree, a chart and a queue draw how subjects relate.
+
+- A tree draws each subject once, under the subject it relates to. A subject can
+  belong to several groups, such as a person in two parties, and is then drawn
+  in each group, with the same person under the same manager in each.
+- A group is a party, nested by its own parent, and its name is drawn, never its
+  code.
+- A filter by group appears only when the reader sees more than one, and its
+  choices are the groups they see.
+- A person with a manager the reader cannot see is marked, not drawn as a root.
+- A chart zooms and fits, and scrolls sideways rather than squeezing its cards.
+- A relationship view is paged or lazy in the same way as a list. It never reads
+  every row to draw the part the reader sees.
+
+** Who sees what
+
+Visibility is decided by the narrowest read that does the job.
+
+| Reader | Sees | Through |
+|--------+------+---------|
+| A tenant administrator | Every subject of the tenant | The read of accounts |
+| A member | The people in the parties they work in, and everyone who reports to them | The organisation read, scoped by party and reporting line |
+| Anyone | Their own record | Self reads |
+
+- A member's list shows names, photos, titles and parties. It does not show
+  email addresses, contact records, sign-ins or roles. Account data is not screen
+  furniture.
+- A party the reader does not work in, and does not manage someone in, is not
+  named to them, even when a colleague in their own party also works in it.
+- A person who is outside the reader's view is "someone outside your view", never
+  an identifier.
+- The menu offers an entry by the narrowest read that screen needs, so a member
+  gets Staff and Hierarchy and an administrator gets the fuller list.
+
+** Proposals and four-eyes
+
+A change that another person must agree to is a proposal, not a write.
+
+- The control says Propose, and the dialog says that nothing changes until the
+  other person approves.
+- The proposer sees the state of their proposal among their own requests and can
+  withdraw it while it waits.
+- The person who decides sees it in Requests, with who proposed it and what
+  changes, and approves or declines it. A decline needs a comment.
+- Requests is the one place for every kind of request. Every member sees their
+  own there, and a person who can decide also sees the queue.
+- The decision and the apply are recorded, so the history of the subject names the
+  proposer, the decider and the time.
+
+The reporting line becomes a proposal in the story "Approve a reporting line
+change by the proposed manager". Until that story is done, the line is changed
+by a direct edit for those who hold the update permission.
+
+** The shell around a screen
+
+- The footer states the tenant and the party the session acts for, as pills,
+  because they decide what every screen shows. It also states the client, the
+  server and the environment.
+- The header names an administrator's mode and says nothing for an ordinary
+  member, whose mode has no meaning to them.
+- The notification bell and the account menu stand in the header. The account
+  menu holds the person's own pages and signing out.
+- A person's own pages are My profile, My access and Where I work. They are
+  reached from the account menu and from the profile's doors, each in one place.
+
+** Feedback, states and words
+
+- A screen states what it is waiting for. First load says "Loading…" in the place
+  of the content. A reload keeps the rows, dimmed. An empty list says what is
+  empty and what to do. An error is in place, in the server's words, with Retry.
+- A refused read is a refusal and not a failure. The screen says the reader may
+  not see this, in words, and never shows a permission code.
+- A time is relative with the exact time on hover. "Never signed in" is a phrase
+  and not 1 January 1970: a missing time is not a time.
+- Words are in sentence case, and the verbs are Add, Edit, Save, Delete, Remove,
+  Revert, Refresh, Cancel and Propose. An entity's own action is a verb and its
+  object.
+- Every string exists in English, French and Portuguese before the screen ships.
+- A screen never shows an identifier where a name would do.
+- A screen does not narrate what is absent. A control that is not offered is not
+  drawn, and nothing says why unless the reader would otherwise be stuck. A sentence
+  that only explains an empty space is removed.
+
+** Updates and refresh
+
+This section is a placeholder. The way a screen learns that something changed is
+the subject of the story "Hear a change on the server and offer a refresh", and
+this page will be completed when that story is done.
+
+What is settled:
+
+- The lists and the relationship views have a Refresh button among the header's
+  actions. It is the same control (=RefreshButton=) on each. The record page's
+  own Refresh is part of the update story.
+- The notification bell reads its count on a timer, and when the count rises the
+  request lists are read again.
+
+What is not settled, and will be specified here:
+
+- How a screen is told that a record it shows has changed on the server, and the
+  shape of that signal.
+- What the Refresh button does when the screen knows it is stale, including the
+  pulse that draws the eye to it.
+- What a screen does with an edit in progress when the record changes beneath it.
+- How a conflict between a person's edit and a newer version is shown and
+  resolved.
+- Which screens may update themselves without being asked, and which wait for the
+  reader.
+- How the recency marks of the record standard apply to an entity page.
+
+** The shared components
+
+| Rule | Component | Status |
+|------+-----------+--------|
+| A person named in text | =PersonRef= and =usePeopleDirectory= in =access/PersonRef.tsx= | Exists; the directory is read whole, see the deviations |
+| The author's picture | =useActorPictures= in =access/PersonRef.tsx=, =Avatar= in =ui/Images.tsx= | Exists |
+| A history author's link | =actorPathFor= in =access/PeoplePage.tsx= | Exists |
+| The timeline | =Timeline= in =timeline/Timeline.tsx= | Exists; one-line headers, details on demand, the event chart, the author's photo beside the header, the author's link, the current-version emblem |
+| A person's merged story | =readPersonTimeline= in =wire-protocol/src/timeline.ts= | Exists; reads the whole account history, see the deviations |
+| The pager | =Pager= in =ui/Pager.tsx= | Exists |
+| The roles panel, paged on the server | =RolesAllow= in =access/Allowances.tsx=, =list_account_permissions= and =list_my_permissions= | Exists |
+| The role editor, paged on the server | =RoleEditor= in =access/RolePage.tsx=, =list_role_permissions= | Exists |
+| The roles list, paged on the server | =RolesPage=, =list_roles_page= | Exists |
+| The holders of a role, paged on the server | =RolePage=, =list_role_holders= | Exists |
+| The organisation tree, by party | =ReportingLinesPage=, =OrgChart=, =organisation.ts= | Exists; reads the whole tree, see the deviations |
+| A member's list of staff | =StaffOfMyParties= | Exists; reads the whole organisation read |
+| Self reads | =get_my_account=, =get_my_login_info=, =get_my_sessions=, =list_my_permissions= | Exists |
+| Links for email and web | =mailto= and =webLink= in =access/PersonForms.tsx=, =Detail= in =ui/Primitives.tsx= | Exists |
+| Tenant and party in the footer | =VersionFooter= | Exists |
+| Refresh | =RefreshButton= in =ui/RefreshButton.tsx= | Exists; the stale pulse waits for the update story |
+
+** How the Staff screens conform today
+
+| Rule | Where Staff differs |
+|------+---------------------|
+| Server paging for everything | The person's timeline reads the whole account history and merges four reads. It needs a window and a load-older control |
+| Server paging for everything | The roles a person holds are read with every permission code of every role. It needs a paged list of grants without the codes |
+| Server paging for everything | "Can I…?" searches the whole permission catalogue in the browser. It needs a server search |
+| Server paging for everything | The directory behind =PersonRef= reads the account list or the organisation tree whole. It needs a lookup of the few identifiers a screen draws |
+| Server paging for everything | The organisation tree for the Hierarchy is one read of the whole visible tree. It needs branches read on demand |
+| Server paging for everything | The staff list for a member is the organisation read, sorted and searched in the browser. It needs the same server search and paging as the administrator's list |
+| Words | The person page names its history tab Timeline and My profile names it History. One name, History, is the rule |
+| Photos | A history author's photo comes from the directory, so an author the reader cannot name is shown as initials, and the directory is read whole |
+| Proposals | The reporting line is not yet a proposal |
+| Updates | Not specified yet |
+
+Each deviation is a follow-up. None of them is a reason to copy the shortcut to
+another screen.
+
+** Building an entity screen
+
+Work in this order. Each step ends in something to check.
+
+1. Name the subject, its aspects, and for each aspect the table, the read and the
+   permission. Say which aspects the reader sees whatever they hold.
+2. Decide the list: its columns, its search, its filters and its default order.
+   Say what the server searches and sorts.
+3. For every read the page will make, write down its page: its offset, its limit,
+   its total and its filters. If a read has none, it is not ready.
+4. Add the self reads the signed-in person needs, and put each on the allow-list
+   of Authorised reads in the same change.
+5. Build the list from the shared parts, then the page: header, tabs in the
+   address, one card per changeable aspect.
+6. Put Edit on each card, with the reason in the dialog.
+7. Draw every person with =PersonRef=, every email as =mailto:=, every web
+   address as a link, every flagged code with its flag.
+8. Build the timeline from the shared =Timeline=: headers, details on demand,
+   author photo and link, gaps stated.
+9. Add the strings in English, French and Portuguese.
+10. Check it against data of the real size, as a member and as an administrator:
+    a large tenant, a role that grants a whole area, a person with no photo, a
+    person outside the reader's view, a refused read, an empty history.
+
+** Verifying a rule
+
+A rule is done when the screen shows what the rule says, tried against data of
+the real size. A test that checks only the code's own reading of the rule is not
+enough. The Staff work paged the areas of the permissions in the browser, passed
+a test of that, and still showed a screen with every permission on it.
+
+* See also
+
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the screen of one kind of record, which this page extends
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — colours, labels, the access mark, History versus Audit
+- [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]
+- [[id:46F465EE-7693-4852-B125-12C56290B695][Icon reference]]
+- [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge catalogue]]
+- [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] — the allow-list that the self reads belong on
+- [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]]
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record behind proposals and four-eyes
+- [[id:85892C17-BB81-4724-9B84-20E21D41C499][History and diff architecture]]
+- [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]] — where the update section will draw from
+- [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]] and [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] — the journeys the Staff screens serve

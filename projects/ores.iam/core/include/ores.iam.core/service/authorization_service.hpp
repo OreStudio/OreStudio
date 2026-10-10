@@ -25,6 +25,7 @@
 #include "ores.iam.api/domain/account_role.hpp"
 #include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_role_repository.hpp"
 #include "ores.iam.core/repository/permission_repository.hpp"
@@ -81,6 +82,35 @@ struct account_access {
 struct role_permissions {
     ores::utility::domain::result result;
     std::vector<std::string> permission_codes;
+};
+
+/**
+ * @brief Which page of what an account's roles allow is asked for.
+ *
+ * An empty area means the first area the account holds something in, so a page
+ * is always of one area. The search narrows the resources by name. The limit is
+ * kept to a sensible range so a caller cannot ask for the whole catalogue.
+ */
+struct permission_query {
+    std::string area;
+    std::string search;
+    int offset = 0;
+    int limit = 15;
+    /// Also the resources the roles do not grant, for the role editor to tick.
+    bool include_unheld = false;
+};
+
+/**
+ * @brief Which page of the tenant's roles is asked for.
+ */
+struct roles_query {
+    /// One role, by id; the other fields are then ignored.
+    std::string role_id;
+    std::string search;
+    std::string area;
+    bool include_service = false;
+    int offset = 0;
+    int limit = 15;
 };
 
 /**
@@ -282,6 +312,53 @@ public:
     account_access read_account_access(const boost::uuids::uuid& caller_id,
                                        const boost::uuids::uuid& account_id);
 
+    /**
+     * @brief Reads one page of what an account's own roles let it do.
+     *
+     * The caller names no other account, so a session is the whole of the
+     * requirement and no permission is checked.
+     */
+    messaging::permission_page_response read_own_permissions(const boost::uuids::uuid& account_id,
+                                                              const permission_query& query);
+
+    /**
+     * @brief Reads one page of what another account's roles let it do.
+     *
+     * Needs roles:read, as reading the account's roles does, and answers
+     * @c denied with that code otherwise.
+     */
+    messaging::permission_page_response
+    read_account_permissions(const boost::uuids::uuid& caller_id,
+                             const boost::uuids::uuid& account_id,
+                             const permission_query& query);
+
+    /**
+     * @brief Reads one page of the catalogue against what one role grants.
+     *
+     * Serves the role editor. Needs roles:read and answers @c denied with that
+     * code otherwise.
+     */
+    messaging::permission_page_response read_role_permissions(const boost::uuids::uuid& caller_id,
+                                                              const boost::uuids::uuid& role_id,
+                                                              const permission_query& query);
+
+    /**
+     * @brief Reads one page of the tenant's roles, with each role's permissions
+     * counted and not listed. Needs roles:read.
+     */
+    messaging::role_page_response read_roles_page(const boost::uuids::uuid& caller_id,
+                                                  const roles_query& query);
+
+    /**
+     * @brief Reads one page of the people who hold a role, by name.
+     *
+     * Needs roles:read and answers @c denied with that code otherwise.
+     */
+    messaging::role_holders_response read_role_holders(const boost::uuids::uuid& caller_id,
+                                                       const boost::uuids::uuid& role_id,
+                                                       int offset,
+                                                       int limit);
+
     // ========================================================================
     // Permission Checking
     // ========================================================================
@@ -321,6 +398,13 @@ public:
                                  std::string_view required_permission);
 
 private:
+    /**
+     * @brief Pages the catalogue by resource against the permissions the roles
+     * grant, wildcards included.
+     */
+    messaging::permission_page_response
+    page_permissions(const std::vector<account_access_entry>& roles, const permission_query& query);
+
     /**
      * @brief Composes one account's roles, their permissions and their tails.
      *

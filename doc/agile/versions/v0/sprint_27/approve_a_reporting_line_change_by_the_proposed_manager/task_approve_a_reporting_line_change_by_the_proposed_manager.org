@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 6EBDB18A-E19D-4BC8-BD42-D6207E8BB120
+:END:
+#+title: Task: Approve a reporting line change by the proposed manager
+#+description: A change to a person's reporting line is proposed, and the person it would make their manager approves it, like a role request. Today anyone with the update permission changes it directly.
+#+type: task
+#+level: s1
+#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:sprint_27:v0:
+#+owner: marco
+#+branch: feature/address-the-people-screens-review
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0245BF99-2467-4C68-898F-9608F50CD3A9][Approve a reporting line change by the proposed manager]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make a reporting line change a four-eyes decision: one person proposes, the proposed new manager approves or declines, and only an approval writes the line. It follows the role request journey.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0245BF99-2467-4C68-898F-9608F50CD3A9][Approve a reporting line change by the proposed manager]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- A proposal names the person, the proposed manager and a reason, and nothing changes until the proposed manager approves.
+- The proposed manager sees the proposal in Requests and can approve or decline it with a reason.
+- The history shows who proposed, who approved and when.
+
+* Plan
+
+Review item P18 of =Address the review of the people screens=. This is the story's umbrella and end-to-end check; the build is split into the five tasks beside it, and the story's Design section holds the shape. Model the change on the role request journey: a proposal is a request, the person it names answers it, and only an approval writes.
+
+1. Read how a role request is stored, routed to its approver and answered, and reuse that shape for a reporting line request.
+2. Decide the request's data: the person, the proposed manager, the reason, the state, who proposed and who answered.
+3. Server: a propose operation, an answer operation that writes the line on approval, and a read of the requests addressed to a person.
+4. Web: a proposal in place of the direct edit, and the proposal in Requests for the proposed manager.
+5. Refuse a proposal that would make a loop, as the direct write does today.
+6. Tests for propose, approve, decline, and the refused loop.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

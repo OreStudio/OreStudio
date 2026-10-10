@@ -377,6 +377,24 @@ BEGIN
         'accounts'
     );
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.account_contact_informations',
+        'ACME Corporation',
+        'Organisation',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Code Generation Methodology',
+        'ACME Corporation Group Account Contact Informations',
+        'The holding company''s staff contact details -- the Group CEO''s address, published party-scoped like the group accounts.',
+        'ACMEBANK',
+        'ACME Corporation generated data',
+        current_date,
+        'Internal Use Only',
+        'account_contact_informations'
+    );
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_group.business_units',
         'ACME Corporation',
         'Organisation',

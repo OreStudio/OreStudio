@@ -94,6 +94,8 @@ export const en: SourceCatalogue = {
     access: {
         allAreas: 'All areas',
         areaFilter: 'Area',
+        permissionsShowing: 'Showing {from}–{to} of {total} permissions',
+        resourcesHeld: '{count} resources',
         hub: {
             title: 'Organisation',
             lead: 'The people of this tenant, and who they report to.',
@@ -161,7 +163,6 @@ export const en: SourceCatalogue = {
             why: 'Why',
             noRole: 'No role. They can sign in but do nothing yet.',
             takeAway: 'Take away',
-            currentVersion: 'This is the current version.',
             notYourself: 'You cannot take a role away from yourself.',
             whatTheyAllow: 'What these roles let them do',
             giveTitle: 'Give {name} a role',
@@ -215,6 +216,7 @@ export const en: SourceCatalogue = {
             saveTitle: 'Save {role}?',
             andMore: 'and {count} more',
             reaches: '{people} hold this role. The change reaches them within 30 minutes.',
+            holdersShowing: 'Showing {from}–{to} of {total} people',
             nowAllows: 'Now allows',
             noLongerAllows: 'No longer allows',
             whyChange: 'Why the change',
@@ -244,6 +246,9 @@ export const en: SourceCatalogue = {
         },
     },
 
+    people: {
+        outsideView: 'Someone outside your view',
+    },
     inbox: {
         state: {
             waiting: 'Waiting',
@@ -274,6 +279,8 @@ export const en: SourceCatalogue = {
             submit: 'Ask',
         },
         mine: {
+            none: 'You have made no requests.',
+            lead: 'The requests you have made, and how they were answered.',
             title: 'Your requests',
             asked: 'asked {date}',
             youWrote: 'You wrote: {reason}',
@@ -690,6 +697,7 @@ export const en: SourceCatalogue = {
             common_other: 'Another reason',
         },
         tabs: {
+            history: 'History',
             details: 'Details',
             contact: 'Contact',
             access: 'Access',
@@ -778,7 +786,7 @@ export const en: SourceCatalogue = {
             protect: 'Protect my account',
             protectWhy: 'Your password, your sign-ins and your sessions:',
             know: 'Know what I may do',
-            knowWhy: 'What your roles let you do:',
+            knowWhy: 'The roles you hold and what they let you do:',
             failed: 'Your access could not be read, so the administrator panels are not offered. {reason}',
         },
         save: {
@@ -1556,9 +1564,9 @@ export const en: SourceCatalogue = {
 
     timeline: {
         empty: 'Nothing has happened to this yet.',
+        details: 'Details',
+        current: 'Current version',
         field: 'Field',
-        notRevertible: 'This entry records something that happened, so there is nothing to revert.',
-        changeNotOffered: 'Putting a changed field back is not offered here.',
         noChanges: 'No changes',
         kind: {
             raised: 'Created',
@@ -2412,6 +2420,8 @@ export const en: SourceCatalogue = {
     },
 
     version: {
+        tenant: 'Tenant: {name}',
+        party: 'Party: {name}',
         client: 'Client: {version}',
         server: 'Server: {version}',
         serverUnknown: 'Server: unknown',
@@ -2872,6 +2882,8 @@ export const en: SourceCatalogue = {
             zoomReset: 'Reset',
             noReports: 'No one reports to this person.',
             findPerson: 'Find a person',
+            recentChanges: 'Recently changed lines',
+            noRecentChanges: 'No reporting line has changed recently.',
             person: 'Person',
             tabs: { tree: 'Tree', chart: 'Org chart', history: 'History' },
             you: 'You',

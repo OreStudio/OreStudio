@@ -199,6 +199,75 @@ describe('ProfilePage', () => {
         expect(html).not.toContain('>1 Panton Street<');
     });
 
+    it('offers History only to somebody who may read accounts', () => {
+        const withRead = render((client) => {
+            client.setQueryData(['my-access'], access(['iam::accounts:read']));
+            client.setQueryData(['account', 'ada'], account);
+        });
+
+        expect(withRead).toContain('>History<');
+        expect(render(member)).not.toContain('>History<');
+    });
+
+    it('draws the person’s own story on the History tab, headers first', () => {
+        const html = render((client) => {
+            client.setQueryData(['my-access'], access(['iam::accounts:read']));
+            client.setQueryData(['timeline', 'person', 'ada'], {
+                subject: 'person',
+                id: 'ada',
+                gaps: [],
+                events: [
+                    {
+                        entityType: 'ores.iam.account',
+                        entityId: ACCOUNT_ID,
+                        kind: 'raised',
+                        at: '2026-10-05 09:30:00Z',
+                        actor: 'grace',
+                        version: 1,
+                        reasonCode: 'system.external_data_import',
+                        commentary: 'Published from organisation dataset',
+                        fields: [{ name: 'Full Name', value: 'Ada Lovelace' }],
+                    },
+                ],
+            });
+        }, '/profile?tab=history');
+
+        expect(html).toContain('system.external_data_import');
+        expect(html).toContain('Published from organisation dataset');
+        expect(html).toContain('href="/people/grace"');
+        expect(html).toContain('<details');
+    });
+
+    it('names the roles on My access only, and points there from the Access tab', () => {
+        const html = render(member, '/profile?tab=access');
+
+        expect(html).not.toContain('Roles you hold');
+        expect(html).toContain('href="/access"');
+    });
+
+    it('links a web page in the contact record and leaves other text as text', () => {
+        const linked = render((client) => {
+            member(client);
+            client.setQueryData(['contact-information', 'me'], {
+                ...contact,
+                webPage: 'https://acme.example/desk',
+            });
+        }, '/profile?tab=contact');
+        const text = render((client) => {
+            member(client);
+            client.setQueryData(['contact-information', 'me'], {
+                ...contact,
+                webPage: 'see our site',
+            });
+        }, '/profile?tab=contact');
+
+        expect(linked).toContain('href="https://acme.example/desk"');
+        expect(linked).toContain('target="_blank"');
+        expect(linked).toContain('rel="noopener noreferrer"');
+        expect(text).toContain('see our site');
+        expect(text).not.toContain('href="see our site"');
+    });
+
     it('draws the contact record on its tab, telling the two addresses apart', () => {
         const html = render(member, '/profile?tab=contact');
 

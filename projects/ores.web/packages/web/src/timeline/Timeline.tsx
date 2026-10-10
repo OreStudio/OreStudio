@@ -20,6 +20,7 @@
  */
 
 import { Fragment, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import {
     TIMELINE_PROVENANCE_FIELDS,
     fieldValue,
@@ -30,6 +31,8 @@ import {
 import { useTranslation } from '../i18n/Provider.js';
 import { formatDateTime, parseTimestamp } from '../ui/Time.js';
 import { DiffLines } from '../ui/Diff.js';
+import { Icon } from '../ui/Icon.js';
+import { Avatar } from '../ui/Images.js';
 import { Tag } from '../ui/Primitives.js';
 
 /**
@@ -59,11 +62,25 @@ export function Timeline({
     timeline,
     renderActions,
     renderHead,
+    actorPath,
+    actorPicture,
     hideUnchanged = false,
 }: {
     readonly timeline: Stream;
     readonly renderActions?: (event: TimelineEvent) => ReactNode;
     readonly renderHead?: (event: TimelineEvent) => ReactNode;
+    /**
+     * Where the person who wrote an entry is opened, or undefined when they
+     * cannot be. An entry written by a service has no page, and a reader who
+     * may not read accounts cannot open one, so the caller states which.
+     */
+    readonly actorPath?: (actor: string) => string | undefined;
+    /**
+     * The picture of the person who wrote an entry, drawn beside the time: the
+     * address of the picture, or null for their initials. A stream with no such
+     * function draws no picture.
+     */
+    readonly actorPicture?: (actor: string) => string | null;
     /**
      * Leaves out the versions that changed none of the fields the stream
      * carries. A stream narrowed to one field, such as a reporting line, keeps
@@ -77,6 +94,7 @@ export function Timeline({
         return <p className="text-sm text-ink-muted">{t('timeline.empty')}</p>;
     }
     const previous = previousVersions(timeline.events);
+    const newest = newestVersions(timeline.events);
     const events = hideUnchanged
         ? timeline.events.filter((event) => {
               const before = previous.get(earlier(event));
@@ -88,25 +106,191 @@ export function Timeline({
           })
         : timeline.events;
     return (
-        <ol className="grid list-none gap-0 p-0">
-            {events.map((event, index) => (
-                <Fragment key={entryKey(event, index)}>
-                    {startsADay(event, events[index - 1]) && <DayDivider at={event.at} />}
-                    <Entry
-                        event={event}
-                        before={previous.get(earlier(event))}
-                        actions={renderActions?.(event)}
-                        head={renderHead?.(event)}
-                    />
-                </Fragment>
-            ))}
-        </ol>
+        <div className="grid gap-3" data-timeline>
+            <EventChart events={events} />
+            <ol className="grid list-none gap-0 p-0">
+                {events.map((event, index) => (
+                    <Fragment key={entryKey(event, index)}>
+                        {startsADay(event, events[index - 1]) && <DayDivider at={event.at} />}
+                        <Entry
+                            event={event}
+                            before={previous.get(earlier(event))}
+                            actions={renderActions?.(event)}
+                            head={renderHead?.(event)}
+                            actorPath={actorPath}
+                            actorPicture={actorPicture}
+                            current={newest.has(`${entryKeyOf(event)}#${String(event.version)}`)}
+                        />
+                    </Fragment>
+                ))}
+            </ol>
+        </div>
+    );
+}
+
+/** The colour of an event kind on the chart, which the legend repeats. */
+const KIND_COLOUR: Readonly<Record<string, string>> = {
+    raised: 'bg-roadmap',
+    changed: 'bg-accent',
+    asked: 'bg-accent-bright',
+    decided: 'bg-warn',
+    granted: 'bg-up',
+    signed_in: 'bg-ink-muted',
+    sign_in_failed: 'bg-down',
+    signed_out: 'bg-ink-faint',
+};
+
+function colourOf(kind: string): string {
+    return KIND_COLOUR[kind] ?? 'bg-line-strong';
+}
+
+/**
+ * Scrolls to the entry nearest a moment and marks it for a moment, so a click
+ * on the chart lands on the events around that hour or day.
+ */
+function goTo(from: HTMLElement, ms: number): void {
+    const rows = [...(from.closest('[data-timeline]')?.querySelectorAll('li[data-ms]') ?? [])];
+    let nearest: Element | undefined;
+    let gap = Infinity;
+    for (const row of rows) {
+        const distance = Math.abs(Number(row.getAttribute('data-ms')) - ms);
+        if (distance < gap) {
+            gap = distance;
+            nearest = row;
+        }
+    }
+    if (nearest === undefined) return;
+    nearest.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    nearest.classList.add('bg-accent/10');
+    setTimeout(() => {
+        nearest.classList.remove('bg-accent/10');
+    }, 1500);
+}
+
+const HOUR = 3_600_000;
+const DAY = 24 * HOUR;
+
+/**
+ * The stream as a histogram: a bar for each hour, or for each day once the
+ * history spans more than two days, split by the kind of entry. Empty buckets
+ * between the first and the last are drawn, so a gap in time reads as a gap. It
+ * reads the entries the list shows, so it needs no read of its own.
+ */
+function EventChart({ events }: { readonly events: readonly TimelineEvent[] }): ReactNode {
+    const { t, language } = useTranslation();
+    const times = events
+        .map((event) => ({ kind: event.kind, ms: parseTimestamp(event.at).getTime() }))
+        .filter((point) => !Number.isNaN(point.ms));
+    if (times.length === 0) return null;
+    const first = Math.min(...times.map((point) => point.ms));
+    const last = Math.max(...times.map((point) => point.ms));
+    const hourly = last - first <= 2 * DAY;
+    const step = hourly ? HOUR : DAY;
+    const startOf = (ms: number): number => {
+        const date = new Date(ms);
+        if (hourly) date.setMinutes(0, 0, 0);
+        else date.setHours(0, 0, 0, 0);
+        return date.getTime();
+    };
+    const from = startOf(first);
+    const count = Math.round((startOf(last) - from) / step) + 1;
+    const buckets: Map<string, number>[] = Array.from({ length: count }, () => new Map());
+    const totals = new Map<string, number>();
+    for (const { kind, ms } of times) {
+        const bucket = buckets[Math.min(count - 1, Math.round((startOf(ms) - from) / step))];
+        bucket?.set(kind, (bucket.get(kind) ?? 0) + 1);
+        totals.set(kind, (totals.get(kind) ?? 0) + 1);
+    }
+    const tallest = Math.max(
+        ...buckets.map((bucket) => [...bucket.values()].reduce((a, n) => a + n, 0)),
+    );
+    const kinds = [...totals.keys()];
+    const label = (ms: number): string =>
+        new Intl.DateTimeFormat(
+            language,
+            hourly ? { dateStyle: 'medium', timeStyle: 'short' } : { dateStyle: 'medium' },
+        ).format(new Date(ms));
+    return (
+        <figure className="m-0 grid gap-1.5 rounded-md border border-line-subtle px-3 py-2">
+            <div className="flex h-24 items-end gap-0.5 overflow-x-auto border-b border-line">
+                {buckets.map((bucket, index) => {
+                    const total = [...bucket.values()].reduce((a, n) => a + n, 0);
+                    return (
+                        <button
+                            type="button"
+                            key={from + index * step}
+                            className="flex h-full w-3.5 shrink-0 cursor-pointer flex-col-reverse border-0 bg-transparent p-0 hover:bg-surface-hover"
+                            title={`${label(from + index * step)}: ${String(total)}`}
+                            aria-label={`${label(from + index * step)}: ${String(total)}`}
+                            onClick={(click) => {
+                                goTo(click.currentTarget, from + index * step + step / 2);
+                            }}
+                        >
+                            {kinds
+                                .filter((kind) => bucket.has(kind))
+                                .map((kind) => (
+                                    <span
+                                        key={kind}
+                                        className={colourOf(kind)}
+                                        style={{
+                                            height: `${((bucket.get(kind) ?? 0) / tallest) * 100}%`,
+                                        }}
+                                        title={`${t(`timeline.kind.${kind}`)}: ${String(bucket.get(kind))}`}
+                                    />
+                                ))}
+                        </button>
+                    );
+                })}
+            </div>
+            <div className="flex justify-between text-[0.7rem] text-ink-faint">
+                <span>{label(from)}</span>
+                <span>{label(from + (count - 1) * step)}</span>
+            </div>
+            <figcaption className="flex flex-wrap gap-x-3 gap-y-1 text-[0.75rem] text-ink-muted">
+                {kinds.map((kind) => (
+                    <span key={kind} className="inline-flex items-center gap-1.5">
+                        <span className={`h-2.5 w-2.5 rounded-sm ${colourOf(kind)}`} aria-hidden />
+                        {t(`timeline.kind.${kind}`)} {totals.get(kind)}
+                    </span>
+                ))}
+            </figcaption>
+        </figure>
     );
 }
 
 /** What names one entry in the stream: no two entries come from one version twice. */
 function entryKey(event: TimelineEvent, index: number): string {
     return `${event.entityType}#${event.entityId}#${String(event.version)}#${String(index)}`;
+}
+
+/** What names the record an entry is a version of. */
+function entryKeyOf(event: TimelineEvent): string {
+    return `${event.entityType}#${event.entityId}`;
+}
+
+/**
+ * The newest version of each record in the stream, as =record#version=: for each
+ * record that has versions, the one with the highest number is the current
+ * version. An act that is not a version is never current.
+ */
+function newestVersions(events: readonly TimelineEvent[]): ReadonlySet<string> {
+    const highest = new Map<string, number>();
+    for (const event of events) {
+        if (!isAChange(event.kind) && event.kind !== 'raised') continue;
+        highest.set(
+            entryKeyOf(event),
+            Math.max(highest.get(entryKeyOf(event)) ?? 0, event.version),
+        );
+    }
+    return new Set(
+        events
+            .filter(
+                (event) =>
+                    (isAChange(event.kind) || event.kind === 'raised') &&
+                    highest.get(entryKeyOf(event)) === event.version,
+            )
+            .map((event) => `${entryKeyOf(event)}#${String(event.version)}`),
+    );
 }
 
 /** The key of the version one before this one, which is what an entry is read against. */
@@ -138,7 +322,7 @@ function startsADay(event: TimelineEvent, before: TimelineEvent | undefined): bo
 }
 
 /** The column the rail sits in, which every row of the stream shares. */
-const ROW = 'grid grid-cols-[5.6rem_1.6rem_1fr]';
+const ROW = 'grid grid-cols-[8rem_1.6rem_1fr]';
 
 function DayDivider({ at }: { readonly at: string }): ReactNode {
     const { language } = useTranslation();
@@ -225,19 +409,38 @@ function Entry({
     before,
     actions,
     head,
+    actorPath,
+    actorPicture,
+    current,
 }: {
     readonly event: TimelineEvent;
     readonly before: TimelineEvent | undefined;
     readonly actions: ReactNode;
     readonly head: ReactNode;
+    readonly actorPath: ((actor: string) => string | undefined) | undefined;
+    readonly actorPicture: ((actor: string) => string | null) | undefined;
+    /** Whether this entry is the newest version of its record. */
+    readonly current: boolean;
 }): ReactNode {
     const { t, language } = useTranslation();
     const changed = changedFields(event, before);
     const quiet = isAnAct(event.kind);
     return (
-        <li className={ROW}>
-            <div className="pr-2.5 pt-[9px] text-right font-mono text-[0.72rem] text-ink-faint">
-                {timeOf(event.at, language)}
+        <li className={`${ROW} scroll-mt-4`} data-ms={parseTimestamp(event.at).getTime()}>
+            <div className="flex items-start justify-end gap-1.5 pr-2.5 pt-[6px]">
+                <span className="pt-[3px] font-mono text-[0.72rem] text-ink-faint">
+                    {timeOf(event.at, language)}
+                </span>
+                {current && (
+                    <span
+                        className="pt-[3px] text-up"
+                        title={t('timeline.current')}
+                        aria-label={t('timeline.current')}
+                        role="img"
+                    >
+                        <Icon name="current" size={16} />
+                    </span>
+                )}
             </div>
             <div className="relative flex justify-center">
                 <span className="absolute inset-y-0 w-px bg-line" aria-hidden />
@@ -246,33 +449,42 @@ function Entry({
                     aria-hidden
                 />
             </div>
-            <div className={`grid min-w-0 gap-1.5 pb-3.5 pl-1.5 pt-1 ${quiet ? 'opacity-90' : ''}`}>
-                {head ?? <DefaultHead event={event} changed={changed} />}
-                {event.commentary !== '' && (
-                    <p className="text-[0.8rem] text-ink-muted italic">{event.commentary}</p>
+            <div className="flex min-w-0 items-start gap-2.5 pb-3.5 pl-1.5 pt-1">
+                {actorPicture !== undefined && event.actor !== '' && (
+                    <Avatar name={event.actor} size="md" src={actorPicture(event.actor)} />
                 )}
-                {changed.length > 0 && before !== undefined ? (
-                    <ChangeTable changed={changed} before={before} />
-                ) : isAChange(event.kind) && before !== undefined ? (
-                    /*
-                     * A version that changed no field against the one before
-                     * it, such as a revert to values already held, has nothing
-                     * to show. The whole record is for a first version, which
-                     * has nothing to be read against.
-                     */
-                    <p className="text-[0.8rem] text-ink-faint">{t('timeline.noChanges')}</p>
-                ) : (
-                    <Facts event={event} before={before} />
-                )}
-                {actions}
-                {actions === undefined && isAnAct(event.kind) && (
-                    <p className="text-[0.78rem] text-ink-faint">{t('timeline.notRevertible')}</p>
-                )}
-                {actions === undefined && isAChange(event.kind) && (
-                    <p className="text-[0.78rem] text-ink-faint">
-                        {t('timeline.changeNotOffered')}
-                    </p>
-                )}
+                <div className={`grid min-w-0 flex-1 gap-1.5 ${quiet ? 'opacity-90' : ''}`}>
+                    {head === undefined ? (
+                        <DefaultHead event={event} changed={changed} actorPath={actorPath} />
+                    ) : (
+                        <>
+                            {head}
+                            {event.commentary !== '' && (
+                                <p className="text-[0.8rem] text-ink-muted italic">
+                                    {event.commentary}
+                                </p>
+                            )}
+                        </>
+                    )}
+                    {changed.length > 0 && before !== undefined ? (
+                        <Details>
+                            <ChangeTable changed={changed} before={before} />
+                        </Details>
+                    ) : isAChange(event.kind) && before !== undefined ? (
+                        /*
+                         * A version that changed no field against the one before
+                         * it, such as a revert to values already held, has nothing
+                         * to show. The whole record is for a first version, which
+                         * has nothing to be read against.
+                         */
+                        <p className="text-[0.8rem] text-ink-faint">{t('timeline.noChanges')}</p>
+                    ) : ownFields(event).length > 0 ? (
+                        <Details>
+                            <Facts event={event} before={before} />
+                        </Details>
+                    ) : null}
+                    {actions}
+                </div>
             </div>
         </li>
     );
@@ -289,34 +501,72 @@ function Entry({
 function DefaultHead({
     event,
     changed,
+    actorPath,
 }: {
     readonly event: TimelineEvent;
     readonly changed: readonly TimelineField[];
+    readonly actorPath: ((actor: string) => string | undefined) | undefined;
 }): ReactNode {
     const { t, language } = useTranslation();
     const badge = [entityOf(event), event.entityId === '' ? '' : shortId(event.entityId)]
         .filter((part) => part !== '')
         .join(' ');
     return (
-        <div className="flex flex-wrap items-baseline gap-2">
-            <Tag tone={kindTone(event.kind)}>{t(`timeline.kind.${event.kind}`)}</Tag>
-            <span className="font-mono text-[0.72rem] text-ink-faint">
-                {badge}
-                {event.version > 0 && ` v${String(event.version)}`}
-            </span>
-            {event.reasonCode !== '' && (
-                <span className="rounded border border-warn/40 bg-warn/10 px-1.5 font-mono text-[0.68rem] text-warn">
-                    {event.reasonCode}
+        <>
+            <div className="flex flex-wrap items-baseline gap-2">
+                <Tag tone={kindTone(event.kind)}>{t(`timeline.kind.${event.kind}`)}</Tag>
+                <span className="font-mono text-[0.72rem] text-ink-faint">
+                    {badge}
+                    {event.version > 0 && ` v${String(event.version)}`}
                 </span>
+                {event.reasonCode !== '' && (
+                    <span className="rounded border border-warn/40 bg-warn/10 px-1.5 font-mono text-[0.68rem] text-warn">
+                        {event.reasonCode}
+                    </span>
+                )}
+                {event.actor !== '' && <Actor name={event.actor} path={actorPath?.(event.actor)} />}
+                <span className="text-sm text-ink-muted">{sentenceOf(event, changed)}</span>
+                <span className="ml-auto text-[0.72rem] text-ink-faint">
+                    {formatDateTime(event.at, language)}
+                </span>
+            </div>
+            {event.commentary !== '' && (
+                <p className="text-[0.8rem] text-ink-muted italic">{event.commentary}</p>
             )}
-            {event.actor !== '' && (
-                <span className="text-sm font-semibold text-ink">{event.actor}</span>
-            )}
-            <span className="text-sm text-ink-muted">{sentenceOf(event, changed)}</span>
-            <span className="ml-auto text-[0.72rem] text-ink-faint">
-                {formatDateTime(event.at, language)}
-            </span>
-        </div>
+        </>
+    );
+}
+
+/** Who wrote the entry, opening their page when the caller says it can be opened. */
+function Actor({
+    name,
+    path,
+}: {
+    readonly name: string;
+    readonly path: string | undefined;
+}): ReactNode {
+    return path === undefined ? (
+        <span className="text-sm font-semibold text-ink">{name}</span>
+    ) : (
+        <Link
+            to={path}
+            className="text-sm font-semibold text-ink underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+        >
+            {name}
+        </Link>
+    );
+}
+
+/** An entry's detail, kept behind its header until a reader asks for it. */
+function Details({ children }: { readonly children: ReactNode }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <details className="group">
+            <summary className="w-fit cursor-pointer text-[0.78rem] text-ink-faint select-none hover:text-ink">
+                {t('timeline.details')}
+            </summary>
+            <div className="mt-1.5">{children}</div>
+        </details>
     );
 }
 

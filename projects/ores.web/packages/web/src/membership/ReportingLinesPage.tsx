@@ -31,6 +31,8 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ReportingLineDialog } from '../access/PersonForms.js';
 import { useHolds } from '../access/holds.js';
+import { actorPathFor } from '../access/PeoplePage.js';
+import { useActorPictures } from '../access/PersonRef.js';
 import { Crumbs } from '../refdata/shared.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
@@ -47,6 +49,7 @@ import {
     type Shape,
 } from './organisation.js';
 import { PersonSearch } from './PersonSearch.js';
+import { RecentLineChanges } from './RecentLineChanges.js';
 
 /** The entity whose versions carry a person's reporting line. */
 const ACCOUNT_ENTITY = 'ores.iam.account';
@@ -99,6 +102,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     const queries = useQueryClient();
     const holds = useHolds();
     const mayReadAccounts = holds('iam::accounts:read');
+    const actorPicture = useActorPictures();
     const mayChange = holds('iam::accounts:update');
     const mayReadRoles = holds('iam::roles:read');
     const [selectedId, setSelectedId] = useState('');
@@ -347,7 +351,13 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
             )}
 
             {tab === 'history' && (
-                <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,1fr)]">
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+                    <RecentLineChanges
+                        nodes={nodes}
+                        nameFor={nameFor}
+                        selectedId={selected?.accountId ?? ''}
+                        onSelect={setSelectedId}
+                    />
                     <section className="space-y-4">
                         <Field label={t('membership.reporting.person')}>
                             <PersonSearch
@@ -362,6 +372,8 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                         {story.isError && <Notice tone="error">{story.error.message}</Notice>}
                         {story.data !== undefined && (
                             <Timeline
+                                actorPath={actorPathFor(mayReadAccounts)}
+                                actorPicture={actorPicture}
                                 hideUnchanged
                                 timeline={lineTimeline(
                                     story.data,
@@ -371,7 +383,6 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                             />
                         )}
                     </section>
-                    {card}
                 </div>
             )}
 

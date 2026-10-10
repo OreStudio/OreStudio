@@ -125,8 +125,8 @@ describe('a person’s own requests', () => {
                 client.setQueryData(['my-requests'], { items: [mine()], total: 1 });
                 client.setQueryData(['my-access'], { roles: [] });
             },
-            <MyAccessPage tenantName="Acme" />,
-            '/access',
+            <RequestsPage />,
+            '/requests',
         );
 
         expect(html).toContain('Your requests');
@@ -144,10 +144,23 @@ describe('a person’s own requests', () => {
         expect(html).toMatch(/<button[^>]*>Withdraw<\/button>/);
     });
 
-    it('draws no panel at all when the person has asked for nothing', () => {
+    it('says so when the person has asked for nothing', () => {
         const html = render(
             (client) => {
                 client.setQueryData(['my-requests'], { items: [], total: 0 });
+                client.setQueryData(['my-access'], { roles: [] });
+            },
+            <RequestsPage />,
+            '/requests',
+        );
+
+        expect(html).toContain('You have made no requests.');
+    });
+
+    it('does not repeat the requests on the My access screen', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(['my-requests'], { items: [mine()], total: 1 });
                 client.setQueryData(['my-access'], { roles: [] });
             },
             <MyAccessPage tenantName="Acme" />,
@@ -176,8 +189,8 @@ describe('a person’s own requests', () => {
                 });
                 client.setQueryData(['my-access'], { roles: [] });
             },
-            <MyAccessPage tenantName="Acme" />,
-            '/access',
+            <RequestsPage />,
+            '/requests',
         );
 
         expect(html).toContain('Refused');
@@ -264,6 +277,9 @@ describe('the request queue', () => {
     it('names who asked, what for and why, and opens the request from the row', () => {
         const html = render(
             (client) => {
+                client.setQueryData(['my-access'], {
+                    roles: [{ roleId: 'r', permissionCodes: ['iam::roles:assign'] }],
+                });
                 client.setQueryData(['request-queue'], {
                     items: [queued()],
                     total: 1,
@@ -285,6 +301,9 @@ describe('the request queue', () => {
     it('says nothing is waiting rather than drawing an empty table', () => {
         const html = render(
             (client) => {
+                client.setQueryData(['my-access'], {
+                    roles: [{ roleId: 'r', permissionCodes: ['iam::roles:assign'] }],
+                });
                 client.setQueryData(['request-queue'], { items: [], total: 0, answered: [] });
             },
             <RequestsPage />,
@@ -297,6 +316,9 @@ describe('the request queue', () => {
     it('lists what has been answered below the queue', () => {
         const html = render(
             (client) => {
+                client.setQueryData(['my-access'], {
+                    roles: [{ roleId: 'r', permissionCodes: ['iam::roles:assign'] }],
+                });
                 client.setQueryData(['request-queue'], {
                     items: [],
                     total: 0,
@@ -320,13 +342,17 @@ describe('the request queue', () => {
         expect(html).toContain('Nothing is waiting.');
         expect(html).toContain('Answered');
         expect(html).toContain('Approved');
-        expect(html).toContain('by priya');
+        expect(html).toContain('>priya<');
+        expect(html).toContain('by ');
         expect(html).toContain('Induction done.');
     });
 
     it('keeps a held request in the table, because nobody has answered it', () => {
         const html = render(
             (client) => {
+                client.setQueryData(['my-access'], {
+                    roles: [{ roleId: 'r', permissionCodes: ['iam::roles:assign'] }],
+                });
                 client.setQueryData(['request-queue'], {
                     items: [queued({ stateCode: 'held' })],
                     total: 1,
@@ -477,15 +503,15 @@ describe('the requests menu item', () => {
         );
     }
 
-    it('appears for somebody who may assign roles', () => {
+    it('appears for somebody who may assign roles, who also decides there', () => {
         const html = shell(['iam::roles:assign']);
 
         expect(html).toContain('href="/requests"');
         expect(html).toContain('>Requests</a>');
     });
 
-    it('is left out of the menu for somebody who may not', () => {
-        expect(shell(['refdata::currencies:read'])).not.toContain('href="/requests"');
+    it('appears for every member, because Requests holds their own', () => {
+        expect(shell(['refdata::currencies:read'])).toContain('href="/requests"');
     });
 });
 

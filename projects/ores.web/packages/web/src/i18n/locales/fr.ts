@@ -88,6 +88,8 @@ const fr: SourceCatalogue = {
     access: {
         allAreas: 'Tous les domaines',
         areaFilter: 'Domaine',
+        permissionsShowing: 'Affichage de {from} à {to} sur {total} autorisations',
+        resourcesHeld: '{count} ressources',
         hub: {
             title: 'Organisation',
             lead: 'Les personnes de ce locataire, et à qui elles rendent compte.',
@@ -157,7 +159,6 @@ const fr: SourceCatalogue = {
             why: 'Pourquoi',
             noRole: 'Aucun rôle. La personne peut se connecter mais ne peut encore rien faire.',
             takeAway: 'Retirer',
-            currentVersion: 'C’est la version actuelle.',
             notYourself: 'Vous ne pouvez pas vous retirer un rôle.',
             whatTheyAllow: 'Ce que ces rôles permettent',
             giveTitle: 'Accorder un rôle à {name}',
@@ -213,6 +214,7 @@ const fr: SourceCatalogue = {
             saveTitle: 'Enregistrer {role} ?',
             andMore: 'et {count} de plus',
             reaches: '{people} ont ce rôle. Le changement les atteint sous 30 minutes.',
+            holdersShowing: 'Affichage de {from} à {to} sur {total} personnes',
             nowAllows: 'Permet désormais',
             noLongerAllows: 'Ne permet plus',
             whyChange: 'Pourquoi ce changement',
@@ -242,6 +244,9 @@ const fr: SourceCatalogue = {
         },
     },
 
+    people: {
+        outsideView: 'Une personne hors de votre périmètre',
+    },
     inbox: {
         state: {
             waiting: 'En attente',
@@ -273,6 +278,8 @@ const fr: SourceCatalogue = {
             submit: 'Demander',
         },
         mine: {
+            none: 'Vous n’avez fait aucune demande.',
+            lead: 'Les demandes que vous avez faites, et la réponse reçue.',
             title: 'Vos demandes',
             asked: 'demandé le {date}',
             youWrote: 'Vous avez écrit : {reason}',
@@ -696,6 +703,7 @@ const fr: SourceCatalogue = {
             common_other: 'Autre raison',
         },
         tabs: {
+            history: 'Historique',
             details: 'Détails',
             contact: 'Contact',
             access: 'Accès',
@@ -789,7 +797,7 @@ const fr: SourceCatalogue = {
             protect: 'Protéger mon compte',
             protectWhy: 'Votre mot de passe, vos connexions et vos sessions :',
             know: 'Savoir ce que je peux faire',
-            knowWhy: 'Ce que vos rôles vous permettent de faire :',
+            knowWhy: 'Les rôles que vous détenez et ce qu’ils vous permettent :',
             failed: "Vos accès n'ont pas pu être lus, donc les panneaux d'administration ne sont pas proposés. {reason}",
         },
         save: {
@@ -1576,9 +1584,9 @@ const fr: SourceCatalogue = {
 
     timeline: {
         empty: 'Rien ne lui est encore arrivé.',
+        details: 'Détails',
+        current: 'Version actuelle',
         field: 'Champ',
-        notRevertible: 'Cette entrée relate un fait, il n’y a donc rien à rétablir.',
-        changeNotOffered: 'Rétablir un champ modifié n’est pas proposé ici.',
         noChanges: 'Aucune modification',
         kind: {
             raised: 'Créé',
@@ -2442,6 +2450,8 @@ const fr: SourceCatalogue = {
     },
 
     version: {
+        tenant: 'Locataire : {name}',
+        party: 'Partie : {name}',
         client: 'Client : {version}',
         server: 'Serveur : {version}',
         serverUnknown: 'Serveur : inconnu',
@@ -2914,6 +2924,8 @@ const fr: SourceCatalogue = {
             zoomReset: 'Réinitialiser',
             noReports: 'Personne ne rend compte à cette personne.',
             findPerson: 'Chercher une personne',
+            recentChanges: 'Lignes hiérarchiques modifiées récemment',
+            noRecentChanges: 'Aucune ligne hiérarchique n’a changé récemment.',
             person: 'Personne',
             tabs: { tree: 'Arbre', chart: 'Organigramme', history: 'Historique' },
             you: 'Vous',

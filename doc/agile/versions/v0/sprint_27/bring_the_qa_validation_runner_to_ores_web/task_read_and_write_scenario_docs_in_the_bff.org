@@ -87,6 +87,7 @@ task and name that file in the Command column.
 - A save writes the whole doc back with the doc's own line end and a final line end. A byte order mark is dropped.
 - A note goes in one table cell. A line end becomes "; " and a pipe becomes "/", as in the Qt runner.
 - The scan does not follow a symbolic link. Before a read or a write, the real path of the file must sit inside the real doc root, else =PathEscapeError=.
+- The tests read the two scenario fixtures of the =@ores/org= package. A second copy would repeat their :ID: in the corpus.
 - Nothing calls compass. A test renders the current =doc_test_scenario.org.mustache= template and parses it, so a change to the template shows up there.
 - A call for the Tests queue reads one index entry per doc and caches each scenario summary by file time and size. The first call after a start scans the tree.
 

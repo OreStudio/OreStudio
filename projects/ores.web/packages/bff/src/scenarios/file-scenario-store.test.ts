@@ -39,7 +39,7 @@ import { UnknownStepError, type RunInput, type StepOutcome } from './scenario-do
 import { InvalidDocIdError, PathEscapeError } from './scenario-store.js';
 
 const fixture = (name: string): string =>
-    readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8');
+    readFileSync(new URL(`../../../org/src/fixtures/${name}`, import.meta.url), 'utf8');
 
 const SINGLE = 'A607D53A-66E3-4211-AE3B-069A603F509F';
 const MULTI = 'B12A8474-32FF-45B7-BFD8-FF1B42845DAD';

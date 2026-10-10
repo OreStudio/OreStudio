@@ -33,7 +33,7 @@ import {
 } from './scenario-doc.js';
 
 const fixture = (name: string): string =>
-    readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8');
+    readFileSync(new URL(`../../../org/src/fixtures/${name}`, import.meta.url), 'utf8');
 
 const single = fixture('single_client_scenario.org');
 const multi = fixture('multi_client_scenario.org');

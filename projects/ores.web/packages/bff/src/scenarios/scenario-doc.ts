@@ -95,8 +95,13 @@ export interface StepOutcome extends StepRef {
     readonly notes: string;
 }
 
+/**
+ * A tester's save. It carries no overall state: the state follows from the
+ * steps once the save is in. A scenario closes when no step is pending, and
+ * then it is FAILED if any step failed, else PASSED. `completedAt` is written
+ * only when the save closes the scenario.
+ */
 export interface RunInput {
-    readonly state: ScenarioState;
     readonly steps: readonly StepOutcome[];
     readonly completedAt: string;
     readonly branch: string;
@@ -342,6 +347,8 @@ function newResultSection(level: number, outcome: StepOutcome): string[] {
 
 export interface RecordedRun {
     readonly text: string;
+    /** The state the scenario has after the save. */
+    readonly state: ScenarioState;
     /** The steps this save wrote, in the order the doc has them. */
     readonly changed: readonly StepRef[];
 }
@@ -415,10 +422,28 @@ export function recordRun(text: string, input: RunInput): RecordedRun {
         }
     }
 
+    const outcomeOf = new Map<Located, StepStatus>();
+    for (const outcome of input.steps) {
+        const step = located.find(
+            (l) => l.ref.client === outcome.client && l.ref.title === outcome.title,
+        );
+        if (step !== undefined) outcomeOf.set(step, outcome.status);
+    }
+    const statuses = located.map(
+        (l) =>
+            outcomeOf.get(l) ??
+            stepStatus(l.result === undefined ? '' : (fieldTable(l.result).get('status') ?? '')),
+    );
+    const state: ScenarioState = statuses.includes('PENDING')
+        ? 'PENDING'
+        : statuses.includes('FAIL')
+          ? 'FAILED'
+          : 'PASSED';
+
     const resultsTable = results.tables[0];
     const run: [string, string][] = [
-        ['Status', input.state],
-        ['Completed at', input.completedAt],
+        ['Status', state],
+        ['Completed at', state === 'PENDING' ? '' : input.completedAt],
         ['Branch', input.branch],
         ['Commit', input.commit],
         ['Worktree', input.worktree],
@@ -453,7 +478,7 @@ export function recordRun(text: string, input: RunInput): RecordedRun {
                 doc.lines,
                 infoTable.firstLine,
                 infoTable.lastLine,
-                [['State', input.state]],
+                [['State', state]],
                 13,
             ),
         });
@@ -465,6 +490,7 @@ export function recordRun(text: string, input: RunInput): RecordedRun {
     }
     return {
         text: lines.join(doc.eol) + doc.eol,
+        state,
         changed: located.filter((l) => written.has(l)).map((l) => l.ref),
     };
 }

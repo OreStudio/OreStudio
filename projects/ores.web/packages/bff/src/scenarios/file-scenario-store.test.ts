@@ -56,9 +56,8 @@ const storyDoc = `:PROPERTIES:
 A story.
 `;
 
-function input(steps: StepOutcome[], state: RunInput['state'] = 'FAILED'): RunInput {
+function input(steps: StepOutcome[]): RunInput {
     return {
-        state,
         steps,
         completedAt: '2026-10-11T09:00:00Z',
         branch: 'feature/x',
@@ -288,7 +287,7 @@ describe('recording a run', () => {
         expect(before.find((x) => x.id === MULTI)?.steps.pass).toBe(2);
         await s.record(
             MULTI,
-            input([{ client: 'blue', title: 'Read', status: 'PASS', notes: '' }], 'PENDING'),
+            input([{ client: 'blue', title: 'Read', status: 'PASS', notes: '' }]),
         );
         const after = await s.list();
         expect(after.find((x) => x.id === MULTI)?.steps.pass).toBe(3);

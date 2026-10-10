@@ -89,8 +89,8 @@ struct netting_set_identifier final {
      * @brief The legal entity of the firm the identifier belongs to.
      *
      * References the parties table. It is the party of the identifier's netting set, and fixed for
-     * the identifier's life. Two legal entities may each hold a set that answers to the same ORE
-     * id.
+     * the identifier's life. The insert trigger derives it from the netting set and ignores what
+     * the caller sent. Two legal entities may each hold a set that answers to the same ORE id.
      */
     boost::uuids::uuid party_id;
 

@@ -50,14 +50,14 @@ two bundle tasks, because both depend on it.
   per tenant and party. The ORE alias is unique per tenant, party, scheme and
   value.
 - A netting set has a required =party_id=. The CSA and the netting set
-  identifier have a fixed =party_id= and take the party of their netting set.
-  The two are equal by construction in the publish functions and the mapper;
-  no pinned key holds them equal (see Notes).
+  identifier have a fixed =party_id= that the insert trigger derives from
+  their netting set, so the two cannot differ (see Notes).
 - The DQ publish functions check what a party already holds within that party
   and write the party. The ORE netting set mapper takes the importing party.
   The ORE import resolves an ORE id through the session's visible parties.
-- pgTAP covers: the same code and the same ORE id under two parties, every CSA
-  taking the party of its netting set, and an unknown party being refused.
+- pgTAP covers: the same code and the same ORE id under two parties, a CSA and
+  an identifier taking the party of their netting set whichever party they
+  name, and a CSA on a missing netting set being refused.
 - A fresh ACME provision passes, and the root party holds the sample data.
 
 * Plan
@@ -78,12 +78,13 @@ two bundle tasks, because both depend on it.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Places that look up an agreement, a set or an identifier by number or code | 5 SQL files and 2 C++ files, listed in Notes | =grep -rIn= over =projects= for the table names and =netting_set= | 8744fb7165 |
-| Sample data held by Acme Corporation Plc after a fresh ACME provision | 8 agreements, 19 netting sets, 7 CSAs, 19 ORE ids, 2 sample portfolios | =compass sql= count by =party_id= over the four tables and =ores_refdata_portfolios_tbl= | f12bba9723 |
-| Other ACME parties holding sample data | 0 (HK, UK, US and the system party) | the same query | f12bba9723 |
-| Identifiers and set-agreement pairs whose party differs from their set's | 0 identifiers, 0 set-agreement pairs, 1 CSA written by the generated unit test | =compass sql= joins on =netting_set_id= and =netting_agreement_id= | f12bba9723 |
-| pgTAP | 314 tests in 33 files pass; =test.sql= is a loader with no plan | =pg_prove= as the test DDL role over =projects/ores.sql/test/*.sql= | f12bba9723 |
-| C++ suites | refdata, ORE (3), DQ (4), shell (16) and trading (4) executables pass | =compass test run= with one =-R= filter per suite | f12bba9723 |
-| Web | =counterpartyState.test.ts= 14 of 14 pass | =npx vitest run= in =ores.web/packages/web= | f12bba9723 |
+| Sample data held by Acme Corporation Plc after a fresh ACME provision | 8 agreements, 19 netting sets, 7 CSAs, 19 ORE ids, 2 sample portfolios | =compass sql= count by =party_id= over the four tables and =ores_refdata_portfolios_tbl= | this commit |
+| Other ACME parties holding sample data | 0 (HK, UK, US) | the same query | this commit |
+| CSAs, identifiers and set-agreement pairs whose party differs from their set's | 0, 0 and 0 | =compass sql= joins on =netting_set_id= and =netting_agreement_id= | this commit |
+| pgTAP | 311 tests pass in 32 files; =test.sql= is a loader with no plan; =synthetic_market_data_generation_config_scope_test.sql= fails on a provisioned database because it hard-codes another environment's DDL role, and is not changed here | =pg_prove= as the test DDL role over =projects/ores.sql/test/*.sql= | this commit |
+| Codegen tests | 1315 pass, 1 fails: =test_trade_type_catalogue.py::test_a_routed_table_checks_exactly_the_codes_routed_to_it=, which fails the same way on =origin/main= in a full run and passes alone | =pytest projects/ores.codegen/tests= | this commit |
+| C++ suites | refdata, ORE, DQ, shell and trading passed on the pinned-key design (f12bba9723); the run for this commit is the local check gate | =compass test run= with one =-R= filter per suite | f12bba9723 |
+| Web | =counterpartyState.test.ts= 14 of 14 pass | =npx vitest run= in =ores.web/packages/web= | this commit |
 
 * Notes
 
@@ -118,11 +119,14 @@ isolation policy for select. This closes the open question: the netting set
 *Decisions taken while building.*
 
 - The CSA and the netting set identifier carry a fixed =party_id=, with a
-  foreign key to parties. They have no pinned key to the party of their set. A
-  pin is correct, but the generated eventing integration test cannot satisfy
-  it: the generator seeds a parent netting set under one party and the CSA
-  under another, and the pin refuses the CSA. The publish functions and the ORE
-  mapper write the set's party, so the two stay equal by construction.
+  foreign key to parties. The insert trigger derives it from the netting set
+  and ignores what the caller sent, as the trades trigger derives the party
+  from the book. This needed a general form of =party_id_from_book_id=, which
+  is tied to books and portfolios. The new =party_id_from_parent= feature in
+  =ores.codegen= names the parent table, the referencing column and the
+  message of the existence check. A pinned key was tried first and dropped:
+  the generated eventing test seeds the set under one party and the CSA under
+  another, and the pin refuses the CSA.
 - Party isolation follows the pattern of netting sets, agreements and books: a
   tenant policy for all commands, generated with the table, and a handwritten
   restrictive policy for select on =party_id= in
@@ -131,7 +135,8 @@ isolation policy for select. This closes the open question: the netting set
   tests of the child tables seed parties the session cannot see.
 - The ORE netting set mapper takes the importing party. An ORE document names
   no legal entity of the firm, so the importer supplies it. Only tests call it
-  today.
+  today. The DQ publish functions still pass the target party explicitly; the
+  trigger agrees with it.
 
 *Known follow-up.* =ores_refdata_csa_eligible_currencies_tbl= has no
 =party_id= and no party policy. Its rows are reachable through CSAs that the
@@ -171,15 +176,17 @@ legal entity of the firm. Two parties can each hold the same agreement number,
 netting set code and ORE id. A netting set must belong to a party. A fresh ACME
 provision gives Acme Corporation Plc 8 agreements, 19 netting sets, 7 CSAs, 19
 ORE ids and the 2 sample portfolios, and gives the other parties none, as the
-profile intends. All 314 pgTAP tests, the C++ suites for refdata, ORE, DQ,
-shell and trading, and the web test pass.
+profile intends. The pgTAP tests, the C++ suites for refdata, ORE, DQ, shell
+and trading, and the web test pass. The codegen suite has one failure,
+=test_trade_type_catalogue.py::test_a_routed_table_checks_exactly_the_codes_routed_to_it=,
+which fails the same way on =origin/main= in a full run and passes alone.
 
 Not as first planned:
 
-- The CSA and the identifier have no pinned key to the party of their set. The
-  generated eventing integration test cannot satisfy it, so the two are kept
-  equal by the publish functions and the mapper. A direct write can still name
-  two parties; the generated unit test wrote one such CSA.
+- The CSA and the identifier take their party from their netting set by a
+  trigger, not by a pinned key. The pin conflicted with the generated eventing
+  test, so the work added the =party_id_from_parent= feature to =ores.codegen=
+  and the models use it.
 - A lookup that names no party does not raise an error. The publish functions
   default to the tenant's root party, as before.
 - The ORE import names no party. It resolves an ORE id through the session's

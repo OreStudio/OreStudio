@@ -31,15 +31,15 @@
  * - A publish naming a party the tenant lacks is refused
  * - An agreement whose LEI names no counterparty is skipped
  * - A second party holds the same netting set codes and ORE ids as the first
- * - A CSA takes the party of its netting set
- * - A CSA naming a party the tenant lacks is refused
+ * - A CSA takes the party of its netting set, whichever party it names
+ * - A CSA on a netting set that does not exist is refused
  *
  * Run with: pg_prove -d <database> test/refdata_ore_sample_netting_test.sql
  */
 
 begin;
 
-select plan(17);
+select plan(19);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -363,19 +363,35 @@ select is(
     0::bigint,
     'every CSA has the party of its netting set');
 
-select throws_like(
+select lives_ok(
     $$insert into ores_refdata_csas_tbl (tenant_id, id, version, netting_set_id, party_id,
           is_active, modified_by, performed_by, change_reason_code, change_commentary)
-      select ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0, ns.id,
-          '00000000-0000-0000-0000-0000000cf0ff'::uuid, false,
+      select ores_utility_system_tenant_id_fn(), '00000000-0000-0000-0000-0000000cf0c1'::uuid,
+          0, ns.id, '00000000-0000-0000-0000-0000000cf001'::uuid, false,
           current_user, current_user, 'system.new_record', 'test'
       from ores_refdata_netting_sets_tbl ns
       where ns.tenant_id = ores_utility_system_tenant_id_fn()
         and ns.party_id = '00000000-0000-0000-0000-0000000cf002'::uuid
         and ns.code = 'NS-BARC-PRICING-01'
         and ns.valid_to = ores_utility_infinity_timestamp_fn()$$,
-    '%Invalid party_id%',
-    'a CSA cannot name a party the tenant lacks');
+    'a CSA that names another party is written');
+
+select is(
+    (select party_id::text from ores_refdata_csas_tbl
+     where id = '00000000-0000-0000-0000-0000000cf0c1'::uuid
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    '00000000-0000-0000-0000-0000000cf002',
+    'a CSA takes the party of its netting set, not the party it names');
+
+select throws_like(
+    $$insert into ores_refdata_csas_tbl (tenant_id, id, version, netting_set_id, party_id,
+          is_active, modified_by, performed_by, change_reason_code, change_commentary)
+      values (ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0,
+          '00000000-0000-0000-0000-0000000cf0fe'::uuid,
+          '00000000-0000-0000-0000-0000000cf001'::uuid, false,
+          current_user, current_user, 'system.new_record', 'test')$$,
+    '%No active netting set found%',
+    'a CSA cannot be written for a netting set that does not exist');
 
 select * from finish();
 

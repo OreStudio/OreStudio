@@ -89,6 +89,19 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- The netting_set_id row states the owning party, so the party is not
+    -- the caller's to supply: derive it and ignore what was sent. A copy
+    -- the caller made could only drift from the row it belongs to.
+    select party_id into NEW.party_id
+    from ores_refdata_netting_sets_tbl
+    where tenant_id = NEW.tenant_id
+      and id = NEW.netting_set_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    if not found then
+        raise exception 'Invalid netting_set_id: %. No active netting set found with this id.', NEW.netting_set_id
+            using errcode = '23503';
+    end if;
+
     -- Validate netting_set_id (soft FK to ores_refdata_netting_sets_tbl)
     if not exists (
         select 1 from ores_refdata_netting_sets_tbl

@@ -65,8 +65,9 @@ uuid_gen()
 The legal entity of the firm the identifier belongs to.
 
 References the parties table. It is the party of the identifier's netting set,
-and fixed for the identifier's life. Two legal entities may each hold a set
-that answers to the same ORE id.
+and fixed for the identifier's life. The insert trigger derives it from the
+netting set and ignores what the caller sent. Two legal entities may each hold
+a set that answers to the same ORE id.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
@@ -143,6 +144,13 @@ Other schemes keep the per-set key above.
 | name      | columns                                  | unique | current_only | where_extra       |
 |-----------+------------------------------------------+--------+--------------+-------------------|
 | ore_alias | tenant_id, party_id, id_scheme, id_value | true   | true         | id_scheme = 'ORE' |
+
+** Party id from parent
+:PROPERTIES:
+:parent_table:         ores_refdata_netting_sets_tbl
+:parent_column:        netting_set_id
+:parent_error_message: Invalid netting_set_id: %. No active netting set found with this id.
+:END:
 
 * Foreign keys
 

@@ -209,9 +209,11 @@ is a key on the trade's booking rather than a membership table.
   composite key from the trade's booking to the set enforces this, so
   a trade cannot be filed in another counterparty's set.
 - A CSA references exactly one set, and a set has at most one active
-  CSA at a time. A CSA has the legal entity of its set. The writers take
-  it from the set, and a set shows only to the parties that can see its
-  legal entity, so a session cannot file a CSA on another entity's set.
+  CSA at a time. A CSA has the legal entity of its set. The insert
+  trigger derives it from the set and ignores the party the caller sent,
+  so the two cannot differ. A set shows only to the parties that can see
+  its legal entity, so a session cannot file a CSA on another entity's
+  set.
 - An ORE netting set id names one set within a legal entity. Another
   legal entity may use the same id for its own set.
 - Moving a trade to another set is a change to the trade's booking and

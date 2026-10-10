@@ -28,6 +28,7 @@
  * - Other schemes allow one value on several netting sets
  * - A new version of an alias keeps its name
  * - A deleted alias frees its ORE id for another netting set of the party
+ * - An identifier takes the party of its netting set, whichever party it names
  * - An identifier must name an existing netting set and a known scheme
  *
  * Run with: pg_prove -d <database> test/refdata_netting_set_identifiers_test.sql
@@ -35,7 +36,7 @@
 
 begin;
 
-select plan(9);
+select plan(10);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -141,6 +142,21 @@ select throws_like(
     $$select pg_temp.add_identifier('00000000-0000-0000-0000-0000000a5000', 'NSITEST_NO_SCHEME', 'X')$$,
     '%NSITEST_NO_SCHEME%',
     'an identifier must use a known scheme');
+
+insert into ores_refdata_netting_set_identifiers_tbl (tenant_id, id, version,
+    netting_set_id, party_id, id_scheme, id_value, modified_by, performed_by,
+    change_reason_code, change_commentary)
+values (ores_utility_system_tenant_id_fn(), '00000000-0000-0000-0000-0000000a5b01'::uuid, 0,
+    '00000000-0000-0000-0000-0000000a5002'::uuid,
+    '00000000-0000-0000-0000-0000000a5a01'::uuid, 'INTERNAL', 'NSITEST_PARTY',
+    current_user, current_user, 'system.new_record', 'test');
+
+select is(
+    (select party_id::text from ores_refdata_netting_set_identifiers_tbl
+     where id = '00000000-0000-0000-0000-0000000a5b01'::uuid
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    '00000000-0000-0000-0000-0000000a5a02',
+    'an identifier takes the party of its netting set, not the party it names');
 
 select * from finish();
 

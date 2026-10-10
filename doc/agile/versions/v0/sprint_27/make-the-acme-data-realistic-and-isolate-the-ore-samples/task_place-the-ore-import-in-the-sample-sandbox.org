@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/place-the-ore-import-in-the-sample-sandbox
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A sample import lands in the party's sample sandbox. The importer creates its po
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

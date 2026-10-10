@@ -83,7 +83,9 @@ struct netting_set final {
     /**
      * @brief The legal entity of the firm the set belongs to.
      *
-     * References the parties table. When the set has an agreement it equals the agreement's.
+     * References the parties table. Fixed for the set's life, so the CSAs and the identifiers that
+     * take their party from the set can never be left on another party. When the set has an
+     * agreement it equals the agreement's.
      */
     boost::uuids::uuid party_id;
 

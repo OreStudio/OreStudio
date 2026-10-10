@@ -184,6 +184,16 @@ begin
                 NEW.version::text,
                 current_version::text);
         end if;
+        if exists (
+            select 1 from "ores_refdata_netting_sets_tbl"
+            where tenant_id = NEW.tenant_id
+              and id = NEW.id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+              and "party_id" is distinct from NEW."party_id"
+        ) then
+            raise exception 'party_id cannot change: it is fixed for the life of the netting_set.'
+                using errcode = '23514';
+        end if;
         NEW.version = current_version + 1;
         -- clock_timestamp(), not current_timestamp: current_timestamp is
         -- frozen for the whole transaction, so a same-transaction

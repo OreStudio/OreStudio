@@ -102,12 +102,14 @@ std::nullopt
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :natural_key: true
+:fixed:       true
 :END:
 
 The legal entity of the firm the set belongs to.
 
-References the parties table. When the set has an agreement it equals the
-agreement's.
+References the parties table. Fixed for the set's life, so the CSAs and the
+identifiers that take their party from the set can never be left on another
+party. When the set has an agreement it equals the agreement's.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()

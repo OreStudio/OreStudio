@@ -33,13 +33,14 @@
  * - A second party holds the same netting set codes and ORE ids as the first
  * - A CSA takes the party of its netting set, whichever party it names
  * - A CSA on a netting set that does not exist is refused
+ * - A netting set cannot move to another party
  *
  * Run with: pg_prove -d <database> test/refdata_ore_sample_netting_test.sql
  */
 
 begin;
 
-select plan(19);
+select plan(20);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -392,6 +393,19 @@ select throws_like(
           current_user, current_user, 'system.new_record', 'test')$$,
     '%No active netting set found%',
     'a CSA cannot be written for a netting set that does not exist');
+
+select throws_like(
+    $$insert into ores_refdata_netting_sets_tbl (tenant_id, id, version, code, party_id,
+          modified_by, performed_by, change_reason_code, change_commentary)
+      select tenant_id, id, version, code, '00000000-0000-0000-0000-0000000cf001'::uuid,
+          current_user, current_user, 'system.new_record', 'test'
+      from ores_refdata_netting_sets_tbl
+      where tenant_id = ores_utility_system_tenant_id_fn()
+        and party_id = '00000000-0000-0000-0000-0000000cf002'::uuid
+        and code = 'NS-BARC-PRICING-01'
+        and valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%party_id cannot change%',
+    'a netting set cannot move to another party');
 
 select * from finish();
 

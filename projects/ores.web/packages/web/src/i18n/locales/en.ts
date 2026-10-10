@@ -88,6 +88,7 @@ export const en: SourceCatalogue = {
             organisation: 'Organisation',
             roles: 'Roles',
             refdata: 'Reference data',
+            marketdata: 'Market data',
             access: 'My access',
             whereIWork: 'Where I work',
             profile: 'My profile',
@@ -2879,6 +2880,7 @@ export const en: SourceCatalogue = {
                 memberships: 'Memberships',
                 centres: 'Business centres',
                 counterparties: 'Counterparties',
+                mixture: 'Mixture',
             },
         },
         fields: {
@@ -2958,8 +2960,34 @@ export const en: SourceCatalogue = {
             unit_code: 'Code',
             unit_type_id: 'Unit type',
             business_centre_code: 'Business centre',
+            config_id: 'Collection',
+            base_currency_code: 'Base currency',
+            quote_currency_code: 'Quote currency',
+            source_name: 'Source name',
+            ore_key: 'ORE key',
+            process_type: 'Engine',
+            ticks_per_hour: 'Ticks per hour',
+            price_source: 'Initial price from',
+            gmm_initial_price: 'Initial price',
+            vintage_source: 'Vintage source',
+            vintage_date: 'Vintage date',
+            enabled: 'Enabled',
+            auto_start: 'Starts with the service',
+            mean: 'Mean (μ)',
+            stdev: 'Deviation (σ)',
+            weight: 'Weight (w)',
+            component_index: 'Index',
         },
         choices: {
+            process_type: {
+                geometric: 'Geometric',
+                arithmetic: 'Arithmetic',
+                ornstein_uhlenbeck: 'Mean reverting (Ornstein-Uhlenbeck)',
+            },
+            price_source: {
+                fixed: 'A fixed price',
+                vintage: 'A market data vintage',
+            },
             kind: {
                 fixed_date: 'Fixed date',
                 nth_weekday_of_month: 'Nth weekday of the month',
@@ -3147,6 +3175,67 @@ export const en: SourceCatalogue = {
         },
     },
 
+    marketdata: {
+        area: {
+            title: 'Market data',
+            lead: 'The prices and curves the platform receives or generates.',
+            screens: {
+                fxFeeds: 'FX price feeds',
+                fxFeedsBody:
+                    'Compose the synthetic FX feeds: the pair, the engine and the mixture each one draws from.',
+            },
+        },
+        fxFeeds: {
+            title: 'FX price feeds',
+            lead: 'The synthetic FX feeds of your party. A feed produces nothing until it is enabled and started.',
+            add: 'Add feed',
+            addTitle: 'Add an FX price feed',
+            pair: 'Pair',
+            samePair: 'The base and quote currencies must differ.',
+            removeWarning:
+                'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',
+        },
+        mixture: {
+            lead: 'The Gaussians the feed draws each return from. Change the values and read what they imply before you save them.',
+            none: 'No component yet. Add one to give the feed a process.',
+            up: 'Up',
+            discardRow: 'Discard',
+            add: 'Add component',
+            sum: 'Weight sum {sum}. The weights stay as typed, and the draw normalises them.',
+            sumPending: 'Weight sum: waiting for every weight to be a number.',
+            problems: {
+                empty: 'The mixture needs at least one component.',
+                number: 'Every mean, deviation and weight must be a number.',
+                negative: 'A deviation or a weight cannot be negative.',
+                weights: 'The weights must add up to more than zero.',
+            },
+            unsaved: '{count} components to write. Nothing reaches the feed until you save.',
+            save: 'Save mixture',
+            discard: 'Discard changes',
+            removeAfter: 'To delete a saved component, save or discard your changes first.',
+            componentTitle: 'Mixture component',
+            removeTitle: 'Delete this component?',
+        },
+        preview: {
+            distribution: 'Return distribution',
+            meanReverting:
+                'A mean-reverting engine reads the first component only: its weight is the reversion speed κ and its deviation is the volatility σ. The sample paths show the result.',
+            nothing:
+                'No component has a deviation above zero, so there is no distribution to draw.',
+            density:
+                'The solid line is the mixture, with the weights normalised. Each dashed line is one weighted component.',
+            paths: 'Sample paths',
+            initialPrice: 'Initial price',
+            ticks: 'Ticks per path',
+            pathCount: 'Paths',
+            seed: 'Seed',
+            reseed: 'Reseed',
+            waiting:
+                'The paths are drawn when the mixture can be saved, the price is above zero, the ticks are 2 to 5000 and the paths are 1 to 50.',
+            unsaved:
+                'The server draws these paths from the values on the screen, with the {process} engine. Nothing is saved.',
+        },
+    },
     membership: {
         where: {
             title: 'Where I work',

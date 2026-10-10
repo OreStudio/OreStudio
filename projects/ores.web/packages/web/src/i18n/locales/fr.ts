@@ -82,6 +82,7 @@ const fr: SourceCatalogue = {
             organisation: 'Organisation',
             roles: 'Rôles',
             refdata: 'Données de référence',
+            marketdata: 'Données de marché',
             access: 'Mes accès',
             whereIWork: 'Où je travaille',
             profile: 'Mon profil',
@@ -2922,6 +2923,7 @@ const fr: SourceCatalogue = {
                 memberships: 'Appartenances',
                 centres: 'Centres d’affaires',
                 counterparties: 'Contreparties',
+                mixture: 'Mélange',
             },
         },
         fields: {
@@ -3001,8 +3003,34 @@ const fr: SourceCatalogue = {
             unit_code: 'Code',
             unit_type_id: 'Type d’unité',
             business_centre_code: 'Centre d’affaires',
+            config_id: 'Collection',
+            base_currency_code: 'Devise de base',
+            quote_currency_code: 'Devise de cotation',
+            source_name: 'Nom de la source',
+            ore_key: 'Clé ORE',
+            process_type: 'Moteur',
+            ticks_per_hour: 'Ticks par heure',
+            price_source: 'Prix initial depuis',
+            gmm_initial_price: 'Prix initial',
+            vintage_source: 'Source du millésime',
+            vintage_date: 'Date du millésime',
+            enabled: 'Activé',
+            auto_start: 'Démarre avec le service',
+            mean: 'Moyenne (μ)',
+            stdev: 'Écart type (σ)',
+            weight: 'Poids (w)',
+            component_index: 'Indice',
         },
         choices: {
+            process_type: {
+                geometric: 'Géométrique',
+                arithmetic: 'Arithmétique',
+                ornstein_uhlenbeck: 'Retour à la moyenne (Ornstein-Uhlenbeck)',
+            },
+            price_source: {
+                fixed: 'Un prix fixe',
+                vintage: 'Un millésime de données de marché',
+            },
             kind: {
                 fixed_date: 'Date fixe',
                 nth_weekday_of_month: 'Nième jour de la semaine du mois',
@@ -3193,6 +3221,68 @@ const fr: SourceCatalogue = {
         },
     },
 
+    marketdata: {
+        area: {
+            title: 'Données de marché',
+            lead: 'Les prix et les courbes que la plateforme reçoit ou génère.',
+            screens: {
+                fxFeeds: 'Flux de prix FX',
+                fxFeedsBody:
+                    'Composez les flux FX synthétiques : la paire, le moteur et le mélange de chacun.',
+            },
+        },
+        fxFeeds: {
+            title: 'Flux de prix FX',
+            lead: "Les flux FX synthétiques de votre partie. Un flux ne produit rien tant qu'il n'est pas activé et démarré.",
+            add: 'Ajouter un flux',
+            addTitle: 'Ajouter un flux de prix FX',
+            pair: 'Paire',
+            samePair: 'Les devises de base et de cotation doivent être différentes.',
+            removeWarning:
+                "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
+        },
+        mixture: {
+            lead: 'Les gaussiennes dont le flux tire chaque rendement. Changez les valeurs et lisez ce qu’elles impliquent avant de les enregistrer.',
+            none: 'Aucune composante. Ajoutez-en une pour donner un processus au flux.',
+            up: 'Monter',
+            discardRow: 'Écarter',
+            add: 'Ajouter une composante',
+            sum: 'Somme des poids {sum}. Les poids restent tels que saisis, et le tirage les normalise.',
+            sumPending: 'Somme des poids : en attente que chaque poids soit un nombre.',
+            problems: {
+                empty: 'Le mélange doit avoir au moins une composante.',
+                number: 'Chaque moyenne, écart type et poids doit être un nombre.',
+                negative: 'Un écart type ou un poids ne peut pas être négatif.',
+                weights: 'La somme des poids doit être supérieure à zéro.',
+            },
+            unsaved: "{count} composantes à écrire. Rien n'atteint le flux avant l'enregistrement.",
+            save: 'Enregistrer le mélange',
+            discard: 'Annuler les modifications',
+            removeAfter:
+                "Pour supprimer une composante enregistrée, enregistrez ou annulez d'abord vos modifications.",
+            componentTitle: 'Composante du mélange',
+            removeTitle: 'Supprimer cette composante ?',
+        },
+        preview: {
+            distribution: 'Distribution des rendements',
+            meanReverting:
+                'Un moteur à retour à la moyenne ne lit que la première composante : son poids est la vitesse de retour κ et son écart type est la volatilité σ. Les trajectoires montrent le résultat.',
+            nothing:
+                "Aucune composante n'a un écart type supérieur à zéro, donc il n'y a pas de distribution à tracer.",
+            density:
+                'La ligne pleine est le mélange, avec les poids normalisés. Chaque ligne en tirets est une composante pondérée.',
+            paths: 'Trajectoires simulées',
+            initialPrice: 'Prix initial',
+            ticks: 'Ticks par trajectoire',
+            pathCount: 'Trajectoires',
+            seed: 'Graine',
+            reseed: 'Nouvelle graine',
+            waiting:
+                'Les trajectoires sont tracées quand le mélange peut être enregistré, que le prix est supérieur à zéro, que les ticks vont de 2 à 5000 et les trajectoires de 1 à 50.',
+            unsaved:
+                "Le serveur tire ces trajectoires des valeurs à l'écran, avec le moteur {process}. Rien n'est enregistré.",
+        },
+    },
     membership: {
         where: {
             title: 'Où je travaille',

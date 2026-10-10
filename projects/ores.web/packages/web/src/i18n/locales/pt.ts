@@ -87,6 +87,7 @@ const pt: SourceCatalogue = {
             organisation: 'Organização',
             roles: 'Papéis',
             refdata: 'Dados de referência',
+            marketdata: 'Dados de mercado',
             access: 'O meu acesso',
             whereIWork: 'Onde trabalho',
             profile: 'O meu perfil',
@@ -2902,6 +2903,7 @@ const pt: SourceCatalogue = {
                 memberships: 'Pertenças',
                 centres: 'Centros de negócios',
                 counterparties: 'Contrapartes',
+                mixture: 'Mistura',
             },
         },
         fields: {
@@ -2981,8 +2983,34 @@ const pt: SourceCatalogue = {
             unit_code: 'Código',
             unit_type_id: 'Tipo de unidade',
             business_centre_code: 'Centro de negócios',
+            config_id: 'Coleção',
+            base_currency_code: 'Moeda base',
+            quote_currency_code: 'Moeda cotada',
+            source_name: 'Nome da fonte',
+            ore_key: 'Chave ORE',
+            process_type: 'Motor',
+            ticks_per_hour: 'Ticks por hora',
+            price_source: 'Preço inicial a partir de',
+            gmm_initial_price: 'Preço inicial',
+            vintage_source: 'Fonte da vintage',
+            vintage_date: 'Data da vintage',
+            enabled: 'Ativo',
+            auto_start: 'Arranca com o serviço',
+            mean: 'Média (μ)',
+            stdev: 'Desvio padrão (σ)',
+            weight: 'Peso (w)',
+            component_index: 'Índice',
         },
         choices: {
+            process_type: {
+                geometric: 'Geométrico',
+                arithmetic: 'Aritmético',
+                ornstein_uhlenbeck: 'Reversão à média (Ornstein-Uhlenbeck)',
+            },
+            price_source: {
+                fixed: 'Um preço fixo',
+                vintage: 'Uma vintage de dados de mercado',
+            },
             kind: {
                 fixed_date: 'Data fixa',
                 nth_weekday_of_month: 'Enésimo dia da semana do mês',
@@ -3170,6 +3198,68 @@ const pt: SourceCatalogue = {
         },
     },
 
+    marketdata: {
+        area: {
+            title: 'Dados de mercado',
+            lead: 'Os preços e as curvas que a plataforma recebe ou gera.',
+            screens: {
+                fxFeeds: 'Fluxos de preços FX',
+                fxFeedsBody:
+                    'Componha os fluxos FX sintéticos: o par, o motor e a mistura de cada um.',
+            },
+        },
+        fxFeeds: {
+            title: 'Fluxos de preços FX',
+            lead: 'Os fluxos FX sintéticos da sua parte. Um fluxo não produz nada até estar ativo e arrancado.',
+            add: 'Adicionar fluxo',
+            addTitle: 'Adicionar um fluxo de preços FX',
+            pair: 'Par',
+            samePair: 'As moedas base e cotada têm de ser diferentes.',
+            removeWarning:
+                'O fluxo para se estiver a correr. A mistura é apagada primeiro, depois o fluxo. O histórico de cada um fica.',
+        },
+        mixture: {
+            lead: 'As gaussianas de que o fluxo tira cada retorno. Altere os valores e leia o que implicam antes de os guardar.',
+            none: 'Ainda sem componentes. Adicione uma para dar um processo ao fluxo.',
+            up: 'Subir',
+            discardRow: 'Descartar',
+            add: 'Adicionar componente',
+            sum: 'Soma dos pesos {sum}. Os pesos ficam como escritos, e o sorteio normaliza-os.',
+            sumPending: 'Soma dos pesos: à espera que cada peso seja um número.',
+            problems: {
+                empty: 'A mistura precisa de pelo menos uma componente.',
+                number: 'Cada média, desvio padrão e peso tem de ser um número.',
+                negative: 'Um desvio padrão ou um peso não pode ser negativo.',
+                weights: 'A soma dos pesos tem de ser maior que zero.',
+            },
+            unsaved: '{count} componentes por escrever. Nada chega ao fluxo até guardar.',
+            save: 'Guardar mistura',
+            discard: 'Descartar alterações',
+            removeAfter:
+                'Para apagar uma componente guardada, guarde ou descarte primeiro as suas alterações.',
+            componentTitle: 'Componente da mistura',
+            removeTitle: 'Apagar esta componente?',
+        },
+        preview: {
+            distribution: 'Distribuição dos retornos',
+            meanReverting:
+                'Um motor de reversão à média lê só a primeira componente: o peso é a velocidade de reversão κ e o desvio padrão é a volatilidade σ. As trajetórias mostram o resultado.',
+            nothing:
+                'Nenhuma componente tem desvio padrão acima de zero, por isso não há distribuição para desenhar.',
+            density:
+                'A linha cheia é a mistura, com os pesos normalizados. Cada linha tracejada é uma componente ponderada.',
+            paths: 'Trajetórias simuladas',
+            initialPrice: 'Preço inicial',
+            ticks: 'Ticks por trajetória',
+            pathCount: 'Trajetórias',
+            seed: 'Semente',
+            reseed: 'Nova semente',
+            waiting:
+                'As trajetórias são desenhadas quando a mistura pode ser guardada, o preço é maior que zero, os ticks vão de 2 a 5000 e as trajetórias de 1 a 50.',
+            unsaved:
+                'O servidor tira estas trajetórias dos valores no ecrã, com o motor {process}. Nada é guardado.',
+        },
+    },
     membership: {
         where: {
             title: 'Onde trabalho',

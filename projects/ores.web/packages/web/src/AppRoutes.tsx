@@ -86,6 +86,8 @@ import { CurrenciesPage, CurrencyPage } from './refdata/currencies.js';
 import { CalendarPage, CalendarsPage } from './refdata/calendars.js';
 import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
+import { MarketDataPage } from './marketdata/MarketDataPage.js';
+import { FxFeedPage, FxFeedsPage } from './marketdata/fxFeeds.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ProfilePage } from './pages/ProfilePage.js';
@@ -710,6 +712,42 @@ export function AppRoutes({
                     shell,
                     (view) => (
                         <RefdataPage mode={view.mode} />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/market-data"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <MarketDataPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/market-data/fx-feeds"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <FxFeedsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/market-data/fx-feeds/:id"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <FxFeedPage />
                     ),
                     'workspace',
                 )}

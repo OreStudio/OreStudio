@@ -50,6 +50,11 @@ The web screens read once and never learn that a record changed elsewhere. Add l
 | [[id:ED7D9486-7BA6-4E74-A64F-096FA9AD8EA7][Move the change registry to the canonical event subjects]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 | [[id:2263A9B5-802A-4C95-B2BA-0B301CDEF523][Analyse who may listen to which tenant and party events]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 | [[id:708FDAB5-D9F2-40F8-914C-35924974325D][Declare what each screen and form needs, and report failures by operation]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
+| [[id:7B502802-07D4-4A32-9EE4-88AE093318B6][Carry the tenant in a header on every entity event]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
+| [[id:10DA4C60-4E4D-4C8A-A49B-971061BF8669][Carry the party in a header on party-owned events]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
+| [[id:0BFCA44C-59DC-4D79-AB16-EC186C717C87][Listen by tenant and party in the BFF]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
+| [[id:8D03C5D3-6C63-4334-96B7-9AF57D7B44FB][Listen by tenant in ores.qt]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:01886727-C01E-4460-AEC6-A2FCC31996CC][Document the tenant isolation of events]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 
 * Decisions
 
@@ -80,7 +85,7 @@ Decided by the product owner:
 
 Known limit, found in task 1:
 
-- A published entity event names no tenant, in its subject or its payload, and ores.qt ignores the tenant it logs. The web follows ores.qt. A change in one tenant can mark a screen stale in another, which costs one refresh that reads only the reader's own data. The product owner finds this unacceptable: a session may listen only to the tenants and parties it may see. The task "Analyse who may listen to which tenant and party events" decides how.
+- A published entity event used to name no tenant, and ores.qt ignores the tenant it logs. The product owner found this unacceptable: a session may listen only to the tenants and parties it may see. The analysis found no rule for events in the NATS entity protocol, so the protocol now defines one: the tenant and the party travel in the =X-Tenant-Id= and =X-Party-Id= headers, the subject grammar is unchanged, and the subscriber enforces. The web BFF passes an event to a session only when it may hear it. ores.qt is outside this repository and still hears every tenant.
 
 Open decisions for the product owner:
 

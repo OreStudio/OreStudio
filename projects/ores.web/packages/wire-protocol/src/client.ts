@@ -986,16 +986,24 @@ export class OresClient {
      */
     subscribeToEvents(
         relative: string,
-        onEvent: (change: { readonly at: string }) => void,
+        onEvent: (change: {
+            readonly at: string;
+            readonly tenantId: string | undefined;
+            readonly partyId: string | undefined;
+        }) => void,
     ): () => void {
         const subscribe = this.#transport.subscribe;
         if (subscribe === undefined) {
             return () => undefined;
         }
-        return subscribe.call(this.#transport, relative, (payload) => {
+        return subscribe.call(this.#transport, relative, (payload, envelope) => {
             try {
                 const decoded = this.#codec.decodeAs(payload, changeEventSchema);
-                onEvent({ at: decoded.occurred_at });
+                onEvent({
+                    at: decoded.occurred_at,
+                    tenantId: envelope.tenantId,
+                    partyId: envelope.partyId,
+                });
             } catch {
                 // An event this build does not understand is one it cannot act on.
             }

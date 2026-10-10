@@ -63,7 +63,8 @@ plus the tenant:
 | =version=        | =int=  | The version the change produced                                |
 | =occurred_at=    | =text= | UTC time of the change                                         |
 | =correlation_id= | =text= | The request that caused the change, when one is known          |
-| =tenant_id=      | =text= | The tenant that owns the row; consumed in process, not published |
+| =tenant_id=      | =text= | The tenant that owns the row; published in the =X-Tenant-Id= header, not in the payload |
+| =party_id=       | =text= | The party that owns the row, on a party-owned table only; published in the =X-Party-Id= header |
 
 The channel name (first argument to =pg_notify=) follows the convention
 =ores_<table_base_name>=, e.g. =ores_compute_workunits= for
@@ -101,6 +102,9 @@ PostgreSQL LISTEN connection. On each incoming notification it:
 3. Publishes the typed event on the in-process =event_bus=.
 4. Publishes an =entity_change_event= -- the entity's name, the changed ids
    and the tenant -- on the same bus.
+5. Publishes a =published_entity_event<Event>= -- the typed event with the
+   tenant and the party the store reported -- on the same bus. The generated
+   registrar subscribes to this one and publishes to NATS.
 
 Mappings are registered during application startup. The generated
 per-entity registrar does it:
@@ -155,13 +159,16 @@ name identifies it on the in-process bus, and it is not published to NATS.
 * Stage 4 — Client pickup
 
 A NATS subscriber registers interest in a prefix's wildcard and receives the
-typed event as the payload. The web server holds one subscription per tenant
-and entity for all the sessions watching it and relays the events to each
-browser on =GET /api/events=; see
+typed event as the payload. The tenant and the party are in the envelope, as
+=X-Tenant-Id= and =X-Party-Id=; the protocol specification defines them (Events,
+Tenancy of an event). The web server holds one subscription per entity for all the
+sessions watching it and relays the events to each browser on =GET /api/events=; see
 [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]]. The registry listens on the
 wildcard of each collection's prefix, such as =iam.v1.accounts_events.>=, and
-relays the time of the change. The event names no tenant, so the web server
-cannot yet keep one tenant's change from another tenant's session.
+relays the time of the change. It tells a session only of an event whose tenant
+is the session's own or the system tenant's, and, for a member, whose party the
+member works in. An event with no tenant header is told to nobody. The broker
+does not enforce this, so the rule is kept by the subscriber.
 
 * Verifying eventing
 

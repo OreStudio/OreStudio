@@ -29,6 +29,7 @@
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
@@ -133,10 +134,13 @@ TEST_CASE("write_trade_booking_publishes_an_event", tags) {
     REQUIRE(nats.is_connected());
 
     using event_type = ores::trading::messaging::trade_booking_event;
-    auto sub = bus.subscribe<event_type>([&nats](const event_type& e) {
+    using published_type = ev::domain::published_entity_event<event_type>;
+    auto sub = bus.subscribe<published_type>([&nats](const published_type& p) {
         // One payload is addressed by three subjects, so the subject is the
-        // collection's prefix and the action the event reports.
-        ev::service::publish_entity_event(nats, ev::domain::event_subject<event_type>(e.action), e);
+        // collection's prefix and the action the event reports. The tenant
+        // travels in the headers.
+        ev::service::publish_entity_event(
+            nats, ev::domain::event_subject<event_type>(p.event.action), p);
     });
 
     event_source.register_entity_event_mapping<event_type>("ores_trading_trade_bookings");
@@ -242,6 +246,9 @@ TEST_CASE("write_trade_booking_publishes_an_event", tags) {
                                      << msg.data.size() << " bytes";
     }
     REQUIRE_FALSE(received.empty());
+    // The envelope names the tenant that owns the row, so a relay can pass the
+    // event on only to a reader of that tenant.
+    REQUIRE(received.front().headers.contains(std::string(ores::nats::headers::x_tenant_id)));
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
                             << " matching NATS notification(s) for trade_booking " << id_str;
 

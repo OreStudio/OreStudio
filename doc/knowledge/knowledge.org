@@ -136,6 +136,9 @@ features. Each component's own page carries its script inventory.
 - [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the one shape and
   behaviour of every screen that lists and maintains records: paging, the record
   page, writes and change reasons, history, related records, icons and states.
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the look and feel of a screen for an entity
+  made of several kinds of record, such as a person: the list, the page, the Edit
+  pattern, people links, photos and flags, server paging, history, who sees what.
 
 * Security
 

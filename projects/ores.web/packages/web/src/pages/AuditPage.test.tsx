@@ -43,6 +43,7 @@ import {
     formatReadAt,
     isZeroAddress,
     orderLoginRecords,
+    withoutNeverSignedIn,
     withinPeriod,
 } from './AuditPage.js';
 
@@ -244,6 +245,19 @@ describe('the audit sign-ins screen', () => {
         expect(html).not.toContain('0.0.0.0');
     });
 
+    it('links the account name to the page of the person', () => {
+        const html = render('/audit?tab=failures');
+
+        expect(html).toContain(`href="/people/${USERNAME}"`);
+    });
+
+    it('offers to hide the accounts that never signed in', () => {
+        const html = render('/audit?tab=failures');
+
+        expect(html).toContain('Hide accounts that never signed in');
+        expect(html).not.toContain('checked=""');
+    });
+
     it('reads the authentication event log, newest first', () => {
         const html = render('/audit?tab=events');
 
@@ -280,6 +294,14 @@ describe('the audit helpers', () => {
         expect(isZeroAddress('0.0.0.0')).toBe(true);
         expect(isZeroAddress('')).toBe(true);
         expect(isZeroAddress('198.51.100.7')).toBe(false);
+    });
+
+    it('drops the accounts that never signed in, whether the time is empty or zero', () => {
+        const signedIn = loginInfo({ lastLogin: '2026-09-29 21:03:00Z' });
+        const never = loginInfo({ lastLogin: '1970-01-01 00:00:00Z' });
+
+        expect(withoutNeverSignedIn([signedIn, never])).toEqual([signedIn]);
+        expect(withoutNeverSignedIn([never])).toEqual([]);
     });
 
     it('orders the most failed first, then the accounts that have signed in', () => {

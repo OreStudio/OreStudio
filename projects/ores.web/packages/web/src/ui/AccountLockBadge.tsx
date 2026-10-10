@@ -23,6 +23,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type { BadgePresentation } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
+import { useTranslation } from '../i18n/Provider.js';
 import { Label } from './Label.js';
 
 /**
@@ -42,6 +43,12 @@ export function useBadge(code: string): BadgePresentation | undefined {
  * domain draws it: the locked badge in red, the unlocked badge in green.
  */
 export function AccountLockBadge({ locked }: { readonly locked: boolean }): ReactNode {
+    const { t } = useTranslation();
     const badge = useBadge(locked ? 'account_locked' : 'account_unlocked');
-    return <Label text={badge?.label ?? (locked ? 'Locked' : 'Unlocked')} badge={badge} />;
+    return (
+        <Label
+            text={badge?.label ?? (locked ? t('common.locked') : t('common.unlocked'))}
+            badge={badge}
+        />
+    );
 }

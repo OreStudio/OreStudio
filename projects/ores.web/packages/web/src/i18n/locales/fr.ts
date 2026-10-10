@@ -467,6 +467,7 @@ const fr: SourceCatalogue = {
             never: 'Jamais',
             neverSignedIn: 'Jamais connecté',
             hideNeverSignedIn: 'Masquer les comptes jamais connectés',
+            allHidden: 'Tous les enregistrements sont masqués. Décochez le filtre pour les voir.',
         },
         events: {
             title: 'Événements d’authentification',
@@ -3219,6 +3220,8 @@ const fr: SourceCatalogue = {
     },
 
     common: {
+        locked: 'Verrouillé',
+        unlocked: 'Déverrouillé',
         loading: 'Chargement...',
         notAvailable: 'Cette page n’est pas disponible pour vous.',
         clear: 'Effacer',

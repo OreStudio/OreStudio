@@ -25,6 +25,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
 import type { Account, LoginInfo } from '@ores/wire-protocol/browser';
 import { uuid } from '@ores/wire-protocol/browser';
+import { TranslationProvider } from '../i18n/Provider.js';
 import { RescueView } from './RescuePage.js';
 
 /**
@@ -78,9 +79,11 @@ function loginInfo(overrides: Partial<LoginInfo> = {}): LoginInfo {
 function render(row: Account, state: LoginInfo | null): string {
     return renderToStaticMarkup(
         <QueryClientProvider client={new QueryClient()}>
-            <MemoryRouter>
-                <RescueView account={row} loginInfo={state} onReload={async () => undefined} />
-            </MemoryRouter>
+            <TranslationProvider>
+                <MemoryRouter>
+                    <RescueView account={row} loginInfo={state} onReload={async () => undefined} />
+                </MemoryRouter>
+            </TranslationProvider>
         </QueryClientProvider>,
     );
 }

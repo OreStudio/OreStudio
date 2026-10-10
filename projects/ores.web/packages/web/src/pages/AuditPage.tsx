@@ -32,6 +32,7 @@ import type {
 import { api, type AuditPeriod } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
+import { actorPathFor } from '../access/PeoplePage.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { AccountLockBadge } from '../ui/AccountLockBadge.js';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
@@ -187,16 +188,18 @@ function AccountCell({
     }
     const name =
         username !== undefined && username !== '' ? username : (nameOf.get(accountId) ?? '');
+    const personPath = actorPathFor(true)(name);
     return (
         <div className="space-y-0.5">
             {name !== '' && (
                 <div>
-                    <Link
-                        className="text-accent-bright hover:underline"
-                        to={`/people/${encodeURIComponent(name)}`}
-                    >
-                        {name}
-                    </Link>
+                    {personPath === undefined ? (
+                        <span>{name}</span>
+                    ) : (
+                        <Link className="text-accent-bright hover:underline" to={personPath}>
+                            {name}
+                        </Link>
+                    )}
                 </div>
             )}
             <div className="font-mono text-xs text-ink-faint">{accountId}</div>
@@ -553,6 +556,11 @@ function StatisticsPanel({
     );
 }
 
+/** The login records of accounts that have signed in at least once. */
+export function withoutNeverSignedIn(rows: readonly LoginInfo[]): readonly LoginInfo[] {
+    return rows.filter((row) => !isZeroTimestamp(row.lastLogin));
+}
+
 /**
  * The failed attempts, and the lock state beside them.
  *
@@ -571,9 +579,8 @@ function FailuresPanel({
 }): ReactNode {
     const { t } = useTranslation();
     const [hideNeverSignedIn, setHideNeverSignedIn] = useState(false);
-    const ordered = orderLoginRecords(query.data?.loginInfo ?? []).filter(
-        (row) => !hideNeverSignedIn || !isZeroTimestamp(row.lastLogin),
-    );
+    const records = query.data?.loginInfo ?? [];
+    const ordered = orderLoginRecords(hideNeverSignedIn ? withoutNeverSignedIn(records) : records);
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
@@ -602,7 +609,11 @@ function FailuresPanel({
                     {failureReason(query.error, t('auditSignIns.failures.notAllowed'))}
                 </Notice>
             ) : ordered.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('auditSignIns.failures.empty')}</p>
+                <p className="text-sm text-ink-muted">
+                    {records.length > 0
+                        ? t('auditSignIns.failures.allHidden')
+                        : t('auditSignIns.failures.empty')}
+                </p>
             ) : (
                 <table className="w-full text-left text-sm">
                     <thead className="text-left text-xs text-ink-faint">

@@ -22,6 +22,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TranslationProvider } from '../i18n/Provider.js';
 import { AccountLockBadge } from './AccountLockBadge.js';
 
 /** The catalogue as the server answers it, holding the two lock badges. */
@@ -54,7 +55,9 @@ function render(locked: boolean, catalogue: typeof CATALOGUE | undefined): strin
     }
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
-            <AccountLockBadge locked={locked} />
+            <TranslationProvider>
+                <AccountLockBadge locked={locked} />
+            </TranslationProvider>
         </QueryClientProvider>,
     );
 }

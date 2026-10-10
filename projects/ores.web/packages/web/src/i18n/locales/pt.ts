@@ -466,6 +466,7 @@ const pt: SourceCatalogue = {
             never: 'Nunca',
             neverSignedIn: 'Nunca iniciou sessão',
             hideNeverSignedIn: 'Ocultar contas que nunca entraram',
+            allHidden: 'Todos os registos estão ocultos. Desmarque o filtro para os ver.',
         },
         events: {
             title: 'Eventos de autenticação',
@@ -3196,6 +3197,8 @@ const pt: SourceCatalogue = {
     },
 
     common: {
+        locked: 'Bloqueada',
+        unlocked: 'Desbloqueada',
         loading: 'A carregar...',
         notAvailable: 'Esta página não está disponível para si.',
         clear: 'Limpar',

@@ -470,6 +470,7 @@ export const en: SourceCatalogue = {
             never: 'Never',
             neverSignedIn: 'Never signed in',
             hideNeverSignedIn: 'Hide accounts that never signed in',
+            allHidden: 'Every record is hidden. Clear the filter to see them.',
         },
         events: {
             title: 'Authentication events',
@@ -3174,6 +3175,8 @@ export const en: SourceCatalogue = {
     },
 
     common: {
+        locked: 'Locked',
+        unlocked: 'Unlocked',
         loading: 'Loading...',
         notAvailable: 'This is not available to you.',
         clear: 'Clear',

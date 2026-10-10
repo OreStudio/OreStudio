@@ -94,7 +94,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | raise is not atomic: a failed link write leaves a request with no parts, decided by count | approval_lifecycle.cpp | Accept | A failed link write now withdraws the request and rethrows. The store has no transaction across the two writes |
+| 2 | Duplicate or unknown part codes at raise | approval_lifecycle.cpp | Accept | Empty codes are rejected before any write. Duplicates are dropped. An unknown code fails on the foreign key. A test covers all three |
+| 3 | One person cannot approve two parts | decide function | Accept as intended | Stated in the function header. A test covers it |
+| 4 | Hold, resume and withdraw name no part | approval_lifecycle.cpp | Accept as intended | Stated in the function header. These fall back to any part permission in the handler. A test covers withdraw on a request with parts |
+| 5 | N+1 reads and the open rule repeated in SQL | approval_lifecycle.cpp | Decline the join, accept the comment | There are four parts, so the cost is small. A comment links the two copies of the rule |
+| 6 | Policy rows for kinds that name parts | seed | Note | No kind names parts yet. The gate task adds them and closes the queue gap |
+| 7 | Comment on the system tenant read | approval_lifecycle.cpp | Accept | Added |
 
 * Result
 

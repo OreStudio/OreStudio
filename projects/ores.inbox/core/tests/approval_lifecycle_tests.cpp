@@ -253,6 +253,49 @@ TEST_CASE("an_answer_names_a_part_the_request_needs", tags) {
     CHECK(lifecycle.request(id)->state_code == "waiting");
 }
 
+TEST_CASE("a_part_code_is_listed_once_and_must_exist", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+    const auto kind = lifecycle.kind("iam.role_grant");
+
+    const auto raised = lifecycle.raise(*kind, "Open a book", asker.id, {"finance", "finance"});
+    CHECK(lifecycle.parts_of(boost::uuids::to_string(raised.id)).size() == 1);
+
+    CHECK_THROWS(lifecycle.raise(*kind, "Open a book", asker.id, {"no_such_part"}));
+    CHECK_THROWS(lifecycle.raise(*kind, "Open a book", asker.id, {""}));
+}
+
+TEST_CASE("one_person_cannot_approve_two_parts_of_one_request", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto decider = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(
+        *lifecycle.kind("iam.role_grant"), "Change a book", asker.id, {"finance", "operations"});
+    const auto id = boost::uuids::to_string(raised.id);
+
+    const auto first = lifecycle.decide(id, raised.version, "approve", decider.id, "", "finance");
+    REQUIRE(first.outcome == "ok");
+    CHECK_THROWS(lifecycle.decide(id, first.version, "approve", decider.id, "", "operations"));
+    CHECK(lifecycle.request(id)->state_code == "waiting");
+}
+
+TEST_CASE("the_asker_withdraws_a_request_that_names_parts", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(
+        *lifecycle.kind("iam.role_grant"), "Open a book", asker.id, {"controller", "finance"});
+    const auto id = boost::uuids::to_string(raised.id);
+
+    const auto r = lifecycle.decide(id, raised.version, "withdraw", asker.id, "");
+    CHECK(r.outcome == "ok");
+    CHECK(r.state_code == "withdrawn");
+}
+
 TEST_CASE("a_refusal_from_a_part_refuses_the_request", tags) {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);

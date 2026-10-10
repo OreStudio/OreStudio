@@ -49,6 +49,10 @@
  * The caller checks that the person holds the part's decider permission. A
  * request with no part rows is decided by the count above.
  *
+ * One person approves a request once, whatever the part. A person who holds the
+ * decider permission of two parts answers for one of them, and a second person
+ * answers for the other. Hold, resume and withdraw name no part.
+ *
  * The function runs as the caller, so row-level security scopes every read to
  * the caller's tenant. It answers one row: the outcome (ok, missing, conflict,
  * invalid), a message, and the request's state and version afterwards.

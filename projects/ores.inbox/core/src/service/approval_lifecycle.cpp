@@ -92,6 +92,14 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
                                                    const std::string& reason,
                                                    const boost::uuids::uuid& requested_by,
                                                    const std::vector<std::string>& part_codes) {
+    std::vector<std::string> codes;
+    for (const auto& code : part_codes) {
+        if (code.empty())
+            throw std::invalid_argument("A part code cannot be empty.");
+        if (std::ranges::find(codes, code) == codes.end())
+            codes.push_back(code);
+    }
+
     const auto now = std::chrono::system_clock::now();
 
     domain::approval_request r;
@@ -112,9 +120,9 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
     repository::approval_request_repository repo;
     repo.write(ctx_, r, ores::utility::domain::precondition{});
 
-    if (!part_codes.empty()) {
+    if (!codes.empty()) {
         std::vector<domain::approval_request_part> links;
-        for (const auto& code : part_codes) {
+        for (const auto& code : codes) {
             domain::approval_request_part link;
             link.tenant_id = ctx_.tenant_id().to_string();
             link.request_id = r.id;
@@ -124,7 +132,25 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
             links.push_back(std::move(link));
         }
         repository::approval_request_part_repository parts_repo(ctx_);
-        parts_repo.write(links);
+        try {
+            parts_repo.write(links);
+        } catch (...) {
+            // A request with no part rows is decided by count, so one whose
+            // links failed to write must not stay open.
+            BOOST_LOG_SEV(lg(), error) << "The parts of request " << boost::uuids::to_string(r.id)
+                                       << " were not written; withdrawing it.";
+            try {
+                const auto current = request(boost::uuids::to_string(r.id));
+                decide(boost::uuids::to_string(r.id),
+                       current ? current->version : 1,
+                       "withdraw",
+                       requested_by,
+                       "The parts of the request could not be written.");
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error) << "The half-raised request was not withdrawn: " << e.what();
+            }
+            throw;
+        }
     }
 
     const auto written = request(boost::uuids::to_string(r.id));
@@ -134,6 +160,7 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
 }
 
 std::optional<domain::approval_part> approval_lifecycle::part(const std::string& code) {
+    // Parts are system tenant lookups, so they are read under the system tenant.
     repository::approval_part_repository repo;
     const auto system_ctx = ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor());
     const auto found = repo.read_latest(system_ctx, code);
@@ -168,6 +195,8 @@ std::vector<domain::approval_part> approval_lifecycle::parts_of(const std::strin
     return parts;
 }
 
+// The rule for which parts are open is the same one
+// ores_inbox_decide_approval_request_fn applies. Change them together.
 std::vector<domain::approval_part>
 approval_lifecycle::open_parts_of(const std::string& request_id) {
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(

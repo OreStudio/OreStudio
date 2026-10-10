@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-book-structure-screen
-#+pr:
+#+pr: 3041
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3041][#3041]] | [web] Build the book structure screen |
 
 * Review
 

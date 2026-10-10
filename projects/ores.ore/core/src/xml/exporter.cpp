@@ -185,6 +185,13 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                             r.legs,
                             r.leg_amounts,
                             r.leg_rates);
+                    else if (tt == "InflationSwap")
+                        xsd_t = swap_instrument_mapper::reverse_inflation_swap(
+                            r.header,
+                            std::get<trading::domain::inflation_swap_instrument>(r.facts),
+                            r.legs,
+                            r.leg_amounts,
+                            r.leg_rates);
                     else {
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for swap type: " << tt;
                         return;

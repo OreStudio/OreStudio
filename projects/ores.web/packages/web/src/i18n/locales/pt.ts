@@ -777,6 +777,10 @@ const pt: SourceCatalogue = {
                 '{username} pode iniciar sessão outra vez, e a contagem de tentativas falhadas foi reposta.',
         },
     },
+    accessRead: {
+        slow: 'O servidor demora a responder. O menu e o início podem ter partes em falta até responder.',
+        failed: 'Não foi possível ler o seu acesso, por isso faltam partes do menu e do início.',
+    },
     profile: {
         reason: {
             system_update: 'Alteração normal',
@@ -3103,6 +3107,7 @@ const pt: SourceCatalogue = {
         apply: 'Aplicar',
         back: 'Voltar',
         continue: 'Continuar',
+        retry: 'Tentar novamente',
         cancel: 'Cancelar',
     },
 };

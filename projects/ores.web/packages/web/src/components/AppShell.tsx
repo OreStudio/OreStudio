@@ -30,6 +30,7 @@ import { Button } from '../ui/Primitives.js';
 import { useHolds } from '../access/holds.js';
 import { displayName } from '../access/names.js';
 import { NotificationBell } from '../inbox/NotificationBell.js';
+import { AccessNotice } from '../shell/AccessNotice.js';
 import { MENU, modeKey, offered } from '../shell/areas.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
 import { VersionFooter } from './VersionFooter.js';
@@ -168,7 +169,10 @@ export function AppShell({
              * screen looks the same either side of the door.
              */}
             <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8">
-                <div className={`mx-auto w-full ${SHELL_WIDTHS[width]}`}>{children}</div>
+                <div className={`mx-auto w-full ${SHELL_WIDTHS[width]}`}>
+                    <AccessNotice />
+                    {children}
+                </div>
             </main>
             <VersionFooter
                 serverVersion={serverVersion}

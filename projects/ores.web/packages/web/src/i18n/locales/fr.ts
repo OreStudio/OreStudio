@@ -781,6 +781,10 @@ const fr: SourceCatalogue = {
                 '{username} pourra se connecter de nouveau, et son nombre de tentatives échouées est remis à zéro.',
         },
     },
+    accessRead: {
+        slow: "Le serveur est lent à répondre. Le menu et l'accueil peuvent manquer de parties tant qu'il ne répond pas.",
+        failed: "Vos accès n'ont pas pu être lus, donc des parties du menu et de l'accueil manquent.",
+    },
     profile: {
         reason: {
             system_update: 'Modification courante',
@@ -3126,6 +3130,7 @@ const fr: SourceCatalogue = {
         apply: 'Appliquer',
         back: 'Retour',
         continue: 'Continuer',
+        retry: 'Réessayer',
         cancel: 'Annuler',
     },
 };

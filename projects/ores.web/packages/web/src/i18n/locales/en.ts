@@ -774,6 +774,10 @@ export const en: SourceCatalogue = {
                 '{username} can sign in again, and the count of failed attempts is cleared.',
         },
     },
+    accessRead: {
+        slow: 'The server is slow to answer. The menu and the home may be missing parts until it does.',
+        failed: 'Your access could not be read, so parts of the menu and the home are missing.',
+    },
     profile: {
         reason: {
             system_update: 'Ordinary change',
@@ -3083,6 +3087,7 @@ export const en: SourceCatalogue = {
         apply: 'Apply',
         back: 'Back',
         continue: 'Continue',
+        retry: 'Retry',
         cancel: 'Cancel',
     },
 };

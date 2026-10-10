@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-09T22:30:40.685791Z
+' Generated: 2026-10-10T09:42:55.095349Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 100
+Tables: 101
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2323,7 +2323,7 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * amount : numeric(28, 10)
           type : text
-          start_date : text
+          start_date : date
           currency : text
         * modified_by : text
         * performed_by : text
@@ -2345,6 +2345,37 @@ package "trading" #E8F5E9 {
     The ordinal preserves the document's order.
     The amount is the only required member, so it is the only column here
     that cannot be null.
+    end note
+
+    entity ores_trading_instrument_option_exercise_prices_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * exercise_date : date
+        * price : numeric(28, 10)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_instrument_option_exercise_prices_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Instrument Option Exercise Price Table
+    One row per exercise price an option block states, keyed to the
+    instrument and the entry's ordinal.
+    The schema states the exercise price list as a string, and the option
+    block's fourth keyed child holds the decoded pairs: the exercise date
+    and the price stated for it. The ordinal preserves the document's order.
+    Both members are required within an entry, so neither column here can be
+    null.
     end note
 
     entity ores_trading_instrument_option_payment_dates_tbl <<temporal>> #C6F0D8 {
@@ -2388,7 +2419,7 @@ package "trading" #E8F5E9 {
         * has_settlement : boolean
           settlement_pay_currency : text
           settlement_fx_index : text
-          settlement_fixing_date : text
+          settlement_fixing_date : date
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2433,10 +2464,9 @@ package "trading" #E8F5E9 {
           settlement : text
           settlement_method : text
           pay_off_at_expiry : text
-          premium_amount : text
+          premium_amount : numeric(28, 10)
           premium_currency : text
-          premium_pay_date : text
-          exercise_prices : text
+          premium_pay_date : date
           exercise_fee_settlement_period : text
           exercise_fee_settlement_calendar : text
           exercise_fee_settlement_convention : text
@@ -2452,7 +2482,7 @@ package "trading" #E8F5E9 {
         * has_settlement_data : boolean
           settlement_pay_currency : text
           settlement_fx_index : text
-          settlement_fixing_date : text
+          settlement_fixing_date : date
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2472,18 +2502,18 @@ package "trading" #E8F5E9 {
     and the equity, FX and commodity products state it too. The nine bond
     tables carry the option's type and its strike and nothing else, so this
     table holds the block: the exercise and payment terms, the settlement
-    terms, and the three nested groups whose lists get child tables of
+    terms, and the four nested groups whose lists get child tables of
     their own.
     A member the document omits is a null column. Three members are
     themselves groups whose every member is optional, so a null column set
     cannot say whether the document stated the group and left it bare or
     omitted it. Each of those three carries a flag on this row:
     has_exercise_data, has_payment_data and has_settlement_data.
-    Every other member is text, and the text is the document's own
-    spelling. The schema types the premium amount, the exercise price list
-    and the several flags as text or as its own bool, which enumerates
-    thirteen spellings, so a decoded form would not re-emit what the
-    document held.
+    The schema types the premium amount, the premium pay date and the
+    several flags as text or as its own bool, which enumerates thirteen
+    spellings, so a decoded form would not re-emit what the document held.
+    The premium amount and the two settlement dates are typed here and the
+    boundary converts, as the family's end_date does.
     end note
 
     entity ores_trading_instrument_schedule_dates_tbl <<temporal>> #C6F0D8 {
@@ -3874,6 +3904,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_inflation_swap_instruments_tbl : "ha
 ores_trading_trade_activities_tbl ||--o{ ores_trading_inflation_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_instrument_option_exercise_fees_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_option_exercise_fees_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_instrument_option_exercise_prices_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_option_exercise_prices_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_instrument_option_payment_dates_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_option_payment_dates_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_instrument_option_premiums_tbl : "has"

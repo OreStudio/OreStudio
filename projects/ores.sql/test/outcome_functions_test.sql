@@ -80,7 +80,7 @@ select is(
 
 -- Test 5
 select throws_ok(
-    $$select ores_outcome_raise_fn('version_conflict', 'currency', 'iso_code', '3', '4')$$,
+    $$select ores_outcome_raise_fn('version_conflict', 'currency', 'iso_code', null, '3', '4')$$,
     'P0002',
     'The currency for iso_code is at version 4, and this write states version 3.',
     'the raiser raises P0002 for version_conflict and composes its sentence'

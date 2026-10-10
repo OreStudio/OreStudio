@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-09T22:30:40.685791Z
+' Generated: 2026-10-10T09:42:55.095349Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -26,7 +26,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-465 tables in 21 groups.
+492 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -239,10 +239,13 @@ entity "dq_staging" as dq_staging {
   ores_dq_accounts_artefact_tbl
   ores_dq_asset_classes_artefact_tbl
   ores_dq_asset_measures_artefact_tbl
+  ores_dq_average_ois_conventions_artefact_tbl
   ores_dq_badge_definitions_artefact_tbl
   ores_dq_badge_mappings_artefact_tbl
   ores_dq_badge_severities_artefact_tbl
   ores_dq_benchmark_rates_artefact_tbl
+  ores_dq_bma_basis_swap_conventions_artefact_tbl
+  ores_dq_bond_yield_conventions_artefact_tbl
   ores_dq_books_artefact_tbl
   ores_dq_business_centres_artefact_tbl
   ores_dq_business_processes_artefact_tbl
@@ -251,21 +254,36 @@ entity "dq_staging" as dq_staging {
   ores_dq_calendar_types_artefact_tbl
   ores_dq_calendars_artefact_tbl
   ores_dq_cashflow_types_artefact_tbl
+  ores_dq_cds_conventions_artefact_tbl
+  ores_dq_cms_spread_option_conventions_artefact_tbl
   ores_dq_code_domains_artefact_tbl
   ores_dq_coding_schemes_artefact_tbl
+  ores_dq_commodity_forward_conventions_artefact_tbl
+  ores_dq_commodity_future_conventions_artefact_tbl
   ores_dq_counterparty_aliases_artefact_tbl
   ores_dq_countries_artefact_tbl
   ores_dq_crm_topology_bundles_artefact_tbl
+  ores_dq_cross_currency_basis_conventions_artefact_tbl
+  ores_dq_cross_currency_fix_float_conventions_artefact_tbl
   ores_dq_csas_artefact_tbl
   ores_dq_currencies_artefact_tbl
   ores_dq_currency_calendars_artefact_tbl
   ores_dq_currency_countries_artefact_tbl
+  ores_dq_currency_currency_groups_artefact_tbl
+  ores_dq_currency_groups_artefact_tbl
   ores_dq_currency_pair_convention_calendars_artefact_tbl
   ores_dq_currency_pair_conventions_artefact_tbl
   ores_dq_currency_pairs_artefact_tbl
+  ores_dq_deposit_conventions_artefact_tbl
   ores_dq_entity_classifications_artefact_tbl
+  ores_dq_fra_conventions_artefact_tbl
+  ores_dq_future_conventions_artefact_tbl
+  ores_dq_fx_option_conventions_artefact_tbl
+  ores_dq_ibor_index_conventions_artefact_tbl
   ores_dq_image_tags_artefact_tbl
   ores_dq_images_artefact_tbl
+  ores_dq_inflation_swap_conventions_artefact_tbl
+  ores_dq_intraday_power_load_conventions_artefact_tbl
   ores_dq_ip2country_artefact_tbl
   ores_dq_lei_bic_artefact_tbl
   ores_dq_lei_entities_artefact_tbl
@@ -275,6 +293,8 @@ entity "dq_staging" as dq_staging {
   ores_dq_netting_agreements_artefact_tbl
   ores_dq_netting_set_aliases_artefact_tbl
   ores_dq_netting_sets_artefact_tbl
+  ores_dq_ois_conventions_artefact_tbl
+  ores_dq_overnight_index_conventions_artefact_tbl
   ores_dq_party_relationships_artefact_tbl
   ores_dq_party_roles_artefact_tbl
   ores_dq_payment_frequencies_artefact_tbl
@@ -285,16 +305,22 @@ entity "dq_staging" as dq_staging {
   ores_dq_reporting_regimes_artefact_tbl
   ores_dq_risk_report_configs_artefact_tbl
   ores_dq_supervisory_bodies_artefact_tbl
+  ores_dq_swap_conventions_artefact_tbl
+  ores_dq_swap_index_conventions_artefact_tbl
   ores_dq_synthetic_fx_spot_configs_artefact_tbl
   ores_dq_synthetic_gmm_components_artefact_tbl
   ores_dq_synthetic_ir_curve_configs_artefact_tbl
   ores_dq_synthetic_ir_curve_template_entries_artefact_tbl
   ores_dq_tags_artefact_tbl
+  ores_dq_tenor_basis_swap_conventions_artefact_tbl
+  ores_dq_tenor_basis_two_swap_conventions_artefact_tbl
   ores_dq_tenor_schedules_artefact_tbl
+  ores_dq_zero_conventions_artefact_tbl
+  ores_dq_zero_inflation_index_conventions_artefact_tbl
 }
 note bottom of dq_staging
 Data Staging
-57 tables — ores_schema.dq_staging.puml
+83 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -431,6 +457,7 @@ entity "trading" as trading {
   ores_trading_fx_variance_swap_instruments_tbl
   ores_trading_inflation_swap_instruments_tbl
   ores_trading_instrument_option_exercise_fees_tbl
+  ores_trading_instrument_option_exercise_prices_tbl
   ores_trading_instrument_option_payment_dates_tbl
   ores_trading_instrument_option_premiums_tbl
   ores_trading_instrument_options_tbl
@@ -475,7 +502,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-100 tables — ores_schema.trading.puml
+101 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {

@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 251849EC-BDDD-4D2F-BA43-3D917CB0DA7E
+:END:
+#+title: Task: Scaffold story: Hotfix: the er-diagram and pgtap checks fail on main
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_local_check_failures_in_the_er_diagram_and_pgtap:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/clear-the-local-check-failures-in-the-er-diagram-and-pgtap
+#+pr: 3048
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:56DA3709-B087-4870-AB5F-A66F95795B92][Hotfix: the er-diagram and pgtap checks fail on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:56DA3709-B087-4870-AB5F-A66F95795B92][Hotfix: the er-diagram and pgtap checks fail on main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3048][#3048]] | [sql] Clear the er-diagram and pgtap check failures |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Drop order may fail on foreign keys | dq_drop.sql | Checked | A query on pg_constraint found no foreign key to or from any DQ artefact table. |
+| 2 | RLS_002 ignore hides a later read of party_id | validation_ignore.txt | No change | Same trade-off as the tenant and RLS_001 ignores for these tables. The comment gives the reason. |
+| 3 | Fixture values are hard-coded | pgTAP tests | No change | Fine for fixtures. |
+| 4 | No merge base in the review checkout | branch | No change | An artefact of the review checkout. |
+
+* Result
+
+The story, its two tasks and the sprint wiring exist. They ride the same pull request as the fix, because the fix is small and the two failures share one goal.

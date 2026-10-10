@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-09T19:34:22.173318Z
+' Generated: 2026-10-10T09:42:55.095349Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 57
+Tables: 83
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -128,6 +128,30 @@ package "dq_staging" #F3E5F5 {
     The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures. - Artefact Table
     end note
 
+    entity ores_dq_average_ois_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * spot_lag : integer
+        * fixed_tenor : text
+        * fixed_day_count_fraction : text
+          fixed_calendar : text
+          fixed_convention : text
+          fixed_payment_convention : text
+          fixed_frequency : text
+        * index : text
+        * on_tenor : text
+        * rate_cutoff : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_average_ois_conventions_artefact_tbl
+    Describes how ORE averages the floating leg of an overnight index swap over a tenor, and how the fixed leg pays against it. Corresponds to the <AverageOIS> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
+    end note
+
     entity ores_dq_badge_definitions_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -188,6 +212,51 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_benchmark_rates_artefact_tbl
     FpML Benchmark rates - Artefact Table
+    end note
+
+    entity ores_dq_bma_basis_swap_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * index : text
+        * bma_index : text
+          bma_payment_calendar : text
+          bma_payment_convention : text
+          bma_payment_lag : integer
+          index_payment_calendar : text
+          index_payment_convention : text
+          index_payment_lag : integer
+          index_settlement_days : integer
+          index_payment_period : text
+          overnight_lockout_days : integer
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_bma_basis_swap_conventions_artefact_tbl
+    Describes how ORE builds a basis swap whose two legs reference a BMA municipal index and an IBOR or overnight index, and how each leg's payments are scheduled. Corresponds to the <BMABasisSwap> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). Three fields are required and the rest are optional. The corpus sets the two payment lags, the settlement days, the index payment period and the overnight lockout days in one element each, and never sets either payment calendar or either payment convention. - Artefact Table
+    end note
+
+    entity ores_dq_bond_yield_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * compounding : text
+          frequency : text
+          price_type : text
+          accuracy : double
+          max_evaluations : integer
+          guess : double
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_bond_yield_conventions_artefact_tbl
+    Describes how ORE builds a bond yield: the compounding it is quoted on, the frequency it pays at, whether the price is clean or dirty, and the tolerances its solver runs to. Corresponds to the <BondYield> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). One field is required and six are optional. One file carries five elements and sets all six optional fields. The accuracy and the guess are floats in ORE and travel through a double column, because the refdata schema has no float type; a float widens to a double and narrows back with no loss. - Artefact Table
     end note
 
     entity ores_dq_books_artefact_tbl  #F7E5FF {
@@ -324,6 +393,51 @@ package "dq_staging" #F3E5F5 {
     The type of cash flows associated with OTC derivatives contracts and their lifecycle events. - Artefact Table
     end note
 
+    entity ores_dq_cds_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * settlement_days : integer
+        * calendar : text
+        * frequency : text
+        * payment_convention : text
+        * rule : text
+        * day_count_fraction : text
+        * settles_accrual : boolean
+        * pays_at_default_time : boolean
+          upfront_settlement_days : integer
+          last_period_day_count_fraction : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_cds_conventions_artefact_tbl
+    Defines the settlement lag, premium payment schedule, and accrual rules for a vanilla CDS. Corresponds to the <CDS> element in ORE conventions.xml. The rule field governs IMM dates and standard CDS roll dates. - Artefact Table
+    end note
+
+    entity ores_dq_cms_spread_option_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * forward_start : text
+        * spot_days : text
+        * swap_tenor : text
+        * fixing_days : integer
+        * calendar : text
+        * day_count_fraction : text
+        * roll_convention : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_cms_spread_option_conventions_artefact_tbl
+    Describes how ORE builds a constant-maturity-swap spread option: where its forward starts, how long its underlying swap runs, when it fixes, and the calendar and conventions its schedule rolls on. Corresponds to the <CmsSpreadOption> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). All eight fields are required and the corpus sets all eight in all twelve elements, which are otherwise identical: one convention shared by twelve files. The two period fields and the spot days stay in ORE's spelling, because they are tenors rather than frequency enumerations; the day count and the roll convention are normalised to the canonical codes the other tables hold. - Artefact Table
+    end note
+
     entity ores_dq_code_domains_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -355,6 +469,91 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_coding_schemes_artefact_tbl
     A published code list that a subject area's values come from, such as an ISO currency list or an FpML codelist. The scheme names the authority that publishes it and the subject area it applies to, and may point at the document that defines it. The authority and the subject-area columns are plain text rather than declared foreign keys, because the table has never carried a constraint and adding one would refuse rows the platform accepts today. - Artefact Table
+    end note
+
+    entity ores_dq_commodity_forward_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+          spot_days : integer
+          points_factor : double
+          advance_calendar : text
+          spot_relative : boolean
+          delivery_location : text
+          business_day_convention : text
+          outright : boolean
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_commodity_forward_conventions_artefact_tbl
+    Describes how ORE builds a commodity forward: how many days after the trade it starts, how its points are scaled, the calendar it advances on, and whether it is quoted outright or as a spread to spot. Corresponds to the <CommodityForward> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). One field is required and seven are optional. Two files carry five elements between them, and every one sets all seven optional fields except the delivery location, which none sets. - Artefact Table
+    end note
+
+    entity ores_dq_commodity_future_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * contract_frequency : text
+        * calendar : text
+          expiry_calendar : text
+          expiry_month_lag : integer
+          one_contract_month : text
+          offset_days : integer
+          business_day_convention : text
+          adjust_before_offset : boolean
+          is_averaging : boolean
+          valid_contract_months : text
+          anchor_day_of_month : integer
+          anchor_calendar_days_before : integer
+          anchor_business_days_after : integer
+          anchor_nth_nth : integer
+          anchor_nth_weekday : text
+          anchor_last_weekday : text
+          anchor_weekly_day_of_the_week : text
+          option_expiry_month_lag : integer
+          option_contract_frequency : text
+          option_expiry_offset : integer
+          option_calendar_days_before : integer
+          option_min_business_days_before : integer
+          option_expiry_day : integer
+          option_nth_nth : integer
+          option_nth_weekday : text
+          option_expiry_last_weekday_of_month : text
+          option_expiry_weekly_day_of_the_week : text
+          option_business_day_convention : text
+          hours_per_day : integer
+          off_peak_index : text
+          peak_index : text
+          off_peak_hours : double
+          peak_calendar : text
+          index_name : text
+          savings_time : text
+          delivery_location : text
+          balance_of_the_month : boolean
+          balance_of_the_month_pricing_calendar : text
+          option_underlying_future_convention : text
+          averaging_commodity_name : text
+          averaging_period : text
+          averaging_pricing_calendar : text
+          averaging_conventions : text
+          averaging_use_business_days : boolean
+          averaging_delivery_roll_days : integer
+          averaging_future_month_offset : integer
+          averaging_daily_expiry_offset : integer
+          prohibited_expiries : text
+          future_continuation_mappings : text
+          option_continuation_mappings : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_commodity_future_conventions_artefact_tbl
+    Describes how ORE builds a commodity future: when it expires, which contract months it lists, how its expiry anchors to a day of the month or a weekday, and the schedule of the options written on it. Corresponds to the <CommodityFuture> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). Thirty of the element's thirty-four fields are modelled here, as forty columns, because the element's nested structs are flattened rather than given tables of their own. AnchorDay becomes seven columns, OptionNthWeekday two more, and OffPeakPowerIndexData four. The corpus uses all six of AnchorDay's variants, so flattening it is what lets a commodity future round trip at all. Five files carry the element, in eight hundred and eight elements, and two of them carried nothing else unmodelled when it landed. Four more fields hold lists, and each is written as a text column rather than counted: AveragingData becomes eight columns, and ProhibitedExpiries, FutureContinuationMappings and OptionContinuationMappings become one text column each, holding comma-separated dates and from:to pairs. A column is a weaker home than a table, and it is what keeps the field in the element's round trip rather than excluding the file from it. - Artefact Table
     end note
 
     entity ores_dq_counterparty_aliases_artefact_tbl  #F7E5FF {
@@ -399,6 +598,75 @@ package "dq_staging" #F3E5F5 {
         * quote_currency_code : text
         * row_kind : text
     }
+
+    entity ores_dq_cross_currency_basis_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * settlement_days : integer
+          settlement_calendar : text
+        * roll_convention : text
+        * flat_index : text
+        * spread_index : text
+          eom : boolean
+          is_resettable : boolean
+          flat_index_is_resettable : boolean
+          flat_tenor : text
+          spread_tenor : text
+          spread_payment_lag : integer
+          flat_payment_lag : integer
+          spread_include_spread : boolean
+          spread_lookback : text
+          spread_fixing_days : integer
+          spread_rate_cutoff : integer
+          spread_is_averaged : boolean
+          spread_observation_shift : boolean
+          flat_include_spread : boolean
+          flat_lookback : text
+          flat_fixing_days : integer
+          flat_rate_cutoff : integer
+          flat_is_averaged : boolean
+          flat_observation_shift : boolean
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_cross_currency_basis_conventions_artefact_tbl
+    Describes how ORE builds both legs of a cross-currency basis swap: the two indices, their tenors, their payment lags and their fixing and cutoff rules, and whether the spread is included in a leg's coupons. Corresponds to the <CrossCurrencyBasis> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
+    end note
+
+    entity ores_dq_cross_currency_fix_float_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * settlement_days : integer
+        * settlement_calendar : text
+        * settlement_convention : text
+        * fixed_currency : text
+        * fixed_frequency : text
+        * fixed_convention : text
+        * fixed_day_count_fraction : text
+        * index : text
+          eom : boolean
+          is_resettable : boolean
+          float_index_is_resettable : boolean
+          include_spread : boolean
+          lookback : text
+          fixing_days : integer
+          rate_cutoff : integer
+          is_averaged : boolean
+          observation_shift : boolean
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_cross_currency_fix_float_conventions_artefact_tbl
+    Describes how ORE builds a cross-currency swap whose fixed leg pays one currency and whose floating leg pays an index in another. Corresponds to the <CrossCurrencyFixFloat> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). Nine fields are required and nine are optional. The corpus sets all nine required in all forty-one elements and sets none of the optional ones, so the optional half of the mapping is proven by a case that builds the element rather than by the corpus walk. - Artefact Table
+    end note
 
     entity ores_dq_csas_artefact_tbl  #F7E5FF {
         --
@@ -487,6 +755,34 @@ package "dq_staging" #F3E5F5 {
     Currency Country - Artefact Table
     end note
 
+    entity ores_dq_currency_currency_groups_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * currency_iso_code : text
+        * currency_group_code : text
+        * version : integer
+    }
+
+    note right of ores_dq_currency_currency_groups_artefact_tbl
+    Currency Currency Group - Artefact Table
+    end note
+
+    entity ores_dq_currency_groups_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+    }
+
+    note right of ores_dq_currency_groups_artefact_tbl
+    Reference data defining desk-style currency groupings. Unlike currency.market_tier (single-valued primary liquidity tier), a currency can belong to any number of groups simultaneously via [[id:579032D2-3637-4188-859E-6C17C1D144F7][ores.refdata.currency_currency_group_junction]] (e.g. NOK: G11 *and* SCANDIES *and* COMMODITY). Seeded with G11, SCANDIES, ANTIPODEANS, COMMODITY, ASIANS, LATAMS — extensible by inserting a row, no schema change needed for a new group. - Artefact Table
+    end note
+
     entity ores_dq_currency_pair_convention_calendars_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -534,6 +830,27 @@ package "dq_staging" #F3E5F5 {
     Currency pair identity: base/quote legs, deliverability, classification, and fixing source. Conventions (pip factor, tick size, calendars, business day convention) live 1:1 in [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]], matching the codebase's existing *_convention entity family. spot_days, calendars, and G11 membership are *derived* at read time from the two legs, not stored here — see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] for the full design rationale. - Artefact Table
     end note
 
+    entity ores_dq_deposit_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * index_based : boolean
+          index : text
+          calendar : text
+          convention : text
+          end_of_month : boolean
+          day_count_fraction : text
+          settlement_days : integer
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_deposit_conventions_artefact_tbl
+    Specifies the settlement lag, calendar, and day count for short-term deposits used as the near-end instruments when bootstrapping a yield curve. Corresponds to the <Deposit> element in ORE conventions.xml. When index_based is true the remaining fields may be omitted and are instead inherited from the referenced IBOR index convention. - Artefact Table
+    end note
+
     entity ores_dq_entity_classifications_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -546,6 +863,80 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_entity_classifications_artefact_tbl
     Financial Entity Indicator as defined by the CFTC. - Artefact Table
+    end note
+
+    entity ores_dq_fra_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * index : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_fra_conventions_artefact_tbl
+    A FRA convention ties a FRA instrument to an IBOR index whose own conventions (calendar, day count, settlement) govern the FRA. Corresponds to the <FRA> element in ORE conventions.xml. - Artefact Table
+    end note
+
+    entity ores_dq_future_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * index : text
+          date_generation_rule : text
+          netting_type : text
+          calendar : text
+          overnight_index_tenor : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_future_conventions_artefact_tbl
+    Describes how ORE builds the dates and settles the fixings of a future. Corresponds to the <Future> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
+    end note
+
+    entity ores_dq_fx_option_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+          fx_convention_id : text <<FK>>
+        * atm_type : text
+        * delta_type : text
+          switch_tenor : text
+          long_term_atm_type : text
+          long_term_delta_type : text
+          risk_reversal_in_favor_of : text
+          butterfly_style : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_fx_option_conventions_artefact_tbl
+    Describes how ORE quotes an FX option: which strike counts as at the money, how the delta is measured, and what happens beyond a switch tenor. Corresponds to the <FxOption> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
+    end note
+
+    entity ores_dq_ibor_index_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * fixing_calendar : text
+        * day_count_fraction : text
+        * settlement_days : integer
+        * business_day_convention : text
+        * end_of_month : boolean
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_ibor_index_conventions_artefact_tbl
+    Defines the fixing calendar, day count, settlement lag, and business day convention for a term IBOR index such as EURIBOR or USD LIBOR. Corresponds to the <IborIndex> element in ORE conventions.xml. - Artefact Table
     end note
 
     entity ores_dq_image_tags_artefact_tbl  #F7E5FF {
@@ -574,6 +965,52 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_images_artefact_tbl
     An image is a named document the platform renders, such as a currency flag or a commodity icon. The bytes are format-agnostic: an SVG document, a JPEG, or any other media type mime_type names. The database stores them base64-encoded in a text column, and the domain type carries the raw bytes. Images carry tags through the image_tag junction, and an image arrives either by upload or from the data-quality publish path. - Artefact Table
+    end note
+
+    entity ores_dq_inflation_swap_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * fix_calendar : text
+        * fix_convention : text
+        * day_count_fraction : text
+        * index : text
+        * interpolated : boolean
+        * observation_lag : text
+        * adjust_inflation_observation_dates : boolean
+        * inflation_calendar : text
+        * inflation_convention : text
+          publication_roll : text
+          start_delay : text
+          start_delay_convention : text
+          publication_schedule_name : text
+          publication_schedule_rules : text
+          publication_schedule_dates : text
+          publication_schedule_derived_groups : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_inflation_swap_conventions_artefact_tbl
+    Describes how ORE builds an inflation swap: the calendars and conventions its legs roll on, the day count it accrues on, the zero-coupon inflation index it references, and how the index's observations are lagged and adjusted. Corresponds to the <InflationSwap> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). Ten fields are required and the rest are optional. The corpus sets all ten in all one hundred and one elements. Of the optional fields it sets only PublicationRoll, in two elements. The element also carries PublicationSchedule, which ORE types as a schedule of rule blocks, date blocks and derived schedule groups. Each block is written as one text column in a stated form: blocks are separated by semicolons and a block's fields by pipes, which is enough to keep every value the binding holds without a table of its own. Two shipped files set a schedule. - Artefact Table
+    end note
+
+    entity ores_dq_intraday_power_load_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+          explicit_load_profile : text
+          business_day_load_rules : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_intraday_power_load_conventions_artefact_tbl
+    Describes how ORE builds an intraday power load profile, either as a list of dates each carrying its own load factors or as a list of business day rules that generate them. Corresponds to the <IntradayPowerLoad> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). The element's one data field is a choice between two nested lists, and each list is written as one text column in a stated form rather than given a table of its own. Records are separated by semicolons and a record's fields by pipes; load factors are separated by commas and a factor's own fields by colons, so a factor reads from:to:unit:dst:value. One file carries two elements, one of each form, and between them they hold every shape the element can take. - Artefact Table
     end note
 
     entity ores_dq_ip2country_artefact_tbl  #F7E5FF {
@@ -738,6 +1175,48 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_netting_sets_artefact_tbl
     A netting set of the party a publish targets. It names its master agreement by number and its counterparty by LEI; publishing resolves both in the target tenant. A set with no agreement holds trades that do not net. - Artefact Table
+    end note
+
+    entity ores_dq_ois_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * spot_lag : integer
+        * index : text
+        * fixed_day_count_fraction : text
+          fixed_calendar : text
+          payment_lag : integer
+          end_of_month : boolean
+          fixed_frequency : text
+          fixed_convention : text
+          fixed_payment_convention : text
+          rule : text
+          payment_calendar : text
+          rate_cutoff : integer
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_ois_conventions_artefact_tbl
+    Defines the fixed-leg and overnight floating-leg parameters for an OIS. OIS are used to bootstrap risk-free overnight discount curves (e.g. EONIA, SOFR, SONIA). Corresponds to the <OIS> element in ORE conventions.xml. - Artefact Table
+    end note
+
+    entity ores_dq_overnight_index_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * fixing_calendar : text
+        * day_count_fraction : text
+        * settlement_days : integer
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_overnight_index_conventions_artefact_tbl
+    Defines the fixing calendar, day count, and settlement lag for a risk-free overnight rate index. Corresponds to the <OvernightIndex> element in ORE conventions.xml. - Artefact Table
     end note
 
     entity ores_dq_party_relationships_artefact_tbl  #F7E5FF {
@@ -908,6 +1387,43 @@ package "dq_staging" #F3E5F5 {
     Contains a code representing a supervisory-body that may be supervising this transaction. - Artefact Table
     end note
 
+    entity ores_dq_swap_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+          fixed_calendar : text
+        * fixed_frequency : text
+          fixed_convention : text
+        * fixed_day_count_fraction : text
+        * index : text
+          float_frequency : text
+          sub_periods_coupon_type : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_swap_conventions_artefact_tbl
+    Defines the fixed-leg schedule and the floating-leg index for a standard interest rate swap. Used by ORE to bootstrap par swap rates off a yield curve. Corresponds to the <Swap> element in ORE conventions.xml. - Artefact Table
+    end note
+
+    entity ores_dq_swap_index_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * conventions : text
+          fixing_calendar : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_swap_index_conventions_artefact_tbl
+    A named swap index, which ORE describes by pointing at the swap convention it follows rather than by restating that convention's fields. Corresponds to the <SwapIndex> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
+    end note
+
     entity ores_dq_synthetic_fx_spot_configs_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1015,6 +1531,58 @@ package "dq_staging" #F3E5F5 {
     A tag classifies an image. A tag belongs to one tenant, names a single category such as flag, currency or commodity, and its name is unique within that tenant. Images carry tags through the image_tag junction, so a tag has no lifecycle of its own beyond its own version history. - Artefact Table
     end note
 
+    entity ores_dq_tenor_basis_swap_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+          pay_index : text
+          pay_frequency : text
+          receive_index : text
+          receive_frequency : text
+          spread_on_rec : boolean
+          include_spread : boolean
+          sub_periods_coupon_type : text
+          pay_is_averaged : boolean
+          rec_is_averaged : boolean
+          long_index : text
+          long_pay_tenor : text
+          short_index : text
+          short_pay_tenor : text
+          spread_on_short : boolean
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_tenor_basis_swap_conventions_artefact_tbl
+    Describes how ORE builds the two legs of a tenor basis swap, where each leg pays a different tenor off its own index and the two legs may differ in more than the tenor. Corresponds to the <TenorBasisSwap> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). ORE lets a tenor basis swap be written two ways, and the corpus uses both. The paying and receiving form names PayIndex and ReceiveIndex with an optional frequency each, and adds the averaging and sub-periods fields. The long and short form names LongIndex and ShortIndex with an optional payment tenor each, and adds the spread flags. The two forms do not share a field, so the table carries every field of both and each row fills one form. - Artefact Table
+    end note
+
+    entity ores_dq_tenor_basis_two_swap_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * calendar : text
+        * long_fixed_frequency : text
+        * long_fixed_convention : text
+        * long_fixed_day_count_fraction : text
+        * long_index : text
+        * short_fixed_frequency : text
+        * short_fixed_convention : text
+        * short_fixed_day_count_fraction : text
+        * short_index : text
+          long_minus_short : boolean
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_tenor_basis_two_swap_conventions_artefact_tbl
+    Describes how ORE builds both legs of a two-tenor basis swap, where a long leg and a short leg pay different frequencies off different indices, and which of the two the quoted spread is measured from. Corresponds to the <TenorBasisTwoSwap> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
+    end note
+
     entity ores_dq_tenor_schedules_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1031,6 +1599,49 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_tenor_schedules_artefact_tbl
     A named schedule axis a [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][tenor]] resolves along (story Decision D2: anchor + calendar offset + n steps). Two kinds today, distinguished by schedule_source: - CLOSED_FORM: the dates come from a closed-form rule evaluated code-side. ROLL_QUARTER is the only instance: the first business day after the 20th of March/June/September/December (the IMM quarterly rule). - EVENT_LOOKUP: the dates come from [[id:B20050A5-1245-4944-A328-2A0893C92AEC][calendar_event]] rows on a named calendar, filtered by diary entry type. FOMC_MEETING is the only instance: central_bank_meeting events on US.FOMC. calendar_code and diary_entry_type are null for closed-form schedules (no event store involved) and required for event-lookup ones -- but the binding is documented, not enforced in the schema. - Artefact Table
+    end note
+
+    entity ores_dq_zero_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * tenor_based : boolean
+        * day_count_fraction : text
+          compounding : text
+          compounding_frequency : text
+          tenor_calendar : text
+          spot_lag : integer
+          spot_calendar : text
+          roll_convention : text
+          end_of_month : boolean
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_zero_conventions_artefact_tbl
+    Specifies the day count fraction and compounding method used when bootstrapping a discount or zero-rate curve in ORE. Corresponds to the <Zero> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
+    end note
+
+    entity ores_dq_zero_inflation_index_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * party_id : uuid <<FK>>
+        * region_name : text
+        * region_code : text
+        * revised : boolean
+        * frequency : text
+        * availability_lag : text
+        * currency : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_zero_inflation_index_conventions_artefact_tbl
+    Describes a zero-coupon inflation index: the region it is published for, how often it is published, how far behind its publication date it becomes available, and the currency it is quoted in. Corresponds to the <ZeroInflationIndex> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). Every field is required. The corpus sets all seven in all fifty-four elements, and ORE's schema holds them by value, so an element without one does not parse. The element carries one more field, RebasingEvents, and this table does not model it: the ORE type holds it as a list of doubles, and the refdata schema has no array column. No shipped file sets it. Rather than drop it silently the mapper counts every element that carries one in conventions_mapper::unmodelled under ZeroInflationIndex.RebasingEvents, so a document that uses it is excluded from the round-trip set and named in the measurement. - Artefact Table
     end note
 
 }

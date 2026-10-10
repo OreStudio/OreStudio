@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/decide-the-curve-builds-table
-#+pr:
+#+pr: 3075
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3075][#3075]] | [agile] Decide against a curve_builds table |
 
 * Review
 

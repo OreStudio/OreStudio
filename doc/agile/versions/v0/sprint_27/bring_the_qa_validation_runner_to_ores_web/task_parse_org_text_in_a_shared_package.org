@@ -8,7 +8,7 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/parse-org-text-in-a-shared-package
-#+pr:
+#+pr: 3071
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3071][#3071]] | [web] Add the @ores/org package to parse and render org text |
 
 * Review
 

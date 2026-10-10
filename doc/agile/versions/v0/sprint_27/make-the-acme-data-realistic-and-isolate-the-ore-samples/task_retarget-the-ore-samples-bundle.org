@@ -8,7 +8,7 @@
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
 #+branch: feature/retarget-the-ore-samples-bundle
-#+pr:
+#+pr: 3084
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -121,7 +121,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3084][#3084]] | [sql,refdata] Retarget the ORE samples bundle |
 
 * Review
 

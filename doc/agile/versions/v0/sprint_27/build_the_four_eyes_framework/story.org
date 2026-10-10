@@ -50,7 +50,7 @@ A gated write cannot take effect until every function the policy names has appro
 | [[id:0705EF62-7930-4B2C-B003-E578AF0D0A16][Move the party details screen onto the review panel]] | BACKLOG | | | Make the party details screen raise a request for a gated change instead of writing it. |
 | [[id:40014A64-C176-46E6-B39F-EBA92DDC7967][Move the convention screen onto the review panel]] | BACKLOG | | | Make the instrument convention screen raise a request for every write. |
 | [[id:BE57136B-9C17-4FCB-A4EB-05AA840B11F2][Move the tenor resolution screen onto the review panel]] | BACKLOG | | | Make the tenor resolution screen raise a request for every write. |
-| [[id:4F8399A7-7512-4229-AA69-3364C82BB387][Generate the pending change for a gated entity]] | BACKLOG | | | Add a codegen facet that makes, for an entity its model marks gated, the typed pending table, the typed raise and preview messages, the dry run, the apply and the typed read of a pending change, starting with the book. |
+| [[id:4F8399A7-7512-4229-AA69-3364C82BB387][Generate the pending change for a gated entity]] | DONE | 2026-10-10 | 2026-10-10 | Add a codegen facet that makes, for an entity its model marks gated, the typed pending table, the typed raise and preview messages, the dry run, the apply and the typed read of a pending change, starting with the book. |
 
 * Decisions
 

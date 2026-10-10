@@ -7,44 +7,51 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-the-pending-change-for-a-gated-entity
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A gated entity gets a typed pending table with its own columns, and the operations to propose, check, read and apply a change to it, from its model alone.
+A gated entity gets a typed pending table with its own columns, and the stack that reads it, from its model alone. The dry run and the apply that use it belong to the next task.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
 
-- The pending table has the entity columns with the same foreign keys, checks and lookup validation, plus the request, line number, operation, version read and part.
-- A model change reaches the pending table in the same regeneration and migration.
-- The dry run runs the real service database layer in a savepoint, returns its refusals, publishes no event and sends no notification.
-- The book is generated first and its pending table, propose, check, read and apply are tested.
+- The pending table has the entity columns with the same foreign keys and lookup validation, plus the request, line number, operation, version read and part. The live row's own checks and insert-trigger rules are not copied. The dry run runs them by calling the real write.
+- A model change reaches the pending table in the same regeneration.
+- A model that is not regenerated fails a check.
+- The pending table cannot be written through a client. Only the raise operation writes it.
+- The book is generated first. Its pending table is written and read back by the generated eventing test. A line for an unknown request is refused by the table, which was checked by hand against the recreated database.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Mark an entity model =:gated: true= in its =* Flags= drawer.
+- Derive a second, ordinary entity model from it, =<entity>_change=. It has the line columns (id, request, line number, operation, base version, part) and the entity's own columns. Its keys are not natural keys, and its foreign keys and lookup validations are the entity's.
+- Run every existing archetype on the derived model, so the table, the domain type, the repository and the read-only protocol come from the templates that already exist.
+- Make =compass codegen generate= derive and generate the pending model after it generates a gated model.
+- Add a check that fails when a derived model is stale.
 
 * Measurements
 
@@ -61,6 +68,11 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- A derived model is an ordinary entity model, so every template applies without change. The cost is that the generated handlers, shell commands and event registrars exist for the pending table too. The model is client read-only, so the handlers expose reads only.
+- The table's own =check= constraints and the insert-trigger rules of the live row are not copied. The dry run in the next task runs them by calling the real write in a savepoint.
+- The refdata tests now link the inbox libraries, because the generated test seeds an approval request.
+- This task does not write the dry run or the apply. They need the raise operation, so they move to the next task, whose acceptance now says so.
 
 * Test Scenarios
 
@@ -86,3 +98,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An entity model marked =:gated: true= now gets a pending table, with the rest of the stack, from its own model. The book is the first.
+
+- =derive_pending_models.py= and =codegen.pending_change= derive =ores.refdata.book_change= from the book. The derived model has the line columns and the book's columns, with the book's foreign keys and lookup validations.
+- The existing templates generate the table, the domain type, the repository, the read-only protocol and handler, and the shell and TypeScript types for it. The table, its row-level security, its permission and its registrars are wired in.
+- =compass codegen generate= on the book derives and generates =book_change= in the same run. The book's own outputs did not change.
+- A new check, =derive_pending_models.py --check=, runs in the codegen drift workflow and fails when a derived model is stale.
+
+Evidence: the generated =write_book_change_publishes_an_event= test passes on a recreated database. It writes a line with every parent seeded. An insert with an unknown request is refused with "Invalid request_id". The codegen drift sweep, the handler permission, populate reference, test case reachability, model drift and cmake source checks pass.
+
+Correction: the policy table holds 32 rows, and the earlier PR said 33.
+
+Not done here: the dry run, the apply and the typed raise. They are in the next task.

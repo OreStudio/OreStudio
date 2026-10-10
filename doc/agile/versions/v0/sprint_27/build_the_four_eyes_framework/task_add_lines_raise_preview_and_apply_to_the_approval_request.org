@@ -35,6 +35,9 @@ A request holds typed lines for several entities, is previewed and raised with e
 
 * Acceptance
 
+- The dry run runs the real service database layer for each line inside a savepoint. It returns the refusals the service gives, publishes no event and sends no notification.
+- The apply writes each line through the real service in one transaction.
+
 - Preview returns every proposed write with its part and any refusal, and writes nothing.
 - Raise runs each write in a rolled-back savepoint, writes the request, its parts and its lines, and tells the deciders of the parts that can be answered now.
 - The last approval starts an apply workflow whose steps re-check, apply every line in one transaction, marking each applied once, and tell the maker.

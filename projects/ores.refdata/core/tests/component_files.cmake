@@ -26,6 +26,7 @@ set(files
     "bma_basis_swap_convention_eventing_integration_tests.cpp"
     "bond_future_volatility_config_eventing_integration_tests.cpp"
     "bond_yield_convention_eventing_integration_tests.cpp"
+    "book_change_eventing_integration_tests.cpp"
     "book_eventing_integration_tests.cpp"
     "book_purpose_type_eventing_integration_tests.cpp"
     "book_status_eventing_integration_tests.cpp"

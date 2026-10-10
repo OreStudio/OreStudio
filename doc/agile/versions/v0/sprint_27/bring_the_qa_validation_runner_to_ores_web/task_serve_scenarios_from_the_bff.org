@@ -8,7 +8,7 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/serve-scenarios-from-the-bff
-#+pr:
+#+pr: 3085
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3085][#3085]] | [web] Serve scenarios from the BFF |
 
 * Review
 

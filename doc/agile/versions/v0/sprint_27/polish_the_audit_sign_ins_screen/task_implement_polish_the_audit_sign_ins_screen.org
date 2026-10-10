@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D7A13BC8-2B73-4D60-B05A-E017E9E81B52][Polish the audit sign-ins screen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D7A13BC8-2B73-4D60-B05A-E017E9E81B52][Polish the audit sign-ins screen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -83,3 +83,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Sign-ins screen now links each username to =/people/<username>=. The lock
+state on Sign-ins and Rescue access is the =AccountLockBadge=, painted from the
+badge catalogue. The failed attempts tab has a checkbox that hides accounts
+that never signed in. The Operations card and menu came from main. The web
+tests (726), the type check and Prettier pass.

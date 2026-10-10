@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Create the story, its tasks and the sprint row. This task changes no code.
 
 * Status
 
@@ -35,7 +35,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The story, its two work tasks and the sprint row exist.
 
 * Plan
 
@@ -80,7 +80,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Story state and Now conflict | story.org | Accepted | Now and Next rewritten; state stays STARTED |
+| 2 | Next is stale | story.org | Accepted | Next now names the first work task |
+| 3 | Scaffold task has template text | task_scaffold | Accepted | Goal and Acceptance filled in |
+| 4 | Story placeholders | story.org | Accepted | Decisions and Out of scope written |
+| 5 | Two tasks overlap on the upcoming run | story.org | Accepted | Decision records which task owns what |
+| 6 | Branch convention differs between tasks | task files | Declined | compass sets the branch when a task starts |
+| 7 | Table alignment | status tables | Declined | Template output; renders correctly |
+| 8 | Sprint table split | sprint.org | Declined | Pre-existing; this row joins the right table |
 
 * Result
 

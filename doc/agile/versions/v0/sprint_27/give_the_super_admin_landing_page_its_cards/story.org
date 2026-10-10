@@ -23,9 +23,9 @@ A system administrator lands on cards for the screens they use, and sees which j
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | The scaffold PR is in review.          |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Offer the places as cards.             |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -44,6 +44,10 @@ A system administrator lands on cards for the screens they use, and sees which j
 
 * Decisions
 
+- The implement task owns the upcoming run on the home page. The filing task owns the backlog captures. The two do not overlap.
+- The upcoming run shows the three super administrator journeys that have a design and a backend but no screen. The story builds none of those screens, because another story owns the operations journeys.
+
 * Out of scope
 
--
+- Building the market data feeds, yield curve process types or compute catalogue screens.
+- The retire or reset tenant journey, which another story owns.

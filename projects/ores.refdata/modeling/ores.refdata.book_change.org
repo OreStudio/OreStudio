@@ -1,0 +1,490 @@
+:PROPERTIES:
+:ID: AB2DD577-76F7-5CBE-9E13-CAB826E53771
+:END:
+#+title: ores.refdata.book_change
+#+description: GENERATED from ores.refdata.book by derive_pending_models.py. One proposed write to the book, held until its request is decided.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:pending:
+#+brief: One proposed write to a book, held for its request.
+#+entity_singular: book_change
+#+entity_plural: book_changes
+#+entity_title: Book Change
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+Do not edit. Change ores.refdata.book and run
+derive_pending_models.py.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID identifying this line.
+
+One proposed write inside a request.
+
+** request_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+The approval request this line belongs to.
+
+References the approval requests table.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** line_no
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:END:
+
+The place of this line in its request, from one.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** operation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+What the line proposes: put or delete.
+
+#+begin_src cpp :name generator
+std::string("put")
+#+end_src
+
+** base_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:END:
+
+The version of the live row the maker read, or zero for a new row.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** part_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The approval part that decides this line.
+
+References the approval parts the system tenant holds.
+
+#+begin_src cpp :name generator
+std::string("operations")
+#+end_src
+
+** entity_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this book.
+
+Surrogate key for the book record.
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+Party that owns this book.
+
+References the parties table.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:END:
+
+Book name, unique within party.
+
+e.g., 'FXO_EUR_VOL_01'.
+
+#+begin_src cpp :name generator
+std::string("BOOK_") + std::to_string(faker::number::integer(1, 999))
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description of the book.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** parent_portfolio_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Links to exactly one portfolio.
+
+Mandatory: Every book must belong to a portfolio.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** owner_unit_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Business unit that owns this book.
+
+Optional FK to business_units. Should reference a unit that is an owner_unit_id in the book's portfolio ancestry chain.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** functional_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Functional/accounting currency, designated by the ledger.
+
+ISO 4217 currency code.
+
+#+begin_src cpp :name generator
+// X-0 is the sentinel code the eventing integration fixture seeds
+// before writing this row: the functional-currency trigger accepts only
+// codes of active currencies for the write tenant, so no fixed code is
+// valid on its own and the seed must come first. A caller that does not
+// seed it must overwrite this with a code it has written, or the insert
+// is rejected.
+std::string("X-0")
+#+end_src
+
+** gl_account_ref
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Reference to external General Ledger.
+
+e.g., 'GL-10150-FXO'. Nullable if not integrated.
+
+#+begin_src cpp :name generator
+std::string("GL-10150-TEST")
+#+end_src
+
+** cost_center
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Internal finance code for P&L attribution.
+
+Links to cost center in finance system.
+
+#+begin_src cpp :name generator
+std::string("CC-001")
+#+end_src
+
+** book_status
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "Active"
+:END:
+
+Lifecycle status of the book.
+
+References book_statuses lookup (Active, Closed, Frozen). Defaults to
+=Active= so a freshly-constructed book (the Add dialog, before the
+Status combo's async populate completes) always carries a value the
+FK-validation trigger accepts.
+
+#+begin_src cpp :name generator
+std::string("Active")
+#+end_src
+
+** regulatory_book_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "Trading"
+:END:
+
+Basel III/IV FRTB trading book / banking book classification.
+
+References regulatory_book_types lookup (Trading, Banking). Defaults
+to =Trading= for the same reason =book_status= defaults to =Active=.
+
+#+begin_src cpp :name generator
+std::string("Trading")
+#+end_src
+
+** book_purpose_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "Trading"
+:END:
+
+The risk role this book plays.
+
+References book_purpose_types lookup (Trading, Reserve, Funding, Wash,
+WriteOff, Test, Sales, SweepTarget, RemittanceTarget). Defaults to =Trading=,
+which that lookup's own seed describes as the purpose for a book that plays
+none of the specialised roles, for the same reason =book_status= defaults to
+=Active=.
+
+#+begin_src cpp :name generator
+std::string("Trading")
+#+end_src
+
+** ledger_feed_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "None"
+:END:
+
+How this book's ledger balance is fed.
+
+References ledger_feed_types lookup (None, Automatic, Manual). Defaults to
+=None=, which that lookup's own seed describes as the value for a book with no
+ledger connection.
+
+#+begin_src cpp :name generator
+std::string("None")
+#+end_src
+
+** is_sweepable
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Whether this book is eligible for spot-sweep transfers to the
+designated Sweep target book -- independent of ledger_feed_type and
+book_purpose_type; see [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]].
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** rates_centre_code
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "WRLD"
+:END:
+
+Rates centre determining which revaluation market data snapshot this
+book uses at end-of-day; see
+[[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]].
+
+Soft FK to business_centres by code (e.g. "GBLO", "USNY"), reusing
+the same location reference already used by
+counterparty/party/business_unit rather than modeling a dedicated
+rates-centre entity. Defaults to =WRLD= (the global sentinel business
+centre, seeded for every tenant) for the same reason =book_status=
+defaults to =Active= -- a freshly-constructed book always carries a
+value the FK-validation trigger accepts.
+
+#+begin_src cpp :name generator
+std::string("WRLD")
+#+end_src
+
+** sandbox_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:fixed:    true
+:END:
+
+The sandbox the book belongs to; absent for an official book.
+
+A book in a sandbox is a /virtual book/ (see [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]): the trading
+system creates it, it never maps to the ledger, and nothing official reads
+it. It sits in its sandbox's portfolio tree, so its parent portfolio
+belongs to the same sandbox, and an official book never sits under a
+sandbox portfolio. It carries no ledger reference and is not a sweep
+target. Fixed for the book's life.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_book_changes_tbl
+:END:
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_inbox_approval_requests_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid request_id: %. No approval request found with this id.
+:END:
+
+The request the line belongs to.
+
+** part_code
+:PROPERTIES:
+:table:             ores_inbox_approval_parts_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid part_code: %. No approval part found with this code.
+:END:
+
+The part that decides the line.
+
+** functional_currency
+:PROPERTIES:
+:table:           ores_refdata_currencies_tbl
+:target_column:   iso_code
+:parent_entity:   currency
+:seed_value:      USD
+:skip_check:      true
+:nullable:        false
+:error_message:   Invalid functional_currency: %. No active currency found with this iso code.
+:END:
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:parent_entity: party
+:reuse_existing: true
+:nullable:      false
+:error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
+** parent_portfolio_id
+:PROPERTIES:
+:table:         ores_refdata_portfolios_tbl
+:parent_entity: portfolio
+:seed_parent_party_id: true
+:nullable:      false
+:error_message: Invalid parent_portfolio_id: %. No active portfolio found with this id.
+:END:
+
+** owner_unit_id
+:PROPERTIES:
+:table:         ores_refdata_business_units_tbl
+:nullable:      true
+:error_message: Invalid owner_unit_id: %. No active business unit found.
+:END:
+
+** sandbox_id
+:PROPERTIES:
+:table:         ores_refdata_sandboxes_tbl
+:nullable:      true
+:error_message: Invalid sandbox_id: %. No active sandbox found with this id.
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column               | validation_function                       |
+|----------------------+--------------------------------------------|
+| functional_currency  | ores_refdata_validate_currency_fn         |
+| book_status          | ores_refdata_validate_book_status_fn      |
+| regulatory_book_type | ores_refdata_validate_regulatory_book_type_fn |
+| book_purpose_type    | ores_refdata_validate_book_purpose_type_fn |
+| ledger_feed_type     | ores_refdata_validate_ledger_feed_type_fn |
+| rates_centre_code    | ores_refdata_validate_business_centre_fn  |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: book_change
+:entity_plural_short:   book_changes
+:entity_singular_words: book change
+:entity_plural_words:   book changes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+

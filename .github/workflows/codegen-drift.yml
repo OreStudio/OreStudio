@@ -154,6 +154,11 @@ jobs:
       - name: Check models agree with the profiles they bind to
         run: |
           python3 projects/ores.codegen/scripts/check_model_drift.py --summary
+      # A gated entity's pending-change model is derived from it. A model
+      # changed without re-deriving leaves the pending table behind.
+      - name: Check every pending-change model is derived from its entity
+        run: |
+          python3 projects/ores.codegen/scripts/derive_pending_models.py --check
 
   # Handler permissions: a generated handler checks
   # has_permission(req_ctx, "<code>"), and iam_permissions_populate.sql

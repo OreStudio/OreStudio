@@ -99,6 +99,14 @@ generated from the entity's model, as the entity's other tables are, so a model
 change reaches the pending table in the same regeneration and the same migration.
 A request may hold lines for several entities, one typed table each.
 
+An entity model opts in with =:gated: true= in its =* Flags= drawer. The code
+generator then derives a second entity model, =<entity>_change=, beside the first,
+and runs every existing template on it. The derived model has no natural keys and
+no checks or insert-trigger rules, because those are the live row's rules and the
+dry run runs them by calling the real write. It is read-only to clients: only the
+raise operation writes a line. =compass codegen generate= derives it whenever it
+generates the gated model, and a drift check fails when a derived model is stale.
+
 The queue and the request page need three further typed facts that no entity
 table can give: the parts a request needs and their order. They live in one small
 table keyed by the request and the part, written at raise.

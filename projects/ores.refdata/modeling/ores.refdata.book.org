@@ -24,6 +24,7 @@ capital treatment. Must belong to exactly one portfolio.
 :product:          ores
 :component:        refdata
 :profile:   fk-scoped-child
+:gated:     true
 :END:
 
 * Columns

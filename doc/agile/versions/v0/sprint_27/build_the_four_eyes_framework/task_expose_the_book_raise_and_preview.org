@@ -8,7 +8,7 @@
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
 #+branch: feature/expose-the-book-raise-and-preview
-#+pr:
+#+pr: 3080
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3080][#3080]] | [refdata] Expose the book preview and raise as operations |
 
 * Review
 

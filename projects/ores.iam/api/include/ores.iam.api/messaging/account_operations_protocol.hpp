@@ -28,6 +28,7 @@
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/account_contact_information.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
+#include "ores.iam.api/domain/session.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <optional>
 #include <string>
@@ -526,6 +527,64 @@ struct get_my_account_response {
      * @brief The caller's account, or nothing when the session names none.
      */
     std::optional<ores::iam::domain::account> account;
+};
+
+/**
+ * @brief A member's read of their own sign-in state.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's. The read needs no permission: it is a self
+ * read on the allow-list of Authorised reads, so a member sees whether their
+ * account is locked and when they last signed in without holding
+ * iam::login_info:read. Reading another account's is iam.v1.login_info.get,
+ * which needs that permission.
+ */
+struct get_my_login_info_request {
+    using response_type = struct get_my_login_info_response;
+    static constexpr std::string_view nats_subject = "iam.v1.ops.get_my_login_info";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+struct get_my_login_info_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The caller's sign-in state, or nothing when none is recorded.
+     */
+    std::optional<ores::iam::domain::login_info> login_info;
+};
+
+/**
+ * @brief A member's read of the places their own account is signed in.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's. The read needs no permission: it is a self
+ * read on the allow-list of Authorised reads. The tenant-wide read of open
+ * sessions is iam.v1.ops.get_active_sessions, which needs iam::sessions:read.
+ */
+struct get_my_sessions_request {
+    using response_type = struct get_my_sessions_response;
+    static constexpr std::string_view nats_subject = "iam.v1.ops.get_my_sessions";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+struct get_my_sessions_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The caller's sessions with no end time, newest first.
+     */
+    std::vector<ores::iam::domain::session> sessions;
 };
 
 /**

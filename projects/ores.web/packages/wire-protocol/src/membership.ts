@@ -21,10 +21,17 @@
 
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
-import type { Account } from './domain.js';
+import type { Account, LoginInfo } from './domain.js';
 import { OperationFailedError } from './errors.js';
 import { subjects as accountSubjects } from './generated/iam/protocol/account_operations_protocol.js';
-import { decidedResultSchema, mapAccount, wireAccountSchema } from './operations.js';
+import {
+    activeSessionsReplySchema,
+    decidedResultSchema,
+    loginInfoReplySchema,
+    mapAccount,
+    wireAccountSchema,
+    type WireActiveSessions,
+} from './operations.js';
 
 /**
  * The membership read path: the parties the caller's own account works in.
@@ -165,6 +172,36 @@ export async function readMyAccount(caller: AuthenticatedCaller): Promise<Accoun
         );
     }
     return reply.account;
+}
+
+/**
+ * The caller's own sign-in state, or nothing when none is recorded.
+ *
+ * The request names no account, because the session names it, so the read
+ * answers the caller's own state and needs no permission. A member who does
+ * not hold iam::login_info:read reads whether their account is locked and when
+ * they last signed in through this.
+ */
+export async function readMyLoginInfo(caller: AuthenticatedCaller): Promise<LoginInfo | null> {
+    return caller.callAuthenticated(
+        accountSubjects.get_my_login_info_request,
+        {},
+        loginInfoReplySchema,
+    );
+}
+
+/**
+ * The caller's own open sessions, newest first.
+ *
+ * The request names no account, because the session names it, so the read
+ * answers the caller's own sessions and needs no permission.
+ */
+export async function readMySessions(caller: AuthenticatedCaller): Promise<WireActiveSessions> {
+    return caller.callAuthenticated(
+        accountSubjects.get_my_sessions_request,
+        {},
+        activeSessionsReplySchema,
+    );
 }
 
 const setReportingLineReplySchema = z

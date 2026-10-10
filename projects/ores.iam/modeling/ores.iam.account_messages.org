@@ -23,6 +23,7 @@ The account protocol messages.
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/account_contact_information.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
+#include "ores.iam.api/domain/session.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <optional>
 #include <string>
@@ -843,6 +844,78 @@ from here is what the registrar subscribes with.
 #+begin_src cpp :name comment
 /**
  * @brief The caller's account, or nothing when the session names none.
+ */
+#+end_src
+
+** get_my_login_info_request
+:PROPERTIES:
+:subject: iam.v1.ops.get_my_login_info
+:response: get_my_login_info_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A member's read of their own sign-in state.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's. The read needs no permission: it is a self
+ * read on the allow-list of Authorised reads, so a member sees whether their
+ * account is locked and when they last signed in without holding
+ * iam::login_info:read. Reading another account's is iam.v1.login_info.get,
+ * which needs that permission.
+ */
+#+end_src
+
+** get_my_login_info_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** login_info
+:PROPERTIES:
+:cpp_type: std::optional<ores::iam::domain::login_info>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The caller's sign-in state, or nothing when none is recorded.
+ */
+#+end_src
+
+** get_my_sessions_request
+:PROPERTIES:
+:subject: iam.v1.ops.get_my_sessions
+:response: get_my_sessions_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A member's read of the places their own account is signed in.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's. The read needs no permission: it is a self
+ * read on the allow-list of Authorised reads. The tenant-wide read of open
+ * sessions is iam.v1.ops.get_active_sessions, which needs iam::sessions:read.
+ */
+#+end_src
+
+** get_my_sessions_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** sessions
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::session>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The caller's sessions with no end time, newest first.
  */
 #+end_src
 

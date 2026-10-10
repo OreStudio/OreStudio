@@ -59,6 +59,8 @@ import {
     reportingLineRequestSchema,
     reportingTreeSchema,
     readMyAccount,
+    readMyLoginInfo,
+    readMySessions,
     setReportingLine,
     deleteRole,
     giveRole,
@@ -1493,7 +1495,14 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (!key.success) {
             throw invalidRequest('An account id is required.');
         }
-        return { loginInfo: await readLoginInfo(session.client, key.data.key.account_id) };
+        // Your own state is a self read, which needs no permission; anybody
+        // else's is the login info read, which does.
+        const own = key.data.key.account_id === session.accountId;
+        return {
+            loginInfo: own
+                ? await readMyLoginInfo(session.client)
+                : await readLoginInfo(session.client, key.data.key.account_id),
+        };
     });
 
     /**
@@ -1530,17 +1539,12 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     /**
      * The signed-in person's own sessions with no end time.
      *
-     * The server answers the tenant's open sessions, the platform's own
-     * services' among them in the system tenant, so the read keeps the rows
-     * of the session's account and no other.
+     * A self read: the server answers the caller's own open sessions and no
+     * other, and it needs no permission.
      */
     server.get('/api/me/sessions', async (request) => {
         const session = requireSession(request);
-        const answer = await readActiveSessions(session.client);
-        return {
-            ...answer,
-            sessions: answer.sessions.filter((row) => row.accountId === session.accountId),
-        };
+        return readMySessions(session.client);
     });
 
     /** What the roster may ask for: a search, an order and one page of the matches. */

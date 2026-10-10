@@ -190,6 +190,20 @@ void account_operations_operations_commands::register_commands(cli::Menu& root_m
         "get-my-account");
 
     menu->Insert(
+        "get-my-login-info",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_my_login_info(std::ref(out), std::ref(session), std::move(args));
+        },
+        "get-my-login-info");
+
+    menu->Insert(
+        "get-my-sessions",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_my_sessions(std::ref(out), std::ref(session), std::move(args));
+        },
+        "get-my-sessions");
+
+    menu->Insert(
         "get-my-parties",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_my_parties(std::ref(out), std::ref(session), std::move(args));
@@ -1022,6 +1036,106 @@ void account_operations_operations_commands::process_get_my_account(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::iam::messaging::get_my_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void account_operations_operations_commands::process_get_my_login_info(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-my-login-info request.";
+
+    using request_type = ores::iam::messaging::get_my_login_info_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-my-login-info." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 0;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    try {
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::get_my_login_info_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::get_my_login_info_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::get_my_login_info_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void account_operations_operations_commands::process_get_my_sessions(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-my-sessions request.";
+
+    using request_type = ores::iam::messaging::get_my_sessions_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-my-sessions." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 0;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    try {
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::get_my_sessions_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::get_my_sessions_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::get_my_sessions_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

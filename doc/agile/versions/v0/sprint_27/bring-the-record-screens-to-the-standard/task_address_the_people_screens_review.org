@@ -58,38 +58,38 @@ reason beside any box that does not. The groups are the order of work.
 
 ** Questions to settle first
 - [ ] P8 Sign out when the window closes: beacon, or a shorter idle lifetime?
-- [ ] P9 My access in two places: which two, and which one stays?
-- [ ] P14 Requests: one place for every request type?
+- [x] P9 My access in two places: settled by proposal. My access keeps the roles and what they allow; the profile's Access tab points to it.
+- [x] P14 Requests: settled by proposal. It is the one place for every request type; every member sees their own there, and deciders see the queue.
 
 ** Staff and person
-- [ ] P1 Party column in the staff list
-- [ ] P2 Address for Adrian Vance and the others who have none
-- [ ] P7 Can I... on the staff person page
+- [x] P1 Party column in the staff list
+- [x] P2 Address for Adrian Vance and the others who have none
+- [x] P7 Can I... on the staff person page
 
 ** Access and roles
-- [ ] P3 Page the permissions a role grants
-- [ ] P4 Select the permission area (Reference data, Data quality, ...)
-- [ ] P10 Requests visible to every member
-- [ ] P6 Protect my account refused for Adrian Vance
+- [x] P3 Page the permissions a role grants
+- [x] P4 Select the permission area (Reference data, Data quality, ...)
+- [x] P10 Requests visible to every member
+- [x] P6 Protect my account: the Security page now reads sign-in state and sessions through two self reads (get_my_login_info, get_my_sessions)
 
 ** Profile
-- [ ] P5 History on My profile
-- [ ] P9 My access in one place (after the question)
-- [ ] P8 Sign out on close (after the question)
+- [x] P5 History on My profile
+- [x] P9 My access in one place
+- [ ] P8 Sign out on close (waiting for the answer to the question above)
 
 ** Requests
-- [ ] P12 Answered by: name, with username, as a link
-- [ ] P13 Approved by: the same
-- [ ] P14 Scope of Requests (after the question)
+- [x] P12 Answered by: name, with username, as a link
+- [x] P13 Approved by: the same
+- [x] P14 Scope of Requests
 
 ** History
-- [ ] P15 Header line per event, details on demand
-- [ ] P16 Username links to the person
-- [ ] P17 Hierarchy history: recent changes list, then one person's history
+- [x] P15 Header line per event, details on demand
+- [x] P16 Username links to the person
+- [x] P17 Hierarchy history: recent changes list, then one person's history
 
 ** Shell
-- [ ] P19 Current tenant and party as pills; explain or drop the Application pill
-- [ ] P11 Live notifications (deferred to Hear a change on the server and offer a refresh)
+- [x] P19 Current tenant and party as pills; explain or drop the Application pill
+- [x] P11 The bell list is polled and the request lists refresh when the count rises. A pushed update stays with Hear a change on the server and offer a refresh.
 
 ** Own task
 - [ ] P18 Approve a reporting line change by the proposed manager (task_approve_a_reporting_line_change_by_the_proposed_manager)

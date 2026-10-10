@@ -55,6 +55,26 @@ A kind of record with one table and no aspects is still a record screen. Use the
 replaces it. Where the two disagree on the same thing, the record standard rules
 for a screen of one record kind, and this page rules for an entity.
 
+** User journeys and screens
+
+A user journey says what a person is trying to do. A screen is a part of the
+interface. The two are not the same shape, and a screen is never a journey
+copied step by step.
+
+- A journey is a design document. It names the goal, the actor, the reads and
+  writes it needs, and what is missing. It stays as it is.
+- The screens that serve a journey follow the UX standards: the list, the page
+  of one subject, the cards, the dialogs and the history. One journey is usually
+  served by several standard screens, and one screen serves several journeys.
+- A wizard is the exception. Use a guided sequence of steps only when it makes
+  the task easier or quicker for the person, for example the first run of an
+  installation or the setup of a tenant. Editing a record, or a record made of
+  several kinds of record, is not such a task. It is done on the page of the
+  subject, with an Edit button on each card.
+- A change that needs a second person is not a different screen. The person
+  saves in the usual dialog, and the save proposes the change. See
+  [[*Proposals and four-eyes][Proposals and four-eyes]].
+
 ** Words
 
 | Word | Meaning |

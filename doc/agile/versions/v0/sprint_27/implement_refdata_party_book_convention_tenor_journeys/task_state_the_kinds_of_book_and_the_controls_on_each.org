@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: docs/book-types-and-their-controls
-#+pr:
+#+pr: 3049
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3049][#3049]] | [doc] State the kinds of book and the controls on each |
 
 * Review
 

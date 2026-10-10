@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: F0AC7834-D945-4CC4-BB85-327FBD4010DF
+:END:
+#+title: Task: Prefix the release figure with v
+#+description: Initial task for: Show the release with its v
+#+type: task
+#+level: s1
+#+filetags: :show_the_release_with_its_v:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C4A3D144-E13B-445D-918F-945CE636214C][Show the release with its v]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The newest release figure reads v0.0.27, whichever form the services report.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C4A3D144-E13B-445D-918F-945CE636214C][Show the release with its v]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The release figure on the services screen and the system home starts with v.
+- A release that already starts with v is not given a second one.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The newest release figure on the services screen and the system home now reads v0.0.27. A small function adds the v when the services report the number bare, and leaves a release that already has one, and a word such as unknown, alone. The wire value is unchanged. The web package passes 647 tests and the format check. The versions in the instance table and in the skew notice are not changed.

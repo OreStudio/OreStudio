@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: C4A3D144-E13B-445D-918F-945CE636214C
+:END:
+#+title: Story: Show the release with its v
+#+description: The installation figures state the newest release as 0.0.27, because the services report it without a leading v. The rest of the application writes releases as v0.0.27. Show the figure the same way.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The newest release figure reads v0.0.27, whichever form the services report.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- The release figure on the services screen and the system home starts with v.
+- A release that already starts with v is not given a second one.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E83C206A-EE63-4A18-815E-96324A2BC475][Scaffold story: Show the release with its v]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F0AC7834-D945-4CC4-BB85-327FBD4010DF][Prefix the release figure with v]] | DONE | | 2026-10-10 | Initial task for: Show the release with its v |
+
+* Decisions
+
+* Out of scope
+
+-
+
+The release figure now reads v0.0.27 on the services screen and the system home.

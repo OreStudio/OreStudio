@@ -154,16 +154,6 @@ Other schemes keep the per-set key above.
 
 * Foreign keys
 
-** netting_set_id
-:PROPERTIES:
-:table:         ores_refdata_netting_sets_tbl
-:parent_entity: netting_set
-:nullable:      false
-:error_message: Invalid netting_set_id: %. No active netting set found with this id.
-:list_by:       true
-:list_by_uuid:  true
-:END:
-
 ** party_id
 :PROPERTIES:
 :table:          ores_refdata_parties_tbl
@@ -171,6 +161,17 @@ Other schemes keep the per-set key above.
 :reuse_existing: true
 :nullable:       false
 :error_message:  Invalid party_id: %. No active party found with this id.
+:END:
+
+** netting_set_id
+:PROPERTIES:
+:table:         ores_refdata_netting_sets_tbl
+:parent_entity: netting_set
+:seed_parent_party_id: true
+:nullable:      false
+:error_message: Invalid netting_set_id: %. No active netting set found with this id.
+:list_by:       true
+:list_by_uuid:  true
 :END:
 
 * Insert trigger

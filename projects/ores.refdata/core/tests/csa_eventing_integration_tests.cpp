@@ -128,30 +128,6 @@ TEST_CASE("write_csa_publishes_an_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_csa(ctx);
     v.change_reason_code = "system.test";
-    // Seed the active netting_set row ores_refdata_netting_sets_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto netting_set_id_parent = ores::refdata::generators::generate_synthetic_netting_set(ctx);
-    netting_set_id_parent.change_reason_code = "system.test";
-    // netting_set's own mandatory party_id FK (session-set in
-    // production) needs an active party too: seed one, attached under the
-    // tenant's root party like the direct-party branch below.
-    auto netting_set_id_party = ores::refdata::generators::generate_synthetic_party(ctx);
-    netting_set_id_party.change_reason_code = "system.test";
-    auto netting_set_id_party_existing =
-        ores::refdata::repository::party_repository().read_latest(party_ctx);
-    for (const auto& e : netting_set_id_party_existing) {
-        if (e.tenant_id == netting_set_id_party.tenant_id) {
-            netting_set_id_party.parent_party_id = e.id;
-            break;
-        }
-    }
-    ores::refdata::repository::party_repository netting_set_id_party_repo;
-    netting_set_id_party_repo.write(party_ctx, netting_set_id_party);
-    netting_set_id_parent.party_id = netting_set_id_party.id;
-    ores::refdata::repository::netting_set_repository netting_set_id_repo;
-    netting_set_id_repo.write(party_ctx, netting_set_id_parent);
-    v.netting_set_id = netting_set_id_parent.id;
     // Seed the active party row ores_refdata_parties_tbl references:
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
@@ -169,6 +145,20 @@ TEST_CASE("write_csa_publishes_an_event", tags) {
     ores::refdata::repository::party_repository party_id_repo;
     party_id_repo.write(party_ctx, party_id_parent);
     v.party_id = party_id_parent.id;
+    // Seed the active netting_set row ores_refdata_netting_sets_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto netting_set_id_parent = ores::refdata::generators::generate_synthetic_netting_set(ctx);
+    netting_set_id_parent.change_reason_code = "system.test";
+    // The csa takes its party from this netting_set,
+    // so the netting_set carries the party already seeded for the
+    // csa: under any other party the stored row would belong to a
+    // party the csa's own reads do not name. The party foreign key
+    // is declared first in the model, so that party is written by now.
+    netting_set_id_parent.party_id = v.party_id;
+    ores::refdata::repository::netting_set_repository netting_set_id_repo;
+    netting_set_id_repo.write(party_ctx, netting_set_id_parent);
+    v.netting_set_id = netting_set_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "CSA: " << v;
 

@@ -37,6 +37,13 @@ states the owning legal entity, such as a CSA that belongs to a netting set.
 The party then cannot differ from the parent's, because the caller never
 supplies it.
 
+A model that uses this feature also sets =:seed_parent_party_id: true= on the
+foreign key that names the parent, and lists its own =party_id= foreign key
+first. The generated eventing integration test then seeds the parent under the
+entity's own party. Without the property the test seeds the parent under a fresh
+party, the trigger stores that party, and the test cannot read back the row it
+wrote.
+
 * Structural consequence
 
 None for the column set. It assumes a =party_id= column already exists. The

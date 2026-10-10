@@ -324,6 +324,15 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
 {{/parent_party_isolated}}
 {{#parent_requires_party}}
 {{^parent_supplies_party}}
+{{#seed_parent_party_id}}
+    // The {{entity_singular}} takes its party from this {{parent_entity_singular}},
+    // so the {{parent_entity_singular}} carries the party already seeded for the
+    // {{entity_singular}}: under any other party the stored row would belong to a
+    // party the {{entity_singular}}'s own reads do not name. The party foreign key
+    // is declared first in the model, so that party is written by now.
+    {{column}}_parent.{{{parent_party_prefix}}}party_id = v.{{{scaffold_prefix}}}party_id;
+{{/seed_parent_party_id}}
+{{^seed_parent_party_id}}
     // {{parent_entity_singular}}'s own mandatory party_id FK (session-set in
     // production) needs an active party too: seed one, attached under the
     // tenant's root party like the direct-party branch below.
@@ -339,6 +348,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     ores::refdata::repository::party_repository {{column}}_party_repo;
     {{column}}_party_repo.write(party_ctx, {{column}}_party);
     {{column}}_parent.{{{parent_party_prefix}}}party_id = {{column}}_party.id;
+{{/seed_parent_party_id}}
 {{/parent_supplies_party}}
 {{/parent_requires_party}}
 {{#parent_is_party}}

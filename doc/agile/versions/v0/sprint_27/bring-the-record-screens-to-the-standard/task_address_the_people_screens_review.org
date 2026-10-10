@@ -8,7 +8,7 @@
 #+filetags: :bring-the-record-screens-to-the-standard:sprint_27:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
-#+pr:
+#+pr: 3045
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -129,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3045][#3045]] | [web] Address the people screens review |
 
 * Review
 

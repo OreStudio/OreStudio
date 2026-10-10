@@ -142,6 +142,7 @@ export async function listImageSummaries(
             limit: page.limit,
             order: { field: '', descending: false },
             filter: page.search === '' ? null : { id_one_of: null, search: page.search },
+            as_of: null,
         },
         imagePageReplySchema,
     );

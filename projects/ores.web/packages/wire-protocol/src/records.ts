@@ -117,7 +117,7 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         writable: false,
         search: false,
         sortable: [],
-        asOf: false,
+        asOf: true,
         subjects: {
             list: businessCentreSubjects.list_business_centres_request,
             put: businessCentreSubjects.put_business_centre_request,
@@ -133,7 +133,7 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         writable: true,
         search: true,
         sortable: ['code', 'name', 'calendar_type', 'country_code'],
-        asOf: false,
+        asOf: true,
         subjects: {
             list: calendarSubjects.list_calendars_request,
             put: calendarSubjects.put_calendar_request,
@@ -149,7 +149,7 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         writable: true,
         search: false,
         sortable: [],
-        asOf: false,
+        asOf: true,
         listBy: 'calendar_code',
         subjects: {
             list: calendarRuleSubjects.list_calendar_rules_request,
@@ -167,7 +167,7 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         writable: true,
         search: false,
         sortable: [],
-        asOf: false,
+        asOf: true,
         listBy: 'calendar_code',
         subjects: {
             list: calendarExceptionSubjects.list_calendar_exceptions_request,
@@ -185,7 +185,7 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         writable: true,
         search: false,
         sortable: [],
-        asOf: false,
+        asOf: true,
         listBy: 'calendar_code',
         subjects: {
             list: calendarEventSubjects.list_calendar_events_request,
@@ -203,7 +203,7 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         writable: true,
         search: true,
         sortable: ['code', 'name', 'display_order'],
-        asOf: false,
+        asOf: true,
         subjects: {
             list: currencyGroupSubjects.list_currency_groups_request,
             put: currencyGroupSubjects.put_currency_group_request,
@@ -273,7 +273,7 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         writable: true,
         search: true,
         sortable: ['pair_code', 'base_currency', 'quote_currency', 'classification'],
-        asOf: false,
+        asOf: true,
         subjects: {
             list: currencyPairSubjects.list_currency_pairs_request,
             put: currencyPairSubjects.put_currency_pair_request,
@@ -289,7 +289,7 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         writable: true,
         search: false,
         sortable: [],
-        asOf: false,
+        asOf: true,
         subjects: {
             list: currencyPairConventionSubjects.list_currency_pair_conventions_request,
             put: currencyPairConventionSubjects.put_currency_pair_convention_request,

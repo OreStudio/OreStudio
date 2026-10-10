@@ -19,22 +19,26 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useReducer, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
+import type { Scenario } from '@ores/contracts';
 import { qa } from '../api/qa.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
-import { Notice, PageHeader } from '../ui/Primitives.js';
+import { Notice } from '../ui/Primitives.js';
+import { openRunner, outcomeOf, reduce, saveRequest, type Action, type Outcome } from './runner.js';
+import { ScenarioRunner } from './ScenarioRunner.js';
+import { QA_SCENARIOS_KEY } from './TestsQueue.js';
 
-/**
- * The page a queue row opens. It names the scenario and its steps, and says the
- * runner is not built yet. The runner replaces the body.
- */
+/** The page a queue row opens: the scenario, loaded, and its runner. */
 export function ScenarioPage(): ReactNode {
     const { t } = useTranslation();
     const { id = '' } = useParams();
-    const scenario = useQuery({ queryKey: ['qa-scenario', id], queryFn: () => qa.scenario(id) });
+    const scenario = useQuery({
+        queryKey: ['qa-scenario', id],
+        queryFn: () => qa.scenario(id),
+    });
 
     return (
         <div className="space-y-4">
@@ -42,28 +46,56 @@ export function ScenarioPage(): ReactNode {
                 parts={[
                     { label: t('shell.menu.home'), to: '/' },
                     { label: t('shell.menu.development'), to: '/development' },
+                    ...(scenario.isSuccess ? [{ label: scenario.data.title }] : []),
                 ]}
             />
             {scenario.isError && <Notice tone="error">{scenario.error.message}</Notice>}
             {scenario.isPending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
-            {scenario.isSuccess && (
-                <>
-                    <PageHeader
-                        title={scenario.data.title}
-                        description={scenario.data.description}
-                    />
-                    <Notice>{t('development.scenario.notBuilt')}</Notice>
-                    <ol className="list-decimal space-y-1 pl-6 text-sm">
-                        {scenario.data.steps.map((step, index) => (
-                            <li key={`${index}/${step.client ?? ''}/${step.title}`}>
-                                {step.client === null
-                                    ? step.title
-                                    : `${step.client}: ${step.title}`}
-                            </li>
-                        ))}
-                    </ol>
-                </>
-            )}
+            {scenario.isSuccess && <Run id={id} scenario={scenario.data} />}
         </div>
+    );
+}
+
+/** Holds the working copy of one loaded scenario, and saves it. */
+function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenario }): ReactNode {
+    const client = useQueryClient();
+    const [runner, dispatch] = useReducer(reduce, scenario, openRunner);
+    const [outcome, setOutcome] = useState<Outcome | null>(null);
+    const [confirmingRetest, setConfirmingRetest] = useState(false);
+
+    // An action of the tester clears the message about the last save. A save
+    // dispatches on the raw dispatch, so its own message stays.
+    const act = (action: Action): void => {
+        setOutcome(null);
+        dispatch(action);
+    };
+
+    const save = useMutation({
+        mutationFn: () => qa.record(id, saveRequest(runner)),
+        onSuccess: (saved) => {
+            client.setQueryData(['qa-scenario', id], saved.scenario);
+            void client.invalidateQueries({ queryKey: QA_SCENARIOS_KEY });
+            dispatch({ type: 'saved', scenario: saved.scenario });
+            setOutcome(outcomeOf(saved));
+        },
+        onError: (error) => setOutcome({ kind: 'failed', message: error.message }),
+    });
+
+    return (
+        <ScenarioRunner
+            scenario={scenario}
+            runner={runner}
+            dispatch={act}
+            onSave={() => save.mutate()}
+            saving={save.isPending}
+            outcome={outcome}
+            confirmingRetest={confirmingRetest}
+            onAskRetest={() => setConfirmingRetest(true)}
+            onConfirmRetest={() => {
+                setConfirmingRetest(false);
+                act({ type: 'retest' });
+            }}
+            onCancelRetest={() => setConfirmingRetest(false)}
+        />
     );
 }

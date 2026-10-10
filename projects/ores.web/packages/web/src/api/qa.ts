@@ -20,8 +20,11 @@
  */
 
 import {
+    runResponseSchema,
     scenarioListSchema,
     scenarioResponseSchema,
+    type RunRequest,
+    type RunResponse,
     type Scenario,
     type ScenarioSummary,
 } from '@ores/contracts';
@@ -45,5 +48,16 @@ export const qa = {
         return scenarioResponseSchema.parse(
             await request(`/api/qa/scenarios/${encodeURIComponent(id)}`, { method: 'GET' }),
         ).scenario;
+    },
+
+    /** Save a run into a scenario. The server says whether the save closed it. */
+    async record(id: string, run: RunRequest): Promise<RunResponse> {
+        return runResponseSchema.parse(
+            await request(`/api/qa/scenarios/${encodeURIComponent(id)}/run`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(run),
+            }),
+        );
     },
 };

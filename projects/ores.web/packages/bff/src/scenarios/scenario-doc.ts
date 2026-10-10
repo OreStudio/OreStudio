@@ -19,6 +19,7 @@
  *
  */
 
+import { scenarioStateOf } from '@ores/contracts';
 import {
     fieldTable,
     findSection,
@@ -435,15 +436,7 @@ export function recordRun(text: string, input: RunInput): RecordedRun {
             outcomeOf.get(l) ??
             stepStatus(l.result === undefined ? '' : (fieldTable(l.result).get('status') ?? '')),
     );
-    // A scenario in which nothing passed or failed, such as one whose steps
-    // are all dropped, has not been run, so it stays open.
-    const ran = statuses.some((status) => status === 'PASS' || status === 'FAIL');
-    const state: ScenarioState =
-        statuses.includes('PENDING') || !ran
-            ? 'PENDING'
-            : statuses.includes('FAIL')
-              ? 'FAILED'
-              : 'PASSED';
+    const state = scenarioStateOf(statuses);
 
     const resultsTable = results.tables[0];
     const run: [string, string][] = [

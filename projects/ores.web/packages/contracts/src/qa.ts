@@ -37,6 +37,21 @@ export type StepStatus = z.infer<typeof stepStatusSchema>;
 export const scenarioStateSchema = z.enum(['PENDING', 'PASSED', 'FAILED']);
 export type ScenarioState = z.infer<typeof scenarioStateSchema>;
 
+/**
+ * The state a scenario has once its steps have these statuses. It closes when
+ * no step is pending and some step passed or failed. It is then FAILED if a
+ * step failed, else PASSED. A scenario in which nothing passed or failed, such
+ * as one whose steps are all dropped, has not been run, so it stays PENDING.
+ *
+ * The server decides with this when it saves a run, and the browser shows the
+ * same answer while a tester marks steps, so the two cannot differ.
+ */
+export function scenarioStateOf(statuses: readonly StepStatus[]): ScenarioState {
+    const ran = statuses.some((status) => status === 'PASS' || status === 'FAIL');
+    if (statuses.includes('PENDING') || !ran) return 'PENDING';
+    return statuses.includes('FAIL') ? 'FAILED' : 'PASSED';
+}
+
 /** A link to another doc: its :ID: and the text of the link. */
 export const docLinkSchema = z.object({ id: z.string(), title: z.string() });
 export type DocLink = z.infer<typeof docLinkSchema>;

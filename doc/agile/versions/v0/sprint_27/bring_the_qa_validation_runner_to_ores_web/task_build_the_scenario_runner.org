@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A tester works through a scenario one step at a time, marks each step, writes no
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -44,9 +44,13 @@ A tester works through a scenario one step at a time, marks each step, writes no
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The runner replaces the page a queue row opens. It follows layout B of the prototype, accepted on 2026-10-10.
+
+- =runner.ts= holds the rules as a reducer over a working copy of the steps. A Pass moves to the next step. A Fail and a Clear stay on the step. A note belongs to the step on show. A closed scenario ignores marks and notes. A retest clears every step and its note, starts at the first step and opens the scenario. A save returns the server's scenario, and the scenario is closed only as the server says.
+- =scenarioStateOf= in =@ores/contracts= is the one rule for a scenario's state: it closes when no step is pending and some step passed or failed, then FAILED if a step failed, else PASSED. The BFF codec and the browser both use it, so the header and the saved doc cannot disagree.
+- =ScenarioRunner.tsx= draws the header with the state tag, the progress bar, the step with its client tag, the instructions, Pass, Fail and Clear, the note, and the save bar. A closed scenario shows Retest in place of Save, and Retest asks in a dialog first.
+- =OrgText.tsx= draws a step's instructions through =renderOrgHtml= from =@ores/org=, which shows raw HTML as text and removes unsafe links.
+- =ScenarioPage.tsx= loads the scenario, holds the reducer and saves through =PUT /api/qa/scenarios/:id/run=. A save refreshes the queue. The page tells the tester whether the save closed the scenario or left steps to mark, or why it failed.
 
 * Measurements
 
@@ -63,6 +67,12 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- A save sends every step the tester can mark. A dropped step is left out, because a save never writes one. A retest leaves a dropped step as it was.
+- A retest changes nothing on disk until the tester saves. A tester who leaves after a retest leaves the closed result in place.
+- A save sends blank branch, commit and worktree, so the Results table of the doc loses those three values on a save. The BFF should fill them from its own work tree. That is open.
+- The tests render the view with the reducer's states as markup. A throwaway harness, not committed, mounted the real page against an in-memory fake of the two endpoints and drove it in headless Chrome: 25 checks covered Fail then note, Pass moving on, the last Pass, Save closing a scenario, a closed scenario being read-only, the retest dialog with Cancel and Confirm, a partial save, and the save message clearing on the next action. All 25 passed, with no script errors.
+- Images for a step wait for task 7. The Story and Task tabs wait for task 6.
 
 * Test Scenarios
 

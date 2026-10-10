@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 5F88F874-7A41-4CAE-BEC5-5C4A35334A1B
+:END:
+#+title: Story: Give the super administrator's landing page its cards
+#+description: The system administrator's home shows health figures and a tenant table. It offers no card for the places the person works in. Offer them as cards, as the tenant administrator's home does, and mark the super administrator journeys that have no screen yet.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A system administrator lands on cards for the screens they use, and sees which journeys are still to come.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- The system home shows an active run of cards that lead to tenants, accounts, services, grid, bus, logs, versions and security.
+- The system home shows an upcoming run for the journeys with no screen.
+- The health figures, the attention list and the tenant table stay.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D83549D8-5FBD-48C0-9E43-7F6C58E0AD52][Scaffold story: Give the super administrator's landing page its cards]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0FDB8A7E-3A26-48F0-977B-6B9606C374DF][Offer the super administrator's places as cards]] | BACKLOG | | | Initial task for: Give the super administrator's landing page its cards |
+| [[id:46D623F0-D2E0-447D-B6FD-4F2E0EAE1133][File the super administrator journeys that have no screen]] | BACKLOG | | | Three super administrator journeys have a design and a backend but no screen: the market data feeds, the yield curve process types, and the compute catalogue. File one capture for each, with what its backend offers and what is missing. |
+
+* Decisions
+
+* Out of scope
+
+-

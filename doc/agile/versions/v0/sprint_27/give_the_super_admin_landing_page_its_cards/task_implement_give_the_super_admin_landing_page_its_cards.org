@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 0FDB8A7E-3A26-48F0-977B-6B9606C374DF
+:END:
+#+title: Task: Offer the super administrator's places as cards
+#+description: Initial task for: Give the super administrator's landing page its cards
+#+type: task
+#+level: s1
+#+filetags: :give_the_super_admin_landing_page_its_cards:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5F88F874-7A41-4CAE-BEC5-5C4A35334A1B][Give the super administrator's landing page its cards]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A system administrator lands on cards for the screens they use, and sees which journeys are still to come.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:5F88F874-7A41-4CAE-BEC5-5C4A35334A1B][Give the super administrator's landing page its cards]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The system home shows an active run of cards that lead to tenants, accounts, services, grid, bus, logs, versions and security.
+- The system home shows an upcoming run for the journeys with no screen.
+- The health figures, the attention list and the tenant table stay.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

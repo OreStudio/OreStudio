@@ -48,6 +48,8 @@ std::vector<ores::diff::domain::field_value> render_trade_fields(const domain::t
         {.name = "Counterparty Scope", .value = rfl::enum_to_string(v.counterparty_scope)});
     fields.push_back({.name = "Booking Nature", .value = rfl::enum_to_string(v.booking_nature)});
     fields.push_back({.name = "Entry Channel", .value = rfl::enum_to_string(v.entry_channel)});
+    fields.push_back({.name = "External Version", .value = std::to_string(v.external_version)});
+    fields.push_back({.name = "Economic Digest", .value = v.economic_digest});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

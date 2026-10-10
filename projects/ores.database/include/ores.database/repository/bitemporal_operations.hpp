@@ -22,7 +22,9 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/export.hpp"
+#include "ores.database/repository/entity_write_observer.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <map>
 #include <optional>
@@ -131,6 +133,11 @@ void execute_write_op(context ctx,
  *
  * It joins the context's own transaction when the context carries one.
  *
+ * An entity whose component specialises @c entity_write_observer is observed
+ * after the write, in the same transaction as it. When the context carries no
+ * transaction the write and its observation share one opened here, so a
+ * failure in either leaves neither.
+ *
  * @tparam EntityType The database entity type
  * @param ctx The repository context
  * @param entity The entity or vector of entities to write
@@ -148,7 +155,24 @@ void execute_write_query(context ctx,
                          logging::logger_t& lg,
                          const std::string& operation_desc) {
 
-    execute_write_op(ctx, sqlgen::insert(entity), lg, operation_desc);
+    if constexpr (entity_write_observer<EntityType>::observes) {
+        if (ctx.active_transaction()) {
+            execute_write_op(ctx, sqlgen::insert(entity), lg, operation_desc);
+            entity_write_observer<EntityType>::observe(ctx, entity, lg);
+        } else {
+            /*
+             * The observation reads and writes the entity's parent, and is one
+             * unit with the write, so the write opens the transaction the
+             * caller did not.
+             */
+            unit_of_work uow(ctx);
+            execute_write_op(uow.ctx(), sqlgen::insert(entity), lg, operation_desc);
+            entity_write_observer<EntityType>::observe(uow.ctx(), entity, lg);
+            uow.commit();
+        }
+    } else {
+        execute_write_op(ctx, sqlgen::insert(entity), lg, operation_desc);
+    }
 }
 
 /**

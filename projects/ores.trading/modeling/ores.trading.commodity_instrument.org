@@ -126,7 +126,7 @@ std::string("USD")
 
 ** quantity
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          double precision
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
@@ -179,7 +179,7 @@ std::chrono::year_month_day{std::chrono::year{2029}/1/15}
 
 ** fixed_price
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -199,7 +199,7 @@ Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionTy
 
 ** strike_price
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -267,7 +267,7 @@ Second commodity code for spread options.
 
 ** spread_amount
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -287,7 +287,7 @@ Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to o
 
 ** variance_strike
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:          double precision
 :cpp_type: std::optional<double>
 :nullable: true
 :END:
@@ -296,7 +296,7 @@ Strike variance for variance swap products.
 
 ** accumulation_amount
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -305,7 +305,7 @@ Per-fixing accumulation amount for accumulator products.
 
 ** knock_out_barrier
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -325,7 +325,7 @@ Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrier
 
 ** lower_barrier
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -334,7 +334,7 @@ Lower barrier level.
 
 ** upper_barrier
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:

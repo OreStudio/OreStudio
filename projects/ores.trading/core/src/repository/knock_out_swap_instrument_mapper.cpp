@@ -29,6 +29,7 @@
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/knock_out_swap_instrument_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -51,7 +52,7 @@ knock_out_swap_instrument_mapper::map(const knock_out_swap_instrument_entity& v)
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.barrier_start_date = ores::platform::time::datetime::from_iso8601_date(v.barrier_start_date);
-    r.barrier_level = v.barrier_level;
+    r.barrier_level = ores::utility::decimal::decimal::from_string(v.barrier_level).value();
     r.barrier_type = v.barrier_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -73,7 +74,7 @@ knock_out_swap_instrument_mapper::map(const domain::knock_out_swap_instrument& v
     r.version = v.version;
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.barrier_start_date = ores::platform::time::datetime::to_iso8601_date(v.barrier_start_date);
-    r.barrier_level = v.barrier_level;
+    r.barrier_level = v.barrier_level.to_string();
     r.barrier_type = v.barrier_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

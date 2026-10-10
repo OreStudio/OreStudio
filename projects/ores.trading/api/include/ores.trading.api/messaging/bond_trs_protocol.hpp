@@ -44,7 +44,7 @@ struct bond_trs_write {
     boost::uuids::uuid trade_activity_id;
     std::string return_type;
     std::string funding_leg_type;
-    double funding_rate;
+    std::optional<ores::utility::decimal::decimal> funding_rate;
     std::string funding_index;
     std::optional<std::string> payer;
     std::optional<std::string> price_type;

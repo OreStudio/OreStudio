@@ -28,13 +28,14 @@
  * - The LEI counterparty publish adds what a tenant lacks and skips the rest
  * - A published counterparty links to a parent the tenant already holds
  * - The alias publish writes each alias once and skips a LEI the tenant lacks
+ * - An alias the tenant already resolves to another counterparty is refused
  *
  * Run with: pg_prove -d <database> test/refdata_counterparty_ore_aliases_test.sql
  */
 
 begin;
 
-select plan(12);
+select plan(13);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -224,6 +225,34 @@ select results_eq(
         ores_utility_system_tenant_id_fn())$$,
     $$values ('inserted'::text, 1::bigint), ('skipped'::text, 1::bigint)$$,
     'a name staged twice in one dataset is written once');
+
+do $$
+declare
+    v_dataset_id uuid;
+begin
+    perform ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'test.ore_alias_taken', 'ORE', 'Parties', 'Reference Data', 'NONE',
+        'Primary', 'Actual', 'Raw', 'GLEIF Golden Copy Extraction',
+        'Alias conflict test', 'Test dataset.', 'ORE', 'Test', current_date,
+        'Open Data', 'counterparty_aliases');
+    select id into v_dataset_id from ores_dq_datasets_tbl
+    where code = 'test.ore_alias_taken'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    -- CPTY_A is already the alias of one counterparty, and this dataset names
+    -- a different one, so the name cannot be applied over.
+    insert into ores_dq_counterparty_aliases_artefact_tbl (dataset_id, tenant_id, id_value,
+        version, id_scheme, lei, description)
+    values (v_dataset_id, ores_utility_system_tenant_id_fn(), 'CPTY_A', 0, 'ORE',
+        '7H6GLXDRUGQFU57RNE97', 'test');
+end $$;
+
+select throws_like(
+    $$select * from ores_refdata_publish_counterparty_aliases_from_dq_fn(
+        (select id from ores_dq_datasets_tbl where code = 'test.ore_alias_taken'
+           and valid_to = ores_utility_infinity_timestamp_fn()),
+        ores_utility_system_tenant_id_fn())$$,
+    '%Alias CPTY_A already belongs to another counterparty%',
+    'an alias the tenant already resolves to another counterparty is refused');
 
 select * from finish();
 

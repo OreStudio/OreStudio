@@ -21,6 +21,7 @@ block whole and export re-emits it.
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #+end_src
@@ -50,14 +51,14 @@ The settlement the forward takes, when the document states one.
 
 ** amount
 :PROPERTIES:
-:cpp_type: std::optional<double>
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :END:
 
 The amount the forward settles for, when the document states one.
 
 ** lock_rate
 :PROPERTIES:
-:cpp_type: std::optional<double>
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :END:
 
 The rate the forward locks, when the document states one.

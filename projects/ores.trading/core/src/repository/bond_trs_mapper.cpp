@@ -51,7 +51,10 @@ domain::bond_trs bond_trs_mapper::map(const bond_trs_entity& v) {
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.return_type = v.return_type;
     r.funding_leg_type = v.funding_leg_type;
-    r.funding_rate = v.funding_rate.value_or(0);
+    r.funding_rate =
+        v.funding_rate.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.funding_rate).value()) :
+            std::nullopt;
     r.funding_index = v.funding_index.value_or("");
     r.payer = v.payer;
     r.price_type = v.price_type;
@@ -79,7 +82,8 @@ bond_trs_entity bond_trs_mapper::map(const domain::bond_trs& v) {
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.return_type = v.return_type;
     r.funding_leg_type = v.funding_leg_type;
-    r.funding_rate = v.funding_rate == 0 ? std::nullopt : std::optional(v.funding_rate);
+    r.funding_rate =
+        v.funding_rate.has_value() ? std::optional(v.funding_rate->to_string()) : std::nullopt;
     r.funding_index = v.funding_index.empty() ? std::nullopt : std::optional(v.funding_index);
     r.payer = v.payer;
     r.price_type = v.price_type;

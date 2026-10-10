@@ -48,7 +48,7 @@ struct bond_trs_entity {
     std::string trade_activity_id;
     std::string return_type;
     std::string funding_leg_type;
-    std::optional<double> funding_rate;
+    std::optional<std::string> funding_rate;
     std::optional<std::string> funding_index;
     std::optional<std::string> payer;
     std::optional<std::string> price_type;

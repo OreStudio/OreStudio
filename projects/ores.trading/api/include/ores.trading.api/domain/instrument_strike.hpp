@@ -82,7 +82,7 @@ struct instrument_strike final {
     /**
      * @brief The strike stated as a yield.
      */
-    std::optional<double> yield_value;
+    std::optional<ores::utility::decimal::decimal> yield_value;
 
     /**
      * @brief Compounding the yield strike is stated under.

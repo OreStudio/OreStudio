@@ -51,13 +51,12 @@ render_fx_digital_option_instrument_fields(const domain::fx_digital_option_instr
     fields.push_back({.name = "Expiry Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Long Short", .value = v.long_short});
-    fields.push_back(
-        {.name = "Strike", .value = v.strike ? std::to_string(*v.strike) : std::string{}});
+    fields.push_back({.name = "Strike", .value = v.strike ? v.strike->to_string() : std::string{}});
     fields.push_back({.name = "Barrier Type", .value = v.barrier_type});
     fields.push_back({.name = "Lower Barrier",
-                      .value = v.lower_barrier ? std::to_string(*v.lower_barrier) : std::string{}});
+                      .value = v.lower_barrier ? v.lower_barrier->to_string() : std::string{}});
     fields.push_back({.name = "Upper Barrier",
-                      .value = v.upper_barrier ? std::to_string(*v.upper_barrier) : std::string{}});
+                      .value = v.upper_barrier ? v.upper_barrier->to_string() : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

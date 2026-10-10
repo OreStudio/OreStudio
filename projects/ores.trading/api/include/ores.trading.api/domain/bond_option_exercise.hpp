@@ -43,7 +43,7 @@ struct bond_option_exercise {
     /**
      * @brief The price the exercise pays, when the document states one.
      */
-    std::optional<double> price;
+    std::optional<ores::utility::decimal::decimal> price;
 
     /**
      * @brief Value equality.

@@ -25,6 +25,7 @@
 #ifndef ORES_DQ_API_DOMAIN_CSA_HPP
 #define ORES_DQ_API_DOMAIN_CSA_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <optional>
 #include <string>
@@ -84,17 +85,17 @@ struct csa final {
     /**
      * @brief The smallest amount the firm transfers.
      */
-    std::optional<double> minimum_transfer_amount_pay;
+    std::optional<ores::utility::decimal::decimal> minimum_transfer_amount_pay;
 
     /**
      * @brief The smallest amount the counterparty transfers.
      */
-    std::optional<double> minimum_transfer_amount_receive;
+    std::optional<ores::utility::decimal::decimal> minimum_transfer_amount_receive;
 
     /**
      * @brief The independent amount held.
      */
-    std::optional<double> independent_amount_held;
+    std::optional<ores::utility::decimal::decimal> independent_amount_held;
 
     /**
      * @brief FIXED, as ORE names it.
@@ -119,12 +120,12 @@ struct csa final {
     /**
      * @brief The spread on collateral received.
      */
-    std::optional<double> collateral_compounding_spread_receive;
+    std::optional<ores::utility::decimal::decimal> collateral_compounding_spread_receive;
 
     /**
      * @brief The spread on collateral posted.
      */
-    std::optional<double> collateral_compounding_spread_pay;
+    std::optional<ores::utility::decimal::decimal> collateral_compounding_spread_pay;
 
     /**
      * @brief ORE's ApplyInitialMargin.

@@ -171,8 +171,8 @@ std::nullopt
 
 ** minimum_transfer_amount_pay
 :PROPERTIES:
-:type:     double precision
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -186,8 +186,8 @@ std::nullopt
 
 ** minimum_transfer_amount_receive
 :PROPERTIES:
-:type:     double precision
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -201,8 +201,8 @@ std::nullopt
 
 ** independent_amount_held
 :PROPERTIES:
-:type:     double precision
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -277,8 +277,8 @@ std::optional<std::string>("2W")
 
 ** collateral_compounding_spread_receive
 :PROPERTIES:
-:type:     double precision
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -292,8 +292,8 @@ std::nullopt
 
 ** collateral_compounding_spread_pay
 :PROPERTIES:
-:type:     double precision
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 

@@ -39,7 +39,7 @@ create table if not exists "ores_trading_inflation_swap_instruments_tbl" (
     "version" integer not null,
     "trade_activity_id" uuid not null,
     "inflation_index_code" text not null,
-    "base_cpi" numeric(18, 10) null,
+    "base_cpi" double precision null,
     "lag_convention" text null,
     "modified_by" text not null,
     "performed_by" text not null,

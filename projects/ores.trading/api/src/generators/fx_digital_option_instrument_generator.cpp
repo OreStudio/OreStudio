@@ -56,7 +56,13 @@ generate_synthetic_fx_digital_option_instrument(utility::generation::generation_
     r.option_type = std::string("Call");
     r.expiry_date = std::chrono::year_month_day{std::chrono::year{2033} / 2 / 20};
     r.long_short = std::string("Long");
-    r.strike = 1.1;
+    r.strike = ores::utility::decimal::decimal::from_string("1.1").value();
+    r.lower_barrier = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
+    r.upper_barrier = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

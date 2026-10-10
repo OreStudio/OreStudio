@@ -39,7 +39,7 @@ create table if not exists "ores_trading_equity_swap_instruments_tbl" (
     "underlying_name" text null,
     "basket_json" text null,
     "currency" text not null,
-    "notional" numeric(28, 10) not null,
+    "notional" numeric(38, 12) not null,
     "return_type" text not null,
     "start_date" date not null,
     "maturity_date" date not null,

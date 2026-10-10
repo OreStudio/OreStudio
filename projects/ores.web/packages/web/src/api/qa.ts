@@ -20,9 +20,11 @@
  */
 
 import {
+    qaDocResponseSchema,
     runResponseSchema,
     scenarioListSchema,
     scenarioResponseSchema,
+    type QaDoc,
     type RunRequest,
     type RunResponse,
     type Scenario,
@@ -48,6 +50,13 @@ export const qa = {
         return scenarioResponseSchema.parse(
             await request(`/api/qa/scenarios/${encodeURIComponent(id)}`, { method: 'GET' }),
         ).scenario;
+    },
+
+    /** A story, a task or a scenario by its :ID:, as org text. */
+    async doc(id: string): Promise<QaDoc> {
+        return qaDocResponseSchema.parse(
+            await request(`/api/qa/docs/${encodeURIComponent(id)}`, { method: 'GET' }),
+        ).doc;
     },
 
     /** Save a run into a scenario. The server says whether the save closed it. */

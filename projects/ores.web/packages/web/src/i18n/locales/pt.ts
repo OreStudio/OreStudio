@@ -1144,6 +1144,21 @@ const pt: SourceCatalogue = {
                 failed: 'Reprovado',
             },
         },
+        scenario: {
+            tabsLabel: 'Visões do cenário',
+            tabs: {
+                steps: 'Passos',
+                story: 'História',
+                task: 'Tarefa',
+            },
+            noStory: 'Este cenário não cita nenhuma história.',
+            noTask: 'Este cenário não cita nenhuma tarefa.',
+        },
+        docs: {
+            title: 'Documento',
+            unresolved:
+                'Nenhuma história, tarefa ou cenário tem o id {id}. O link pode apontar para um documento que o executor não mostra.',
+        },
         runner: {
             states: {
                 PENDING: 'Pendente',

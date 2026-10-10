@@ -23,7 +23,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import type { Scenario } from '@ores/contracts';
+import type { QaDoc, Scenario } from '@ores/contracts';
+import { ApiFailure } from '../api/transport.js';
+import { docKey } from './DocPanel.js';
 import { AppRoutes } from '../AppRoutes.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import type { BootstrapState } from '../session/BootstrapProvider.js';
@@ -108,14 +110,17 @@ const scenario: Scenario = {
     run: { status: '', completedAt: '', branch: '', commit: '', worktree: '' },
 };
 
-function render(path: string): string {
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function render(path: string, seed: (client: QueryClient) => void = () => undefined): string {
+    const client = new QueryClient({
+        defaultOptions: { queries: { retry: false, retryOnMount: false } },
+    });
     client.setQueryData(QA_SCENARIOS_KEY, [summary({ id: ID, title: scenario.title })]);
     client.setQueryData(['qa-scenario', ID], scenario);
     client.setQueryData(['permissions'], []);
     client.setQueryData(['unread-notifications'], 0);
     client.setQueryData(['notifications'], { items: [], total: 0 });
     client.setQueryData(['my-access'], { roles: [] });
+    seed(client);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -162,5 +167,116 @@ describe('the development routes', () => {
         expect(html).toContain('>Fail</button>');
         expect(html).toContain('>Save</button>');
         expect(html.match(/href="\/development"/g)?.length).toBe(3);
+    });
+});
+
+const STORY = 'FE07BF4D-054D-4A69-AF3C-D70D10493370';
+const TASK = '8DC4ABA3-B053-4C40-B575-6EDFCF3C86DE';
+const withContext: Scenario = {
+    ...scenario,
+    story: { id: STORY, title: 'Refresh the manual' },
+    task: { id: TASK, title: 'Retake the shots' },
+};
+const storyDoc: QaDoc = {
+    id: STORY,
+    title: 'Story: Refresh the manual',
+    type: 'story',
+    path: 'sprint_27/refresh/story.org',
+    text: `* Goal\n\nRefresh the manual. See [[id:${TASK}][the task]].`,
+};
+const taskDoc: QaDoc = {
+    id: TASK,
+    title: 'Task: Retake the shots',
+    type: 'task',
+    path: 'sprint_27/refresh/task.org',
+    text: '* Goal\n\nRetake four screenshots.',
+};
+
+function seeded(client: QueryClient): void {
+    client.setQueryData(['qa-scenario', ID], withContext);
+    client.setQueryData(docKey(STORY), storyDoc);
+    client.setQueryData(docKey(TASK), taskDoc);
+}
+
+describe('the story and the task beside the steps', () => {
+    it('offers Steps, Story and Task, with Steps showing first', () => {
+        const html = render(`/development/tests/${ID}`, seeded);
+        for (const tab of ['Steps', 'Story', 'Task']) expect(html).toContain(`>${tab}</button>`);
+        expect(html).not.toMatch(
+            /<div hidden=""><div class="space-y-4"><section class="card space-y-3/,
+        );
+        expect(html).toContain('Open the General tab');
+        expect(html).not.toContain('Story: Refresh the manual');
+    });
+
+    it('shows the rendered story on the Story tab, with a link to the task', () => {
+        const html = render(`/development/tests/${ID}?tab=story`, seeded);
+        expect(html).toContain('Story: Refresh the manual');
+        expect(html).toContain('Refresh the manual. See');
+        expect(html).toContain(`href="/development/docs/${TASK}"`);
+    });
+
+    it('shows the rendered task on the Task tab', () => {
+        const html = render(`/development/tests/${ID}?tab=task`, seeded);
+        expect(html).toContain('Task: Retake the shots');
+        expect(html).toContain('Retake four screenshots.');
+    });
+
+    it('keeps the runner mounted but hidden on another tab, so its marks survive', () => {
+        const html = render(`/development/tests/${ID}?tab=story`, seeded);
+        expect(html).toContain('<div hidden="">');
+        expect(html).toContain('Open the General tab');
+    });
+
+    it('says plainly when the scenario names no story or no task', () => {
+        const none = (client: QueryClient) => client.setQueryData(['qa-scenario', ID], scenario);
+        expect(render(`/development/tests/${ID}?tab=story`, none)).toContain(
+            'This scenario names no story.',
+        );
+        const task = render(`/development/tests/${ID}?tab=task`, none);
+        expect(task).toContain('This scenario names no task.');
+        expect(task).not.toContain('role="alert"');
+    });
+
+    it('says a doc the server cannot find does not resolve', () => {
+        const dead = (client: QueryClient) => {
+            client.setQueryData(['qa-scenario', ID], withContext);
+            const query = client.getQueryCache().build(client, { queryKey: docKey(STORY) });
+            query.setState({
+                ...query.state,
+                status: 'error',
+                error: new ApiFailure(404, { code: 'not-found', message: 'No story.' }),
+                fetchStatus: 'idle',
+            });
+        };
+        expect(render(`/development/tests/${ID}?tab=story`, dead)).toContain(
+            `No story, task or scenario has the id ${STORY}.`,
+        );
+    });
+});
+
+describe('the doc route', () => {
+    it('opens the doc an id link names, under the shell', () => {
+        const html = render(`/development/docs/${TASK}`, seeded);
+        expect(html).toContain('Task: Retake the shots');
+        expect(html).toContain('Retake four screenshots.');
+        expect(html).toContain('>Doc</span>');
+    });
+
+    it('says a link that does not resolve does not', () => {
+        const html = render('/development/docs/CCCCCCCC-CCCC-4CCC-8CCC-CCCCCCCCCCCC', (client) => {
+            const query = client.getQueryCache().build(client, {
+                queryKey: docKey('CCCCCCCC-CCCC-4CCC-8CCC-CCCCCCCCCCCC'),
+            });
+            query.setState({
+                ...query.state,
+                status: 'error',
+                error: new ApiFailure(404, { code: 'not-found', message: 'No story.' }),
+                fetchStatus: 'idle',
+            });
+        });
+        expect(html).toContain(
+            'No story, task or scenario has the id CCCCCCCC-CCCC-4CCC-8CCC-CCCCCCCCCCCC.',
+        );
     });
 });

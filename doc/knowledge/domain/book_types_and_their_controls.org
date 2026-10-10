@@ -22,8 +22,8 @@ is for, and they do not change which process opens it. The existing notes
 state the controls for opening and closing an official book and for opening a
 sandbox. They were silent on changing a book, moving a book under another
 portfolio, granting rights and creating a portfolio, and the product owner has
-decided each of those below: every one is gated by a second person, and
-sandboxes are not.
+decided each of those below: every act that changes an official book or its
+rights is gated by a second person, and sandboxes are not.
 
 * Detail
 
@@ -109,7 +109,7 @@ who decides is never the person who asked.
 
 | # | Act | Decision | Who asks | Who decides |
 |---+-----+----------+----------+-------------|
-| 1 | Change an official book after it is live | Gated by the function that owns the field. A description-only edit is not gated | The desk or the owning function | Finance for the functional currency, GL account reference, cost center and owner unit. Market Risk for the regulatory type, purpose, rates centre and sweepable flag. Operations for the allowed currencies and products and the status |
+| 1 | Change an official book after it is live | Gated by the function that owns the field. A description-only edit is not gated | The desk or the owning function | Finance for the functional currency, GL account reference, cost center and owner unit. Market Risk for the regulatory type, purpose, rates centre and sweepable flag. Operations for the allowed currencies and products and the status. A status change that closes the book is not a status edit: it follows the closing process above, with the flat check, and Finance executes it |
 | 2 | Move a book under another portfolio | Gated. A move changes who can see the book, because a right at a node covers everything below it | The desk | Operations, who administers book access |
 | 3 | Grant or remove a right at an official portfolio node | Gated, as the deferred HBAC capture proposes | The head of desk | Operations |
 | 4 | Change a book's classification | Gated. This is the same ownership as row 1, stated for the axes: regulatory type and purpose to Market Risk, ledger feed to Finance | The desk or the owning function | Market Risk or Finance |
@@ -148,7 +148,7 @@ approval request are chosen by permission, so a Controller and a Finance part
 need either their own roles or an agreed permission on an existing role. And
 the seeded roles do not separate Market Risk from Operations, so a
 Market Risk approval and an Operations approval would be decided by the same
-role unless that changes. The task filed for the story adds the missing
+role unless that changes. The task [[id:C37EA3F0-1A82-4E42-A21B-599C6873191A][Add the missing book-control actors to Acme]] adds the missing
 accounts. The recommendation, taken as the working rule, is a role for each of
 Controller, Finance and Market Risk that holds the permission to decide the
 approvals its part owns, and the existing Operations role keeps Operations'.

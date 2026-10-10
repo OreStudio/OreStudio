@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-realistic-acme-base-bundle
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ group's data and carries ACME's own catalogue, methodology and licence.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
-| Now          | Not yet started.                       |
+| Now          | The audit is done. The design needs three decisions. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Settle the design, then write the datasets. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -68,6 +68,42 @@ group's data and carries ACME's own catalogue, methodology and licence.
 None yet.
 
 * Notes
+
+*Audit, 2026-10-10 (plan step 1).* Read from a freshly provisioned ACME
+tenant and from the repository. The database was queried; the report needs are
+not yet read (plan step 2).
+
+- *What ACME publishes today, per party.* Four legal entities plus the system
+  party. Each entity has a bundle (=acme_group=, =acme_uk=, =acme_us=,
+  =acme_hk=) of datasets named =acme.<entity>.<thing>=: business units,
+  portfolios, books, accounts and contact information. The =load_staff= step of
+  the =acme_demo= profile publishes each bundle to its own party. The realistic
+  netting data fits this pattern with no new party machinery: add
+  =acme.<entity>.netting_agreements=, =netting_sets= and =csas= datasets to the
+  entity's bundle.
+- *Counts after provisioning.* Acme Corporation Plc 1 business unit, 22
+  portfolios, 22 books. UK 15 business units, HK 6, US 6, each with 20
+  portfolios and 22 books. The tenant holds 12,959 GLEIF counterparties, 67
+  market series, 155 report definitions and no trades.
+- *Mixed portfolios.* Every entity has two official top-level portfolios,
+  =Global Portfolio= and =Regulatory Capital=, both aggregating in USD. Acme
+  Corporation Plc also holds the sample portfolios =PF1= and =PF2= at the top of
+  the same tree, because the =ore_samples= bundle publishes them there. Official
+  and sample portfolios are not separated.
+- *What the sample netting data is.* Eight banks, 19 netting sets, 7 CSAs and 19
+  ORE aliases, published to Acme Corporation Plc only. All 7 CSAs are in EUR and
+  every threshold pair is identical. Five use the overnight index EUR-EONIA,
+  retired in 2022. The set descriptions read as test data ("pricing test book",
+  "wrapped trades").
+- *References to the current dataset codes.* The sample netting and portfolio
+  dataset scripts, the bundle and bundle member scripts, the =acme_demo=
+  profile, =party_provisioning_plan.hpp=, the pgTAP sample netting test, the
+  trading envelope names test, the manual chapter on initial setup, and a
+  number of plans. The retarget task owns the renaming; this task adds new
+  datasets and leaves these in place.
+- *Banks are real GLEIF entities.* A counterparty is found by LEI, and the
+  GLEIF set holds many affiliates of one bank (BNP Paribas alone has dozens),
+  so each agreement must name the right legal entity by LEI.
 
 * Test Scenarios
 

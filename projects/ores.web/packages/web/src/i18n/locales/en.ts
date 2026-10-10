@@ -78,6 +78,7 @@ export const en: SourceCatalogue = {
             accounts: 'Accounts',
             tenants: 'Tenants',
             operations: 'Operations',
+            development: 'Development',
             parties: 'Parties',
             rescue: 'Rescue access',
             audit: 'Sign-ins',
@@ -1117,6 +1118,33 @@ export const en: SourceCatalogue = {
      * doing. The versions screen belongs to every session, so it is offered
      * from Home as well as from this area's hub.
      */
+    development: {
+        tabs: {
+            label: 'Development areas',
+            tests: 'Tests',
+        },
+        tests: {
+            waiting: 'Waiting',
+            done: 'Done',
+            nothingWaiting: 'Nothing is waiting.',
+            nothingDone: 'Nothing has been tested yet.',
+            scenario: 'Scenario',
+            target: 'Target',
+            progress: 'Progress',
+            state: 'State',
+            completed: 'Completed',
+            stepsDone: '{done} of {total} steps',
+            states: {
+                pending: 'Pending',
+                inProgress: 'In progress',
+                passed: 'Passed',
+                failed: 'Failed',
+            },
+        },
+        scenario: {
+            notBuilt: 'The runner for this scenario is not built yet.',
+        },
+    },
     operations: {
         back: 'Back to operations',
         instance: {

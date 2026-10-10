@@ -72,6 +72,7 @@ const fr: SourceCatalogue = {
             accounts: 'Comptes',
             tenants: 'Locataires',
             operations: 'Opérations',
+            development: 'Développement',
             parties: 'Parties',
             rescue: 'Rétablir un accès',
             audit: 'Connexions',
@@ -1128,6 +1129,33 @@ const fr: SourceCatalogue = {
         },
     },
 
+    development: {
+        tabs: {
+            label: 'Zones de développement',
+            tests: 'Tests',
+        },
+        tests: {
+            waiting: 'En attente',
+            done: 'Terminés',
+            nothingWaiting: "Rien n'est en attente.",
+            nothingDone: "Rien n'a encore été testé.",
+            scenario: 'Scénario',
+            target: 'Cible',
+            progress: 'Avancement',
+            state: 'État',
+            completed: 'Terminé le',
+            stepsDone: '{done} étapes sur {total}',
+            states: {
+                pending: 'En attente',
+                inProgress: 'En cours',
+                passed: 'Réussi',
+                failed: 'Échoué',
+            },
+        },
+        scenario: {
+            notBuilt: "L'exécuteur de ce scénario n'est pas encore construit.",
+        },
+    },
     operations: {
         back: 'Retour aux opérations',
         instance: {

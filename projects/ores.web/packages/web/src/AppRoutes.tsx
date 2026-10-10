@@ -49,6 +49,8 @@ import type { ShellWidth } from './shell/layout.js';
 import { PublicShell } from './components/PublicShell.js';
 import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
+import { DevelopmentArea } from './development/DevelopmentArea.js';
+import { ScenarioPage } from './development/ScenarioPage.js';
 import { OperationsArea } from './operations/OperationsArea.js';
 import { BusPage } from './operations/BusPage.js';
 import { GridPage } from './operations/GridPage.js';
@@ -432,6 +434,36 @@ export function AppRoutes({
                 element={signedIn(gate.version, session, shell, () => (
                     <AuditPage />
                 ))}
+            />
+            {/*
+             * The development area: the tests a tester can run. No route here is
+             * gated, and the menu draws the entry for everybody, because a trader
+             * may run test scenarios. The BFF answers not found when it has no
+             * doc root, and the screen says so.
+             */}
+            <Route
+                path="/development"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <DevelopmentArea />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/development/tests/:id"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ScenarioPage />
+                    ),
+                    'workspace',
+                )}
             />
             {/*
              * The operations area: its hub, the versions screen the prototype

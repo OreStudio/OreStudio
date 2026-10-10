@@ -164,15 +164,16 @@ button.stale-mark {
 @keyframes row-changed {
   0%,
   100% {
-    background-color: color-mix(in oklab, var(--color-accent) 7%, transparent);
+    background-color: color-mix(in oklab, var(--color-stale) 8%, transparent);
   }
   50% {
-    background-color: color-mix(in oklab, var(--color-accent) 22%, transparent);
+    background-color: color-mix(in oklab, var(--color-stale) 28%, transparent);
   }
 }
 
 .row-changed {
   animation: row-changed 900ms ease-in-out 3;
+  box-shadow: inset 3px 0 0 var(--color-stale);
 }
 
 /* A person who asked their system for less motion gets the mark without the

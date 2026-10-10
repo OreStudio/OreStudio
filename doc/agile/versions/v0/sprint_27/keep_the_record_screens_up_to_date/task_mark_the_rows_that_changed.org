@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ After a reload the rows whose recorded time is newer than the last load are tint
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A list marks the rows that differ when the same page is read again: the key was not there, or the row's content is not what it was. ores.qt compares =recorded_at= with the last reload time, which crosses the server's clock and the browser's, so the web compares the row against the same page read before and uses no clock. Moving to another page, searching or sorting marks nothing. A marked row gets a gold left edge and pulses three times (=row-changed=), and the mark goes after four seconds. The list keeps its scroll position because it only re-reads. =RecordTable= does this for every refdata list, the people, parties and tenants lists. The staff list and the hierarchy are not tables of =RecordTable= and are not marked yet. Five unit tests cover the comparison.

@@ -87,6 +87,9 @@ function visiblePanels(holds: (code: string) => boolean): Visible {
     return { people, signIns, requests, parties };
 }
 
+/** How often the open dashboard reads its figures again. */
+const DASHBOARD_REFRESH_MS = 15_000;
+
 /** The most login records one read returns, which the server caps. */
 const LOGIN_RECORDS_READ = 1000;
 
@@ -111,18 +114,24 @@ function useDashboardData(visible: Visible) {
         queryFn: () => api.loginInfoPage({ limit: LOGIN_RECORDS_READ }),
         enabled: visible.people || visible.signIns,
         retry: false,
+        staleTime: 0,
+        refetchInterval: DASHBOARD_REFRESH_MS,
     });
     const sessions = useQuery({
         queryKey: [AUDIT_SESSIONS_QUERY_KEY],
         queryFn: () => api.activeSessions(),
         enabled: visible.signIns,
         retry: false,
+        staleTime: 0,
+        refetchInterval: DASHBOARD_REFRESH_MS,
     });
     const requests = useQuery({
         queryKey: ['tenant-home-requests'],
         queryFn: () => api.requestQueue({ offset: 0, limit: 1 }),
         enabled: visible.requests,
         retry: false,
+        staleTime: 0,
+        refetchInterval: DASHBOARD_REFRESH_MS,
     });
     const parties = useQuery({
         queryKey: ['tenant-home-parties'],
@@ -326,7 +335,9 @@ function PeoplePanel({ data, translator }: PanelProps): ReactNode {
                         allRecordsRead(data),
                     )}
                     label={t('home.tenantDashboard.people.locked')}
-                    tone={rows !== undefined && lockedAccounts(rows) > 0 ? 'warn' : 'neutral'}
+                    tone={
+                        rows === undefined ? 'neutral' : lockedAccounts(rows) > 0 ? 'bad' : 'good'
+                    }
                     to="/rescue"
                 />
                 <Metric
@@ -361,7 +372,7 @@ function SignInsPanel({ data, translator }: PanelProps): ReactNode {
                 <Metric
                     value={count(failed, allRecordsRead(data))}
                     label={t('home.tenantDashboard.signIns.failed')}
-                    tone={failed !== undefined && failed > 0 ? 'warn' : 'neutral'}
+                    tone={failed === undefined ? 'neutral' : failed > 0 ? 'bad' : 'good'}
                 />
             </div>
         </Panel>
@@ -383,7 +394,7 @@ function RequestsPanel({ data, translator }: PanelProps): ReactNode {
                 <Metric
                     value={count(queue?.total)}
                     label={t('home.tenantDashboard.requests.waiting')}
-                    tone={queue !== undefined && queue.total > 0 ? 'warn' : 'neutral'}
+                    tone={queue === undefined ? 'neutral' : queue.total > 0 ? 'warn' : 'good'}
                 />
                 <Metric
                     value={count(queue?.answered.length)}

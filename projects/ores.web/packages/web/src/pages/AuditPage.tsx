@@ -31,6 +31,7 @@ import type {
 import { api, type AuditPeriod } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
+import { Crumbs } from '../refdata/shared.js';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { isZeroTimestamp } from '../ui/Time.js';
@@ -806,6 +807,12 @@ export function AuditPage(): ReactNode {
 
     return (
         <div className="space-y-6">
+            <Crumbs
+                parts={[
+                    { label: t('shell.menu.home'), to: '/' },
+                    { label: t('auditSignIns.title') },
+                ]}
+            />
             <PageHeader
                 title={t('auditSignIns.title')}
                 description={t('auditSignIns.description')}

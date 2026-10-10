@@ -77,7 +77,11 @@ export interface OrgSection {
 export interface OrgDoc {
     /** The document's lines without their line ends. */
     readonly lines: readonly string[];
-    /** The line end the document uses, so a writer can keep it. */
+    /**
+     * The line end the document uses, so a writer can keep it. It is
+     * `\r\n` when the text has any `\r\n`, so a mixed file reports `\r\n`.
+     * A leading byte order mark is dropped from the first line.
+     */
     readonly eol: '\n' | '\r\n';
     /** The :ID: of the file-level property drawer, upper cased. */
     readonly id: string | null;
@@ -120,26 +124,34 @@ function isSeparator(line: string): boolean {
     return /^\|[-+|]*$/.test(line.replace(/\s/g, '')) && line.includes('-');
 }
 
+/** Split a table row on every pipe. A cell holding `\|` or a `[[a|b]]` link splits wrongly. */
 function cells(line: string): string[] {
     const inner = line.trim().replace(/^\|/, '').replace(/\|$/, '');
     return inner.split('|').map((cell) => cell.trim());
 }
 
-/** Read a property drawer that starts at `at`. Returns the lines it spans. */
+/**
+ * Read a property drawer that starts at `at`. Returns the lines it spans.
+ * A drawer with no :END: before `limit` is not a drawer.
+ */
 function readDrawer(
     lines: readonly string[],
     at: number,
+    limit: number,
 ): { properties: Map<string, string>; end: number } | null {
     if (lines[at]?.trim() !== ':PROPERTIES:') return null;
+    let close = at + 1;
+    while (close < limit && lines[close]?.trim() !== ':END:') close += 1;
+    if (close >= limit) return null;
     const properties = new Map<string, string>();
     let i = at + 1;
-    while (i < lines.length && lines[i]?.trim() !== ':END:') {
+    while (i < close) {
         const match = PROPERTY.exec((lines[i] ?? '').trim());
         if (match?.[1] !== undefined)
             properties.set(match[1].toLowerCase(), (match[2] ?? '').trim());
         i += 1;
     }
-    return { properties, end: Math.min(i + 1, lines.length) };
+    return { properties, end: close + 1 };
 }
 
 function parseTodo(value: string): { open: string[]; done: string[] } {
@@ -261,11 +273,13 @@ function readHeading(
 /** Parse org text into an outline. It never throws on text. */
 export function parseOrg(text: string): OrgDoc {
     const eol = text.includes('\r\n') ? '\r\n' : '\n';
-    const lines = text.split(/\r?\n/);
+    const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
     if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
 
+    const firstHeading = lines.findIndex((line) => HEADING.test(line));
+    const headerLimit = firstHeading < 0 ? lines.length : firstHeading;
     let i = 0;
-    const drawer = readDrawer(lines, 0);
+    const drawer = readDrawer(lines, 0, headerLimit);
     const properties = drawer?.properties ?? new Map<string, string>();
     if (drawer !== null) i = drawer.end;
     const idValue = properties.get('id');
@@ -331,7 +345,7 @@ export function parseOrg(text: string): OrgDoc {
         while (stack.length >= draft.level) stack.pop();
         stack.push(heading.title);
 
-        const sectionDrawer = readDrawer(lines, draft.headingLine + 1);
+        const sectionDrawer = readDrawer(lines, draft.headingLine + 1, bodyEnd);
         const bodyStart = sectionDrawer === null ? draft.headingLine + 1 : sectionDrawer.end;
         const sectionProps = sectionDrawer?.properties ?? new Map<string, string>();
         const sectionId = sectionProps.get('id');
@@ -384,7 +398,11 @@ export function findSection(
     );
 }
 
-/** The sections one level below this one, in document order. */
+/**
+ * The sections exactly one level below this one, in document order. A
+ * section that skips a level, such as a third-level heading directly under
+ * a first-level one, is not a child.
+ */
 export function sectionChildren(doc: OrgDoc, parent: OrgSection): OrgSection[] {
     return doc.sections.filter(
         (section) =>

@@ -82,6 +82,14 @@ describe('the page header', () => {
         expect(html).not.toContain('test_scenario');
         expect(html).toContain('Body text');
     });
+
+    it('keeps a keyword line inside a block', () => {
+        const html = renderOrgHtml(
+            '#+title: T\n\nText\n\n#+begin_example\n#+title: in a block\n#+end_example\n',
+        );
+        expect(html).toContain('title: in a block');
+        expect(html).not.toContain('>T<');
+    });
 });
 
 describe('links', () => {
@@ -93,6 +101,14 @@ describe('links', () => {
             idHref: (id) => `/docs/${id}`,
         });
         expect(custom).toContain('href="/docs/AB12"');
+    });
+
+    it('drops a file link that would name another host', () => {
+        for (const target of ['//evil.example/x.png', '///evil.example/x']) {
+            const html = renderOrgHtml(`[[file:${target}][go]] [[file:${target}]]\n`);
+            expect(html).not.toContain('evil.example/x"');
+            expect(html).not.toMatch(/(?:href|src)="[\\/]{2}/);
+        }
     });
 
     it('makes a file link relative', () => {
@@ -167,6 +183,21 @@ describe('hostile input', () => {
         }
     });
 
+    it('shows a paragraph of many near-limit lines as text, quickly', () => {
+        const line = '*a '.repeat(99);
+        const started = Date.now();
+        const html = renderOrgHtml(`before\n\n${Array(2000).fill(line).join('\n')}\n\nafter\n`);
+        expect(Date.now() - started).toBeLessThan(2000);
+        expect(html).toContain('before');
+        expect(html).toContain('after');
+    });
+
+    it('does not count the lines of a source block', () => {
+        const code = Array(400).fill('a * b * c').join('\n');
+        const html = renderOrgHtml(`#+begin_src c\n${code}\n#+end_src\n`);
+        expect(html).not.toContain(': a');
+    });
+
     it('keeps a long ordinary line as ordinary prose', () => {
         const html = renderOrgHtml(`${'word '.repeat(3000)}and *bold*\n`);
         expect(html).toContain('<strong>bold</strong>');
@@ -176,6 +207,7 @@ describe('hostile input', () => {
         const html = renderOrgHtml('<b>' + 'x'.repeat(2_100_000));
         expect(html.startsWith('<pre>&lt;b&gt;')).toBe(true);
         expect(html).not.toContain('<b>');
+        expect(html).toContain('cut at 2000000 characters');
     });
 });
 

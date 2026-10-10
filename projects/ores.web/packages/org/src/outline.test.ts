@@ -264,7 +264,8 @@ describe('hostile and odd input', () => {
         expect(parseOrg('').sections).toEqual([]);
         expect(parseOrg('* ').sections[0]?.title).toBe('');
         expect(parseOrg('*').sections).toEqual([]);
-        expect(parseOrg(':PROPERTIES:\n:ID: x').id).toBe('X');
+        expect(parseOrg(':PROPERTIES:\n:ID: x').id).toBeNull();
+        expect(parseOrg(':PROPERTIES:\n:ID: x\n:END:').id).toBe('X');
     });
 
     it('survives a very long line', () => {
@@ -294,5 +295,42 @@ describe('the compass scenario corpus', () => {
                 expect(section.subtreeEnd, file).toBeGreaterThanOrEqual(section.bodyEnd);
             }
         }
+    });
+});
+
+describe('damaged drawers', () => {
+    it('does not read an unterminated file drawer as the whole document', () => {
+        const doc = parseOrg(':PROPERTIES:\n:ID: ABC\n\n* One\nbody\n* Two\n');
+        expect(doc.id).toBeNull();
+        expect(doc.sections.map((section) => section.title)).toEqual(['One', 'Two']);
+    });
+
+    it('does not read properties from a later section', () => {
+        const doc = parseOrg('* One\n:PROPERTIES:\n:ID: X\n* Two\n:PROPERTIES:\n:ID: Y\n:END:\n');
+        expect(doc.sections[0]?.id).toBeNull();
+        expect(doc.sections[1]?.id).toBe('Y');
+    });
+
+    it('hides the rest of a section after a plain drawer with no end, as org does', () => {
+        const doc = parseOrg('* One\n:foo:\nlost line\n* Two\n');
+        const one = doc.sections[0];
+        expect(one).toBeDefined();
+        expect(one === undefined ? [] : sectionBody(doc, one)).toContain(':foo:');
+        expect(doc.sections).toHaveLength(2);
+    });
+});
+
+describe('text edges', () => {
+    it('drops a byte order mark so the file drawer is found', () => {
+        const doc = parseOrg('\uFEFF:PROPERTIES:\n:ID: ABC\n:END:\n* One\n');
+        expect(doc.id).toBe('ABC');
+    });
+
+    it('takes only the sections exactly one level down as children', () => {
+        const doc = parseOrg('* Top\n*** Deep\n** Child\n');
+        const top = doc.sections[0];
+        expect(top).toBeDefined();
+        const titles = top === undefined ? [] : sectionChildren(doc, top).map((s) => s.title);
+        expect(titles).toEqual(['Child']);
     });
 });

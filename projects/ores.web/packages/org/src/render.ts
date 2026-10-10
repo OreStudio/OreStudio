@@ -69,7 +69,10 @@ function rewriteLinks(tree: Root, idHref: (id: string) => string): void {
                 element.properties[key] = idHref(id);
                 element.properties['dataOrgId'] = id;
             } else if (value.toLowerCase().startsWith('file:')) {
-                element.properties[key] = value.slice(5);
+                const target = value.slice(5);
+                // A leading double slash would name another host.
+                if (/^[\\/]{2}/.test(target)) delete element.properties[key];
+                else element.properties[key] = target;
             }
         }
     });
@@ -113,23 +116,52 @@ function linkIssues(tree: Root, repo: string): void {
 }
 
 /**
- * The org parser slows sharply on a line that is full of emphasis markers,
- * and a deep nest of them overflows its stack. A real line has a few markers.
- * A line past the limit shows as fixed-width text, which the parser leaves
- * alone.
+ * The org parser slows sharply on a paragraph that is full of emphasis
+ * markers, and a deep nest of them overflows its stack. A real paragraph has
+ * a few markers. A paragraph past the limit shows as fixed-width text, which
+ * the parser leaves alone. Lines in a source or example block hold code and
+ * are not counted, because the parser reads them as plain text.
  */
-const MAX_MARKERS_PER_LINE = 300;
+const MAX_MARKERS_PER_PARAGRAPH = 300;
 const MAX_SOURCE_LENGTH = 2_000_000;
+const MARKER = /[*/_=~+]|\[\[/g;
+const RAW_BLOCK_BEGIN = /^\s*#\+begin_(?:src|example|export|comment)\b/i;
+const RAW_BLOCK_END = /^\s*#\+end_(?:src|example|export|comment)\b/i;
 
-function guardLines(source: string): string {
-    return source
-        .split('\n')
-        .map((line) => {
-            if (line.length < MAX_MARKERS_PER_LINE) return line;
-            const markers = (line.match(/[*/_=~+]|\[\[/g) ?? []).length;
-            return markers > MAX_MARKERS_PER_LINE ? `: ${line}` : line;
-        })
-        .join('\n');
+function guardParagraphs(source: string): string {
+    const lines = source.split('\n');
+    const out: string[] = [];
+    let paragraph: string[] = [];
+    let markers = 0;
+    let inRawBlock = false;
+    const flush = () => {
+        const over = markers > MAX_MARKERS_PER_PARAGRAPH;
+        for (const line of paragraph) out.push(over ? `: ${line}` : line);
+        paragraph = [];
+        markers = 0;
+    };
+    for (const line of lines) {
+        if (inRawBlock) {
+            out.push(line);
+            if (RAW_BLOCK_END.test(line)) inRawBlock = false;
+            continue;
+        }
+        if (RAW_BLOCK_BEGIN.test(line)) {
+            flush();
+            out.push(line);
+            inRawBlock = true;
+            continue;
+        }
+        if (line.trim() === '') {
+            flush();
+            out.push(line);
+            continue;
+        }
+        paragraph.push(line);
+        markers += (line.match(MARKER) ?? []).length;
+    }
+    flush();
+    return out.join('\n');
 }
 
 function escapeHtml(text: string): string {
@@ -140,11 +172,26 @@ function escapeHtml(text: string): string {
         .replace(/"/g, '&quot;');
 }
 
-/** Take away the file-level drawer and the #+keyword lines, which a page shows elsewhere. */
+const HEADER_KEYWORD = /^#\+[A-Za-z_][A-Za-z0-9_-]*:/;
+
+/**
+ * Take away the file-level drawer and the #+keyword lines that open the
+ * document, which a page shows elsewhere. A keyword line later in the text,
+ * or inside a block, stays.
+ */
 function stripHeader(source: string): string {
-    return source
-        .replace(/^:PROPERTIES:\r?\n(?:.*\r?\n)*?:END:\r?\n/, '')
-        .replace(/^#\+[A-Za-z_][A-Za-z0-9_-]*:.*\r?\n/gm, '');
+    const text = source
+        .replace(/^\uFEFF/, '')
+        .replace(/^:PROPERTIES:\r?\n(?:.*\r?\n)*?:END:\r?\n/, '');
+    const lines = text.split('\n');
+    let at = 0;
+    while (at < lines.length) {
+        const line = lines[at] ?? '';
+        if (!HEADER_KEYWORD.test(line) && line.trim() !== '') break;
+        at += 1;
+    }
+    const head = lines.slice(0, at).filter((line) => !HEADER_KEYWORD.test(line));
+    return [...head, ...lines.slice(at)].join('\n');
 }
 
 /**
@@ -154,7 +201,7 @@ function stripHeader(source: string): string {
  */
 export function renderOrgHtml(source: string, options: RenderOptions = {}): string {
     if (source.length > MAX_SOURCE_LENGTH) {
-        return `<pre>${escapeHtml(source.slice(0, MAX_SOURCE_LENGTH))}</pre>`;
+        return `<pre>${escapeHtml(source.slice(0, MAX_SOURCE_LENGTH))}</pre><p>This text is cut at ${MAX_SOURCE_LENGTH} characters.</p>`;
     }
     const idHref = options.idHref ?? ((id: string) => `#org-id-${id}`);
     const repo = options.githubRepo;
@@ -168,7 +215,7 @@ export function renderOrgHtml(source: string, options: RenderOptions = {}): stri
             })
             .use(rehypeSanitize, SAFE_SCHEMA)
             .use(rehypeStringify);
-        return String(processor.processSync(guardLines(stripHeader(source))));
+        return String(processor.processSync(guardParagraphs(stripHeader(source))));
     } catch {
         return `<pre>${escapeHtml(source)}</pre>`;
     }

@@ -25,6 +25,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type CalendarDay, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { useAreaRoot } from '../shell/AreaTrail.js';
 import { useFlags } from '../images/flags.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { HistoryPanel } from './HistoryPanel.js';
@@ -198,10 +199,7 @@ export function CalendarsPage(): ReactNode {
                 source={source}
                 title={t('refdata.calendars.title')}
                 lead={t('refdata.calendars.lead')}
-                crumbs={[
-                    { label: t('refdata.area.title'), to: '/refdata' },
-                    { label: t('refdata.calendars.title') },
-                ]}
+                crumbs={[...useAreaRoot('refdata'), { label: t('refdata.calendars.title') }]}
                 pathOf={(row) => calendarPath(show(row['code']))}
                 addLabel={t('refdata.calendars.add')}
                 onAdd={() => setAdding(true)}
@@ -312,7 +310,7 @@ function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode
         <div className="space-y-4">
             <RecordHeader
                 crumbs={[
-                    { label: t('refdata.area.title'), to: '/refdata' },
+                    ...useAreaRoot('refdata'),
                     { label: t('refdata.calendars.title'), to: calendarPath() },
                     { label: code },
                 ]}

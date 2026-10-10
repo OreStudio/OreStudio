@@ -260,6 +260,17 @@ describe('the currency screens', () => {
         expect(html).toContain('Remove');
     });
 
+    it('is reached from Home through Reference data', () => {
+        for (const path of ['/refdata/currencies', '/refdata/currencies/EUR']) {
+            const html = render(path, (client) => {
+                client.setQueryData(['records', 'currencies', 'key', 'EUR'], euro);
+            });
+
+            expect(html.indexOf('href="/"'), path).toBeGreaterThanOrEqual(0);
+            expect(html.indexOf('href="/refdata"'), path).toBeGreaterThan(html.indexOf('href="/"'));
+        }
+    });
+
     it('ends the details with who last changed the record', () => {
         const html = render('/refdata/currencies/EUR', (client) => {
             client.setQueryData(['records', 'currencies', 'key', 'EUR'], {

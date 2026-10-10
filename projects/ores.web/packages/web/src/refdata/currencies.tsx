@@ -24,6 +24,7 @@ import { useNavigate, useParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import type { RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { useAreaRoot } from '../shell/AreaTrail.js';
 import { Notice } from '../ui/Primitives.js';
 import { HistoryPanel } from './HistoryPanel.js';
 import { RecordList, useRecordSource } from './RecordList.js';
@@ -106,10 +107,7 @@ export function CurrenciesPage(): ReactNode {
                 source={source}
                 title={t('refdata.currencies.title')}
                 lead={t('refdata.currencies.lead')}
-                crumbs={[
-                    { label: t('refdata.area.title'), to: '/refdata' },
-                    { label: t('refdata.currencies.title') },
-                ]}
+                crumbs={[...useAreaRoot('refdata'), { label: t('refdata.currencies.title') }]}
                 pathOf={(row) => currencyPath(show(row['iso_code']))}
                 addLabel={t('refdata.currencies.add')}
                 onAdd={() => setAdding(true)}
@@ -207,7 +205,7 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
         <div className="space-y-4">
             <RecordHeader
                 crumbs={[
-                    { label: t('refdata.area.title'), to: '/refdata' },
+                    ...useAreaRoot('refdata'),
                     { label: t('refdata.currencies.title'), to: currencyPath() },
                     { label: code },
                 ]}

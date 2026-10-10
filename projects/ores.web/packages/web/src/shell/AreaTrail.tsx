@@ -64,6 +64,18 @@ export function useAreaParts(
     ];
 }
 
+/**
+ * Home and the area, as the first two parts of a trail. A screen whose trail
+ * goes on below its list, such as a record page, starts from these.
+ */
+export function useAreaRoot(area: AreaName): readonly TrailStep[] {
+    const { t } = useTranslation();
+    return [
+        { label: t('shell.menu.home'), to: '/' },
+        { label: t(AREAS[area].nameKey), to: AREAS[area].to },
+    ];
+}
+
 /** The trail of a screen that belongs to an area, drawn above its header. */
 export function AreaTrail({
     area,

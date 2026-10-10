@@ -99,6 +99,13 @@ function render(): string {
 }
 
 describe('PartiesPage', () => {
+    it('is reached from Home through Reference data', () => {
+        const html = render();
+
+        expect(html.indexOf('href="/"')).toBeGreaterThanOrEqual(0);
+        expect(html.indexOf('href="/refdata"')).toBeGreaterThan(html.indexOf('href="/"'));
+    });
+
     it('lists the parties with their parents', () => {
         const html = render();
 

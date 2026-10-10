@@ -7558,6 +7558,9 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == "services":
         import compass_services
         sys.exit(compass_services.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
+    if len(sys.argv) >= 2 and sys.argv[1] == "open-as":
+        import compass_open_as
+        sys.exit(compass_open_as.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
     if len(sys.argv) >= 2 and sys.argv[1] == "systemd":
         import systemd_generate
         sys.exit(systemd_generate.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
@@ -7620,7 +7623,7 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "image", "nats", "db", "sql", "services", "claude", "test", "build",
+            "env", "image", "nats", "db", "sql", "services", "claude", "open-as", "test", "build",
             "site", "shell", "review", "pr", "release-notes", "bearings",
             "orient", "timeline", "capture", "lint", "check", "codegen", "branches",
             "skills",
@@ -7648,7 +7651,7 @@ def main():
         "  Build:     build\n"
         "  Codegen:   codegen generate | codegen regenerate | codegen entity\n"
         "  Site:      site\n"
-        "  Operate:   services, claude\n"
+        "  Operate:   services, claude, open-as\n"
         "  Shell:     shell\n"
         "  Review:    review\n"
         "  PR:        pr\n"
@@ -7765,6 +7768,10 @@ def main():
                           help="Launch Claude Code inside its own systemd "
                                "--user scope, so oomd can kill it without "
                                "taking Emacs down with it")
+    subparsers.add_parser("open-as",
+                          help="Open the web in an isolated Chrome signed in as an "
+                               "Acme user: 'open-as name|title|role TEXT "
+                               "[--location hk]'")
     subparsers.add_parser("test",
                           help="Test: 'test run' runs ctest under the build lock; "
                                "'test results' shows last run overview; "

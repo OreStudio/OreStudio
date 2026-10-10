@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: BB0FC305-7B8F-4862-BE0E-A2F00BF9AEDE
+:END:
+#+title: Task: Add compass open-as to launch Chrome as an Acme persona
+#+description: Initial task for: Open the web as an Acme persona
+#+type: task
+#+level: s1
+#+filetags: :open_as_acme_persona:sprint_27:v0:
+#+owner: marco
+#+branch: feature/open-as-acme-persona
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C9251A6C-97E8-47DC-B87F-CE260B5A9948][Open the web as an Acme persona]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Test the web as different Acme users without adding profiles to the developer's own Chrome. One command opens an isolated browser with the username and password filled in, so only Sign in is left to press.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C9251A6C-97E8-47DC-B87F-CE260B5A9948][Open the web as an Acme persona]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- compass open-as with a person's name opens an isolated Chrome on the web login with that user's credentials filled in.
+- compass open-as can also choose a person by job title and location, or by role and location, with London as the default location.
+- The command leaves the developer's own Chrome profiles untouched and is documented as a recipe.
+
+* Plan
+
+1. Add =compass open-as= as a compass pillar in =compass_open_as.py=, with three ways to choose a person: =name=, =title= and =role=. Title and role take an office, London by default.
+2. Hard code what Acme fixes: the tenant hostname, the shared password, the office aliases, the roles and the job titles. Read the staff from the seeder's =accounts.json=.
+3. Give each person a Chrome data directory under the cache folder, so the developer's own profiles never change.
+4. Fill the sign-in form through the DevTools protocol with a small standard-library socket client, so compass gains no dependency.
+5. Unit-test the choice and the frame encoding. Check the fill and the sign-in end to end in headless Chrome against the running web service.
+6. Write a recipe and link it from the ops index.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The shell session this was built in has no display, so the sign-in fill was checked in headless Chrome (=--headless=). It filled the form and the sign-in reached the home page as Adrian Vance. The window itself was not seen.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=compass open-as= opens an isolated Chrome with the Acme sign-in filled for a person chosen by name, by job title and office, or by role and office. The recipe "How do I open the web as an Acme user?" documents it, and 11 unit tests cover the choice and the socket framing.

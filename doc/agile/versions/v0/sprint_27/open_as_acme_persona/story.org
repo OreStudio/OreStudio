@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: C9251A6C-97E8-47DC-B87F-CE260B5A9948
+:END:
+#+title: Story: Open the web as an Acme persona
+#+description: A compass command that opens a separate Chrome instance signed in as a seeded Acme user, chosen by name, by job title and location, or by role and location.
+#+type: story
+#+level: s2
+#+filetags: :compass:web:testing:acme:sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Test the web as different Acme users without adding profiles to the developer's own Chrome. One command opens an isolated browser with the username and password filled in, so only Sign in is left to press.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- compass open-as with a person's name opens an isolated Chrome on the web login with that user's credentials filled in.
+- compass open-as can also choose a person by job title and location, or by role and location, with London as the default location.
+- The command leaves the developer's own Chrome profiles untouched and is documented as a recipe.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BBA4B79E-31DB-44A7-80BF-728EF262479A][Scaffold story: Open the web as an Acme persona]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:BB0FC305-7B8F-4862-BE0E-A2F00BF9AEDE][Add compass open-as to launch Chrome as an Acme persona]] | DONE | 2026-10-10 | 2026-10-10 | Initial task for: Open the web as an Acme persona |
+
+* Decisions
+
+- Each persona gets its own Chrome =--user-data-dir= under =~/.cache/ores-personas=, not a Chrome profile. A separate data directory never shows in the developer's profile picker and never syncs.
+- The sign-in form is filled through the DevTools protocol with a standard-library socket client, so compass gains no dependency. The password is never stored in the browser.
+- Acme's tenant, password, offices, roles and titles are hard coded, because the tenant is fixed. The staff come from the seeder's =accounts.json=.
+
+* Out of scope
+
+-
+
+* Result
+
+=compass open-as name, title or role= opens an isolated Chrome with the Acme sign-in filled. See the recipe "How do I open the web as an Acme user?".

@@ -8,7 +8,7 @@
 #+filetags: :seed-a-trade-population-with-its-market-data:sprint_27:v0:
 #+owner: marco
 #+branch: feature/analyse-the-fixing-data-source
-#+pr:
+#+pr: 3043
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -71,7 +71,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3043][#3043]] | [agile] Add the story to seed a relative-time trade population |
 
 * Review
 

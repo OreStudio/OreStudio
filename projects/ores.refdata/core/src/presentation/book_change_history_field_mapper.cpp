@@ -43,7 +43,6 @@ render_book_change_fields(const domain::book_change& v) {
     fields.push_back({.name = "Line No", .value = std::to_string(v.line_no)});
     fields.push_back({.name = "Operation", .value = v.operation});
     fields.push_back({.name = "Base Version", .value = std::to_string(v.base_version)});
-    fields.push_back({.name = "Part Code", .value = v.part_code});
     fields.push_back({.name = "Entity ID", .value = boost::uuids::to_string(v.entity_id)});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Name", .value = v.name});

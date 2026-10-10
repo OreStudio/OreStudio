@@ -48,10 +48,12 @@ domain::book_change book_change_mapper::map(const book_change_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id);
+
+
     r.line_no = v.line_no;
+
     r.operation = v.operation;
     r.base_version = v.base_version;
-    r.part_code = v.part_code;
     r.entity_id = boost::lexical_cast<boost::uuids::uuid>(v.entity_id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.name = v.name;
@@ -90,10 +92,12 @@ book_change_entity book_change_mapper::map(const domain::book_change& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.request_id = boost::uuids::to_string(v.request_id);
+
+
     r.line_no = v.line_no;
+
     r.operation = v.operation;
     r.base_version = v.base_version;
-    r.part_code = v.part_code;
     r.entity_id = boost::uuids::to_string(v.entity_id);
     r.party_id = boost::uuids::to_string(v.party_id);
     r.name = v.name;

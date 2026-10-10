@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.core/presentation/approval_request_history_field_mapper.hpp"
+#include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.inbox.core/service/approval_request_service.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
@@ -678,56 +679,11 @@ public:
     }
 
 private:
-    /**
-     * @brief Tells the deciders whose turn it is.
-     *
-     * A request of a kind with one decider permission tells its holders. A
-     * request that names parts tells the holders of the parts that are open:
-     * those of the earliest answer order that has not yet approved.
-     */
     void tell_open_parts(const ores::database::context& ctx,
                          service::approval_lifecycle& lifecycle,
                          const domain::approval_kind& kind,
                          const domain::approval_request& raised) {
-        const auto parts = lifecycle.parts_of(boost::uuids::to_string(raised.id));
-        if (parts.empty()) {
-            tell_deciders(ctx, kind, raised, kind.decide_permission_code);
-            return;
-        }
-        for (const auto& open : lifecycle.open_parts_of(boost::uuids::to_string(raised.id)))
-            tell_deciders(ctx, kind, raised, open.decide_permission_code);
-    }
-
-    /**
-     * @brief Tells the people who may decide a request that it waits.
-     *
-     * Telling is never the operation: a failure here is logged, and the
-     * request stands.
-     */
-    void tell_deciders(const ores::database::context& ctx,
-                       const domain::approval_kind& kind,
-                       const domain::approval_request& raised,
-                       const std::string& permission_code) {
-        try {
-            service::notification_center center(ctx);
-            auto deciders = center.holders_of(permission_code);
-            std::erase(deciders, boost::uuids::to_string(raised.requested_by));
-            if (deciders.empty())
-                return;
-            raise_notification_request n{.kind_code = "inbox.approval_waiting",
-                                         .link_route = "requests",
-                                         .link_id = boost::uuids::to_string(raised.id),
-                                         .arguments = {{.name = "kind", .value = kind.name},
-                                                       {.name = "requester", .value = ctx.actor()},
-                                                       {.name = "reason", .value = raised.reason}},
-                                         .account_ids = {},
-                                         .audience_permission_code = permission_code};
-            center.raise(n, deciders, raised.requested_by);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), warn)
-                << "Request " << boost::uuids::to_string(raised.id)
-                << " raised, but its deciders were not told: " << e.what();
-        }
+        service::approval_announcer(ctx).tell_open_parts(lifecycle, kind, raised);
     }
 
     /**

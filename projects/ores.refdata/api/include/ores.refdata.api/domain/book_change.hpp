@@ -81,13 +81,6 @@ struct book_change final {
     int base_version = 0;
 
     /**
-     * @brief The approval part that decides this line.
-     *
-     * References the approval parts the system tenant holds.
-     */
-    std::string part_code;
-
-    /**
      * @brief UUID uniquely identifying this book.
      *
      * Surrogate key for the book record.

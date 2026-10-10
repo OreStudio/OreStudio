@@ -94,7 +94,9 @@ already does: its detail is a typed table keyed by the request, in the component
 that owns the kind, and nothing in the inbox is stored as a document. The pending
 table of a gated entity has the entity's own columns, with the same foreign keys,
 checks and lookup validation, plus the request, a line number, the operation (put
-or delete), the version the maker read and the part that decides the line. It is
+or delete) and the version the maker read. A line holds no part. A put can change
+columns that two parts decide, so the request holds the parts, as the union the
+policy gives for the columns all its lines change. The pending table is
 generated from the entity's model, as the entity's other tables are, so a model
 change reaches the pending table in the same regeneration and the same migration.
 A request may hold lines for several entities, one typed table each.
@@ -123,8 +125,10 @@ already takes. It does four things in one transaction:
    anyone waits. The dry run covers database rows. A sequence value it used stays
    used. It publishes no event and sends no notification, because it calls the
    repository and validation layer and never the layer that publishes.
-2. It reads the policy and gives each line its part. A write with no part is
-   refused here as "needs no request", so a caller writes it directly.
+2. It reads the policy for the columns each line changes and gives the request the
+   union of the parts. A request with no part is refused here as "needs no
+   request", so a caller writes it directly. The policy names the columns of the
+   entity, and a line that creates a row changes every column.
 3. It writes the request, its parts and its lines.
 4. It tells the deciders of the parts that can be answered now: the first part in
    the order, or every part when the policy gives no order.

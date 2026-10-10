@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T09:42:55.095349Z
+' Generated: 2026-10-10T18:43:39.230749Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -26,7 +26,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-492 tables in 21 groups.
+500 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -83,6 +83,7 @@ entity "refdata" as refdata {
   ores_refdata_bma_basis_swap_conventions_tbl
   ores_refdata_bond_future_volatility_configs_tbl
   ores_refdata_bond_yield_conventions_tbl
+  ores_refdata_book_changes_tbl
   ores_refdata_book_purpose_types_tbl
   ores_refdata_book_statuses_tbl
   ores_refdata_books_tbl
@@ -230,7 +231,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-154 tables — ores_schema.refdata.puml
+155 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -404,7 +405,9 @@ entity "trading" as trading {
   ores_trading_ascots_tbl
   ores_trading_average_types_tbl
   ores_trading_balance_guaranteed_swap_instruments_tbl
+  ores_trading_balance_guaranteed_swap_tranches_tbl
   ores_trading_barrier_types_tbl
+  ores_trading_bg_swap_tranche_notionals_tbl
   ores_trading_bond_forwards_tbl
   ores_trading_bond_futures_tbl
   ores_trading_bond_instruments_tbl
@@ -446,6 +449,8 @@ entity "trading" as trading {
   ores_trading_equity_swap_instruments_tbl
   ores_trading_equity_variance_swap_instruments_tbl
   ores_trading_exercise_types_tbl
+  ores_trading_flexi_swap_instruments_tbl
+  ores_trading_flexi_swap_lower_notionals_tbl
   ores_trading_fpml_event_types_tbl
   ores_trading_fra_instruments_tbl
   ores_trading_fx_accumulator_instruments_tbl
@@ -502,7 +507,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-101 tables — ores_schema.trading.puml
+105 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {
@@ -654,6 +659,9 @@ entity "inbox" as inbox {
   ores_inbox_approval_decision_types_tbl
   ores_inbox_approval_decisions_tbl
   ores_inbox_approval_kinds_tbl
+  ores_inbox_approval_parts_tbl
+  ores_inbox_approval_policies_tbl
+  ores_inbox_approval_request_parts_tbl
   ores_inbox_approval_request_states_tbl
   ores_inbox_approval_requests_tbl
   ores_inbox_delivery_outcome_types_tbl
@@ -667,7 +675,7 @@ entity "inbox" as inbox {
 }
 note bottom of inbox
 Inbox — Approval Requests and Notifications
-13 tables — ores_schema.inbox.puml
+16 tables — ores_schema.inbox.puml
 end note
 
 

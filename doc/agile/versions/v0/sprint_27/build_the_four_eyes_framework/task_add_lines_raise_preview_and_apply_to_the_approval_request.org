@@ -1,59 +1,61 @@
 :PROPERTIES:
 :ID: 2E2081E7-9E54-4F91-A1B3-B205E318EE90
 :END:
-#+title: Task: Raise, preview and apply a request
-#+description: Combine the generated pending changes: one typed raise for lines of several entities, a preview that writes nothing, an apply workflow started by the approval that applies every line in one transaction, an apply_failed state, and a failure policy that separates transient from permanent failures.
+#+title: Task: Raise and preview a request
+#+description: Let a maker propose book changes as typed lines: a preview that runs the real write in a rolled-back transaction and returns every refusal, and a raise that writes the request, its parts chosen by the policy, and its lines in one transaction. The apply is the next task.
 #+type: task
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-lines-raise-preview-and-apply-to-the-approval-request
+#+pr: 3072
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A request holds typed lines for several entities, is previewed and raised with every refusal returned early, and applies as one transaction when the last part approves.
+A maker proposes writes to books as typed lines. The preview returns every refusal and writes nothing. The raise writes the request, the parts the policy names and the lines together, and tells the deciders of the parts that can answer now.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-10                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                             |
 
 * Acceptance
 
-- A line number is unique inside a request (partial unique index on tenant, request and line number).
-- A line cannot be written for a request that is already decided.
+- A line number is unique inside a request. The derived model declares the request and line number as a natural key, so the unique index is generated.
+- The policy names the columns of the entity. A line selects its parts from the columns it changes.
+- The preview runs the real service write for each line inside one transaction it never commits, with a savepoint per line. It returns the refusals the service gives, publishes no event and sends no notification.
+- The preview refuses a line whose base version is not the live version.
+- The raise writes the request, its parts and its lines in one transaction, and refuses a request that no policy row gates.
 - A test refuses a line for an unknown request.
-
-- The dry run runs the real service database layer for each line inside a savepoint. It returns the refusals the service gives, publishes no event and sends no notification.
-- The apply writes each line through the real service in one transaction.
-
-- Preview returns every proposed write with its part and any refusal, and writes nothing.
-- Raise runs each write in a rolled-back savepoint, writes the request, its parts and its lines, and tells the deciders of the parts that can be answered now.
-- The last approval starts an apply workflow whose steps re-check, apply every line in one transaction, marking each applied once, and tell the maker.
-- A refusal at apply moves the request to apply_failed with the line and reason and ends the run as failed. An infrastructure failure or missed deadline stops the run, and the retry verb resumes it until the kind's window ends, then the request moves to apply_failed.
-- The run shows on the workflow screens.
-- apply_failed is final, and a new request needs every part to approve again.
+- A test shows a preview that leaves the live table and the pending table unchanged.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- The apply (workflow, apply_failed, retry) moves to the task "Apply an approved request". This task stops at a request that holds typed lines and its parts.
+- A line holds no part. A put can change columns that two parts decide, so the request's parts are the union the policy gives for all its lines. The =part_code= column leaves the derived model.
+- The policy field names become the columns of the entity (book_status, rates_centre_code, is_sweepable, owner_unit_id, parent_portfolio_id). The two rows for columns the book does not have are removed.
+- A database function returns the parts for an entity type, an operation and a list of changed columns.
+- The preview and the raise are a service in refdata, because only refdata knows the book columns and the book service. A kind =refdata.book_change= is seeded for the requests.
+- The preview needs no new transaction support. =unit_of_work= holds one transaction and drops it on destruction. A savepoint per line is =execute_raw_command=. A rolled-back transaction discards the notifications the write queued.
+- A "no line on a decided request" guard is not added in the database. The raise creates the request and its lines together, and it is the only writer.
 
 * Measurements
 
@@ -71,6 +73,14 @@ task and name that file in the Command column.
 
 * Notes
 
+- The preview needs no new transaction support. =unit_of_work= holds one transaction and rolls it back when it is destroyed. The raw command helper opens its own connection, so the savepoints run on the transaction's own connection instead.
+- A write that fails inside a transaction aborts it until the savepoint rolls back. The test with a refused line followed by a good line shows the next line is still checked.
+- The service lives in =ores.refdata.service=, not =ores.refdata.core=. =ores.inbox.core= links =ores.iam.core=, which links =ores.refdata.core=, so core cannot link the inbox.
+- The telling of the deciders moved out of the approval handler into =approval_announcer=, so any component that raises a request tells its deciders the same way.
+- The policy now names the book's columns. Five rows changed name and the two rows for columns the book lacks (allowed currencies and products) are gone, so the policy has 30 rows. The earlier count of 32 was right for the earlier names.
+- The column list that compares a line with the live book is written by hand. A column the policy does not name cannot gate a change, so a missed column only matters when the policy names it.
+- The raise and the preview are not yet reachable from outside the process. The next task, "Expose the book raise and preview", adds the typed operations.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -86,12 +96,32 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3072][#3072]] | [refdata] Raise and preview book changes as typed lines |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Operation text goes into the policy SQL unescaped | book_proposal.cpp | Accept | The query binds the entity type, operation and columns as parameters. A test sends a hostile operation and it is refused. |
+| 2 | Raise overwrites the maker's reason code | book_proposal.cpp | Accept | The stored line keeps the maker's reason and commentary, and takes the default only when empty. |
+| 3 | Preview and raise are separate transactions | book_proposal.cpp | Accept | A comment states it. The apply task re-checks the base version. |
+| 4 | Policy read may use another connection | book_proposal.cpp | Accept | The helper sets the caller's tenant and party on its own connection. A test shows a tenant's own policy row adds a part. |
+| 5 | Savepoint failure is not handled | book_proposal.cpp | Accept | A comment states that the unit of work rolls back. |
+| 6 | Column table repeats the book schema | book_proposal.cpp | Decline | Only a column the policy names can gate a change. The next gate task adds the generated list. |
+| 7 | No tests for empty lines or no reason | tests | Accept | Added. |
 
 * Result
+
+A maker can propose changes to books as typed lines. The preview and the raise are a service, =book_proposal_service=. They are not yet offered over NATS.
+
+- The preview runs the real book service for each line in a transaction it never commits, with a savepoint per line. It returns each line's refusal and the parts the policy names. The live table and the pending table are unchanged afterwards.
+- The raise previews, refuses when any line is refused or no policy row gates the changes, then writes the request, its parts and its lines in one transaction. It tells the deciders of the open parts after the commit.
+- The pending line has no part. The request holds the parts, as the union the policy gives for the columns all its lines change.
+- A line number is unique inside a request. The derived model declares the request and line number as a natural key, and the generator emits the unique index.
+- The policy names the book's columns. The kind =refdata.book_change= and the function =ores_inbox_policy_parts_fn= are new.
+
+Evidence: thirteen =[book_proposal]= cases pass (38 assertions) on a recreated database. They cover a valid new book and its three parts, a preview that writes nothing, a refused line followed by a good line, a stale version, a one-column change naming one part, a raise that writes the request, parts and line, a refused line that raises nothing, a change no policy row gates, a duplicate line number, and a line for an unknown request. The generated =book_change= test and the 20 =[approval]= cases still pass. The cmake source, populate reference, handler permission, test case reachability, pasted block symbol and derived-model checks pass.
+
+The ER diagram check on main failed for the parts and policies tables of the earlier task, which had no row-level security. This task adds a tenant policy to both. A tenant reads its own rows and the system tenant's, and writes only its own. The pending book lines also gain the party and sandbox policies the book has. The ER diagrams are regenerated, and the strict parse and the diagram check pass.
+
+Not done here: the NATS operations, the apply and the screens. They are the next tasks.

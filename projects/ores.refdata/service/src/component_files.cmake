@@ -156,6 +156,7 @@ set(files
     "messaging/yield_volatility_config_event_registrar.cpp"
     "messaging/zero_convention_event_registrar.cpp"
     "messaging/zero_inflation_index_convention_event_registrar.cpp"
+    "service/book_proposal.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -298,4 +299,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/zero_convention_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/zero_inflation_index_convention_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/ores.refdata.service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/service/book_proposal.hpp"
 )

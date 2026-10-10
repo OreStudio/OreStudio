@@ -25,3 +25,5 @@
 
 drop policy if exists notification_recipients_tbl_tenant_isolation_policy on "ores_inbox_notification_recipients_tbl";
 drop policy if exists notification_arguments_tbl_tenant_isolation_policy on "ores_inbox_notification_arguments_tbl";
+drop policy if exists approval_parts_tbl_tenant_isolation_policy on "ores_inbox_approval_parts_tbl";
+drop policy if exists approval_policies_tbl_tenant_isolation_policy on "ores_inbox_approval_policies_tbl";

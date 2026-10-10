@@ -482,6 +482,32 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- A pending line shows the book it proposes, so it is as visible as the book.
+drop policy if exists book_changes_party_isolation_policy
+    on ores_refdata_book_changes_tbl;
+
+create policy book_changes_party_isolation_policy
+on ores_refdata_book_changes_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+drop policy if exists book_changes_sandbox_isolation_policy
+    on ores_refdata_book_changes_tbl;
+
+create policy book_changes_sandbox_isolation_policy
+on ores_refdata_book_changes_tbl
+as restrictive
+for all using (
+    sandbox_id is null
+    or ores_refdata_actor_sees_sandbox_fn(tenant_id, sandbox_id)
+)
+with check (
+    sandbox_id is null
+    or ores_refdata_actor_sees_sandbox_fn(tenant_id, sandbox_id)
+);
+
 -- -----------------------------------------------------------------------------
 -- Books
 -- -----------------------------------------------------------------------------

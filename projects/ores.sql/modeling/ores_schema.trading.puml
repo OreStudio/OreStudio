@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T09:42:55.095349Z
+' Generated: 2026-10-10T18:43:39.230749Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 101
+Tables: 105
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -208,18 +208,19 @@ package "trading" #E8F5E9 {
     already deploy, and it is not derived from an ORE schema.
     end note
 
-    entity ores_trading_balance_guaranteed_swap_instruments_tbl <<junction>> #ECECEC {
+    entity ores_trading_balance_guaranteed_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
+        * reference_security : text
           lockout_days : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -230,10 +231,47 @@ package "trading" #E8F5E9 {
     Balance Guaranteed Swap Instrument Table
     Represents a Balance Guaranteed Swap instrument where the notional
     amortises in line with an underlying pool of assets (e.g., mortgages).
+    The document names the reference security here, lists the tranches in
+    balance_guaranteed_swap_tranche with their notionals in
+    balance_guaranteed_swap_tranche_notional, and states the tranche schedule as
+    an instrument_schedule row under the owner role tranches.
     This row is the family's fact table, not its identity. The header,
     ores.trading.rate_instruments, holds the trade type code, the party, the
     instrument's start and maturity dates and its description; this table holds
     only the product's own fields, and joins the header by trade_id.
+    end note
+
+    entity ores_trading_balance_guaranteed_swap_tranches_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+          description : text
+        * security_id : text <<FK>>
+        * seniority : bigint
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_balance_guaranteed_swap_tranches_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Balance Guaranteed Swap Tranche Table
+    One row per tranche a balance guaranteed swap states, keyed to the
+    instrument and the tranche's ordinal.
+    The ORE schema states the tranches as a list under the swap's Tranches block.
+    A tranche names its security, its seniority and an optional description, and it
+    holds a list of dated notionals that live in
+    balance_guaranteed_swap_tranche_notional. The block's schedule is not here: it
+    is a schedule of the shared kind, so it lands in instrument_schedule under the
+    owner role tranches.
     end note
 
     entity ores_trading_barrier_types_tbl <<temporal>> #C6F0D8 {
@@ -259,6 +297,37 @@ package "trading" #E8F5E9 {
     barrierType simple type under external/ore/xsd/instruments.xsd.
     The values are the ORE XSD spellings, so a stored value round-trips through the
     ORE XML unchanged. No conversion is introduced here.
+    end note
+
+    entity ores_trading_bg_swap_tranche_notionals_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * tranche_number : integer <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+          start_date : date
+        * notional : numeric(28, 10)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_bg_swap_tranche_notionals_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Balance Guaranteed Swap Tranche Notional Table
+    One row per notional a tranche states, keyed to the instrument, the
+    tranche and the notional's ordinal within that tranche.
+    A tranche's notional amortises, so the document states a list of notionals,
+    each dated from the day it applies. The first notional states no date and
+    applies from the start of the swap. The export writes the rows back in the
+    order the document stated them.
     end note
 
     entity ores_trading_bond_forwards_tbl <<temporal>> #C6F0D8 {
@@ -1964,6 +2033,71 @@ package "trading" #E8F5E9 {
     the ORE exerciseStyle simple type under external/ore/xsd/ore_types.xsd.
     The values are the ORE XSD spellings, so a stored value round-trips through the
     ORE XML unchanged. No conversion is introduced here.
+    end note
+
+    entity ores_trading_flexi_swap_instruments_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * option_long_short : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_flexi_swap_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Flexi Swap Instrument Table
+    Represents a Flexi Swap instrument: a swap whose owner may choose, period by
+    period, a notional between the lower bounds and the legs' notionals. The
+    document states the option's direction here and the bounds in
+    flexi_swap_lower_notional; the legs are the family's swap legs.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.rate_instruments, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
+    end note
+
+    entity ores_trading_flexi_swap_lower_notionals_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * bound_number : integer
+          currency : text
+          start_date : date
+        * notional : numeric(28, 10)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_flexi_swap_lower_notionals_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Flexi Swap Lower Notional Table
+    One row per notional a flexi swap's lower bound block states, keyed to the
+    instrument and the notional's ordinal across the whole block.
+    The ORE schema states the lower bounds as an unbounded list of blocks. Each
+    block names a currency once and holds a list of dated notionals. The column
+    bound_number is the block's position in the document, and the row carries the
+    block's currency, so the export regroups the rows into the blocks the document
+    held. A notional that states no date applies from the start of the swap, as in
+    the leg notionals. The document may state a notional of zero, so the amount
+    check allows it.
     end note
 
     entity ores_trading_fpml_event_types_tbl <<temporal>> #C6F0D8 {
@@ -3821,6 +3955,10 @@ ores_trading_trades_tbl ||--o{ ores_trading_ascots_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_ascots_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_balance_guaranteed_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_balance_guaranteed_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_bg_swap_tranche_notionals_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_bg_swap_tranche_notionals_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_balance_guaranteed_swap_tranches_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_balance_guaranteed_swap_tranches_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_bond_forwards_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_bond_forwards_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_bond_futures_tbl : "has"
@@ -3884,6 +4022,10 @@ ores_trading_trades_tbl ||--o{ ores_trading_equity_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_variance_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_variance_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_flexi_swap_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_flexi_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_flexi_swap_lower_notionals_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_flexi_swap_lower_notionals_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fra_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fra_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_accumulator_instruments_tbl : "has"

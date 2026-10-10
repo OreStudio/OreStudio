@@ -38,7 +38,6 @@ export interface BookChange {
     line_no: number;
     operation: string;
     base_version: number;
-    part_code: string;
     entity_id: string;
     party_id: string;
     name: string;

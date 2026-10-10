@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T09:42:55.095349Z
+' Generated: 2026-10-10T17:26:00.098536Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: inbox
-Tables: 13
+Tables: 16
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -43,6 +43,7 @@ Keys this group states reach into:
 - ores_iam_accounts_tbl (iam)
 - ores_iam_permissions_tbl (iam)
 - ores_iam_role_grant_requests_tbl (iam)
+- ores_refdata_book_changes_tbl (refdata)
 end note
 
 '
@@ -86,6 +87,7 @@ package "inbox" #FCE4EC {
         * version : integer
         * request_id : uuid <<FK>>
         * decision_code : text <<FK>>
+          part_code : text <<FK>>
         * decided_by : uuid <<FK>>
         * decided_at : timestamptz
         * comment : text
@@ -146,6 +148,108 @@ package "inbox" #FCE4EC {
     each by a different person, close a request as approved. The component that
     owns the kind owns its detail table and the operation that applies an approval.
     Kinds are managed by the system tenant.
+    end note
+
+    entity ores_inbox_approval_parts_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * decide_permission_code : text <<FK>>
+        * answer_order : integer
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_approval_parts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Approval Part Table
+    Reference data table of the parts of an approval: the functions whose approval
+    a request may need. Examples: 'controller', 'finance', 'market_risk',
+    'operations'.
+    A part is what makes a request need several different people. Each part names the
+    permission a person needs to answer for it, and its answer_order: a part with a
+    lower order must approve before a part with a higher one can be answered, and parts
+    with the same order are answered in parallel. A request's parts are the distinct
+    parts of its changes, and the request is approved only when every one of them has
+    an approval. A refusal from a part that can be answered ends the request.
+    Parts are managed by the system tenant. A tenant without a function grants the
+    part's permission to whichever role does that work, so the part is decided by a
+    permission and not by a job title.
+    end note
+
+    entity ores_inbox_approval_policies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * entity_type : text
+        * operation : text
+          field_name : text
+        * part_code : text <<FK>>
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_approval_policies_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Approval Policy Table
+    Reference data table of the approval policy: for an act on an entity, optionally
+    narrowed to one field, the part that must approve it. A row says that putting or
+    deleting an entity_type, or changing one of its fields, needs the named part. An
+    act with no row is written directly.
+    The policy is data, so who decides is a data change. The rows are the tables in
+    the book controls note: the description of a book needs no part, the cost center
+    needs finance, a move needs operations. One act may have several rows, one for each
+    part that must approve, and the request's parts are the distinct parts of its rows.
+    The system tenant holds the policy rows, so a tenant cannot loosen its own
+    controls. A tenant's own rows, which may add a part to an act and never remove one,
+    come with the policy read in a later task.
+    end note
+
+    entity ores_inbox_approval_request_parts_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * request_id : uuid <<PK, FK>>
+        * part_code : text <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_approval_request_parts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Approval Request Part Table
+    A request needs the approval of one or more parts, and a part may be needed by
+    many requests. Each row names one part a request needs, and is written when the
+    request is raised. A decision carries the part it answers, so a request is
+    approved when every part named here has an approval, in the order the parts give.
+    A request with no rows here is a request of a kind that names one decider
+    permission and a count, as the role request is, and it is decided as before.
     end note
 
     entity ores_inbox_approval_request_states_tbl <<temporal>> #C6F0D8 {
@@ -453,6 +557,10 @@ package "inbox" #FCE4EC {
 '
 ores_inbox_approval_requests_tbl ||--o{ ores_inbox_approval_decisions_tbl : "has"
 ores_inbox_approval_decision_types_tbl ||--o{ ores_inbox_approval_decisions_tbl : "has"
+ores_inbox_approval_parts_tbl ||--o{ ores_inbox_approval_decisions_tbl : "has"
+ores_inbox_approval_parts_tbl ||--o{ ores_inbox_approval_policies_tbl : "has"
+ores_inbox_approval_requests_tbl ||--o{ ores_inbox_approval_request_parts_tbl : "has"
+ores_inbox_approval_parts_tbl ||--o{ ores_inbox_approval_request_parts_tbl : "has"
 ores_inbox_approval_kinds_tbl ||--o{ ores_inbox_approval_requests_tbl : "has"
 ores_inbox_approval_request_states_tbl ||--o{ ores_inbox_approval_requests_tbl : "has"
 ores_inbox_notifications_tbl ||--o{ ores_inbox_notification_arguments_tbl : "has"

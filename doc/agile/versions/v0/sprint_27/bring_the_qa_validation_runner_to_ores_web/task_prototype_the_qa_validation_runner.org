@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D
+:END:
+#+title: Task: Prototype the QA validation runner
+#+description: Show the Tests tab and the runner, and confirm how results are written.
+#+type: task
+#+level: s1
+#+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
+#+owner: marco
+#+branch: feature/prototype-the-qa-validation-runner
+#+pr: 3063
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Show a tester working through a test scenario: the Tests tab with scenarios waiting and done, and the runner with steps, story and task. The prototype also confirms how results are written, so the build tasks start from a settled storage decision.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE |
+| Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The prototype shows the Tests tab, the runner, a step with its note and the story and task beside the steps.
+- The prototype is accepted before any code is built.
+- The story records how results are written, as a decision.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3063][#3063]] | [prototype] Draw the test scenarios queue and runner |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Fail or the last Pass locks the scenario, because read-only follows the inferred result | index.html | Accept | A closed flag on each scenario now decides read-only. A save closes a decided scenario and a retest opens it. A scripted run in Chrome covers the flow, and it fails on the old page. |
+| 2 | Variant B moves on after a Fail, before the tester writes a note | index.html | Accept | Only a Pass moves on. |
+| 3 | Retest wipes the steps without asking | index.html | Accept | A retest now asks for confirmation. |
+| 4 | The task table is not aligned | task file | Decline | Cosmetic. Compass writes those cells. |
+| 5 | The seven gaps live in the note and again in the page | index.html | Decline | A prototype opens with no build, so the page carries its own copy. |
+
+* Result
+
+The prototype is a static page, doc/prototypes/testing/test-scenarios/. It draws the Tests tab with a queue of waiting and done scenarios, and a runner in three layouts: steps beside the detail, one step at a time, and the whole scenario as a document. Four cases switch from the bar: queue, running, reopened and failed step. Every layout puts the story and the task beside the steps. The design note states seven gaps. The main one is that nothing reads or writes a scenario, so the BFF must call a compass scenario verb. The reviewer accepted layout B, one step at a time, on 2026-10-10, and asked that the queue carry no heading of its own.

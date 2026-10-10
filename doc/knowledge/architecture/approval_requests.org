@@ -271,6 +271,7 @@ change events are what it listens to.
 
 * See also
 
+- [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] — how this record grows to hold several deciding functions, a pending change, a gate in the write path and one screen set for every kind.
 - [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the first kind: a member asks for a role.
 - [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational authorisation queue]] — the trade queue whose rules this record takes.
 - [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational authorisation]] — why authorisation is metadata, and the four-eyes principle.

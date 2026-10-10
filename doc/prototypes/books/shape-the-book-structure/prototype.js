@@ -1165,7 +1165,7 @@
             '<p class="lead">The checker reads what would change, then answers with a comment.</p>' + delta + '</div>' +
             '<div class="panel"><h2>Checks</h2>' + checks + '</div>' + why +
             '<div class="panel-soft"><label class="field"><span class="lbl">Comment \u00b7 required</span>' +
-            '<input data-comment="1" placeholder="Why you approve or decline" value="' + esc(S.comment) + '"></label>' +
+            '<input data-comment="1" data-focus="comment" placeholder="Why you approve or decline" value="' + esc(S.comment) + '"></label>' +
             '<div class="stepfoot"><button type="button" class="btn ghost" data-act="decline"' + (declineBlocked ? ' disabled' : '') + '>Decline</button>' +
             '<button type="button" class="btn primary ml-auto" data-act="approve"' + (blocked ? ' disabled' : '') + '>Approve</button></div></div>';
     }

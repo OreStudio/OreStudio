@@ -26,7 +26,7 @@ generated alternative kept beside the agreed design, never instead of it.
 #+ATTR_HTML: :class hug-leading
 | Prototype                 | What it argues | Open it | Review |
 |---------------------------+----------------+---------+--------|
-| Define how tenors resolve | A tenor is a code a person reads and a resolution the system computes: the unit, the anchor, the schedule and the algorithm are shown against the date they produce on a named calendar. | [[file:define-how-tenors-resolve/][prototype]] | none |
+| Define how tenors resolve | A tenor is a code a person reads and a resolution the system computes: the unit, the anchor, the schedule and the algorithm are shown against the date they produce on a named calendar. It also draws a second person's approval for every write: the request waits, Market Risk decides, and a decline leaves the tenor alone. | [[file:define-how-tenors-resolve/][prototype]] | none |
 
 * Adding a prototype
 

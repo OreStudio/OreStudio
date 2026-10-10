@@ -21,6 +21,12 @@
  *   ?fail=duplicate|missing|duplicate_set_id   the server's refusal; ?fail=1 is the first kind
  *   ?refuse=duplicate                      an alias of ?fail
  *   ?version=3                             the history version to read
+ * Four-eyes states, from the book controls note (four-eyes.js draws them):
+ *   ?state=waiting|decide|declined         a raised request waiting, the checker's
+ *                                           decision screen, and a declined request
+ *   ?actor=o.ops|m.risk|...                who answers on the decision screen (decide only)
+ *   ?maker=h.desk|o.ops|...                who raised the request; the maker cannot decide it
+ *   ?check=identifier                      make the authoritative-identifier check fail
  * The bar mirrors the same states as buttons. */
 
 (function () {
@@ -92,7 +98,7 @@
 
     /* Every state the bar can reach, in the order the bar lists them. */
     var BAR_STATES = ['landing', 'counterparty', 'identifiers', 'contacts', 'agreements',
-        'review', 'done', 'history', 'refused'];
+        'review', 'done', 'history', 'refused', 'waiting', 'decide', 'declined'];
 
     /* The first kind ?fail=1 selects. */
     var FAIL_KINDS = ['duplicate', 'missing', 'duplicate_set_id'];
@@ -187,6 +193,68 @@
         live: false,
         refused: false
     };
+
+    /* The changes the confirm would write, each with the function that decides
+     * it, from the book controls note. A contact is not material, so it needs
+     * no second person. */
+    function changesOf() {
+        var d = S.draft;
+        var out = [];
+        var row = S.picked ? rowByCode(S.picked) : undefined;
+        var base = row === undefined ? null : loadRow(row);
+        function differs(a, b) { return JSON.stringify(a) !== JSON.stringify(b); }
+        var sets = d.agreements.reduce(function (n, a) { return n + a.sets.length; }, 0);
+        if (base === null) {
+            out.push({ what: 'New counterparty ' + d.short_code, who: d.full_name, from: null, to: null, decider: 'Operations' });
+            out.push({ what: 'Identifiers (' + d.identifiers.length + ')', who: d.full_name, from: null, to: null, decider: 'Operations' });
+            out.push({ what: 'Contacts (' + d.contacts.length + ')', who: d.full_name, from: null, to: null, decider: null });
+            if (d.agreements.length > 0) {
+                out.push({ what: 'Netting agreements and collateral (' + sets + ' sets)', who: d.full_name, from: null, to: null, decider: 'Market Risk' });
+            }
+            out.push({ what: 'Visible to ' + S.resolvedParties.map(partyName).join(', '), who: d.full_name, from: null, to: null, decider: 'Operations' });
+            return out;
+        }
+        [['short_code', 'Short code'], ['full_name', 'Full name'], ['transliterated_name', 'Transliterated name'],
+            ['party_type', 'Party type'], ['status', 'Status'], ['business_center_code', 'Business center'],
+            ['parent_counterparty_id', 'Parent counterparty']].forEach(function (f) {
+            if (String(d[f[0]]) !== String(base[f[0]])) {
+                out.push({ what: 'Set ' + f[1], who: base.full_name, from: dash(String(base[f[0]])), to: dash(String(d[f[0]])), decider: 'Operations' });
+            }
+        });
+        if (differs(d.identifiers, base.identifiers)) {
+            out.push({ what: 'Change the identifiers', who: base.full_name,
+                from: base.identifiers.map(function (i) { return i.scheme + ' ' + i.value; }).join(', ') || 'none',
+                to: d.identifiers.map(function (i) { return i.scheme + ' ' + i.value; }).join(', ') || 'none', decider: 'Operations' });
+        }
+        if (differs(d.contacts, base.contacts)) {
+            out.push({ what: 'Change the contacts', who: base.full_name, from: null, to: null, decider: null });
+        }
+        if (differs(d.agreements, base.agreements)) {
+            out.push({ what: 'Change the netting agreements, sets or collateral', who: base.full_name, from: null, to: null, decider: 'Market Risk' });
+        }
+        return out;
+    }
+
+    var FE = FourEyes.create({
+        getChanges: changesOf,
+        subject: function () { return S.draft.full_name === '' ? 'The counterparty' : S.draft.full_name; },
+        checks: function (actor, changes, check) {
+            var auth = authoritativeIdentifier(S.draft.identifiers);
+            return [{ ok: check === 'identifier' ? false : auth !== undefined,
+                label: 'The counterparty has one authoritative identifier',
+                detail: auth === undefined ? 'none' : auth.scheme + ' ' + auth.value }];
+        }
+    });
+
+    function reviewGate() {
+        var changes = changesOf();
+        return FE.reviewNotice(changes) +
+            '<ul class="fe-changes" style="margin-bottom:18px">' + changes.map(function (c) {
+                var fromto = c.from === null ? '' :
+                    '<div class="fe-fromto"><span class="fe-was">' + esc(c.from) + '</span><span>\u2192</span><span class="fe-now">' + esc(c.to) + '</span></div>';
+                return '<li><div class="fe-what">' + esc(c.what) + FE.badge(c) + '</div><div class="fe-who">' + esc(c.who) + '</div>' + fromto + '</li>';
+            }).join('') + '</ul>';
+    }
 
     function blankDraft() {
         return {
@@ -399,6 +467,13 @@
         }
         if (S.fail !== '' && REFUSALS[S.fail] !== undefined) S.refused = true;
         if (S.state === 'done') S.live = true;
+        FE.params(p);
+        if (FE.states.indexOf(S.state) >= 0 && S.picked === undefined && S.draft.short_code === '') {
+            /* A direct link to a four-eyes state needs a request to show. */
+            S.draft.short_code = 'NEWCO';
+            S.draft.full_name = 'Newco Capital Ltd';
+            S.draft.identifiers = [{ scheme: 'LEI', value: '549300NEWCO00000001', description: '' }];
+        }
     }
 
     /* ?fail= accepts a kind by name, or 1 for the first kind. */
@@ -1087,7 +1162,7 @@
                 }, 0) + ' row(s)'],
             ['refdata.v1.party_counterparties.put', S.resolvedParties.length + ' row(s)']
         ];
-        return '<dl class="reviewgrid">' + dl + '</dl>' +
+        return reviewGate() + '<dl class="reviewgrid">' + dl + '</dl>' +
             '<h2 style="font-size:14px;margin-top:22px">What the confirm writes</h2>' +
             '<table class="datatable"><tbody>' + steps.map(function (r) {
                 return '<tr><th>' + mono(r[0]) + '</th><td>' + esc(r[1]) + '</td></tr>';
@@ -1114,7 +1189,7 @@
         }).join('');
         return '<div class="notice success"><h3>' +
             esc(d.full_name === '' ? 'The counterparty' : d.full_name) + ' is on board.</h3>' +
-            'The tenant can trade with it. ' +
+            (FE.S.applied ? 'The request was approved and applied. ' : '') + 'The tenant can trade with it. ' +
             (auth === undefined ? 'It has no authoritative identifier yet.' :
                 'It resolves by ' + esc(auth.scheme) + ' ' + mono(auth.value) + '.') + '</div>' +
             '<table class="datatable"><tbody>' +
@@ -1272,7 +1347,7 @@
     }
 
     function nextOf(id) {
-        if (id === 'review') return { label: 'Confirm and write', enabled: true };
+        if (id === 'review') return { label: FE.primaryLabel(changesOf(), 'Confirm and write'), enabled: changesOf().length > 0 };
         if (id === 'done' || id === 'history') return null;
         var i = STEP_ORDER.indexOf(id);
         if (i < 0) return null;
@@ -1289,6 +1364,18 @@
         if (S.state === 'landing') {
             document.getElementById('app').innerHTML =
                 '<div class="page">' + landing() + '</div>';
+        } else if (FE.states.indexOf(S.state) >= 0) {
+            var feTitles = { waiting: 'Waiting', decide: 'Decide', declined: 'Declined' };
+            var feLeads = { waiting: 'The request is raised and the counterparty has not changed.',
+                decide: 'The checker reads the change and answers it.',
+                declined: 'The request was declined and the counterparty has not changed.' };
+            document.getElementById('app').innerHTML =
+                '<div class="page"><h1>' + feTitles[S.state] + ' \u2014 ' +
+                esc(S.draft.full_name === '' ? 'new counterparty' : S.draft.full_name) + '</h1>' +
+                '<div class="journey">' + rail('review') +
+                '<section class="card">' + stepHeader() +
+                '<h2>' + feTitles[S.state] + '</h2><p class="lead">' + feLeads[S.state] + '</p>' +
+                FE.html(S.state) + '</section></div></div>';
         } else if (S.state === 'refused') {
             document.getElementById('app').innerHTML =
                 '<div class="page">' +
@@ -1386,7 +1473,13 @@
 
     function goNext() {
         var id = S.state;
-        if (id === 'review') { setState('done'); return; }
+        if (id === 'review') {
+            var changes = changesOf();
+            if (FE.gated(changes).length > 0) { FE.raise(changes); setState('waiting'); return; }
+            FE.reset();
+            setState('done');
+            return;
+        }
         var i = STEP_ORDER.indexOf(id);
         if (i >= 0 && i < STEP_ORDER.length - 1) S.state = STEP_ORDER[i + 1];
     }
@@ -1567,6 +1660,25 @@
 
     document.addEventListener('input', onInput);
     document.addEventListener('change', onInput);
+
+    /* The four-eyes screens: their own controls, not the journey's. */
+    document.addEventListener('click', function (ev) {
+        var el = ev.target.closest('[data-fe]');
+        if (!el) return;
+        ev.preventDefault();
+        var to = FE.click(el);
+        if (to === null || to === 'stay') return;
+        if (to === 'outcome') { S.live = true; setState('done'); } else { setState(to); }
+        rerender();
+    });
+
+    function onFeInput(ev) {
+        var el = ev.target;
+        if (el && el.getAttribute && FE.input(el)) rerender();
+    }
+
+    document.addEventListener('input', onFeInput);
+    document.addEventListener('change', onFeInput);
 
     readParams();
     render();

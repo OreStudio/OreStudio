@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 86B6BF9C-CEEA-4FCB-8048-7CA94E927584
+:END:
+#+title: Story: Seed a relative-time trade population with the market data it needs
+#+description: A new ACME system has no time horizon and no deal population, so nothing says which historical fixings or market data it needs. Hold a sample ACME trade corpus in DQ whose dates are relative to the install date, then derive the market data that corpus requires and generate it, including historical fixings, in ores.synthetic.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A new ACME system must price its trades on the day it is installed. Today
+it cannot. The #3026 work gave every convention a correct oresmd URI, but
+the =acme_demo= profile seeds no index fixing series. Of 1,171 distinct
+seeded conventions, 1,166 point at market data that does not exist.
+
+Two facts stop us from seeding that data directly.
+
+1. *There is no time horizon.* A new system has no history. Every date in
+   its data is relative to the install date, so the fixings it needs run
+   back from that date. A fixed list of dated rows cannot serve this.
+2. *There is no deal population.* Nothing says which indices matter. A
+   valuation needs fixings only for floating legs that have already reset,
+   and only for the indices those trades use.
+
+We do not seed fixings from =external/ore=. That is sample data for a user
+to import, not a source for provisioning.
+
+This story delivers two things that work together.
+
+1. *A sample ACME trade corpus in DQ.* It is a dataset of trades whose dates
+   are relative to the install date (for example "start 18 months before
+   install, maturity 4 years after"). The install step instantiates it into
+   real dates. Because the corpus is known, the market data it requires is
+   known.
+2. *A way to populate the data that corpus requires.* Resolve the corpus's
+   market data requirements, then generate that data in =ores.synthetic=.
+   This includes historical fixings, which =ores.synthetic= cannot produce
+   today (it generates FX spot and IR curves only). A fixing on date d is
+   derived from the generated curve for that index and tenor, seeded so the
+   result is repeatable.
+
+The population step can run during ACME setup or after installation. The
+story must pick one (see Decisions).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- A DQ dataset holds a sample ACME trade corpus. Every date in it is
+  relative to the install date.
+- Provisioning ACME on any day instantiates that corpus with dates
+  relative to that day. Two installs on different days produce the same
+  corpus shifted in time.
+- The market data the corpus requires is listed by resolution, not by hand.
+- =ores.synthetic= generates historical index fixings back from the install
+  date, deterministic for a given seed, in the series the conventions'
+  oresmd URIs name.
+- After provisioning, every seeded convention the corpus uses joins to a
+  fixing series with data. The count of unpriceable conventions used by the
+  corpus is zero.
+- A report run on the corpus gathers its fixings from the store without
+  importing any file from =external/ore=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+Open. Each needs an answer before the tasks are cut.
+
+- *When the data is generated.* During ACME setup, or after installation as
+  a separate step. Setup is simpler for the user. A separate step keeps
+  install fast and lets the data be regenerated.
+- *Party ownership.* A fixing row has a =party_id= under RLS. ACME has five
+  parties. Decide whether each party gets its own fixing series or the data
+  is seeded once. This touches the =backfill-identity= party-RLS failure
+  found in #3026, which is a separate bug.
+- *Scope of the corpus.* Which asset classes and trade types the first
+  corpus covers. It must reach the 5 conventions that match today and grow
+  from there.
+- *Where the corpus lives.* A new DQ dataset beside =ore.conventions=, or
+  an extension of it.
+- *Real overnight fixings.* Public overnight rates (for example EUR
+  =€STR=, USD SOFR, GBP SONIA) could replace synthetic ones later. This
+  needs a vendor producer, which does not exist, so it is not in this
+  story.
+
+Evidence used so far: the fixing store, the ORE import and export paths,
+and the synthetic component were read in the repository. The database was
+not queried.
+* Out of scope
+
+- A vendor producer for real fixings. None exists in the tree.
+- Seeding fixings from =external/ore=. That stays an import the user runs.
+- Editing conventions further. The conventions are correct and addressed;
+  the missing piece is market data.
+- The =backfill-identity= party-RLS failure, except where it blocks the
+  party ownership decision.

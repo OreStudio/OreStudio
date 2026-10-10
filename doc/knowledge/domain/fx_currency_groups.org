@@ -75,6 +75,10 @@ different things. The CRM has no foreign key to a group.
 | Membership   | A currency is in or out             | A currency is a pivot, a driver leg or a derived leg |
 | Owns         | Nothing but its members             | Driver pairs and enabled derived pairs              |
 
+A topology belongs to a party. The DQ bundle publishes the topologies to
+each party, so every party gets its own copy. A group belongs to the
+tenant and is shared by all its parties.
+
 The names match, but the sets do not. The "scandies" topology uses USD,
 EUR, SEK, NOK and DKK. USD is the pivot and EUR is not a Scandie. The
 Scandies group holds only DKK, NOK and SEK. The "majors" topology has

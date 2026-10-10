@@ -387,6 +387,8 @@ TEST_CASE("mapper_roundtrip_inflation_swap_reverse", tags) {
     REQUIRE(legs[0].Currency.operator bool());
     CHECK(std::string(*legs[0].Currency) == "GBP");
     CHECK(legs[1].LegType == ores::ore::domain::legType::CPI);
+    REQUIRE(legs[1].Currency.operator bool());
+    CHECK(std::string(*legs[1].Currency) == "GBP");
     REQUIRE(legs[0].ScheduleData);
     REQUIRE(!legs[0].ScheduleData->Rules.empty());
     CHECK(std::string(legs[0].ScheduleData->Rules[0].StartDate) == "2023-07-10");

@@ -877,7 +877,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <RequestStoryPage me={view.username} />
+                        <RequestStoryPage />
                     ),
                     'workspace',
                 )}

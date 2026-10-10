@@ -29,6 +29,7 @@ import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { AreaFilter } from './PermissionAreas.js';
 import { roleLabel } from './words.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { RefreshQueries } from '../ui/RefreshButton.js';
 
 /** How long typing pauses before a search is sent to the server. */
 const SEARCH_PAUSE_MS = 300;
@@ -101,9 +102,12 @@ export function RolesPage(): ReactNode {
                     title={t('access.roles.title')}
                     description={t('access.roles.lead')}
                     actions={
-                        <Button variant="primary" onClick={() => setCreating(true)}>
-                            {t('access.roles.new')}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <RefreshQueries keys={[['roles-page']]} />
+                            <Button variant="primary" onClick={() => setCreating(true)}>
+                                {t('access.roles.new')}
+                            </Button>
+                        </div>
                     }
                 />
             </div>

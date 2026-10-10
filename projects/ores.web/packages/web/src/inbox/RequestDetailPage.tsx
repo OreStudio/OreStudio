@@ -21,7 +21,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import type { InboxRequestView, PermissionEntry, RoleSummary } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { formatDateTime } from '../ui/Time.js';
@@ -31,7 +31,8 @@ import { PermissionAreas } from '../access/PermissionAreas.js';
 import { roleLabel } from '../access/words.js';
 import { PersonRef } from '../access/PersonRef.js';
 import { AccountPicture } from '../ui/Images.js';
-import { Button, Detail, Notice, PageHeader } from '../ui/Primitives.js';
+import { Button, Detail, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
 import { RequestStateChip } from './RequestStateChip.js';
 import { askedFor, stateLabel } from './words.js';
 
@@ -129,22 +130,10 @@ function Request({
 
     return (
         <div className="space-y-6">
-            <nav className="flex items-center gap-2 text-sm text-ink-muted">
-                {/* Back to where this reader works. A member has no queue and
-                    an empty one would send them nowhere, so their own request
-                    goes back to the screen that lists their own requests. */}
-                <Link to={self ? '/access' : '/requests'} className="hover:text-ink">
-                    {self ? t('shell.menu.access') : t('inbox.queue.title')}
-                </Link>
-                {/* The whole story of this request, which is the same request
-                    read across every table it wrote rather than one at a time. */}
-                <Link
-                    to={`/requests/${encodeURIComponent(request.id)}/story`}
-                    className="ml-auto hover:text-ink"
-                >
-                    {t('inbox.story.request')}
-                </Link>
-            </nav>
+            <AreaTrail
+                area="requests"
+                screen={t('inbox.request.title', { role: askedFor(t, request) })}
+            />
 
             <PageHeader
                 title={t('inbox.request.title', { role: askedFor(t, request) })}
@@ -152,6 +141,11 @@ function Request({
                     state: stateLabel(t, request.stateCode),
                     date: formatDateTime(request.requestedAt, language),
                 })}
+                actions={
+                    <LinkButton to={`/requests/${encodeURIComponent(request.id)}/story`}>
+                        {t('inbox.story.request')}
+                    </LinkButton>
+                }
             />
             {/* The identifier is here for the person who has to quote it, and
                 nowhere else on the page: what the request is about is the

@@ -391,7 +391,6 @@ export const en: SourceCatalogue = {
         title: 'Audit: sign-ins',
         description: 'Who is signed in, what they are doing, and who is failing to get in.',
         readAt: 'Read at {at}',
-        refresh: 'Refresh',
         tabs: 'Audit readings',
         filterNote:
             'The period narrows the events and the statistics on the server, and the open sessions in this browser. No version, diff or revert control appears here: this screen is an event log, not a versioned entity.',
@@ -689,6 +688,97 @@ export const en: SourceCatalogue = {
      * The profile screen: one page with a panel per record, so each panel
      * saves on its own and reports on its own.
      */
+    signInFacts: {
+        lastSignIn: 'Last sign-in',
+        never: 'Never signed in',
+        from: 'From',
+        unknown: 'Unknown',
+        failed: 'Failed attempts',
+        none: 'This account has no sign-in record yet.',
+        locked: 'Locked',
+        notLocked: 'Not locked',
+    },
+    security: {
+        title: 'Security',
+        lead: 'Your password, and the places your account is signed in.',
+        reading: 'Reading your account…',
+        readFailed: 'The read failed.',
+        sessions: {
+            title: 'Where you are signed in',
+            caveat: 'No sign-out writes an end time, so this list holds every session of the account. An old session looks the same as a live one.',
+            empty: 'No sessions are recorded for your account.',
+            started: 'Started',
+            client: 'Client',
+            address: 'Address',
+            country: 'Country',
+            traffic: 'Sent / received',
+            unknownClient: 'Unknown client',
+            noAddress: 'No address',
+            unknownCountry: 'Unknown',
+        },
+        password: {
+            title: 'Password',
+            lead: 'Change the password you sign in with. The server checks the current password first.',
+            current: 'Current password',
+            currentHint: 'Proves the request is yours.',
+            new: 'New password',
+            submit: 'Change password',
+            changed: 'The password is changed. Use it at your next sign-in.',
+            refused: 'The change was refused.',
+        },
+        state: {
+            title: 'Sign-in state',
+            lead: 'Read only. The server writes it when you sign in.',
+            resetRequired: 'Password change required',
+            account: 'Account',
+        },
+    },
+    rescue: {
+        title: 'Rescue access',
+        lead: 'Get one colleague back into the system, or shut the account down.',
+        find: 'Pick the colleague who asked for help.',
+        another: 'Choose another colleague',
+        reading: 'Reading the account…',
+        readFailed: 'The read failed.',
+        missing:
+            'No account in this tenant is named {username}. It may have been renamed or removed.',
+        diagnosis: {
+            title: 'What the state suggests',
+            never: '{username} has never signed in, so there is no count of attempts and no lock state.',
+            locked: {
+                one: 'Failed attempts locked this account. Unlock it when the colleague only forgot the password.',
+                other: 'Failed attempts locked this account. Unlock it when the colleague only forgot the password.',
+            },
+            open: 'The account is not locked. Failed attempts lock it only when they reach the limit of the server.',
+            failed: {
+                one: '{count} failed attempt',
+                other: '{count} failed attempts',
+            },
+            online: 'Session open',
+            offline: 'No session',
+        },
+        lock: {
+            title: 'Lock the account',
+            lead: 'A locked account cannot sign in. Unlocking clears the count of failed attempts.',
+            sideLocked: 'Locked',
+            sideUnlocked: 'Unlocked',
+            locked: 'The account is locked. Its open sessions stay open.',
+            unlocked: 'The account is unlocked, and its count of failed attempts is cleared.',
+            refused: 'The change was refused.',
+            lockTitle: 'Lock this account',
+            unlockTitle: 'Unlock this account',
+            lockAction: 'Lock the account',
+            unlockAction: 'Unlock the account',
+            lockBody:
+                '{username} cannot sign in after this. Sessions that are already open stay open until they expire.',
+            unlockBody:
+                '{username} can sign in again, and the count of failed attempts is cleared.',
+        },
+    },
+    accessRead: {
+        slow: 'The server is slow to answer. The menu and the home may be missing parts until it does.',
+        failed: 'Your access could not be read, so parts of the menu and the home are missing.',
+    },
     profile: {
         reason: {
             system_update: 'Ordinary change',
@@ -1195,7 +1285,6 @@ export const en: SourceCatalogue = {
             description:
                 'Every service the registry expects, met by the instances that report. The compute runners belong to the grid screen.',
             updated: 'Updated {at}',
-            refresh: 'Refresh',
             skew: 'Version skew: {services} run {versions} while the rest run {newest}. The comparison is between releases, because a heartbeat states the release and not the build.',
             instances: {
                 title: 'Instances',
@@ -1239,7 +1328,6 @@ export const en: SourceCatalogue = {
             description:
                 "The installation's host and work summary, one row per machine, carrying the runner that reports for it.",
             updated: 'Updated {at}',
-            refresh: 'Refresh',
             units: {
                 gib: '{value} GiB',
                 mib: '{value} MiB',
@@ -3027,6 +3115,8 @@ export const en: SourceCatalogue = {
         apply: 'Apply',
         back: 'Back',
         continue: 'Continue',
+        retry: 'Retry',
+        cancel: 'Cancel',
     },
 };
 

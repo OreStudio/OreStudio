@@ -54,6 +54,7 @@ import {
 } from './OperationsParts.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { RefreshButton } from '../ui/RefreshButton.js';
 
 /** The journeys that carry on from this one, in the order its page names them. */
 const JOURNEYS: readonly JourneyId[] = [
@@ -418,9 +419,10 @@ export function GridPage(): ReactNode {
                             <span className="text-xs text-ink-faint">
                                 {t('operations.grid.updated', { at: readTime(grid.dataUpdatedAt) })}
                             </span>
-                            <Button variant="secondary" onClick={() => void grid.refetch()}>
-                                {t('operations.grid.refresh')}
-                            </Button>
+                            <RefreshButton
+                                onClick={() => void grid.refetch()}
+                                pending={grid.isFetching}
+                            />
                             <OperationsBack />
                         </div>
                     }

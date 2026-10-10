@@ -27,32 +27,53 @@ import { Crumbs } from '../refdata/shared.js';
 const AREAS = {
     organisation: { nameKey: 'shell.menu.organisation', to: '/organisation' },
     operations: { nameKey: 'shell.menu.operations', to: '/operations' },
+    requests: { nameKey: 'shell.menu.requests', to: '/requests' },
 } as const;
 
 export type AreaName = keyof typeof AREAS;
 
+/** A step of the trail below its area: a screen with its address, or the page the reader is on. */
+export interface TrailStep {
+    readonly label: string;
+    readonly to?: string;
+}
+
 /**
- * The trail of a screen that belongs to an area: Home, the area, the screen.
+ * The parts of the trail of a screen that belongs to an area: Home, the area,
+ * then each step down to the page the reader is on.
  *
  * Every screen has one area and states it in the same words, so a person
- * reaches the same screen by the same trail from wherever they arrived.
+ * reaches the same screen by the same trail from wherever they arrived. The
+ * area is a link unless the reader is on the area's own page. A list that draws
+ * its own header takes these parts as its crumbs.
  */
+export function useAreaParts(
+    area: AreaName,
+    screen?: string,
+    steps: readonly TrailStep[] = [],
+): readonly TrailStep[] {
+    const { t } = useTranslation();
+    const { nameKey, to } = AREAS[area];
+    const below: readonly TrailStep[] =
+        screen === undefined ? steps : [...steps, { label: screen }];
+    return [
+        { label: t('shell.menu.home'), to: '/' },
+        below.length === 0 ? { label: t(nameKey) } : { label: t(nameKey), to },
+        ...below,
+    ];
+}
+
+/** The trail of a screen that belongs to an area, drawn above its header. */
 export function AreaTrail({
     area,
     screen,
+    steps,
 }: {
     readonly area: AreaName;
-    readonly screen: string;
+    /** The page the reader is on, when it is one level below the area. */
+    readonly screen?: string;
+    /** The screens between the area and the page the reader is on. */
+    readonly steps?: readonly TrailStep[];
 }): ReactNode {
-    const { t } = useTranslation();
-    const { nameKey, to } = AREAS[area];
-    return (
-        <Crumbs
-            parts={[
-                { label: t('shell.menu.home'), to: '/' },
-                { label: t(nameKey), to },
-                { label: screen },
-            ]}
-        />
-    );
+    return <Crumbs parts={useAreaParts(area, screen, steps)} />;
 }

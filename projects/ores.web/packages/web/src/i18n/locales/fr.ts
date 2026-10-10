@@ -388,7 +388,6 @@ const fr: SourceCatalogue = {
         title: 'Audit : connexions',
         description: 'Qui est connecté, ce que chacun fait, et qui échoue à se connecter.',
         readAt: 'Lu à {at}',
-        refresh: 'Actualiser',
         tabs: 'Lectures de l’audit',
         filterNote:
             'La période restreint les événements et les statistiques sur le serveur, et les sessions ouvertes dans ce navigateur. Aucun contrôle de version, de diff ou de retour n’apparaît ici : cet écran est un journal d’événements, pas une entité versionnée.',
@@ -695,6 +694,98 @@ const fr: SourceCatalogue = {
      * L'écran du profil : une page avec un panneau par enregistrement, donc
      * chaque panneau enregistre seul et rend compte seul.
      */
+    signInFacts: {
+        lastSignIn: 'Dernière connexion',
+        never: 'Jamais connecté',
+        from: 'Depuis',
+        unknown: 'Inconnue',
+        failed: 'Tentatives échouées',
+        none: "Ce compte n'a pas encore d'enregistrement de connexion.",
+        locked: 'Verrouillé',
+        notLocked: 'Non verrouillé',
+    },
+    security: {
+        title: 'Sécurité',
+        lead: 'Votre mot de passe et les lieux où votre compte est connecté.',
+        reading: 'Lecture de votre compte…',
+        readFailed: 'La lecture a échoué.',
+        sessions: {
+            title: 'Où vous êtes connecté',
+            caveat: "Aucune déconnexion n'écrit d'heure de fin, donc cette liste contient toutes les sessions du compte. Une ancienne session ressemble à une session active.",
+            empty: "Aucune session n'est enregistrée pour votre compte.",
+            started: 'Début',
+            client: 'Client',
+            address: 'Adresse',
+            country: 'Pays',
+            traffic: 'Envoyé / reçu',
+            unknownClient: 'Client inconnu',
+            noAddress: 'Aucune adresse',
+            unknownCountry: 'Inconnu',
+        },
+        password: {
+            title: 'Mot de passe',
+            lead: "Changez le mot de passe avec lequel vous vous connectez. Le serveur vérifie d'abord le mot de passe actuel.",
+            current: 'Mot de passe actuel',
+            currentHint: 'Prouve que la demande vient de vous.',
+            new: 'Nouveau mot de passe',
+            submit: 'Changer le mot de passe',
+            changed: 'Le mot de passe est changé. Utilisez-le à votre prochaine connexion.',
+            refused: 'Le changement a été refusé.',
+        },
+        state: {
+            title: 'État des connexions',
+            lead: "Lecture seule. Le serveur l'écrit quand vous vous connectez.",
+            resetRequired: 'Changement de mot de passe requis',
+            account: 'Compte',
+        },
+    },
+    rescue: {
+        title: "Récupération d'accès",
+        lead: 'Faites revenir un collègue dans le système, ou verrouillez le compte.',
+        find: "Choisissez le collègue qui a demandé de l'aide.",
+        another: 'Choisir un autre collègue',
+        reading: 'Lecture du compte…',
+        readFailed: 'La lecture a échoué.',
+        missing:
+            "Aucun compte de ce locataire ne s'appelle {username}. Il a peut-être été renommé ou supprimé.",
+        diagnosis: {
+            title: "Ce que suggère l'état",
+            never: "{username} ne s'est jamais connecté, donc il n'y a ni nombre de tentatives ni état de verrouillage.",
+            locked: {
+                one: 'Des tentatives échouées ont verrouillé ce compte. Déverrouillez-le si le collègue a seulement oublié son mot de passe.',
+                other: 'Des tentatives échouées ont verrouillé ce compte. Déverrouillez-le si le collègue a seulement oublié son mot de passe.',
+            },
+            open: "Le compte n'est pas verrouillé. Des tentatives échouées ne le verrouillent que lorsqu'elles atteignent la limite du serveur.",
+            failed: {
+                one: '{count} tentative échouée',
+                other: '{count} tentatives échouées',
+            },
+            online: 'Session ouverte',
+            offline: 'Aucune session',
+        },
+        lock: {
+            title: 'Verrouiller le compte',
+            lead: 'Un compte verrouillé ne peut pas se connecter. Le déverrouiller remet à zéro le nombre de tentatives échouées.',
+            sideLocked: 'Verrouillé',
+            sideUnlocked: 'Déverrouillé',
+            locked: 'Le compte est verrouillé. Ses sessions ouvertes restent ouvertes.',
+            unlocked:
+                'Le compte est déverrouillé, et son nombre de tentatives échouées est remis à zéro.',
+            refused: 'Le changement a été refusé.',
+            lockTitle: 'Verrouiller ce compte',
+            unlockTitle: 'Déverrouiller ce compte',
+            lockAction: 'Verrouiller le compte',
+            unlockAction: 'Déverrouiller le compte',
+            lockBody:
+                "{username} ne pourra plus se connecter. Les sessions déjà ouvertes restent ouvertes jusqu'à leur expiration.",
+            unlockBody:
+                '{username} pourra se connecter de nouveau, et son nombre de tentatives échouées est remis à zéro.',
+        },
+    },
+    accessRead: {
+        slow: "Le serveur est lent à répondre. Le menu et l'accueil peuvent manquer de parties tant qu'il ne répond pas.",
+        failed: "Vos accès n'ont pas pu être lus, donc des parties du menu et de l'accueil manquent.",
+    },
     profile: {
         reason: {
             system_update: 'Modification courante',
@@ -1207,7 +1298,6 @@ const fr: SourceCatalogue = {
             description:
                 'Chaque service attendu par le registre, confronté aux instances qui se signalent. Les exécutants de calcul appartiennent à l’écran de la grille.',
             updated: 'Mis à jour à {at}',
-            refresh: 'Actualiser',
             skew: 'Décalage de version : {services} exécutent {versions} alors que le reste exécute {newest}. La comparaison porte sur les versions, car un battement énonce la version et non la construction.',
             instances: {
                 title: 'Instances',
@@ -1252,7 +1342,6 @@ const fr: SourceCatalogue = {
             description:
                 'Le résumé des hôtes et du travail de l’installation, une ligne par machine, portant l’exécutant qui se signale pour elle.',
             updated: 'Mis à jour à {at}',
-            refresh: 'Actualiser',
             units: {
                 gib: '{value} Gio',
                 mib: '{value} Mio',
@@ -3069,6 +3158,8 @@ const fr: SourceCatalogue = {
         apply: 'Appliquer',
         back: 'Retour',
         continue: 'Continuer',
+        retry: 'Réessayer',
+        cancel: 'Annuler',
     },
 };
 

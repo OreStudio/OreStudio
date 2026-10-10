@@ -26,7 +26,9 @@ import { AccountDoors } from './AccountDoors.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ContactTab, IdentityTab } from '../access/PersonForms.js';
-import { useHolds } from '../access/holds.js';
+import { usePermissions } from '../access/holds.js';
+import { PERMISSION } from '../access/permissions.js';
+import { tabsFor } from '../access/screens.js';
 import { actorPathFor } from '../access/PeoplePage.js';
 import { useActorPictures } from '../access/PersonRef.js';
 import { Timeline } from '../timeline/Timeline.js';
@@ -44,10 +46,18 @@ import { useTabs } from '../ui/Tabs.js';
 export function ProfilePage({ session }: { readonly session: SessionView }): ReactNode {
     const { t } = useTranslation();
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
-    const mayReadHistory = useHolds()('iam::accounts:read');
+    const { can } = usePermissions();
     const { tab, bar } = useTabs({
         label: t('profile.title.mine'),
-        tabs: ['details', 'contact', ...(mayReadHistory ? ['history'] : []), 'access'],
+        tabs: tabsFor(
+            [
+                { name: 'details' },
+                { name: 'contact' },
+                { name: 'history', needs: { all: [PERMISSION.accountsRead] } },
+                { name: 'access' },
+            ],
+            can,
+        ),
         titleOf: (name) => t(`profile.tabs.${name}`),
     });
 

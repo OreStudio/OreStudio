@@ -99,10 +99,12 @@ for a system administrator, is not covered yet.
 
 Not done, and left for the next tasks in this line:
 
-- The other screens still call =holds()= themselves (the roles column on People,
-  the tabs of the person page, the reporting lines screen, the requests and roles
-  pages). They compile against the typed list, but they are not yet declared
-  screens.
+- The tabs of the person page, My profile and the hierarchy are declared
+  (=tabsFor=), and the roles pages and the hierarchy are guarded by =Requires=.
+  A person's own page (=/people/:username=), the requests pages, Audit and the
+  data-only checks (the roles column on People, the roles list on a role) still
+  call =holds()= themselves. They compile against the typed list, but they are
+  not declared screens yet.
 - The BFF test =inbox.test.ts= (decides a request against the version read) fails
   on main. The wire code sends =part_code= and the test does not expect it.
 

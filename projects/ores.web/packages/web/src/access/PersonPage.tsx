@@ -39,7 +39,9 @@ import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { useChangedRows } from '../refdata/changedRows.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
-import { useHolds } from './holds.js';
+import { useHolds, usePermissions } from './holds.js';
+import { PERMISSION } from './permissions.js';
+import { tabsFor } from './screens.js';
 import { actorPathFor } from './PeoplePage.js';
 import { useActorPictures } from './PersonRef.js';
 import { RecordHeader } from '../refdata/records.js';
@@ -120,16 +122,14 @@ function Person({
      * is broken.
      */
     const holds = useHolds();
+    const { can } = usePermissions();
     const mayReadRoles = holds('iam::roles:read');
-    const mayReadContact = holds('iam::account_contact_informations:read');
-    const mayReadSignIns = holds('iam::sessions:read');
     /*
      * Your own contact record is read and written through the session, not
      * through your account id, so it needs no permission at all: a person who
      * may read no colleague's address still owns their own, and an empty record
      * is a form waiting to be filled rather than an absence.
      */
-    const maySeeContact = mayReadContact || self;
     const access = useQuery({
         queryKey: ['account-access', account.id],
         queryFn: () => api.accountAccess(account.id),
@@ -169,13 +169,16 @@ function Person({
 
     const { tab, bar } = useTabs({
         label: name,
-        tabs: [
-            'details',
-            ...(maySeeContact ? ['contact'] : []),
-            ...(mayReadRoles ? ['roles'] : []),
-            ...(mayReadSignIns ? ['signIns'] : []),
-            'timeline',
-        ],
+        tabs: tabsFor(
+            [
+                { name: 'details' },
+                { name: 'contact', needs: self ? {} : { all: [PERMISSION.contactsRead] } },
+                { name: 'roles', needs: { all: [PERMISSION.rolesRead] } },
+                { name: 'signIns', needs: { all: [PERMISSION.sessionsRead] } },
+                { name: 'timeline' },
+            ],
+            can,
+        ),
         titleOf: (part) => t(`access.person.tabs.${part}`),
     });
     const roles = access.data?.roles ?? [];

@@ -403,7 +403,10 @@ describe('the route table once the flag is clear', () => {
         });
         expect(staff).toContain('>Staff<');
 
-        const tree = render('/hierarchy', ready, authenticated, {}, [], (client) =>
+        const tree = render('/hierarchy', ready, authenticated, {}, [], (client) => {
+            client.setQueryData(['my-access'], {
+                roles: [{ roleId: 'r', permissionCodes: ['iam::organisation:read'] }],
+            });
             client.setQueryData(['reporting-tree'], {
                 unrooted: 0,
                 nodes: [
@@ -421,8 +424,8 @@ describe('the route table once the flag is clear', () => {
                     },
                 ],
                 parties: [],
-            }),
-        );
+            });
+        });
         expect(tree).toContain('>Hierarchy<');
         expect(tree).toContain('Ada Lovelace');
     });

@@ -8,7 +8,7 @@
 #+filetags: :review_the_system_home_screen:sprint_27:v0:
 #+owner: marco
 #+branch: feature/review-the-system-home-screen
-#+pr:
+#+pr: 3059
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -72,7 +72,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3059][#3059]] | [web] Rework the system home into tabs with four dashboard panels |
 
 * Review
 

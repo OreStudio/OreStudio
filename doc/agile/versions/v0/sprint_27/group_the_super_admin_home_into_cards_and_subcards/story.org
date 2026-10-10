@@ -21,11 +21,11 @@ A system administrator lands on Tenants, Accounts, Operations and Security cards
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The scaffold PR is in review.          |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Reduce the home to four cards.         |
+| Next          | Nothing. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ A system administrator lands on Tenants, Accounts, Operations and Security cards
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:AE922085-9F6C-4529-9283-795268EDA5CA][Scaffold story: Group the super administrator's home into cards and subcards]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:B6C0FC5B-ADF3-4A29-91AC-C8C7DFF54676][Reduce the super administrator's home to four cards]] | BACKLOG | | | Initial task for: Group the super administrator's home into cards and subcards |
+| [[id:B6C0FC5B-ADF3-4A29-91AC-C8C7DFF54676][Reduce the super administrator's home to four cards]] | DONE | 2026-10-10 | 2026-10-10 | Initial task for: Group the super administrator's home into cards and subcards |
 
 * Decisions
 
@@ -49,3 +49,5 @@ A system administrator lands on Tenants, Accounts, Operations and Security cards
 * Out of scope
 
 - Building the screens behind the upcoming cards.
+
+The system administrator's home now offers four cards, and the operations screens sit behind the Operations card.

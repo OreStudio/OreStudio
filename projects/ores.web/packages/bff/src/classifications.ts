@@ -97,7 +97,10 @@ const HISTORY_TYPES = new Set([
     ),
     // The tenant is not a refdata record: IAM serves the tenant's own versions.
     'ores.iam.tenant',
-    // Counterparties are not in the record table; the onboarding screen reads their versions here.
+    // Parties and counterparties are not in the record table; their screens read their versions here.
+    'ores.refdata.party',
+    'ores.refdata.party_identifier',
+    'ores.refdata.party_contact_information',
     'ores.refdata.counterparty',
     'ores.refdata.counterparty_identifier',
     'ores.refdata.counterparty_contact_information',

@@ -19,19 +19,23 @@
  *
  */
 
-/**
- * `@ores/contracts` holds the HTTP shapes the BFF serves.
- *
- * The BFF imports this package. The browser imports only the QA shapes in
- * `qa.ts`, which it parses with the schema the server serialised them from, so
- * a shape change fails loudly on whichever side is stale. The other shapes are
- * the BFF's alone, because the browser parses those with
- * `@ores/wire-protocol/browser`. Sharing one schema for all of them is the
- * intent.
- *
- * It carries no Node dependency, so the browser can load it when the split is
- * finished.
- */
-export * from './site.js';
-export * from './session.js';
-export * from './qa.js';
+import type { ScenarioSummary } from '@ores/contracts';
+
+/** A scenario summary for a test, waiting and untouched unless the test says otherwise. */
+export function summary(overrides: Partial<ScenarioSummary> = {}): ScenarioSummary {
+    return {
+        id: '11111111-1111-4111-8111-111111111111',
+        title: 'A scenario',
+        description: '',
+        path: 'a/scenario.org',
+        state: 'PENDING',
+        phase: 'waiting',
+        target: 'CurrencyDetailDialog',
+        story: { id: 'S', title: 'A story' },
+        task: { id: 'T', title: 'A task' },
+        clients: [],
+        steps: { total: 4, pending: 4, pass: 0, fail: 0, dropped: 0 },
+        completedAt: '',
+        ...overrides,
+    };
+}

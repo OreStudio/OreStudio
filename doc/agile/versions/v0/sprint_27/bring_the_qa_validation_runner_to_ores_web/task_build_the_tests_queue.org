@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A signed-in user opens Development, then Tests, and sees the scenarios waiting a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,15 @@ A signed-in user opens Development, then Tests, and sees the scenarios waiting a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A new area in =projects/ores.web/packages/web/src/development/=, drawn from the prototype in =doc/prototypes/testing/test-scenarios/=.
+
+- =shell/areas.ts= gets a Development entry in =MENU=, with no permission and no scope, so the menu draws it for everybody. =AppRoutes.tsx= gets =/development= and =/development/tests/:id=.
+- =DevelopmentArea= draws the breadcrumb and the tab bar through =useTabs=. The only tab is Tests. Board, Stories and Tasks join it in story 2.
+- =TestsQueue= reads =GET /api/qa/scenarios= through =api/qa.ts= and draws two cards, Waiting and Done. A row shows the scenario, its story and task, its target and clients, a progress bar with "n of m steps", a state tag and the completion time. A row opens =/development/tests/:id=. The tab has no heading of its own.
+- =queue.ts= holds the logic and is tested alone: the state of a row, the percent done, and the order. Waiting scenarios in progress come before those not started. Done scenarios come newest completion first, and undated ones last.
+- =ScenarioPage= is the page a row opens. It names the scenario and lists its steps, and says the runner is not built yet. Task 5 replaces its body with the runner.
+- The catalogue gets a =development= block and a menu key in English, French and Portuguese.
+- =@ores/contracts= now serves the browser as well as the BFF for the QA shapes, and its comment says so.
 
 * Measurements
 
@@ -61,6 +67,10 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The Updated column of the prototype is a Completed column here. A summary carries the completion time and no edit time. A waiting scenario shows it blank.
+- A load that fails shows the server's message in an error notice. With no doc root the BFF answers not found and names ORES_WEB_DOC_ROOT, so a developer sees what to set.
+- The tests render the screens to markup with the query cache seeded, as the other screens' tests do. No test drives a browser against a live BFF, because a sign-in needs the NATS broker.
 
 * Test Scenarios
 

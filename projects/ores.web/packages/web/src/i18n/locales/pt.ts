@@ -77,6 +77,7 @@ const pt: SourceCatalogue = {
             accounts: 'Contas',
             tenants: 'Inquilinos',
             operations: 'Operações',
+            development: 'Desenvolvimento',
             parties: 'Partes',
             rescue: 'Recuperar acesso',
             audit: 'Entradas',
@@ -1120,6 +1121,33 @@ const pt: SourceCatalogue = {
         },
     },
 
+    development: {
+        tabs: {
+            label: 'Áreas de desenvolvimento',
+            tests: 'Testes',
+        },
+        tests: {
+            waiting: 'Aguardando',
+            done: 'Concluídos',
+            nothingWaiting: 'Nada está aguardando.',
+            nothingDone: 'Nada foi testado ainda.',
+            scenario: 'Cenário',
+            target: 'Alvo',
+            progress: 'Progresso',
+            state: 'Estado',
+            completed: 'Concluído em',
+            stepsDone: '{done} de {total} passos',
+            states: {
+                pending: 'Pendente',
+                inProgress: 'Em andamento',
+                passed: 'Aprovado',
+                failed: 'Reprovado',
+            },
+        },
+        scenario: {
+            notBuilt: 'O executor deste cenário ainda não foi construído.',
+        },
+    },
     operations: {
         back: 'Voltar às operações',
         instance: {

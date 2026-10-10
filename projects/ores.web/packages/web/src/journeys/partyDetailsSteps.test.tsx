@@ -256,6 +256,7 @@ describe('the party details steps', () => {
             expect.objectContaining({
                 step: 'overview',
                 subject: 'refdata.v1.ops.put_party_composite',
+                written: [],
             }),
         );
         expect(state.recordWritten).not.toHaveBeenCalled();
@@ -273,5 +274,23 @@ describe('the party details steps', () => {
             expect.objectContaining({ step: 'structure', code: 'level_violation' }),
         );
         expect(state.recordWritten).not.toHaveBeenCalled();
+    });
+
+    it('lists what was already written when a later call is refused', async () => {
+        const state = asDetails(
+            opened(
+                { kind: 'set-field', field: 'fullName', value: 'Acme plc' },
+                { kind: 'set-unit-type', unitId: 'desk', unitTypeId: 'type-1' },
+            ),
+        );
+        const server = fakeServer([], {
+            reclassifyUnit: vi.fn(async () => refused('Level broken.')),
+        });
+        await expect(reviewOf(stepsFor(state, server)).next?.run?.()).rejects.toThrow(
+            /Already written: refdata.v1.ops.put_party_composite/,
+        );
+        expect(state.recordRefusal).toHaveBeenCalledWith(
+            expect.objectContaining({ written: ['refdata.v1.ops.put_party_composite'] }),
+        );
     });
 });

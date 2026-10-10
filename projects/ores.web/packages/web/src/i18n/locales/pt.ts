@@ -1881,7 +1881,9 @@ const pt: SourceCatalogue = {
             },
             refusal: {
                 heading: 'O servidor recusou a alteração.',
-                kept: 'Nada mais foi escrito. As suas alterações são mantidas.',
+                kept: 'As suas alterações são mantidas.',
+                nothingWritten: 'Nada foi escrito.',
+                partial: 'Já escrito: {calls}.',
                 walkBack: 'Ir para o passo',
             },
             outcome: {

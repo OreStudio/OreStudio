@@ -1866,7 +1866,9 @@ export const en: SourceCatalogue = {
             },
             refusal: {
                 heading: 'The server refused the change.',
-                kept: 'Nothing else was written. Your changes are kept.',
+                kept: 'Your changes are kept.',
+                nothingWritten: 'Nothing was written.',
+                partial: 'Already written: {calls}.',
                 walkBack: 'Go to the step',
             },
             outcome: {

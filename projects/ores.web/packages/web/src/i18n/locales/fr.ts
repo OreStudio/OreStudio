@@ -1888,7 +1888,9 @@ const fr: SourceCatalogue = {
             },
             refusal: {
                 heading: 'Le serveur a refusé le changement.',
-                kept: "Rien d'autre n'a été écrit. Vos changements sont conservés.",
+                kept: 'Vos changements sont conservés.',
+                nothingWritten: "Rien n'a été écrit.",
+                partial: 'Déjà écrit : {calls}.',
                 walkBack: "Aller à l'étape",
             },
             outcome: {

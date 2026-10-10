@@ -94,6 +94,13 @@ export interface PartyStepsInput {
     readonly onFinished: () => void;
 }
 
+/** What was and was not written before the refusal, stated so a partial write is not a surprise. */
+function writtenText(t: Translator['t'], refusal: PartyRefusal): string {
+    return refusal.written.length === 0
+        ? t('journey.partyDetails.refusal.nothingWritten')
+        : t('journey.partyDetails.refusal.partial', { calls: refusal.written.join(', ') });
+}
+
 function refusalText(t: Translator['t'], refusal: PartyRefusal): string {
     const fields = refusal.fields
         .map((failure) => `${failure.field}: ${failure.message}`)
@@ -103,14 +110,21 @@ function refusalText(t: Translator['t'], refusal: PartyRefusal): string {
         refusal.subject,
         refusal.message,
         fields,
+        writtenText(t, refusal),
         t('journey.partyDetails.refusal.kept'),
     ]
         .filter((part) => part !== '')
         .join(' ');
 }
 
-function refusalOf(subject: string, step: string, outcome: PartyWriteOutcome): PartyRefusal {
+function refusalOf(
+    subject: string,
+    step: string,
+    outcome: PartyWriteOutcome,
+    written: readonly string[],
+): PartyRefusal {
     return {
+        written,
         step,
         subject,
         code: outcome.code,
@@ -833,7 +847,8 @@ function ReviewStep({
                             </li>
                         ))}
                     </ul>
-                    <p className="mt-2 text-sm">{t('journey.partyDetails.refusal.kept')}</p>
+                    <p className="mt-2 text-sm">{writtenText(t, state.refusal)}</p>
+                    <p className="text-sm">{t('journey.partyDetails.refusal.kept')}</p>
                     <Button
                         size="sm"
                         className="mt-2"
@@ -1021,8 +1036,10 @@ export function partySteps(input: PartyStepsInput): readonly JourneyStep<ReactNo
         state.fields.shortCode.trim() !== '' &&
         state.fields.fullName.trim() !== '';
 
+    const wrote: string[] = [];
+
     function fail(subject: string, step: string, outcome: PartyWriteOutcome): never {
-        const refusal = refusalOf(subject, step, outcome);
+        const refusal = refusalOf(subject, step, outcome, [...wrote]);
         state.recordRefusal(refusal);
         throw new Error(refusalText(t, refusal));
     }
@@ -1033,12 +1050,14 @@ export function partySteps(input: PartyStepsInput): readonly JourneyStep<ReactNo
             return;
         }
         state.clearRefusal();
+        wrote.length = 0;
         const intent = plan.composite.intent;
         const partyId = plan.composite.party.id;
-        const written = await server.writeComposite(plan.composite);
-        if (!written.success || written.party === undefined) {
-            fail('refdata.v1.ops.put_party_composite', 'overview', written);
+        const composite = await server.writeComposite(plan.composite);
+        if (!composite.success || composite.party === undefined) {
+            fail('refdata.v1.ops.put_party_composite', 'overview', composite);
         }
+        wrote.push('refdata.v1.ops.put_party_composite');
         for (const retire of plan.retires) {
             const outcome = await server.retireIdentifier(
                 partyId,
@@ -1049,6 +1068,7 @@ export function partySteps(input: PartyStepsInput): readonly JourneyStep<ReactNo
             if (!outcome.success) {
                 fail('refdata.v1.party_identifiers.delete', 'identifiers', outcome);
             }
+            wrote.push(`party_identifiers.delete ${retire.value}`);
         }
         for (const link of plan.links) {
             const outcome = link.open
@@ -1061,14 +1081,16 @@ export function partySteps(input: PartyStepsInput): readonly JourneyStep<ReactNo
                     outcome,
                 );
             }
+            wrote.push(`party_${link.set}.${link.open ? 'put' : 'delete'} ${link.code}`);
         }
         for (const row of plan.units) {
             const outcome = await server.reclassifyUnit(row.unit, row.unitTypeId, intent);
             if (!outcome.success) {
                 fail('refdata.v1.business_units.put', 'structure', outcome);
             }
+            wrote.push(`business_units.put ${row.unit.unit_code}`);
         }
-        state.recordWritten(written.party);
+        state.recordWritten(composite.party);
     };
 
     return [

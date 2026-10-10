@@ -286,6 +286,10 @@ describe('party details routes', () => {
 
     it('retires an identifier by its value against the version it read', async () => {
         const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.party_identifiers.list_by_party_id': {
+                result: ok,
+                party_identifiers: [{ id_value: 'LEI-OLD', version: 2 }],
+            },
             'refdata.v1.party_identifiers.delete': { result: ok },
         });
         const response = await send(
@@ -296,11 +300,48 @@ describe('party details routes', () => {
             { intent: INTENT, idValue: 'LEI-OLD', version: 2 },
         );
         expect(response.json().result.outcome).toBe('ok');
-        expect(calls[0]?.body).toMatchObject({
+        expect(calls[1]?.body).toMatchObject({
             removal: {
                 key: { id_value: 'LEI-OLD' },
                 precondition: { kind: 'must_match_version', version: 2 },
             },
         });
+    });
+
+    it('refuses to retire a value the party does not hold', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.party_identifiers.list_by_party_id': {
+                result: ok,
+                party_identifiers: [{ id_value: 'OTHER', version: 1 }],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'DELETE',
+            `/api/party-details/${ID}/identifiers`,
+            { intent: INTENT, idValue: 'LEI-OLD', version: 2 },
+        );
+        expect(response.statusCode).toBe(404);
+        expect(calls).toHaveLength(1);
+    });
+
+    it('refuses an unlink with no body and a counterparty link that is not an id', async () => {
+        const { server, sessionId } = buildTestServer({});
+        const bare = await send(
+            server,
+            sessionId,
+            'DELETE',
+            `/api/party-details/${ID}/currencies/GBP`,
+        );
+        expect(bare.statusCode).toBe(400);
+        const bad = await send(
+            server,
+            sessionId,
+            'PUT',
+            `/api/party-details/${ID}/counterparties/not-an-id`,
+            { intent: INTENT },
+        );
+        expect(bad.statusCode).toBe(400);
     });
 });

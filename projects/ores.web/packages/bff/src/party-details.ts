@@ -36,7 +36,7 @@ import { subjects as partySubjects } from '@ores/wire-protocol/generated/refdata
 import { subjects as partyStatusSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_status_protocol';
 import { subjects as partyTypeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_type_protocol';
 import { listResource } from './counterparties.js';
-import { invalidRequest } from './errors.js';
+import { invalidRequest, notFound } from './errors.js';
 import {
     idSchema,
     input,
@@ -110,6 +110,8 @@ const JUNCTIONS = {
 } as const;
 
 type Junction = keyof typeof JUNCTIONS;
+
+const farSchema = z.string().trim().min(1).max(100);
 
 const junctionSchema = z.enum(Object.keys(JUNCTIONS) as [Junction, ...Junction[]]);
 
@@ -268,8 +270,20 @@ export function registerPartyDetailsRoutes(
      */
     server.delete('/api/party-details/:id/identifiers', async (request) => {
         const session = requireSession(request);
-        paramId(request);
+        const id = paramId(request);
         const body = input(retireBodySchema, request.body);
+        /*
+         * The delete is keyed by the value alone, so the party the address names
+         * must hold it. Otherwise a request for one party could retire another's.
+         */
+        const held = await readAll(session, PANELS.identifiers.subject, PANELS.identifiers.rows, {
+            party_id: id,
+            scope: 'direct',
+            filter: null,
+        });
+        if (!held.some((identifier) => identifier['id_value'] === body.idValue)) {
+            throw notFound(`Party ${id} holds no identifier ${body.idValue}.`);
+        }
         const result = await write(
             session,
             partyIdentifierSubjects.delete_party_identifier_request,
@@ -306,10 +320,11 @@ export function registerPartyDetailsRoutes(
         const id = paramId(request);
         const params = request.params as { junction: string; far: string };
         const junction = JUNCTIONS[input(junctionSchema, params.junction)];
+        const far = input(junction === JUNCTIONS.counterparties ? idSchema : farSchema, params.far);
         const body = input(linkBodySchema, request.body);
         const result = await write(session, junction.put, {
             change: {
-                write: { party_id: id, [junction.far]: params.far },
+                write: { party_id: id, [junction.far]: far },
                 precondition: { kind: 'any', version: null },
             },
             intent: body.intent,
@@ -322,10 +337,11 @@ export function registerPartyDetailsRoutes(
         const id = paramId(request);
         const params = request.params as { junction: string; far: string };
         const junction = JUNCTIONS[input(junctionSchema, params.junction)];
+        const far = input(junction === JUNCTIONS.counterparties ? idSchema : farSchema, params.far);
         const body = input(linkBodySchema, request.body);
         const result = await write(session, junction.remove, {
             removal: {
-                key: { party_id: id, [junction.far]: params.far },
+                key: { party_id: id, [junction.far]: far },
                 precondition: { kind: 'any', version: null },
             },
             intent: body.intent,

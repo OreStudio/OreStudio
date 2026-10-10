@@ -115,6 +115,8 @@ export interface PartyRefusal {
         readonly code: string;
         readonly message: string;
     }[];
+    /** The calls that were already written when this one was refused. */
+    readonly written: readonly string[];
 }
 
 export interface PartyDraft {

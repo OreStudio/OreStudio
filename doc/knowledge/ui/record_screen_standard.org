@@ -137,8 +137,12 @@ one path segment, as the pair code =EUR/USD= is.
 - The breadcrumb (=Crumbs=), then the plural as the title, in sentence case
   (=PageHeader=).
 - One sentence that says what the records are.
-- At the right, /Refresh/ then /Add/. Add is the primary button and is drawn
-  only for a person who may write.
+- At the right, /Refresh/, then /Workflows/, then /Add/. Add is the primary
+  button and is drawn only for a person who may write. Workflows is a menu of the
+  guided workflows that act on this kind of record, such as onboarding a party.
+  It lists only those the person may start, and is not drawn when there are none.
+  A workflow is not Add: Add is one record and one write in a dialog, and a
+  workflow has several steps and its own address.
 
 *** Search and filter
 
@@ -594,6 +598,7 @@ component carries it today.
 | Recency | (none) | Missing; needs the change notification consumer |
 | Permissions | =useRecordPermissions= | Exists |
 | Access mark | =AccessMark= in =ui/AccessMark.tsx=, drawn by =RecordHeader= | Exists |
+| Workflows of a kind | =WorkflowMenu= in =shell/WorkflowMenu.tsx= | Exists on Parties |
 
 ** How today's record screens conform
 

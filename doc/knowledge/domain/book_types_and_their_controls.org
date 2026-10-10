@@ -114,6 +114,35 @@ owner, and the book prototypes and screens must not invent an answer.
 | 6 | Create a portfolio | A portfolio is a trading concept and the desk shapes it | Whether a new portfolio needs approval, and whether a sandbox's portfolio differs |
 | 7 | The book structure screen's "new book" | The notes say the trading system cannot create an official book | Which lifecycle step that screen is: the desk's request, or Operations' final set-up |
 
+** Who plays each part in Acme
+
+The Acme Corporation dataset has 58 staff accounts across three legal entities
+and a group account, under three roles: Trading (30), Operations (16) and Viewer
+(12). The roles the system seeds are SuperAdmin, TenantAdmin, Trading,
+Operations, Viewer, Support and Quant. No role is named for a controller, for
+Finance or for Market Risk. The table matches each part the controls name to
+the accounts Acme holds. It was read from =accounts.json= and the role seed.
+
+| Part | Needed for | Acme today | Gap |
+|------+------------+------------+-----|
+| Desk requester | Initiating a new book; proposing a rights grant | Head of Desk (9) and Head of Trading (3), role Trading | none |
+| Controller | The first independent check on a new book | No account, no job title, no role | *missing* |
+| Finance | Wiring the book into the accounting hierarchy; executing a closure | No account. A Group Treasury unit exists, and no account sits in it as Finance | *missing* |
+| Market Risk | Classification, capital treatment, rates centre | Head of Market Risk (3) and Head of Risk (3), role Operations | exists, but shares a role with Operations |
+| Operations | Allowed currencies and products; set-up on the booking systems; access review | Head of Middle Office (3) and COO (3), role Operations | exists |
+| A second person for each part | A decider who is not the asker | The heads above come in threes, one per entity. Controller and Finance have none | *missing* for Controller and Finance |
+| Sandbox user | Opening a sandbox and its virtual books | Traders and analysts hold accounts. No account is a quant or an IT user, and the Quant role has no Acme account | *missing* |
+| Test-book owner | Owning a test book, "restricted to IT users" | No IT account | *missing* |
+| Tenant administrator | Administering the tenant | Not in the dataset. It comes from tenant provisioning | check |
+
+Two further facts matter before the prototypes are drawn. The deciders in an
+approval request are chosen by permission, so a Controller and a Finance part
+need either their own roles or an agreed permission on an existing role. And
+the seeded roles do not separate Market Risk from Operations, so a
+Market Risk approval and an Operations approval would be decided by the same
+role unless that changes. The task filed for the story adds the missing
+accounts, and the role question is an open decision above.
+
 ** How the controls map onto approval requests
 
 Every second-person control above is one case of the approval request: a record

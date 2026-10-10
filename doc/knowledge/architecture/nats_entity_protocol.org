@@ -807,6 +807,39 @@ event {
 }
 #+end_src
 
+*** Tenancy of an event
+
+An event belongs to a tenant, and to a party when the row it announces belongs
+to one. Neither travels in the payload, because the payload is business data and
+a message never states its own tenancy. Neither travels in the subject, because
+the subject names the collection and keeps the four segments of the grammar.
+Both travel in the envelope, in two headers:
+
+| Header | Value |
+|--------+-------|
+| =X-Tenant-Id= | The tenant that owns the row. Always present on an event. |
+| =X-Party-Id= | The party that owns the row. Present only on an event of a party-owned table. |
+
+The publisher sets them from the row the store reported, never from a caller. An
+event without =X-Party-Id= concerns the whole tenant. An event of the system
+tenant concerns every tenant, because system rows (change reasons,
+classification lists) are shared.
+
+A subscriber that serves people applies the headers before it passes news on.
+The web BFF passes an event to a session only when its tenant is the session's
+tenant or the system tenant, and, when the event names a party, only when that
+party is one the session may see. A subscriber that serves a service, such as an
+entity cache, keeps the tenants it holds and ignores the rest. A subscriber that
+finds no =X-Tenant-Id= on an event passes nothing on, because an event whose
+tenant is unknown cannot be shown to be the reader's.
+
+The broker does not enforce this. Every client that holds a certificate can
+subscribe to every event subject, so the rule is kept by the subscriber, and a
+relay that serves browsers is where it matters. Moving the tenant into the
+subject, or giving each tenant its own broker account, would let the broker
+enforce it. That changes the grammar and the broker's provisioning, so it is
+recorded here as a later option and is not part of this version.
+
 Events are published at least once and may arrive more than once, and they may
 arrive out of order. A consumer is therefore idempotent and does not assume
 ordering: it applies change by key and version, so that applying an event it has
@@ -875,6 +908,8 @@ Envelope headers are the registry for everything that is not business data.
 | =X-Delegated-Authorization= | A token for acting on behalf of another principal. |
 | =X-Correlation-Id= | Correlates every message caused by one originating request. |
 | =X-Idempotency-Key= | Makes a command safe to repeat. |
+| =X-Tenant-Id= | On an event: the tenant that owns the row. See *Tenancy of an event*. |
+| =X-Party-Id= | On an event of a party-owned table: the party that owns the row. |
 | =X-Error= | The transport failure code, on an empty reply. |
 
 A service propagates the correlation id onto every message it publishes while

@@ -61,6 +61,15 @@ inline constexpr std::string_view nats_session_id = "Nats-Session-Id";
 /// protocol type needs to know this header exists.
 inline constexpr std::string_view x_content_encoding = "X-Content-Encoding";
 
+/// The tenant that owns the row an entity event announces. Always present on
+/// an entity event. A subscriber that serves people passes the event on only to
+/// a reader of this tenant or of the system tenant.
+inline constexpr std::string_view x_tenant_id = "X-Tenant-Id";
+
+/// The party that owns the row an entity event announces. Present only on an
+/// event of a party-owned table; an event without it concerns the whole tenant.
+inline constexpr std::string_view x_party_id = "X-Party-Id";
+
 /// Value of x_content_encoding when the body is gzip-compressed.
 inline constexpr std::string_view content_encoding_gzip = "gzip";
 

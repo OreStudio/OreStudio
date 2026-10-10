@@ -48,15 +48,18 @@ register_workflow_plan_dependency_event_mapping(ev::service::postgres_event_sour
     event_source.register_entity_event_mapping<workflow::messaging::workflow_plan_dependency_event>(
         "ores_workflow_plan_dependencies");
 
-    return event_bus.subscribe<workflow::messaging::workflow_plan_dependency_event>(
-        [&nats](const workflow::messaging::workflow_plan_dependency_event& e) {
+    return event_bus.subscribe<
+        ev::domain::published_entity_event<workflow::messaging::workflow_plan_dependency_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                workflow::messaging::workflow_plan_dependency_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
                 ev::domain::event_subject<workflow::messaging::workflow_plan_dependency_event>(
-                    e.action),
-                e);
+                    published.event.action),
+                published);
         });
 }
 

@@ -49,15 +49,19 @@ namespace ev = ores::eventing;
         .register_entity_event_mapping<trading::messaging::equity_position_option_underlying_event>(
             "ores_trading_equity_position_option_underlyings");
 
-    return event_bus.subscribe<trading::messaging::equity_position_option_underlying_event>(
-        [&nats](const trading::messaging::equity_position_option_underlying_event& e) {
+    return event_bus.subscribe<ev::domain::published_entity_event<
+        trading::messaging::equity_position_option_underlying_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                trading::messaging::equity_position_option_underlying_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
                 ev::domain::event_subject<
-                    trading::messaging::equity_position_option_underlying_event>(e.action),
-                e);
+                    trading::messaging::equity_position_option_underlying_event>(
+                    published.event.action),
+                published);
         });
 }
 

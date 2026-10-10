@@ -577,9 +577,11 @@ lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notific
 
 *** What is not heard yet
 
-- A published event names no tenant or party. A change in another tenant can make
-  a screen stale. The task "Analyse who may listen to which tenant and party
-  events" decides how to isolate them.
+- The events of another tenant are not told to a session. An event names its
+  tenant and, on a party-owned table, its party, in the envelope. A session hears
+  its own tenant and the system tenant, and a member hears the parties they work in.
+  The broker does not enforce this, so a client that listens to NATS directly still
+  hears every tenant.
 - A role granted or taken away is published inside the service only, so a person
   page cannot hear it.
 - A reporting line has no event of its own. The staff list and the hierarchy

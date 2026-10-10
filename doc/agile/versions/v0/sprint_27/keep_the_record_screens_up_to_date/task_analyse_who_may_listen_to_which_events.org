@@ -178,6 +178,16 @@ via its "Verifies task" field.
 
 * Result
 
+*Revised on building.* The recommendation above put the tenant in the subject.
+Building it showed that the subject is a documented, CI-enforced grammar (four
+segments, checked by =check_subject_conformance.py= and its baseline), and that the
+NATS entity protocol says tenancy never travels in a payload or a request. It
+had no rule for events. The route built is the header route: the tenant and the
+party travel in the envelope as =X-Tenant-Id= and =X-Party-Id=, the protocol
+specification now says so (Events, *Tenancy of an event*), and the subscriber
+enforces. The subject route stays recorded as a later option for broker-level
+enforcement.
+
 Analysis done. Recommendation: the tenant in the subject, and the party as a
 header that the BFF checks. Five tasks would build it. None is started, and the
 decision is the owner's.

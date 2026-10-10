@@ -132,7 +132,10 @@ def test_cache_registrar_subscribes_to_the_canonical_events(tmp_path):
     assert "entity_change_event" not in registrar
     assert "widget_changed_event.hpp" not in registrar
     assert "entity_event_traits" in registrar
-    assert "entity_event_notification" in registrar
+    # The tenant that owns the row is in the envelope, not in the payload.
+    assert "ores.nats/domain/headers.hpp" in registrar
+    assert "x_tenant_id" in registrar
+    assert "entity_event_notification" not in registrar
     assert "widget_event.hpp" in registrar
     # One subscription per canonical action.
     assert registrar.count("event_subject<widget_event>") == 3

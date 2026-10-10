@@ -48,15 +48,18 @@ register_crm_enabled_derived_pair_event_mapping(ev::service::postgres_event_sour
     event_source.register_entity_event_mapping<refdata::messaging::crm_enabled_derived_pair_event>(
         "ores_refdata_crm_enabled_derived_pairs");
 
-    return event_bus.subscribe<refdata::messaging::crm_enabled_derived_pair_event>(
-        [&nats](const refdata::messaging::crm_enabled_derived_pair_event& e) {
+    return event_bus.subscribe<
+        ev::domain::published_entity_event<refdata::messaging::crm_enabled_derived_pair_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                refdata::messaging::crm_enabled_derived_pair_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
                 ev::domain::event_subject<refdata::messaging::crm_enabled_derived_pair_event>(
-                    e.action),
-                e);
+                    published.event.action),
+                published);
         });
 }
 

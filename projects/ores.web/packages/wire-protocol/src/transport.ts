@@ -56,7 +56,10 @@ export interface Transport {
      * for everything that asks and answers; the capability is checked rather than
      * assumed.
      */
-    subscribe?(relative: string, onMessage: (payload: Uint8Array) => void): () => void;
+    subscribe?(
+        relative: string,
+        onMessage: (payload: Uint8Array, envelope: MessageEnvelope) => void,
+    ): () => void;
     /**
      * Sends a message nobody replies to.
      *
@@ -64,6 +67,23 @@ export interface Transport {
      * that cannot publish is still usable for everything that asks and answers.
      */
     publish?(relative: string, body: Uint8Array): void;
+}
+
+/** The header that names the tenant owning the row an entity event announces. */
+export const TENANT_HEADER = 'X-Tenant-Id';
+
+/** The header that names the party owning the row, on an event of a party-owned table. */
+export const PARTY_HEADER = 'X-Party-Id';
+
+/**
+ * What the envelope of a published event says about whose it is.
+ *
+ * The payload never states its own tenancy; these headers do. An event without a
+ * tenant cannot be shown to be anybody's, and a relay passes nothing on for it.
+ */
+export interface MessageEnvelope {
+    readonly tenantId: string | undefined;
+    readonly partyId: string | undefined;
 }
 
 /** mTLS material, as file paths or inline PEM. */
@@ -163,7 +183,10 @@ export class NatsTransport implements Transport {
      * The payload is handed over undecoded, because what a message means belongs
      * to whoever subscribed and not to the transport.
      */
-    subscribe(relative: string, onMessage: (payload: Uint8Array) => void): () => void {
+    subscribe(
+        relative: string,
+        onMessage: (payload: Uint8Array, envelope: MessageEnvelope) => void,
+    ): () => void {
         const connection = this.#connection;
         if (connection === undefined || connection.isClosed()) {
             throw new TransportError('Cannot subscribe: not connected');
@@ -175,7 +198,10 @@ export class NatsTransport implements Transport {
         // the caller's next line must not wait for a message that may never come.
         void (async () => {
             for await (const message of subscription) {
-                onMessage(message.data);
+                onMessage(message.data, {
+                    tenantId: message.headers?.get(TENANT_HEADER) || undefined,
+                    partyId: message.headers?.get(PARTY_HEADER) || undefined,
+                });
             }
         })().catch(() => {
             // A closed connection ends the loop, which is how this is meant to stop.

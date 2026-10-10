@@ -24,7 +24,7 @@ import { OresClient } from './client.js';
 import { z } from 'zod';
 import { NotAuthenticatedError, OperationFailedError, SessionExpiredError } from './errors.js';
 import { WireCodec } from './codec.js';
-import type { Reply, RequestHeaders, Transport } from './transport.js';
+import type { MessageEnvelope, Reply, RequestHeaders, Transport } from './transport.js';
 
 interface RecordedCall {
     readonly subject: string;
@@ -1048,5 +1048,42 @@ describe('the service heartbeat', () => {
                 version: '0.0.27',
             }),
         ).not.toThrow();
+    });
+});
+
+describe('listening to published events', () => {
+    it('hands on the time of the change with the tenancy the envelope names', () => {
+        const heard: unknown[] = [];
+        let deliver: ((payload: Uint8Array, envelope: MessageEnvelope) => void) | undefined;
+        const transport = {
+            async request(): Promise<Reply> {
+                throw new Error('not used');
+            },
+            async close(): Promise<void> {
+                return undefined;
+            },
+            subscribe(
+                _relative: string,
+                onMessage: (payload: Uint8Array, envelope: MessageEnvelope) => void,
+            ) {
+                deliver = onMessage;
+                return () => undefined;
+            },
+        } as unknown as Transport;
+        const client = new OresClient({ transport });
+
+        client.subscribeToEvents('iam.v1.accounts_events.>', (change) => heard.push(change));
+        const payload = new WireCodec('msgpack').encode({
+            event_id: '44444444-4444-4444-4444-444444444444',
+            action: 'updated',
+            occurred_at: '2026-10-10T12:00:03Z',
+        });
+        deliver?.(payload, { tenantId: 't1', partyId: 'p1' });
+        deliver?.(payload, { tenantId: undefined, partyId: undefined });
+
+        expect(heard).toEqual([
+            { at: '2026-10-10T12:00:03Z', tenantId: 't1', partyId: 'p1' },
+            { at: '2026-10-10T12:00:03Z', tenantId: undefined, partyId: undefined },
+        ]);
     });
 });

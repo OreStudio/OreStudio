@@ -44,6 +44,9 @@ declare
     {{primary_key.notify_declarations}}
     changed_key jsonb;
     changed_tenant_id text;
+{{#has_party_column}}
+    changed_party_id text;
+{{/has_party_column}}
 begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
@@ -54,6 +57,9 @@ begin
 {{#has_tenant_id}}
         changed_tenant_id := OLD.tenant_id::text;
 {{/has_tenant_id}}
+{{#has_party_column}}
+        changed_party_id := OLD.party_id::text;
+{{/has_party_column}}
     elsif TG_OP = 'UPDATE' then
 {{#has_audit_columns}}
         -- A versioned table's update is the internal close of the current
@@ -69,6 +75,9 @@ begin
 {{#has_tenant_id}}
         changed_tenant_id := NEW.tenant_id::text;
 {{/has_tenant_id}}
+{{#has_party_column}}
+        changed_party_id := NEW.party_id::text;
+{{/has_party_column}}
 {{/has_audit_columns}}
     else
 {{#has_audit_columns}}
@@ -89,6 +98,9 @@ begin
 {{#has_tenant_id}}
         changed_tenant_id := NEW.tenant_id::text;
 {{/has_tenant_id}}
+{{#has_party_column}}
+        changed_party_id := NEW.party_id::text;
+{{/has_party_column}}
     end if;
 
     changed_key := {{primary_key.notify_key_object}};
@@ -101,7 +113,8 @@ begin
         'version', changed_version,
         'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
         'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
-        'tenant_id', changed_tenant_id
+        'tenant_id', changed_tenant_id{{#has_party_column}},
+        'party_id', changed_party_id{{/has_party_column}}
     );
 
     perform pg_notify('{{sql_name_base}}', notification_payload::text);

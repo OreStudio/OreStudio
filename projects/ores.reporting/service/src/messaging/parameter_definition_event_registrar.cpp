@@ -48,15 +48,18 @@ register_parameter_definition_event_mapping(ev::service::postgres_event_source& 
     event_source.register_entity_event_mapping<reporting::messaging::parameter_definition_event>(
         "ores_reporting_parameter_definitions");
 
-    return event_bus.subscribe<reporting::messaging::parameter_definition_event>(
-        [&nats](const reporting::messaging::parameter_definition_event& e) {
+    return event_bus.subscribe<
+        ev::domain::published_entity_event<reporting::messaging::parameter_definition_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                reporting::messaging::parameter_definition_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
                 ev::domain::event_subject<reporting::messaging::parameter_definition_event>(
-                    e.action),
-                e);
+                    published.event.action),
+                published);
         });
 }
 

@@ -48,15 +48,19 @@ register_book_purpose_type_event_mapping(ev::service::postgres_event_source& eve
     event_source.register_entity_event_mapping<refdata::messaging::book_purpose_type_event>(
         "ores_refdata_book_purpose_types");
 
-    return event_bus.subscribe<refdata::messaging::book_purpose_type_event>(
-        [&nats](const refdata::messaging::book_purpose_type_event& e) {
-            // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
-            ev::service::publish_entity_event(
-                nats,
-                ev::domain::event_subject<refdata::messaging::book_purpose_type_event>(e.action),
-                e);
-        });
+    return event_bus
+        .subscribe<ev::domain::published_entity_event<refdata::messaging::book_purpose_type_event>>(
+            [&nats](const ev::domain::published_entity_event<
+                    refdata::messaging::book_purpose_type_event>& published) {
+                // One payload is addressed by three subjects, so the subject is
+                // the collection's prefix and the action the event reports. The
+                // tenant and the party travel in the headers, not in the payload.
+                ev::service::publish_entity_event(
+                    nats,
+                    ev::domain::event_subject<refdata::messaging::book_purpose_type_event>(
+                        published.event.action),
+                    published);
+            });
 }
 
 }

@@ -48,15 +48,18 @@ register_notification_preference_event_mapping(ev::service::postgres_event_sourc
     event_source.register_entity_event_mapping<inbox::messaging::notification_preference_event>(
         "ores_inbox_notification_preferences");
 
-    return event_bus.subscribe<inbox::messaging::notification_preference_event>(
-        [&nats](const inbox::messaging::notification_preference_event& e) {
+    return event_bus.subscribe<
+        ev::domain::published_entity_event<inbox::messaging::notification_preference_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                inbox::messaging::notification_preference_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
                 ev::domain::event_subject<inbox::messaging::notification_preference_event>(
-                    e.action),
-                e);
+                    published.event.action),
+                published);
         });
 }
 

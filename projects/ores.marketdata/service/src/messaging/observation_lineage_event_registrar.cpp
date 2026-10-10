@@ -48,15 +48,18 @@ register_observation_lineage_event_mapping(ev::service::postgres_event_source& e
     event_source.register_entity_event_mapping<marketdata::messaging::observation_lineage_event>(
         "ores_marketdata_observation_lineages");
 
-    return event_bus.subscribe<marketdata::messaging::observation_lineage_event>(
-        [&nats](const marketdata::messaging::observation_lineage_event& e) {
+    return event_bus.subscribe<
+        ev::domain::published_entity_event<marketdata::messaging::observation_lineage_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                marketdata::messaging::observation_lineage_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
                 ev::domain::event_subject<marketdata::messaging::observation_lineage_event>(
-                    e.action),
-                e);
+                    published.event.action),
+                published);
         });
 }
 

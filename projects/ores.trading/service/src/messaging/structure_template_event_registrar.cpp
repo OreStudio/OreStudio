@@ -48,14 +48,19 @@ register_structure_template_event_mapping(ev::service::postgres_event_source& ev
     event_source.register_entity_event_mapping<trading::messaging::structure_template_event>(
         "ores_trading_structure_templates");
 
-    return event_bus.subscribe<trading::messaging::structure_template_event>(
-        [&nats](const trading::messaging::structure_template_event& e) {
+    return event_bus.subscribe<
+        ev::domain::published_entity_event<trading::messaging::structure_template_event>>(
+        [&nats](
+            const ev::domain::published_entity_event<trading::messaging::structure_template_event>&
+                published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
-                ev::domain::event_subject<trading::messaging::structure_template_event>(e.action),
-                e);
+                ev::domain::event_subject<trading::messaging::structure_template_event>(
+                    published.event.action),
+                published);
         });
 }
 

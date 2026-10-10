@@ -48,15 +48,18 @@ register_stress_test_scenario_event_mapping(ev::service::postgres_event_source& 
     event_source.register_entity_event_mapping<analytics::messaging::stress_test_scenario_event>(
         "ores_analytics_stress_test_scenarios");
 
-    return event_bus.subscribe<analytics::messaging::stress_test_scenario_event>(
-        [&nats](const analytics::messaging::stress_test_scenario_event& e) {
+    return event_bus.subscribe<
+        ev::domain::published_entity_event<analytics::messaging::stress_test_scenario_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                analytics::messaging::stress_test_scenario_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
                 ev::domain::event_subject<analytics::messaging::stress_test_scenario_event>(
-                    e.action),
-                e);
+                    published.event.action),
+                published);
         });
 }
 

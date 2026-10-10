@@ -122,7 +122,13 @@ public:
             .channel_name = channel_name,
             .publisher = [this,
                           channel_name](const domain::entity_event_notification& notification) {
-                bus_.publish(domain::entity_event_traits<Event>::from_notification(notification));
+                auto event = domain::entity_event_traits<Event>::from_notification(notification);
+                // The typed event stays tenant-free for in-process subscribers; the
+                // publisher to NATS needs the tenancy beside it, for the headers.
+                domain::published_entity_event<Event> published{
+                    event, notification.tenant_id, notification.party_id};
+                bus_.publish(event);
+                bus_.publish(published);
             }};
 
         listener_.subscribe(channel_name);

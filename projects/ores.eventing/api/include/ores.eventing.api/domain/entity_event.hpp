@@ -39,6 +39,8 @@ namespace ores::eventing::domain {
  * The event a subscriber receives on NATS carries the typed key and no
  * @c entity or @c tenant_id: the subject already names the collection, and
  * tenancy is an authorisation concern rather than part of the announcement.
+ * The tenant and the party travel in the envelope's headers instead; see
+ * @c published_entity_event.
  */
 struct entity_event_notification final {
     /**
@@ -90,6 +92,32 @@ struct entity_event_notification final {
      * can decide whether the event concerns it; it is not published.
      */
     std::string tenant_id;
+
+    /**
+     * @brief The party that owns the row, when the table is party-owned.
+     *
+     * Absent for a table that has no party, which makes the event concern the
+     * whole tenant.
+     */
+    std::optional<std::string> party_id;
+};
+
+/**
+ * @brief A typed entity event with the tenancy the store reported for it.
+ *
+ * The payload is business data and never states its own tenancy, so the tenant
+ * and the party that publish alongside the event are held beside it. The
+ * publisher turns them into the @c X-Tenant-Id and @c X-Party-Id headers of the
+ * envelope. In-process subscribers that do not publish keep subscribing to the
+ * bare event.
+ *
+ * @tparam Event The generated event type.
+ */
+template <typename Event>
+struct published_entity_event final {
+    Event event;
+    std::string tenant_id;
+    std::optional<std::string> party_id;
 };
 
 }

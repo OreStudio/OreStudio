@@ -2861,7 +2861,23 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                     .default([]),
             })
             .parse(request.body);
-        events.watch(session.id, session.tenantId, body.watches as readonly Watch[]);
+        events.watch(
+            session.id,
+            {
+                tenantId: session.tenantId,
+                // An administrator sees every party of the tenant; a member sees the
+                // parties they work in, and the list is read when an event arrives so
+                // that switching party is counted.
+                everyParty: session.mode !== 'application',
+                parties: () =>
+                    new Set(
+                        (
+                            sessions.get(session.id)?.availableParties ?? session.availableParties
+                        ).map((party) => party.id),
+                    ),
+            },
+            body.watches as readonly Watch[],
+        );
         return { ok: true };
     });
 

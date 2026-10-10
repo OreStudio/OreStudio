@@ -29,7 +29,7 @@
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/eventing/party_event.hpp"
 #include <memory>
@@ -65,16 +65,17 @@ warm_and_subscribe_party_cache(ores::nats::service::client& nats,
         // A warm-up failure is logged; nothing here can react to it.
         (void)cache->load(tenant_id);
 
-    using ores::eventing::domain::entity_event_notification;
     using ores::eventing::domain::event_subject;
     using ores::refdata::messaging::party_event;
 
     const auto on_change = [cache](ores::nats::message msg) {
-        auto evt = ores::nats::default_wire_codec().decode<entity_event_notification>(msg.data);
-        if (evt && !evt->tenant_id.empty()) {
+        // The payload is the event alone; the tenant that owns the row is in
+        // the envelope, so an event without it names no partition to reload.
+        const auto tenant = msg.headers.find(std::string(ores::nats::headers::x_tenant_id));
+        if (tenant != msg.headers.end() && !tenant->second.empty()) {
             // Offload to a detached thread: load() calls request_sync,
             // which would block the NATS callback thread if called inline.
-            std::thread([cache, tid = evt->tenant_id]() { (void)cache->load(tid); }).detach();
+            std::thread([cache, tid = tenant->second]() { (void)cache->load(tid); }).detach();
         }
     };
 

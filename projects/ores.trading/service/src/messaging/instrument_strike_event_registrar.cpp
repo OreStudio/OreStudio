@@ -48,15 +48,19 @@ register_instrument_strike_event_mapping(ev::service::postgres_event_source& eve
     event_source.register_entity_event_mapping<trading::messaging::instrument_strike_event>(
         "ores_trading_instrument_strikes");
 
-    return event_bus.subscribe<trading::messaging::instrument_strike_event>(
-        [&nats](const trading::messaging::instrument_strike_event& e) {
-            // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
-            ev::service::publish_entity_event(
-                nats,
-                ev::domain::event_subject<trading::messaging::instrument_strike_event>(e.action),
-                e);
-        });
+    return event_bus
+        .subscribe<ev::domain::published_entity_event<trading::messaging::instrument_strike_event>>(
+            [&nats](const ev::domain::published_entity_event<
+                    trading::messaging::instrument_strike_event>& published) {
+                // One payload is addressed by three subjects, so the subject is
+                // the collection's prefix and the action the event reports. The
+                // tenant and the party travel in the headers, not in the payload.
+                ev::service::publish_entity_event(
+                    nats,
+                    ev::domain::event_subject<trading::messaging::instrument_strike_event>(
+                        published.event.action),
+                    published);
+            });
 }
 
 }

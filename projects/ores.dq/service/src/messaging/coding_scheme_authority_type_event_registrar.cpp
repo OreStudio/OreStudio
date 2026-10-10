@@ -48,15 +48,18 @@ namespace ev = ores::eventing;
     event_source.register_entity_event_mapping<dq::messaging::coding_scheme_authority_type_event>(
         "ores_dq_coding_scheme_authority_types");
 
-    return event_bus.subscribe<dq::messaging::coding_scheme_authority_type_event>(
-        [&nats](const dq::messaging::coding_scheme_authority_type_event& e) {
+    return event_bus.subscribe<
+        ev::domain::published_entity_event<dq::messaging::coding_scheme_authority_type_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                dq::messaging::coding_scheme_authority_type_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
                 ev::domain::event_subject<dq::messaging::coding_scheme_authority_type_event>(
-                    e.action),
-                e);
+                    published.event.action),
+                published);
         });
 }
 

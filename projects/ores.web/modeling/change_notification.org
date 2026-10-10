@@ -20,10 +20,11 @@ per entity.
 *Status.* The transport is built: the BFF streams the events and holds the shared,
 routed subscriptions. The registry listens on each collection's canonical
 subject, =<component>.v1.<resource>_events.>=, and hands on the time of the change.
-A published event names no tenant, so the registry keeps its subscriptions per
-tenant but cannot yet drop another tenant's change; a change elsewhere can mark a
-screen stale, and a refresh then reads only the reader's own data. Who may listen
-to which tenant and party is open, and has its own analysis task.
+A published event names its tenant, and its party on a party-owned table, in the
+envelope (=X-Tenant-Id=, =X-Party-Id=). The registry holds one subscription for
+each entity and tells a session only of an event it may hear: its own tenant, the
+system tenant, and for a member the parties they work in. An event with no tenant
+is told to nobody.
 
 The consumer is built for lists, the staff list, the hierarchy and the person
 page: one stream for the session, =useEntityChanges=, a gold Refresh button that
@@ -170,11 +171,13 @@ a map from that key to the sessions watching it:
         └── session C   ← has a country open
 #+end_src
 
-/Keyed by tenant as well as entity, and that is not decoration./ Tenancy is the
-boundary the whole system is built on: a change in one tenant's accounts is not
-news in another's, and telling a session about it would leak the fact that it
-happened. Every subscription therefore carries the tenant of the sessions it
-serves, and a session is only ever routed news from its own.
+/Filtered by tenant, and that is not decoration./ Tenancy is the boundary the
+whole system is built on: a change in one tenant's accounts is not news in
+another's, and telling a session about it would leak the fact that it happened.
+The subject is the same for every tenant, so every event arrives at the registry
+and each carries its tenant in the envelope. A session is told only of its own
+tenant and the system tenant, whose rows are shared, and a member only of the
+parties they work in. An administrator hears every party of the tenant.
 
 /Reference counted, and torn down when the last watcher goes./ The map entry
 exists while at least one session watches and is removed when the last one stops,
@@ -288,9 +291,12 @@ Named rather than assumed, because they change the shape.
 subscription for each tenant and entity, shared by the sessions that watch it, and
 closed with the last watcher.
 
-/Who may listen to which tenant and party?/ Open. A published event names no
-tenant or party, and ores.qt does not filter either. The task "Analyse who may
-listen to which tenant and party events" compares the options and recommends one.
+/Who may listen to which tenant and party?/ Decided: the subscriber enforces it
+from the envelope headers, and the protocol specification defines them. The broker
+does not enforce it, so a client with a certificate can still hear every tenant.
+Moving the tenant into the subject, or a broker account for each tenant, would
+change the grammar and is a later option. ores.qt lives outside this repository
+and still listens without filtering.
 
 /How does a screen hear that a role was granted?/ It cannot: the grant and the
 revocation are published inside the service only. A reporting line has no event of

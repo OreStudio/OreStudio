@@ -19,7 +19,7 @@
  *
  */
 
-import type { OresClient } from '@ores/wire-protocol';
+import { SYSTEM_TENANT_ID, type OresClient } from '@ores/wire-protocol';
 
 /**
  * Who is watching what, and the one subscription that serves them.
@@ -27,12 +27,15 @@ import type { OresClient } from '@ores/wire-protocol';
  * A subscription per screen would be wrong twice over: a deployment with fifty
  * people on the accounts list would open fifty NATS subscriptions to the same
  * subject, and every one of them would carry the same message. So a subscription
- * is shared, keyed by the tenant and the entity, and this keeps the map from that
- * key to the sessions watching it.
+ * is shared, keyed by the entity, and this keeps the map from that key to the
+ * sessions watching it.
  *
- * Keyed by tenant as well as entity, and that is not decoration. Tenancy is the
- * boundary the system is built on: a change in one tenant's accounts is not news
- * in another's, and forwarding it would leak the fact that it happened.
+ * The subject is the same for every tenant, so the broker delivers every
+ * tenant's events here. Each event names its tenant, and its party when the row
+ * has one, in the envelope, and a session is told only of the events it may
+ * hear: those of its own tenant and of the system tenant, and, for a member, of
+ * a party it works in. An event that names no tenant is passed to nobody,
+ * because it cannot be shown to be anyone's.
  *
  * Reference counted. The subscription is opened for the first watcher and closed
  * with the last, so nothing is held open for an entity nobody is looking at.
@@ -59,6 +62,40 @@ export interface ChangeEvent {
     readonly at: string;
 }
 
+/** Whose events a session may hear. */
+export interface Audience {
+    readonly tenantId: string;
+    /**
+     * Whether the session sees every party of its tenant. An administrator does;
+     * a member sees the parties they work in.
+     */
+    readonly everyParty: boolean;
+    /** The parties the session works in, read when an event arrives so a switch counts. */
+    readonly parties: () => ReadonlySet<string>;
+}
+
+/** What an event's envelope says about whose it is. */
+export interface Envelope {
+    readonly tenantId: string | undefined;
+    readonly partyId: string | undefined;
+}
+
+/**
+ * Whether an event may be told to a session.
+ *
+ * The tenant must be the session's own or the system tenant's, whose rows are
+ * shared. A party-owned event also needs a party the session can see; an event
+ * with no party concerns the whole tenant.
+ */
+export function mayHear(audience: Audience, envelope: Envelope): boolean {
+    if (envelope.tenantId === undefined) return false;
+    if (envelope.tenantId !== audience.tenantId && envelope.tenantId !== SYSTEM_TENANT_ID) {
+        return false;
+    }
+    if (envelope.partyId === undefined || audience.everyParty) return true;
+    return audience.parties().has(envelope.partyId);
+}
+
 /** A name that can stand in a subject: it cannot be a wildcard or add a segment. */
 const SUBJECT_NAME = /^[a-z][a-z0-9_]*$/;
 
@@ -80,13 +117,16 @@ export function eventSubject(component: string, entity: string): string {
 
 export class ChangeEventRegistry {
     readonly #client: OresClient;
-    /** Subscription key to the sessions listening and the way to stop it. */
+    /** Entity to the sessions listening and the way to stop the subscription. */
     readonly #shared = new Map<
         string,
-        { listeners: Map<string, ChangeListener>; stop: () => void }
+        {
+            listeners: Map<string, { listener: ChangeListener; audience: Audience }>;
+            stop: () => void;
+        }
     >();
     /** Session id to what it watches, so a session can be forgotten wholesale. */
-    readonly #watching = new Map<string, { tenantId: string; watches: readonly Watch[] }>();
+    readonly #watching = new Map<string, { audience: Audience; watches: readonly Watch[] }>();
     /** How to reach a session, registered once when its stream opens. */
     readonly #listeners = new Map<string, ChangeListener>();
 
@@ -113,7 +153,7 @@ export class ChangeEventRegistry {
      * alone rather than torn down and rebuilt, because rebuilding is how a screen
      * misses the change that arrives during the gap.
      */
-    watch(sessionId: string, tenantId: string, watches: readonly Watch[]): void {
+    watch(sessionId: string, audience: Audience, watches: readonly Watch[]): void {
         if (!this.#listeners.has(sessionId)) return;
         // A name with a wildcard in it would listen to more than was asked for, and
         // the names arrive from the browser, so only plain names are watched.
@@ -122,14 +162,14 @@ export class ChangeEventRegistry {
         if (previous !== undefined) {
             for (const watch of previous.watches) {
                 if (!watches.some((w) => sameWatch(w, watch))) {
-                    this.#release(previous.tenantId, watch, sessionId);
+                    this.#release(watch, sessionId);
                 }
             }
         }
         for (const watch of watches) {
-            this.#acquire(tenantId, watch, sessionId);
+            this.#acquire(watch, sessionId, audience);
         }
-        this.#watching.set(sessionId, { tenantId, watches });
+        this.#watching.set(sessionId, { audience, watches });
     }
 
     /** Forgets a session, dropping whatever only it was watching. */
@@ -137,21 +177,21 @@ export class ChangeEventRegistry {
         const entry = this.#watching.get(sessionId);
         if (entry !== undefined) {
             for (const watch of entry.watches) {
-                this.#release(entry.tenantId, watch, sessionId);
+                this.#release(watch, sessionId);
             }
             this.#watching.delete(sessionId);
         }
         this.#listeners.delete(sessionId);
     }
 
-    #acquire(tenantId: string, watch: Watch, sessionId: string): void {
-        const key = keyFor(tenantId, watch);
+    #acquire(watch: Watch, sessionId: string, audience: Audience): void {
+        const key = keyFor(watch);
         let entry = this.#shared.get(key);
 
         if (entry === undefined) {
             // The subscription is opened once for everyone watching, and the listener
             // map starts empty: it is the sessions that listen, and they arrive next.
-            const listeners = new Map<string, ChangeListener>();
+            const listeners = new Map<string, { listener: ChangeListener; audience: Audience }>();
             const stop = this.#client.subscribeToEvents(
                 eventSubject(watch.component, watch.entity),
                 (change) => {
@@ -160,7 +200,9 @@ export class ChangeEventRegistry {
                         entity: watch.entity,
                         at: change.at,
                     };
-                    for (const listener of listeners.values()) listener(event);
+                    for (const heard of listeners.values()) {
+                        if (mayHear(heard.audience, change)) heard.listener(event);
+                    }
                 },
             );
             entry = { listeners, stop };
@@ -168,11 +210,11 @@ export class ChangeEventRegistry {
         }
 
         const listener = this.#listeners.get(sessionId);
-        if (listener !== undefined) entry.listeners.set(sessionId, listener);
+        if (listener !== undefined) entry.listeners.set(sessionId, { listener, audience });
     }
 
-    #release(tenantId: string, watch: Watch, sessionId: string): void {
-        const key = keyFor(tenantId, watch);
+    #release(watch: Watch, sessionId: string): void {
+        const key = keyFor(watch);
         const entry = this.#shared.get(key);
         if (entry === undefined) return;
 
@@ -191,8 +233,8 @@ export class ChangeEventRegistry {
     }
 }
 
-function keyFor(tenantId: string, watch: Watch): string {
-    return `${tenantId}\u0000${watch.component}\u0000${watch.entity}`;
+function keyFor(watch: Watch): string {
+    return `${watch.component}\u0000${watch.entity}`;
 }
 
 function sameWatch(a: Watch, b: Watch): boolean {

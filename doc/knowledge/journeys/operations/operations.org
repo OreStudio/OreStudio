@@ -37,8 +37,9 @@ already stores everything they show, with the gaps recorded below.
 
 * Who reaches the screens
 
-The rule below is under review. [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] proposes one menu for every person,
-with Operations offered to all and its cards following the permissions.
+[[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] replaces the rule below. Operations is not one kind of user's area.
+It is drawn for anyone who holds the read of one of its screens, and each screen
+is guarded by its own read. The table below states the position before that change.
 
 The shell draws the line with an area, not with a permission on a screen: the
 *system-administration* menu carries *Operations* and no other menu does, and

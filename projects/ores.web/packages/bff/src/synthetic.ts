@@ -79,6 +79,10 @@ const text = z.string().max(2000);
  * field: a parameter definition is keyed by its name on the wire but filtered
  * by its id, and its id is what names one row.
  *
+ * A write schema is strict: the party, like the tenant, is the session's and
+ * never the browser's, so a write that states it is refused rather than
+ * having the field dropped.
+ *
  * A system-owned resource is one catalogue every tenant reads. The server
  * reads and writes it in the system tenant, so a write from a tenant session
  * would change every tenant's catalogue; only a system session writes it.
@@ -149,9 +153,8 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             remove: fxFeedSubjects.delete_fx_spot_generation_config_request,
             removeMany: fxFeedSubjects.delete_many_fx_spot_generation_configs_request,
         },
-        writes: z.object({
+        writes: z.strictObject({
             id: idSchema,
-            party_id: idSchema,
             config_id: idSchema,
             base_currency_code: code,
             quote_currency_code: code,
@@ -180,9 +183,8 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             remove: gmmSubjects.delete_gmm_component_request,
             removeMany: gmmSubjects.delete_many_gmm_components_request,
         },
-        writes: z.object({
+        writes: z.strictObject({
             id: idSchema,
-            party_id: idSchema,
             fx_spot_config_id: idSchema,
             component_index: z.int().nonnegative(),
             description: text,
@@ -203,9 +205,8 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             remove: irFeedSubjects.delete_ir_curve_generation_config_request,
             removeMany: irFeedSubjects.delete_many_ir_curve_generation_configs_request,
         },
-        writes: z.object({
+        writes: z.strictObject({
             id: idSchema,
-            party_id: idSchema,
             config_id: idSchema,
             currency_code: code,
             index_family: code,
@@ -239,7 +240,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             removeMany:
                 parameterValueSubjects.delete_many_ir_curve_generation_config_process_parameter_values_request,
         },
-        writes: z.object({
+        writes: z.strictObject({
             id: idSchema,
             config_id: idSchema,
             parameter_definition_id: idSchema,
@@ -258,9 +259,8 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             remove: templateEntrySubjects.delete_ir_curve_template_entry_request,
             removeMany: templateEntrySubjects.delete_many_ir_curve_template_entries_request,
         },
-        writes: z.object({
+        writes: z.strictObject({
             id: idSchema,
-            party_id: idSchema,
             ir_curve_config_id: idSchema,
             sequence_index: z.int().nonnegative(),
             start_tenor_code: code,
@@ -281,7 +281,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             remove: processTypeSubjects.delete_yield_curve_process_type_request,
             removeMany: processTypeSubjects.delete_many_yield_curve_process_types_request,
         },
-        writes: z.object({
+        writes: z.strictObject({
             code,
             name: label,
             description: text,

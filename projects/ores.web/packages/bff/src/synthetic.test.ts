@@ -124,14 +124,12 @@ function send(
 
 const ID = '55555555-5555-4555-8555-555555555555';
 const OTHER = '66666666-6666-4666-8666-666666666666';
-const PARTY = '77777777-7777-4777-8777-777777777777';
 const COLLECTION = '88888888-8888-4888-8888-888888888888';
 const INTENT = { reason_code: 'common.correction', commentary: '' };
 const SYSTEM_TENANT = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 
 const COMPONENT = {
     id: ID,
-    party_id: PARTY,
     fx_spot_config_id: OTHER,
     component_index: 0,
     description: 'calm',
@@ -283,6 +281,21 @@ describe('synthetic writes', () => {
         const response = await send(server, sessionId, 'PUT', '/api/synthetic/gmm-components', {
             intent: INTENT,
             changes: [{ write: { ...COMPONENT, weight: 'heavy' }, version: null }],
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it("refuses a write that states its party, which is the session's", async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'PUT', '/api/synthetic/gmm-components', {
+            intent: INTENT,
+            changes: [
+                {
+                    write: { ...COMPONENT, party_id: '77777777-7777-4777-8777-777777777777' },
+                    version: null,
+                },
+            ],
         });
         expect(response.statusCode).toBe(400);
         expect(calls).toHaveLength(0);

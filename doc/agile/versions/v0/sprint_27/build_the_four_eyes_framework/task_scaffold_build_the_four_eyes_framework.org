@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 95117DE1-F187-43BE-B5A4-601137A8D2E7
+:END:
+#+title: Task: Scaffold story: Build the four-eyes framework
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :build_the_four_eyes_framework:sprint_27:v0:
+#+owner: marco
+#+branch: feature/build-the-four-eyes-framework
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Describe how the approval request grows into the four-eyes framework, and file the tasks that build it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Wrote =doc/knowledge/architecture/four_eyes_framework.org=, which reads the
+inbox as built (the request, its kinds, states and decisions, four-eyes in the
+schema, the decide function, the sweeps, the notifications, and the role request
+as the one kind with its own detail and apply) against what the five prototypes
+draw. Four things are missing for a gated refdata write: several deciding parts, a
+held pending change, a gate in the write path, and one set of screens for every
+kind. The note adds parts, a policy, lines, raise and preview, an apply as one
+transaction with an =apply_failed= state, a gate, and a kind descriptor on the web.
+
+Filed nine tasks: parts and policy; lines, raise, preview and apply; the gate; the
+common screens; and one to move each of the five screens onto the review panel
+(book structure, counterparty, party, convention, tenor).
+
+*One decision is open and blocks the second task.* How a line holds its proposed
+write: a typed shadow table per gated entity, or one lines table with the canonical
+serialisation of the generated write record. The note recommends the lines table and
+flags that it reverses the earlier decision that a kind keeps a typed table.

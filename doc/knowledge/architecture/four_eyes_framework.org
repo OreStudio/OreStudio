@@ -1,0 +1,215 @@
+:PROPERTIES:
+:ID: E21DFC83-9F3F-45BE-AD3F-48262126DFAC
+:END:
+#+title: Four-eyes framework
+#+description: How the approval request grows from one decider and one kind into a framework any gated write uses: decider parts, a held pending change, a gate in the write path, and one UX for every kind of request.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:approval:four-eyes:workflow:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+* Summary
+
+The approval request already holds who asked, who decided, why, and where the
+request stands, for any kind of request. What it lacks for a gated refdata write
+is four things: a request that needs several different functions to approve it,
+a place to hold the change the request proposes, a gate in the write path so a
+gated write cannot skip the request, and one screen set that every kind of
+request shares. This note says how to add each without a new queue. The request
+stays the one record and the inbox stays the one queue. A *part* is one function's
+share of a decision. A *pending change* is one proposed write held until the
+request is approved. A *policy* says which acts are gated and which part decides
+each. A *kind descriptor* tells the web how to draw a kind. A new kind of request
+is then one policy row, one descriptor, and the operation that applies it.
+
+* Detail
+
+** What exists
+
+| Part of the design | Built | Where |
+|--------------------+-------+-------|
+| The request header, its states and its decisions | Yes | =ores.inbox=: =approval_request=, =approval_request_state=, =approval_decision= |
+| A kind, with its decider permission, hold, comment and expiry rules | Yes | =approval_kind=, one permission and one approval count per kind |
+| Four-eyes in the schema | Yes | A trigger refuses a decision by the person who asked, and one approval per person |
+| Decide in one statement, with a version check | Yes | =ores_inbox_decide_approval_request_fn= |
+| Expiry, a reminder sweep, notifications to deciders and to the asker | Yes | the expire and remind functions, =notification_operations= |
+| A generic raise | Partly | =inbox.v1.ops.raise_approval= takes a kind and a reason and nothing else |
+| A kind's detail and its apply | One kind | IAM's role request: =ask_for_roles= writes the request and its roles, and IAM applies approved ones by reconciliation |
+| The queue, my requests, one request, its story | Yes | =inbox.v1.ops.*=, and the web pages under =web/src/inbox= |
+| The web pages for any kind | No | The detail page draws roles, and the kind's name comes from a label table |
+
+A kind with its own detail table and its own raise operation works today. It does
+not scale to the refdata journeys, where every gated entity would need both.
+
+** What the gated writes need that does not exist
+
+| Need | Why the prototypes draw it | Gap |
+|------+----------------------------+-----|
+| Several functions on one request | The waiting table lists Controller, Finance, Market Risk and Operations, each answering its own part | A kind has one permission and one count, so the request cannot say who must approve |
+| An order between parts | A new book goes to the controller first | Nothing orders approvals |
+| A held change | The decider reads what would change | A request holds only a reason, so there is nothing to read or apply |
+| One request for several changes | A move, a rights grant and a new portfolio are one request | A request has no lines |
+| Apply on approval, all or nothing | A request applies when the last part approves | Only IAM applies, for roles |
+| A failed apply | A write can be stale by the time it is approved | No state says "approved and could not apply" |
+| Checks before the decider sees it | The flat check, the ownership check, the stale version | Nothing runs a write without keeping it |
+| A gate in the write path | A gated put must not succeed directly | The generated put applies at once |
+| One screen set for every kind | The prototypes share their waiting, decide and declined screens | The pages draw roles and the role kind's words |
+
+** The design
+
+*** Parts
+
+A *part* is a function that must approve: controller, finance, market_risk,
+operations. A lookup of parts says, for each, the permission its decider needs and
+its place in the order. A request's parts are the distinct parts of its changes.
+
+A decision records the part it answers, and the decide function approves the request
+only when every part has an approval from a person who holds that part's
+permission. A refusal from any part ends it. A part with an earlier place in the
+order cannot be answered until the earlier part has approved. The existing rules
+carry over unchanged: the person who asked never decides, one person approves a
+part once, a refusal needs a comment, and a decision names the version it saw.
+
+The count the kind keeps, =approvals_required=, still serves the kinds with one
+part, such as the role request, which names a single part with its permission.
+
+*** The policy
+
+The policy is data: a row says that an act on an entity, optionally narrowed to a
+set of fields, needs a named part. Changing who decides is a data change, and the
+system tenant holds the rows so a tenant cannot loosen its own controls. The rows
+are the tables in [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]]: the description of a book needs no
+part, the cost center needs finance, and so on. An act with no row is written
+directly.
+
+*** The pending change
+
+A request holds a list of *lines*. A line is one proposed write: the entity, the
+operation (put or delete), the key, the version the maker read, the part that
+decides it, and the proposed row. A request of one kind may hold lines for several
+entities.
+
+*** Raising
+
+One operation raises a request for a list of proposed writes and a reason. It does
+four things in one transaction:
+
+1. It runs each write against the real service inside a savepoint and rolls it back,
+   so every refusal the service would give, such as a level violation or a stale
+   version, comes back to the maker at once, before anyone waits.
+2. It reads the policy and gives each line its part. A write with no part is
+   refused here as "needs no request", so a caller writes it directly.
+3. It writes the request, its lines and its parts.
+4. It tells the deciders of the first open parts.
+
+A *preview* operation does steps 1 and 2 and writes nothing. The web calls it from
+the review, so the review can show every change with its decider before the person
+confirms.
+
+*** Applying
+
+When the last part approves, the owning component applies every line in one
+transaction, through the same service code the direct write uses, as the approver
+with the request as the reason, as IAM already does for roles. A line whose version
+has moved on fails, and the whole request is rolled back. A new state, =apply_failed=,
+records that, names the line and the reason, and tells the person who asked. The
+request does not return to waiting: the maker raises a new request from the
+current row. Apply is by reconciliation, as IAM's is, so a missed event or a service
+that was down converges on the next run.
+
+*** The gate
+
+The generated put and delete handlers of a gated entity check the policy. When the
+caller is not the applier and the act has a part, the handler refuses with the
+typed result =approval_required= and writes nothing. The refusal is a rule of the
+service, not of a screen, so a script or another client cannot skip the request.
+The applier is the one caller the gate lets through. A hand-written handler, such
+as a composite write, calls the same check.
+
+*** States
+
+The six states stay. =apply_failed= is added. The decision types stay: approve,
+refuse, hold, resume, withdraw. A part's answer is a decision carrying its part,
+so the history shows who answered which part and when, with no new table of
+answers.
+
+** The common experience
+
+Every kind of request is drawn by the same screens. A kind adds a *descriptor* and
+nothing else on the web:
+
+| Descriptor part | What it gives the shared screens |
+|-----------------+---------------------------------|
+| =label= | The kind's name, from the catalogue |
+| =summary= | One line for the queue and for my requests |
+| =subject= | A link to the thing the request is about |
+| =delta= | How a line is drawn: the field changes for a refdata line, the roles for a role request |
+| =columns= | What the queue shows beyond the common columns |
+
+The shared screens are the ones the prototypes drew:
+
+| Screen | What it is | Replaces |
+|--------+------------+----------|
+| Review panel | Every change with its badge, the notice, and the primary button that writes or raises | The review step of each journey |
+| Request page | The parts and who must still answer, the delta, the checks, the comment, and approve or decline | =RequestDetailPage=, which draws roles |
+| My requests | What I raised, with its state | =MyRequests= |
+| Queue | What I may decide, oldest first, filtered by kind | =RequestsPage= |
+| Story | Every event of one request | =RequestStoryPage= |
+
+A screen that gates a write does not draw any of these. It asks the preview, hands
+the proposed writes to the review panel, and navigates to the request page after a
+raise. The decision screen, the waiting state and the declined state in the five
+prototypes are the request page in three states.
+
+** Holding the pending change: two ways
+
+The one real design choice is how a line holds the proposed row.
+
+*Typed shadow tables.* Each gated entity gets a generated pending table with the
+entity's own columns, plus the request, the operation and the version read. It
+matches the earlier decision that each kind keeps a typed table, and it keeps a
+checked shape in the schema. It adds one table per gated entity, about 35 of them,
+and every model change touches two tables.
+
+*One line table with the proposed write.* One lines table keeps the typed facts the
+queue needs (entity, operation, key, part, version) and the proposed row as the
+canonical serialisation of the generated write record. The shape is checked when the
+record is decoded, at raise and again at apply, by the protocol type the generator
+already makes. It adds one table, applies through one registered handler per entity,
+and a model change touches one place. The cost is a document column, which the data
+design otherwise avoids: the column is written once, never updated, never queried by
+field, and read only to draw a delta or to apply.
+
+*Recommendation:* the one line table. The shadow tables multiply the schema for no
+check the protocol does not already give, and the line table keeps the apply path and
+every service rule in one place. This reverses the earlier decision that a kind keeps
+a typed detail table, for refdata changes only. The role request keeps its typed
+table, because its detail is small and unique.
+
+** Delivery
+
+The work splits so each piece is usable and reviewable alone:
+
+1. *Parts and policy.* The parts lookup, the policy table, parts on decisions, the
+   decide function counting per part and in order, and a deciders-per-part
+   notification. No refdata yet. Tested in SQL and on the handler.
+2. *Lines, raise, preview and apply.* The lines table, the raise and preview
+   operations, the savepoint dry run, the one-transaction apply, =apply_failed=, and
+   the reconciler. First entity: the book.
+3. *The gate.* The policy check in the generated handlers and the composite handler,
+   the =approval_required= result, and the applier's pass.
+4. *The common experience.* The BFF routes for preview, raise and the request page,
+   the kind descriptor registry, the review panel, and the request page replacing the
+   role-only detail.
+5. *The screens.* One task each to move the book structure, counterparty, party,
+   convention and tenor screens onto the review panel.
+6. *The people.* The Acme accounts and the roles for each part, which exists as a task.
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record this note extends.
+- [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][Implement four-eyes authorisation framework]] — the deferred item this answers.
+- [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]] — the acts, the deciders and the policy rows.
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the first kind, which this generalises beyond.
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — how a decider is told a request waits.

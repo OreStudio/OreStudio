@@ -33,6 +33,7 @@ import { registerCounterpartyRoutes } from './counterparties.js';
 import { registerPartyDetailsRoutes } from './party-details.js';
 import { registerBookRoutes } from './books.js';
 import { registerConventionRoutes } from './conventions.js';
+import { registerSyntheticRoutes } from './synthetic.js';
 import { registerAuditRoutes } from './audit.js';
 import { registerTimelineRoutes } from './timeline.js';
 import { registerInboxRoutes } from './inbox.js';
@@ -2397,6 +2398,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerPartyDetailsRoutes(server, requireSession);
     registerBookRoutes(server, requireSession);
     registerConventionRoutes(server, requireSession);
+    registerSyntheticRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
     registerAuditRoutes(server, requireSession);

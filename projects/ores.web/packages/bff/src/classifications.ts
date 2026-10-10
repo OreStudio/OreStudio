@@ -39,6 +39,7 @@ import {
 } from '@ores/wire-protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import type { LiveSession } from './sessions.js';
+import { SYNTHETIC_HISTORY_TYPES } from './synthetic.js';
 
 const codeSchema = z.string().trim().min(1).max(100);
 const textSchema = z.string().max(2000).default('');
@@ -108,6 +109,7 @@ const HISTORY_TYPES = new Set([
     'ores.refdata.counterparty',
     'ores.refdata.counterparty_identifier',
     'ores.refdata.counterparty_contact_information',
+    ...SYNTHETIC_HISTORY_TYPES,
 ]);
 
 /**

@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 79DA69BB-0711-40E6-8400-1B2DAC2FA40D
+:END:
+#+title: Story: Bring the QA validation runner to ores.web
+#+description: ores.qt had a QA Validation Runner, a test scenario manager. It opened a test_scenario doc, listed its steps, let the tester mark each step PASS or FAIL with a note and a screenshot, and wrote the results back. ores.web has no equivalent.
+#+type: story
+#+level: s2
+#+filetags: :web:qa:testing:journeys:v0:sprint_27:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A tester works through a test scenario in ores.web: open a scenario, read its steps beside its story and task, mark each step PASS or FAIL with a note, and save the result. The browser cannot write repo files, so compass records the results. The prototype confirms that first cut.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The scaffold is in review. The prototype is next. |
+| Waiting on    | Nothing.                               |
+| Next          | Prototype the runner. |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- A prototype of the runner is accepted before any code is built.
+- The story records how scenario docs are read and results written, and what changes if the module runs in production.
+- A tester can open a scenario, mark every step and save, and the result is stored.
+- The scenario's story and task show beside its steps.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B27572F6-212D-49DB-90D5-1A36A6C2A9A4][Scaffold story: Bring the QA validation runner to ores.web]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D][Prototype the QA validation runner]] | BACKLOG | | | Show the Tests tab and the runner, and confirm how results are written. |
+
+* The arc
+
+ores.web gains a module for development and testing. It is a regular module, like
+the others, and it does not depend on the developer surface. It joins development
+and testing in one place. It will replace =ores.org-js= and =ores.dsh_kanban=, in
+story 2. This story is the first step.
+
+| Story | What it adds |
+|-------+--------------|
+| 1. Test scenarios (this story) | A regular module in ores.web. A Tests tab lists scenarios waiting and scenarios done. The runner opens one: its steps, its story and its task, a PASS or FAIL and a note on each step, and a save that writes the org file. |
+| 2. Browse the agile tree | Kanban for the sprint, stories, tasks, the backlog buckets and any doc by link. It reaches parity with =ores.dsh_kanban= and =ores.org-js=, then both go. |
+| 3. The test queue as notifications | A scenario waiting for a tester raises an inbox notification. The bell shows it. A tester role and an assignment arrive here. |
+
+* Decisions
+
+- The module is a regular module. It does not use =developerTools=. A trader may run test scenarios without developer tools. How a development mode works, and whether the module runs in production, are open.
+- Compass stays the only reader and writer of the org tree. The BFF calls compass and never parses or writes org files itself. The browser still renders org text it receives, which is display and not parsing the tree. A new =compass scenario= verb records the results. The verb does not exist yet, and building it is a task of this story after the prototype. so the rule that only compass changes agile artefacts holds. The first cut writes straight into the story's own folder, which is where scenarios already live.
+- Until the production question is settled, the module reads the work tree the BFF runs in. It never merges work trees, as the =ores.dsh_kanban= contract says.
+- The browser cannot capture the screen, so a step takes a pasted or dropped image. The BFF saves it next to the scenario doc.
+- =ores.org-js= leaves the public website. The new module needs a running BFF and does not replace the public static view, and there is no static export. Story 2 removes the project and its publishing: the copy into the site in =ores-build-site.el=, the exclude patterns in =ores-build-site.el=, =ores-sync-org-roam.el=, =ores-check-org-links.el= and =compass.py=, and the memory, tag and modeling pages that name it. Story 2 also checks that no page on the site links to the old agile view.
+- Org text renders in the browser with the parser from =ores.org-js=, ported into the web package. The port is the first step of retiring that project.
+
+* Open questions
+
+- Who may use the module? The first cut allows any signed-in user. A permission and a tester role come with story 3.
+- Does the module run in production? A deployed BFF has no work tree, so it has no org files to read or write. The answer decides where scenarios and their results live. Settle it before the module leaves development.
+- How does a development mode work? It is open. The module does not assume one.
+
+* Out of scope
+
+- Starting or closing tasks from the browser.
+- A tester account, assignment and review. They belong to story 3.
+- =ores.dsh_environment=, which this arc does not retire.

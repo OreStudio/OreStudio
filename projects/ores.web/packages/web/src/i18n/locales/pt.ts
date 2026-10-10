@@ -932,7 +932,6 @@ const pt: SourceCatalogue = {
             open: 'Abrir',
             tenants: 'Inquilinos',
             tenantsLead: 'As organizações que esta instalação serve, e o estado de cada uma.',
-            tenantsBody: 'As organizações que esta instalação serve, e o estado de cada uma.',
             addTenantBody: 'Crie um inquilino a partir de um perfil inicial e entregue-o.',
             feeds: 'Fluxos de dados de mercado',
             feedsBody:

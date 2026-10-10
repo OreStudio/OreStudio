@@ -244,6 +244,12 @@ describe("the system administrator's cards", () => {
         expect(html).toContain('Coming later');
     });
 
+    it('links nothing under the upcoming heading', () => {
+        const html = home('system-administration');
+
+        expect(html.slice(html.indexOf('Upcoming Modules'))).not.toContain('href=');
+    });
+
     it('offers the cards before the overview has been read', () => {
         const html = home('system-administration');
 

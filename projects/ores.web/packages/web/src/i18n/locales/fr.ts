@@ -938,7 +938,6 @@ const fr: SourceCatalogue = {
             open: 'Ouvrir',
             tenants: 'Locataires',
             tenantsLead: 'Les organisations que sert ce déploiement, et l’état de chacune.',
-            tenantsBody: 'Les organisations que sert ce déploiement, et l’état de chacune.',
             addTenantBody: 'Créez un locataire à partir d’un profil de départ, puis remettez-le.',
             feeds: 'Flux de données de marché',
             feedsBody: 'Quels flux tournent, quand chacun a émis, et démarrer ou arrêter un flux.',

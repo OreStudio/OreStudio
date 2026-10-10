@@ -143,7 +143,7 @@ function SystemTiles(): ReactNode {
     const active: Tile[] = [
         {
             title: t('home.system.tenants'),
-            body: t('home.system.tenantsBody'),
+            body: t('home.system.tenantsLead'),
             to: '/tenants',
             icon: 'party',
         },

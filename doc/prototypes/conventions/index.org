@@ -26,7 +26,7 @@ generated alternative kept beside the agreed design, never instead of it.
 #+ATTR_HTML: :class hug-leading
 | Prototype              | What it argues | Open it | Review |
 |------------------------+----------------+---------+--------|
-| Instrument conventions | A person starts from the instrument they want to trade, not from the entity name: the picker walks from the instrument family to the convention that serves it, and the convention states the terms it fixes. | [[file:define-the-conventions-for-an-instrument/][prototype]] | none |
+| Instrument conventions | A person starts from the instrument they want to trade, not from the entity name: the picker walks from the instrument family to the convention that serves it, and the convention states the terms it fixes. It also draws a second person's approval for every write: the request waits, Market Risk decides, and a decline leaves the convention alone. | [[file:define-the-conventions-for-an-instrument/][prototype]] | none |
 
 * Adding a prototype
 

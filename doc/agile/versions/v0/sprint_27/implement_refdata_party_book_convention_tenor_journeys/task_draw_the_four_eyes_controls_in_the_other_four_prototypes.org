@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: A6B218E1-56AA-4730-A140-421F7A1871E8
+:END:
+#+title: Task: Draw the four-eyes controls in the other four prototypes
+#+description: The book structure prototype draws the raise, wait, decide and decline states and is signed off. The counterparty, party, convention and tenor prototypes still let one administrator write every change. Draw the same states in each, with the decider the controls note names.
+#+type: task
+#+level: s1
+#+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/draw-the-four-eyes-controls-in-the-other-four-prototypes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reviewer can walk each of the four prototypes as a maker, see the request wait, and walk it as the checker, and sign each design off.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- Each prototype's review marks every change as gated with its decider, or as needing no approval.
+- A gated write raises a request and shows it waiting; an ungated write is made directly.
+- Each prototype has a decision screen that refuses the person who asked, needs a comment, and applies only when every decider has approved.
+- The controls note records the working rule for each journey, and each journey document and group page describe the new states.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Drew the four-eyes controls in the counterparty, party, convention and tenor
+prototypes, on the pattern the signed-off book prototype set.
+
+*How.* Each prototype carries a copy of =four-eyes.js= beside its own script,
+because a prototype is self-contained. The file draws the three screens every
+gated write needs: =waiting=, =decide= and =declined=. A prototype supplies its
+changes and who decides each, and a check. The book prototype keeps its own inline
+copy of the same logic, which was signed off before the shared file existed.
+
+*The rule per journey* is in the controls note, under "The controls on the other
+reference-data journeys", and is the working rule for the product owner to confirm:
+Operations decides a counterparty and Market Risk its agreements and collateral;
+Finance decides a party's identity and Operations its memberships and links; Market
+Risk decides a convention and a tenor. A contact is not gated.
+
+*What each shows.* The review marks every change as =needs <function>= or
+=no approval=, and the confirm becomes =Raise request= when any is gated. The decide
+screen names who is acting, shows the delta and a check, refuses the person who
+asked, needs a comment, and applies the request only when every named function has
+approved. A decline leaves the record alone. Each takes =?actor=, =?maker= and
+=?check=.
+
+*Verification.* For each prototype I rendered the review and the new states in
+headless Chrome and read them, and ran a scripted flow in headless Chrome: raise,
+open as the checker, approve as each named function in turn, and read the applied
+outcome. All four applied only after the last approval. =node= parses each script.
+No automated test covers a prototype.
+
+*Not done.* Nothing holds or applies a pending change, and Acme has no Finance
+account. Both gaps are stated in each journey document.

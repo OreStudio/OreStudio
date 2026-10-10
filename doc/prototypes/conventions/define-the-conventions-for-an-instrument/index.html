@@ -28,6 +28,11 @@
                                         lookup. ?refusal=1 is the alias
     ?version=3                          the version the history step shows
     ?diff=1                             show the history field diff (default on)
+    ?state=waiting|decide|declined      a raised request waiting, the checker's
+                                        decision screen, and a declined request
+    ?actor=m.risk|o.ops|...             who answers on the decision screen (decide only)
+    ?maker=h.desk|m.risk|...            who raised the request; the maker cannot decide it
+    ?check=lookup                       make the term-lookup check fail
 
   The bar at the foot mirrors the states as buttons, lists the families, and
   carries the two demo toggles (fail, diff).
@@ -37,6 +42,7 @@
 <div id="app"></div>
 <div class="proto-bar" id="proto-bar"></div>
 
+<script src="four-eyes.js"></script>
 <script src="prototype.js"></script>
 </body>
 </html>

@@ -39,6 +39,12 @@
  *   ?with=1                            the registration-default flag
  *   ?reason=common.rectification       the change reason code
  *   ?version=7                         the history version whose diff is shown
+ * Four-eyes states, from the book controls note (four-eyes.js draws them):
+ *   ?state=waiting|decide|declined     a raised request waiting, the checker's
+ *                                      decision screen, and a declined request
+ *   ?actor=f.ledger|o.ops|...          who answers on the decision screen (decide only)
+ *   ?maker=h.desk|f.ledger|...         who raised the request; the maker cannot decide it
+ *   ?check=stale                       make the party-version check fail
  * The bar mirrors the same states as buttons. */
 
 (function () {
@@ -455,6 +461,7 @@
             else if (FAILS.indexOf(f) >= 0) S.fail = f;
         }
 
+        FE.params(p);
         setState(p.get('state'));
         if (S.view === 'refused') armFail();
     }
@@ -463,6 +470,7 @@
         for (var i = 0; i < STEPS.length; i++) {
             if (STEPS[i].id === id) { S.view = 'walk'; S.at = i; return; }
         }
+        if (FE.states.indexOf(id) >= 0) { S.view = id; S.at = STEPS.length - 2; return; }
         if (id === 'refused') { S.view = 'refused'; return; }
         if (id === 'history') { S.view = 'history'; return; }
         S.view = 'list';
@@ -564,6 +572,31 @@
         return out;
     }
 
+    /* The function that decides each change, from the book controls note. A
+       contact is not material, so it needs no second person. */
+    function deciderOf(what) {
+        if (what.indexOf('Primary contact') === 0) return null;
+        if (what.indexOf('Country membership') === 0 || what.indexOf('Currency membership') === 0) return 'Operations';
+        return 'Finance';
+    }
+
+    function gatedChanges() {
+        var p = party();
+        return changes().map(function (c) {
+            return { what: c.what, who: p.name, from: c.from, to: c.to, decider: deciderOf(c.what) };
+        });
+    }
+
+    var FE = FourEyes.create({
+        getChanges: gatedChanges,
+        subject: function () { return party().name; },
+        checks: function (actor, list, check) {
+            var p = party();
+            return [{ ok: check !== 'stale', label: 'The party is still at the version the maker read',
+                detail: check === 'stale' ? 'The party moved on to version ' + (p.version + 1) + '; the maker read version ' + p.version + '.' : 'Version ' + p.version }];
+        }
+    });
+
     function save() {
         S.saved = true;
         S.version = Math.max(S.version, party().version + 1);
@@ -620,6 +653,7 @@
     function cardTitle() {
         if (S.view === 'history') return 'History';
         if (S.view === 'refused') return 'Refused';
+        if (FE.states.indexOf(S.view) >= 0) return { waiting: 'Waiting', decide: 'Decide', declined: 'Declined' }[S.view];
         return STEPS[S.at].title;
     }
 
@@ -628,6 +662,9 @@
             return 'Every version of the party, each with the field difference from the version before. Read with refdata.v1.history.get, entity_type ores.refdata.party.';
         }
         if (S.view === 'refused') return 'The write did not land. The record is exactly as it was.';
+        if (S.view === 'waiting') return 'The request is raised and the party has not changed.';
+        if (S.view === 'decide') return 'The checker reads the change and answers it.';
+        if (S.view === 'declined') return 'The request was declined and the party has not changed.';
         if (STEPS[S.at].id === 'outcome') {
             return 'The correction is written as a new version of the same party.';
         }
@@ -665,6 +702,7 @@
     function body() {
         if (S.view === 'history') return historyStep();
         if (S.view === 'refused') return refusedStep();
+        if (FE.states.indexOf(S.view) >= 0) return FE.html(S.view);
         var id = STEPS[S.at].id;
         if (id === 'overview') return overviewStep();
         if (id === 'identifiers') return identifiersStep();
@@ -1077,7 +1115,7 @@
     function reviewStep() {
         var cs = changes();
         var rows = cs.map(function (c) {
-            return '<tr><td>' + esc(c.what) + '</td>' +
+            return '<tr><td>' + esc(c.what) + FE.badge({ decider: deciderOf(c.what) }) + '</td>' +
                 '<td class="dfrom">' + esc(c.from) + '</td>' +
                 '<td class="dto">' + esc(c.to) + '</td>' +
                 '<td class="mono faint">' + esc(c.op) + '</td></tr>';
@@ -1087,7 +1125,7 @@
                 'close a membership, or record an identifier.</td></tr>';
         }
         var p = party();
-        return '<div class="notice warn">Nothing is written until you confirm. The party write states ' +
+        return FE.reviewNotice(gatedChanges()) + '<div class="notice warn">Nothing is written until you confirm. The party write states ' +
             '<span class="mono">must_match_version ' + esc(p.version) + '</span>; a record that moved on is ' +
             'refused, and the refusal names the version it found.</div>' +
             '<table class="table"><thead><tr><th>What</th><th>Before</th><th>After</th><th>Operation</th></tr>' +
@@ -1121,7 +1159,7 @@
                 '<span class="acts mono sub">' + esc(c.op) + '</span></li>';
         }).join('');
         if (written === '') written = '<li class="faint">No operation was written.</li>';
-        return '<div class="notice success"><b>Saved.</b> ' + esc(p.name) + ' is now version ' +
+        return '<div class="notice success"><b>' + (FE.S.applied ? 'Approved and saved.' : 'Saved.') + '</b> ' + esc(p.name) + ' is now version ' +
             esc(S.version) + '. The party kept its id and its codename; the correction is a new version of the ' +
             'same record, and the previous version is untouched.</div>' +
             '<ul class="rowlist">' + written + '</ul>' +
@@ -1301,6 +1339,7 @@
                 'refusal</button>' +
                 '</div>';
         }
+        if (FE.states.indexOf(S.view) >= 0) return '';
         if (S.view === 'history') {
             return '<div class="stepfoot">' +
                 '<button class="btn ghost" data-act="state" data-state="review">Back to review</button>' +
@@ -1311,7 +1350,7 @@
         var back = S.at > 0 ?
             '<button class="btn ghost" data-act="back">Back</button>' :
             '<button class="btn ghost" data-act="state" data-state="list">Parties</button>';
-        var label = step === 'review' ? 'Save correction' : 'Continue';
+        var label = step === 'review' ? FE.primaryLabel(gatedChanges(), 'Save correction') : 'Continue';
         var enabled = step !== 'review' || changes().length > 0;
         return '<div class="stepfoot">' + back +
             '<button class="btn primary ml-auto" data-act="' + (step === 'review' ? 'confirm' : 'next') + '"' +
@@ -1328,7 +1367,7 @@
     }
 
     function renderBar() {
-        var states = ['list'].concat(STEPS.map(function (s) { return s.id; })).concat(['refused', 'history']);
+        var states = ['list'].concat(STEPS.map(function (s) { return s.id; })).concat(['refused', 'waiting', 'decide', 'declined', 'history']);
         var current = S.view === 'walk' ? STEPS[S.at].id : S.view;
         var buttons = states.map(function (id) {
             return '<button data-act="state" data-state="' + esc(id) + '"' +
@@ -1384,8 +1423,15 @@
         } else if (act === 'back') {
             if (S.at > 0) S.at -= 1;
         } else if (act === 'confirm') {
-            save();
-            setState('outcome');
+            var gated = gatedChanges();
+            if (FE.gated(gated).length > 0) {
+                FE.raise(gated);
+                setState('waiting');
+            } else {
+                FE.reset();
+                save();
+                setState('outcome');
+            }
         } else if (act === 'close') {
             var kind = el.getAttribute('data-kind');
             var code = el.getAttribute('data-code');
@@ -1447,4 +1493,23 @@
 
     readParams();
     render();
+
+    /* The four-eyes screens: their own controls, not the journey's. */
+    document.addEventListener('click', function (ev) {
+        var el = ev.target.closest('[data-fe]');
+        if (!el) return;
+        ev.preventDefault();
+        var to = FE.click(el);
+        if (to === null || to === 'stay') return;
+        if (to === 'outcome') { if (!S.saved) save(); setState('outcome'); } else { setState(to); }
+        rerender();
+    });
+
+    function onFeInput(ev) {
+        var el = ev.target;
+        if (el && el.getAttribute && FE.input(el)) rerender();
+    }
+
+    document.addEventListener('input', onFeInput);
+    document.addEventListener('change', onFeInput);
 })();

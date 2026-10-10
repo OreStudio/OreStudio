@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/reshape-the-single-instant-read-to-the-object-definition
-#+pr:
+#+pr: 3034
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3034][#3034]] | [marketdata] Reshape the single-instant read to the object definition |
 
 * Review
 

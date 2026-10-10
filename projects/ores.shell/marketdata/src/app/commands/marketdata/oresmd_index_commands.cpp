@@ -141,11 +141,11 @@ void oresmd_index_commands::process(std::ostream& out, const std::vector<std::st
             return;
         }
         out << "✓ Wrote " << rows.size() << " oresmd URI(s) to " << out_path << std::endl;
+        out << "✓ Resolved " << rows.size() << " ORE index name(s)." << std::endl;
     } else {
         for (const auto& [name, uri] : rows)
             out << name << '\t' << uri << '\n';
     }
-    out << "✓ Resolved " << rows.size() << " ORE index name(s)." << std::endl;
 }
 
 void oresmd_index_commands::register_verb(cli::Menu& marketdata_menu) {
@@ -154,7 +154,8 @@ void oresmd_index_commands::register_verb(cli::Menu& marketdata_menu) {
         [](std::ostream& out, std::vector<std::string> args) {
             process(std::ref(out), std::move(args));
         },
-        "Turn ORE index names into oresmd fixing URIs, offline",
+        "Turn ORE index names (one per line; blank and '#' lines skipped; stdin "
+        "when --in is unset) into oresmd fixing URIs, offline",
         {"[--in <path>] [--out <path>]"});
 }
 

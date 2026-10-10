@@ -75,6 +75,7 @@ TEST_CASE("account_operations_operations_registers_every_declared_command", tags
              std::string{"account_operations update-self-account"},
              std::string{"account_operations update-self-account-contact-information"},
              std::string{"account_operations get-my-account-contact-information"},
+             std::string{"account_operations get-my-account"},
              std::string{"account_operations get-my-parties"},
              std::string{"account_operations set-reporting-line"},
              std::string{"account_operations get-reporting-tree"},
@@ -82,7 +83,7 @@ TEST_CASE("account_operations_operations_registers_every_declared_command", tags
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 18 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 19 command(s).";
 }
 
 TEST_CASE("account_operations_operations_process_save_account_requires_a_session", tags) {
@@ -970,6 +971,42 @@ TEST_CASE("account_operations_operations_process_get_my_account_contact_informat
 
     command_feedback::reset();
     account_operations_operations_commands::process_get_my_account_contact_information(
+        out, session, std::vector<std::string>{});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("account_operations_operations_process_get_my_account_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    account_operations_operations_commands::process_get_my_account(
+        out, session, std::vector<std::string>{});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("account_operations_operations_process_get_my_account_reaches_the_transport", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    account_operations_operations_commands::process_get_my_account(
         out, session, std::vector<std::string>{});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();

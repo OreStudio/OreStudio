@@ -337,7 +337,11 @@ describe('the route table once the flag is clear', () => {
     });
 
     it('offers the staff list and the hierarchy as two cards on the Organisation page', () => {
-        const html = render('/organisation', ready, authenticated);
+        const html = render('/organisation', ready, authenticated, {}, [], (client) =>
+            client.setQueryData(['my-access'], {
+                roles: [{ roleId: 'r', permissionCodes: ['iam::accounts:read'] }],
+            }),
+        );
 
         expect(html).toContain('href="/staff"');
         expect(html).toContain('href="/hierarchy"');
@@ -363,11 +367,15 @@ describe('the route table once the flag is clear', () => {
                         username: 'ada.lovelace',
                         fullName: 'Ada Lovelace',
                         jobTitle: 'Head of Desk',
+                        imageId: null,
                         reportsToAccountId: null,
+                        reportsOutsideScope: false,
                         depth: 0,
                         directReports: 0,
+                        partyIds: [],
                     },
                 ],
+                parties: [],
             }),
         );
         expect(tree).toContain('>Hierarchy<');

@@ -461,8 +461,10 @@ export {
     readReportingTree,
     reportingLineRequestSchema,
     reportingTreeNodeSchema,
+    reportingTreePartySchema,
     reportingTreeSchema,
     setMyDefaultParty,
+    readMyAccount,
     setReportingLine,
 } from './membership.js';
 export type {
@@ -471,6 +473,7 @@ export type {
     ReportingLineWrite,
     ReportingTree,
     ReportingTreeNode,
+    ReportingTreeParty,
 } from './membership.js';
 
 export {

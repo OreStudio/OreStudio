@@ -235,8 +235,38 @@ describe('ProfilePage', () => {
          * an identifier tells a reader nothing.
          */
         expect(html).toContain('href="/people/grace"');
-        expect(html).toContain('/api/accounts/grace/picture');
+        expect(html).toContain('>GH<');
         expect(html).toContain('>Grace Hopper<');
+    });
+
+    it('names the manager from the organisation for a member, without a link', () => {
+        const html = render((client) => {
+            client.setQueryData(['my-access'], access(['iam::organisation:read']));
+            client.setQueryData(['account', 'ada'], account);
+            client.setQueryData(['reporting-tree'], {
+                nodes: [
+                    {
+                        accountId: MANAGER_ID,
+                        username: 'grace',
+                        fullName: 'Grace Hopper',
+                        jobTitle: 'Chief of Staff',
+                        imageId: null,
+                        reportsToAccountId: '',
+                        reportsOutsideScope: false,
+                        partyIds: [],
+                        depth: 0,
+                        directReports: 1,
+                    },
+                ],
+                parties: [],
+                unrooted: 0,
+            });
+        });
+
+        expect(html).toContain('>Grace Hopper<');
+        expect(html).toContain('>Chief of Staff<');
+        expect(html).not.toContain('href="/people/grace"');
+        expect(html).not.toContain(`Reports to ${MANAGER_ID}`);
     });
 
     it("offers the member's own panels an Edit button, naming no permission", () => {

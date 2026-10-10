@@ -27,6 +27,7 @@ import type {
     Account,
     AccountContactInformation,
     HeldRole,
+    ReportingTreeNode,
     ImageUploadPolicy,
     SessionView,
 } from '@ores/wire-protocol/browser';
@@ -127,18 +128,87 @@ function fieldIssue(outcome: PanelOutcome | undefined, name: string): FieldIssue
     return message === undefined || message === '' ? {} : { error: message };
 }
 
+/** The person a reporting line names, as the identity panel draws them. */
+export interface ManagerView {
+    readonly username: string;
+    readonly fullName: string;
+    readonly jobTitle: string;
+    readonly imageId: string | null;
+    /** Whether the reader may open their page, which is an account read. */
+    readonly openable: boolean;
+}
+
 /**
- * The account a reporting line names, when the caller may read the directory.
+ * The person a reporting line names, when the caller can see them.
  *
  * An account states its manager as an identifier, and a reader can do nothing
- * with an identifier: it is resolved to the row it names so the line can be
- * drawn as that person, with their picture and their name, opening their page.
- * A caller who may not read the directory, or a manager who is no longer in it,
- * is shown the recorded identifier rather than a name the screen invented.
+ * with an identifier: it is resolved to the person it names so the line can be
+ * drawn with their picture and their name. A caller who reads accounts finds
+ * them in the directory and may open their page. A caller who reads only the
+ * organisation finds them in the organisation tree and sees the same, without
+ * the link. A manager who is no longer in either is shown as the recorded
+ * identifier rather than a name the screen invented.
  */
-function resolveManager(accounts: readonly Account[], reportsTo: string | null): Account | null {
+function resolveManager(
+    accounts: readonly Account[],
+    organisation: readonly ReportingTreeNode[],
+    reportsTo: string | null,
+): ManagerView | null {
     if (reportsTo === null) return null;
-    return accounts.find((row) => row.id === reportsTo) ?? null;
+    const account = accounts.find((row) => row.id === reportsTo);
+    if (account !== undefined) {
+        return {
+            username: account.username,
+            fullName: account.fullName,
+            jobTitle: account.jobTitle,
+            imageId: account.imageId,
+            openable: true,
+        };
+    }
+    const node = organisation.find((row) => row.accountId === reportsTo);
+    return node === undefined
+        ? null
+        : {
+              username: node.username,
+              fullName: node.fullName,
+              jobTitle: node.jobTitle,
+              imageId: node.imageId,
+              openable: false,
+          };
+}
+
+/** The manager as a line: picture, name, and job title, opening their page when allowed. */
+function ManagerLine({ manager }: { readonly manager: ManagerView }): ReactNode {
+    const name = displayName(manager, manager.username);
+    const body = (
+        <>
+            <Avatar
+                name={name}
+                size="sm"
+                src={manager.imageId === null ? null : imageUrl(manager.imageId)}
+            />
+            <span
+                className={
+                    manager.openable
+                        ? 'underline decoration-line-strong underline-offset-2 hover:decoration-accent'
+                        : ''
+                }
+            >
+                {name}
+            </span>
+            {manager.jobTitle !== '' && (
+                <span className="text-xs text-ink-muted">{manager.jobTitle}</span>
+            )}
+        </>
+    );
+    const className = 'flex w-fit items-center gap-2 text-sm text-ink';
+    return manager.openable ? (
+        <Link to={personPath(manager.username)} className={className}>
+            {body}
+        </Link>
+    ) : (
+        <span className={className}>{body}</span>
+    );
 }
 
 /**
@@ -155,6 +225,7 @@ export function IdentityPanel({
     refused,
     signInEmail,
     manager,
+    managerOutOfView,
     canWrite,
     me,
     username,
@@ -165,7 +236,9 @@ export function IdentityPanel({
     readonly pending: boolean;
     readonly refused: string | null;
     readonly signInEmail: string;
-    readonly manager: Account | null;
+    readonly manager: ManagerView | null;
+    /** Whether the person has a manager the reader may not see. */
+    readonly managerOutOfView: boolean;
     readonly canWrite: boolean;
     readonly me: boolean;
     readonly username: string;
@@ -276,35 +349,23 @@ export function IdentityPanel({
                     )}
                     {account.reportsToAccountId !== null && manager === null && (
                         <p className="text-sm">
-                            {t('profile.identity.reportsTo', {
-                                name: account.reportsToAccountId,
-                            })}
+                            {managerOutOfView
+                                ? t('membership.reporting.outsideManager')
+                                : t('profile.identity.reportsTo', {
+                                      name: account.reportsToAccountId,
+                                  })}
                         </p>
                     )}
                     {manager !== null && (
                         /*
-                         * A link rather than plain text: the point of naming
-                         * the person is that a reader can go and look at them,
-                         * and a reader who cannot see that it is a link will
-                         * not try. The job title beside the name says who they
-                         * are to this person without opening the page.
+                         * A link rather than plain text where the reader may
+                         * open the person: the point of naming them is that a
+                         * reader can go and look at them. A reader who may not
+                         * read accounts is shown the same without the link. The
+                         * job title beside the name says who they are to this
+                         * person without opening the page.
                          */
-                        <Link
-                            to={personPath(manager.username)}
-                            className="flex w-fit items-center gap-2 text-sm text-ink"
-                        >
-                            <AccountPicture
-                                username={manager.username}
-                                name={displayName(manager, manager.username)}
-                                size="sm"
-                            />
-                            <span className="underline decoration-line-strong underline-offset-2 hover:decoration-accent">
-                                {displayName(manager, manager.username)}
-                            </span>
-                            {manager.jobTitle !== '' && (
-                                <span className="text-xs text-ink-muted">{manager.jobTitle}</span>
-                            )}
-                        </Link>
+                        <ManagerLine manager={manager} />
                     )}
                     {/*
                      * An administrator sets the line: the server allows it to a
@@ -1094,7 +1155,10 @@ function ContactDialog({
                         {...fieldIssue(outcome, 'countryCode')}
                     >
                         <div className="flex items-center gap-2">
-                            <FlagOf source="country" code={draft.countryCode.trim().toUpperCase()} />
+                            <FlagOf
+                                source="country"
+                                code={draft.countryCode.trim().toUpperCase()}
+                            />
                             <Input value={draft.countryCode} onChange={set('countryCode')} />
                         </div>
                     </Field>
@@ -1238,12 +1302,22 @@ export function IdentityTab({
      * account and may still see who their manager is. Gating this on write was
      * why a member was shown their manager's identifier instead of the person.
      */
-    const mayReadDirectory = useHolds()('iam::accounts:read');
+    const holds = useHolds();
+    const mayReadDirectory = holds('iam::accounts:read');
     const managers = useQuery({
         queryKey: ['accounts'],
         queryFn: api.accounts,
         enabled: mayReadDirectory,
+        meta: { quiet: true },
     });
+    // A reader who sees the organisation and not the accounts finds the manager there.
+    const organisation = useQuery({
+        queryKey: ['reporting-tree'],
+        queryFn: () => api.reportingTree(),
+        enabled: !mayReadDirectory && holds('iam::organisation:read'),
+        meta: { quiet: true },
+    });
+    const nodes = organisation.data?.nodes ?? [];
     const reasons = useQuery({ queryKey: ['amend-reasons'], queryFn: api.amendReasons });
     return (
         <IdentityPanel
@@ -1253,13 +1327,24 @@ export function IdentityTab({
             signInEmail={account.data?.email ?? fallbackEmail}
             manager={resolveManager(
                 managers.data?.accounts ?? [],
+                nodes,
                 account.data?.reportsToAccountId ?? null,
             )}
+            managerOutOfView={
+                nodes.find((node) => node.accountId === account.data?.id)?.reportsOutsideScope ===
+                true
+            }
             canWrite={me || writes.accounts}
             me={me}
             username={username}
             reasons={reasons.data ?? []}
-            onSaved={() => queries.invalidateQueries({ queryKey: ['account', username] })}
+            onSaved={() =>
+                Promise.all([
+                    queries.invalidateQueries({ queryKey: ['account', username] }),
+                    // The new version is an entry in the person's story.
+                    queries.invalidateQueries({ queryKey: ['timeline', 'person', username] }),
+                ])
+            }
         />
     );
 }
@@ -1312,7 +1397,11 @@ export function ContactTab({
             signInEmail={account.data?.email ?? fallbackEmail}
             reasons={reasons.data ?? []}
             onSaved={() =>
-                queries.invalidateQueries({ queryKey: ['contact-information', contactKey] })
+                Promise.all([
+                    queries.invalidateQueries({ queryKey: ['contact-information', contactKey] }),
+                    // The new version is an entry in the person's story.
+                    queries.invalidateQueries({ queryKey: ['timeline', 'person', username] }),
+                ])
             }
         />
     );

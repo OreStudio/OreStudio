@@ -181,7 +181,7 @@ export type { MyParties, MyParty, ReportingLineWrite } from './membership.js';
 
 // The reporting shape, as the Reporting lines screen reads it from the BFF.
 export { reportingTreeNodeSchema, reportingTreeSchema } from './membership.js';
-export type { ReportingTree, ReportingTreeNode } from './membership.js';
+export type { ReportingTree, ReportingTreeNode, ReportingTreeParty } from './membership.js';
 
 // The starting-point read, so the browser parses what the BFF served with the
 // definition the server serialised it from.

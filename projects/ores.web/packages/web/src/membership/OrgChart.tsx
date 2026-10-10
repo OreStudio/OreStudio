@@ -20,39 +20,45 @@
  */
 
 import { useRef, useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
-import type { ReportingTreeNode } from '@ores/wire-protocol/browser';
+import type { ReportingTreeNode, ReportingTreeParty } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
-import { personPath } from '../access/PeoplePage.js';
-import { roleLabel } from '../access/words.js';
-import { AccountPicture } from '../ui/Images.js';
-import { Button, Tag } from '../ui/Primitives.js';
+import { Button } from '../ui/Primitives.js';
+import { Badges, NameLink, NodeAvatar, nameOf } from './NodeParts.js';
+import { partyLabel, type PartyBranch, type PartyForest } from './organisation.js';
 
 /** How far the chart zooms out and in, and by how much a click moves it. */
 const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 2;
 const ZOOM_STEP = 0.1;
 
-/** The role that makes a person their tenant's administrator. */
-const TENANT_ADMIN = 'TenantAdmin';
-
-/**
- * The org chart: each person as a card above the people who report to them.
- *
- * It draws the same tree as the list, from the same read, and a card opens the
- * person it shows. The chart is as wide as its widest level, so it scrolls
- * sideways rather than squeezing the cards.
- */
-export function OrgChart({
-    roots,
-    children,
-    meId,
-    admins,
-}: {
-    readonly roots: readonly ReportingTreeNode[];
-    readonly children: ReadonlyMap<string, ReportingTreeNode[]>;
+/** What the chart needs to mark a person out and to open them. */
+interface Marks {
     readonly meId: string;
     readonly admins: ReadonlySet<string>;
+    readonly parties: ReadonlyMap<string, ReportingTreeParty>;
+    /** Whether a card opens the person's page, which is an account read. */
+    readonly openable: boolean;
+}
+
+/**
+ * The org chart: each person as a card above the people who report to them, or
+ * each party as a card above the parties below it, with its people inside.
+ *
+ * It draws the same read as the list, and a person's card opens their page when
+ * the reader may read accounts. The chart is as wide as its widest level, so it
+ * scrolls sideways rather than squeezing the cards, and it zooms.
+ */
+export function OrgChart({
+    reporting,
+    party,
+    marks,
+}: {
+    readonly reporting?: {
+        readonly roots: readonly ReportingTreeNode[];
+        readonly children: ReadonlyMap<string, ReportingTreeNode[]>;
+    };
+    readonly party?: PartyForest;
+    readonly marks: Marks;
 }): ReactNode {
     const { t } = useTranslation();
     const [zoom, setZoom] = useState(1);
@@ -112,58 +118,71 @@ export function OrgChart({
             <div ref={frame} className="orgchart overflow-auto pb-2">
                 <div style={{ zoom }} className="w-max min-w-full">
                     <ul className="min-w-max">
-                        {roots.map((node) => (
+                        {reporting?.roots.map((node) => (
                             <Branch
                                 key={node.accountId}
                                 node={node}
-                                children={children}
-                                meId={meId}
-                                admins={admins}
+                                children={reporting.children}
+                                marks={marks}
                             />
                         ))}
+                        {party?.branches.map((branch) => (
+                            <PartyBox key={branch.party.partyId} branch={branch} marks={marks} />
+                        ))}
                     </ul>
+                    {party !== undefined && party.unaffiliated.length > 0 && (
+                        <PeopleRow
+                            title={t('membership.reporting.noParty')}
+                            people={party.unaffiliated}
+                            marks={marks}
+                        />
+                    )}
                 </div>
             </div>
         </div>
     );
 }
 
+function Card({ node, marks }: { readonly node: ReportingTreeNode; readonly marks: Marks }) {
+    const isMe = node.accountId === marks.meId;
+    return (
+        <NameLink
+            node={node}
+            openable={marks.openable}
+            className={`card inline-flex w-44 flex-col items-center gap-1 p-3 text-center hover:border-accent-line focus-visible:outline-accent ${
+                isMe ? 'ring-1 ring-accent' : ''
+            }`}
+        >
+            <NodeAvatar node={node} size="lg" />
+            <span className={`text-sm ${isMe ? 'font-semibold' : 'font-medium'}`}>
+                {nameOf(node)}
+            </span>
+            <span className="text-xs text-ink-muted">{node.jobTitle}</span>
+            <span className="flex justify-center">
+                <Badges
+                    node={node}
+                    isMe={isMe}
+                    isAdmin={marks.admins.has(node.accountId)}
+                    parties={marks.parties}
+                />
+            </span>
+        </NameLink>
+    );
+}
+
 function Branch({
     node,
     children,
-    meId,
-    admins,
+    marks,
 }: {
     readonly node: ReportingTreeNode;
     readonly children: ReadonlyMap<string, ReportingTreeNode[]>;
-    readonly meId: string;
-    readonly admins: ReadonlySet<string>;
+    readonly marks: Marks;
 }): ReactNode {
-    const { t } = useTranslation();
     const kids = children.get(node.accountId) ?? [];
-    const isMe = node.accountId === meId;
     return (
         <li>
-            <Link
-                to={personPath(node.username)}
-                className={`card inline-flex w-44 flex-col items-center gap-1 p-3 text-center hover:border-accent-line focus-visible:outline-accent ${
-                    isMe ? 'ring-1 ring-accent' : ''
-                }`}
-            >
-                <AccountPicture username={node.username} name={node.fullName} size="lg" />
-                <span className={`text-sm ${isMe ? 'font-semibold' : 'font-medium'}`}>
-                    {node.fullName}
-                </span>
-                <span className="text-xs text-ink-muted">{node.jobTitle}</span>
-                {(isMe || admins.has(node.accountId)) && (
-                    <span className="flex flex-wrap justify-center gap-1">
-                        {isMe && <Tag tone="accent">{t('membership.reporting.you')}</Tag>}
-                        {admins.has(node.accountId) && (
-                            <Tag tone="warn">{roleLabel(t, TENANT_ADMIN)}</Tag>
-                        )}
-                    </span>
-                )}
-            </Link>
+            <Card node={node} marks={marks} />
             {kids.length > 0 && (
                 <ul>
                     {kids.map((child) => (
@@ -171,12 +190,65 @@ function Branch({
                             key={child.accountId}
                             node={child}
                             children={children}
-                            meId={meId}
-                            admins={admins}
+                            marks={marks}
                         />
                     ))}
                 </ul>
             )}
         </li>
+    );
+}
+
+/** A party as a box: its name, the people who work in it, and the parties below. */
+function PartyBox({
+    branch,
+    marks,
+}: {
+    readonly branch: PartyBranch;
+    readonly marks: Marks;
+}): ReactNode {
+    return (
+        <li>
+            <div className="card inline-block min-w-48 p-3 text-center">
+                <p className="text-sm font-semibold">{partyLabel(branch.party)}</p>
+                {branch.party.shortCode !== '' && branch.party.name !== '' && (
+                    <p className="font-mono text-[11px] text-ink-faint">{branch.party.shortCode}</p>
+                )}
+                <div className="mt-2 flex flex-wrap justify-center gap-2">
+                    {branch.members.map((node) => (
+                        <Card key={node.accountId} node={node} marks={marks} />
+                    ))}
+                </div>
+            </div>
+            {branch.below.length > 0 && (
+                <ul>
+                    {branch.below.map((below) => (
+                        <PartyBox key={below.party.partyId} branch={below} marks={marks} />
+                    ))}
+                </ul>
+            )}
+        </li>
+    );
+}
+
+/** The people who work in no party, in a row of their own. */
+function PeopleRow({
+    title,
+    people,
+    marks,
+}: {
+    readonly title: string;
+    readonly people: readonly ReportingTreeNode[];
+    readonly marks: Marks;
+}): ReactNode {
+    return (
+        <div className="mt-6 text-center">
+            <p className="mb-2 text-sm font-semibold text-ink-muted">{title}</p>
+            <div className="flex flex-wrap justify-center gap-2">
+                {people.map((node) => (
+                    <Card key={node.accountId} node={node} marks={marks} />
+                ))}
+            </div>
+        </div>
     );
 }

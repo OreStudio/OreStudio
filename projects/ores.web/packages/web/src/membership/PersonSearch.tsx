@@ -22,8 +22,8 @@
 import { useId, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { ReportingTreeNode } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
-import { AccountPicture } from '../ui/Images.js';
 import { Input } from '../ui/Primitives.js';
+import { NodeAvatar } from './NodeParts.js';
 
 /** How many matches the list shows, so a large tenant does not draw every person. */
 const SHOWN = 50;
@@ -161,11 +161,7 @@ export function PersonSearch({
                                 index === active ? 'bg-surface-hover' : ''
                             }`}
                         >
-                            <AccountPicture
-                                username={node.username}
-                                name={nameOf(node)}
-                                size="sm"
-                            />
+                            <NodeAvatar node={node} size="sm" />
                             <span className="font-medium">{nameOf(node)}</span>
                             <span className="truncate text-xs text-ink-muted">{node.jobTitle}</span>
                         </li>

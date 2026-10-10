@@ -44,6 +44,7 @@ import { Timeline } from '../timeline/Timeline.js';
 import { useHolds } from './holds.js';
 import { RecordHeader } from '../refdata/records.js';
 import { useTabs } from '../ui/Tabs.js';
+import { AccountDoors } from '../pages/AccountDoors.js';
 
 /**
  * One person's access: the roles they hold, who gave each one and why, and
@@ -356,6 +357,8 @@ function Person({
                     </section>
                 </div>
             )}
+
+            {self && <AccountDoors />}
 
             {giving && (
                 <GiveRoleDialog

@@ -500,6 +500,35 @@ struct get_my_account_contact_information_response {
 };
 
 /**
+ * @brief A member's read of their own account.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's. The read needs no permission: it is a self
+ * read on the allow-list of Authorised reads, so a member sees their own name,
+ * picture and job title without holding iam::accounts:read. Reading a
+ * colleague's account is iam.v1.accounts.get, which needs that permission.
+ */
+struct get_my_account_request {
+    using response_type = struct get_my_account_response;
+    static constexpr std::string_view nats_subject = "iam.v1.ops.get_my_account";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+struct get_my_account_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The caller's account, or nothing when the session names none.
+     */
+    std::optional<ores::iam::domain::account> account;
+};
+
+/**
  * @brief One party the caller's account works in, as the member's own screen
  * reads it.
  *
@@ -603,6 +632,29 @@ struct set_reporting_line_response {
 };
 
 /**
+ * @brief One party the reporting shape is drawn under.
+ *
+ * A person works in a party, and a viewer may work in several, so the shape is
+ * grouped by party. The service states which parties are in scope by id; the
+ * handler names them from IAM's party cache, which mirrors refdata's parties,
+ * so the name and the parent are empty for a party the cache has not seen
+ * rather than a half-read row.
+ *
+ * Declared before the node and the response that carry it, because the
+ * generators emit the messages in the order this file states them.
+ */
+struct reporting_tree_party {
+    std::string party_id;
+    std::string name;
+    std::string short_code;
+    /**
+     * @brief The parent party's id, or empty when the party has none or its parent
+     * is not in the scope the caller may read.
+     */
+    std::string parent_party_id;
+};
+
+/**
  * @brief One account in the tenant's reporting shape.
  *
  * The depth counts from a root: a root is 0, its reports are 1, and so on.
@@ -620,23 +672,47 @@ struct reporting_tree_node {
     std::string full_name;
     std::string job_title;
     /**
-     * @brief The manager's account id, or empty when the account is a root.
+     * @brief The id of the account's picture, or empty when it has none. The
+     * picture is drawn from this identifier, so a reader who may see the tree needs
+     * no read of the account to draw the person.
+     */
+    std::string image_id;
+    /**
+     * @brief The manager's account id, or empty when the account is a root or its
+     * manager is outside what the caller may see. The second case is stated by
+     * =reports_outside_scope=, so a person who has a manager is never drawn as one
+     * who has none.
      */
     std::string reports_to_account_id;
     /**
      * @brief The number of managers between this account and a root, or -1 when it
      * reaches none.
      */
-    int depth;
-    int direct_reports;
+    int depth = 0;
+    int direct_reports = 0;
+    /**
+     * @brief Whether the account has a manager the caller may not see. The manager
+     * is not named, and the account is drawn as the top of what the caller can see
+     * with this marker, not as a person with no manager.
+     */
+    bool reports_outside_scope = false;
+    /**
+     * @brief The ids of the parties in scope that this account works in. Empty when
+     * the account is linked to none of them.
+     */
+    std::vector<std::string> party_ids;
 };
 
 /**
- * @brief The tenant's reporting shape in one read.
+ * @brief A reporting shape in one read: the tenant's, or what the caller may see.
  *
- * The read answers the tenant's own accounts, which row-level security bounds,
- * and needs =iam::accounts:read=. An empty =root_account_id= asks for the whole
- * tenant, ordered by depth; a stated root asks for that account's branch, so a
+ * The scope follows what the caller holds. A caller with =iam::accounts:read=
+ * reads the tenant's own accounts, which row-level security bounds. A caller
+ * with =iam::organisation:read= and not that code reads the people they may
+ * see: those who work in any party their own account works in, and everyone
+ * who reports to them directly or indirectly. A node never carries an email or
+ * a contact detail. A caller with neither is refused. An empty =root_account_id= asks for the whole
+ * scope, ordered by depth; a stated root asks for that account's branch, so a
  * screen can open one part of a large organisation without carrying the rest.
  */
 struct get_reporting_tree_request {
@@ -656,10 +732,16 @@ struct get_reporting_tree_response {
     ores::utility::domain::result result;
     std::vector<reporting_tree_node> nodes;
     /**
+     * @brief The parties in scope, each with the party above it when that party is
+     * in scope too. A holding group's parties nest, so a viewer who works in all of
+     * them sees the group drawn as the group.
+     */
+    std::vector<reporting_tree_party> parties;
+    /**
      * @brief How many accounts in the tenant reach no root. Stated so the screen
      * can say the shape is broken rather than draw a tree that is missing people.
      */
-    int unrooted;
+    int unrooted = 0;
 };
 
 /**

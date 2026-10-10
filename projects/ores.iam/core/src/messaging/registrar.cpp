@@ -280,6 +280,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
+        get_my_account_request::nats_subject, qg, [acth](ores::nats::message msg) {
+            acth->get_my_account(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
         get_my_parties_request::nats_subject, qg, [acth](ores::nats::message msg) {
             acth->get_my_parties(std::move(msg));
         }));

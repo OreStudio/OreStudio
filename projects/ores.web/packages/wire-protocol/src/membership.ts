@@ -134,6 +134,39 @@ export async function setMyDefaultParty(
     }
 }
 
+const myAccountReplySchema = z
+    .object({
+        result: decidedResultSchema,
+        account: wireAccountSchema.nullable().default(null),
+    })
+    .transform((row) => ({
+        result: row.result,
+        account: row.account === null ? null : mapAccount(row.account),
+    }));
+
+/**
+ * The caller's own account, or nothing when the session names none.
+ *
+ * The request names no account, because the session names it, so the read
+ * cannot answer about anybody else and needs no permission. A member who does
+ * not hold iam::accounts:read reads their own name, picture and job title
+ * through this; reading a colleague's account is readAccount, which does.
+ */
+export async function readMyAccount(caller: AuthenticatedCaller): Promise<Account | null> {
+    const reply = await caller.callAuthenticated(
+        accountSubjects.get_my_account_request,
+        {},
+        myAccountReplySchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw new OperationFailedError(
+            accountSubjects.get_my_account_request,
+            reply.result.message,
+        );
+    }
+    return reply.account;
+}
+
 const setReportingLineReplySchema = z
     .object({
         result: decidedResultSchema,
@@ -195,36 +228,63 @@ export async function setReportingLine(
     return reply.account;
 }
 
-/** One account in the tenant's reporting shape, as the screen reads it. */
+/** One account in a reporting shape, as the screen reads it. */
 export const reportingTreeNodeSchema = z.object({
     accountId: z.string(),
     username: z.string(),
     fullName: z.string(),
     jobTitle: z.string(),
-    /** The manager, or null when the account is a root. */
+    /** The picture's id, or null: a reader draws the person without reading the account. */
+    imageId: z.string().nullable(),
+    /** The manager, or null when the account is a root or the manager is out of view. */
     reportsToAccountId: z.string().nullable(),
+    /** Whether the person has a manager the reader may not see, which is not the same as none. */
+    reportsOutsideScope: z.boolean(),
     /** Managers between this account and a root, or -1 when it reaches none. */
     depth: z.int(),
     directReports: z.int(),
+    /** The parties in the answer that this person works in. */
+    partyIds: z.array(z.string()),
+});
+
+/** One party the shape is drawn under. */
+export const reportingTreePartySchema = z.object({
+    partyId: z.string(),
+    name: z.string(),
+    shortCode: z.string(),
+    /** The party above this one when it is in the answer too, or null. */
+    parentPartyId: z.string().nullable(),
 });
 
 export const reportingTreeSchema = z.object({
     /** How many accounts reach no root, so the screen can state the gap. */
     unrooted: z.int(),
     nodes: z.array(reportingTreeNodeSchema),
+    parties: z.array(reportingTreePartySchema),
 });
 
 export type ReportingTree = z.infer<typeof reportingTreeSchema>;
 export type ReportingTreeNode = z.infer<typeof reportingTreeNodeSchema>;
+export type ReportingTreeParty = z.infer<typeof reportingTreePartySchema>;
 
 const wireReportingTreeNodeSchema = z.object({
     account_id: z.string(),
     username: z.string(),
     full_name: z.string(),
     job_title: z.string(),
+    image_id: z.string().default(''),
     reports_to_account_id: z.string().default(''),
+    reports_outside_scope: z.boolean().default(false),
     depth: z.int(),
     direct_reports: z.int(),
+    party_ids: z.array(z.string()).default([]),
+});
+
+const wireReportingTreePartySchema = z.object({
+    party_id: z.string(),
+    name: z.string().default(''),
+    short_code: z.string().default(''),
+    parent_party_id: z.string().default(''),
 });
 
 const wireReportingTreeSchema = z
@@ -232,6 +292,7 @@ const wireReportingTreeSchema = z
         result: decidedResultSchema,
         nodes: z.array(wireReportingTreeNodeSchema).default([]),
         unrooted: z.int().default(0),
+        parties: z.array(wireReportingTreePartySchema).default([]),
     })
     .transform((row) => ({
         result: row.result,
@@ -242,21 +303,32 @@ const wireReportingTreeSchema = z
                 username: node.username,
                 fullName: node.full_name,
                 jobTitle: node.job_title,
+                imageId: node.image_id === '' ? null : node.image_id,
                 reportsToAccountId:
                     node.reports_to_account_id === '' ? null : node.reports_to_account_id,
+                reportsOutsideScope: node.reports_outside_scope,
                 depth: node.depth,
                 directReports: node.direct_reports,
+                partyIds: node.party_ids,
+            })),
+            parties: row.parties.map((party) => ({
+                partyId: party.party_id,
+                name: party.name,
+                shortCode: party.short_code,
+                parentPartyId: party.parent_party_id === '' ? null : party.parent_party_id,
             })),
         },
     }));
 
 /**
- * Reads the tenant's reporting shape, or one account's branch of it.
+ * Reads a reporting shape, or one account's branch of it.
  *
- * An empty root asks for the whole tenant, ordered by depth; a stated root asks
- * for that account's branch. The server needs iam::accounts:read, and an
- * account that reaches no root is answered with depth -1 and counted in
- * `unrooted` rather than being dropped.
+ * An empty root asks for the whole scope, ordered by depth; a stated root asks
+ * for that account's branch. The scope follows what the caller holds: the
+ * tenant for iam::accounts:read, and for iam::organisation:read the people who
+ * work in the caller's parties and those who report to the caller. An account
+ * that reaches no root is answered with depth -1 and counted in `unrooted`
+ * rather than being dropped.
  */
 export async function readReportingTree(
     caller: AuthenticatedCaller,

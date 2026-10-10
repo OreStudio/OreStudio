@@ -24,6 +24,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { PageHeader } from '../ui/Primitives.js';
 import { Tiles, type Tile } from '../ui/Tiles.js';
 import { Crumbs } from '../refdata/shared.js';
+import { useHolds } from './holds.js';
 
 /** Where the organisation area lives. */
 export const ORGANISATION_PATH = '/organisation';
@@ -40,13 +41,20 @@ export const HIERARCHY_PATH = '/hierarchy';
  */
 export function OrganisationPage(): ReactNode {
     const { t } = useTranslation();
+    const holds = useHolds();
+    // The staff list is a list of accounts, which a member does not read; the
+    // hierarchy is the organisation read, which is theirs.
     const tiles: readonly Tile[] = [
-        {
-            title: t('access.hub.staff'),
-            body: t('access.hub.staffBody'),
-            to: STAFF_PATH,
-            icon: 'person',
-        },
+        ...(holds('iam::accounts:read')
+            ? ([
+                  {
+                      title: t('access.hub.staff'),
+                      body: t('access.hub.staffBody'),
+                      to: STAFF_PATH,
+                      icon: 'person',
+                  },
+              ] satisfies Tile[])
+            : []),
         {
             title: t('access.hub.hierarchy'),
             body: t('access.hub.hierarchyBody'),

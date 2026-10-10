@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
@@ -34,6 +35,7 @@
 #include <openssl/evp.h>
 #include <stdexcept>
 #include <unordered_map>
+#include <set>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -688,6 +690,14 @@ account_operations_service::get_my_account_contact_information(
     return response;
 }
 
+messaging::get_my_account_response
+account_operations_service::get_my_account(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading own account: " << boost::uuids::to_string(account_id);
+    messaging::get_my_account_response response;
+    response.account = find_account_by_id(account_id);
+    return response;
+}
+
 std::optional<domain::account>
 account_operations_service::find_account_by_username(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Finding account by username: " << username;
@@ -1018,19 +1028,113 @@ messaging::set_reporting_line_response account_operations_service::set_reporting
 }
 
 messaging::get_reporting_tree_response account_operations_service::get_reporting_tree(
-    const messaging::get_reporting_tree_request& request) {
+    const messaging::get_reporting_tree_request& request,
+    const std::optional<boost::uuids::uuid>& viewer) {
     messaging::get_reporting_tree_response response;
 
     // The tenant's own roster, which row-level security bounds.
-    const auto accounts = account_repo_.read_latest(ctx_);
+    auto accounts = account_repo_.read_latest(ctx_);
 
-    std::unordered_map<std::string, const domain::account*> by_id;
-    std::unordered_map<std::string, std::vector<std::string>> children;
+    // The parties each account works in, from the links the tenant holds.
+    repository::account_party_repository links(ctx_);
+    std::unordered_map<std::string, std::vector<std::string>> parties_of_all;
+    for (const auto& link : links.read_latest()) {
+        parties_of_all[boost::uuids::to_string(link.account_id)].push_back(
+            boost::uuids::to_string(link.party_id));
+    }
+
+    // A caller who may read the organisation and not the accounts sees two
+    // kinds of people: those who work in any party their own account works in,
+    // and everyone who reports to them, directly or indirectly. A person who
+    // works in one party sees that party; the head of a holding group, linked
+    // to each of its parties and with the group beneath them, sees everyone
+    // under them.
+    if (viewer) {
+        const auto me = boost::uuids::to_string(*viewer);
+        std::unordered_set<std::string> visible{me};
+
+        std::unordered_set<std::string> my_parties;
+        if (const auto mine = parties_of_all.find(me); mine != parties_of_all.end()) {
+            my_parties.insert(mine->second.begin(), mine->second.end());
+        }
+        for (const auto& [account, parties] : parties_of_all) {
+            if (std::any_of(parties.begin(), parties.end(), [&](const std::string& party) {
+                    return my_parties.count(party) > 0;
+                })) {
+                visible.insert(account);
+            }
+        }
+
+        std::unordered_map<std::string, std::vector<std::string>> reports;
+        for (const auto& account : accounts) {
+            if (account.reports_to_account_id) {
+                reports[boost::uuids::to_string(*account.reports_to_account_id)].push_back(
+                    boost::uuids::to_string(account.id));
+            }
+        }
+        std::queue<std::string> below;
+        below.push(me);
+        while (!below.empty()) {
+            const auto manager = below.front();
+            below.pop();
+            const auto found = reports.find(manager);
+            if (found == reports.end()) {
+                continue;
+            }
+            for (const auto& report : found->second) {
+                // A ring the store accepted before the guard existed ends here.
+                if (visible.insert(report).second) {
+                    below.push(report);
+                }
+            }
+        }
+
+        std::erase_if(accounts, [&](const domain::account& account) {
+            return visible.count(boost::uuids::to_string(account.id)) == 0;
+        });
+    }
+
+    // The parties the shape is drawn under: every party a visible person works
+    // in, so a head of group sees the parties of the people under them. Sorted,
+    // so the answer does not depend on the order the store returned the links.
+    std::unordered_map<std::string, std::vector<std::string>> parties_of;
+    std::set<std::string> scope_parties;
     for (const auto& account : accounts) {
         const auto id = boost::uuids::to_string(account.id);
-        by_id[id] = &account;
-        if (account.reports_to_account_id) {
-            children[boost::uuids::to_string(*account.reports_to_account_id)].push_back(id);
+        if (const auto found = parties_of_all.find(id); found != parties_of_all.end()) {
+            parties_of[id] = found->second;
+            scope_parties.insert(found->second.begin(), found->second.end());
+        }
+    }
+    for (const auto& party : scope_parties) {
+        response.parties.push_back(messaging::reporting_tree_party{.party_id = party});
+    }
+
+    std::unordered_map<std::string, const domain::account*> by_id;
+    for (const auto& account : accounts) {
+        by_id[boost::uuids::to_string(account.id)] = &account;
+    }
+
+    // The manager the tree draws for an account. In the tenant's tree a manager
+    // the tenant no longer holds is a gap the unrooted total states. In a
+    // viewer's tree a manager outside what the viewer may see is not drawn, and
+    // the account carries a marker saying so, so that a person who has a manager
+    // is never drawn as one who has none.
+    const auto outside_view = [&](const domain::account& account) {
+        return viewer && account.reports_to_account_id &&
+               by_id.count(boost::uuids::to_string(*account.reports_to_account_id)) == 0;
+    };
+    const auto manager_of = [&](const domain::account& account) -> std::optional<std::string> {
+        if (!account.reports_to_account_id || outside_view(account)) {
+            return std::nullopt;
+        }
+        return boost::uuids::to_string(*account.reports_to_account_id);
+    };
+
+    std::unordered_map<std::string, std::vector<std::string>> children;
+    for (const auto& account : accounts) {
+        if (const auto manager = manager_of(account)) {
+            children[*manager].push_back(boost::uuids::to_string(account.id));
         }
     }
 
@@ -1039,7 +1143,7 @@ messaging::get_reporting_tree_response account_operations_service::get_reporting
     // to the unrooted total, because drawing it as a root would hide the gap.
     std::vector<std::string> roots;
     for (const auto& account : accounts) {
-        if (!account.reports_to_account_id) {
+        if (!manager_of(account)) {
             roots.push_back(boost::uuids::to_string(account.id));
         }
     }
@@ -1098,11 +1202,14 @@ messaging::get_reporting_tree_response account_operations_service::get_reporting
             .username = account->username,
             .full_name = account->full_name,
             .job_title = account->job_title,
-            .reports_to_account_id = account->reports_to_account_id ?
-                                         boost::uuids::to_string(*account->reports_to_account_id) :
-                                         std::string{},
+            .image_id = account->image_id ? boost::uuids::to_string(*account->image_id) :
+                                            std::string{},
+            .reports_to_account_id = manager_of(*account).value_or(std::string{}),
             .depth = d,
-            .direct_reports = static_cast<int>(kids == children.end() ? 0 : kids->second.size())};
+            .direct_reports = static_cast<int>(kids == children.end() ? 0 : kids->second.size()),
+            .reports_outside_scope = outside_view(*account),
+            .party_ids = parties_of.count(id) > 0 ? parties_of.at(id) :
+                                                    std::vector<std::string>{}};
     };
 
     if (request.root_account_id.empty()) {

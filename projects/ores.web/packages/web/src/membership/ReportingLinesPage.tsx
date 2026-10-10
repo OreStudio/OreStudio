@@ -21,29 +21,25 @@
 
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
 import {
     fieldValue,
     type ReportingTreeNode,
+    type ReportingTreeParty,
     type Timeline as Stream,
 } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
-import { personPath } from '../access/PeoplePage.js';
 import { ReportingLineDialog } from '../access/PersonForms.js';
 import { useHolds } from '../access/holds.js';
-import { roleLabel } from '../access/words.js';
 import { Crumbs } from '../refdata/shared.js';
 import { Timeline } from '../timeline/Timeline.js';
-import { AccountPicture } from '../ui/Images.js';
-import { Button, Detail, Field, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
+import { Badges, NameLink, NodeAvatar, TENANT_ADMIN, nameOf } from './NodeParts.js';
 import { OrgChart } from './OrgChart.js';
+import { inParty, partyForest, partyLabel, shapeOf, type PartyBranch } from './organisation.js';
 import { PersonSearch } from './PersonSearch.js';
-
-/** The role that makes a person their tenant's administrator. */
-const TENANT_ADMIN = 'TenantAdmin';
 
 /** The entity whose versions carry a person's reporting line. */
 const ACCOUNT_ENTITY = 'ores.iam.account';
@@ -60,7 +56,7 @@ const ACCOUNT_ENTITY = 'ores.iam.account';
 export function lineTimeline(
     source: Stream | undefined,
     fieldName: string,
-    nameOf: (accountId: string | null) => string,
+    nameFor: (accountId: string | null) => string,
 ): Stream {
     const events = (source?.events ?? [])
         .filter((event) => event.entityType === ACCOUNT_ENTITY)
@@ -68,7 +64,7 @@ export function lineTimeline(
             const raw = fieldValue(event.fields, 'Reports To Account ID');
             return {
                 ...event,
-                fields: [{ name: fieldName, value: nameOf(raw === '' ? null : raw) }],
+                fields: [{ name: fieldName, value: nameFor(raw === '' ? null : raw) }],
             };
         });
     return { subject: 'person', id: source?.id ?? '', events, gaps: [] };
@@ -77,45 +73,60 @@ export function lineTimeline(
 /**
  * Hierarchy: who reports to whom, as a tree, as an org chart, and as history.
  *
- * It opens on the signed-in person, because that is the place a reader starts
- * from. The tree and the chart are one read drawn two ways, and either selects
- * a person; the card beside them is that person, and the history tab is the
- * standard timeline of their line. The line is changed in a dialog with the
- * reason it states, like any other record, and the manager picker cannot offer
- * anybody who reports to the person, so the screen cannot ask for a ring.
+ * The read answers what the reader may see: the whole tenant for an
+ * administrator, and for anybody else the people who work in the parties they
+ * work in and everyone who reports to them. It opens on the signed-in person.
+ * Two lenses draw it. The reporting line puts each person once under their
+ * manager. The party lens lists the people of each party, nested by the party's
+ * own parent, so a person who works in two parties appears in both. A party
+ * filter narrows either to one party when the reader sees several.
+ *
+ * A person is opened only by a reader who may read accounts, and the history is
+ * theirs too, because both are account reads. Changing a line is a dialog with
+ * the reason it states, and the manager picker cannot offer anybody who reports
+ * to the person, so the screen cannot ask for a ring.
  */
-export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
+export function ReportingLinesPage({
+    me,
+    startLens = 'reporting',
+}: {
+    readonly me: string;
+    /** The lens the screen opens on; the reporting line unless a test or a link says otherwise. */
+    readonly startLens?: 'reporting' | 'party';
+}): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
     const holds = useHolds();
+    const mayReadAccounts = holds('iam::accounts:read');
     const mayChange = holds('iam::accounts:update');
     const mayReadRoles = holds('iam::roles:read');
     const [selectedId, setSelectedId] = useState('');
     const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
     const [editing, setEditing] = useState(false);
+    const [party, setParty] = useState('');
+    const [lens, setLens] = useState<'reporting' | 'party'>(startLens);
     const { tab, bar } = useTabs({
         label: t('access.hub.hierarchy'),
-        tabs: ['tree', 'chart', 'history'],
+        tabs: mayReadAccounts ? ['tree', 'chart', 'history'] : ['tree', 'chart'],
         titleOf: (part) => t(`membership.reporting.tabs.${part}`),
     });
 
     const tree = useQuery({ queryKey: ['reporting-tree'], queryFn: () => api.reportingTree() });
-    const reasons = useQuery({ queryKey: ['amend-reasons'], queryFn: api.amendReasons });
+    const reasons = useQuery({
+        queryKey: ['amend-reasons'],
+        queryFn: api.amendReasons,
+        enabled: mayChange,
+    });
 
     const nodes = tree.data?.nodes ?? [];
-    const children = useMemo(() => {
-        const byManager = new Map<string, ReportingTreeNode[]>();
-        for (const node of nodes) {
-            const managerId = node.reportsToAccountId;
-            if (managerId === null) {
-                continue;
-            }
-            const siblings = byManager.get(managerId) ?? [];
-            siblings.push(node);
-            byManager.set(managerId, siblings);
-        }
-        return byManager;
-    }, [nodes]);
+    const parties = tree.data?.parties ?? [];
+    const partyById = useMemo(
+        () => new Map<string, ReportingTreeParty>(parties.map((entry) => [entry.partyId, entry])),
+        [parties],
+    );
+    const visible = useMemo(() => inParty(nodes, party), [nodes, party]);
+    const shape = useMemo(() => shapeOf(visible), [visible]);
+    const forest = useMemo(() => partyForest(parties, visible, party), [parties, visible, party]);
 
     const mine = nodes.find((node) => node.username === me);
     const selected = nodes.find((node) => node.accountId === selectedId) ?? mine;
@@ -153,17 +164,19 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
      * The tree states the shape and the manager, and the account read states
      * the version the write must state back, so the write is refused as a
      * conflict when somebody else has changed the row since this card read it.
+     * Only somebody who may change a line needs it.
      */
     const account = useQuery({
         queryKey: ['account', selected?.username ?? ''],
         queryFn: () => api.account(selected?.username ?? ''),
-        enabled: selected !== undefined,
+        enabled: selected !== undefined && mayChange,
         retry: false,
+        meta: { quiet: true },
     });
     const story = useQuery({
         queryKey: ['timeline', 'person', selected?.username ?? ''],
         queryFn: () => api.timeline('person', selected?.username ?? ''),
-        enabled: selected !== undefined,
+        enabled: selected !== undefined && mayReadAccounts && tab === 'history',
         retry: false,
     });
 
@@ -181,22 +194,71 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
         return <Notice tone="error">{tree.error.message}</Notice>;
     }
 
-    const roots = nodes.filter((node) => node.reportsToAccountId === null);
     const unrooted = nodes.filter((node) => node.depth < 0);
-    const nameOf = (accountId: string | null): string => {
+    const nameFor = (accountId: string | null): string => {
         if (accountId === null) return t('membership.reporting.noManager');
         const node = nodes.find((candidate) => candidate.accountId === accountId);
-        return node === undefined || node.fullName === '' ? accountId : node.fullName;
+        return node === undefined ? accountId : nameOf(node);
+    };
+    const marks = {
+        meId: mine?.accountId ?? '',
+        admins,
+        parties: partyById,
+        openable: mayReadAccounts,
     };
     const card = (
         <PersonCard
             selected={selected}
             nodes={nodes}
-            isMe={selected?.accountId === mine?.accountId}
-            isAdmin={selected !== undefined && admins.has(selected.accountId)}
+            marks={marks}
             canEdit={mayChange && account.data != null}
             onEdit={() => setEditing(true)}
         />
+    );
+    const lensBar = (
+        <div className="flex flex-wrap items-center gap-3">
+            {parties.length > 1 && (
+                <Select
+                    className="w-60"
+                    value={party}
+                    onChange={(event) => setParty(event.target.value)}
+                    aria-label={t('membership.reporting.party')}
+                >
+                    <option value="">{t('membership.reporting.allParties')}</option>
+                    {[...parties]
+                        .sort((a, b) => partyLabel(a).localeCompare(partyLabel(b)))
+                        .map((entry) => (
+                            <option key={entry.partyId} value={entry.partyId}>
+                                {partyLabel(entry)}
+                            </option>
+                        ))}
+                </Select>
+            )}
+            {parties.length > 0 && (
+                <div
+                    role="group"
+                    aria-label={t('membership.reporting.lens')}
+                    className="flex gap-1"
+                >
+                    <Button
+                        size="sm"
+                        variant={lens === 'reporting' ? 'primary' : 'secondary'}
+                        aria-pressed={lens === 'reporting'}
+                        onClick={() => setLens('reporting')}
+                    >
+                        {t('membership.reporting.lensReporting')}
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant={lens === 'party' ? 'primary' : 'secondary'}
+                        aria-pressed={lens === 'party'}
+                        onClick={() => setLens('party')}
+                    >
+                        {t('membership.reporting.lensParty')}
+                    </Button>
+                </div>
+            )}
+        </div>
     );
 
     return (
@@ -217,60 +279,93 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
             </div>
 
             {bar}
+            {tab !== 'history' && lensBar}
 
             {tab === 'tree' && (
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,1fr)]">
                     <section className="card">
                         <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
                             <h2 className="text-sm font-semibold">
-                                {t('membership.reporting.tree')}
+                                {lens === 'party'
+                                    ? t('membership.reporting.byParty')
+                                    : t('membership.reporting.tree')}
                             </h2>
                             <div className="flex items-center gap-2">
                                 <Tag tone="muted">
-                                    {t('membership.reporting.people', { count: nodes.length })}
+                                    {t('membership.reporting.people', { count: visible.length })}
                                 </Tag>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setCollapsed(new Set())}
-                                >
-                                    {t('membership.reporting.expandAll')}
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() =>
-                                        setCollapsed(new Set(nodes.map((n) => n.accountId)))
-                                    }
-                                >
-                                    {t('membership.reporting.collapseAll')}
-                                </Button>
+                                {lens === 'reporting' && (
+                                    <>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setCollapsed(new Set())}
+                                        >
+                                            {t('membership.reporting.expandAll')}
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() =>
+                                                setCollapsed(new Set(nodes.map((n) => n.accountId)))
+                                            }
+                                        >
+                                            {t('membership.reporting.collapseAll')}
+                                        </Button>
+                                    </>
+                                )}
                             </div>
                         </div>
                         <ul className="max-h-[36rem] overflow-auto p-3">
-                            {roots.map((node) => (
-                                <TreeNode
-                                    key={node.accountId}
-                                    node={node}
-                                    children={children}
-                                    collapsed={collapsed}
-                                    selectedId={selected?.accountId ?? ''}
-                                    meId={mine?.accountId ?? ''}
-                                    admins={admins}
-                                    onSelect={setSelectedId}
-                                    onToggle={(id) =>
-                                        setCollapsed((previous) => {
-                                            const next = new Set(previous);
-                                            if (next.has(id)) {
-                                                next.delete(id);
-                                            } else {
-                                                next.add(id);
-                                            }
-                                            return next;
-                                        })
-                                    }
-                                />
-                            ))}
+                            {lens === 'reporting' &&
+                                shape.roots.map((node) => (
+                                    <TreeNode
+                                        key={node.accountId}
+                                        node={node}
+                                        children={shape.children}
+                                        collapsed={collapsed}
+                                        selectedId={selected?.accountId ?? ''}
+                                        marks={marks}
+                                        onSelect={setSelectedId}
+                                        onToggle={(id) =>
+                                            setCollapsed((previous) => {
+                                                const next = new Set(previous);
+                                                if (next.has(id)) {
+                                                    next.delete(id);
+                                                } else {
+                                                    next.add(id);
+                                                }
+                                                return next;
+                                            })
+                                        }
+                                    />
+                                ))}
+                            {lens === 'party' && (
+                                <>
+                                    {forest.branches.map((branch) => (
+                                        <PartyTree
+                                            key={branch.party.partyId}
+                                            branch={branch}
+                                            selectedId={selected?.accountId ?? ''}
+                                            marks={marks}
+                                            onSelect={setSelectedId}
+                                        />
+                                    ))}
+                                    {forest.unaffiliated.length > 0 && (
+                                        <li>
+                                            <p className="mt-2 text-xs font-semibold text-ink-muted">
+                                                {t('membership.reporting.noParty')}
+                                            </p>
+                                            <PeopleList
+                                                people={forest.unaffiliated}
+                                                selectedId={selected?.accountId ?? ''}
+                                                marks={marks}
+                                                onSelect={setSelectedId}
+                                            />
+                                        </li>
+                                    )}
+                                </>
+                            )}
                         </ul>
                     </section>
                     {card}
@@ -280,10 +375,10 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
             {tab === 'chart' && (
                 <section className="card p-4">
                     <OrgChart
-                        roots={roots}
-                        children={children}
-                        meId={mine?.accountId ?? ''}
-                        admins={admins}
+                        {...(lens === 'reporting'
+                            ? { reporting: { roots: shape.roots, children: shape.children } }
+                            : { party: forest })}
+                        marks={marks}
                     />
                 </section>
             )}
@@ -308,7 +403,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                                 timeline={lineTimeline(
                                     story.data,
                                     t('membership.reporting.reportsTo'),
-                                    nameOf,
+                                    nameFor,
                                 )}
                             />
                         )}
@@ -341,15 +436,18 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
 function PersonCard({
     selected,
     nodes,
-    isMe,
-    isAdmin,
+    marks,
     canEdit,
     onEdit,
 }: {
     readonly selected: ReportingTreeNode | undefined;
     readonly nodes: readonly ReportingTreeNode[];
-    readonly isMe: boolean;
-    readonly isAdmin: boolean;
+    readonly marks: {
+        readonly meId: string;
+        readonly admins: ReadonlySet<string>;
+        readonly parties: ReadonlyMap<string, ReportingTreeParty>;
+        readonly openable: boolean;
+    };
     readonly canEdit: boolean;
     readonly onEdit: () => void;
 }): ReactNode {
@@ -361,33 +459,34 @@ function PersonCard({
             </section>
         );
     }
+    const isMe = selected.accountId === marks.meId;
     const manager =
         selected.reportsToAccountId === null
             ? undefined
             : nodes.find((node) => node.accountId === selected.reportsToAccountId);
     const reports = nodes
         .filter((node) => node.reportsToAccountId === selected.accountId)
-        .sort((a, b) => a.fullName.localeCompare(b.fullName));
+        .sort((a, b) => nameOf(a).localeCompare(nameOf(b)));
     return (
         <section className="card space-y-4 p-5">
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-4">
-                    <AccountPicture
-                        username={selected.username}
-                        name={selected.fullName}
-                        size="lg"
-                    />
+                    <NodeAvatar node={selected} size="lg" />
                     <div className="min-w-0">
                         <h2 className="text-base font-semibold">
-                            <Link
-                                to={personPath(selected.username)}
+                            <NameLink
+                                node={selected}
+                                openable={marks.openable}
                                 className="underline decoration-line-strong underline-offset-2 hover:decoration-accent"
-                            >
-                                {selected.fullName}
-                            </Link>
+                            />
                         </h2>
                         <p className="text-sm text-ink-muted">{selected.jobTitle}</p>
-                        <Badges isMe={isMe} isAdmin={isAdmin} />
+                        <Badges
+                            node={selected}
+                            isMe={isMe}
+                            isAdmin={marks.admins.has(selected.accountId)}
+                            parties={marks.parties}
+                        />
                     </div>
                 </div>
                 {canEdit && !isMe && (
@@ -403,22 +502,21 @@ function PersonCard({
                         {t('membership.reporting.reportsTo')}
                     </dt>
                     <dd className="mt-1 text-sm">
-                        {manager === undefined ? (
-                            t('membership.reporting.noManager')
-                        ) : (
-                            <Link
-                                to={personPath(manager.username)}
+                        {manager !== undefined ? (
+                            <NameLink
+                                node={manager}
+                                openable={marks.openable}
                                 className="flex items-center gap-2"
                             >
-                                <AccountPicture
-                                    username={manager.username}
-                                    name={manager.fullName}
-                                    size="sm"
-                                />
+                                <NodeAvatar node={manager} size="sm" />
                                 <span className="underline decoration-line-strong underline-offset-2 hover:decoration-accent">
-                                    {manager.fullName}
+                                    {nameOf(manager)}
                                 </span>
-                            </Link>
+                            </NameLink>
+                        ) : selected.reportsOutsideScope ? (
+                            t('membership.reporting.outsideManager')
+                        ) : (
+                            t('membership.reporting.noManager')
                         )}
                     </dd>
                 </div>
@@ -443,20 +541,17 @@ function PersonCard({
                     <ul className="space-y-1">
                         {reports.map((report) => (
                             <li key={report.accountId}>
-                                <Link
-                                    to={personPath(report.username)}
+                                <NameLink
+                                    node={report}
+                                    openable={marks.openable}
                                     className="flex items-center gap-2 rounded px-1 py-0.5 text-sm hover:bg-surface-overlay"
                                 >
-                                    <AccountPicture
-                                        username={report.username}
-                                        name={report.fullName}
-                                        size="sm"
-                                    />
-                                    <span className="font-medium">{report.fullName}</span>
+                                    <NodeAvatar node={report} size="sm" />
+                                    <span className="font-medium">{nameOf(report)}</span>
                                     <span className="text-xs text-ink-muted">
                                         {report.jobTitle}
                                     </span>
-                                </Link>
+                                </NameLink>
                             </li>
                         ))}
                     </ul>
@@ -466,22 +561,10 @@ function PersonCard({
     );
 }
 
-/** What marks a person out: that they are the signed-in person, or their tenant's administrator. */
-function Badges({
-    isMe,
-    isAdmin,
-}: {
-    readonly isMe: boolean;
-    readonly isAdmin: boolean;
-}): ReactNode {
-    const { t } = useTranslation();
-    if (!isMe && !isAdmin) return null;
-    return (
-        <span className="mt-1 flex flex-wrap gap-1">
-            {isMe && <Tag tone="accent">{t('membership.reporting.you')}</Tag>}
-            {isAdmin && <Tag tone="warn">{roleLabel(t, TENANT_ADMIN)}</Tag>}
-        </span>
-    );
+interface RowMarks {
+    readonly meId: string;
+    readonly admins: ReadonlySet<string>;
+    readonly parties: ReadonlyMap<string, ReportingTreeParty>;
 }
 
 /** One person and the branch under them. */
@@ -490,8 +573,7 @@ function TreeNode({
     children,
     collapsed,
     selectedId,
-    meId,
-    admins,
+    marks,
     onSelect,
     onToggle,
 }: {
@@ -499,15 +581,14 @@ function TreeNode({
     readonly children: ReadonlyMap<string, ReportingTreeNode[]>;
     readonly collapsed: ReadonlySet<string>;
     readonly selectedId: string;
-    readonly meId: string;
-    readonly admins: ReadonlySet<string>;
+    readonly marks: RowMarks;
     readonly onSelect: (id: string) => void;
     readonly onToggle: (id: string) => void;
 }): ReactNode {
     const { t } = useTranslation();
     const kids = children.get(node.accountId) ?? [];
     const open = !collapsed.has(node.accountId);
-    const isMe = node.accountId === meId;
+    const isMe = node.accountId === marks.meId;
     return (
         <li>
             <div
@@ -531,23 +612,11 @@ function TreeNode({
                 ) : (
                     <span className="w-4 shrink-0" />
                 )}
-                <button
-                    type="button"
-                    className="flex min-w-0 flex-1 items-center gap-2 rounded px-1 py-0.5 text-left hover:bg-surface-overlay"
-                    onClick={() => onSelect(node.accountId)}
-                >
-                    <AccountPicture username={node.username} name={node.fullName} size="sm" />
-                    <span className="min-w-0">
-                        <span className={`text-sm ${isMe ? 'font-semibold' : 'font-medium'}`}>
-                            {node.fullName}
-                        </span>{' '}
-                        <span className="text-xs text-ink-muted">{node.jobTitle}</span>
-                        <span className="ml-2 text-[11px] text-ink-faint">
-                            {t('membership.reporting.reports', { count: node.directReports })}
-                        </span>
+                <PersonRow node={node} marks={marks} onSelect={onSelect}>
+                    <span className="ml-2 text-[11px] text-ink-faint">
+                        {t('membership.reporting.reports', { count: node.directReports })}
                     </span>
-                    <Badges isMe={isMe} isAdmin={admins.has(node.accountId)} />
-                </button>
+                </PersonRow>
             </div>
             {open && kids.length > 0 && (
                 <ul className="ml-4 border-l border-line-subtle pl-2">
@@ -558,14 +627,121 @@ function TreeNode({
                             children={children}
                             collapsed={collapsed}
                             selectedId={selectedId}
-                            meId={meId}
-                            admins={admins}
+                            marks={marks}
                             onSelect={onSelect}
                             onToggle={onToggle}
                         />
                     ))}
                 </ul>
             )}
+        </li>
+    );
+}
+
+/** A person as a row: picture, name, title and what marks them out; selecting is the click. */
+function PersonRow({
+    node,
+    marks,
+    onSelect,
+    children,
+}: {
+    readonly node: ReportingTreeNode;
+    readonly marks: RowMarks;
+    readonly onSelect: (id: string) => void;
+    readonly children?: ReactNode;
+}): ReactNode {
+    const isMe = node.accountId === marks.meId;
+    return (
+        <button
+            type="button"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded px-1 py-0.5 text-left hover:bg-surface-overlay"
+            onClick={() => onSelect(node.accountId)}
+        >
+            <NodeAvatar node={node} size="sm" />
+            <span className="min-w-0">
+                <span className={`text-sm ${isMe ? 'font-semibold' : 'font-medium'}`}>
+                    {nameOf(node)}
+                </span>{' '}
+                <span className="text-xs text-ink-muted">{node.jobTitle}</span>
+                {children}
+            </span>
+            <Badges
+                node={node}
+                isMe={isMe}
+                isAdmin={marks.admins.has(node.accountId)}
+                parties={marks.parties}
+            />
+        </button>
+    );
+}
+
+/** The people of a party, one per row. */
+function PeopleList({
+    people,
+    selectedId,
+    marks,
+    onSelect,
+}: {
+    readonly people: readonly ReportingTreeNode[];
+    readonly selectedId: string;
+    readonly marks: RowMarks;
+    readonly onSelect: (id: string) => void;
+}): ReactNode {
+    return (
+        <ul className="ml-2 space-y-0.5">
+            {people.map((node) => (
+                <li
+                    key={node.accountId}
+                    className={`flex items-center rounded px-1 py-0.5 ${
+                        selectedId === node.accountId ? 'bg-accent/10' : ''
+                    }`}
+                >
+                    <PersonRow node={node} marks={marks} onSelect={onSelect} />
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+/** One party, the people who work in it, and the parties below it. */
+function PartyTree({
+    branch,
+    selectedId,
+    marks,
+    onSelect,
+}: {
+    readonly branch: PartyBranch;
+    readonly selectedId: string;
+    readonly marks: RowMarks;
+    readonly onSelect: (id: string) => void;
+}): ReactNode {
+    return (
+        <li>
+            <details open className="py-1">
+                <summary className="cursor-pointer text-sm font-semibold">
+                    {partyLabel(branch.party)}{' '}
+                    <span className="font-normal text-ink-faint">({branch.members.length})</span>
+                </summary>
+                <PeopleList
+                    people={branch.members}
+                    selectedId={selectedId}
+                    marks={marks}
+                    onSelect={onSelect}
+                />
+                {branch.below.length > 0 && (
+                    <ul className="ml-4 border-l border-line-subtle pl-2">
+                        {branch.below.map((below) => (
+                            <PartyTree
+                                key={below.party.partyId}
+                                branch={below}
+                                selectedId={selectedId}
+                                marks={marks}
+                                onSelect={onSelect}
+                            />
+                        ))}
+                    </ul>
+                )}
+            </details>
         </li>
     );
 }

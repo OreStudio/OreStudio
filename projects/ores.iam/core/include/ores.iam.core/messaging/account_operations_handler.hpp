@@ -97,6 +97,48 @@ acct_project_my_party(const boost::uuids::uuid& party_id,
         .business_center_code = party ? party->business_center_code : std::string{}};
 }
 
+/**
+ * @brief Names the parties a reporting shape is drawn under.
+ *
+ * The service states the parties by id, because it holds no party data. IAM's
+ * party cache mirrors refdata's parties, so the name, the short code and the
+ * parent come from it, reloaded once when a party is missing. The parent is
+ * stated only when it is in scope too, so a viewer is not shown a party they
+ * cannot see. A party the cache cannot name keeps empty strings: the screen
+ * states the gap and invents no name.
+ */
+inline void acct_name_tree_parties(service::cache::party_cache& cache,
+                                   const std::string& tenant_id,
+                                   std::vector<ores::iam::messaging::reporting_tree_party>& parties) {
+    boost::uuids::string_generator sg;
+    std::unordered_set<std::string> in_scope;
+    for (const auto& party : parties) {
+        in_scope.insert(party.party_id);
+    }
+    const auto lookup = [&](const std::string& id) {
+        return acct_lookup_party(cache, tenant_id, sg(id));
+    };
+    if (std::any_of(parties.begin(), parties.end(), [&](const auto& party) {
+            return !lookup(party.party_id);
+        })) {
+        (void)cache.load(tenant_id);
+    }
+    for (auto& party : parties) {
+        const auto found = lookup(party.party_id);
+        if (!found) {
+            continue;
+        }
+        party.name = found->full_name;
+        party.short_code = found->short_code;
+        if (found->parent_party_id) {
+            const auto parent = boost::uuids::to_string(*found->parent_party_id);
+            if (in_scope.count(parent) > 0) {
+                party.parent_party_id = parent;
+            }
+        }
+    }
+}
+
 // Reads onboarding.party directly from the DB (never the party cache), so
 // it is immune to cache staleness after a heavy import — unlike the
 // party.status check it replaces, which conflated the party's own domain
@@ -847,6 +889,34 @@ public:
     }
 
     /**
+     * @brief Serves iam.v1.ops.get_my_account.
+     *
+     * The account comes from the validated token, so the read can answer only
+     * the caller's own account and needs no permission. It is a self read on
+     * the allow-list of Authorised reads.
+     */
+    void get_my_account(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        try {
+            auto scope = self_request_scope(msg);
+            if (!scope)
+                return;
+            const auto& [account_id, ctx] = *scope;
+            service::account_operations_service svc(ctx);
+            auto response = svc.get_my_account(account_id);
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_my_account_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = "The read failed.";
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
      * @brief Serves iam.v1.ops.get_my_parties.
      *
      * The account comes from the validated token, so the read answers only the
@@ -953,8 +1023,11 @@ public:
     /**
      * @brief Serves iam.v1.ops.get_reporting_tree.
      *
-     * A read of the tenant's own roster, so it needs =iam::accounts:read= and
-     * names no tenant: row-level security bounds what it can see.
+     * A read of the tenant's own roster, which names no tenant: row-level
+     * security bounds what it can see. A caller with =iam::accounts:read= reads
+     * the tenant. A caller with =iam::organisation:read= and not that code reads
+     * the parties their own account works in. The node carries no email or contact
+     * detail, so the narrower code grants no account data.
      */
     void get_reporting_tree(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
@@ -964,19 +1037,23 @@ public:
             return;
         }
         try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
+            auto scope = self_request_scope(msg);
+            if (!scope)
                 return;
-            }
-            const auto& ctx = *ctx_expected;
-            if (!has_permission(ctx, "iam::accounts:read")) {
+            const auto& [account_id, ctx] = *scope;
+            // The scope follows what the caller holds: the accounts permission
+            // reads the tenant, the organisation permission reads the parties
+            // the caller's own account works in, and a caller with neither is
+            // refused.
+            const bool tenant_wide = has_permission(ctx, "iam::accounts:read");
+            if (!tenant_wide && !has_permission(ctx, "iam::organisation:read")) {
                 error_reply(nats_, msg, ores::service::error_code::forbidden);
                 return;
             }
             service::account_operations_service svc(ctx);
-            auto response = svc.get_reporting_tree(*req);
+            auto response = svc.get_reporting_tree(
+                *req, tenant_wide ? std::nullopt : std::optional<boost::uuids::uuid>{account_id});
+            acct_name_tree_parties(*party_cache_, ctx.tenant_id().to_string(), response.parties);
             BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {

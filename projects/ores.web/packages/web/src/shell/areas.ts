@@ -25,8 +25,8 @@ import type { SessionMode } from '@ores/wire-protocol/browser';
 export interface MenuItem {
     readonly nameKey: string;
     readonly to: string;
-    /** Shown only to a person who holds this permission. */
-    readonly permission?: string;
+    /** Shown only to a person who holds this permission, or any of these. */
+    readonly permission?: string | readonly string[];
 }
 
 /**
@@ -60,7 +60,7 @@ export const SHELL_MENUS: Readonly<Record<SessionMode, readonly MenuItem[]>> = {
         {
             nameKey: 'shell.menu.organisation',
             to: '/organisation',
-            permission: 'iam::accounts:read',
+            permission: ['iam::accounts:read', 'iam::organisation:read'],
         },
         { nameKey: 'shell.menu.requests', to: '/requests', permission: 'iam::roles:assign' },
         { nameKey: 'shell.menu.refdata', to: '/refdata' },
@@ -74,4 +74,14 @@ export function menuFor(mode: SessionMode): readonly MenuItem[] {
 
 export function modeKey(mode: SessionMode): string {
     return `shell.mode.${mode}`;
+}
+
+/** Whether a menu item is offered to somebody who holds what `holds` answers for. */
+export function offered(item: MenuItem, holds: (code: string) => boolean): boolean {
+    if (item.permission === undefined) {
+        return true;
+    }
+    return typeof item.permission === 'string'
+        ? holds(item.permission)
+        : item.permission.some(holds);
 }

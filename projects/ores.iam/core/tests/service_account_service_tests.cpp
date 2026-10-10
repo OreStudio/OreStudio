@@ -26,11 +26,15 @@
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.api/generators/tenant_generator.hpp"
 #include "ores.iam.core/repository/account_contact_information_repository.hpp"
+#include "ores.iam.api/generators/account_party_generator.hpp"
+#include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -44,6 +48,7 @@
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <faker-cxx/internet.h>
 #include <optional>
+#include <set>
 
 namespace {
 
@@ -72,6 +77,71 @@ int tree_direct_reports(const ores::iam::messaging::get_reporting_tree_response&
         }
     }
     return -100;
+}
+
+/** A party under the tenant's system party, which is what a seeded party sits under. */
+boost::uuids::uuid new_party(ores::testing::scoped_database_helper& h,
+                             ores::utility::generation::generation_context& ctx) {
+    ores::refdata::repository::party_repository repo;
+    boost::uuids::uuid system_party;
+    bool found = false;
+    for (const auto& p : repo.read_latest(h.context())) {
+        if (p.tenant_id == h.tenant_id() && p.party_category == "System") {
+            system_party = p.id;
+            found = true;
+            break;
+        }
+    }
+    REQUIRE(found);
+    auto party = ores::refdata::generators::generate_synthetic_party(ctx);
+    party.change_reason_code = "system.test";
+    party.parent_party_id = system_party;
+    repo.write(h.context(), party);
+    return party.id;
+}
+
+/** An account the store accepts, made the way the other cases make theirs. */
+boost::uuids::uuid new_account(ores::iam::service::account_operations_service& sut,
+                               ores::utility::generation::generation_context& ctx) {
+    const auto e = ores::iam::generators::generate_synthetic_account(ctx);
+    return sut.create_account(e.username, e.email, faker::internet::password(), e.modified_by).id;
+}
+
+/** Makes an account work in a party. */
+void link_to(ores::testing::scoped_database_helper& h,
+             ores::utility::generation::generation_context& ctx,
+             const boost::uuids::uuid& account_id,
+             const boost::uuids::uuid& party_id) {
+    ores::iam::repository::account_party_repository links(h.context());
+    auto ap = ores::iam::generators::generate_synthetic_account_party(ctx);
+    ap.account_id = account_id;
+    ap.party_id = party_id;
+    links.write(ap);
+}
+
+/** The accounts a tree names, as text, so a case can compare them as a set. */
+std::set<std::string> tree_accounts(const ores::iam::messaging::get_reporting_tree_response& tree) {
+    std::set<std::string> ids;
+    for (const auto& node : tree.nodes) {
+        ids.insert(node.account_id);
+    }
+    return ids;
+}
+
+const ores::iam::messaging::reporting_tree_node*
+tree_node(const ores::iam::messaging::get_reporting_tree_response& tree,
+          const boost::uuids::uuid& id) {
+    const auto wanted = boost::uuids::to_string(id);
+    for (const auto& node : tree.nodes) {
+        if (node.account_id == wanted) {
+            return &node;
+        }
+    }
+    return nullptr;
+}
+
+std::string text(const boost::uuids::uuid& id) {
+    return boost::uuids::to_string(id);
 }
 
 /** Sets one account's manager through the narrow write, which must succeed. */
@@ -111,6 +181,45 @@ TEST_CASE("create_account_with_valid_data", tags) {
     CHECK(a.email == e.email);
 
     CHECK(!a.id.is_nil());
+}
+
+/**
+ * The own-account read answers the account the session names, and only that
+ * one: the request carries no account id, so there is nothing to name another
+ * account with. It checks no permission, because it is a self read.
+ */
+TEST_CASE("get_my_account_reads_the_callers_own_account_and_no_other", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto mine = generate_synthetic_account(ctx);
+    const auto theirs = generate_synthetic_account(ctx);
+    const auto a = sut.create_account(
+        mine.username, mine.email, faker::internet::password(), mine.modified_by);
+    const auto b = sut.create_account(
+        theirs.username, theirs.email, faker::internet::password(), theirs.modified_by);
+
+    const auto response = sut.get_my_account(a.id);
+    BOOST_LOG_SEV(lg, info) << "Own account: " << response.account.has_value();
+
+    CHECK(response.result.outcome == ores::utility::domain::outcome::ok);
+    REQUIRE(response.account.has_value());
+    CHECK(response.account->id == a.id);
+    CHECK(response.account->username == mine.username);
+    CHECK(response.account->id != b.id);
+}
+
+TEST_CASE("get_my_account_states_no_account_for_a_session_that_names_none", tags) {
+    scoped_database_helper h;
+    service::account_operations_service sut(h.context());
+
+    const auto response = sut.get_my_account(boost::uuids::random_generator()());
+
+    CHECK(response.result.outcome == ores::utility::domain::outcome::ok);
+    CHECK(!response.account.has_value());
 }
 
 TEST_CASE("create_multiple_accounts", tags) {
@@ -689,6 +798,151 @@ TEST_CASE("get_reporting_tree_answers_depth_and_the_direct_reports", tags) {
         }
         CHECK(tree.nodes[i - 1].depth <= tree.nodes[i].depth);
     }
+}
+
+/**
+ * A member sees the people of the parties they work in, and nobody else's. The
+ * tenant holds more people than that, and the read must not answer them.
+ */
+TEST_CASE("the_reporting_tree_of_a_viewer_holds_the_people_of_their_parties_only", tags) {
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto north = new_party(h, ctx);
+    const auto south = new_party(h, ctx);
+    const auto viewer = new_account(sut, ctx);
+    const auto colleague = new_account(sut, ctx);
+    const auto stranger = new_account(sut, ctx);
+    link_to(h, ctx, viewer, north);
+    link_to(h, ctx, colleague, north);
+    link_to(h, ctx, stranger, south);
+
+    ores::iam::messaging::get_reporting_tree_request req;
+    const auto tree = sut.get_reporting_tree(req, viewer);
+
+    CHECK(tree_accounts(tree) == std::set<std::string>{text(viewer), text(colleague)});
+    REQUIRE(tree.parties.size() == 1);
+    CHECK(tree.parties.front().party_id == text(north));
+}
+
+TEST_CASE("a_viewer_who_works_in_several_parties_sees_all_of_them", tags) {
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto north = new_party(h, ctx);
+    const auto south = new_party(h, ctx);
+    const auto east = new_party(h, ctx);
+    const auto head = new_account(sut, ctx);
+    const auto in_north = new_account(sut, ctx);
+    const auto in_south = new_account(sut, ctx);
+    const auto in_east = new_account(sut, ctx);
+    link_to(h, ctx, head, north);
+    link_to(h, ctx, head, south);
+    link_to(h, ctx, in_north, north);
+    link_to(h, ctx, in_south, south);
+    link_to(h, ctx, in_east, east);
+
+    ores::iam::messaging::get_reporting_tree_request req;
+    const auto tree = sut.get_reporting_tree(req, head);
+
+    CHECK(tree_accounts(tree) ==
+          std::set<std::string>{text(head), text(in_north), text(in_south)});
+    const auto* node = tree_node(tree, head);
+    REQUIRE(node != nullptr);
+    CHECK(node->party_ids.size() == 2);
+}
+
+/**
+ * The head of a group sees everyone under them, including people who work in a
+ * party the head is not linked to: who reports to you is yours to see.
+ */
+TEST_CASE("a_viewer_sees_everyone_who_reports_to_them_whatever_their_party", tags) {
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto holding = new_party(h, ctx);
+    const auto subsidiary = new_party(h, ctx);
+    const auto ceo = new_account(sut, ctx);
+    const auto director = new_account(sut, ctx);
+    const auto analyst = new_account(sut, ctx);
+    const auto outsider = new_account(sut, ctx);
+    link_to(h, ctx, ceo, holding);
+    link_to(h, ctx, director, subsidiary);
+    link_to(h, ctx, analyst, subsidiary);
+    link_to(h, ctx, outsider, subsidiary);
+    set_manager(sut, director, ceo);
+    set_manager(sut, analyst, director);
+
+    ores::iam::messaging::get_reporting_tree_request req;
+    const auto tree = sut.get_reporting_tree(req, ceo);
+
+    // The outsider shares the subsidiary with the people below the CEO, but the
+    // CEO is not linked to it and the outsider does not report to the CEO.
+    CHECK(tree_accounts(tree) ==
+          std::set<std::string>{text(ceo), text(director), text(analyst)});
+    CHECK(tree_depth(tree, analyst) == 2);
+    // The parties of the people below the CEO are drawn too.
+    CHECK(tree.parties.size() == 2);
+}
+
+/**
+ * A person with a manager is never drawn as one without. A manager the viewer
+ * may not see is not named, and the person carries a marker saying so.
+ */
+TEST_CASE("a_manager_the_viewer_may_not_see_is_marked_and_not_dropped", tags) {
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto north = new_party(h, ctx);
+    const auto south = new_party(h, ctx);
+    const auto viewer = new_account(sut, ctx);
+    const auto report = new_account(sut, ctx);
+    const auto boss = new_account(sut, ctx);
+    link_to(h, ctx, viewer, north);
+    link_to(h, ctx, report, north);
+    link_to(h, ctx, boss, south);
+    set_manager(sut, report, boss);
+
+    ores::iam::messaging::get_reporting_tree_request req;
+    const auto tree = sut.get_reporting_tree(req, viewer);
+
+    const auto* node = tree_node(tree, report);
+    REQUIRE(node != nullptr);
+    CHECK(node->reports_outside_scope);
+    CHECK(node->reports_to_account_id.empty());
+    CHECK(node->depth == 0);
+    CHECK(tree.unrooted == 0);
+    CHECK(tree_node(tree, boss) == nullptr);
+}
+
+TEST_CASE("the_tenants_reporting_tree_lists_every_party_and_each_accounts_parties", tags) {
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto north = new_party(h, ctx);
+    const auto south = new_party(h, ctx);
+    const auto both = new_account(sut, ctx);
+    link_to(h, ctx, both, north);
+    link_to(h, ctx, both, south);
+
+    ores::iam::messaging::get_reporting_tree_request req;
+    const auto tree = sut.get_reporting_tree(req);
+
+    std::set<std::string> parties;
+    for (const auto& party : tree.parties) {
+        parties.insert(party.party_id);
+    }
+    CHECK(parties.count(text(north)) == 1);
+    CHECK(parties.count(text(south)) == 1);
+    const auto* node = tree_node(tree, both);
+    REQUIRE(node != nullptr);
+    CHECK(node->party_ids.size() == 2);
+    CHECK(!node->reports_outside_scope);
 }
 
 TEST_CASE("get_reporting_tree_answers_one_branch_from_a_stated_root", tags) {

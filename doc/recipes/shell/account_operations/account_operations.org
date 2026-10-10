@@ -306,6 +306,27 @@ It is addressed at =iam.v1.ops.get_my_account_contact_information=.
 account_operations get-my-account-contact-information
 #+end_src
 
+** =get-my-account=
+:PROPERTIES:
+:ID: 35935DF7-8B85-5472-881A-2D1EF6F4BFC6
+:END:
+
+Sends =get_my_account_request= and prints =get_my_account_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations get-my-account
+#+end_example
+
+It is addressed at =iam.v1.ops.get_my_account=.
+
+#+name: account_operations-get-my-account
+#+begin_src ores-shell :tangle account_operations-get-my-account.ores :exports none
+account_operations get-my-account
+#+end_src
+
 ** =get-my-parties=
 :PROPERTIES:
 :ID: 6FC32928-D003-5055-9849-71083524E888

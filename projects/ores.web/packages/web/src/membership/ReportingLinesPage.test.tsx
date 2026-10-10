@@ -24,7 +24,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
-import type { ReportingTreeNode, TimelineEvent } from '@ores/wire-protocol/browser';
+import type {
+    ReportingTreeNode,
+    ReportingTreeParty,
+    TimelineEvent,
+} from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { managerCandidates } from './managers.js';
 import { lineTimeline, ReportingLinesPage } from './ReportingLinesPage.js';
@@ -49,15 +53,20 @@ function person(
     reportsToAccountId: string | null,
     depth: number,
     directReports: number,
+    over: Partial<ReportingTreeNode> = {},
 ): ReportingTreeNode {
     return {
         accountId,
         username: fullName.toLowerCase().replace(/ /g, '.'),
         fullName,
         jobTitle: `${fullName} title`,
+        imageId: `img-${fullName.toLowerCase().replace(/ /g, '.')}`,
         reportsToAccountId,
+        reportsOutsideScope: false,
         depth,
         directReports,
+        partyIds: [],
+        ...over,
     };
 }
 
@@ -69,14 +78,21 @@ const TREE = [
     person(ALAN, 'Alan Turing', GRACE, 2, 0),
 ];
 
+/** The permissions of an administrator, who reads accounts and changes them. */
+const ADMIN = ['iam::accounts:read', 'iam::accounts:update'];
+
 function render(
     nodes: readonly ReportingTreeNode[],
     unrooted = 0,
     me = '',
     entry = '/hierarchy',
+    parties: readonly ReportingTreeParty[] = [],
+    holds: readonly string[] = ADMIN,
+    startLens: 'reporting' | 'party' = 'reporting',
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['reporting-tree'], { unrooted, nodes });
+    client.setQueryData(['reporting-tree'], { unrooted, nodes, parties });
+    client.setQueryData(['my-access'], { roles: [{ roleId: 'r', permissionCodes: [...holds] }] });
     client.setQueryData(
         ['amend-reasons'],
         [{ code: 'common.non_material_update', description: 'Non material update' }],
@@ -85,7 +101,7 @@ function render(
         <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter initialEntries={[entry]}>
-                    <ReportingLinesPage me={me} />
+                    <ReportingLinesPage me={me} startLens={startLens} />
                 </MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,
@@ -108,8 +124,8 @@ describe('Reporting lines', () => {
     it('draws each person with their picture', () => {
         const html = render(TREE);
 
-        expect(html).toContain('/api/accounts/ada.lovelace/picture');
-        expect(html).toContain('/api/accounts/alan.turing/picture');
+        expect(html).toContain('/api/images/img-ada.lovelace');
+        expect(html).toContain('/api/images/img-alan.turing');
     });
 
     it('opens on the signed-in person and marks them as the reader', () => {
@@ -140,7 +156,7 @@ describe('Reporting lines', () => {
         expect(html).toContain('class="orgchart');
         expect(html).toContain('Ada Lovelace');
         expect(html).toContain('Alan Turing');
-        expect(html).toContain('/api/accounts/edsger.dijkstra/picture');
+        expect(html).toContain('/api/images/img-edsger.dijkstra');
         expect(html).toContain('>You<');
         expect(html).not.toContain('Reporting tree');
         // Each card opens the person, and the chart stands alone: no card beside it.
@@ -189,7 +205,7 @@ describe('Reporting lines', () => {
         expect(html).toContain('value="Grace Hopper"');
         // The person's card stands beside the timeline.
         expect(html).toContain('Direct reports');
-        expect(html).toContain('/api/accounts/grace.hopper/picture');
+        expect(html).toContain('/api/images/img-grace.hopper');
         expect(html).not.toContain('Reporting tree');
     });
 
@@ -208,6 +224,142 @@ describe('Reporting lines', () => {
 
         expect(html).toContain('reach no root');
         expect(html).toContain('1 people reach no root');
+    });
+});
+
+const NORTH: ReportingTreeParty = {
+    partyId: 'north',
+    name: 'Acme North plc',
+    shortCode: 'NORTH',
+    parentPartyId: null,
+};
+const SOUTH: ReportingTreeParty = {
+    partyId: 'south',
+    name: 'Acme South Inc',
+    shortCode: 'SOUTH',
+    parentPartyId: 'north',
+};
+
+/** Ada in both parties, Grace in the north, Alan and Edsger in the south. */
+const IN_PARTIES = [
+    person(ADA, 'Ada Lovelace', null, 0, 2, { partyIds: ['north', 'south'] }),
+    person(GRACE, 'Grace Hopper', ADA, 1, 1, { partyIds: ['north'] }),
+    person(EDSGER, 'Edsger Dijkstra', ADA, 1, 0, { partyIds: ['south'] }),
+    person(ALAN, 'Alan Turing', GRACE, 2, 0, { partyIds: ['south'] }),
+];
+
+describe('parties in the hierarchy', () => {
+    it('offers a party filter only when the reader sees several parties', () => {
+        const several = render(IN_PARTIES, 0, 'ada.lovelace', '/hierarchy', [NORTH, SOUTH]);
+        const one = render(IN_PARTIES, 0, 'ada.lovelace', '/hierarchy', [NORTH]);
+
+        expect(several).toContain('aria-label="Party"');
+        expect(several).toContain('>All parties<');
+        expect(several).toContain('>Acme North plc<');
+        expect(one).not.toContain('aria-label="Party"');
+    });
+
+    it('names each person’s parties when the reader sees several', () => {
+        const html = render(IN_PARTIES, 0, 'ada.lovelace', '/hierarchy', [NORTH, SOUTH]);
+
+        expect(html).toContain('>NORTH<');
+        expect(html).toContain('>SOUTH<');
+    });
+
+    it('offers the reporting line and the party as two lenses, opening on the reporting line', () => {
+        const html = render(IN_PARTIES, 0, 'ada.lovelace', '/hierarchy', [NORTH, SOUTH]);
+
+        expect(html).toContain('>Reporting line<');
+        expect(html).toContain('>By party<');
+        expect(html).toContain('Reporting tree');
+    });
+
+    it('groups the people by party in the tree, the parties nested by their parent', () => {
+        const html = render(
+            IN_PARTIES,
+            0,
+            'ada.lovelace',
+            '/hierarchy',
+            [NORTH, SOUTH],
+            ADMIN,
+            'party',
+        );
+
+        expect(html).toContain('People by party');
+        expect(html).not.toContain('Reporting tree');
+        // The south is below the north, and Ada, who works in both, is listed under each.
+        expect(html.indexOf('Acme North plc')).toBeLessThan(html.indexOf('Acme South Inc'));
+        expect(html.split('Ada Lovelace').length - 1).toBeGreaterThanOrEqual(2);
+    });
+
+    it('draws each party as a box with its people in the org chart’s party lens', () => {
+        const html = render(
+            IN_PARTIES,
+            0,
+            'ada.lovelace',
+            '/hierarchy?tab=chart',
+            [NORTH, SOUTH],
+            ADMIN,
+            'party',
+        );
+
+        expect(html).toContain('class="orgchart');
+        expect(html).toContain('Acme North plc');
+        expect(html).toContain('Acme South Inc');
+        expect(html).toContain('Edsger Dijkstra');
+    });
+
+    it('lists the people who work in no party apart', () => {
+        const alone = person(ALAN, 'Alan Turing', null, 0, 0);
+        const html = render(
+            [...IN_PARTIES.slice(0, 2), alone],
+            0,
+            '',
+            '/hierarchy',
+            [NORTH, SOUTH],
+            ADMIN,
+            'party',
+        );
+
+        expect(html).toContain('Works in no party');
+    });
+});
+
+describe('a member who reads the organisation and not the accounts', () => {
+    const MEMBER = ['iam::organisation:read'];
+
+    it('sees the tree and the chart but not the history, which is an account read', () => {
+        const html = render(IN_PARTIES, 0, 'grace.hopper', '/hierarchy', [NORTH, SOUTH], MEMBER);
+
+        expect(html).toContain('>Tree<');
+        expect(html).toContain('>Org chart<');
+        expect(html).not.toContain('>History<');
+    });
+
+    it('is not sent to account pages that would refuse it', () => {
+        const html = render(IN_PARTIES, 0, 'grace.hopper', '/hierarchy', [NORTH, SOUTH], MEMBER);
+
+        expect(html).toContain('Ada Lovelace');
+        expect(html).not.toContain('href="/people/');
+    });
+
+    it('is told when a manager is out of view, and is not shown a person as having none', () => {
+        const stranded = person(GRACE, 'Grace Hopper', null, 0, 0, {
+            reportsOutsideScope: true,
+            partyIds: ['north'],
+        });
+        const html = render([stranded], 0, 'grace.hopper', '/hierarchy', [NORTH], MEMBER);
+
+        expect(html).toContain('Reports to someone you cannot see');
+        expect(html).toContain('Someone outside your view');
+        expect(html).not.toContain('No one<');
+    });
+
+    it('draws people from their picture id, with no account read', () => {
+        const html = render(IN_PARTIES, 0, 'grace.hopper', '/hierarchy', [NORTH, SOUTH], MEMBER);
+
+        expect(html).toContain('/api/images/img-ada.lovelace');
+        expect(html).not.toContain('/api/accounts/');
     });
 });
 
@@ -270,7 +422,10 @@ describe('the history of a line', () => {
         const [, change] = lineTimeline(
             stream(
                 version(1, ''),
-                version(2, ADA, { reasonCode: 'common.rectification', commentary: 'Wrong manager' }),
+                version(2, ADA, {
+                    reasonCode: 'common.rectification',
+                    commentary: 'Wrong manager',
+                }),
             ),
             'Reports to',
             nameOf,

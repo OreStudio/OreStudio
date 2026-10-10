@@ -295,6 +295,16 @@ describe('A person', () => {
         expect(html).not.toMatch(/Take away/);
     });
 
+    it('offers a person the doors to their own password and access, and nobody else’s', () => {
+        const own = person('daniel', '/people/daniel');
+        const colleague = person('priya', '/people/daniel');
+
+        expect(own).toContain('Protect my account');
+        expect(own).toContain('href="/security"');
+        expect(own).toContain('href="/access"');
+        expect(colleague).not.toContain('Protect my account');
+    });
+
     it('shows the person picture and the roles they hold, with a way to take one away', () => {
         const html = person('priya');
 

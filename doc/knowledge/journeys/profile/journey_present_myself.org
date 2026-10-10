@@ -106,13 +106,15 @@ So =partial= here means the operation exists and the caller may not use it.
    labelled apart: the first is the address a person signs in with and the
    second is the address colleagues use, and neither reads as the other.
    (Product owner, 2026-09-30.)
-5. *No self read.* The account read needs =iam::accounts:read=, which the
-   default *Viewer* role does not hold, so a plain member's read of their own
-   account is refused. The screen states the refusal and its consequence: the
-   identity panel draws no fields it cannot ground and offers no save, and the
-   shell trigger falls back to the username and the initials. The candidate is
-   a self read of the caller's own account, or a *Viewer* grant that carries
-   =iam::accounts:read=. (Reconnaissance, 2026-10-05.)
+5. *Closed: the self read.* The account read needs =iam::accounts:read=, which
+   the default *Viewer* and *Member* roles do not hold, so a plain member's read
+   of their own account was refused. =iam.v1.ops.get_my_account= answers the
+   caller's own account with no account id and no permission, and it is on the
+   allow-list of
+   [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. The web
+   server sends a request that names the signed-in person's own username to it,
+   so the shell, the profile and the person page read the member's own name,
+   picture and job title. (2026-10-10.)
 6. *Closed: the self write on a tenant with accounts.* Step 4's save lands: the
    generated insert trigger validates =modified_by= above the version replace,
    so the actor's row is still current when the validator reads it, and the

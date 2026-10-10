@@ -40,6 +40,7 @@ render_netting_set_fields(const domain::netting_set& v) {
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Code", .value = v.code});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Netting Agreement ID",
                       .value = v.netting_agreement_id ?
                                    boost::uuids::to_string(*v.netting_agreement_id) :
@@ -47,8 +48,6 @@ render_netting_set_fields(const domain::netting_set& v) {
     fields.push_back(
         {.name = "Counterparty ID",
          .value = v.counterparty_id ? boost::uuids::to_string(*v.counterparty_id) : std::string{}});
-    fields.push_back({.name = "Party ID",
-                      .value = v.party_id ? boost::uuids::to_string(*v.party_id) : std::string{}});
     fields.push_back({.name = "Call Type", .value = v.call_type.value_or(std::string{})});
     fields.push_back(
         {.name = "Initial Margin Type", .value = v.initial_margin_type.value_or(std::string{})});

@@ -77,7 +77,7 @@ ORE reference results. The ACME data does not copy ORE's terms.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:CB552BA9-C34E-47E1-BA4A-B7D38308C1A2][Scope agreements, netting sets and CSAs to the party]] | BACKLOG | | | An agreement reference is meaningful only between one ACME legal entity and one counterparty. Make agreement number and netting set code unique per party, and give the CSA its own party, so each party can hold the same codes. |
+| [[id:CB552BA9-C34E-47E1-BA4A-B7D38308C1A2][Scope agreements, netting sets and CSAs to the party]] | DONE | 2026-10-10 | 2026-10-10 | An agreement reference is meaningful only between one ACME legal entity and one counterparty. Make agreement number and netting set code unique per party, and give the CSA its own party, so each party can hold the same codes. |
 | [[id:0E7D53D5-235D-42EE-86EC-3478E84AE5A2][Build the realistic ACME base bundle]] | BACKLOG | | | Derive realistic ACME agreements, netting sets, CSAs, portfolios and report configuration from the ORE samples, improved to look and behave like a real group's data, for each party's report definitions. |
 | [[id:816DAA26-71D0-4AE3-AF13-FC52C3446B06][Retarget the ORE samples bundle to the import needs]] | BACKLOG | | | Keep ore_samples, label every item as sample data, shrink it to the reference data the sample import needs, install it on every party, and land imports in a sandbox portfolio and book tree. |
 | [[id:6F2B9202-0F43-48E2-B115-86D321B01228][Describe the story and its tasks]] | DONE | 2026-10-10 | 2026-10-10 | Write the story that splits the ACME data from the ORE samples, with its decisions, its open questions and its three tasks, from a read of the netting and portfolio datasets, the acme_demo profile and the party keys. |
@@ -100,6 +100,10 @@ Taken with the product owner on 2026-10-10:
   counterparty. It also lets the samples bundle install the same codes on every
   party. It is the first task, ahead of the two bundle tasks.
 
+- A netting set must belong to a party, under the usual party RLS pattern.
+  Done in the first task. The CSA and the netting set identifier carry the
+  party of their set, kept equal by the writers and not by a pinned key.
+
 Known problems to design around:
 
 - *Agreement numbers and netting set codes were unique per tenant.* PR #2598
@@ -112,8 +116,6 @@ Known problems to design around:
 
 Open, to settle in the tasks:
 
-- The rule for a netting set with no party. The column is nullable today, and
-  a party-scoped CSA needs a party.
 - Which banks each ACME legal entity faces, and which agreement type and
   governing law each uses.
 - The CSA archetypes: variation margin, initial margin, and none. Their

@@ -155,6 +155,18 @@
 \ir ./trading_balance_guaranteed_swap_instruments_create.sql
 \ir ./trading_balance_guaranteed_swap_instruments_notify_trigger_create.sql
 
+\ir ./trading_balance_guaranteed_swap_tranches_create.sql
+\ir ./trading_balance_guaranteed_swap_tranches_notify_trigger_create.sql
+
+\ir ./trading_balance_guaranteed_swap_tranche_notionals_create.sql
+\ir ./trading_balance_guaranteed_swap_tranche_notionals_notify_trigger_create.sql
+
+\ir ./trading_flexi_swap_instruments_create.sql
+\ir ./trading_flexi_swap_instruments_notify_trigger_create.sql
+
+\ir ./trading_flexi_swap_lower_notionals_create.sql
+\ir ./trading_flexi_swap_lower_notionals_notify_trigger_create.sql
+
 \ir ./trading_callable_swap_instruments_create.sql
 \ir ./trading_callable_swap_instruments_notify_trigger_create.sql
 

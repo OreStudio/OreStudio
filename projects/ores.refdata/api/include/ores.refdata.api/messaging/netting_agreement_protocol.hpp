@@ -42,6 +42,7 @@ struct netting_agreement_key {
 struct netting_agreement_write {
     boost::uuids::uuid id;
     std::string agreement_number;
+    boost::uuids::uuid party_id;
     boost::uuids::uuid counterparty_id;
     std::string agreement_type;
     std::optional<std::string> governing_law;

@@ -28,6 +28,8 @@
 #include "ores.trading.core/messaging/ascot_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/average_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/average_type_registrar.hpp"
+#include "ores.trading.core/messaging/balance_guaranteed_swap_tranche_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/balance_guaranteed_swap_tranche_notional_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/barrier_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/barrier_type_registrar.hpp"
 #include "ores.trading.core/messaging/bond_forward_history_provider_registrar.hpp"
@@ -56,6 +58,7 @@
 #include "ores.trading.core/messaging/equity_position_option_underlying_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/exercise_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/exercise_type_registrar.hpp"
+#include "ores.trading.core/messaging/flexi_swap_lower_notional_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/fpml_event_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/fpml_event_type_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_exercise_fee_history_provider_registrar.hpp"
@@ -196,6 +199,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_amortization_type_history_provider(hist_registry);
     register_ascot_history_provider(hist_registry);
     register_average_type_history_provider(hist_registry);
+    register_balance_guaranteed_swap_tranche_history_provider(hist_registry);
+    register_balance_guaranteed_swap_tranche_notional_history_provider(hist_registry);
     register_barrier_type_history_provider(hist_registry);
     register_bond_forward_history_provider(hist_registry);
     register_bond_future_history_provider(hist_registry);
@@ -219,6 +224,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_commodity_basket_constituent_history_provider(hist_registry);
     register_equity_position_option_underlying_history_provider(hist_registry);
     register_exercise_type_history_provider(hist_registry);
+    register_flexi_swap_lower_notional_history_provider(hist_registry);
     register_fpml_event_type_history_provider(hist_registry);
     register_instrument_option_exercise_fee_history_provider(hist_registry);
     register_instrument_option_exercise_price_history_provider(hist_registry);

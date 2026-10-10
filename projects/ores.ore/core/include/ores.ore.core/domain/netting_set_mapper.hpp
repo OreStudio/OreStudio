@@ -26,6 +26,7 @@
 #include "ores.refdata.api/domain/csa.hpp"
 #include "ores.refdata.api/domain/csa_eligible_currency.hpp"
 #include "ores.refdata.api/domain/netting_set.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <string_view>
 #include <vector>
 
@@ -66,8 +67,12 @@ private:
 public:
     /**
      * @brief Maps an ORE NettingSetDefinitions document to the entities.
+     *
+     * Every set and every CSA belongs to the legal entity @p party_id: an ORE
+     * document names no legal entity of the firm, so the importer supplies it.
      */
-    static mapped_netting_sets map(const nettingsetdefinitions& v);
+    static mapped_netting_sets map(const nettingsetdefinitions& v,
+                                   const boost::uuids::uuid& party_id);
 
     /**
      * @brief Reconstructs an ORE NettingSetDefinitions document from the

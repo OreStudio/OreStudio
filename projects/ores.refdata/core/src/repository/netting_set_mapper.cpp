@@ -50,6 +50,8 @@ domain::netting_set netting_set_mapper::map(const netting_set_entity& v) {
 
     r.code = v.code;
 
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+
     r.netting_agreement_id =
         v.netting_agreement_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.netting_agreement_id)) :
@@ -58,9 +60,6 @@ domain::netting_set netting_set_mapper::map(const netting_set_entity& v) {
         v.counterparty_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_id)) :
             std::nullopt;
-    r.party_id = v.party_id.has_value() ?
-                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.party_id)) :
-                     std::nullopt;
     r.call_type = v.call_type;
     r.initial_margin_type = v.initial_margin_type;
     r.risk_weight = v.risk_weight;
@@ -85,14 +84,14 @@ netting_set_entity netting_set_mapper::map(const domain::netting_set& v) {
 
     r.code = v.code;
 
+    r.party_id = boost::uuids::to_string(v.party_id);
+
     r.netting_agreement_id = v.netting_agreement_id.has_value() ?
                                  std::optional(boost::uuids::to_string(*v.netting_agreement_id)) :
                                  std::nullopt;
     r.counterparty_id = v.counterparty_id.has_value() ?
                             std::optional(boost::uuids::to_string(*v.counterparty_id)) :
                             std::nullopt;
-    r.party_id =
-        v.party_id.has_value() ? std::optional(boost::uuids::to_string(*v.party_id)) : std::nullopt;
     r.call_type = v.call_type;
     r.initial_margin_type = v.initial_margin_type;
     r.risk_weight = v.risk_weight;

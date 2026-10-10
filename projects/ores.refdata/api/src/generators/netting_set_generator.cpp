@@ -48,9 +48,9 @@ domain::netting_set generate_synthetic_netting_set(utility::generation::generati
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string("NS-") + std::string(faker::string::alphanumeric(10)) + "-" +
              std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.netting_agreement_id = std::nullopt;
     r.counterparty_id = std::nullopt;
-    r.party_id = std::nullopt;
     r.call_type = std::nullopt;
     r.initial_margin_type = std::nullopt;
     r.risk_weight = std::nullopt;

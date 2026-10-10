@@ -253,6 +253,7 @@ csa_repository::read_at_version(context ctx, const std::string& id, std::uint32_
     return entities.front();
 }
 
+
 std::vector<domain::csa>
 csa_repository::read_latest_by_netting_set_id(context ctx,
                                               const std::string& netting_set_id,

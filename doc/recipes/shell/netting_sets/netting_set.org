@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-netting_sets add <code> <netting_agreement_id> <counterparty_id> <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>
+netting_sets add <code> <party_id> <netting_agreement_id> <counterparty_id> <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.netting_sets.put=.
 
 #+name: netting_sets-add
 #+begin_src ores-shell :tangle netting_sets-add.ores :exports none
-netting_sets add __none__ - - - - - - system.new_record generated_script
+netting_sets add __none__ 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-netting_sets set <id> <code> <netting_agreement_id> <counterparty_id> <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary> [--version <n>]
+netting_sets set <id> <code> <party_id> <netting_agreement_id> <counterparty_id> <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.netting_sets.put=.
 
 #+name: netting_sets-set
 #+begin_src ores-shell :tangle netting_sets-set.ores :exports none
-netting_sets set 00000000-0000-0000-0000-000000000000 __none__ - - - - - - system.new_record generated_script
+netting_sets set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-netting_sets put-many --count <n> <id> <code> <netting_agreement_id> <counterparty_id> <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>
+netting_sets put-many --count <n> <id> <code> <party_id> <netting_agreement_id> <counterparty_id> <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.netting_sets.put_many=.
 
 #+name: netting_sets-put-many
 #+begin_src ores-shell :tangle netting_sets-put-many.ores :exports none
-netting_sets put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ - - - - - - system.new_record generated_script
+netting_sets put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

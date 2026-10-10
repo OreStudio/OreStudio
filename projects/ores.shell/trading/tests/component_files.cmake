@@ -46,6 +46,7 @@ set(files
     "equity_swap_instrument_commands_tests.cpp"
     "equity_variance_swap_instrument_commands_tests.cpp"
     "exercise_type_commands_tests.cpp"
+    "flexi_swap_instrument_commands_tests.cpp"
     "fpml_event_type_commands_tests.cpp"
     "fra_instrument_commands_tests.cpp"
     "fx_accumulator_instrument_commands_tests.cpp"

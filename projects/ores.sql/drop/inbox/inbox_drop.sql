@@ -41,11 +41,16 @@
 \ir ./inbox_approval_decision_rules_drop.sql
 \ir ./inbox_approval_decisions_notify_trigger_drop.sql
 \ir ./inbox_approval_decisions_drop.sql
+\ir ./inbox_approval_request_part_drop.sql
 \ir ./inbox_approval_requests_notify_trigger_drop.sql
 \ir ./inbox_approval_requests_drop.sql
 \ir ./inbox_approval_decision_types_notify_trigger_drop.sql
 \ir ./inbox_approval_decision_types_drop.sql
 \ir ./inbox_approval_request_states_notify_trigger_drop.sql
 \ir ./inbox_approval_request_states_drop.sql
+\ir ./inbox_approval_policies_notify_trigger_drop.sql
+\ir ./inbox_approval_policies_drop.sql
+\ir ./inbox_approval_parts_notify_trigger_drop.sql
+\ir ./inbox_approval_parts_drop.sql
 \ir ./inbox_approval_kinds_notify_trigger_drop.sql
 \ir ./inbox_approval_kinds_drop.sql

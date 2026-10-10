@@ -29,6 +29,8 @@
 \ir inbox_approval_request_states_populate.sql
 \ir inbox_approval_decision_types_populate.sql
 \ir inbox_approval_kinds_populate.sql
+\ir inbox_approval_parts_populate.sql
+\ir inbox_approval_policies_populate.sql
 \ir inbox_notification_channels_populate.sql
 \ir inbox_notification_kinds_populate.sql
 \ir inbox_delivery_outcome_types_populate.sql

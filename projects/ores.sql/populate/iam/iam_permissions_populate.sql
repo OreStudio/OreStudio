@@ -249,6 +249,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::books:read',   'View books');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::books:write',  'Create and modify books');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::books:delete', 'Delete books');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_changes:read', 'View proposed changes to books');
 
     -- Book status permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_statuses:read',   'View book statuses');
@@ -1062,6 +1063,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::balance_guaranteed_swap_instruments:read',   'View balance guaranteed swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::balance_guaranteed_swap_instruments:write',  'Create and modify balance guaranteed swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::balance_guaranteed_swap_instruments:delete', 'Delete balance guaranteed swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::balance_guaranteed_swap_tranches:read', 'View balance guaranteed swap tranches');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::balance_guaranteed_swap_tranches:write','Create and modify balance guaranteed swap tranches');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::balance_guaranteed_swap_tranches:delete','Delete balance guaranteed swap tranches');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::balance_guaranteed_swap_tranche_notionals:read','View balance guaranteed swap tranche notionals');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::balance_guaranteed_swap_tranche_notionals:write','Create and modify balance guaranteed swap tranche notionals');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::balance_guaranteed_swap_tranche_notionals:delete','Delete balance guaranteed swap tranche notionals');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::barrier_types:read',                         'View barrier types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::barrier_types:write',                        'Create and modify barrier types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::barrier_types:delete',                       'Delete barrier types');
@@ -1182,6 +1189,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fpml_event_types:read',                      'View fpml event types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fpml_event_types:write',                     'Create and modify fpml event types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fpml_event_types:delete',                    'Delete fpml event types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::flexi_swap_instruments:read',           'View flexi swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::flexi_swap_instruments:write',          'Create and modify flexi swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::flexi_swap_instruments:delete',         'Delete flexi swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::flexi_swap_lower_notionals:read',       'View flexi swap lower notionals');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::flexi_swap_lower_notionals:write',      'Create and modify flexi swap lower notionals');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::flexi_swap_lower_notionals:delete',     'Delete flexi swap lower notionals');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fra_instruments:read',                       'View fra instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fra_instruments:write',                      'Create and modify fra instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fra_instruments:delete',                     'Delete fra instruments');
@@ -1497,6 +1510,19 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_decision_types:read',   'Read and list approval decision types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_decision_types:write',  'Create and update approval decision types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_decision_types:delete', 'Delete approval decision types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_parts:read',        'Read and list approval parts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_parts:write',       'Create and update approval parts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_parts:delete',      'Delete approval parts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_policies:read',     'Read and list approval policies');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_policies:write',    'Create and update approval policies');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_policies:delete',   'Delete approval policies');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_request_parts:read', 'Read and list approval request parts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_request_parts:write', 'Create and update approval request parts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_request_parts:delete', 'Delete approval request parts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approvals:decide_controller', 'Decide approval requests as Controller');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approvals:decide_finance', 'Decide approval requests as Finance');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approvals:decide_market_risk', 'Decide approval requests as Market Risk');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approvals:decide_operations', 'Decide approval requests as Operations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_requests:read',         'Read and list approval requests');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_requests:write',        'Create and update approval requests');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_requests:delete',       'Delete approval requests');

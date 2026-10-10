@@ -46,6 +46,34 @@ namespace ores::shell::app::commands {
 using namespace logging;
 using ores::nats::service::nats_client;
 
+namespace {
+
+/**
+ * @brief Split a comma-separated token into the elements of a list field.
+ *
+ * The token __none__ states the empty list, because the command line cannot
+ * carry an empty argument: the tokenizer drops one, and a command whose list
+ * field should be empty has no other way to say so.
+ */
+std::vector<std::string> split_list_token(const std::string& value) {
+    if (value == "__none__")
+        return {};
+    std::vector<std::string> parts;
+    std::string current;
+    for (const char c : value) {
+        if (c == ',') {
+            parts.push_back(current);
+            current.clear();
+        } else {
+            current.push_back(c);
+        }
+    }
+    parts.push_back(current);
+    return parts;
+}
+
+}
+
 void approval_operations_operations_commands::register_commands(cli::Menu& root_menu,
                                                                 nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("approval_operations");
@@ -55,7 +83,7 @@ void approval_operations_operations_commands::register_commands(cli::Menu& root_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_raise_approval(std::ref(out), std::ref(session), std::move(args));
         },
-        "raise-approval <kind_code> <reason>");
+        "raise-approval <kind_code> <reason> <part_codes>");
 
     menu->Insert(
         "withdraw-approval",
@@ -69,7 +97,7 @@ void approval_operations_operations_commands::register_commands(cli::Menu& root_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_decide_approval(std::ref(out), std::ref(session), std::move(args));
         },
-        "decide-approval <request_id> <decision_code> <comment> [--version <v>]");
+        "decide-approval <request_id> <decision_code> <comment> <part_code> [--version <v>]");
 
     menu->Insert(
         "list-approval-queue",
@@ -138,7 +166,7 @@ void approval_operations_operations_commands::process_raise_approval(
         return;
     }
 
-    constexpr std::size_t positional_count = 2;
+    constexpr std::size_t positional_count = 3;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -150,6 +178,7 @@ void approval_operations_operations_commands::process_raise_approval(
     try {
         req.kind_code = parsed->positionals[next++];
         req.reason = parsed->positionals[next++];
+        req.part_codes = split_list_token(parsed->positionals[next++]);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -251,7 +280,7 @@ void approval_operations_operations_commands::process_decide_approval(
         return;
     }
 
-    constexpr std::size_t positional_count = 3;
+    constexpr std::size_t positional_count = 4;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -264,6 +293,7 @@ void approval_operations_operations_commands::process_decide_approval(
         req.request_id = parsed->positionals[next++];
         req.decision_code = parsed->positionals[next++];
         req.comment = parsed->positionals[next++];
+        req.part_code = parsed->positionals[next++];
         if (const auto& raw_version = parsed->flag("version"); !raw_version.empty()) {
             req.version = ores::shell::app::from_token<int>(raw_version, "version");
         }

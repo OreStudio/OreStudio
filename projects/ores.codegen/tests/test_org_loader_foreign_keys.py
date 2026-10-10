@@ -191,3 +191,26 @@ def test_book_error_message_apostrophe_is_escaped_for_the_sql_literal():
     book = de["sql"]["party_id_from_book_id"]
     assert book["book_error_message"] == "Invalid book_id: %. The book''s party is unknown."
     assert book["book_table"] == "ores_refdata_books_tbl"
+
+
+def test_party_id_from_parent_names_the_parent_and_escapes_its_message():
+    """The party-from-parent check raises its message inside a literal too."""
+    doc = parse_org(
+        REQUIRED_FLAGS
+        + """
+* SQL
+
+** Party id from parent
+:PROPERTIES:
+:parent_table:         ores_refdata_netting_sets_tbl
+:parent_column:        netting_set_id
+:parent_error_message: Invalid netting_set_id: %. The set's party is unknown.
+:END:
+"""
+    )
+    de = org_document_to_model(doc)["domain_entity"]
+    parent = de["sql"]["party_id_from_parent"]
+    assert parent["parent_table"] == "ores_refdata_netting_sets_tbl"
+    assert parent["parent_column"] == "netting_set_id"
+    assert parent["parent_error_message"] == (
+        "Invalid netting_set_id: %. The set''s party is unknown.")

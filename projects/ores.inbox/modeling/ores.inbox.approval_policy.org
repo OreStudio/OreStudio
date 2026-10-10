@@ -1,0 +1,261 @@
+:PROPERTIES:
+:ID: 5D251F6E-82B4-4A44-B4F0-C61B0805996F
+:END:
+#+title: ores.inbox.approval_policy
+#+description: Codegen entity model for the inbox =approval_policy= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: inbox
+#+filetags: :model:entity:inbox:
+#+brief: Which part must approve an act on an entity, and so which writes need a second person.
+#+entity_singular: approval_policy
+#+entity_plural: approval_policies
+#+entity_title: Approval Policy
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+Reference data table of the approval policy: for an act on an entity, optionally
+narrowed to one field, the part that must approve it. A row says that putting or
+deleting an =entity_type=, or changing one of its fields, needs the named part. An
+act with no row is written directly.
+
+The policy is data, so who decides is a data change. The rows are the tables in
+the book controls note: the description of a book needs no part, the cost center
+needs finance, a move needs operations. One act may have several rows, one for each
+part that must approve, and the request's parts are the distinct parts of its rows.
+
+The system tenant holds the policy rows, so a tenant cannot loosen its own
+controls. A tenant's own rows, which may add a part to an act and never remove one,
+come with the policy read in a later task.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: inbox
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique policy row code: the entity, the operation and the field.
+
+Examples: 'ores.refdata.book:put:cost_center'.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name for the row.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Policy"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Why the act needs this part.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** entity_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The entity the act is on, by its audit entity type.
+
+Examples: 'ores.refdata.book'.
+
+#+begin_src cpp :name generator
+std::string("ores.refdata.book")
+#+end_src
+
+** operation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The act: 'put' or 'delete'.
+
+#+begin_src cpp :name generator
+std::string("put")
+#+end_src
+
+** field_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The one field of the entity the row is narrowed to, or null when the row covers
+the whole act.
+
+Examples: 'cost_center'.
+
+** part_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The part that must approve the act.
+
+Examples: 'finance'.
+
+#+begin_src cpp :name generator
+std::string("finance")
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* Foreign keys
+
+** part_code
+:PROPERTIES:
+:table:             ores_inbox_approval_parts_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid part_code: %. No approval part found with this code.
+:END:
+
+The part that must approve. Parts are held by the system tenant, so the check reads
+it.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_inbox_approval_policies_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:        api
+:service_find_prefix: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: policy
+:entity_plural_short:   policies
+:entity_singular_words: approval policy
+:entity_plural_words:   approval policys
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: apo
+:END:
+
+** Table display
+
+| column                 | header             |
+|------------------------+--------------------|
+| code                   | Code               |
+| name                   | Name               |
+| entity_type            | Entity             |
+| part_code              | Part               |
+| modified_by            | Modified By        |
+| version                | Version            |
+
+** Presentation
+:PROPERTIES:
+:collection_name: approval_policies
+:key_field:       code
+:END:
+
+*** Detail fields
+
+| field                  | label             | widget           | type      | is_key | is_required | placeholder             |
+|------------------------+-------------------+------------------+-----------+--------+-------------+-------------------------|
+| code                   | Code              | codeEdit         | line_edit | true   | true        | Enter policy code       |
+| name                   | Name              | nameEdit         | line_edit |        | true        | Enter display name      |
+| description            | Description       | descriptionEdit  | text_edit |        |             | Enter a description     |
+| entity_type            | Entity            | entityEdit       | line_edit |        | true        | Enter an entity type    |
+| operation              | Operation         | operationEdit    | line_edit |        | true        | put or delete           |
+| part_code              | Part              | partEdit         | line_edit |        | true        | Enter a part code       |
+
+*** Columns
+
+| enum_name            | field                  | header             | type      | width |
+|----------------------+------------------------+--------------------+-----------+-------|
+| Code                 | code                   | Code               | string    | 160   |
+| Name                 | name                   | Name               | string    | 200   |
+| EntityType           | entity_type            | Entity             | string    | 200   |
+| PartCode             | part_code              | Part               | string    | 120   |
+| Version              | version                | Version            | int       | 80    |
+| ModifiedBy           | modified_by            | Modified By        | string    | 120   |
+| RecordedAt           | recorded_at            | Recorded At        | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the design this lookup implements.
+- [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — the record whose parts the policy decides.

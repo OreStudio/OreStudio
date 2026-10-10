@@ -42,6 +42,7 @@ struct balance_guaranteed_swap_instrument_key {
 struct balance_guaranteed_swap_instrument_write {
     boost::uuids::uuid trade_id;
     boost::uuids::uuid trade_activity_id;
+    std::string reference_security;
     std::optional<int> lockout_days;
 };
 

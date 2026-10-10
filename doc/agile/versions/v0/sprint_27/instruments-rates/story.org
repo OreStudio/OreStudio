@@ -53,6 +53,7 @@ Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types t
 | [[id:1E1BA14F-E8A2-4DD4-B538-DA125EC7B7A1][Close the rates round trip]] | DONE | | 2026-10-10 | Add the missing reverse mappers for InflationSwap, BalanceGuaranteedSwap and FlexiSwap, and decide the hand-written rates carrier's and codec's disposition: replace them with the generated per-entity protocols, or record why the carrier must stay hand-written. (Staging unit 6; findings R10, R13.) |
 | [[id:4A53F30C-42AB-41D1-9C3C-55321FC38920][Generate the blotter's common-date view]] | BACKLOG | | | Finding R9: each product states its dates under its own name - start_date, maturity_date, expiry_date, end_date - so a deal grid cannot read one date column across the family. The view maps each product's dates to one set of names, and it is generated because the mapping is a property of the models. This first family creates the view; each later family adds its mapping. (Staging unit 7; finding R9.) |
 | [[id:1EFA46D4-8562-4C63-A1D3-4CF33551BEB2][Prove the rates round trip over the corpus]] | BACKLOG | | | Run the ORE round trip over the family's corpus at the new shape, write the migration script that moves the rows of the legacy tables into the header and the facts, and add the repository, service and eventing coverage the family has none of. (Staging unit 8; findings R9, R14.) |
+| [[id:E5BD501A-CB63-465A-9F5A-02F62A417F9A][Carry the FlexiSwap and BalanceGuaranteedSwap fields]] | DONE | 2026-10-10 | 2026-10-10 | Add the fields the model lacks for these two products, so the export writes the elements the ORE schema requires. |
 
 * Decisions
 
@@ -60,6 +61,13 @@ Distilled from =design.org=, which carries the argument and the
 evidence. The design stays in this folder as the record of why these
 decisions are what they are.
 
+
+- *A product's list fields are child rows and its schedule is a shared row.*
+  FlexiSwap and BalanceGuaranteedSwap carry their bounds, tranches and
+  notionals as child tables keyed by the trade and an ordinal, and the tranche
+  schedule is an =instrument_schedule= row under the owner role =tranches=.
+  Reason: it is the shape =callable_swap_call_date= and the leg children
+  already follow, and a second schedule table would repeat the shared one.
 - *The anchor pin is a trigger check on the header alone.* The trade
   anchor is versioned and has no unique key a database foreign key could
   name, so the header declares a =Pinned keys= row over =(trade_id,

@@ -81,6 +81,21 @@ end.
  */
 #+end_src
 
+*** part_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The parts whose approval the request needs.
+ *
+ * Empty for a kind that names one decider permission and a count. When parts
+ * are named, the request is approved once every part has approved, in the
+ * answer order the parts give.
+ */
+#+end_src
+
 ** raise_approval_request_response
 :PROPERTIES:
 :END:
@@ -200,6 +215,20 @@ end.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+*** part_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The part the decider answers for.
+ *
+ * Required to approve or refuse a request that names parts. The decider needs
+ * the permission that part names.
+ */
+#+end_src
 
 ** decide_approval_request_response
 :PROPERTIES:

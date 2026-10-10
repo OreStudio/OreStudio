@@ -42,6 +42,7 @@ render_netting_set_identifier_fields(const domain::netting_set_identifier& v) {
         {.name = "Netting Set ID", .value = boost::uuids::to_string(v.netting_set_id)});
     fields.push_back({.name = "ID Scheme", .value = v.id_scheme});
     fields.push_back({.name = "ID Value", .value = v.id_value});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

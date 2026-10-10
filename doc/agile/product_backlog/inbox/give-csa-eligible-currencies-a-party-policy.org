@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: A4DE852C-462B-4DB6-A6A2-3CF82473064B
+:ID: F7A3B0C3-A952-40A8-A4CE-E10DA0D8B103
 :END:
-#+title: Carry the FlexiSwap and BalanceGuaranteedSwap product fields
-#+description: The model keeps only the legs of these two products, so their export cannot write the elements the schema requires.
+#+title: Give csa_eligible_currencies a party policy
+#+description: ores_refdata_csa_eligible_currencies_tbl has no party_id and no party policy, so a direct listing is not filtered by party even though its CSAs are. Derive the party from the CSA or add a policy by join to the CSA.
 #+type: capture
 #+level: cross
-#+filetags: :rates:ore:round-trip:
+#+filetags: 
 #+created: 2026-10-10
 #+updated: 2026-10-10
 

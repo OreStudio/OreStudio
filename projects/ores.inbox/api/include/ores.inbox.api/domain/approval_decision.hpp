@@ -74,6 +74,14 @@ struct approval_decision final {
     std::string decision_code;
 
     /**
+     * @brief The part of the request this decision answers, or null for a request that names no
+     * parts. FK reference to ores_inbox_approval_parts_tbl, which the system tenant holds. An
+     * approval of a part counts only for that part, and one person approves a request at most once,
+     * so each part is approved by a different person.
+     */
+    std::optional<std::string> part_code;
+
+    /**
      * @brief The account that decided. FK reference to ores_iam_accounts_tbl.
      */
     boost::uuids::uuid decided_by;

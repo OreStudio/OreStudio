@@ -24,6 +24,8 @@ set(files
     "approval_decision_type_eventing_integration_tests.cpp"
     "approval_kind_eventing_integration_tests.cpp"
     "approval_lifecycle_tests.cpp"
+    "approval_part_eventing_integration_tests.cpp"
+    "approval_policy_eventing_integration_tests.cpp"
     "approval_request_eventing_integration_tests.cpp"
     "approval_request_state_eventing_integration_tests.cpp"
     "approval_rule_refusal_tests.cpp"

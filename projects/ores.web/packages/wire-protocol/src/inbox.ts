@@ -1095,6 +1095,8 @@ export async function decideRequest(
         readonly version: number;
         readonly decisionCode: string;
         readonly comment: string;
+        /** The part the decider answers for; empty for a request that names none. */
+        readonly partCode?: string;
     },
 ): Promise<void> {
     const request: DecideApprovalRequestRequest = {
@@ -1102,6 +1104,7 @@ export async function decideRequest(
         version: input.version,
         decision_code: input.decisionCode,
         comment: input.comment,
+        part_code: input.partCode ?? '',
     };
     const reply = await caller.callAuthenticated(INBOX_SUBJECTS.decide, request, resultReplySchema);
     ok(INBOX_SUBJECTS.decide, reply.result);

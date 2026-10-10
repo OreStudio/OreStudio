@@ -33,10 +33,15 @@
 \ir ./inbox_approval_request_states_notify_trigger_create.sql
 \ir ./inbox_approval_decision_types_create.sql
 \ir ./inbox_approval_decision_types_notify_trigger_create.sql
+\ir ./inbox_approval_parts_create.sql
+\ir ./inbox_approval_parts_notify_trigger_create.sql
+\ir ./inbox_approval_policies_create.sql
+\ir ./inbox_approval_policies_notify_trigger_create.sql
 
 -- The request header every kind shares
 \ir ./inbox_approval_requests_create.sql
 \ir ./inbox_approval_requests_notify_trigger_create.sql
+\ir ./inbox_approval_request_part_create.sql
 
 -- The decisions on a request, and the rules every decision keeps
 \ir ./inbox_approval_decisions_create.sql

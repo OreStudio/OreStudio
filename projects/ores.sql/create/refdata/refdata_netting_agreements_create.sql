@@ -67,9 +67,9 @@ create table if not exists "ores_refdata_netting_agreements_tbl" (
     check ("agreement_type" in ('ISDA', 'AFB', 'FBF', 'OTHER'))
 );
 
--- Unique agreement_number for active records
-create unique index if not exists netting_agreements_agreement_number_uniq_idx
-on "ores_refdata_netting_agreements_tbl" (tenant_id, agreement_number)
+-- Composite natural key: unique combination for active records
+create unique index if not exists netting_agreements_agreement_number_party_id_uniq_idx
+on "ores_refdata_netting_agreements_tbl" (tenant_id, agreement_number, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

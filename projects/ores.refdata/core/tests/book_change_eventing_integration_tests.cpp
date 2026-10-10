@@ -1,0 +1,373 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_integration_test.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/entity_event_publisher.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/domain/book_change.hpp"
+#include "ores.refdata.api/domain/book_change_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/eventing/book_change_event.hpp"
+#include "ores.refdata.api/generators/book_change_generator.hpp"
+#include "ores.refdata.api/messaging/book_change_protocol.hpp"
+#include "ores.refdata.core/repository/book_change_repository.hpp"
+#include "ores.refdata.core/service/book_change_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+// Party seeds (mandatory party_id soft FKs, direct or via a parent's own
+// mandatory party_id FK): the party generator and repository are used
+// regardless of the child's generator facet, hence the fully-qualified
+// refdata paths.
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
+// FK-parent aggregation-currency seed: a seeded portfolio parent's insert
+// trigger validates aggregation_ccy against the currencies table for the
+// write tenant, and the synthetic portfolio generator always emits the
+// X-0 sentinel -- the test seeds it before the parent write or the
+// parent insert is rejected. Like the entity-level currency seed, the
+// currency generator and repository are used regardless of the child's
+// generator facet, hence the fully-qualified refdata paths.
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
+// Soft-FK parent seeding (ores_inbox_approval_requests_tbl): the parent may live in another
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
+#include "ores.inbox.api/generators/approval_request_generator.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
+// Grand-parent seeding (ores_inbox_approval_kinds_tbl): the parent's own mandatory soft FKs
+// reference rows the test seeds before the parent, so their generator
+// and repository headers are needed too. A system-tenant parent is read
+// rather than seeded, so its grand-parents need nothing, and a
+// system-tenant grand-parent is read rather than generated.
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
+// Grand-parent seeding (ores_inbox_approval_request_states_tbl): the parent's own mandatory soft
+// FKs reference rows the test seeds before the parent, so their generator and repository headers
+// are needed too. A system-tenant parent is read rather than seeded, so its grand-parents need
+// nothing, and a system-tenant grand-parent is read rather than generated.
+#include "ores.inbox.core/repository/approval_request_state_repository.hpp"
+// Grand-parent seeding (ores_iam_accounts_tbl): the parent's own mandatory soft FKs
+// reference rows the test seeds before the parent, so their generator
+// and repository headers are needed too. A system-tenant parent is read
+// rather than seeded, so its grand-parents need nothing, and a
+// system-tenant grand-parent is read rather than generated.
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+// Soft-FK parent seeding (ores_inbox_approval_parts_tbl): the parent may live in another
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
+#include "ores.inbox.core/repository/approval_part_repository.hpp"
+// Soft-FK parent seeding (ores_refdata_currencies_tbl): the parent may live in another
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
+// Soft-FK parent seeding (ores_refdata_portfolios_tbl): the parent may live in another
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
+#include "ores.refdata.api/generators/portfolio_generator.hpp"
+#include "ores.refdata.core/repository/portfolio_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/nats_options_helper.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <vector>
+
+// Proves the "write an entity, observe its NATS entity-changed
+// notification" pattern end to end for book_change -- the
+// production DB-write -> pg_notify -> postgres_event_source ->
+// event_bus -> NATS publish chain, assembled directly here the same
+// way the production event-registrar wires it.
+
+namespace {
+
+const std::string_view test_suite("refdata.tests");
+const std::string tags("[eventing][integration]");
+
+
+}
+
+using namespace ores::refdata::generators;
+using ores::refdata::domain::book_change;
+using ores::refdata::repository::book_change_repository;
+using ores::refdata::repository::currency_repository;
+using ores::testing::scoped_database_helper;
+using namespace ores::logging;
+
+TEST_CASE("write_book_change_publishes_an_event", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto& party_ctx = h.context();
+
+    // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
+    // production event-registrar wires in the live service, assembled
+    // directly in the test instead of via a running process.
+    namespace ev = ores::eventing;
+    ev::service::event_bus bus;
+    ev::service::postgres_event_source event_source(party_ctx, bus);
+
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    REQUIRE(nats.is_connected());
+
+    using event_type = ores::refdata::messaging::book_change_event;
+    auto sub = bus.subscribe<event_type>([&nats](const event_type& e) {
+        // One payload is addressed by three subjects, so the subject is the
+        // collection's prefix and the action the event reports.
+        ev::service::publish_entity_event(nats, ev::domain::event_subject<event_type>(e.action), e);
+    });
+
+    event_source.register_entity_event_mapping<event_type>("ores_refdata_book_changes");
+
+    // 2. Subscribe as an external observer would, on the relative subject --
+    // client::subscribe() prepends the subject_prefix itself. The wildcard
+    // takes every action: the first write creates the row and a re-drive
+    // updates it, and the chain is what is under test rather than which of
+    // the three subjects carried it.
+    auto observer = nats.subscribe_buffered(ev::domain::event_subject_wildcard<event_type>(), 10);
+
+    // The listener thread issues LISTEN asynchronously on its own
+    // dedicated connection. Block until it has actually done so before
+    // writing -- Postgres does not queue NOTIFYs sent before a matching
+    // LISTEN is registered.
+    event_source.start();
+    REQUIRE(event_source.wait_until_ready());
+
+    // 3. Write -- triggers the entity's notify trigger -> pg_notify ->
+    // the chain wired above -> NATS.
+    auto v = generate_synthetic_book_change(ctx);
+    v.change_reason_code = "system.test";
+    // Seed the active approval_request row ores_inbox_approval_requests_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto request_id_parent = ores::inbox::generators::generate_synthetic_approval_request(ctx);
+    request_id_parent.change_reason_code = "system.test";
+    auto request_id_parent_account_parent = ores::iam::generators::generate_synthetic_account(ctx);
+    request_id_parent_account_parent.change_reason_code = "system.test";
+    // approval_kind is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, as the direct-parent
+    // system-tenant branch does.
+    {
+        ores::inbox::repository::approval_kind_repository
+            request_id_parent_approval_kind_parent_repo;
+        const auto request_id_parent_approval_kind_parent_catalogue =
+            request_id_parent_approval_kind_parent_repo.read_latest(
+                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(request_id_parent_approval_kind_parent_catalogue.empty());
+        request_id_parent.kind_code = request_id_parent_approval_kind_parent_catalogue.front().code;
+    }
+    // approval_request_state is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, as the direct-parent
+    // system-tenant branch does.
+    {
+        ores::inbox::repository::approval_request_state_repository
+            request_id_parent_approval_request_state_parent_repo;
+        const auto request_id_parent_approval_request_state_parent_catalogue =
+            request_id_parent_approval_request_state_parent_repo.read_latest(
+                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(request_id_parent_approval_request_state_parent_catalogue.empty());
+        request_id_parent.state_code =
+            request_id_parent_approval_request_state_parent_catalogue.front().code;
+    }
+    // Seed the active account row ores_iam_accounts_tbl references:
+    // the referencing row's insert trigger rejects a synthetic key that
+    // matches no active row, so it must be written first.
+    ores::iam::repository::account_repository request_id_parent_account_parent_repo;
+    request_id_parent_account_parent_repo.write(party_ctx, request_id_parent_account_parent);
+    request_id_parent.requested_by = request_id_parent_account_parent.id;
+    ores::inbox::repository::approval_request_repository request_id_repo;
+    request_id_repo.write(party_ctx, request_id_parent);
+    v.request_id = request_id_parent.id;
+    // approval_part is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::inbox::repository::approval_part_repository part_code_catalogue_repo;
+        const auto part_code_catalogue = part_code_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(part_code_catalogue.empty());
+        v.part_code = part_code_catalogue.front().code;
+    }
+    // Seed the active currency row ores_refdata_currencies_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto functional_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
+    functional_currency_parent.change_reason_code = "system.test";
+    ores::refdata::repository::currency_repository functional_currency_repo;
+    functional_currency_repo.write(party_ctx, functional_currency_parent);
+    v.functional_currency = functional_currency_parent.iso_code;
+    // Seed the active party row ores_refdata_parties_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto party_id_parent = ores::refdata::generators::generate_synthetic_party(ctx);
+    party_id_parent.change_reason_code = "system.test";
+    // Only one root party (parent_party_id null) is allowed per tenant:
+    // attach to the existing root party instead of creating a second one.
+    auto party_id_existing = ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : party_id_existing) {
+        if (e.tenant_id == party_id_parent.tenant_id) {
+            party_id_parent.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::refdata::repository::party_repository party_id_repo;
+    party_id_repo.write(party_ctx, party_id_parent);
+    v.party_id = party_id_parent.id;
+    // Seed the active portfolio row ores_refdata_portfolios_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto parent_portfolio_id_parent = ores::refdata::generators::generate_synthetic_portfolio(ctx);
+    parent_portfolio_id_parent.change_reason_code = "system.test";
+    // portfolio's own mandatory party_id FK (session-set in
+    // production) needs an active party too: seed one, attached under the
+    // tenant's root party like the direct-party branch below.
+    auto parent_portfolio_id_party = ores::refdata::generators::generate_synthetic_party(ctx);
+    parent_portfolio_id_party.change_reason_code = "system.test";
+    auto parent_portfolio_id_party_existing =
+        ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : parent_portfolio_id_party_existing) {
+        if (e.tenant_id == parent_portfolio_id_party.tenant_id) {
+            parent_portfolio_id_party.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::refdata::repository::party_repository parent_portfolio_id_party_repo;
+    parent_portfolio_id_party_repo.write(party_ctx, parent_portfolio_id_party);
+    parent_portfolio_id_parent.party_id = parent_portfolio_id_party.id;
+    // The parent portfolio's insert trigger validates aggregation_ccy
+    // against the currencies table for the write tenant, and the
+    // synthetic portfolio generator always emits the X-0 sentinel --
+    // seed it before the parent write or the parent insert is rejected.
+    // Distinct name from the entity-level currency seed block: both are
+    // in scope when the entity also carries the seed_currency flag.
+    auto parent_ccy = ores::refdata::generators::generate_synthetic_currency(ctx);
+    parent_ccy.iso_code = "X-0";
+    currency_repository parent_ccy_repo;
+    parent_ccy_repo.write(party_ctx, {parent_ccy});
+    ores::refdata::repository::portfolio_repository parent_portfolio_id_repo;
+    parent_portfolio_id_repo.write(party_ctx, parent_portfolio_id_parent);
+    v.parent_portfolio_id = parent_portfolio_id_parent.id;
+    const auto id_str = boost::uuids::to_string(v.id);
+    BOOST_LOG_SEV(lg, debug) << "Book Change: " << v;
+
+    book_change_repository repo;
+    repo.write(party_ctx, v);
+
+    // 4. Poll the observer's buffer for the notification. The chain --
+    // trigger -> pg_notify -> 100ms listener poll -> event_bus -> NATS
+    // round trip -- is real, no mocks. Under CI load the listener or
+    // NATS connection can hiccup once (reconnect backoff 1-5s) and the
+    // notification in flight is lost forever; a lost notification never
+    // arrives, so re-drive the write -- a new version row re-fires the
+    // notify trigger. Bounded: 4 attempts, each polling ~2.5s.
+    constexpr int max_attempts = 4;
+    constexpr int polls_per_attempt = 25;
+    std::vector<ores::nats::message> received;
+    for (int attempt = 1; attempt <= max_attempts && received.empty(); ++attempt) {
+        if (attempt > 1) {
+            BOOST_LOG_SEV(lg, warn) << "No matching notification yet; re-driving write"
+                                    << " (attempt " << attempt << " of " << max_attempts << ")";
+            repo.write(party_ctx, v);
+        }
+        for (int i = 0; i < polls_per_attempt && received.empty(); ++i) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            auto snap = observer.snapshot();
+            for (const auto& msg : snap) {
+                auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
+                // The event carries the row's own key record, so the row under
+                // test is recognised by comparing it with the row written.
+                if (decoded && decoded->key.id == v.id)
+                    received.push_back(msg);
+            }
+        }
+    }
+
+    event_source.stop();
+
+    if (received.empty()) {
+        // Exhausted the budget: report what the observer did see so a
+        // genuinely broken chain is diagnosable, not a bare empty check.
+        const auto final_snapshot = observer.snapshot();
+        BOOST_LOG_SEV(lg, error) << "No notification for book_change " << id_str << " after "
+                                 << max_attempts << " writes; observer received "
+                                 << final_snapshot.size() << " message(s) in total";
+        for (const auto& msg : final_snapshot)
+            BOOST_LOG_SEV(lg, error) << "  unexpected message on subject '" << msg.subject << "', "
+                                     << msg.data.size() << " bytes";
+    }
+    REQUIRE_FALSE(received.empty());
+    BOOST_LOG_SEV(lg, info) << "Received " << received.size()
+                            << " matching NATS notification(s) for book_change " << id_str;
+
+    // 5. CRUD round trip on the same row: update through the
+    // repository, read the version history through the service, and
+    // delete. Reads and writes go through party_ctx: for party-scoped
+    // entities it already carries the visible-party GUC the RLS
+    // policies filter every service read by; otherwise it is the
+    // plain test context. The version history grows by one per write
+    // (the notify re-drive above may have written more than once), so
+    // only growth is asserted, not an exact count.
+    {
+        // The row's party (seeded above for the mandatory party FK)
+        // scopes the service reads: point the session's visible-party
+        // set at it directly, the way write_test_party_and_scope_context
+        // does for party-scoped entities.
+        const auto crud_party = v.party_id;
+        const auto crud_ctx =
+            party_ctx.with_party(party_ctx.tenant_id(), crud_party, {crud_party}, h.db_user());
+        ores::refdata::service::book_change_service svc(crud_ctx);
+        v.change_commentary = "updated-by-crud-round-trip";
+        repo.write(crud_ctx, v);
+
+        auto versions = svc.get_book_change_history(id_str);
+        REQUIRE(versions.size() >= 2);
+        REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
+
+        svc.delete_book_change(v.id);
+        // Delete soft-closes the active row (the instead-of delete
+        // rule sets valid_to): the row disappears from latest reads,
+        // and the version history keeps every version.
+        REQUIRE_FALSE(svc.get_book_change(v.id).has_value());
+        REQUIRE(svc.get_book_change_history(id_str).size() == versions.size());
+    }
+}

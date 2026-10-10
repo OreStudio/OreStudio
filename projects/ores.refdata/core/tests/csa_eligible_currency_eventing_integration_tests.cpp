@@ -39,6 +39,12 @@
 #include "ores.refdata.api/messaging/csa_eligible_currency_protocol.hpp"
 #include "ores.refdata.core/repository/csa_eligible_currency_repository.hpp"
 #include "ores.refdata.core/service/csa_eligible_currency_service.hpp"
+// Party seeds (mandatory party_id soft FKs, direct or via a parent's own
+// mandatory party_id FK): the party generator and repository are used
+// regardless of the child's generator facet, hence the fully-qualified
+// refdata paths.
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 // Soft-FK parent seeding (ores_refdata_csas_tbl): the parent may live in another
 // component, so its own component names the headers. A system-tenant parent
 // is read rather than generated, so it needs no generator.
@@ -134,9 +140,43 @@ TEST_CASE("write_csa_eligible_currency_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto csa_id_parent = ores::refdata::generators::generate_synthetic_csa(ctx);
     csa_id_parent.change_reason_code = "system.test";
+    // csa's own mandatory party_id FK (session-set in
+    // production) needs an active party too: seed one, attached under the
+    // tenant's root party like the direct-party branch below.
+    auto csa_id_party = ores::refdata::generators::generate_synthetic_party(ctx);
+    csa_id_party.change_reason_code = "system.test";
+    auto csa_id_party_existing =
+        ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : csa_id_party_existing) {
+        if (e.tenant_id == csa_id_party.tenant_id) {
+            csa_id_party.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::refdata::repository::party_repository csa_id_party_repo;
+    csa_id_party_repo.write(party_ctx, csa_id_party);
+    csa_id_parent.party_id = csa_id_party.id;
     auto csa_id_parent_netting_set_parent =
         ores::refdata::generators::generate_synthetic_netting_set(ctx);
     csa_id_parent_netting_set_parent.change_reason_code = "system.test";
+    // netting_set carries a mandatory party_id FK of its own
+    // (session-set in production), so seed a party for it before its write,
+    // exactly as the direct-parent branch does.
+    auto csa_id_parent_netting_set_parent_party =
+        ores::refdata::generators::generate_synthetic_party(ctx);
+    csa_id_parent_netting_set_parent_party.change_reason_code = "system.test";
+    auto csa_id_parent_netting_set_parent_party_existing =
+        ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : csa_id_parent_netting_set_parent_party_existing) {
+        if (e.tenant_id == csa_id_parent_netting_set_parent_party.tenant_id) {
+            csa_id_parent_netting_set_parent_party.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::refdata::repository::party_repository csa_id_parent_netting_set_parent_party_repo;
+    csa_id_parent_netting_set_parent_party_repo.write(party_ctx,
+                                                      csa_id_parent_netting_set_parent_party);
+    csa_id_parent_netting_set_parent.party_id = csa_id_parent_netting_set_parent_party.id;
     // Seed the active netting_set row ores_refdata_netting_sets_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.

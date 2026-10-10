@@ -190,6 +190,8 @@
 \ir ./refdata_deposit_conventions_drop.sql
 
 -- Books, portfolios, and business units (drop first, depend on parties and lookup tables)
+\ir ./refdata_book_changes_notify_trigger_drop.sql
+\ir ./refdata_book_changes_drop.sql
 \ir ./refdata_books_notify_trigger_drop.sql
 \ir ./refdata_books_drop.sql
 -- Sandbox members, then sandboxes (before portfolios)

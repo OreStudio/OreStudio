@@ -46,6 +46,7 @@ struct csa_entity {
     std::string tenant_id;
     int version = 0;
     std::string netting_set_id;
+    std::string party_id;
     bool is_active = false;
     std::optional<std::string> bilateral;
     std::optional<std::string> csa_currency;

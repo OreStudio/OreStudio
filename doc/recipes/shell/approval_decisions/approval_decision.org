@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-approval_decisions add <request_id> <decision_code> <decided_by> <decided_at> <comment> <reason> <commentary>
+approval_decisions add <request_id> <decision_code> <part_code> <decided_by> <decided_at> <comment> <reason> <commentary>
 #+end_example
 
 It is addressed at =inbox.v1.approval_decisions.put=.
 
 #+name: approval_decisions-add
 #+begin_src ores-shell :tangle approval_decisions-add.ores :exports none
-approval_decisions add 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ system.new_record generated_script
+approval_decisions add 00000000-0000-0000-0000-000000000000 __none__ - 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-approval_decisions set <id> <request_id> <decision_code> <decided_by> <decided_at> <comment> <reason> <commentary> [--version <n>]
+approval_decisions set <id> <request_id> <decision_code> <part_code> <decided_by> <decided_at> <comment> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =inbox.v1.approval_decisions.put=.
 
 #+name: approval_decisions-set
 #+begin_src ores-shell :tangle approval_decisions-set.ores :exports none
-approval_decisions set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ system.new_record generated_script
+approval_decisions set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-approval_decisions put-many --count <n> <id> <request_id> <decision_code> <decided_by> <decided_at> <comment> <reason> <commentary>
+approval_decisions put-many --count <n> <id> <request_id> <decision_code> <part_code> <decided_by> <decided_at> <comment> <reason> <commentary>
 #+end_example
 
 It is addressed at =inbox.v1.approval_decisions.put_many=.
 
 #+name: approval_decisions-put-many
 #+begin_src ores-shell :tangle approval_decisions-put-many.ores :exports none
-approval_decisions put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ system.new_record generated_script
+approval_decisions put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

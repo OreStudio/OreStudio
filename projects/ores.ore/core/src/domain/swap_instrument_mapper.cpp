@@ -36,6 +36,7 @@ using ores::trading::domain::vanilla_swap_instrument;
 using ores::trading::domain::cap_floor_instrument;
 using ores::trading::domain::swaption_instrument;
 using ores::trading::domain::balance_guaranteed_swap_instrument;
+using ores::trading::domain::flexi_swap_instrument;
 using ores::trading::domain::callable_swap_instrument;
 using ores::trading::domain::knock_out_swap_instrument;
 using ores::trading::domain::inflation_swap_instrument;
@@ -1967,7 +1968,7 @@ trade swap_instrument_mapper::reverse_callable_swap(
 }
 
 // ---------------------------------------------------------------------------
-// Forward: FlexiSwap (leg economics only)
+// FlexiSwap
 // ---------------------------------------------------------------------------
 
 trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap(const trade& t) {
@@ -1982,11 +1983,33 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap
 
     trading::domain::swap_instrument_data result;
     result.header = std::move(header);
-    result.facts = vanilla_swap_instrument{};
+    result.facts = flexi_swap_instrument{};
 
     if (!t.FlexiSwapData)
         return result;
     const auto& fd = *t.FlexiSwapData;
+
+    auto& fact = std::get<flexi_swap_instrument>(result.facts);
+    fact.option_long_short = to_string(fd.OptionLongShort);
+
+    int bound_number = 0;
+    int sequence_number = 0;
+    for (const auto& bound : fd.LowerNotionalBounds) {
+        ++bound_number;
+        for (const auto& n : bound.Notional) {
+            trading::domain::flexi_swap_lower_notional row;
+            row.sequence_number = ++sequence_number;
+            row.bound_number = bound_number;
+            if (bound.currency)
+                row.currency = std::string(*bound.currency);
+            if (n.startDate)
+                row.start_date = to_domain_date(std::string(*n.startDate));
+            row.notional =
+                ores::utility::decimal::decimal::from_double(static_cast<float>(n)).value();
+            stamp_child_audit(row);
+            result.lower_notionals.push_back(std::move(row));
+        }
+    }
 
     int leg_num = 1;
     for (const auto& ld : fd.LegData)
@@ -2000,8 +2023,59 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap
     return result;
 }
 
+trade swap_instrument_mapper::reverse_flexi_swap(
+    const trading::domain::rate_instrument& header,
+    const flexi_swap_instrument& instr,
+    const std::vector<swap_leg>& legs,
+    const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+    const std::vector<ores::trading::domain::swap_leg_rate>& rates,
+    const std::vector<trading::domain::flexi_swap_lower_notional>& lower_notionals) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FlexiSwap";
+
+    trade t;
+    t.TradeType = oreTradeType::FlexiSwap;
+
+    flexiSwapData fd;
+    fd.OptionLongShort = instr.option_long_short == "Short" ? longShort::Short : longShort::Long;
+
+    std::vector<const trading::domain::flexi_swap_lower_notional*> ordered;
+    for (const auto& row : lower_notionals)
+        ordered.push_back(&row);
+    std::sort(ordered.begin(), ordered.end(), [](const auto* a, const auto* b) {
+        return a->sequence_number < b->sequence_number;
+    });
+
+    // The rows of one block share its ordinal, so a new block starts where
+    // the ordinal changes.
+    int current_bound = 0;
+    for (const auto* row : ordered) {
+        if (fd.LowerNotionalBounds.empty() || row->bound_number != current_bound) {
+            current_bound = row->bound_number;
+            flexiSwapData_LowerNotionalBounds_t block;
+            if (row->currency)
+                block.currency = xsd::string(*row->currency);
+            fd.LowerNotionalBounds.push_back(std::move(block));
+        }
+        flexiSwapData_LowerNotionalBounds_t_Notional_t v;
+        static_cast<float&>(v) = static_cast<float>(row->notional.to_double());
+        if (row->start_date)
+            v.startDate = xsd::string(to_ore_date(*row->start_date));
+        fd.LowerNotionalBounds.back().Notional.push_back(std::move(v));
+    }
+
+    for (const auto& sl : legs)
+        fd.LegData.push_back(reverse_leg(header.start_date,
+                                         header.maturity_date,
+                                         sl,
+                                         amounts_for_leg(amounts, sl.identity.leg_number),
+                                         rates_for_leg(rates, sl.identity.leg_number)));
+
+    t.FlexiSwapData = std::move(fd);
+    return t;
+}
+
 // ---------------------------------------------------------------------------
-// Forward: BalanceGuaranteedSwap (leg economics only)
+// BalanceGuaranteedSwap
 // ---------------------------------------------------------------------------
 
 trading::domain::swap_instrument_data
@@ -2023,6 +2097,36 @@ swap_instrument_mapper::forward_balance_guaranteed_swap(const trade& t) {
         return result;
     const auto& bd = *t.BalanceGuaranteedSwapData;
 
+    auto& fact = std::get<balance_guaranteed_swap_instrument>(result.facts);
+    fact.reference_security = std::string(bd.ReferenceSecurity);
+
+    int tranche_number = 0;
+    for (const auto& tr : bd.Tranches.Tranche) {
+        ++tranche_number;
+        trading::domain::balance_guaranteed_swap_tranche row;
+        row.sequence_number = tranche_number;
+        if (tr.Description)
+            row.description = std::string(*tr.Description);
+        row.security_id = std::string(tr.SecurityId);
+        row.seniority = tr.Seniority;
+        stamp_child_audit(row);
+        result.tranches.push_back(std::move(row));
+
+        int notional_number = 0;
+        for (const auto& n : tr.Notionals.Notional) {
+            trading::domain::balance_guaranteed_swap_tranche_notional child;
+            child.tranche_number = tranche_number;
+            child.sequence_number = ++notional_number;
+            if (n.startDate)
+                child.start_date = to_domain_date(std::string(*n.startDate));
+            child.notional =
+                ores::utility::decimal::decimal::from_double(static_cast<float>(n)).value();
+            stamp_child_audit(child);
+            result.tranche_notionals.push_back(std::move(child));
+        }
+    }
+    append_schedule(result, bd.Tranches.ScheduleData, "tranches", 1, "schedule");
+
     int leg_num = 1;
     for (const auto& ld : bd.LegData)
         append_leg(result, ld, leg_num++);
@@ -2033,6 +2137,72 @@ swap_instrument_mapper::forward_balance_guaranteed_swap(const trade& t) {
     }
 
     return result;
+}
+
+trade swap_instrument_mapper::reverse_balance_guaranteed_swap(
+    const trading::domain::rate_instrument& header,
+    const balance_guaranteed_swap_instrument& instr,
+    const std::vector<swap_leg>& legs,
+    const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+    const std::vector<ores::trading::domain::swap_leg_rate>& rates,
+    const std::vector<trading::domain::balance_guaranteed_swap_tranche>& tranches,
+    const std::vector<trading::domain::balance_guaranteed_swap_tranche_notional>&
+        tranche_notionals,
+    const std::vector<trading::domain::instrument_schedule>& schedules,
+    const std::vector<trading::domain::instrument_schedule_date>& schedule_dates) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping BalanceGuaranteedSwap";
+
+    trade t;
+    t.TradeType = oreTradeType::BalanceGuaranteedSwap;
+
+    bgSwapData bd;
+    set_text(bd.ReferenceSecurity, instr.reference_security);
+
+    std::vector<const trading::domain::balance_guaranteed_swap_tranche*> ordered_tranches;
+    for (const auto& row : tranches)
+        ordered_tranches.push_back(&row);
+    std::sort(ordered_tranches.begin(), ordered_tranches.end(), [](const auto* a, const auto* b) {
+        return a->sequence_number < b->sequence_number;
+    });
+
+    for (const auto* row : ordered_tranches) {
+        tranche tr;
+        if (row->description) {
+            tranche_Description_t description;
+            static_cast<std::string&>(description) = *row->description;
+            tr.Description = std::move(description);
+        }
+        set_text(tr.SecurityId, row->security_id);
+        tr.Seniority = row->seniority;
+
+        std::vector<const trading::domain::balance_guaranteed_swap_tranche_notional*> notionals;
+        for (const auto& n : tranche_notionals)
+            if (n.tranche_number == row->sequence_number)
+                notionals.push_back(&n);
+        std::sort(notionals.begin(), notionals.end(), [](const auto* a, const auto* b) {
+            return a->sequence_number < b->sequence_number;
+        });
+        for (const auto* n : notionals) {
+            tranche_Notionals_t_Notional_t v;
+            static_cast<float&>(v) = static_cast<float>(n->notional.to_double());
+            if (n->start_date)
+                v.startDate = xsd::string(to_ore_date(*n->start_date));
+            tr.Notionals.Notional.push_back(std::move(v));
+        }
+        bd.Tranches.Tranche.push_back(std::move(tr));
+    }
+    if (const auto stored = schedule_for(schedules, schedule_dates, "tranches", 1, "schedule"))
+        bd.Tranches.ScheduleData = *stored;
+
+    for (const auto& sl : legs)
+        bd.LegData.push_back(reverse_leg(header.start_date,
+                                         header.maturity_date,
+                                         sl,
+                                         amounts_for_leg(amounts, sl.identity.leg_number),
+                                         rates_for_leg(rates, sl.identity.leg_number)));
+
+    t.BalanceGuaranteedSwapData = std::move(bd);
+    return t;
 }
 
 // ---------------------------------------------------------------------------

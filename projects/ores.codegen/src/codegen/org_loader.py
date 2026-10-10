@@ -62,6 +62,7 @@ _FEATURE_NAMESPACE: dict[str, str] = {
     "fk_copy_validations": "sql",
     "text_code_validations": "sql",
     "party_id_from_book_id": "sql",
+    "party_id_from_parent": "sql",
     "party_id_from_session": "sql",
     "rls_tenant_isolation": "sql",
     "rls_party_isolation": "sql",
@@ -1478,6 +1479,20 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             if "book_error_message" in book:
                 book["book_error_message"] = _sql_literal_text(book["book_error_message"])
             de.setdefault("sql", {})["party_id_from_book_id"] = book
+        # party_id_from_parent is the general form of the same idea: the
+        # insert trigger takes party_id from the row the entity belongs to,
+        # whatever that table is, because the parent states the owner and a
+        # caller's copy could only drift from it. The struct names the parent
+        # table, the column that references it and the message the existence
+        # check raises.
+        parent_party_section = _section(sql_section, "Party id from parent")
+        if parent_party_section and parent_party_section.properties:
+            parent_party = {
+                k.lower(): v for k, v in parent_party_section.properties.items()}
+            if "parent_error_message" in parent_party:
+                parent_party["parent_error_message"] = _sql_literal_text(
+                    parent_party["parent_error_message"])
+            de.setdefault("sql", {})["party_id_from_parent"] = parent_party
         # An entity guarded by a state machine cannot be rewritten with the
         # activity that booked it: that activity names a transition which
         # starts the machine, and the row already has a state. The model

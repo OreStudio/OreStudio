@@ -51,6 +51,7 @@ domain::approval_decision approval_decision_mapper::map(const approval_decision_
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id);
     r.decision_code = v.decision_code;
+    r.part_code = v.part_code;
     r.decided_by = boost::lexical_cast<boost::uuids::uuid>(v.decided_by);
     r.decided_at = timestamp_to_timepoint(std::string_view{v.decided_at});
     r.comment = v.comment;
@@ -73,6 +74,7 @@ approval_decision_entity approval_decision_mapper::map(const domain::approval_de
     r.version = v.version;
     r.request_id = boost::uuids::to_string(v.request_id);
     r.decision_code = v.decision_code;
+    r.part_code = v.part_code;
     r.decided_by = boost::uuids::to_string(v.decided_by);
     r.decided_at = ores::platform::time::datetime::to_iso8601_utc(v.decided_at);
     r.comment = v.comment;

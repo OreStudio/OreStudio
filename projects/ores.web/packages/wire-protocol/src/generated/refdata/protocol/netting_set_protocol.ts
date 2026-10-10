@@ -36,6 +36,7 @@ export interface NettingSetKey {
 export interface NettingSetWrite {
     id: string;
     code: string;
+    party_id: string;
     netting_agreement_id: string | null;
     counterparty_id: string | null;
     call_type: string | null;

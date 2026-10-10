@@ -38,6 +38,7 @@ create table if not exists "ores_refdata_netting_set_identifiers_tbl" (
     "netting_set_id" uuid not null,
     "id_scheme" text not null,
     "id_value" text not null,
+    "party_id" uuid not null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -74,7 +75,7 @@ on "ores_refdata_netting_set_identifiers_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists netting_set_identifiers_ore_alias_idx
-on "ores_refdata_netting_set_identifiers_tbl" (tenant_id, id_scheme, id_value)
+on "ores_refdata_netting_set_identifiers_tbl" (tenant_id, party_id, id_scheme, id_value)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and id_scheme = 'ORE';
 
@@ -87,6 +88,30 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- The netting_set_id row states the owning party, so the party is not
+    -- the caller's to supply: derive it and ignore what was sent. A copy
+    -- the caller made could only drift from the row it belongs to.
+    select party_id into NEW.party_id
+    from ores_refdata_netting_sets_tbl
+    where tenant_id = NEW.tenant_id
+      and id = NEW.netting_set_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    if not found then
+        raise exception 'Invalid netting_set_id: %. No active netting set found with this id.', NEW.netting_set_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate party_id (soft FK to ores_refdata_parties_tbl)
+    if not exists (
+        select 1 from ores_refdata_parties_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.party_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid party_id: %. No active party found with this id.', NEW.party_id
+            using errcode = '23503';
+    end if;
 
     -- Validate netting_set_id (soft FK to ores_refdata_netting_sets_tbl)
     if not exists (
@@ -160,6 +185,16 @@ begin
                 'id',
                 NEW.version::text,
                 current_version::text);
+        end if;
+        if exists (
+            select 1 from "ores_refdata_netting_set_identifiers_tbl"
+            where tenant_id = NEW.tenant_id
+              and id = NEW.id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+              and "party_id" is distinct from NEW."party_id"
+        ) then
+            raise exception 'party_id cannot change: it is fixed for the life of the netting_set_identifier.'
+                using errcode = '23514';
         end if;
         NEW.version = current_version + 1;
         -- clock_timestamp(), not current_timestamp: current_timestamp is

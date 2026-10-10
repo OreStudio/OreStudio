@@ -8,7 +8,7 @@
 #+filetags: :stop_a_codegen_test_remapping_the_trade_target_for_the_whole_run:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/stop-a-codegen-test-remapping-the-trade-target-for-the-whole-run
-#+pr:
+#+pr: 3069
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3069][#3069]] | [codegen] Stop a soft FK test from remapping the trade table for the whole run |
 
 * Review
 

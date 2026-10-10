@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 46480D15-1E41-46D6-8042-A56516EBE2EE
+:END:
+#+title: A tenant can write a system catalogue
+#+description: A handler generated with system_tenant_validation runs every write in the system tenant and checks only the permission, so a tenant administrator who holds * changes the catalogue every tenant shares.
+#+type: capture
+#+level: cross
+#+filetags: :security:tenancy:codegen:synthetic:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The codegen flag =system_tenant_validation= makes every generated NATS
+handler operation of an entity run in the system tenant
+(=cpp_nats_handler.hpp.mustache=): the list, the reads, and also the put,
+put_many, delete and delete_many. The handler checks only the permission
+before it switches tenant. A tenant role that holds the write permission,
+such as the seeded =TenantAdmin= with =*=, therefore writes the one
+catalogue every tenant reads.
+
+Two synthetic entities carry the flag: the yield curve process parameter
+definitions, and, since the synthetic BFF routes task, the yield curve
+process types. Other components may carry it too.
+
+This is inferred from the generated code and the seeded roles, not
+observed: no request was sent that wrote a system row from a tenant session.
+The BFF refuses such a write for the process types, and serves the
+definitions read only, but a client on the bus reaches the handler directly.
+
+The candidate fix is in the template: for a system-owned entity, refuse a
+write unless the caller's own tenant is the system tenant, before the
+handler switches context.
+
+* Why
+
+Tenancy is the boundary the system is built on. A change one tenant makes
+to a shared catalogue reaches every other tenant's curve editor and
+validation, with no approval and a history that names a user of another
+tenant.
+
+* References
+
+- [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] — the task that found it.
+
+* See also
+
+-

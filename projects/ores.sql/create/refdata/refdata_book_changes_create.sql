@@ -36,7 +36,6 @@ create table if not exists "ores_refdata_book_changes_tbl" (
     "line_no" integer not null,
     "operation" text not null,
     "base_version" integer not null,
-    "part_code" text not null,
     "entity_id" uuid not null,
     "party_id" uuid not null,
     "name" text not null,
@@ -69,6 +68,11 @@ create table if not exists "ores_refdata_book_changes_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
+-- Composite natural key: unique combination for active records
+create unique index if not exists book_changes_request_id_line_no_uniq_idx
+on "ores_refdata_book_changes_tbl" (tenant_id, request_id, line_no)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists book_changes_version_uniq_idx
 on "ores_refdata_book_changes_tbl" (tenant_id, id, version)
@@ -98,17 +102,6 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid request_id: %. No approval request found with this id.', NEW.request_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate part_code (soft FK to ores_inbox_approval_parts_tbl)
-    if not exists (
-        select 1 from ores_inbox_approval_parts_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and code = NEW.part_code
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid part_code: %. No approval part found with this code.', NEW.part_code
             using errcode = '23503';
     end if;
 

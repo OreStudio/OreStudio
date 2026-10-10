@@ -3,8 +3,9 @@
 An entity model marks itself gated with ``:gated: true`` in its ``* Flags``
 drawer. The pending change of such an entity is a table with the entity's own
 columns, the same foreign keys and the same lookup validation, plus the request
-it belongs to, a line number, the operation, the version the maker read and the
-part that decides the line. This script writes that table's model as an
+it belongs to, a line number, the operation and the version the maker read. A
+line holds no part: the request holds the parts, chosen by the policy from the
+columns its lines change. This script writes that table's model as an
 ordinary entity model beside the source, so every existing archetype applies to
 it and a change to the source reaches the pending table in the same
 regeneration.
@@ -45,6 +46,7 @@ One proposed write inside a request.
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
+:natural_key: true
 :END:
 
 The approval request this line belongs to.
@@ -57,8 +59,9 @@ ctx.generate_uuid()
 
 ** line_no
 :PROPERTIES:
-:type:     integer
-:cpp_type: int
+:type:        integer
+:cpp_type:    int
+:natural_key: true
 :END:
 
 The place of this line in its request, from one.
@@ -91,20 +94,6 @@ The version of the live row the maker read, or zero for a new row.
 0
 #+end_src
 
-** part_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:END:
-
-The approval part that decides this line.
-
-References the approval parts the system tenant holds.
-
-#+begin_src cpp :name generator
-std::string("operations")
-#+end_src
-
 """
 
 
@@ -120,17 +109,6 @@ FOREIGN_KEYS_HEAD = """\
 :END:
 
 The request the line belongs to.
-
-** part_code
-:PROPERTIES:
-:table:             ores_inbox_approval_parts_tbl
-:target_column:     code
-:use_system_tenant: true
-:nullable:          false
-:error_message:     Invalid part_code: %. No approval part found with this code.
-:END:
-
-The part that decides the line.
 
 """
 

@@ -82,10 +82,6 @@
 // system-tenant grand-parent is read rather than generated.
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-// Soft-FK parent seeding (ores_inbox_approval_parts_tbl): the parent may live in another
-// component, so its own component names the headers. A system-tenant parent
-// is read rather than generated, so it needs no generator.
-#include "ores.inbox.core/repository/approval_part_repository.hpp"
 // Soft-FK parent seeding (ores_refdata_currencies_tbl): the parent may live in another
 // component, so its own component names the headers. A system-tenant parent
 // is read rather than generated, so it needs no generator.
@@ -216,18 +212,6 @@ TEST_CASE("write_book_change_publishes_an_event", tags) {
     ores::inbox::repository::approval_request_repository request_id_repo;
     request_id_repo.write(party_ctx, request_id_parent);
     v.request_id = request_id_parent.id;
-    // approval_part is system-tenant reference data: reference a
-    // seeded catalogue row instead of creating one, so the shared system
-    // catalogue keeps exactly the rows the populate scripts put there. The
-    // referencing row's insert trigger resolves the parent under the system
-    // tenant.
-    {
-        ores::inbox::repository::approval_part_repository part_code_catalogue_repo;
-        const auto part_code_catalogue = part_code_catalogue_repo.read_latest(
-            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
-        REQUIRE_FALSE(part_code_catalogue.empty());
-        v.part_code = part_code_catalogue.front().code;
-    }
     // Seed the active currency row ores_refdata_currencies_tbl references:
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.

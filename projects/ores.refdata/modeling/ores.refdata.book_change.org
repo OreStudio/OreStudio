@@ -42,6 +42,7 @@ One proposed write inside a request.
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
+:natural_key: true
 :END:
 
 The approval request this line belongs to.
@@ -54,8 +55,9 @@ ctx.generate_uuid()
 
 ** line_no
 :PROPERTIES:
-:type:     integer
-:cpp_type: int
+:type:        integer
+:cpp_type:    int
+:natural_key: true
 :END:
 
 The place of this line in its request, from one.
@@ -86,20 +88,6 @@ The version of the live row the maker read, or zero for a new row.
 
 #+begin_src cpp :name generator
 0
-#+end_src
-
-** part_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:END:
-
-The approval part that decides this line.
-
-References the approval parts the system tenant holds.
-
-#+begin_src cpp :name generator
-std::string("operations")
 #+end_src
 
 ** entity_id
@@ -389,17 +377,6 @@ std::nullopt
 :END:
 
 The request the line belongs to.
-
-** part_code
-:PROPERTIES:
-:table:             ores_inbox_approval_parts_tbl
-:target_column:     code
-:use_system_tenant: true
-:nullable:          false
-:error_message:     Invalid part_code: %. No approval part found with this code.
-:END:
-
-The part that decides the line.
 
 ** functional_currency
 :PROPERTIES:

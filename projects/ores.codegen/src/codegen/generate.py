@@ -896,12 +896,20 @@ def _generate_single(
 
 
 def cmd_generate(args: Any, base_dir: Path) -> int:
-    return _generate_single(
-        Path(args.model).resolve(),
-        args.dry_run,
-        base_dir,
-        address=args.address,
-    )
+    model = Path(args.model).resolve()
+    rc = _generate_single(model, args.dry_run, base_dir, address=args.address)
+    if rc != 0 or args.dry_run:
+        return rc
+
+    # A gated entity's pending change is derived from its model, so a change
+    # to the model reaches the pending table in the same regeneration.
+    from .pending_change import write_derived  # noqa: PLC0415
+
+    derived = write_derived(model)
+    if derived is None:
+        return 0
+    log.info("Derived %s", derived)
+    return _generate_single(derived, args.dry_run, base_dir, address=args.address)
 
 
 def cmd_regenerate(args: Any, base_dir: Path) -> int:

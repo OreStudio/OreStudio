@@ -8,12 +8,12 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/read-and-write-scenario-docs-in-the-bff
-#+pr:
+#+pr: 3079
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The BFF lists scenarios, reads one with its steps, finds a story or task doc by 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -48,9 +48,19 @@ The BFF lists scenarios, reads one with its steps, finds a story or task doc by 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three layers, each in =projects/ores.web/packages/bff/src/scenarios/=.
+
+1. =scenario-doc.ts= is pure. =parseScenario= reads the text of a scenario doc. =recordRun= returns new text with a run written in. It uses the =@ores/org= outline, so it edits lines in place and leaves every other line alone.
+2. =scenario-store.ts= is the interface: =list=, =read=, =readDoc=, =record=. A database store can replace the files later.
+3. =file-scenario-store.ts= keeps scenarios as files under a doc root. A scan reads the head of each .org file for its :ID:, and an id lookup finds only a file the scan found. A write goes to a temporary file and is renamed over the doc.
+
+Decisions:
+
+- A client is a level-two heading that has a child other than =Result=. The Clients cell is not trusted, because the template says the cell is blank for one client and old docs disagree.
+- A step is named by its client and its title. A save that names a missing step, or a title the doc repeats, refuses the whole save.
+- A closed Results status (PASSED or FAILED) outranks the State row, because the Qt runner wrote only the Results table. 89 scenarios in the corpus show PASSED there with State at PENDING.
+- A save sets Status and Notes in a Result table and keeps any other row, so a later task can add an image row.
+- The doc root is =ORES_WEB_DOC_ROOT=. Unset means the runner is off.
 
 * Measurements
 
@@ -64,9 +74,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| .org files under doc/ | 6829 | =find doc -name '*.org' \| wc -l= | 868a64737b + this branch |
+| Scenario docs the store lists | 134 | =FileScenarioStore.list()= on doc/, 16 of them waiting | this branch |
+| A scan: walk, stat every file | about 0.44 s | a temporary vitest timing walk 157 ms + stat 285 ms, load average low | this branch |
+| A list within the rescan interval | 1 ms | a temporary vitest timing, =rescanAfterMs= 600000 | this branch |
+| A cold list, and a list that rescans | 3.4 s, and 1.7 to 3.2 s | the same timing at load average 50 from other builds | this branch |
+| BFF suite | 50 files, 450 tests pass | =npx vitest run= in packages/bff | this branch |
 
 * Notes
+
+- Two saves of one scenario do not merge. Saves to one file run one after the other, and each writes only the steps it names. The last save to name a step wins that step. A step that only the first save named keeps the first save's result.
+- A save writes the whole doc back with the doc's own line end and a final line end. A byte order mark is dropped.
+- A note goes in one table cell. A line end becomes "; " and a pipe becomes "/", as in the Qt runner.
+- The scan does not follow a symbolic link. Before a read or a write, the real path of the file must sit inside the real doc root, else =PathEscapeError=.
+- The tests read the two scenario fixtures of the =@ores/org= package. A second copy would repeat their :ID: in the corpus.
+- Nothing calls compass. A test renders the current =doc_test_scenario.org.mustache= template and parses it, so a change to the template shows up there.
+- A call for the Tests queue reads one index entry per doc and caches each scenario summary by file time and size. The first call after a start scans the tree.
 
 * Test Scenarios
 
@@ -83,12 +106,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3079][#3079]] | [web] Read and write scenario docs in the BFF |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A concurrent first request can see an empty store | file-scenario-store.ts | Fix | A scan in progress is shared, and a caller waits for it. A test with three concurrent first calls passes. Without the fix it fails. |
+| 2 | A failed scan blocks retries for the interval | file-scenario-store.ts | Fix | The scan time is set only after a scan succeeds. A file or folder that vanishes during the walk is skipped. A test with an unreadable folder passes, and fails without the fix. |
+| 3 | A file is dropped when its keywords sit past 4096 bytes | file-scenario-store.ts | Fix | The head read goes on in chunks to the first heading, up to 64 KB. The :ID: drawer comes first in a compass doc, so the field at risk was #+type:. A test with a 7 KB description passes, and fails without the fix. |
+| 4 | Index entries are stale for an edit made outside the BFF | file-scenario-store.ts | Document | The class comment says so. The text is always read fresh, and a save updates its own entry. |
+| 5 | A lost update when an editor saves between the read and the rename | file-scenario-store.ts | Decline | The window is a few system calls, and a conflict check needs a seam to test and a way for the runner to show it. Last write wins is a stated decision. Task 5 may add a conflict check if a tester meets it. |
+| 6 | A step named twice in one save is dropped without a word | scenario-doc.ts | Fix | A new DuplicateOutcomeError refuses the save. A test covers it. |
+| 7 | A pipe and a line end in a note come back changed | scenario-doc.ts | Document | The comment on StepOutcome says so, for the UI. |
+| 8 | A created Results table has no blank line after it | scenario-doc.ts | Fix | A trailing blank line is added, with a test. |
+| 9 | A doc with no Results section lists and reads, but a save fails | scenario-doc.ts | Note | Task 3 maps the errors to HTTP statuses. The note is in its task. |
+| 10 | Nits: queue key, same-tick edits, negative cache | file-scenario-store.ts | Comment, decline | The queue key has a comment. The other two are not worth the code. |
 
 * Result
+
+The BFF has a scenario store in projects/ores.web/packages/bff/src/scenarios. A pure codec, scenario-doc.ts, reads a scenario doc with parseScenario and writes a run into its text with recordRun. The write changes only the Result tables of the steps it names, the Results table and the State row, and every other line stays. The store sits behind the ScenarioStore interface, and the file store keeps its docs under ORES_WEB_DOC_ROOT. It lists scenarios, reads one with its steps, finds any doc by its :ID: and records a run. Nothing calls compass.
+
+A client is a level-two heading that has a child other than Result, and a step is named by its client and its title. A save that names a missing, repeated or doubled step refuses the whole save. A closed Results status outranks the State row, because the Qt runner never updated State: 89 old scenarios show PASSED in Results with State at PENDING. Of the 134 scenarios in the repository, 16 are waiting.
+
+The tests number 47 for the store and 2 for the config, and the BFF suite passes with 456. They use the two real fixtures of @ores/org, the current compass template rendered and parsed, and every scenario doc in the repository, each taking a full run back without losing a step. Removing the root guard, the id check, the shared scan, the retry after a failed scan or the long head read each fails its own test. The review found three real faults in the first scan code, and all three are fixed. A save is a read and a rename, so an editor that saves between the two loses its edit. Last write wins, and task 5 may add a conflict check. Task 3 serves the store and maps its errors to statuses.

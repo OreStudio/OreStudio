@@ -8,7 +8,7 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/prototype-the-qa-validation-runner
-#+pr:
+#+pr: 3063
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3063][#3063]] | [prototype] Draw the test scenarios queue and runner |
 
 * Review
 

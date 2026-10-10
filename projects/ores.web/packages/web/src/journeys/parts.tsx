@@ -649,8 +649,10 @@ export function RunStep({
                 {warning !== '' && (
                     <span className="mt-0.5 block text-xs text-warn">{warning}</span>
                 )}
+                {step.error !== '' && (
+                    <span className="mt-0.5 block text-xs text-down">{step.error}</span>
+                )}
             </span>
-            {step.error !== '' && <span className="text-xs text-down">{step.error}</span>}
         </li>
     );
 }

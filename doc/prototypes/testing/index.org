@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 2A0C31F1-6535-46A3-BDC9-DF47A14C7F3C
+:END:
+#+title: Testing prototypes
+#+description: The prototypes that answer to testing inside ores.web: what each argues, and the Gemini review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:testing:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+* Summary
+
+Working through a test scenario in the browser, and seeing what waits for a
+tester.
+
+1 prototype answers to this group. Each one is a static page under
+=doc/prototypes/=, opens with no build and no session, and reads mock data
+only. The table below opens each one and says what it argues. Where a
+prototype carries a Gemini review, the last column opens it: a review is a
+generated alternative kept beside the agreed design, never instead of it.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype | What it argues | Open it | Review |
+|-----------+----------------+---------+--------|
+| [[file:test-scenarios.org][Test scenarios]] | A tester's two screens: the queue of scenarios waiting and done, and the runner that works through one. The runner is steps beside the detail, one step at a time, or the whole scenario as a document. Every variant states that nothing reads or writes a scenario yet. | [[file:test-scenarios/][prototype]] | none |
+
+* Adding a prototype
+
+Create =doc/prototypes/testing/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Open the page with
+the links table every prototype carries, and leave its review row at
+=none=. Add a row to the table above, with the design note beside the
+prototype when there is one. Stop there: the site build finds every
+prototype under this tree, so no build file names it.

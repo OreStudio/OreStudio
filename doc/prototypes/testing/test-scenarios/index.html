@@ -182,8 +182,9 @@ tbody tr.open:hover { background: var(--overlay); }
   <h2>What this prototype argues</h2>
   <p class="muted">A tester has two jobs on two screens: find what is waiting, then work through one scenario. The queue is one design. The variants change only the runner, because that is where the tester spends the time.</p>
   <ul>
-    <li><strong>A · Steps beside the detail (recommended for a wide window).</strong> The steps are a list on the left and the chosen step fills the right. The tester sees where they are in the whole scenario and the whole step at once.</li>
-    <li><strong>B · One step at a time (recommended for a narrow window).</strong> The tester runs the scenario in one browser window and the application in another. A narrow window shows one step, a progress bar and the two verdict buttons, and moves on after a verdict.</li>
+    <li><strong>Accepted on 2026-10-10: variant B.</strong> The rejected layouts stay here, switchable from the bar at the foot.</li>
+    <li><strong>A · Steps beside the detail.</strong> The steps are a list on the left and the chosen step fills the right. The tester sees where they are in the whole scenario and the whole step at once.</li>
+    <li><strong>B · One step at a time (accepted).</strong> The tester runs the scenario in one browser window and the application in another. A narrow window shows one step, a progress bar and the two verdict buttons. A Pass moves on. A Fail stays, so the tester can write the note first.</li>
     <li><strong>C · The document.</strong> The scenario reads top to bottom like the org page, with the controls under each step. It suits a finished scenario that someone reopens to read, and a reviewer who wants every note on one page.</li>
     <li><strong>The queue is the front door.</strong> A notification in the bell and a row in the queue open the same scenario. The bell here is mock. No notification kind exists for a waiting test.</li>
     <li><strong>The overall result is inferred, never set.</strong> Any FAIL makes the scenario FAILED. All PASS makes it PASSED. Anything else leaves it PENDING. The tester marks steps, not the scenario.</li>
@@ -253,20 +254,21 @@ tbody tr.open:hover { background: var(--overlay); }
   ];
 
   const clone = (s) => JSON.parse(JSON.stringify(s));
+  /* A scenario is closed when it was saved with every step decided, or arrives done. Marking steps while running never closes it. */
+  const fresh = () => SCENARIOS.map((s) => { const c = clone(s); c.closed = overall(c) !== 'pending'; return c; });
   const CASES = [['queue', 'Queue'], ['running', 'Running'], ['reopened', 'Reopened'], ['failed', 'Failed step']];
   const OPEN_FOR_CASE = { running: 'role-offer', reopened: 'run-token', failed: 'new-instruments' };
 
   const q = new URLSearchParams(location.search);
   const state = {
-    variant: q.get('variant') || 'a',
+    variant: q.get('variant') || 'b',
     occasion: q.get('case') || 'queue',
-    list: SCENARIOS.map(clone),
+    list: fresh(),
     openId: null,
     stepIx: 0,
     tab: 'steps',
     bell: false,
     toast: '',
-    retest: false,
   };
 
   const $ = (id) => document.getElementById(id);
@@ -282,12 +284,11 @@ tbody tr.open:hover { background: var(--overlay); }
   }
   const label = { pass: 'PASSED', fail: 'FAILED', pending: 'PENDING' };
   const done = (s) => s.steps.filter((x) => x.status !== 'pending').length;
-  const isReadOnly = (s) => overall(s) !== 'pending' && !state.retest;
+  const isReadOnly = (s) => s.closed;
   const waiting = () => state.list.filter((s) => overall(s) === 'pending');
 
   function openScenario(id) {
     state.openId = id;
-    state.retest = false;
     state.tab = 'steps';
     const s = current();
     const first = s.steps.findIndex((x) => x.status === 'pending');
@@ -328,7 +329,6 @@ tbody tr.open:hover { background: var(--overlay); }
         <button role="tab" class="soon" aria-selected="false" title="Story 2 of the arc">Stories</button>
         <button role="tab" class="soon" aria-selected="false" title="Story 2 of the arc">Tasks</button>
       </div>
-      <section class="card pad"><div class="head"><div><h1>Tests</h1><p class="muted">Scenarios waiting for a tester, and the ones already done.</p></div></div></section>
       <section class="card">
         <div class="pad" style="padding-bottom:.5rem"><h2>Waiting <span class="chip">${wait.length}</span></h2></div>
         <div class="table-wrap"><table>${head}<tbody>${wait.map(row).join('') || '<tr><td colspan="5" class="muted">Nothing is waiting.</td></tr>'}</tbody></table></div>
@@ -508,7 +508,7 @@ tbody tr.open:hover { background: var(--overlay); }
   function render() {
     $('app').innerHTML = `${state.openId ? runner() : queue()}${gaps()}
       <p class="mini faint">Mock data. No server is read and no write leaves this page. The scenarios and their steps are invented.</p>`;
-    $('variant-seg').innerHTML = [['a', 'A · Steps beside the detail'], ['b', 'B · One step at a time'], ['c', 'C · The document']]
+    $('variant-seg').innerHTML = [['a', 'A · Steps beside the detail'], ['b', 'B · One step at a time ✓'], ['c', 'C · The document']]
       .map(([id, text]) => `<button data-variant="${id}" aria-pressed="${state.variant === id}" ${state.openId ? '' : 'title="Applies to the runner"'}>${esc(text)}</button>`).join('');
     $('case-seg').innerHTML = CASES.map(([id, text]) => `<button data-case="${id}" aria-pressed="${state.occasion === id}">${esc(text)}</button>`).join('');
     bellMenu();
@@ -531,9 +531,8 @@ tbody tr.open:hover { background: var(--overlay); }
     const c = t.closest('[data-case]');
     if (c) {
       state.occasion = c.dataset.case;
-      state.list = SCENARIOS.map(clone);
+      state.list = fresh();
       state.openId = null;
-      state.retest = false;
       if (OPEN_FOR_CASE[state.occasion]) openScenario(OPEN_FOR_CASE[state.occasion]);
       sync(); render(); return;
     }
@@ -553,7 +552,7 @@ tbody tr.open:hover { background: var(--overlay); }
       const s = current();
       const ix = ver.dataset.vi !== undefined ? Number(ver.dataset.vi) : state.stepIx;
       s.steps[ix].status = ver.dataset.verdict;
-      if (state.variant === 'b' && ver.dataset.verdict !== 'pending' && ix < s.steps.length - 1) state.stepIx = ix + 1;
+      if (state.variant === 'b' && ver.dataset.verdict === 'pass' && ix < s.steps.length - 1) state.stepIx = ix + 1;
       render(); return;
     }
     const shot = t.closest('[data-shot]');
@@ -566,16 +565,20 @@ tbody tr.open:hover { background: var(--overlay); }
     if (t.closest('[data-save]')) {
       const s = current();
       s.updated = 'Just now';
-      toast(`Saved. The build records the ${label[overall(s)]} state and each step's result in the scenario doc.`);
+      s.closed = overall(s) !== 'pending';
+      toast(s.closed
+        ? `Saved and closed as ${label[overall(s)]}. The build records the state and each step's result in the scenario doc.`
+        : `Saved. ${s.steps.length - done(s)} steps are still to mark. The scenario stays open.`);
+      render();
       return;
     }
     if (t.closest('[data-retest]')) {
+      if (!confirm('A retest clears every step and a save overwrites the earlier result. Git keeps the history. Continue?')) return;
       const s = current();
       s.steps.forEach((x) => { x.status = 'pending'; x.notes = ''; x.shots = []; });
-      state.retest = true;
+      s.closed = false;
       state.stepIx = 0;
-      toast('The steps are clear. A save overwrites the earlier result. Git keeps the history.');
-      return;
+      render(); return;
     }
     if (state.bell && !t.closest('#bell-menu')) { state.bell = false; render(); }
   });

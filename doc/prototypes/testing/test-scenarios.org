@@ -34,8 +34,10 @@ Open the [[file:test-scenarios/][prototype]].
 
 ** The verdict
 
-Not yet given. The three variants stay switchable from the bar at the foot of
-the page until the tester and the story owner choose one.
+Accepted on 2026-10-10: variant B, one step at a time. A Pass moves on to the
+next step. A Fail stays on the step, so the tester can write the note first. The
+rejected layouts stay in the prototype, switchable from the bar at the foot of
+the page. The queue carries no heading of its own, because the Tests tab names it.
 
 ** The queue
 
@@ -49,7 +51,7 @@ bell and a row in the queue open the same scenario.
 | Variant | Shape | What it settles | What it gives up |
 |---------+-------+-----------------+------------------|
 | A · Steps beside the detail | A list of steps on the left, the chosen step on the right | The tester sees the whole scenario and one whole step at once | It needs a wide window |
-| B · One step at a time | A progress bar, one step, and the verdict buttons, which move on | It fits a narrow window beside the application under test | The tester sees the rest of the scenario only on request |
+| B · One step at a time (accepted) | A progress bar, one step, and the verdict buttons. A Pass moves on and a Fail stays | It fits a narrow window beside the application under test | The tester sees the rest of the scenario only on request |
 | C · The document | Every step in order with its controls under it | It reads like the org page, so a finished scenario is easy to review | A long scenario makes the tester scroll |
 
 ** The overall result is inferred
@@ -81,7 +83,14 @@ PASSED. Anything else leaves it PENDING. The same rule ran in the Qt tool.
    production is open.
 7. *A retest overwrites.* It rewrites the result in the org file and git keeps
    the history. Keeping each run is the alternative, and the prototype does not
-   choose.
+   choose. A retest asks for confirmation first.
+
+** A scenario closes when it is saved decided
+
+Marking steps never closes a scenario. A save closes it when no step is pending,
+and a retest opens it again. A scenario that arrives done opens closed and
+read-only. A first version of the page derived this from the steps and locked a
+scenario the moment a tester marked a step Fail. The review caught it.
 
 * See also
 

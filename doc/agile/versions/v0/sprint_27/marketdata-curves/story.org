@@ -213,6 +213,10 @@ made the URI the only identity, and no journey asks for points across series by
 coordinate. The reopening event is such a journey. The form then is an index on a
 derived projection of the URI's parts, not a column and not a table.
 
+The series identity is different. The "joinable identity" story projected a series'
+identity into one column per codec field on =market_series=, a cold table of few rows.
+This decision concerns the point, a hot hypertable row, and it leaves that story intact.
+
 Rejected: coordinate columns on the observation. They give a row two identities that
 can disagree, and they put one facet's coordinate on a generic table.
 

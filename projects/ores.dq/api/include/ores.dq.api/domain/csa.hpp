@@ -75,12 +75,12 @@ struct csa final {
     /**
      * @brief The exposure the firm may owe before it must post.
      */
-    std::optional<double> threshold_pay;
+    std::optional<ores::utility::decimal::decimal> threshold_pay;
 
     /**
      * @brief The exposure the counterparty may owe before it must post.
      */
-    std::optional<double> threshold_receive;
+    std::optional<ores::utility::decimal::decimal> threshold_receive;
 
     /**
      * @brief The smallest amount the firm transfers.

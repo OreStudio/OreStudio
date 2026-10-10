@@ -46,8 +46,8 @@ struct csa_write {
     std::optional<std::string> bilateral;
     std::optional<std::string> csa_currency;
     std::optional<std::string> index_name;
-    std::optional<double> threshold_pay;
-    std::optional<double> threshold_receive;
+    std::optional<ores::utility::decimal::decimal> threshold_pay;
+    std::optional<ores::utility::decimal::decimal> threshold_receive;
     std::optional<ores::utility::decimal::decimal> minimum_transfer_amount_pay;
     std::optional<ores::utility::decimal::decimal> minimum_transfer_amount_receive;
     std::optional<ores::utility::decimal::decimal> independent_amount_held;

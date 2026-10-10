@@ -51,8 +51,8 @@ struct csa_entity {
     std::optional<std::string> bilateral;
     std::optional<std::string> csa_currency;
     std::optional<std::string> index_name;
-    std::optional<double> threshold_pay;
-    std::optional<double> threshold_receive;
+    std::optional<std::string> threshold_pay;
+    std::optional<std::string> threshold_receive;
     std::optional<std::string> minimum_transfer_amount_pay;
     std::optional<std::string> minimum_transfer_amount_receive;
     std::optional<std::string> independent_amount_held;

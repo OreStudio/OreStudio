@@ -40,8 +40,8 @@ export interface Csa {
     bilateral: string | null;
     csa_currency: string | null;
     index_name: string | null;
-    threshold_pay: number | null;
-    threshold_receive: number | null;
+    threshold_pay: string | null;
+    threshold_receive: string | null;
     minimum_transfer_amount_pay: string | null;
     minimum_transfer_amount_receive: string | null;
     independent_amount_held: string | null;

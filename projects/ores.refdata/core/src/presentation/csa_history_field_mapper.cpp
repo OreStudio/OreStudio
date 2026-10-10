@@ -46,10 +46,10 @@ std::vector<ores::diff::domain::field_value> render_csa_fields(const domain::csa
     fields.push_back({.name = "Csa Currency", .value = v.csa_currency.value_or(std::string{})});
     fields.push_back({.name = "Index Name", .value = v.index_name.value_or(std::string{})});
     fields.push_back({.name = "Threshold Pay",
-                      .value = v.threshold_pay ? std::to_string(*v.threshold_pay) : std::string{}});
+                      .value = v.threshold_pay ? v.threshold_pay->to_string() : std::string{}});
     fields.push_back(
         {.name = "Threshold Receive",
-         .value = v.threshold_receive ? std::to_string(*v.threshold_receive) : std::string{}});
+         .value = v.threshold_receive ? v.threshold_receive->to_string() : std::string{}});
     fields.push_back({.name = "Minimum Transfer Amount Pay",
                       .value = v.minimum_transfer_amount_pay ?
                                    v.minimum_transfer_amount_pay->to_string() :

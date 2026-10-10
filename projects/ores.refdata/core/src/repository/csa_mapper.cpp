@@ -54,8 +54,15 @@ domain::csa csa_mapper::map(const csa_entity& v) {
     r.bilateral = v.bilateral;
     r.csa_currency = v.csa_currency;
     r.index_name = v.index_name;
-    r.threshold_pay = v.threshold_pay;
-    r.threshold_receive = v.threshold_receive;
+    r.threshold_pay =
+        v.threshold_pay.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.threshold_pay).value()) :
+            std::nullopt;
+    r.threshold_receive =
+        v.threshold_receive.has_value() ?
+            std::optional(
+                ores::utility::decimal::decimal::from_string(*v.threshold_receive).value()) :
+            std::nullopt;
     r.minimum_transfer_amount_pay = v.minimum_transfer_amount_pay.has_value() ?
                                         std::optional(ores::utility::decimal::decimal::from_string(
                                                           *v.minimum_transfer_amount_pay)
@@ -116,8 +123,11 @@ csa_entity csa_mapper::map(const domain::csa& v) {
     r.bilateral = v.bilateral;
     r.csa_currency = v.csa_currency;
     r.index_name = v.index_name;
-    r.threshold_pay = v.threshold_pay;
-    r.threshold_receive = v.threshold_receive;
+    r.threshold_pay =
+        v.threshold_pay.has_value() ? std::optional(v.threshold_pay->to_string()) : std::nullopt;
+    r.threshold_receive = v.threshold_receive.has_value() ?
+                              std::optional(v.threshold_receive->to_string()) :
+                              std::nullopt;
     r.minimum_transfer_amount_pay = v.minimum_transfer_amount_pay.has_value() ?
                                         std::optional(v.minimum_transfer_amount_pay->to_string()) :
                                         std::nullopt;

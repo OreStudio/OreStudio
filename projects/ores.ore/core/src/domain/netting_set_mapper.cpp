@@ -141,8 +141,8 @@ refdata::domain::csa map_csa(const nettingsetdefinitions_NettingSet_t_CSADetails
     if (d.CSACurrency)
         r.csa_currency = to_string(*d.CSACurrency);
     r.index_name = text(d.Index);
-    r.threshold_pay = number(d.ThresholdPay);
-    r.threshold_receive = number(d.ThresholdReceive);
+    r.threshold_pay = number_decimal(d.ThresholdPay);
+    r.threshold_receive = number_decimal(d.ThresholdReceive);
     r.minimum_transfer_amount_pay = number_decimal(d.MinimumTransferAmountPay);
     r.minimum_transfer_amount_receive = number_decimal(d.MinimumTransferAmountReceive);
     if (d.IndependentAmount) {
@@ -174,8 +174,8 @@ reverse_csa(const refdata::domain::csa& c,
     if (c.csa_currency)
         d.CSACurrency = parse_currency_code(*c.csa_currency);
     put_text(d.Index, c.index_name);
-    put(d.ThresholdPay, c.threshold_pay);
-    put(d.ThresholdReceive, c.threshold_receive);
+    put_decimal(d.ThresholdPay, c.threshold_pay);
+    put_decimal(d.ThresholdReceive, c.threshold_receive);
     put_decimal(d.MinimumTransferAmountPay, c.minimum_transfer_amount_pay);
     put_decimal(d.MinimumTransferAmountReceive, c.minimum_transfer_amount_receive);
     if (c.independent_amount_held.has_value() != c.independent_amount_type.has_value())

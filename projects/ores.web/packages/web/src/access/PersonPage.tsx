@@ -34,12 +34,7 @@ import { SignInsPanel } from './SignIns.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { ContactTab, IdentityTab, useAccountWrites } from './PersonForms.js';
-import {
-    ACCOUNT_ENTITY,
-    PersonRevertDialog,
-    isRevertable,
-    latestVersion,
-} from './PersonRevert.js';
+import { ACCOUNT_ENTITY, PersonRevertDialog, isRevertable, latestVersion } from './PersonRevert.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { useHolds } from './holds.js';
 import { RecordHeader } from '../refdata/records.js';

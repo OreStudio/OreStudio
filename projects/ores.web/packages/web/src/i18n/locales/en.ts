@@ -138,6 +138,10 @@ export const en: SourceCatalogue = {
             title: 'Staff',
             lead: 'Who can sign in to this tenant, and the roles each one holds.',
             leadNoRoles: 'Who can sign in to this tenant.',
+            leadParties:
+                'The people who work in the parties you work in, and everyone who reports to you.',
+            findStaff: 'Search by name, username or job title',
+            partiesColumn: 'Parties',
             person: 'Person',
             roles: 'Roles',
             noRole: 'No role',
@@ -2417,10 +2421,6 @@ export const en: SourceCatalogue = {
         reporting: {
             party: 'Party',
             allParties: 'All parties',
-            lens: 'View',
-            lensReporting: 'Reporting line',
-            lensParty: 'By party',
-            byParty: 'People by party',
             noParty: 'Works in no party',
             outside: 'Reports to someone you cannot see',
             outsideManager: 'Someone outside your view',

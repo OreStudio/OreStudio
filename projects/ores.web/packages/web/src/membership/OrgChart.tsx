@@ -23,7 +23,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import type { ReportingTreeNode, ReportingTreeParty } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button } from '../ui/Primitives.js';
-import { Badges, NameLink, NodeAvatar, nameOf } from './NodeParts.js';
+import { Badges, NameLink, NodeAvatar, PartyLine, nameOf } from './NodeParts.js';
 import { partyLabel, type PartyBranch, type PartyForest } from './organisation.js';
 
 /** How far the chart zooms out and in, and by how much a click moves it. */
@@ -42,7 +42,8 @@ interface Marks {
 
 /**
  * The org chart: each person as a card above the people who report to them, or
- * each party as a card above the parties below it, with its people inside.
+ * each party as a box above the parties below it, with the reporting chart of
+ * its people inside.
  *
  * It draws the same read as the list, and a person's card opens their page when
  * the reader may read accounts. The chart is as wide as its widest level, so it
@@ -158,13 +159,9 @@ function Card({ node, marks }: { readonly node: ReportingTreeNode; readonly mark
                 {nameOf(node)}
             </span>
             <span className="text-xs text-ink-muted">{node.jobTitle}</span>
+            <PartyLine node={node} parties={marks.parties} />
             <span className="flex justify-center">
-                <Badges
-                    node={node}
-                    isMe={isMe}
-                    isAdmin={marks.admins.has(node.accountId)}
-                    parties={marks.parties}
-                />
+                <Badges node={node} isMe={isMe} isAdmin={marks.admins.has(node.accountId)} />
             </span>
         </NameLink>
     );
@@ -214,11 +211,16 @@ function PartyBox({
                 {branch.party.shortCode !== '' && branch.party.name !== '' && (
                     <p className="font-mono text-[11px] text-ink-faint">{branch.party.shortCode}</p>
                 )}
-                <div className="mt-2 flex flex-wrap justify-center gap-2">
-                    {branch.members.map((node) => (
-                        <Card key={node.accountId} node={node} marks={marks} />
+                <ul className="mt-2">
+                    {branch.shape.roots.map((node) => (
+                        <Branch
+                            key={node.accountId}
+                            node={node}
+                            children={branch.shape.children}
+                            marks={marks}
+                        />
                     ))}
-                </div>
+                </ul>
             </div>
             {branch.below.length > 0 && (
                 <ul>

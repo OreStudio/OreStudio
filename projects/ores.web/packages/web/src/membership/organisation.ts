@@ -25,10 +25,10 @@ import type { ReportingTreeNode, ReportingTreeParty } from '@ores/wire-protocol/
  * The shapes the Hierarchy screen draws from one tree read.
  *
  * The read is a forest of people, each with one manager and any number of
- * parties. Two lenses draw it: the reporting line, where each person appears
- * once under their manager, and the party, where each party lists the people who
- * work in it and a person in several parties appears in each. The parties nest
- * by their own parent, which is a separate hierarchy from the reporting line.
+ * parties. It is drawn by party: each party holds the reporting tree of the
+ * people who work in it, so a person in several parties appears in each. The
+ * parties nest by their own parent, which is a separate hierarchy from the
+ * reporting line. A tenant with no parties is drawn as one reporting tree.
  */
 
 /** The people who work in a party, or everybody when none is chosen. */
@@ -74,6 +74,8 @@ export function shapeOf(nodes: readonly ReportingTreeNode[]): Shape {
 export interface PartyBranch {
     readonly party: ReportingTreeParty;
     readonly members: readonly ReportingTreeNode[];
+    /** The party's people as a reporting forest: each once, under their manager in the party. */
+    readonly shape: Shape;
     readonly below: readonly PartyBranch[];
 }
 
@@ -125,11 +127,15 @@ export function partyForest(
     }
     const sortParties = (entries: readonly ReportingTreeParty[]) =>
         [...entries].sort((a, b) => partyLabel(a).localeCompare(partyLabel(b)));
-    const branch = (entry: ReportingTreeParty): PartyBranch => ({
-        party: entry,
-        members: nodes.filter((node) => node.partyIds.includes(entry.partyId)).sort(byName),
-        below: sortParties(belowOf.get(entry.partyId) ?? []).map(branch),
-    });
+    const branch = (entry: ReportingTreeParty): PartyBranch => {
+        const members = nodes.filter((node) => node.partyIds.includes(entry.partyId)).sort(byName);
+        return {
+            party: entry,
+            members,
+            shape: shapeOf(members),
+            below: sortParties(belowOf.get(entry.partyId) ?? []).map(branch),
+        };
+    };
     const chosen = party === '' ? tops : parties.filter((entry) => entry.partyId === party);
     return {
         branches: sortParties(chosen).map(branch),

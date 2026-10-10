@@ -36,9 +36,16 @@ import { Timeline } from '../timeline/Timeline.js';
 import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
-import { Badges, NameLink, NodeAvatar, TENANT_ADMIN, nameOf } from './NodeParts.js';
+import { Badges, NameLink, NodeAvatar, PartyLine, TENANT_ADMIN, nameOf } from './NodeParts.js';
 import { OrgChart } from './OrgChart.js';
-import { inParty, partyForest, partyLabel, shapeOf, type PartyBranch } from './organisation.js';
+import {
+    inParty,
+    partyForest,
+    partyLabel,
+    shapeOf,
+    type PartyBranch,
+    type Shape,
+} from './organisation.js';
 import { PersonSearch } from './PersonSearch.js';
 
 /** The entity whose versions carry a person's reporting line. */
@@ -76,24 +83,18 @@ export function lineTimeline(
  * The read answers what the reader may see: the whole tenant for an
  * administrator, and for anybody else the people who work in the parties they
  * work in and everyone who reports to them. It opens on the signed-in person.
- * Two lenses draw it. The reporting line puts each person once under their
- * manager. The party lens lists the people of each party, nested by the party's
- * own parent, so a person who works in two parties appears in both. A party
- * filter narrows either to one party when the reader sees several.
+ * It is drawn by party, the parties nested by their own parent. Each party
+ * holds the reporting tree of the people who work in it, so a person who works
+ * in two parties appears in both, under their manager each time. A tenant with
+ * no parties is drawn as one reporting tree. A party filter narrows it to one
+ * party when the reader sees several.
  *
  * A person is opened only by a reader who may read accounts, and the history is
  * theirs too, because both are account reads. Changing a line is a dialog with
  * the reason it states, and the manager picker cannot offer anybody who reports
  * to the person, so the screen cannot ask for a ring.
  */
-export function ReportingLinesPage({
-    me,
-    startLens = 'reporting',
-}: {
-    readonly me: string;
-    /** The lens the screen opens on; the reporting line unless a test or a link says otherwise. */
-    readonly startLens?: 'reporting' | 'party';
-}): ReactNode {
+export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
     const holds = useHolds();
@@ -104,7 +105,6 @@ export function ReportingLinesPage({
     const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
     const [editing, setEditing] = useState(false);
     const [party, setParty] = useState('');
-    const [lens, setLens] = useState<'reporting' | 'party'>(startLens);
     const { tab, bar } = useTabs({
         label: t('access.hub.hierarchy'),
         tabs: mayReadAccounts ? ['tree', 'chart', 'history'] : ['tree', 'chart'],
@@ -206,6 +206,22 @@ export function ReportingLinesPage({
         parties: partyById,
         openable: mayReadAccounts,
     };
+    const list: TreeList = {
+        collapsed,
+        selectedId: selected?.accountId ?? '',
+        marks,
+        onSelect: setSelectedId,
+        onToggle: (id) =>
+            setCollapsed((previous) => {
+                const next = new Set(previous);
+                if (next.has(id)) {
+                    next.delete(id);
+                } else {
+                    next.add(id);
+                }
+                return next;
+            }),
+    };
     const card = (
         <PersonCard
             selected={selected}
@@ -215,49 +231,23 @@ export function ReportingLinesPage({
             onEdit={() => setEditing(true)}
         />
     );
-    const lensBar = (
+    const filterBar = (
         <div className="flex flex-wrap items-center gap-3">
-            {parties.length > 1 && (
-                <Select
-                    className="w-60"
-                    value={party}
-                    onChange={(event) => setParty(event.target.value)}
-                    aria-label={t('membership.reporting.party')}
-                >
-                    <option value="">{t('membership.reporting.allParties')}</option>
-                    {[...parties]
-                        .sort((a, b) => partyLabel(a).localeCompare(partyLabel(b)))
-                        .map((entry) => (
-                            <option key={entry.partyId} value={entry.partyId}>
-                                {partyLabel(entry)}
-                            </option>
-                        ))}
-                </Select>
-            )}
-            {parties.length > 0 && (
-                <div
-                    role="group"
-                    aria-label={t('membership.reporting.lens')}
-                    className="flex gap-1"
-                >
-                    <Button
-                        size="sm"
-                        variant={lens === 'reporting' ? 'primary' : 'secondary'}
-                        aria-pressed={lens === 'reporting'}
-                        onClick={() => setLens('reporting')}
-                    >
-                        {t('membership.reporting.lensReporting')}
-                    </Button>
-                    <Button
-                        size="sm"
-                        variant={lens === 'party' ? 'primary' : 'secondary'}
-                        aria-pressed={lens === 'party'}
-                        onClick={() => setLens('party')}
-                    >
-                        {t('membership.reporting.lensParty')}
-                    </Button>
-                </div>
-            )}
+            <Select
+                className="w-60"
+                value={party}
+                onChange={(event) => setParty(event.target.value)}
+                aria-label={t('membership.reporting.party')}
+            >
+                <option value="">{t('membership.reporting.allParties')}</option>
+                {[...parties]
+                    .sort((a, b) => partyLabel(a).localeCompare(partyLabel(b)))
+                    .map((entry) => (
+                        <option key={entry.partyId} value={entry.partyId}>
+                            {partyLabel(entry)}
+                        </option>
+                    ))}
+            </Select>
         </div>
     );
 
@@ -279,76 +269,49 @@ export function ReportingLinesPage({
             </div>
 
             {bar}
-            {tab !== 'history' && lensBar}
+            {tab !== 'history' && parties.length > 1 && filterBar}
 
             {tab === 'tree' && (
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,1fr)]">
                     <section className="card">
                         <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
                             <h2 className="text-sm font-semibold">
-                                {lens === 'party'
-                                    ? t('membership.reporting.byParty')
-                                    : t('membership.reporting.tree')}
+                                {t('membership.reporting.tree')}
                             </h2>
                             <div className="flex items-center gap-2">
                                 <Tag tone="muted">
                                     {t('membership.reporting.people', { count: visible.length })}
                                 </Tag>
-                                {lens === 'reporting' && (
-                                    <>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => setCollapsed(new Set())}
-                                        >
-                                            {t('membership.reporting.expandAll')}
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() =>
-                                                setCollapsed(new Set(nodes.map((n) => n.accountId)))
-                                            }
-                                        >
-                                            {t('membership.reporting.collapseAll')}
-                                        </Button>
-                                    </>
-                                )}
+                                <>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setCollapsed(new Set())}
+                                    >
+                                        {t('membership.reporting.expandAll')}
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                            setCollapsed(new Set(nodes.map((n) => n.accountId)))
+                                        }
+                                    >
+                                        {t('membership.reporting.collapseAll')}
+                                    </Button>
+                                </>
                             </div>
                         </div>
                         <ul className="max-h-[36rem] overflow-auto p-3">
-                            {lens === 'reporting' &&
-                                shape.roots.map((node) => (
-                                    <TreeNode
-                                        key={node.accountId}
-                                        node={node}
-                                        children={shape.children}
-                                        collapsed={collapsed}
-                                        selectedId={selected?.accountId ?? ''}
-                                        marks={marks}
-                                        onSelect={setSelectedId}
-                                        onToggle={(id) =>
-                                            setCollapsed((previous) => {
-                                                const next = new Set(previous);
-                                                if (next.has(id)) {
-                                                    next.delete(id);
-                                                } else {
-                                                    next.add(id);
-                                                }
-                                                return next;
-                                            })
-                                        }
-                                    />
-                                ))}
-                            {lens === 'party' && (
+                            {parties.length === 0 ? (
+                                <Roots shape={shape} list={list} />
+                            ) : (
                                 <>
                                     {forest.branches.map((branch) => (
                                         <PartyTree
                                             key={branch.party.partyId}
                                             branch={branch}
-                                            selectedId={selected?.accountId ?? ''}
-                                            marks={marks}
-                                            onSelect={setSelectedId}
+                                            list={list}
                                         />
                                     ))}
                                     {forest.unaffiliated.length > 0 && (
@@ -356,12 +319,12 @@ export function ReportingLinesPage({
                                             <p className="mt-2 text-xs font-semibold text-ink-muted">
                                                 {t('membership.reporting.noParty')}
                                             </p>
-                                            <PeopleList
-                                                people={forest.unaffiliated}
-                                                selectedId={selected?.accountId ?? ''}
-                                                marks={marks}
-                                                onSelect={setSelectedId}
-                                            />
+                                            <ul className="ml-2">
+                                                <Roots
+                                                    shape={shapeOf(forest.unaffiliated)}
+                                                    list={list}
+                                                />
+                                            </ul>
                                         </li>
                                     )}
                                 </>
@@ -375,7 +338,7 @@ export function ReportingLinesPage({
             {tab === 'chart' && (
                 <section className="card p-4">
                     <OrgChart
-                        {...(lens === 'reporting'
+                        {...(parties.length === 0
                             ? { reporting: { roots: shape.roots, children: shape.children } }
                             : { party: forest })}
                         marks={marks}
@@ -481,11 +444,15 @@ function PersonCard({
                             />
                         </h2>
                         <p className="text-sm text-ink-muted">{selected.jobTitle}</p>
+                        <PartyLine
+                            node={selected}
+                            parties={marks.parties}
+                            className="text-xs text-ink-faint"
+                        />
                         <Badges
                             node={selected}
                             isMe={isMe}
                             isAdmin={marks.admins.has(selected.accountId)}
-                            parties={marks.parties}
                         />
                     </div>
                 </div>
@@ -567,25 +534,38 @@ interface RowMarks {
     readonly parties: ReadonlyMap<string, ReportingTreeParty>;
 }
 
-/** One person and the branch under them. */
-function TreeNode({
-    node,
-    children,
-    collapsed,
-    selectedId,
-    marks,
-    onSelect,
-    onToggle,
-}: {
-    readonly node: ReportingTreeNode;
-    readonly children: ReadonlyMap<string, ReportingTreeNode[]>;
+/** What a drawn reporting tree needs to open, close and select its people. */
+interface TreeList {
     readonly collapsed: ReadonlySet<string>;
     readonly selectedId: string;
     readonly marks: RowMarks;
     readonly onSelect: (id: string) => void;
     readonly onToggle: (id: string) => void;
+}
+
+/** The people at the top of a reporting forest, each with the branch under them. */
+function Roots({ shape, list }: { readonly shape: Shape; readonly list: TreeList }): ReactNode {
+    return (
+        <>
+            {shape.roots.map((node) => (
+                <TreeNode key={node.accountId} node={node} children={shape.children} list={list} />
+            ))}
+        </>
+    );
+}
+
+/** One person and the branch under them. */
+function TreeNode({
+    node,
+    children,
+    list,
+}: {
+    readonly node: ReportingTreeNode;
+    readonly children: ReadonlyMap<string, ReportingTreeNode[]>;
+    readonly list: TreeList;
 }): ReactNode {
     const { t } = useTranslation();
+    const { collapsed, selectedId, marks, onSelect, onToggle } = list;
     const kids = children.get(node.accountId) ?? [];
     const open = !collapsed.has(node.accountId);
     const isMe = node.accountId === marks.meId;
@@ -625,11 +605,7 @@ function TreeNode({
                             key={child.accountId}
                             node={child}
                             children={children}
-                            collapsed={collapsed}
-                            selectedId={selectedId}
-                            marks={marks}
-                            onSelect={onSelect}
-                            onToggle={onToggle}
+                            list={list}
                         />
                     ))}
                 </ul>
@@ -664,56 +640,20 @@ function PersonRow({
                 </span>{' '}
                 <span className="text-xs text-ink-muted">{node.jobTitle}</span>
                 {children}
+                <PartyLine node={node} parties={marks.parties} />
             </span>
-            <Badges
-                node={node}
-                isMe={isMe}
-                isAdmin={marks.admins.has(node.accountId)}
-                parties={marks.parties}
-            />
+            <Badges node={node} isMe={isMe} isAdmin={marks.admins.has(node.accountId)} />
         </button>
     );
 }
 
-/** The people of a party, one per row. */
-function PeopleList({
-    people,
-    selectedId,
-    marks,
-    onSelect,
-}: {
-    readonly people: readonly ReportingTreeNode[];
-    readonly selectedId: string;
-    readonly marks: RowMarks;
-    readonly onSelect: (id: string) => void;
-}): ReactNode {
-    return (
-        <ul className="ml-2 space-y-0.5">
-            {people.map((node) => (
-                <li
-                    key={node.accountId}
-                    className={`flex items-center rounded px-1 py-0.5 ${
-                        selectedId === node.accountId ? 'bg-accent/10' : ''
-                    }`}
-                >
-                    <PersonRow node={node} marks={marks} onSelect={onSelect} />
-                </li>
-            ))}
-        </ul>
-    );
-}
-
-/** One party, the people who work in it, and the parties below it. */
+/** One party, the reporting tree of the people who work in it, and the parties below it. */
 function PartyTree({
     branch,
-    selectedId,
-    marks,
-    onSelect,
+    list,
 }: {
     readonly branch: PartyBranch;
-    readonly selectedId: string;
-    readonly marks: RowMarks;
-    readonly onSelect: (id: string) => void;
+    readonly list: TreeList;
 }): ReactNode {
     return (
         <li>
@@ -722,22 +662,13 @@ function PartyTree({
                     {partyLabel(branch.party)}{' '}
                     <span className="font-normal text-ink-faint">({branch.members.length})</span>
                 </summary>
-                <PeopleList
-                    people={branch.members}
-                    selectedId={selectedId}
-                    marks={marks}
-                    onSelect={onSelect}
-                />
+                <ul className="ml-2">
+                    <Roots shape={branch.shape} list={list} />
+                </ul>
                 {branch.below.length > 0 && (
                     <ul className="ml-4 border-l border-line-subtle pl-2">
                         {branch.below.map((below) => (
-                            <PartyTree
-                                key={below.party.partyId}
-                                branch={below}
-                                selectedId={selectedId}
-                                marks={marks}
-                                onSelect={onSelect}
-                            />
+                            <PartyTree key={below.party.partyId} branch={below} list={list} />
                         ))}
                     </ul>
                 )}

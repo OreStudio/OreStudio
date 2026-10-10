@@ -88,27 +88,45 @@ export function NameLink({
 }
 
 /**
+ * The names of the parties a person works in, for the line under their title.
+ *
+ * One party is the whole answer, so naming it on everybody says nothing and the
+ * line is left out.
+ */
+export function PartyLine({
+    node,
+    parties,
+    className = 'text-[11px] text-ink-faint',
+}: {
+    readonly node: ReportingTreeNode;
+    readonly parties: ReadonlyMap<string, ReportingTreeParty>;
+    readonly className?: string;
+}): ReactNode {
+    if (parties.size < 2) return null;
+    const names = node.partyIds
+        .map((id) => parties.get(id))
+        .filter((party): party is ReportingTreeParty => party !== undefined)
+        .map(partyLabel);
+    return names.length === 0 ? null : (
+        <span className={`block ${className}`}>{names.join(', ')}</span>
+    );
+}
+
+/**
  * What marks a person out: the reader themselves, their tenant's administrator,
- * a manager the reader may not see, and the parties they work in.
+ * and a manager the reader may not see.
  */
 export function Badges({
     node,
     isMe,
     isAdmin,
-    parties,
 }: {
     readonly node: ReportingTreeNode;
     readonly isMe: boolean;
     readonly isAdmin: boolean;
-    readonly parties: ReadonlyMap<string, ReportingTreeParty>;
 }): ReactNode {
     const { t } = useTranslation();
-    const mine = node.partyIds
-        .map((id) => parties.get(id))
-        .filter((party): party is ReportingTreeParty => party !== undefined);
-    // One party is the whole answer, so naming it on everybody says nothing.
-    const showParties = parties.size > 1 && mine.length > 0;
-    if (!isMe && !isAdmin && !node.reportsOutsideScope && !showParties) return null;
+    if (!isMe && !isAdmin && !node.reportsOutsideScope) return null;
     return (
         <span className="mt-1 flex flex-wrap gap-1">
             {isMe && <Tag tone="accent">{t('membership.reporting.you')}</Tag>}
@@ -116,12 +134,6 @@ export function Badges({
             {node.reportsOutsideScope && (
                 <Tag tone="muted">{t('membership.reporting.outside')}</Tag>
             )}
-            {showParties &&
-                mine.map((party) => (
-                    <Tag key={party.partyId} tone="neutral" small>
-                        {party.shortCode !== '' ? party.shortCode : partyLabel(party)}
-                    </Tag>
-                ))}
         </span>
     );
 }

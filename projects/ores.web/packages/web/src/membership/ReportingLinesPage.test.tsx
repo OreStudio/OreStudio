@@ -88,7 +88,6 @@ function render(
     entry = '/hierarchy',
     parties: readonly ReportingTreeParty[] = [],
     holds: readonly string[] = ADMIN,
-    startLens: 'reporting' | 'party' = 'reporting',
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['reporting-tree'], { unrooted, nodes, parties });
@@ -101,7 +100,7 @@ function render(
         <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter initialEntries={[entry]}>
-                    <ReportingLinesPage me={me} startLens={startLens} />
+                    <ReportingLinesPage me={me} />
                 </MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,
@@ -259,40 +258,25 @@ describe('parties in the hierarchy', () => {
         expect(one).not.toContain('aria-label="Party"');
     });
 
-    it('names each person’s parties when the reader sees several', () => {
+    it('names each person’s parties, not their codes, under the title when the reader sees several', () => {
         const html = render(IN_PARTIES, 0, 'ada.lovelace', '/hierarchy', [NORTH, SOUTH]);
 
-        expect(html).toContain('>NORTH<');
-        expect(html).toContain('>SOUTH<');
-    });
-
-    it('offers the reporting line and the party as two lenses, opening on the reporting line', () => {
-        const html = render(IN_PARTIES, 0, 'ada.lovelace', '/hierarchy', [NORTH, SOUTH]);
-
-        expect(html).toContain('>Reporting line<');
-        expect(html).toContain('>By party<');
-        expect(html).toContain('Reporting tree');
+        expect(html).toContain('Acme North plc, Acme South Inc');
+        expect(html).not.toContain('>NORTH<');
+        expect(html).not.toContain('>SOUTH<');
+        expect(html).not.toContain('>By party<');
     });
 
     it('groups the people by party in the tree, the parties nested by their parent', () => {
-        const html = render(
-            IN_PARTIES,
-            0,
-            'ada.lovelace',
-            '/hierarchy',
-            [NORTH, SOUTH],
-            ADMIN,
-            'party',
-        );
+        const html = render(IN_PARTIES, 0, 'ada.lovelace', '/hierarchy', [NORTH, SOUTH], ADMIN);
 
-        expect(html).toContain('People by party');
-        expect(html).not.toContain('Reporting tree');
+        expect(html).toContain('Reporting tree');
         // The south is below the north, and Ada, who works in both, is listed under each.
         expect(html.indexOf('Acme North plc')).toBeLessThan(html.indexOf('Acme South Inc'));
         expect(html.split('Ada Lovelace').length - 1).toBeGreaterThanOrEqual(2);
     });
 
-    it('draws each party as a box with its people in the org chart’s party lens', () => {
+    it('draws each party as a box with its people in the org chart', () => {
         const html = render(
             IN_PARTIES,
             0,
@@ -300,7 +284,6 @@ describe('parties in the hierarchy', () => {
             '/hierarchy?tab=chart',
             [NORTH, SOUTH],
             ADMIN,
-            'party',
         );
 
         expect(html).toContain('class="orgchart');
@@ -318,7 +301,6 @@ describe('parties in the hierarchy', () => {
             '/hierarchy',
             [NORTH, SOUTH],
             ADMIN,
-            'party',
         );
 
         expect(html).toContain('Works in no party');

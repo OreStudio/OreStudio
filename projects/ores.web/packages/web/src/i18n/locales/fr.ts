@@ -92,9 +92,11 @@ const fr: SourceCatalogue = {
             title: 'Organisation',
             lead: 'Les personnes de ce locataire, et à qui elles rendent compte.',
             staff: 'Personnel',
-            staffBody: 'Toutes les personnes qui peuvent se connecter : leurs détails, leurs rôles et leurs connexions.',
+            staffBody:
+                'Toutes les personnes qui peuvent se connecter : leurs détails, leurs rôles et leurs connexions.',
             hierarchy: 'Hiérarchie',
-            hierarchyBody: 'Qui rend compte à qui, sous forme d’arbre, et comment chaque lien a changé.',
+            hierarchyBody:
+                'Qui rend compte à qui, sous forme d’arbre, et comment chaque lien a changé.',
         },
         nothingMatches: 'Rien ne correspond.',
         allOfIt: 'Tout',
@@ -132,6 +134,10 @@ const fr: SourceCatalogue = {
             title: 'Personnel',
             lead: 'Qui peut se connecter à ce locataire, et les rôles de chacun.',
             leadNoRoles: 'Qui peut se connecter à ce locataire.',
+            leadParties:
+                'Les personnes qui travaillent dans les parties où vous travaillez, et toutes celles qui relèvent de vous.',
+            findStaff: 'Chercher par nom, identifiant ou intitulé de poste',
+            partiesColumn: 'Parties',
             person: 'Personne',
             roles: 'Rôles',
             noRole: 'Aucun rôle',
@@ -2454,10 +2460,6 @@ const fr: SourceCatalogue = {
         reporting: {
             party: 'Partie',
             allParties: 'Toutes les parties',
-            lens: 'Vue',
-            lensReporting: 'Ligne hiérarchique',
-            lensParty: 'Par partie',
-            byParty: 'Personnes par partie',
             noParty: 'Ne travaille dans aucune partie',
             outside: 'Rend compte à quelqu’un que vous ne pouvez pas voir',
             outsideManager: 'Quelqu’un hors de votre vue',

@@ -97,7 +97,8 @@ const pt: SourceCatalogue = {
             title: 'Organização',
             lead: 'As pessoas deste inquilino, e a quem reportam.',
             staff: 'Pessoal',
-            staffBody: 'Todos os que podem iniciar sessão: os seus detalhes, funções e inícios de sessão.',
+            staffBody:
+                'Todos os que podem iniciar sessão: os seus detalhes, funções e inícios de sessão.',
             hierarchy: 'Hierarquia',
             hierarchyBody: 'Quem reporta a quem, em árvore, e como cada ligação mudou.',
         },
@@ -137,6 +138,10 @@ const pt: SourceCatalogue = {
             title: 'Pessoal',
             lead: 'Quem pode iniciar sessão neste inquilino, e os papéis de cada um.',
             leadNoRoles: 'Quem pode iniciar sessão neste inquilino.',
+            leadParties:
+                'As pessoas que trabalham nas partes em que trabalha e todas as que reportam a si.',
+            findStaff: 'Pesquisar por nome, utilizador ou cargo',
+            partiesColumn: 'Partes',
             person: 'Pessoa',
             roles: 'Papéis',
             noRole: 'Sem papel',
@@ -2434,10 +2439,6 @@ const pt: SourceCatalogue = {
         reporting: {
             party: 'Parte',
             allParties: 'Todas as partes',
-            lens: 'Vista',
-            lensReporting: 'Linha hierárquica',
-            lensParty: 'Por parte',
-            byParty: 'Pessoas por parte',
             noParty: 'Não trabalha em nenhuma parte',
             outside: 'Reporta a alguém que não pode ver',
             outsideManager: 'Alguém fora da sua vista',

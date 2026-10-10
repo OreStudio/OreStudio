@@ -42,10 +42,10 @@ export const HIERARCHY_PATH = '/hierarchy';
 export function OrganisationPage(): ReactNode {
     const { t } = useTranslation();
     const holds = useHolds();
-    // The staff list is a list of accounts, which a member does not read; the
-    // hierarchy is the organisation read, which is theirs.
+    // A member does not read accounts, so their staff list is the people of
+    // their parties, which the organisation read answers.
     const tiles: readonly Tile[] = [
-        ...(holds('iam::accounts:read')
+        ...(holds('iam::accounts:read') || holds('iam::organisation:read')
             ? ([
                   {
                       title: t('access.hub.staff'),

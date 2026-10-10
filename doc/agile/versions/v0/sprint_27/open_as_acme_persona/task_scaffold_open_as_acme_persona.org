@@ -8,7 +8,7 @@
 #+filetags: :open_as_acme_persona:sprint_27:v0:
 #+owner: marco
 #+branch: feature/open-as-acme-persona
-#+pr:
+#+pr: 3040
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3040][#3040]] | [compass] Add open-as to open the web as an Acme user |
 
 * Review
 

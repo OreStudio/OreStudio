@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 8BAE0AC8-571E-44E3-B056-66BFB423791D
+:END:
+#+title: Check which home a signed-in person reaches before building it
+#+description: The home screen a session lands on is chosen by the session mode, and only two of the three declared modes are produced. Confirm what the persona being reviewed actually sees before changing a screen.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :web:verification:memory:feedback:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+Before changing a home or any role-specific screen, find out which component the persona under review reaches. For the web home, sessionModeFor in projects/ores.web/packages/bff/src/session-mode.ts returns system-administration or application only; tenant-administration is declared and never produced, so a tenant administrator lands on the application home and is told apart from a member by the permissions they hold.
+
+*Why:* The tenant administrator dashboard was first built in the home for the tenant-administration mode. No session reaches it, so the screen looked identical to the user, who lost time rebuilding and reloading.
+
+*How to apply:* Open the persona with compass open-as and read what renders, or trace the component from sessionModeFor to the page. Gate parts of a shared home by permission, not by mode.

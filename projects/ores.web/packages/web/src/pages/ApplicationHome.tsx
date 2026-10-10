@@ -29,11 +29,7 @@ import { Metric } from '../ui/Metric.js';
 import { LinkButton, PageHeader } from '../ui/Primitives.js';
 import { Tiles, type Tile } from '../ui/Tiles.js';
 import { useTabs } from '../ui/Tabs.js';
-import {
-    AUDIT_ACCOUNTS_QUERY_KEY,
-    AUDIT_FAILURES_QUERY_KEY,
-    AUDIT_SESSIONS_QUERY_KEY,
-} from './AuditPage.js';
+import { AUDIT_ACCOUNTS_QUERY_KEY, AUDIT_SESSIONS_QUERY_KEY } from './AuditPage.js';
 import { Panel, StatusChip, type PanelStatus } from './DashboardParts.js';
 import {
     accountsWithFailedSignIns,
@@ -43,68 +39,108 @@ import {
 } from './dashboardStatus.js';
 
 /**
- * The tenant administrator's home.
+ * The home of a person who works inside a tenant.
+ *
+ * A tenant administrator and a member both land here, because the session mode
+ * says only that the session acts inside a tenant. What differs between them is
+ * what they may do, so the home is built from the permissions the person holds:
+ * a panel appears for a person who may read what it shows, and a card for a
+ * person who may open the screen. A member who holds none of the panels' reads
+ * gets no Dashboard tab and lands on the Active modules tab.
  *
  * The same three tabs as the system administrator's home. The Dashboard holds
- * panels that state their status in the same words, the Active modules tab
- * holds the places the person works in, and the Upcoming modules tab holds the
- * areas that are still to come.
+ * panels that state their status in the same words, the Active modules tab holds
+ * the places the person works in, and the Upcoming modules tab holds the areas
+ * that are still to come.
  */
 
 /** What the translation hook answers, passed to the pure status functions. */
 type Translator = ReturnType<typeof useTranslation>;
 
-const TABS = ['dashboard', 'active', 'upcoming'] as const;
+/** The permissions that decide what the home shows. */
+const PERMISSION = {
+    accountsRead: 'iam::accounts:read',
+    organisationRead: 'iam::organisation:read',
+    loginInfoRead: 'iam::login_info:read',
+    sessionsRead: 'iam::sessions:read',
+    rolesAssign: 'iam::roles:assign',
+    rolesRead: 'iam::roles:read',
+    accountsLock: 'iam::accounts:lock',
+    partiesRead: 'refdata::parties:read',
+    partiesWrite: 'refdata::parties:write',
+    counterpartiesWrite: 'refdata::counterparties:write',
+} as const;
 
-/** The permission that opens the access request queue, as the menu gates it. */
-const ASSIGN_ROLES = 'iam::roles:assign';
+/** Which panels this person may see, from the permissions they hold. */
+interface Visible {
+    readonly people: boolean;
+    readonly signIns: boolean;
+    readonly requests: boolean;
+    readonly parties: boolean;
+}
+
+function visiblePanels(holds: (code: string) => boolean): Visible {
+    const people = holds(PERMISSION.loginInfoRead) && holds(PERMISSION.accountsRead);
+    const signIns = holds(PERMISSION.loginInfoRead) && holds(PERMISSION.sessionsRead);
+    const requests = holds(PERMISSION.rolesAssign);
+    const parties = holds(PERMISSION.partiesRead);
+    return { people, signIns, requests, parties };
+}
+
+/** The most login records one read returns, which the server caps. */
+const LOGIN_RECORDS_READ = 1000;
 
 /**
- * Every read the dashboard stands on, made once.
+ * Every read the dashboard stands on, made once and only for a panel that is
+ * shown.
  *
- * The sign-in reads share their keys with the sign-ins screen, so a person who
- * opens it after the home reads nothing twice. The request queue is read only
- * for a person who may answer it, because the server would refuse the rest.
+ * The accounts and sessions reads share their keys with the sign-ins screen. The
+ * login records are read in a larger page than that screen reads, so they have a
+ * key of their own. A read the person may not make is not sent, because the
+ * server would refuse it.
  */
-function useTenantDashboardData(mayAnswerRequests: boolean) {
+function useDashboardData(visible: Visible) {
     const accounts = useQuery({
         queryKey: [AUDIT_ACCOUNTS_QUERY_KEY],
         queryFn: () => api.accounts(),
+        enabled: visible.people,
         retry: false,
     });
     const logins = useQuery({
-        queryKey: [AUDIT_FAILURES_QUERY_KEY],
-        queryFn: () => api.loginInfoPage(),
+        queryKey: ['tenant-home-logins'],
+        queryFn: () => api.loginInfoPage({ limit: LOGIN_RECORDS_READ }),
+        enabled: visible.people || visible.signIns,
         retry: false,
     });
     const sessions = useQuery({
         queryKey: [AUDIT_SESSIONS_QUERY_KEY],
         queryFn: () => api.activeSessions(),
+        enabled: visible.signIns,
         retry: false,
     });
     const requests = useQuery({
         queryKey: ['tenant-home-requests'],
         queryFn: () => api.requestQueue({ offset: 0, limit: 1 }),
-        enabled: mayAnswerRequests,
+        enabled: visible.requests,
         retry: false,
     });
     const parties = useQuery({
         queryKey: ['tenant-home-parties'],
         queryFn: () => api.parties({ offset: 0, limit: 1 }),
+        enabled: visible.parties,
         retry: false,
     });
     return { accounts, logins, sessions, requests, parties };
 }
 
-type DashboardData = ReturnType<typeof useTenantDashboardData>;
+type DashboardData = ReturnType<typeof useDashboardData>;
 
-type Read = { readonly isError: boolean; readonly data: unknown };
+interface Pending {
+    readonly isError: boolean;
+}
 
-/** A panel whose read has not answered says why: still reading, or could not be read. */
-function unanswered(read: Read, tr: Translator): PanelStatus | undefined {
-    if (read.data !== undefined && !read.isError) {
-        return undefined;
-    }
+/** The status of a panel whose read has not answered: still reading, or could not be read. */
+function pending(read: Pending, tr: Translator): PanelStatus {
     return {
         tone: 'pending',
         text: tr.t(read.isError ? 'home.system.panels.unread' : 'common.loading'),
@@ -112,11 +148,11 @@ function unanswered(read: Read, tr: Translator): PanelStatus | undefined {
 }
 
 function peopleStatus(data: DashboardData, tr: Translator): PanelStatus {
-    const waiting = unanswered(data.logins, tr);
-    if (waiting !== undefined || data.logins.data === undefined) {
-        return waiting ?? { tone: 'pending', text: tr.t('common.loading') };
+    const rows = data.logins.data?.loginInfo;
+    if (rows === undefined || data.logins.isError) {
+        return pending(data.logins, tr);
     }
-    const locked = lockedAccounts(data.logins.data.loginInfo);
+    const locked = lockedAccounts(rows);
     return locked === 0
         ? { tone: 'ok', text: tr.t('home.system.allClear') }
         : {
@@ -126,11 +162,11 @@ function peopleStatus(data: DashboardData, tr: Translator): PanelStatus {
 }
 
 function signInsStatus(data: DashboardData, tr: Translator): PanelStatus {
-    const waiting = unanswered(data.logins, tr);
-    if (waiting !== undefined || data.logins.data === undefined) {
-        return waiting ?? { tone: 'pending', text: tr.t('common.loading') };
+    const rows = data.logins.data?.loginInfo;
+    if (rows === undefined || data.logins.isError) {
+        return pending(data.logins, tr);
     }
-    const failed = accountsWithFailedSignIns(data.logins.data.loginInfo);
+    const failed = accountsWithFailedSignIns(rows);
     return failed === 0
         ? { tone: 'ok', text: tr.t('home.system.allClear') }
         : {
@@ -140,60 +176,65 @@ function signInsStatus(data: DashboardData, tr: Translator): PanelStatus {
 }
 
 function requestsStatus(data: DashboardData, tr: Translator): PanelStatus {
-    const waiting = unanswered(data.requests, tr);
-    if (waiting !== undefined || data.requests.data === undefined) {
-        return waiting ?? { tone: 'pending', text: tr.t('common.loading') };
+    const queue = data.requests.data;
+    if (queue === undefined || data.requests.isError) {
+        return pending(data.requests, tr);
     }
-    const count = data.requests.data.total;
-    return count === 0
+    return queue.total === 0
         ? { tone: 'ok', text: tr.t('home.system.allClear') }
         : {
               tone: 'attention',
-              text: tr.plural('home.tenantDashboard.requests.needAttention', count),
+              text: tr.plural('home.tenantDashboard.requests.needAttention', queue.total),
           };
 }
 
 function partiesStatus(data: DashboardData, tr: Translator): PanelStatus {
-    const waiting = unanswered(data.parties, tr);
-    if (waiting !== undefined || data.parties.data === undefined) {
-        return waiting ?? { tone: 'pending', text: tr.t('common.loading') };
+    const page = data.parties.data;
+    if (page === undefined || data.parties.isError) {
+        return pending(data.parties, tr);
     }
-    return data.parties.data.totalCount === 0
+    return page.totalCount === 0
         ? { tone: 'quiet', text: tr.t('home.tenantDashboard.parties.none') }
         : { tone: 'ok', text: tr.t('home.system.allClear') };
 }
 
-export function TenantHome({
-    tenantName,
+const TABS_WITH_DASHBOARD = ['dashboard', 'active', 'upcoming'] as const;
+const TABS_WITHOUT_DASHBOARD = ['active', 'upcoming'] as const;
+
+export function ApplicationHome({
+    name,
+    partyName,
 }: {
     readonly name: string;
-    readonly tenantName: string;
+    readonly partyName: string;
 }): ReactNode {
     const translator = useTranslation();
     const { t, plural } = translator;
     const holds = useHolds();
-    const mayAnswerRequests = holds(ASSIGN_ROLES);
-    const data = useTenantDashboardData(mayAnswerRequests);
+    const visible = visiblePanels(holds);
+    const hasDashboard = visible.people || visible.signIns || visible.requests || visible.parties;
+    const data = useDashboardData(visible);
     const { tab, bar } = useTabs({
         label: t('home.system.tabs.label'),
-        tabs: TABS,
+        tabs: hasDashboard ? TABS_WITH_DASHBOARD : TABS_WITHOUT_DASHBOARD,
         titleOf: (candidate) => t(`home.system.tabs.${candidate}`),
     });
 
     const statuses = [
-        peopleStatus(data, translator),
-        signInsStatus(data, translator),
-        ...(mayAnswerRequests ? [requestsStatus(data, translator)] : []),
-        partiesStatus(data, translator),
+        ...(visible.people ? [peopleStatus(data, translator)] : []),
+        ...(visible.signIns ? [signInsStatus(data, translator)] : []),
+        ...(visible.requests ? [requestsStatus(data, translator)] : []),
+        ...(visible.parties ? [partiesStatus(data, translator)] : []),
     ];
     const verdict = installationVerdict(statuses.map((status) => status.tone));
 
     return (
         <div className="space-y-6">
             <PageHeader
-                title={tenantName}
+                title={t('home.welcome', { name })}
+                description={t('home.party.lead', { party: partyName })}
                 actions={
-                    verdict.kind === 'pending' ? undefined : (
+                    !hasDashboard || verdict.kind === 'pending' ? undefined : (
                         <StatusChip
                             status={
                                 verdict.kind === 'ok'
@@ -212,13 +253,9 @@ export function TenantHome({
             />
             {bar}
             {tab === 'dashboard' && (
-                <Dashboard
-                    data={data}
-                    translator={translator}
-                    mayAnswerRequests={mayAnswerRequests}
-                />
+                <Dashboard data={data} translator={translator} visible={visible} />
             )}
-            {tab === 'active' && <ActiveModules />}
+            {tab === 'active' && <ActiveModules holds={holds} />}
             {tab === 'upcoming' && <UpcomingModules />}
         </div>
     );
@@ -232,14 +269,14 @@ interface PanelProps {
 function Dashboard({
     data,
     translator,
-    mayAnswerRequests,
-}: PanelProps & { readonly mayAnswerRequests: boolean }): ReactNode {
+    visible,
+}: PanelProps & { readonly visible: Visible }): ReactNode {
     return (
         <div className="grid gap-4 lg:grid-cols-2">
-            <PeoplePanel data={data} translator={translator} />
-            <SignInsPanel data={data} translator={translator} />
-            {mayAnswerRequests && <RequestsPanel data={data} translator={translator} />}
-            <PartiesPanel data={data} translator={translator} />
+            {visible.people && <PeoplePanel data={data} translator={translator} />}
+            {visible.signIns && <SignInsPanel data={data} translator={translator} />}
+            {visible.requests && <RequestsPanel data={data} translator={translator} />}
+            {visible.parties && <PartiesPanel data={data} translator={translator} />}
         </div>
     );
 }
@@ -254,8 +291,17 @@ function ReadAt({ at, t }: { readonly at: number; readonly t: Translator['t'] })
     );
 }
 
-function count(value: number | undefined): string {
-    return value === undefined ? '—' : String(value);
+function count(value: number | undefined, complete = true): string {
+    if (value === undefined) {
+        return '—';
+    }
+    return complete || value === 0 ? String(value) : `${String(value)}+`;
+}
+
+/** Whether the records read are all there are; if not, a count from them is a lower bound. */
+function allRecordsRead(data: DashboardData): boolean {
+    const page = data.logins.data;
+    return page === undefined || page.loginInfo.length >= page.totalCount;
 }
 
 function PeoplePanel({ data, translator }: PanelProps): ReactNode {
@@ -275,13 +321,19 @@ function PeoplePanel({ data, translator }: PanelProps): ReactNode {
                     label={t('home.tenantDashboard.people.accounts')}
                 />
                 <Metric
-                    value={count(rows === undefined ? undefined : lockedAccounts(rows))}
+                    value={count(
+                        rows === undefined ? undefined : lockedAccounts(rows),
+                        allRecordsRead(data),
+                    )}
                     label={t('home.tenantDashboard.people.locked')}
                     tone={rows !== undefined && lockedAccounts(rows) > 0 ? 'warn' : 'neutral'}
                     to="/rescue"
                 />
                 <Metric
-                    value={count(rows === undefined ? undefined : passwordResetsDue(rows))}
+                    value={count(
+                        rows === undefined ? undefined : passwordResetsDue(rows),
+                        allRecordsRead(data),
+                    )}
                     label={t('home.tenantDashboard.people.resets')}
                 />
             </div>
@@ -307,7 +359,7 @@ function SignInsPanel({ data, translator }: PanelProps): ReactNode {
                     label={t('home.tenantDashboard.signIns.signedIn')}
                 />
                 <Metric
-                    value={count(failed)}
+                    value={count(failed, allRecordsRead(data))}
                     label={t('home.tenantDashboard.signIns.failed')}
                     tone={failed !== undefined && failed > 0 ? 'warn' : 'neutral'}
                 />
@@ -344,6 +396,7 @@ function RequestsPanel({ data, translator }: PanelProps): ReactNode {
 
 function PartiesPanel({ data, translator }: PanelProps): ReactNode {
     const { t } = translator;
+    const holds = useHolds();
 
     return (
         <Panel
@@ -353,9 +406,11 @@ function PartiesPanel({ data, translator }: PanelProps): ReactNode {
             footer={
                 <>
                     <ReadAt at={data.parties.dataUpdatedAt} t={t} />
-                    <LinkButton to="/parties/new" size="sm">
-                        {t('home.tenant.newParty')}
-                    </LinkButton>
+                    {holds(PERMISSION.partiesWrite) && (
+                        <LinkButton to="/parties/new" size="sm">
+                            {t('home.tenant.newParty')}
+                        </LinkButton>
+                    )}
                 </>
             }
         >
@@ -369,74 +424,75 @@ function PartiesPanel({ data, translator }: PanelProps): ReactNode {
     );
 }
 
-function ActiveModules(): ReactNode {
+/**
+ * The places this person can go, each offered only to a person who may open it.
+ *
+ * The run is built rather than written out, so a member sees the few screens
+ * that are theirs and a tenant administrator sees the administration as well.
+ */
+function ActiveModules({ holds }: { readonly holds: (code: string) => boolean }): ReactNode {
     const { t } = useTranslation();
+    const maybe = (allowed: boolean, tile: Tile): readonly Tile[] => (allowed ? [tile] : []);
     const active: Tile[] = [
-        {
+        ...maybe(holds(PERMISSION.partiesRead), {
             title: t('home.tenant.parties'),
             body: t('home.tenant.partiesBody'),
             to: '/parties',
             icon: 'party',
-        },
-        {
+        }),
+        ...maybe(holds(PERMISSION.accountsRead) || holds(PERMISSION.organisationRead), {
             title: t('home.tenant.organisation'),
             body: t('home.tenant.organisationBody'),
             to: '/organisation',
             icon: 'people',
-        },
-        {
+        }),
+        ...maybe(holds(PERMISSION.rolesRead), {
             title: t('home.tenant.roles'),
             body: t('home.tenant.rolesBody'),
             to: '/roles',
             icon: 'access',
-        },
+        }),
         {
             title: t('home.party.refdata'),
             body: t('home.party.refdataBody'),
             to: '/refdata',
             icon: 'database',
         },
-        {
+        ...maybe(holds(PERMISSION.partiesWrite), {
             title: t('home.tenant.newParty'),
             body: t('home.tenant.newPartyBody'),
             to: '/parties/new',
             icon: 'add',
-        },
-        {
+        }),
+        ...maybe(holds(PERMISSION.partiesWrite), {
             title: t('home.tenant.partyDetails'),
             body: t('home.tenant.partyDetailsBody'),
             to: '/parties/details',
             icon: 'party',
-        },
-        {
+        }),
+        ...maybe(holds(PERMISSION.counterpartiesWrite), {
             title: t('home.tenant.counterpartyOnboard'),
             body: t('home.tenant.counterpartyOnboardBody'),
             to: '/counterparties/onboard',
             icon: 'people',
-        },
-        {
-            title: t('home.tenant.bookStructure'),
-            body: t('home.tenant.bookStructureBody'),
-            to: '/books/structure',
-            icon: 'database',
-        },
-        {
-            title: t('home.tenant.conventions'),
-            body: t('home.tenant.conventionsBody'),
-            to: '/conventions',
-            icon: 'database',
-        },
-        {
+        }),
+        ...maybe(holds(PERMISSION.accountsLock), {
             title: t('home.tenant.rescue'),
             body: t('home.tenant.rescueBody'),
             to: '/rescue',
             icon: 'unlock',
-        },
-        {
+        }),
+        ...maybe(holds(PERMISSION.sessionsRead) || holds(PERMISSION.loginInfoRead), {
             title: t('home.tenant.audit'),
             body: t('home.tenant.auditBody'),
             to: '/audit',
             icon: 'record',
+        }),
+        {
+            title: t('home.tenant.access'),
+            body: t('home.tenant.accessBody'),
+            to: '/access',
+            icon: 'person',
         },
         {
             title: t('home.tenant.versions'),
@@ -445,8 +501,8 @@ function ActiveModules(): ReactNode {
             icon: 'history',
         },
         {
-            title: t('home.tenant.security'),
-            body: t('home.tenant.securityBody'),
+            title: t('home.party.security'),
+            body: t('home.party.securityBody'),
             to: '/security',
             icon: 'locked',
         },

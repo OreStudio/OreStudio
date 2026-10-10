@@ -19,24 +19,21 @@
  *
  */
 
-import { type IconName } from '../ui/Icon.js';
-import { useHolds } from '../access/holds.js';
 import { displayName } from '../access/names.js';
 import type { ReactNode } from 'react';
 import type { Account, SessionMode } from '@ores/wire-protocol/browser';
-import { useTranslation } from '../i18n/Provider.js';
-import { PageHeader } from '../ui/Primitives.js';
+import { ApplicationHome } from './ApplicationHome.js';
 import { SystemHome } from './SystemHome.js';
-import { TenantHome } from './TenantHome.js';
-import { Tiles, TilesSection, type Tile } from '../ui/Tiles.js';
 
 /**
  * Where a signed-in person lands.
  *
  * Home shows the state of the work in the person's own words, and the next
- * things they can do. What it shows is decided by the mode the session runs
- * in: the deployment's tenants for the system administrator, the tenant's own
- * screens for its administrator, and the person's work for everyone else.
+ * things they can do. The mode the session runs in decides which home it is:
+ * the deployment for the system administrator, and the tenant's own work for
+ * everyone else. A tenant administrator and a member share that second home,
+ * because the session acts inside a tenant for both; the permissions each holds
+ * decide what it shows them.
  */
 export interface HomePageProps {
     readonly username: string;
@@ -55,102 +52,10 @@ export interface HomePageProps {
     readonly self?: Account | null;
 }
 
-export function HomePage({
-    username,
-    tenantName,
-    partyName,
-    mode,
-    self,
-}: HomePageProps): ReactNode {
+export function HomePage({ username, partyName, mode, self }: HomePageProps): ReactNode {
     const name = displayName(self, username);
     if (mode === 'system-administration') {
         return <SystemHome name={name} />;
     }
-    if (mode === 'tenant-administration') {
-        return <TenantHome name={name} tenantName={tenantName} />;
-    }
-    return <PartyHome name={name} partyName={partyName} />;
-}
-
-function PartyHome({
-    name,
-    partyName,
-}: {
-    readonly name: string;
-    readonly partyName: string;
-}): ReactNode {
-    const { t } = useTranslation();
-    const holds = useHolds();
-    const comingIcons: Record<'marketdata' | 'trading' | 'reporting', IconName> = {
-        marketdata: 'chart',
-        trading: 'trend',
-        reporting: 'document',
-    };
-    const coming: Tile[] = (['marketdata', 'trading', 'reporting'] as const).map((area) => ({
-        title: t(`home.party.${area}`),
-        body: t(`home.party.${area}Body`),
-        icon: comingIcons[area],
-    }));
-
-    /*
-     * The places this person can go. The directory is offered only to somebody
-     * who may read accounts, so the run is built rather than written out.
-     */
-    const active: Tile[] = [
-        ...(holds('iam::accounts:read') || holds('iam::organisation:read')
-            ? ([
-                  {
-                      title: t('home.tenant.organisation'),
-                      body: t('home.tenant.organisationBody'),
-                      to: '/organisation',
-                      icon: 'people',
-                  },
-              ] satisfies Tile[])
-            : []),
-        {
-            title: t('home.party.refdata'),
-            body: t('home.party.refdataBody'),
-            to: '/refdata',
-            icon: 'database',
-        },
-        {
-            title: t('home.party.security'),
-            body: t('home.party.securityBody'),
-            to: '/security',
-            icon: 'locked',
-        },
-        {
-            title: t('home.tenant.access'),
-            body: t('home.tenant.accessBody'),
-            to: '/access',
-            icon: 'person',
-        },
-        {
-            title: t('home.tenant.audit'),
-            body: t('home.tenant.auditBody'),
-            to: '/audit',
-            icon: 'record',
-        },
-        {
-            title: t('home.tenant.versions'),
-            body: t('home.tenant.versionsBody'),
-            to: '/operations/versions',
-            icon: 'history',
-        },
-    ];
-
-    return (
-        <div className="space-y-6">
-            <PageHeader
-                title={t('home.welcome', { name })}
-                description={t('home.party.lead', { party: partyName })}
-            />
-            <TilesSection title={t('home.activeModules')} icon="apps">
-                <Tiles tiles={active} />
-            </TilesSection>
-            <TilesSection title={t('home.upcomingModules')} icon="chart">
-                <Tiles tiles={coming} later={t('home.party.comingLater')} />
-            </TilesSection>
-        </div>
-    );
+    return <ApplicationHome name={name} partyName={partyName} />;
 }

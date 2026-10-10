@@ -42,11 +42,7 @@ import {
 } from '../operations/InstallationHealth.js';
 import { BUS_QUERY_KEY } from '../operations/BusPage.js';
 import { GRID_QUERY_KEY } from '../operations/GridPage.js';
-import {
-    AUDIT_ACCOUNTS_QUERY_KEY,
-    AUDIT_FAILURES_QUERY_KEY,
-    AUDIT_SESSIONS_QUERY_KEY,
-} from './AuditPage.js';
+import { AUDIT_ACCOUNTS_QUERY_KEY, AUDIT_SESSIONS_QUERY_KEY } from './AuditPage.js';
 import { HomePage } from './HomePage.js';
 
 /**
@@ -536,21 +532,31 @@ function loginRow(overrides: Partial<LoginInfo> = {}): LoginInfo {
 function seedTenant(
     options: {
         readonly logins?: readonly LoginInfo[];
+        readonly totalLogins?: number;
         readonly waiting?: number;
         readonly mayAnswer?: boolean;
     } = {},
 ): (client: QueryClient) => void {
     return (client) => {
         client.setQueryData(['my-access'], {
-            roles:
-                options.mayAnswer === false
-                    ? [{ permissionCodes: ['iam::accounts:read'] }]
-                    : [{ permissionCodes: ['iam::roles:assign'] }],
+            roles: [
+                {
+                    permissionCodes:
+                        options.mayAnswer === false
+                            ? [
+                                  'iam::accounts:read',
+                                  'iam::login_info:read',
+                                  'iam::sessions:read',
+                                  'refdata::parties:read',
+                              ]
+                            : ['*'],
+                },
+            ],
         });
         client.setQueryData([AUDIT_ACCOUNTS_QUERY_KEY], { accounts: [], totalCount: 12 });
-        client.setQueryData([AUDIT_FAILURES_QUERY_KEY], {
+        client.setQueryData(['tenant-home-logins'], {
             loginInfo: options.logins ?? [loginRow()],
-            totalCount: (options.logins ?? [loginRow()]).length,
+            totalCount: options.totalLogins ?? (options.logins ?? [loginRow()]).length,
         });
         client.setQueryData([AUDIT_SESSIONS_QUERY_KEY], [{}, {}, {}]);
         client.setQueryData(['tenant-home-requests'], {
@@ -563,10 +569,10 @@ function seedTenant(
 }
 
 describe("the tenant administrator's home", () => {
-    it('is the tenant, with the tabs Dashboard, Active modules and Upcoming modules', () => {
-        const html = home('tenant-administration', undefined, undefined, seedTenant());
+    it('says where they work, with the tabs Dashboard, Active modules and Upcoming modules', () => {
+        const html = home('application', undefined, undefined, seedTenant());
 
-        expect(html).toContain('>Acme Corporation<');
+        expect(html).toContain('Working for Acme London');
         for (const title of ['Dashboard', 'Active modules', 'Upcoming modules']) {
             expect(html).toContain(`>${title}<`);
         }
@@ -574,7 +580,7 @@ describe("the tenant administrator's home", () => {
     });
 
     it('has a People, a Sign-ins, an Access requests and a Parties panel', () => {
-        const html = home('tenant-administration', undefined, undefined, seedTenant());
+        const html = home('application', undefined, undefined, seedTenant());
 
         for (const title of ['People', 'Sign-ins', 'Access requests', 'Parties']) {
             expect(html).toContain(`>${title}</h2>`);
@@ -609,8 +615,20 @@ describe("the tenant administrator's home", () => {
         expect(html).toMatch(/>2<\/span><span[^>]*>Answered</);
     });
 
+    it('marks a count as a lower bound when the records read are not all there are', () => {
+        const html = home(
+            'application',
+            undefined,
+            undefined,
+            seedTenant({ logins: [loginRow({ locked: true })], totalLogins: 2500 }),
+        );
+
+        expect(html).toMatch(/>1\+<\/span><span[^>]*>Locked</);
+        expect(html).toMatch(/>0<\/span><span[^>]*>Password reset due</);
+    });
+
     it('says Everything is running once, at the top, when nothing needs the person', () => {
-        const html = home('tenant-administration', undefined, undefined, seedTenant());
+        const html = home('application', undefined, undefined, seedTenant());
 
         expect(occurrences(html, `>${ALL_CLEAR}<`)).toBe(1);
         expect(occurrences(html, `aria-label="${ALL_CLEAR}"`)).toBe(4);
@@ -639,7 +657,9 @@ describe("the tenant administrator's home", () => {
     });
 
     it('says nothing at the top until the panels have read', () => {
-        const html = home('tenant-administration');
+        const html = home('application', undefined, undefined, (client) => {
+            client.setQueryData(['my-access'], { roles: [{ permissionCodes: ['*'] }] });
+        });
 
         expect(html).not.toContain('area needs attention');
         expect(html).not.toContain('areas need attention');
@@ -693,21 +713,53 @@ describe("the tenant administrator's home", () => {
     });
 });
 
-describe("a party user's home", () => {
-    it('says where they work, offers their own screens, and marks what is coming', () => {
-        const html = home('application');
+describe("the home of the tenant's own modes", () => {
+    it('is the same for the declared tenant administration mode, which nothing produces yet', () => {
+        const html = home('tenant-administration', undefined, undefined, seedTenant());
+
+        expect(html).toContain('>People</h2>');
+        expect(html).toContain('Working for Acme London');
+    });
+});
+
+/** A member: signed in to a party, holding none of what the dashboard reads. */
+function seedMember(client: QueryClient): void {
+    client.setQueryData(['my-access'], { roles: [] });
+}
+
+describe("a member's home", () => {
+    it('lands on the Active modules tab, because nothing on the dashboard is theirs to read', () => {
+        const html = home('application', undefined, undefined, seedMember);
 
         expect(html).toContain('Working for Acme London');
-        expect(html).toContain('href="/security"');
-        expect(html).toContain('Trading');
-        expect(html).toContain('Coming later');
+        expect(html).not.toContain('>Dashboard<');
+        expect(html).toMatch(/aria-selected="true"[^>]*>Active modules</);
+        expect(html).not.toContain('area needs attention');
+        expect(html).not.toContain(ALL_CLEAR);
+    });
+
+    it('offers only the screens that are theirs', () => {
+        const html = home('application', undefined, undefined, seedMember);
+
+        for (const href of ['/security', '/access', '/refdata', '/operations/versions']) {
+            expect(html).toContain(`href="${href}"`);
+        }
+        for (const href of ['/audit', '/rescue', '/roles', '/parties/new', '/organisation']) {
+            expect(html).not.toContain(`href="${href}"`);
+        }
         expect(html).not.toContain('href="/tenants');
     });
 
-    it('offers the audit card, as the tenant home does', () => {
-        const html = home('application');
+    it('marks what is coming on the Upcoming modules tab', () => {
+        const html = home('application', undefined, undefined, seedMember, '/?tab=upcoming');
 
-        expect(html).toContain('href="/audit"');
-        expect(html).toContain('Sign-ins');
+        expect(html).toContain('Trading');
+        expect(html).toContain('Coming later');
+    });
+
+    it('reads nothing the server would refuse', () => {
+        const html = home('application', undefined, undefined, seedMember);
+
+        expect(html).not.toContain('Loading');
     });
 });

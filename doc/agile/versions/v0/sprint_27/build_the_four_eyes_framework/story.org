@@ -51,8 +51,9 @@ A gated write cannot take effect until every function the policy names has appro
 | [[id:40014A64-C176-46E6-B39F-EBA92DDC7967][Move the convention screen onto the review panel]] | BACKLOG | | | Make the instrument convention screen raise a request for every write. |
 | [[id:BE57136B-9C17-4FCB-A4EB-05AA840B11F2][Move the tenor resolution screen onto the review panel]] | BACKLOG | | | Make the tenor resolution screen raise a request for every write. |
 | [[id:4F8399A7-7512-4229-AA69-3364C82BB387][Generate the pending change for a gated entity]] | DONE | 2026-10-10 | 2026-10-10 | Add a codegen facet that makes, for an entity its model marks gated, the typed pending table, the typed raise and preview messages, the dry run, the apply and the typed read of a pending change, starting with the book. |
-| [[id:5FA7003F-7370-461C-A7E8-44A14F3D6D44][Apply an approved request]] | BACKLOG | | | Start an apply workflow on the last approval that applies every line in one transaction, moves a refused request to apply_failed, and resumes an interrupted run until the kind's window ends. |
+| [[id:5FA7003F-7370-461C-A7E8-44A14F3D6D44][Apply an approved request]] | STARTED | 2026-10-10 | | Apply the stored lines of an approved request to the books in one transaction, mark each line applied, and move a request whose apply is refused to apply_failed. The workflow that starts and resumes this is the next task. |
 | [[id:7FAE1F96-1EA6-4AD8-B204-A7B928C78305][Expose the book raise and preview]] | DONE | 2026-10-10 | 2026-10-10 | Offer the book preview and raise as NATS operations with a typed message and a handler that checks the caller may write or delete books, with the TypeScript wire types generated beside them. |
+| [[id:34376AC6-D999-4AB0-BE79-A9BC84FACDF3][Run the apply as a workflow]] | BACKLOG | | | Start a workflow on the last approval whose steps re-check, apply and tell, stop on an infrastructure failure so the retry verb resumes it, and show the run on the workflow screens. |
 
 * Decisions
 

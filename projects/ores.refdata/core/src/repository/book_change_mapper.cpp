@@ -54,6 +54,7 @@ domain::book_change book_change_mapper::map(const book_change_entity& v) {
 
     r.operation = v.operation;
     r.base_version = v.base_version;
+    r.applied = v.applied;
     r.entity_id = boost::lexical_cast<boost::uuids::uuid>(v.entity_id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.name = v.name;
@@ -98,6 +99,7 @@ book_change_entity book_change_mapper::map(const domain::book_change& v) {
 
     r.operation = v.operation;
     r.base_version = v.base_version;
+    r.applied = v.applied;
     r.entity_id = boost::uuids::to_string(v.entity_id);
     r.party_id = boost::uuids::to_string(v.party_id);
     r.name = v.name;

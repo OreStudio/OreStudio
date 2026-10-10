@@ -423,3 +423,151 @@ TEST_CASE("a_part_a_tenant_adds_to_an_act_is_named_with_the_system_parts", tags)
 
     CHECK(preview.part_codes == std::vector<std::string>{"controller"});
 }
+
+namespace {
+
+/**
+ * @brief Approves every part of a request, one person to a part, as the
+ * deciders would.
+ */
+void approve_every_part(const world& w,
+                        ores::testing::scoped_database_helper& h,
+                        const ores::inbox::domain::approval_request& raised) {
+    ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
+    const auto id = boost::uuids::to_string(raised.id);
+    auto gctx = ores::testing::make_generation_context(h);
+    int version = raised.version;
+    while (true) {
+        const auto open = lifecycle.open_parts_of(id);
+        if (open.empty())
+            break;
+        auto decider = ores::iam::generators::generate_synthetic_account(gctx);
+        decider.change_reason_code = "system.test";
+        ores::iam::repository::account_repository{}.write(h.context(), decider);
+        const auto r = lifecycle.decide(id, version, "approve", decider.id, "", open.front().code);
+        REQUIRE(r.outcome == "ok");
+        version = r.version;
+    }
+    REQUIRE(lifecycle.request(id)->state_code == "approved");
+}
+
+}
+
+TEST_CASE("an_apply_writes_every_line_once_and_marks_each_applied", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto line = new_book_line(h, w);
+    const auto proposal = svc.raise({line}, "Open the desk");
+    REQUIRE(proposal.request);
+    approve_every_part(w, h, *proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+
+    const auto first = svc.apply(id);
+
+    CHECK(first.applied);
+    CHECK(first.lines_applied == 1);
+    ores::refdata::service::book_service books(w.ctx);
+    const auto written = books.get_book(line.entity_id);
+    REQUIRE(written.has_value());
+    CHECK(written->name == line.name);
+    const auto rows = ores::refdata::repository::book_change_repository{}.read_latest_by_request_id(
+        w.ctx, id, 0, 10);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().applied);
+
+    const auto again = svc.apply(id);
+    CHECK(again.applied);
+    CHECK(again.lines_applied == 0);
+    CHECK(books.get_book(line.entity_id)->version == written->version);
+}
+
+TEST_CASE("a_refused_line_rolls_the_whole_apply_back_and_fails_the_request", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+
+    const auto existing = new_book_line(h, w);
+    const auto live = make_live(w, existing);
+    auto edit = edit_line(live, existing);
+    edit.description = "Reworded";
+    edit.book_status = live.book_status == "Active" ? "Inactive" : "Active";
+    const auto added = new_book_line(h, w);
+
+    const auto proposal = svc.raise({added, edit}, "Open one desk, change another");
+    REQUIRE(proposal.request);
+    approve_every_part(w, h, *proposal.request);
+
+    // Someone else changes the book between the raise and the apply, so the
+    // second line now claims a version that is no longer current.
+    ores::refdata::service::book_service books(w.ctx);
+    auto moved = *books.get_book(live.id);
+    moved.description = "Changed by someone else";
+    moved.change_reason_code = "system.test";
+    books.save_book(moved);
+
+    const auto id = boost::uuids::to_string(proposal.request->id);
+    const auto result = svc.apply(id);
+
+    CHECK_FALSE(result.applied);
+    CHECK_FALSE(result.transient);
+    CHECK(result.failed_line == 2);
+    CHECK_FALSE(result.refusal.empty());
+    CHECK_FALSE(books.get_book(added.entity_id).has_value());
+    const auto rows = ores::refdata::repository::book_change_repository{}.read_latest_by_request_id(
+        w.ctx, id, 0, 10);
+    CHECK(std::ranges::none_of(rows, [](const auto& r) { return r.applied; }));
+    ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
+    const auto failed = lifecycle.request(id);
+    CHECK(failed->state_code == "apply_failed");
+    CHECK(failed->change_commentary.starts_with("Line 2:"));
+}
+
+TEST_CASE("a_request_that_is_not_approved_is_not_applied", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto line = new_book_line(h, w);
+    const auto proposal = svc.raise({line}, "Open the desk");
+    REQUIRE(proposal.request);
+
+    const auto result = svc.apply(boost::uuids::to_string(proposal.request->id));
+
+    CHECK_FALSE(result.applied);
+    CHECK_FALSE(result.refusal.empty());
+    ores::refdata::service::book_service books(w.ctx);
+    CHECK_FALSE(books.get_book(line.entity_id).has_value());
+    ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
+    CHECK(lifecycle.request(boost::uuids::to_string(proposal.request->id))->state_code ==
+          "waiting");
+}
+
+TEST_CASE("a_recheck_reads_the_stored_lines_against_the_live_book", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto existing = new_book_line(h, w);
+    const auto live = make_live(w, existing);
+    auto edit = edit_line(live, existing);
+    edit.book_status = live.book_status == "Active" ? "Inactive" : "Active";
+    const auto proposal = svc.raise({edit}, "Change the status");
+    REQUIRE(proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+    CHECK_FALSE(svc.recheck(id).refused());
+
+    ores::refdata::service::book_service books(w.ctx);
+    auto moved = *books.get_book(live.id);
+    moved.description = "Changed by someone else";
+    moved.change_reason_code = "system.test";
+    books.save_book(moved);
+
+    CHECK(svc.recheck(id).refused());
+}
+
+TEST_CASE("only_the_database_refusing_a_write_is_a_refusal_and_not_the_infrastructure", tags) {
+    using ores::refdata::service::is_infrastructure_failure;
+    CHECK(is_infrastructure_failure("server closed the connection unexpectedly"));
+    CHECK(is_infrastructure_failure("Cannot commit the transaction: timeout"));
+    CHECK_FALSE(is_infrastructure_failure("Invalid functional_currency: QQQ"));
+    CHECK_FALSE(is_infrastructure_failure("The book changed since it was read"));
+}

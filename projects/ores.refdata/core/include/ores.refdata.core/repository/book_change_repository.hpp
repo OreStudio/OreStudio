@@ -124,6 +124,30 @@ public:
     std::optional<domain::book_change>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+    /**
+     * @brief Reads latest book changes filtered by request_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param request_id The request_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::book_change> read_latest_by_request_id(
+        context ctx,
+        const std::string& request_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::book_changes_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active book changes filtered by request_id.
+     */
+    std::uint32_t get_total_book_change_count_by_request_id(
+        context ctx,
+        const std::string& request_id,
+        const std::optional<messaging::book_changes_filter>& filter = std::nullopt);
+
 
     /**
      * @brief Whether a list of book changes can be ordered by a field.

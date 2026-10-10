@@ -45,7 +45,9 @@ struct book_change_lookup {
 };
 
 struct book_changes_filter {
+    std::optional<boost::uuids::uuid> request_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> request_id_one_of;
 };
 
 struct book_change_event {
@@ -125,6 +127,30 @@ struct get_many_book_changes_request {
 struct get_many_book_changes_response {
     ores::utility::domain::result result;
     std::vector<book_change_lookup> entries;
+};
+
+struct list_by_request_id_book_changes_request {
+    using response_type = struct list_by_request_id_book_changes_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.book_changes.list_by_request_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid request_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<book_changes_filter> filter;
+};
+
+struct list_by_request_id_book_changes_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::book_change> book_changes;
+    std::uint64_t total;
 };
 
 struct list_book_change_versions_request {

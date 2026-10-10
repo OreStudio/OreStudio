@@ -25,6 +25,7 @@
 import type { BookChange } from '../domain/book_change.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface BookChangeKey {
     id: string;
@@ -36,7 +37,9 @@ export interface BookChangeLookup {
 }
 
 export interface BookChangesFilter {
+    request_id: string | null;
     id_one_of: string[] | null;
+    request_id_one_of: string[] | null;
 }
 
 export interface BookChangeEvent {
@@ -91,6 +94,21 @@ export interface GetManyBookChangesResponse {
     entries: BookChangeLookup[];
 }
 
+export interface ListByRequestIdBookChangesRequest {
+    request_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: BookChangesFilter | null;
+}
+
+export interface ListByRequestIdBookChangesResponse {
+    result: Result;
+    book_changes: BookChange[];
+    total: number;
+}
+
 export interface ListBookChangeVersionsRequest {
     key: BookChangeKey;
     offset: number;
@@ -118,6 +136,7 @@ export const subjects = {
     list_book_changes_request: 'refdata.v1.book_changes.list',
     get_book_change_request: 'refdata.v1.book_changes.get',
     get_many_book_changes_request: 'refdata.v1.book_changes.get_many',
+    list_by_request_id_book_changes_request: 'refdata.v1.book_changes.list_by_request_id',
     list_book_change_versions_request: 'refdata.v1.book_changes_versions.list',
     get_book_change_version_request: 'refdata.v1.book_changes_versions.get',
 } as const;
@@ -130,6 +149,7 @@ export const requiresSession = {
     list_book_changes_request: true,
     get_book_change_request: true,
     get_many_book_changes_request: true,
+    list_by_request_id_book_changes_request: true,
     list_book_change_versions_request: true,
     get_book_change_version_request: true,
 } as const;

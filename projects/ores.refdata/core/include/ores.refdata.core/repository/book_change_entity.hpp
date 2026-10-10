@@ -52,6 +52,7 @@ struct book_change_entity {
 
     std::string operation;
     int base_version = 0;
+    bool applied = false;
     std::string entity_id;
     std::string party_id;
     std::string name;

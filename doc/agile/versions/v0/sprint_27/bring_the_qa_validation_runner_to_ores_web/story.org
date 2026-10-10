@@ -42,8 +42,33 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 | [[id:B27572F6-212D-49DB-90D5-1A36A6C2A9A4][Scaffold story: Bring the QA validation runner to ores.web]] | STARTED | 2026-10-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D][Prototype the QA validation runner]] | BACKLOG | | | Initial task for: Bring the QA validation runner to ores.web |
 
+* The arc
+
+ores.web gains a development module, on when the deployment has the developer
+surface on. It joins development and testing in one place. It replaces
+=ores.org-js= and =ores.dsh_kanban=. This story is the first step.
+
+| Story | What it adds |
+|-------+--------------|
+| 1. Test scenarios (this story) | A Development area in ores.web. A Tests tab lists scenarios waiting and scenarios done. The runner opens one: its steps, its story and its task, a PASS or FAIL and a note on each step, and a save that writes the org file. |
+| 2. Browse the agile tree | Kanban for the sprint, stories, tasks, the backlog buckets and any doc by link. It reaches parity with =ores.dsh_kanban= and =ores.org-js=, then both go. |
+| 3. The test queue as notifications | A scenario waiting for a tester raises an inbox notification. The bell shows it. A tester role and an assignment arrive here. |
+
 * Decisions
+
+- The module is the developer surface. The BFF serves it only when =developerTools= is on, as it does the Deployment page.
+- Compass stays the only reader and writer of the org tree. The BFF calls compass and never parses or writes org files itself. A new =compass scenario= verb records the results, so the rule that only compass changes agile artefacts holds. The first cut writes straight into the story's own folder, which is where scenarios already live.
+- The board shows the work tree the BFF runs in. It never merges work trees, as the =ores.dsh_kanban= contract says.
+- The browser cannot capture the screen, so a step takes a pasted or dropped image. The BFF saves it next to the scenario doc.
+- Org text renders in the browser with the parser from =ores.org-js=, ported into the web package. The port is the first step of retiring that project.
+
+* Open questions
+
+- =ores.org-js= is also the public, static view on the project site. The new module needs a running BFF, so it cannot replace that view. Keep a static export, or drop the public view?
+- Who may use the module? The first cut allows any signed-in user on a developer deployment. A tester role comes with story 3.
 
 * Out of scope
 
--
+- Starting or closing tasks from the browser.
+- A tester account, assignment and review. They belong to story 3.
+- =ores.dsh_environment=, which this arc does not retire.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-the-curve-builds-table
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The curve_builds table is added only if the agreed journeys need it, and the dec
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -42,9 +42,10 @@ The curve_builds table is added only if the agreed journeys need it, and the dec
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read the agreed journeys for the consumer that would treat a build as an object
+with a state, a reviewer or a sign-off. Read what the lineage annex and the
+shape tables already carry. Decide from the gap between the two, and name the
+columns only for the journey that needs them.
 
 * Measurements
 
@@ -58,7 +59,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Journeys under =doc/knowledge/journeys/market_data= that name a published marker, a candidate set or a publish act as missing (run in that directory) | 6 (ask, decide, publish, withdraw, see who changed, watch) | =grep -l -i "published marker\|candidate set\|published state\|candidate-against-published\|published version" journey_*.org= | 4c7f24a019 |
+| Journeys that need a build header to run (bootstrap, check, adjust, watch, blueprint) | 0 | =grep -l -i "build header\|build record\|builds table\|curve_build" journey_*.org= (no output; run in that directory) | 4c7f24a019 |
+| Lineage columns that already name a build's inputs | =derivation_config_id=, =derivation_config_version=, =source_as_of= | =grep -n "^\*\* " ores.marketdata.observation_lineage.org= | 4c7f24a019 |
+| Approval kinds seeded for market data | 0 | read of the ask and decide journeys | 4c7f24a019 |
 
 * Notes
 
@@ -86,3 +90,41 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+*Decision: no =curve_builds= table. The table that the journeys do earn is a publication record, and it waits for the publish operation.*
+
+*What the evidence says.* Six journeys name a missing object: ask for a
+publish, decide a publish, publish the approved set, withdraw or replace a
+published curve, see who changed a curve, and watch a curve evolve. They name the same three gaps.
+Nothing marks a candidate set, nothing marks a curve published, and nothing links
+an approval request to a curve. Each journey asks for a *published state*
+(=published_at=, =published_by=, the as-of published), a =superseded_by= link
+and a detail keyed by the approval request. None of the six asks for a *build*
+as a thing with its own state. The bootstrap, check, adjust and blueprint
+journeys run on the series, the points and the annex, and none lists a
+build header as missing.
+
+*Why a build header adds nothing.* A build is the points one derivation wrote at
+one reference date. The annex already carries the three facts that name it:
+=derivation_config_id=, =derivation_config_version= and =source_as_of=. The
+series and the reference date complete the key. A reader groups on that key.
+The group has no state, so it needs no row.
+
+*Why the published state cannot sit on the series or the points.* A series has
+many publishes, withdrawals and replacements over time, and the trail must show
+each one with an actor. One column on the series holds only the latest. A column
+on the points writes to the hot hypertable for a cold fact. So the state needs
+its own small bitemporal record.
+
+*What that record is.* A publication, not a build: series, reference date,
+state (candidate, published, withdrawn, superseded), =published_by=,
+=published_at=, =superseded_by= and =request_id=. Its columns come from
+journeys 9 to 12 and are listed in the story's decision. It is not added in
+this story, because no approval kind, no publish operation and no consumer
+exists to give the columns a test. A table with no reader repeats the mistake
+sprint 25 made.
+
+*Acceptance.* The decision carries its evidence (Measurements). The table is
+not needed as a build, so the record says what carries the build record: the
+annex plus the series and the reference date. The publication record is named
+for the story that adds the publish operation.

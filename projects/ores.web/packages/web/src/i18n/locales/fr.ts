@@ -1059,6 +1059,7 @@ const fr: SourceCatalogue = {
         overview: {
             title: 'L’installation en un coup d’œil',
             unreadable: 'Les services n’ont pas pu être lus.',
+            logsUnread: 'N’a pas pu être lu',
             running: 'Services en marche',
             lost: 'Perdus',
             missing: 'Absents',

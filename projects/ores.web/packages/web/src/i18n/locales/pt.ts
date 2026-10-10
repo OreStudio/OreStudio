@@ -1051,6 +1051,7 @@ const pt: SourceCatalogue = {
         overview: {
             title: 'A instalação num relance',
             unreadable: 'Não foi possível ler os serviços.',
+            logsUnread: 'Não foi possível ler',
             running: 'Serviços em execução',
             lost: 'Perdidos',
             missing: 'Em falta',

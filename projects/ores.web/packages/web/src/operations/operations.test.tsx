@@ -41,7 +41,8 @@ import {
     compareVersions,
     newestVersionOf,
 } from './OperationsParts.js';
-import { ServicesPage, SERVICES_QUERY_KEY, formatAge, readTime } from './ServicesPage.js';
+import { SERVICES_QUERY_KEY } from './InstallationHealth.js';
+import { ServicesPage, formatAge, readTime } from './ServicesPage.js';
 import {
     BusPage,
     BUS_QUERY_KEY,

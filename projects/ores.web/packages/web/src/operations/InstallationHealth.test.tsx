@@ -23,6 +23,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { ServiceRosterRow } from '@ores/wire-protocol/browser';
+import type { LogsRange } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import {
     InstallationFigures,
@@ -73,22 +74,40 @@ function render(options: {
     readonly roster?: readonly ServiceRosterRow[];
     readonly errors?: number;
     readonly warnings?: number;
+    readonly range?: LogsRange;
+    readonly logsFailed?: boolean;
 }): string {
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const range = options.range ?? '1h';
+    const client = new QueryClient({
+        defaultOptions: { queries: { retry: false, retryOnMount: false } },
+    });
+    if (options.logsFailed === true) {
+        for (const level of ['error', 'warn'] as const) {
+            const query = client.getQueryCache().build(client, {
+                queryKey: logCountKey(level, range),
+            });
+            query.setState({
+                ...query.state,
+                status: 'error',
+                error: new Error('the logs could not be read'),
+                fetchStatus: 'idle',
+            });
+        }
+    }
     if (options.roster !== undefined) {
         client.setQueryData(SERVICES_QUERY_KEY, options.roster);
     }
     if (options.errors !== undefined) {
-        client.setQueryData(logCountKey('error', '1h'), options.errors);
+        client.setQueryData(logCountKey('error', range), options.errors);
     }
     if (options.warnings !== undefined) {
-        client.setQueryData(logCountKey('warn', '1h'), options.warnings);
+        client.setQueryData(logCountKey('warn', range), options.warnings);
     }
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter>
-                    <InstallationFigures range="1h" />
+                    <InstallationFigures range={range} />
                 </MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,
@@ -168,6 +187,26 @@ describe('the figures', () => {
 
         expect(html).toContain('>3 of 5<');
         expect(html).toContain('>—<');
+    });
+
+    it('reads the counts of the range it was given', () => {
+        const html = render({ roster, errors: 9, warnings: 2, range: '6h' });
+
+        expect(html).toContain('Errors, Last 6 hours');
+        expect(html).toContain('>9<');
+        expect(html).not.toContain('>—<');
+    });
+
+    it('says the logs could not be read only when the read failed', () => {
+        expect(render({ roster, logsFailed: true })).toContain('Could not be read');
+        expect(render({ roster })).not.toContain('Could not be read');
+    });
+
+    it('does not paint an installation that expects nothing as healthy', () => {
+        const html = render({ roster: [], errors: 0, warnings: 0 });
+
+        expect(html).toContain('>0 of 0<');
+        expect(html).not.toContain('text-up');
     });
 
     it('states nothing it has not read', () => {

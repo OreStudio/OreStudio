@@ -37,7 +37,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { newestVersionOf, sameVersion } from './OperationsParts.js';
 
 /** The compute service's runner, which the grid screen owns; the wire name is the registry's. */
-const COMPUTE_RUNNER = 'ores.compute.wrapper';
+export const COMPUTE_RUNNER = 'ores.compute.wrapper';
 
 /** Where the roster read's answer is cached, so the two screens share one read. */
 export const SERVICES_QUERY_KEY = ['operations-services'] as const;
@@ -120,6 +120,7 @@ export function useInstallationHealth(range: LogsRange): {
     readonly rosterFailed: boolean;
     readonly errors: number | undefined;
     readonly warnings: number | undefined;
+    readonly logsFailed: boolean;
 } {
     const roster = useQuery({ queryKey: SERVICES_QUERY_KEY, queryFn: api.services });
     const errors = useQuery({
@@ -135,6 +136,7 @@ export function useInstallationHealth(range: LogsRange): {
         rosterFailed: roster.isError,
         errors: errors.data,
         warnings: warnings.data,
+        logsFailed: errors.isError || warnings.isError,
     };
 }
 
@@ -152,11 +154,13 @@ function Figure({
     label,
     to,
     tone,
+    note,
 }: {
     readonly value: string;
     readonly label: string;
     readonly to: string;
     readonly tone: Tone;
+    readonly note?: string;
 }): ReactNode {
     return (
         <Link to={to} className="grid gap-1 hover:text-accent-bright">
@@ -164,6 +168,7 @@ function Figure({
                 {value}
             </span>
             <span className="text-xs text-ink-muted">{label}</span>
+            {note !== undefined && <span className="text-xs text-warn">{note}</span>}
         </Link>
     );
 }
@@ -171,7 +176,8 @@ function Figure({
 /** The six figures for one range. */
 export function InstallationFigures({ range }: { readonly range: LogsRange }): ReactNode {
     const { t, plural } = useTranslation();
-    const { roster, rosterFailed, errors, warnings } = useInstallationHealth(range);
+    const { roster, rosterFailed, errors, warnings, logsFailed } = useInstallationHealth(range);
+    const logsNote = logsFailed ? t('operations.overview.logsUnread') : undefined;
     const unread = '—';
     const count = (value: number | undefined): string =>
         value === undefined ? unread : String(value);
@@ -196,7 +202,7 @@ export function InstallationFigures({ range }: { readonly range: LogsRange }): R
                 tone={
                     roster === undefined
                         ? 'neutral'
-                        : roster.running === roster.expected
+                        : roster.expected > 0 && roster.running === roster.expected
                           ? 'good'
                           : 'warn'
                 }
@@ -219,6 +225,7 @@ export function InstallationFigures({ range }: { readonly range: LogsRange }): R
                     range: t(`operations.logs.range.${range}`),
                 })}
                 value={count(errors)}
+                {...(logsNote === undefined ? {} : { note: logsNote })}
                 tone={errors !== undefined && errors > 0 ? 'bad' : 'neutral'}
             />
             <Figure
@@ -227,6 +234,7 @@ export function InstallationFigures({ range }: { readonly range: LogsRange }): R
                     range: t(`operations.logs.range.${range}`),
                 })}
                 value={count(warnings)}
+                {...(logsNote === undefined ? {} : { note: logsNote })}
                 tone={warnings !== undefined && warnings > 0 ? 'warn' : 'neutral'}
             />
             <Figure

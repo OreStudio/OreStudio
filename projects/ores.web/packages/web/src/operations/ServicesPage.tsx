@@ -52,6 +52,7 @@ import {
     type ScreenGap,
 } from './OperationsParts.js';
 import {
+    COMPUTE_RUNNER,
     DEFAULT_HEALTH_RANGE,
     InstallationFigures,
     SERVICES_QUERY_KEY,
@@ -61,9 +62,6 @@ import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 /** The ranges the error and warning counts can be read over, as the logs screen offers them. */
 const HEALTH_RANGES: readonly LogsRange[] = ['15m', '1h', '6h', '24h'];
 
-/** The compute service's runner, which the grid screen owns; the wire name is the registry's. */
-const COMPUTE_RUNNER = 'ores.compute.wrapper';
-
 /** The journeys that carry on from this one, in the order its page names them. */
 const JOURNEYS: readonly JourneyId[] = [
     '7B820710-161C-4926-B5AA-5EF2772A3652',
@@ -72,8 +70,6 @@ const JOURNEYS: readonly JourneyId[] = [
     'C3D59907-9D6A-448C-9A61-9E750755BBFB',
     '22AC8DD8-A440-4330-9992-47A5E9985473',
 ];
-
-export { SERVICES_QUERY_KEY };
 
 /** The instant a read answered, as the wall clock a person reads, in UTC. */
 export function readTime(at: number): string {

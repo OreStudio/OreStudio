@@ -1048,6 +1048,7 @@ export const en: SourceCatalogue = {
         overview: {
             title: 'The installation at a glance',
             unreadable: 'The services could not be read.',
+            logsUnread: 'Could not be read',
             running: 'Services running',
             lost: 'Lost',
             missing: 'Missing',

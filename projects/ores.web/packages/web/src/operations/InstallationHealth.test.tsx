@@ -29,6 +29,7 @@ import {
     InstallationFigures,
     SERVICES_QUERY_KEY,
     logCountKey,
+    releaseLabel,
     summariseRoster,
 } from './InstallationHealth.js';
 
@@ -157,6 +158,20 @@ describe('the roster in counts', () => {
     });
 });
 
+describe('the release as it is written', () => {
+    it('adds the v the services leave out', () => {
+        expect(releaseLabel('0.0.27')).toBe('v0.0.27');
+    });
+
+    it('does not add a second one', () => {
+        expect(releaseLabel('v0.0.27')).toBe('v0.0.27');
+    });
+
+    it('leaves a word that is not a number alone', () => {
+        expect(releaseLabel('unknown')).toBe('unknown');
+    });
+});
+
 describe('the figures', () => {
     it('states the services running of those expected, lost, missing, errors and warnings', () => {
         const html = render({ roster, errors: 4, warnings: 12 });
@@ -169,7 +184,7 @@ describe('the figures', () => {
         expect(html).toContain('Errors, Last hour');
         expect(html).toContain('>12<');
         expect(html).toContain('Warnings, Last hour');
-        expect(html).toContain('>0.0.27<');
+        expect(html).toContain('>v0.0.27<');
     });
 
     it('leads each figure to the screen that explains it', () => {

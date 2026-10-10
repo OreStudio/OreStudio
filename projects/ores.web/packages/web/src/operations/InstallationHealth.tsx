@@ -50,6 +50,17 @@ export function logCountKey(level: 'error' | 'warn', range: LogsRange): readonly
     return ['operations-log-count', level, range];
 }
 
+/**
+ * A release as the application writes it: with a leading `v`.
+ *
+ * The services report the number bare and the rest of the application states
+ * `v0.0.27`, so the figure adds the letter when it is missing and never doubles
+ * it.
+ */
+export function releaseLabel(version: string): string {
+    return /^[0-9]/.test(version) ? `v${version}` : version;
+}
+
 export interface RosterSummary {
     readonly expected: number;
     readonly running: number;
@@ -244,7 +255,7 @@ export function InstallationFigures({ range }: { readonly range: LogsRange }): R
                         ? t('operations.overview.release')
                         : plural('operations.overview.behind', roster.servicesBehind)
                 }
-                value={roster?.newest ?? unread}
+                value={roster?.newest === undefined ? unread : releaseLabel(roster.newest)}
                 tone={roster !== undefined && roster.servicesBehind > 0 ? 'warn' : 'neutral'}
             />
         </div>

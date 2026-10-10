@@ -387,7 +387,6 @@ const fr: SourceCatalogue = {
         title: 'Audit : connexions',
         description: 'Qui est connecté, ce que chacun fait, et qui échoue à se connecter.',
         readAt: 'Lu à {at}',
-        refresh: 'Actualiser',
         tabs: 'Lectures de l’audit',
         filterNote:
             'La période restreint les événements et les statistiques sur le serveur, et les sessions ouvertes dans ce navigateur. Aucun contrôle de version, de diff ou de retour n’apparaît ici : cet écran est un journal d’événements, pas une entité versionnée.',
@@ -1179,7 +1178,6 @@ const fr: SourceCatalogue = {
             description:
                 'Chaque service attendu par le registre, confronté aux instances qui se signalent. Les exécutants de calcul appartiennent à l’écran de la grille.',
             updated: 'Mis à jour à {at}',
-            refresh: 'Actualiser',
             skew: 'Décalage de version : {services} exécutent {versions} alors que le reste exécute {newest}. La comparaison porte sur les versions, car un battement énonce la version et non la construction.',
             instances: {
                 title: 'Instances',
@@ -1224,7 +1222,6 @@ const fr: SourceCatalogue = {
             description:
                 'Le résumé des hôtes et du travail de l’installation, une ligne par machine, portant l’exécutant qui se signale pour elle.',
             updated: 'Mis à jour à {at}',
-            refresh: 'Actualiser',
             units: {
                 gib: '{value} Gio',
                 mib: '{value} Mio',

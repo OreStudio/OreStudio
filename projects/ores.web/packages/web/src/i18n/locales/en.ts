@@ -390,7 +390,6 @@ export const en: SourceCatalogue = {
         title: 'Audit: sign-ins',
         description: 'Who is signed in, what they are doing, and who is failing to get in.',
         readAt: 'Read at {at}',
-        refresh: 'Refresh',
         tabs: 'Audit readings',
         filterNote:
             'The period narrows the events and the statistics on the server, and the open sessions in this browser. No version, diff or revert control appears here: this screen is an event log, not a versioned entity.',
@@ -1167,7 +1166,6 @@ export const en: SourceCatalogue = {
             description:
                 'Every service the registry expects, met by the instances that report. The compute runners belong to the grid screen.',
             updated: 'Updated {at}',
-            refresh: 'Refresh',
             skew: 'Version skew: {services} run {versions} while the rest run {newest}. The comparison is between releases, because a heartbeat states the release and not the build.',
             instances: {
                 title: 'Instances',
@@ -1211,7 +1209,6 @@ export const en: SourceCatalogue = {
             description:
                 "The installation's host and work summary, one row per machine, carrying the runner that reports for it.",
             updated: 'Updated {at}',
-            refresh: 'Refresh',
             units: {
                 gib: '{value} GiB',
                 mib: '{value} MiB',

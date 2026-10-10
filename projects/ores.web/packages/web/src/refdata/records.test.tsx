@@ -20,6 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { textOf } from '../textOf.js';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
@@ -271,7 +272,7 @@ describe('the currency screens', () => {
             });
         });
         expect(html).toContain('Last changed:');
-        expect(html).toContain('svc for priya');
+        expect(textOf(html)).toContain('svc for priya');
         expect(html).toContain('common.rectification');
         expect(html).toContain('Fixed the symbol');
     });

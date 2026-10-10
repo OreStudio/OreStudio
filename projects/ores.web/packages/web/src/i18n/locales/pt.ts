@@ -386,7 +386,6 @@ const pt: SourceCatalogue = {
         title: 'Auditoria: inícios de sessão',
         description: 'Quem tem sessão iniciada, o que cada um faz, e quem falha ao entrar.',
         readAt: 'Lido às {at}',
-        refresh: 'Atualizar',
         tabs: 'Leituras da auditoria',
         filterNote:
             'O período restringe os eventos e as estatísticas no servidor, e as sessões abertas neste navegador. Não aparece aqui qualquer controlo de versão, diff ou reversão: este ecrã é um registo de eventos, não uma entidade versionada.',
@@ -1171,7 +1170,6 @@ const pt: SourceCatalogue = {
             description:
                 'Cada serviço que o registo espera, confrontado com as instâncias que se anunciam. Os executores de cálculo pertencem ao ecrã da grelha.',
             updated: 'Atualizado às {at}',
-            refresh: 'Atualizar',
             skew: 'Desvio de versão: {services} executam {versions} enquanto o resto executa {newest}. A comparação é entre versões, porque um batimento indica a versão e não a compilação.',
             instances: {
                 title: 'Instâncias',
@@ -1216,7 +1214,6 @@ const pt: SourceCatalogue = {
             description:
                 'O resumo dos anfitriões e do trabalho da instalação, uma linha por máquina, com o executor que se anuncia por ela.',
             updated: 'Atualizado às {at}',
-            refresh: 'Atualizar',
             units: {
                 gib: '{value} GiB',
                 mib: '{value} MiB',

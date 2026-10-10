@@ -106,22 +106,155 @@ export function Timeline({
           })
         : timeline.events;
     return (
-        <ol className="grid list-none gap-0 p-0">
-            {events.map((event, index) => (
-                <Fragment key={entryKey(event, index)}>
-                    {startsADay(event, events[index - 1]) && <DayDivider at={event.at} />}
-                    <Entry
-                        event={event}
-                        before={previous.get(earlier(event))}
-                        actions={renderActions?.(event)}
-                        head={renderHead?.(event)}
-                        actorPath={actorPath}
-                        actorPicture={actorPicture}
-                        current={newest.has(`${entryKeyOf(event)}#${String(event.version)}`)}
-                    />
-                </Fragment>
-            ))}
-        </ol>
+        <div className="grid gap-3" data-timeline>
+            <EventChart events={events} />
+            <ol className="grid list-none gap-0 p-0">
+                {events.map((event, index) => (
+                    <Fragment key={entryKey(event, index)}>
+                        {startsADay(event, events[index - 1]) && <DayDivider at={event.at} />}
+                        <Entry
+                            event={event}
+                            before={previous.get(earlier(event))}
+                            actions={renderActions?.(event)}
+                            head={renderHead?.(event)}
+                            actorPath={actorPath}
+                            actorPicture={actorPicture}
+                            current={newest.has(`${entryKeyOf(event)}#${String(event.version)}`)}
+                        />
+                    </Fragment>
+                ))}
+            </ol>
+        </div>
+    );
+}
+
+/** The colour of an event kind on the chart, which the legend repeats. */
+const KIND_COLOUR: Readonly<Record<string, string>> = {
+    raised: 'bg-roadmap',
+    changed: 'bg-accent',
+    asked: 'bg-accent-bright',
+    decided: 'bg-warn',
+    granted: 'bg-up',
+    signed_in: 'bg-ink-muted',
+    sign_in_failed: 'bg-down',
+    signed_out: 'bg-ink-faint',
+};
+
+function colourOf(kind: string): string {
+    return KIND_COLOUR[kind] ?? 'bg-line-strong';
+}
+
+/**
+ * Scrolls to the entry nearest a moment and marks it for a moment, so a click
+ * on the chart lands on the events around that hour or day.
+ */
+function goTo(from: HTMLElement, ms: number): void {
+    const rows = [...(from.closest('[data-timeline]')?.querySelectorAll('li[data-ms]') ?? [])];
+    let nearest: Element | undefined;
+    let gap = Infinity;
+    for (const row of rows) {
+        const distance = Math.abs(Number(row.getAttribute('data-ms')) - ms);
+        if (distance < gap) {
+            gap = distance;
+            nearest = row;
+        }
+    }
+    if (nearest === undefined) return;
+    nearest.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    nearest.classList.add('bg-accent/10');
+    setTimeout(() => {
+        nearest.classList.remove('bg-accent/10');
+    }, 1500);
+}
+
+const HOUR = 3_600_000;
+const DAY = 24 * HOUR;
+
+/**
+ * The stream as a histogram: a bar for each hour, or for each day once the
+ * history spans more than two days, split by the kind of entry. Empty buckets
+ * between the first and the last are drawn, so a gap in time reads as a gap. It
+ * reads the entries the list shows, so it needs no read of its own.
+ */
+function EventChart({ events }: { readonly events: readonly TimelineEvent[] }): ReactNode {
+    const { t, language } = useTranslation();
+    const times = events
+        .map((event) => ({ kind: event.kind, ms: parseTimestamp(event.at).getTime() }))
+        .filter((point) => !Number.isNaN(point.ms));
+    if (times.length === 0) return null;
+    const first = Math.min(...times.map((point) => point.ms));
+    const last = Math.max(...times.map((point) => point.ms));
+    const hourly = last - first <= 2 * DAY;
+    const step = hourly ? HOUR : DAY;
+    const startOf = (ms: number): number => {
+        const date = new Date(ms);
+        if (hourly) date.setMinutes(0, 0, 0);
+        else date.setHours(0, 0, 0, 0);
+        return date.getTime();
+    };
+    const from = startOf(first);
+    const count = Math.round((startOf(last) - from) / step) + 1;
+    const buckets: Map<string, number>[] = Array.from({ length: count }, () => new Map());
+    const totals = new Map<string, number>();
+    for (const { kind, ms } of times) {
+        const bucket = buckets[Math.min(count - 1, Math.round((startOf(ms) - from) / step))];
+        bucket?.set(kind, (bucket.get(kind) ?? 0) + 1);
+        totals.set(kind, (totals.get(kind) ?? 0) + 1);
+    }
+    const tallest = Math.max(
+        ...buckets.map((bucket) => [...bucket.values()].reduce((a, n) => a + n, 0)),
+    );
+    const kinds = [...totals.keys()];
+    const label = (ms: number): string =>
+        new Intl.DateTimeFormat(
+            language,
+            hourly ? { dateStyle: 'medium', timeStyle: 'short' } : { dateStyle: 'medium' },
+        ).format(new Date(ms));
+    return (
+        <figure className="m-0 grid gap-1.5 rounded-md border border-line-subtle px-3 py-2">
+            <div className="flex h-24 items-end gap-0.5 overflow-x-auto border-b border-line">
+                {buckets.map((bucket, index) => {
+                    const total = [...bucket.values()].reduce((a, n) => a + n, 0);
+                    return (
+                        <button
+                            type="button"
+                            key={from + index * step}
+                            className="flex h-full w-3.5 shrink-0 cursor-pointer flex-col-reverse border-0 bg-transparent p-0 hover:bg-surface-hover"
+                            title={`${label(from + index * step)}: ${String(total)}`}
+                            aria-label={`${label(from + index * step)}: ${String(total)}`}
+                            onClick={(click) => {
+                                goTo(click.currentTarget, from + index * step + step / 2);
+                            }}
+                        >
+                            {kinds
+                                .filter((kind) => bucket.has(kind))
+                                .map((kind) => (
+                                    <span
+                                        key={kind}
+                                        className={colourOf(kind)}
+                                        style={{
+                                            height: `${((bucket.get(kind) ?? 0) / tallest) * 100}%`,
+                                        }}
+                                        title={`${t(`timeline.kind.${kind}`)}: ${String(bucket.get(kind))}`}
+                                    />
+                                ))}
+                        </button>
+                    );
+                })}
+            </div>
+            <div className="flex justify-between text-[0.7rem] text-ink-faint">
+                <span>{label(from)}</span>
+                <span>{label(from + (count - 1) * step)}</span>
+            </div>
+            <figcaption className="flex flex-wrap gap-x-3 gap-y-1 text-[0.75rem] text-ink-muted">
+                {kinds.map((kind) => (
+                    <span key={kind} className="inline-flex items-center gap-1.5">
+                        <span className={`h-2.5 w-2.5 rounded-sm ${colourOf(kind)}`} aria-hidden />
+                        {t(`timeline.kind.${kind}`)} {totals.get(kind)}
+                    </span>
+                ))}
+            </figcaption>
+        </figure>
     );
 }
 
@@ -293,11 +426,8 @@ function Entry({
     const changed = changedFields(event, before);
     const quiet = isAnAct(event.kind);
     return (
-        <li className={ROW}>
+        <li className={`${ROW} scroll-mt-4`} data-ms={parseTimestamp(event.at).getTime()}>
             <div className="flex items-start justify-end gap-1.5 pr-2.5 pt-[6px]">
-                {actorPicture !== undefined && event.actor !== '' && (
-                    <Avatar name={event.actor} size="sm" src={actorPicture(event.actor)} />
-                )}
                 <span className="pt-[3px] font-mono text-[0.72rem] text-ink-faint">
                     {timeOf(event.at, language)}
                 </span>
@@ -319,37 +449,42 @@ function Entry({
                     aria-hidden
                 />
             </div>
-            <div className={`grid min-w-0 gap-1.5 pb-3.5 pl-1.5 pt-1 ${quiet ? 'opacity-90' : ''}`}>
-                {head === undefined ? (
-                    <DefaultHead event={event} changed={changed} actorPath={actorPath} />
-                ) : (
-                    <>
-                        {head}
-                        {event.commentary !== '' && (
-                            <p className="text-[0.8rem] text-ink-muted italic">
-                                {event.commentary}
-                            </p>
-                        )}
-                    </>
+            <div className="flex min-w-0 items-start gap-2.5 pb-3.5 pl-1.5 pt-1">
+                {actorPicture !== undefined && event.actor !== '' && (
+                    <Avatar name={event.actor} size="md" src={actorPicture(event.actor)} />
                 )}
-                {changed.length > 0 && before !== undefined ? (
-                    <Details>
-                        <ChangeTable changed={changed} before={before} />
-                    </Details>
-                ) : isAChange(event.kind) && before !== undefined ? (
-                    /*
-                     * A version that changed no field against the one before
-                     * it, such as a revert to values already held, has nothing
-                     * to show. The whole record is for a first version, which
-                     * has nothing to be read against.
-                     */
-                    <p className="text-[0.8rem] text-ink-faint">{t('timeline.noChanges')}</p>
-                ) : ownFields(event).length > 0 ? (
-                    <Details>
-                        <Facts event={event} before={before} />
-                    </Details>
-                ) : null}
-                {actions}
+                <div className={`grid min-w-0 flex-1 gap-1.5 ${quiet ? 'opacity-90' : ''}`}>
+                    {head === undefined ? (
+                        <DefaultHead event={event} changed={changed} actorPath={actorPath} />
+                    ) : (
+                        <>
+                            {head}
+                            {event.commentary !== '' && (
+                                <p className="text-[0.8rem] text-ink-muted italic">
+                                    {event.commentary}
+                                </p>
+                            )}
+                        </>
+                    )}
+                    {changed.length > 0 && before !== undefined ? (
+                        <Details>
+                            <ChangeTable changed={changed} before={before} />
+                        </Details>
+                    ) : isAChange(event.kind) && before !== undefined ? (
+                        /*
+                         * A version that changed no field against the one before
+                         * it, such as a revert to values already held, has nothing
+                         * to show. The whole record is for a first version, which
+                         * has nothing to be read against.
+                         */
+                        <p className="text-[0.8rem] text-ink-faint">{t('timeline.noChanges')}</p>
+                    ) : ownFields(event).length > 0 ? (
+                        <Details>
+                            <Facts event={event} before={before} />
+                        </Details>
+                    ) : null}
+                    {actions}
+                </div>
             </div>
         </li>
     );
@@ -377,26 +512,28 @@ function DefaultHead({
         .filter((part) => part !== '')
         .join(' ');
     return (
-        <div className="flex flex-wrap items-baseline gap-2">
-            <Tag tone={kindTone(event.kind)}>{t(`timeline.kind.${event.kind}`)}</Tag>
-            <span className="font-mono text-[0.72rem] text-ink-faint">
-                {badge}
-                {event.version > 0 && ` v${String(event.version)}`}
-            </span>
-            {event.reasonCode !== '' && (
-                <span className="rounded border border-warn/40 bg-warn/10 px-1.5 font-mono text-[0.68rem] text-warn">
-                    {event.reasonCode}
+        <>
+            <div className="flex flex-wrap items-baseline gap-2">
+                <Tag tone={kindTone(event.kind)}>{t(`timeline.kind.${event.kind}`)}</Tag>
+                <span className="font-mono text-[0.72rem] text-ink-faint">
+                    {badge}
+                    {event.version > 0 && ` v${String(event.version)}`}
                 </span>
-            )}
-            {event.actor !== '' && <Actor name={event.actor} path={actorPath?.(event.actor)} />}
-            <span className="text-sm text-ink-muted">{sentenceOf(event, changed)}</span>
+                {event.reasonCode !== '' && (
+                    <span className="rounded border border-warn/40 bg-warn/10 px-1.5 font-mono text-[0.68rem] text-warn">
+                        {event.reasonCode}
+                    </span>
+                )}
+                {event.actor !== '' && <Actor name={event.actor} path={actorPath?.(event.actor)} />}
+                <span className="text-sm text-ink-muted">{sentenceOf(event, changed)}</span>
+                <span className="ml-auto text-[0.72rem] text-ink-faint">
+                    {formatDateTime(event.at, language)}
+                </span>
+            </div>
             {event.commentary !== '' && (
-                <span className="text-[0.8rem] text-ink-muted italic">{event.commentary}</span>
+                <p className="text-[0.8rem] text-ink-muted italic">{event.commentary}</p>
             )}
-            <span className="ml-auto text-[0.72rem] text-ink-faint">
-                {formatDateTime(event.at, language)}
-            </span>
-        </div>
+        </>
     );
 }
 

@@ -1620,7 +1620,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
         // Your own state is a self read, which needs no permission; anybody
         // else's is the login info read, which does.
-        const own = key.data.key.account_id === session.accountId;
+        const own = key.data.key.account_id.toLowerCase() === session.accountId.toLowerCase();
         return {
             loginInfo: own
                 ? await readMyLoginInfo(session.client)

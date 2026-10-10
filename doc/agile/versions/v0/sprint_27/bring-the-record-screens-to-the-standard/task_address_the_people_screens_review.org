@@ -26,11 +26,11 @@ Close every comment of the product owner's review of the people screens. The Rev
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -160,3 +160,5 @@ The batch from 2026-10-10, in the order given. Decisions: accept, question (need
 | P19 | What does the 'Application' pill mean? Show the current party and tenant, very visibly, perhaps as pills at the bottom. | components/AppShell.tsx | accept | Explain or remove the Application pill. Add tenant and party pills to the footer. |
 
 * Result
+
+The product owner reviewed the Staff screens and accepted them. All 19 comments are decided. P8 and P18 became their own stories. Lists, the role editor and the Held by list page on the server. The timeline has a chart of events by hour or day, the author's photo beside the changes, and the current version as an emblem. The look and feel is now written down in the entity screen specification (=doc/knowledge/ui/=). Known gaps are listed in that document under how Staff conforms today.

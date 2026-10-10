@@ -50,6 +50,9 @@ const PAGE = 100;
  * What is waiting is the whole of `items`: the server answers no request that
  * has an answer, so there is nothing here to filter out.
  */
+/** Marks where a name goes in a translated phrase, so the name can be a link. */
+const DECIDER_SLOT = '\u0001';
+
 export function RequestsPage(): ReactNode {
     const { t } = useTranslation();
     const mayDecide = useHolds()('iam::roles:assign');
@@ -140,8 +143,22 @@ function Queue(): ReactNode {
                                         <RequestStateChip stateCode={request.stateCode} />
                                         {request.decision !== null && (
                                             <span className="text-xs text-ink-faint">
-                                                {t('inbox.queue.by', { decider: '' })}{' '}
-                                                <PersonRef who={request.decision.decidedBy} />
+                                                {t('inbox.queue.by', { decider: DECIDER_SLOT })
+                                                    .split(DECIDER_SLOT)
+                                                    .flatMap((part, index) =>
+                                                        index === 0
+                                                            ? [part]
+                                                            : [
+                                                                  <PersonRef
+                                                                      key="decider"
+                                                                      who={
+                                                                          request.decision!
+                                                                              .decidedBy
+                                                                      }
+                                                                  />,
+                                                                  part,
+                                                              ],
+                                                    )}
                                             </span>
                                         )}
                                     </div>

@@ -714,13 +714,7 @@ messaging::get_my_sessions_response
 account_operations_service::get_my_sessions(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading own sessions: " << boost::uuids::to_string(account_id);
     messaging::get_my_sessions_response response;
-    // The repository has no read by account, so the tenant's sessions are
-    // listed and the caller's open ones kept, as the tenant-wide open read does.
-    repository::session_repository sessions;
-    for (auto& row : sessions.read_latest(ctx_)) {
-        if (row.account_id == account_id && row.end_time.empty())
-            response.sessions.push_back(std::move(row));
-    }
+    response.sessions = repository::session_repository{}.read_active_by_account(ctx_, account_id);
     std::sort(response.sessions.begin(),
               response.sessions.end(),
               [](const domain::session& a, const domain::session& b) {

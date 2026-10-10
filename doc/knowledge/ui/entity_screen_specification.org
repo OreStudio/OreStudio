@@ -29,8 +29,9 @@ The rules in short:
   =http= link.
 - Every change is made in a dialog opened by an Edit button on the card it
   changes. The reason is asked in the dialog and nowhere else.
-- History is a rail of one-line headers with the detail on demand, and the
-  author's photo stands beside the time.
+- History is a chart of events over time above a rail of one-line headers with
+  the detail on demand. The author's photo stands at the left of each entry, and
+  the note stands on its own line below the header.
 - A combo box offers only values that exist, and a screen that shows one value at
   a time has no "all" choice.
 - How a screen learns that something changed is not settled yet. That section is
@@ -246,7 +247,8 @@ rule is the same in all of them.
   wherever its code appears. A country code on a contact card is the flag, then
   the code. Flags come from the one map in the record standard, and a screen never
   works out a flag itself.
-- The photo of a person who wrote a history entry stands beside the time. See
+- The photo of a person who wrote a history entry stands at the left of the
+  entry, beside its header and changes. See
   [[*History and the timeline][History and the timeline]].
 
 ** Paging: the pager is the request
@@ -302,22 +304,47 @@ to save.
 
 ** History and the timeline
 
-An entity's history is one stream, drawn as a rail, newest first.
+An entity's history is one stream. It is drawn as a chart of events over time,
+and below it a rail of entries, newest first.
 
 #+begin_src text
+  ▂ ▅ ▁   ▇ ▃          ■ Created  ■ Changed  ■ Granted  ■ Signed in
+  10 Oct ─────────── 12 Oct
+
   Saturday, 10 October 2026
-  (photo) 03:51:36 ●  [Raised] account a452db76 v1  system.external_data_import
-                      ores_brave_hopper_iam_service  Published from organisation dataset
-                      ▸ Details
-  (photo) 03:40:12 ●  [Changed] account a452db76 v2  Job Title   Rectification
-                      Marco Craveiro  Corrected the title
-                      ▸ Details
+  03:51:36 ●  (photo) [Raised] account a452db76 v1  system.external_data_import
+  ✓           ores_brave_hopper_iam_service  Published from organisation dataset
+              Attached staff photo during provisioning
+              ▸ Details
+  03:40:12 ●  (photo) [Changed] account a452db76 v2  Job Title   Rectification
+              Marco Craveiro
+              Corrected the title
+              ▸ Details
 #+end_src
+
+*** The event chart
+
+- The chart is a histogram of the entries: a bar for each hour, or for each day
+  once the history spans more than two days. Each bar is split by the kind of
+  entry, and each kind has one colour that the legend repeats.
+- Every bar has the same fixed width. A bar never stretches to fill the row, and
+  a long history scrolls sideways.
+- An hour or a day with no entries is empty space. The chart draws every bucket
+  from the first entry to the last, so a gap in time reads as a gap.
+- A bar shows its time and its count on hover, and each segment its kind and its
+  count. The first and the last time stand under the bars. The legend names the
+  kinds that appear, each with its count.
+- A click on a bar scrolls to the entry nearest that hour or day, and marks it for
+  a moment. A click on an empty bar goes to the closest entry in time.
+- The chart reads the entries the list holds. It makes no read of its own.
 
 *** One line per entry
 
-- Each entry is a header on one line: the time, the kind, the record and its
-  version, the fields that changed, the reason code, the author and the note.
+- Each entry is a header on one line: the kind, the record and its version, the
+  reason code, the author, what they did, and the time. The time and the
+  current-version emblem stand in the left gutter.
+- The note, such as "Attached staff photo during provisioning", is never on the
+  header line. It stands on its own line below the header.
 - The detail is collapsed. A field that changed is drawn as the difference, the
   old and the new, and a first version as the whole record. A reader opens the
   detail on demand. The first screen of a long history is a list of headers a
@@ -333,9 +360,9 @@ An entity's history is one stream, drawn as a rail, newest first.
 
 *** The author
 
-- The author's photo stands beside the time, in the left gutter. Where the author
-  has no photo, their initials stand in the same circle. A service is its
-  initials.
+- The author's photo stands at the left of the entry, beside the header and the
+  changes, at medium size (2 rem) so that a face can be seen. Where the author has
+  no photo, their initials stand in the same circle. A service is its initials.
 - The author's name is a link to their page where the reader may open people.
   A service is text.
 - The photo and the link come from the same directory as every other mention of
@@ -524,7 +551,7 @@ What is not settled, and will be specified here:
 | A person named in text | =PersonRef= and =usePeopleDirectory= in =access/PersonRef.tsx= | Exists; the directory is read whole, see the deviations |
 | The author's picture | =useActorPictures= in =access/PersonRef.tsx=, =Avatar= in =ui/Images.tsx= | Exists |
 | A history author's link | =actorPathFor= in =access/PeoplePage.tsx= | Exists |
-| The timeline | =Timeline= in =timeline/Timeline.tsx= | Exists; one-line headers, details on demand, the author's photo beside the time, the author's link, the current-version emblem |
+| The timeline | =Timeline= in =timeline/Timeline.tsx= | Exists; one-line headers, details on demand, the event chart, the author's photo beside the header, the author's link, the current-version emblem |
 | A person's merged story | =readPersonTimeline= in =wire-protocol/src/timeline.ts= | Exists; reads the whole account history, see the deviations |
 | The pager | =Pager= in =ui/Pager.tsx= | Exists |
 | The roles panel, paged on the server | =RolesAllow= in =access/Allowances.tsx=, =list_account_permissions= and =list_my_permissions= | Exists |

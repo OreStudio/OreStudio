@@ -110,6 +110,10 @@ task and name that file in the Command column.
 
 * Notes
 
+- Verified by the suites: web 609, BFF 347, wire-protocol 166, IAM core service 370 assertions, shell 1084. The tenant setup wizard has to be run from the browser before the staff exist, so the screens were not seen with the seeded staff in this session.
+- P18 is a change to the approval engine, which decides by permission and not by a named person. See the plan of its own task for the proposed shape.
+- P8 waits on the choice between a close beacon and a shorter idle lifetime.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

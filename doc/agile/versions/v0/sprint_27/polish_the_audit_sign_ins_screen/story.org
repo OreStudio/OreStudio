@@ -47,7 +47,7 @@ attacker or a forgotten password could be locking out.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:1242EF75-BC1F-4761-83CF-73AC7A5E59BC][Scaffold story: Polish the audit sign-ins screen]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A16F0C21-42E8-4BAA-884C-813A90293997][Implement Polish the audit sign-ins screen]] | BACKLOG | | | Initial task for: Polish the audit sign-ins screen |
+| [[id:A16F0C21-42E8-4BAA-884C-813A90293997][Implement Polish the audit sign-ins screen]] | DONE | 2026-10-10 | 2026-10-10 | Initial task for: Polish the audit sign-ins screen |
 
 * Decisions
 

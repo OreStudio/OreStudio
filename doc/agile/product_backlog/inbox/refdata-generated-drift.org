@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: D2374556-4672-4967-AF3F-3ADA58A9AE40
+:END:
+#+title: drift-sweep was red on 32 refdata generated files, and regenerating fixed it
+#+description: compass check --only drift-sweep failed with 32 files that a render would change, all in ores.refdata generated output. Every diff was clang-format wrapping and include ordering, with no semantic difference, so the gate was reporting formatting drift and not a model disagreement. Regenerating the component with compass codegen regenerate --component refdata --address ores restored all 32 to the content HEAD carries: the working tree had them reformatted away from what the generator produces. The sweep is green afterwards and a second regeneration leaves the 32 clean, so the fix is stable rather than incidental. git status went from 232 to 200 modified paths. Worth knowing because the failure looks like a code change and is only a formatting one, and because the same shape could hide a real drift behind 31 cosmetic ones.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+
+* The cost, learned the same way
+
+=compass codegen regenerate= rewrites every file the component owns, whether or
+not the content changes. mtimes move for all of them, so a regeneration that
+changes nothing still invalidates the build cache: the next build recompiles
+the whole component. Measured here — the =ores.ore.core.tests= build that
+started at 00:41 restarted at 730 objects and 40% because the =refdata=
+regeneration above had touched the component's sources.
+
+So "regenerate and see if anything changed" is not a read-only drift probe. The
+read-only version is to hash the generated tree, regenerate, and hash again.
+Use the regeneration itself only when the drift is real.

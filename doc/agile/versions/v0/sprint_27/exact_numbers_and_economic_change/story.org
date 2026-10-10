@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 38E0EBFB-D1B0-4032-B126-129CEA74ED68
+:END:
+#+title: Story: Hold money exactly and move the external version on economic change
+#+description: Money quantities become exact decimals consistent by role; the ORE boundary stops losing the document's spelling; and an economic digest moves the trade's external version when, and only when, a component's economics change.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Hold every money quantity as an exact decimal, read the ORE boundary without loss, and derive the trade's external version from the economics actually held rather than from the reason a writer supplied.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Every acceptance criterion is met and verified. The boundary reads the document's own digits, all 35 remaining columns are converted with both baselines empty, the digest folds the 29 instrument families, and an amendment moves the external version. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing required. The shape-carrying request remains a stronger design than the reason-based boundary and is recorded in the ADR as a follow-up. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- The ORE boundary reads money with a decimal parse from the document's own text, and no double crosses into the persisted domain.
+- Every money quantity is exact decimal in the domain type and the column, with the C++ and SQL types agreeing by role across families.
+- A trade carries an external version that moves when the economics held change, and does not move on a null amend or a non-economic change.
+- An economic digest is computed over declared economic fields and folded from every instrument component up to the trade.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B06A7058-C406-42E8-98E2-4A7E929C6261][Read the ORE boundary as text]] | STARTED | | | The XML binding keeps the document's lexical form so a money value is parsed exactly. |
+| [[id:A1358CC9-3EA3-4D2A-97DF-AE6E27A83DCF][Make money exact by role across families]] | STARTED | | | 12 of 37 money columns converted; 25 money and 10 continuous columns remain, all in ores.trading. The scale is numeric(38, 12). |
+| [[id:37651D1D-7929-4813-AC5B-5D47A3512D03][Add the trade external version]] | STARTED | | | The trade carries the version the customer's records match, moved only by economic change. The column, the domain field, the protocol and the history projection are in; the fold that moves it is the task below. |
+| [[id:30FDE60C-DBDB-47DA-9C9D-D4262A948AC4][Declare the economic fields]] | BACKLOG | | | The model states which fields are economic and which components make up an instrument's shape. Not started: the digest task ships a name-based first cut in its place, and this task replaces it. |
+| [[id:87305402-9907-4C0D-8463-3FE03C9A1785][Digest the instrument shape and fold it up]] | STARTED | | | An economic digest computed where the whole shape exists, stored as text, folded from components to the trade. The digest and its tests are in; the write-path fold is in flight. |
+
+* Decisions
+
+- Money is exact decimal and continuous is binary float. The list of what
+  counts as money, and the one-way conversion rule, are Regime 2 criteria in
+  [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]]. Both
+  halves are enforced by =check-money-decimal-columns=, each against its own
+  baseline.
+- The column scale is =numeric(38, 12)=, not =numeric(28, 12)=. Widening the
+  scale alone narrows the integer part, and the suite caught it: three
+  assertions failed with a numeric field overflow.
+- The ORE binding carries the document's lexical form rather than only the
+  parsed float, patched into generated code and re-applied by a script, because
+  the generator is external and a regeneration otherwise drops the patch.
+- The external version lives on the trade, not on an agreement, and the digest
+  is a stored =text= column rather than a value computed on read, because the
+  comparison that decides whether to bump needs the previous digest.
+- The fold runs in C++ at the shared write choke point, through a trait the
+  trading component specialises, because canonicalising a decimal is C++ and a
+  second implementation in SQL would be a second digest.
+- The digest covers declared economic fields only. A digest over the whole
+  shape would move the external version for a description change, which is the
+  failure the two-version rule exists to prevent.
+- Verify the type work against the *columns*, never against the round trip: the
+  exporter re-renders through ORE's =float=, whose shortest spelling restores
+  the document's digits, so a truncated column still exports byte-identical
+  text.
+
+* Where each acceptance criterion stands
+
+A scoreboard, so the story cannot read as done before it is. Evidence means
+something that was run, not something that was read.
+
+| Criterion | State | Evidence | What is left |
+|-----------+-------+----------+--------------|
+| The ORE boundary reads money with a decimal parse from the document's own text | **done, verified** | 15 assertions in 4 cases, passing; full `ores.ore.core.tests` green at 482198 assertions in 627 cases | Nothing |
+| No double crosses into the persisted domain | **done** | both baselines empty; live database at 94 `numeric(38, 12)` and 70 `double precision` after a recreate; 0 offenders in both directions | Nothing |
+| Money is exact in both the domain type and the column, agreeing by role across families | **done** | `check-money-decimal-columns` reports 0 and 0 with empty baselines; `check-model-sql-types` 0 mismatches over 3152 columns; `ores.trading.core.tests` 929/140 green | Nothing |
+| A trade carries an external version that moves on economic change and not otherwise | **done** | `ores.trading.core.digest.tests` 25 assertions in 4 cases passing: a null amend changes neither, a system-reason change moves the digest and not the version, and a **user-reason amendment moves both** | Nothing required. The shape-carrying request remains the stronger design and is recorded in the ADR |
+| An economic digest is folded from every instrument component up to the trade | **done** | `ores.trading.core.digest.tests` 19 assertions in 3 cases passing; the fold now observes the **29 instrument families** and reads the instrument and its legs, amounts, rates, amortizations, schedules, strikes, options and premiums; the five non-economic children (state, booking, additional field, portfolio, structure member) are out, identifiers and party roles stay in | The external version is still deliberately unmoved; the boundary and the interim rule are in the ADR |
+
+Two of the five are done, three are partly done, and the row that matters most
+for the customer-facing claim is the last one: the mechanism is in and its
+component set is backwards. That is stated here rather than left to be
+inferred from task states.
+
+* Out of scope
+
+- The per-field =economic= marking in the model, which would replace the
+  name-based exclusion rule. Recorded as its own task because the rule in code
+  works and the declaration is a codegen change.
+- Enabling the external-version bump. It waits on the component set and on a
+  reset of the stored digests, in that order.
+
+* See also
+
+- [[id:B9DAC38A-BEB1-4658-87BC-DFF901033E84][Exact Numbers and Economic Change]]
+  — the rule, the measured boundary chain, and the evidence for each task
+  below. This story is the plan; that page is the reasoning.

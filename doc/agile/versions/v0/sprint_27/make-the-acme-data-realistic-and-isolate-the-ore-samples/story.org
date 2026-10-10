@@ -53,6 +53,8 @@ ORE reference results. The ACME data does not copy ORE's terms.
 
 * Acceptance
 
+- Agreement number and netting set code are unique per party, and a CSA has
+  its own party. Two parties can hold the same codes.
 - The ACME base bundle holds realistic agreements, netting sets, CSAs and
   portfolios for each party. Its datasets, methodology, catalogue and licence
   are ACME's, not ORE's.
@@ -75,6 +77,7 @@ ORE reference results. The ACME data does not copy ORE's terms.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
+| [[id:CB552BA9-C34E-47E1-BA4A-B7D38308C1A2][Scope agreements, netting sets and CSAs to the party]] | BACKLOG | | | An agreement reference is meaningful only between one ACME legal entity and one counterparty. Make agreement number and netting set code unique per party, and give the CSA its own party, so each party can hold the same codes. |
 | [[id:0E7D53D5-235D-42EE-86EC-3478E84AE5A2][Build the realistic ACME base bundle]] | BACKLOG | | | Derive realistic ACME agreements, netting sets, CSAs, portfolios and report configuration from the ORE samples, improved to look and behave like a real group's data, for each party's report definitions. |
 | [[id:816DAA26-71D0-4AE3-AF13-FC52C3446B06][Retarget the ORE samples bundle to the import needs]] | BACKLOG | | | Keep ore_samples, label every item as sample data, shrink it to the reference data the sample import needs, install it on every party, and land imports in a sandbox portfolio and book tree. |
 
@@ -91,17 +94,26 @@ Taken with the product owner on 2026-10-10:
 - All sample imports go to a sandbox portfolio. Their books go into the
   sandbox tree.
 
+- Agreements, netting sets and CSAs are party-scoped. The agreement number and
+  the netting set code are unique per party, and the CSA gets its own party.
+  This is a bilateral contract between one ACME legal entity and one
+  counterparty. It also lets the samples bundle install the same codes on every
+  party. It is the first task, ahead of the two bundle tasks.
+
 Known problems to design around:
 
-- *Agreement numbers are unique per tenant.* The samples bundle installs on
-  every party. PR #2598 review item 6 records that agreements are unique per
-  tenant while netting sets look their agreement up per party. The sample
-  agreement numbers need a per-party part, or the second party collides.
+- *Agreement numbers and netting set codes were unique per tenant.* PR #2598
+  review item 6 records that agreements are unique per tenant while netting
+  sets look their agreement up per party. The first task fixes this. Its open
+  risk is every lookup by number or code that names no party. They were not
+  searched yet.
 - *The current bundle names real banks.* The sample agreements name real banks
   by LEI. They stay sample data. Their code and description must say so.
 
 Open, to settle in the tasks:
 
+- The rule for a netting set with no party. The column is nullable today, and
+  a party-scoped CSA needs a party.
 - Which banks each ACME legal entity faces, and which agreement type and
   governing law each uses.
 - The CSA archetypes: variation margin, initial margin, and none. Their

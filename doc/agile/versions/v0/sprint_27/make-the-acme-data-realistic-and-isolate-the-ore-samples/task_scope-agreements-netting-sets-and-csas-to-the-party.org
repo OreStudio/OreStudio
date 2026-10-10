@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: CB552BA9-C34E-47E1-BA4A-B7D38308C1A2
+:END:
+#+title: Task: Scope agreements, netting sets and CSAs to the party
+#+description: An agreement reference is meaningful only between one ACME legal entity and one counterparty. Make agreement number and netting set code unique per party, and give the CSA its own party, so each party can hold the same codes.
+#+type: task
+#+level: s1
+#+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A master agreement and its CSA are contracts between one ACME legal entity and
+one counterparty. Today the agreement number and the netting set code are
+unique per tenant, and the CSA has no party of its own. Two parties cannot
+hold the same code, so every party must invent its own, and the ORE samples
+bundle cannot install on every party.
+
+Scope all three to the party. Agreement number and netting set code become
+unique per party. The CSA gets its own =party_id=. This task comes before the
+two bundle tasks, because both depend on it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- Two parties can each hold an agreement with the same number and a netting
+  set with the same code.
+- Agreement number is unique per tenant and party. Netting set code is unique
+  per tenant and party.
+- The CSA has a =party_id=. It is fixed for life, and it equals the party of
+  its netting set. A CSA cannot attach to a netting set that has no party.
+- Every lookup of an agreement or netting set by number or code names the
+  party. The DQ publish functions, the alias resolution and the ORE import are
+  covered.
+- pgTAP covers: the same code under two parties, a CSA whose party differs
+  from its set's, and a lookup without a party.
+- A fresh ACME provision passes.
+
+* Plan
+
+1. Search for every lookup of an agreement by number and of a netting set by
+   code, in SQL and in C++. List the ones that do not name a party.
+2. Change the entity models =ores.refdata.netting_agreement=,
+   =ores.refdata.netting_set= and =ores.refdata.csa=, and the DQ staging models
+   =ores.dq.netting_agreement=, =ores.dq.netting_set= and =ores.dq.csa=, then
+   regenerate the SQL and the C++. Do not edit generated files by hand.
+3. Decide the rule for a netting set with no party. The column is nullable
+   today. The CSA rule above needs a party.
+4. Update the publish functions, the alias resolution and the ORE import to
+   name the party in every lookup.
+5. Update pgTAP. Provision ACME.
+
+* Measurements
+
+None yet.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Not started.

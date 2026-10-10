@@ -26,11 +26,11 @@ Show a tester working through a test scenario: the Tests tab with scenarios wait
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED |
+| State        | DONE |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
-| Now          | The prototype is drawn and in review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Record your verdict on the three runner layouts, then close the task. |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -82,8 +82,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Fail or the last Pass locks the scenario, because read-only follows the inferred result | index.html | Accept | A closed flag on each scenario now decides read-only. A save closes a decided scenario and a retest opens it. A scripted run in Chrome covers the flow, and it fails on the old page. |
+| 2 | Variant B moves on after a Fail, before the tester writes a note | index.html | Accept | Only a Pass moves on. |
+| 3 | Retest wipes the steps without asking | index.html | Accept | A retest now asks for confirmation. |
+| 4 | The task table is not aligned | task file | Decline | Cosmetic. Compass writes those cells. |
+| 5 | The seven gaps live in the note and again in the page | index.html | Decline | A prototype opens with no build, so the page carries its own copy. |
 
 * Result
 
-The prototype is a static page, doc/prototypes/testing/test-scenarios/. It draws the Tests tab with a queue of waiting and done scenarios, and a runner in three layouts: steps beside the detail, one step at a time, and the whole scenario as a document. Four cases switch from the bar: queue, running, reopened and failed step. Every layout puts the story and the task beside the steps. The design note states seven gaps. The main one is that nothing reads or writes a scenario, so the BFF must call a compass scenario verb. The note gives no verdict. The three layouts wait for you to choose one.
+The prototype is a static page, doc/prototypes/testing/test-scenarios/. It draws the Tests tab with a queue of waiting and done scenarios, and a runner in three layouts: steps beside the detail, one step at a time, and the whole scenario as a document. Four cases switch from the bar: queue, running, reopened and failed step. Every layout puts the story and the task beside the steps. The design note states seven gaps. The main one is that nothing reads or writes a scenario, so the BFF must call a compass scenario verb. The reviewer accepted layout B, one step at a time, on 2026-10-10, and asked that the queue carry no heading of its own.

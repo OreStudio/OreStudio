@@ -23,9 +23,9 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The scaffold is in review. The prototype is next. |
+| Now           | The prototype is accepted: layout B. |
 | Waiting on    | Nothing.                               |
-| Next          | Prototype the runner. |
+| Next          | Plan the build tasks, starting with the compass scenario verb. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B27572F6-212D-49DB-90D5-1A36A6C2A9A4][Scaffold story: Bring the QA validation runner to ores.web]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D][Prototype the QA validation runner]] | STARTED | 2026-10-10 | | Show the Tests tab and the runner, and confirm how results are written. |
+| [[id:658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D][Prototype the QA validation runner]] | DONE | 2026-10-10 | 2026-10-10 | Show the Tests tab and the runner, and confirm how results are written. |
 
 * The arc
 
@@ -62,6 +62,7 @@ story 2. This story is the first step.
 - Until the production question is settled, the module reads the work tree the BFF runs in. It never merges work trees, as the =ores.dsh_kanban= contract says.
 - The browser cannot capture the screen, so a step takes a pasted or dropped image. The BFF saves it next to the scenario doc.
 - =ores.org-js= leaves the public website. The new module needs a running BFF and does not replace the public static view, and there is no static export. Story 2 removes the project and its publishing: the copy into the site in =ores-build-site.el=, the exclude patterns in =ores-build-site.el=, =ores-sync-org-roam.el=, =ores-check-org-links.el= and =compass.py=, and the memory, tag and modeling pages that name it. Story 2 also checks that no page on the site links to the old agile view.
+- The runner uses layout B, one step at a time, accepted on 2026-10-10. A Pass moves on and a Fail stays on the step. The queue carries no heading, because the Tests tab names it. The prototype is under =doc/prototypes/testing/=.
 - Org text renders in the browser with the parser from =ores.org-js=, ported into the web package. The port is the first step of retiring that project.
 
 * Open questions

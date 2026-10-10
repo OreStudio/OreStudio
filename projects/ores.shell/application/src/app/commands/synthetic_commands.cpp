@@ -1576,7 +1576,6 @@ std::vector<synthetic_commands::setup_row>
 synthetic_commands::plan_fx(const std::string& sub_config_id,
                             const std::string& container_id,
                             const std::string& folder_id,
-                            const std::string& party_id,
                             const std::string& source_name,
                             const std::string& base,
                             const std::string& quote,
@@ -1586,7 +1585,6 @@ synthetic_commands::plan_fx(const std::string& sub_config_id,
                             const std::vector<std::array<double, 3>>& components) {
     synthetic_ms::fx_spot_generation_config_write write;
     write.id = boost::lexical_cast<boost::uuids::uuid>(sub_config_id);
-    write.party_id = boost::lexical_cast<boost::uuids::uuid>(party_id);
     write.config_id = boost::lexical_cast<boost::uuids::uuid>(container_id);
     write.base_currency_code = base;
     write.quote_currency_code = quote;
@@ -1616,7 +1614,6 @@ synthetic_commands::plan_fx(const std::string& sub_config_id,
     for (const auto& component : components) {
         synthetic_ms::gmm_component_write gmm;
         gmm.id = boost::lexical_cast<boost::uuids::uuid>(random_id());
-        gmm.party_id = boost::lexical_cast<boost::uuids::uuid>(party_id);
         gmm.fx_spot_config_id = boost::lexical_cast<boost::uuids::uuid>(sub_config_id);
         gmm.component_index = index;
         gmm.description = "synthetic setup component " + std::to_string(index);
@@ -1639,7 +1636,6 @@ std::vector<synthetic_commands::setup_row> synthetic_commands::plan_ir(
     const std::string& sub_config_id,
     const std::string& container_id,
     const std::string& folder_id,
-    const std::string& party_id,
     const std::string& source_name,
     const std::vector<synthetic::domain::yield_curve_process_parameter_definition>& definitions,
     const std::string& currency,
@@ -1652,7 +1648,6 @@ std::vector<synthetic_commands::setup_row> synthetic_commands::plan_ir(
     const std::vector<std::string>& curve_keys) {
     synthetic_ms::ir_curve_generation_config_write write;
     write.id = boost::lexical_cast<boost::uuids::uuid>(sub_config_id);
-    write.party_id = boost::lexical_cast<boost::uuids::uuid>(party_id);
     write.config_id = boost::lexical_cast<boost::uuids::uuid>(container_id);
     write.currency_code = currency;
     write.index_family = index_family;
@@ -1686,7 +1681,6 @@ std::vector<synthetic_commands::setup_row> synthetic_commands::plan_ir(
     for (const auto& key : curve_keys) {
         synthetic_ms::ir_curve_template_entry_write entry;
         entry.id = boost::lexical_cast<boost::uuids::uuid>(random_id());
-        entry.party_id = boost::lexical_cast<boost::uuids::uuid>(party_id);
         entry.ir_curve_config_id = boost::lexical_cast<boost::uuids::uuid>(sub_config_id);
         entry.sequence_index = index;
         // A caller states one tenor per entry; the entry takes it as both ends,
@@ -1943,7 +1937,6 @@ void synthetic_commands::process_setup(std::ostream& out,
         const auto fx_rows = plan_fx(feed_config,
                                      collection,
                                      instrument_folder,
-                                     party_id,
                                      source_name,
                                      parsed->flag("base"),
                                      parsed->flag("quote"),
@@ -1956,7 +1949,6 @@ void synthetic_commands::process_setup(std::ostream& out,
         const auto ir_rows = plan_ir(feed_config,
                                      collection,
                                      instrument_folder,
-                                     party_id,
                                      source_name,
                                      listing->definitions,
                                      parsed->flag("currency"),

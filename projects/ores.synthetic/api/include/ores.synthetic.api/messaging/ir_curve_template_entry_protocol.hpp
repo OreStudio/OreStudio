@@ -41,7 +41,6 @@ struct ir_curve_template_entry_key {
 
 struct ir_curve_template_entry_write {
     boost::uuids::uuid id;
-    boost::uuids::uuid party_id;
     boost::uuids::uuid ir_curve_config_id;
     int sequence_index;
     std::string start_tenor_code;

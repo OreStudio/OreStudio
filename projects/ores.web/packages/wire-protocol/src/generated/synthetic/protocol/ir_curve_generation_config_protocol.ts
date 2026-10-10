@@ -34,7 +34,6 @@ export interface IrCurveGenerationConfigKey {
 
 export interface IrCurveGenerationConfigWrite {
     id: string;
-    party_id: string;
     config_id: string;
     currency_code: string;
     index_family: string;

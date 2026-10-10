@@ -50,6 +50,7 @@ Surrogate UUID uniquely identifying this configuration.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :natural_key: true
+:server_owned: true
 :END:
 
 Owning party (legal entity) this configuration belongs to.

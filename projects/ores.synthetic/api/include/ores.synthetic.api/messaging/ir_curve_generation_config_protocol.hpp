@@ -41,7 +41,6 @@ struct ir_curve_generation_config_key {
 
 struct ir_curve_generation_config_write {
     boost::uuids::uuid id;
-    boost::uuids::uuid party_id;
     boost::uuids::uuid config_id;
     std::string currency_code;
     std::string index_family;

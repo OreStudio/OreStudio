@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: D83549D8-5FBD-48C0-9E43-7F6C58E0AD52
+:END:
+#+title: Task: Scaffold story: Give the super administrator's landing page its cards
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :give_the_super_admin_landing_page_its_cards:sprint_27:v0:
+#+owner: marco
+#+branch: feature/give-the-super-admin-landing-page-its-cards
+#+pr: 3027
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5F88F874-7A41-4CAE-BEC5-5C4A35334A1B][Give the super administrator's landing page its cards]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the story, its tasks and the sprint row. This task changes no code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:5F88F874-7A41-4CAE-BEC5-5C4A35334A1B][Give the super administrator's landing page its cards]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The story, its two work tasks and the sprint row exist.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3027][#3027]] | [agile] Scaffold the super administrator landing page story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Story state and Now conflict | story.org | Accepted | Now and Next rewritten; state stays STARTED |
+| 2 | Next is stale | story.org | Accepted | Next now names the first work task |
+| 3 | Scaffold task has template text | task_scaffold | Accepted | Goal and Acceptance filled in |
+| 4 | Story placeholders | story.org | Accepted | Decisions and Out of scope written |
+| 5 | Two tasks overlap on the upcoming run | story.org | Accepted | Decision records which task owns what |
+| 6 | Branch convention differs between tasks | task files | Declined | compass sets the branch when a task starts |
+| 7 | Table alignment | status tables | Declined | Template output; renders correctly |
+| 8 | Sprint table split | sprint.org | Declined | Pre-existing; this row joins the right table |
+
+* Result
+
+The story, its three tasks and the sprint row exist. No code changes in this task.

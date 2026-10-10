@@ -29,6 +29,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 namespace ores::marketdata::service {
 
@@ -93,6 +94,12 @@ series_snapshot_reader::read(ores::database::context ctx,
 
     const auto records = repository::market_observation_repository{}.read_as_of_records(
         ctx, series.front().id, as_of);
+    // The staleness is measured over the points the response shows, so the age
+    // and the spread never include a point that has no node.
+    std::vector<repository::observation_record> placed;
+    placed.reserve(records.size());
+    // The read returns one record per distinct oresmd URI, and the URIs of one
+    // series differ only in their coordinates, so no two records share a node.
     for (const auto& record : records) {
         const auto parsed = datum::oresmd_uri_codec::read(record.observation.oresmd_uri);
         if (!parsed)
@@ -103,15 +110,16 @@ series_snapshot_reader::read(ores::database::context ctx,
             continue;
         response.values[*node] = record.observation.value;
         response.recorded_at[*node] = record.recorded_at;
+        placed.push_back(record);
     }
 
-    const auto summary = repository::summarise_staleness(records, as_of);
+    const auto summary = repository::summarise_staleness(placed, as_of);
     response.oldest_age_seconds = summary.oldest_age_seconds;
     response.spread_seconds = summary.spread_seconds;
     response.warning = summary.warning;
 
     BOOST_LOG_SEV(lg(), debug) << "Read the snapshot of series " << series_id << ": "
-                               << records.size() << " points over " << grid.size() << " nodes";
+                               << placed.size() << " points over " << grid.size() << " nodes";
     response.success = true;
     return response;
 }

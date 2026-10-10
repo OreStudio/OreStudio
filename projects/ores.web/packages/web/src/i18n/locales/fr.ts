@@ -215,6 +215,7 @@ const fr: SourceCatalogue = {
             saveTitle: 'Enregistrer {role} ?',
             andMore: 'et {count} de plus',
             reaches: '{people} ont ce rôle. Le changement les atteint sous 30 minutes.',
+            holdersShowing: 'Affichage de {from} à {to} sur {total} personnes',
             nowAllows: 'Permet désormais',
             noLongerAllows: 'Ne permet plus',
             whyChange: 'Pourquoi ce changement',

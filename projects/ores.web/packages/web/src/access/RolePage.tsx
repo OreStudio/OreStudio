@@ -19,16 +19,10 @@
  *
  */
 
-import {
-    keepPreviousData,
-    useMutation,
-    useQueries,
-    useQuery,
-    useQueryClient,
-} from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import type { Account, PermissionPage, RolePageRow } from '@ores/wire-protocol/browser';
+import type { PermissionPage, RoleHolder, RolePageRow } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
@@ -86,36 +80,26 @@ export function RolePage(): ReactNode {
     return <Role key={role.id + String(role.version)} role={role} />;
 }
 
-/** The people who hold a role, read through each person's access. */
-function useHolders(roleId: string): readonly Account[] {
-    const holds = useHolds();
-    const mayReadRoles = holds('iam::roles:read');
-    const people = useQuery({ queryKey: ['accounts'], queryFn: api.accounts });
-    const accounts = people.data?.accounts ?? [];
-    /*
-     * Who holds a role is the grants read, and a caller who may not read grants
-     * is told so once rather than once for every person the list names.
-     */
-    const access = useQueries({
-        queries: accounts.map((account) => ({
-            queryKey: ['account-access', account.id],
-            queryFn: () => api.accountAccess(account.id),
-            enabled: mayReadRoles,
-        })),
-    });
-    if (!mayReadRoles) {
-        return [];
-    }
-    return accounts.filter((_, index) =>
-        (access[index]?.data?.roles ?? []).some((held) => held.roleId === roleId),
-    );
-}
-
 function Role({ role }: { readonly role: RolePageRow }): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const queries = useQueryClient();
-    const holders = useHolders(role.id);
+    const [holderOffset, setHolderOffset] = useState(0);
+    const [holderPageSize, setHolderPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const mayReadRoles = useHolds()('iam::roles:read');
+    /*
+     * Who holds the role is a page of people from the server, with their names
+     * and pictures, so the page reads nobody's access one account at a time. A
+     * reader who may not read roles is not shown a list that would be refused.
+     */
+    const held = useQuery({
+        queryKey: ['role-holders', role.id, holderOffset, holderPageSize],
+        queryFn: () => api.roleHolders(role.id, { offset: holderOffset, limit: holderPageSize }),
+        placeholderData: keepPreviousData,
+        enabled: mayReadRoles,
+    });
+    const holders: readonly RoleHolder[] = held.data?.holders ?? [];
+    const holderTotal = held.data?.totalCount ?? 0;
     const [changes, setChanges] = useState<ReadonlyMap<string, boolean>>(new Map());
     const [saving, setSaving] = useState(false);
     const [renaming, setRenaming] = useState(false);
@@ -152,11 +136,9 @@ function Role({ role }: { readonly role: RolePageRow }): ReactNode {
                             </Button>
                             <Button
                                 variant="danger"
-                                disabled={holders.length > 0 || remove.isPending}
+                                disabled={holderTotal > 0 || remove.isPending}
                                 title={
-                                    holders.length > 0
-                                        ? t('access.roles.heldCannotDelete')
-                                        : undefined
+                                    holderTotal > 0 ? t('access.roles.heldCannotDelete') : undefined
                                 }
                                 onClick={() => remove.mutate()}
                             >
@@ -170,32 +152,53 @@ function Role({ role }: { readonly role: RolePageRow }): ReactNode {
 
             <section className="space-y-2 rounded-md border border-line bg-surface-raised p-4">
                 <h2 className="text-sm font-semibold">{t('access.roles.heldBy')}</h2>
-                {holders.length === 0 ? (
+                {held.isError ? (
+                    <Notice tone="error">{held.error.message}</Notice>
+                ) : holderTotal === 0 ? (
                     <p className="text-sm text-ink-faint">{t('access.roles.nobody')}</p>
                 ) : (
-                    <div className="flex flex-wrap gap-2">
-                        {holders.map((account) => {
-                            const name = displayName(account, account.username);
-                            return (
-                                <Link
-                                    key={account.id}
-                                    to={`/people/${encodeURIComponent(account.username)}`}
-                                    className="flex items-center gap-2 rounded-full border border-line py-0.5 pl-0.5 pr-3 text-sm hover:border-line-strong"
-                                >
-                                    <Avatar
-                                        name={name}
-                                        size="sm"
-                                        src={
-                                            account.imageId === null
-                                                ? null
-                                                : imageUrl(account.imageId)
-                                        }
-                                    />
-                                    {name}
-                                </Link>
-                            );
-                        })}
-                    </div>
+                    <>
+                        <div className="flex flex-wrap gap-2">
+                            {holders.map((holder) => {
+                                const name =
+                                    holder.fullName === '' ? holder.username : holder.fullName;
+                                return (
+                                    <Link
+                                        key={holder.accountId}
+                                        to={`/people/${encodeURIComponent(holder.username)}`}
+                                        className="flex items-center gap-2 rounded-full border border-line py-0.5 pl-0.5 pr-3 text-sm hover:border-line-strong"
+                                    >
+                                        <Avatar
+                                            name={name}
+                                            size="sm"
+                                            src={
+                                                holder.imageId === null
+                                                    ? null
+                                                    : imageUrl(holder.imageId)
+                                            }
+                                        />
+                                        {name}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                        <Pager
+                            offset={holderOffset}
+                            shown={holders.length}
+                            total={holderTotal}
+                            pageSize={holderPageSize}
+                            showing={t('access.roles.holdersShowing', {
+                                from: String(holderOffset + 1),
+                                to: String(holderOffset + holders.length),
+                                total: String(holderTotal),
+                            })}
+                            onMove={setHolderOffset}
+                            onPageSize={(size) => {
+                                setHolderPageSize(size);
+                                setHolderOffset(0);
+                            }}
+                        />
+                    </>
                 )}
             </section>
 
@@ -257,6 +260,7 @@ function Role({ role }: { readonly role: RolePageRow }): ReactNode {
                     added={added}
                     removed={removed}
                     holders={holders}
+                    holderTotal={holderTotal}
                     onSaved={() => setChanges(new Map())}
                     onClose={() => setSaving(false)}
                 />
@@ -428,13 +432,15 @@ function SaveDialog({
     added,
     removed,
     holders,
+    holderTotal,
     onSaved,
     onClose,
 }: {
     readonly role: RolePageRow;
     readonly added: readonly string[];
     readonly removed: readonly string[];
-    readonly holders: readonly Account[];
+    readonly holders: readonly RoleHolder[];
+    readonly holderTotal: number;
     readonly onSaved: () => void;
     readonly onClose: () => void;
 }): ReactNode {
@@ -449,6 +455,7 @@ function SaveDialog({
             await queries.invalidateQueries({ queryKey: ['role-permission-page', role.id] });
             await queries.invalidateQueries({ queryKey: ['account-access'] });
             await queries.invalidateQueries({ queryKey: ['permission-page'] });
+            await queries.invalidateQueries({ queryKey: ['role-holders', role.id] });
             onSaved();
             onClose();
         },
@@ -487,12 +494,18 @@ function SaveDialog({
             }
         >
             <div className="space-y-4">
-                {holders.length > 0 && (
+                {holderTotal > 0 && (
                     <p className="text-sm text-ink-muted">
                         {t('access.roles.reaches', {
-                            people: holders
-                                .map((account) => displayName(account, account.username))
-                                .join(', '),
+                            people:
+                                holders
+                                    .map((holder) =>
+                                        holder.fullName === '' ? holder.username : holder.fullName,
+                                    )
+                                    .join(', ') +
+                                (holderTotal > holders.length
+                                    ? ` ${t('access.roles.andMore', { count: String(holderTotal - holders.length) })}`
+                                    : ''),
                         })}
                     </p>
                 )}

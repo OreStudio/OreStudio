@@ -656,6 +656,59 @@ messaging::role_page_response authorization_service::read_roles_page(
     return response;
 }
 
+messaging::role_holders_response
+authorization_service::read_role_holders(const boost::uuids::uuid& caller_id,
+                                         const boost::uuids::uuid& role_id,
+                                         int offset,
+                                         int limit) {
+    messaging::role_holders_response response;
+    if (!has_permission(caller_id, domain::permissions::roles_read)) {
+        response.result.outcome = ores::utility::domain::outcome::denied;
+        response.result.code = domain::permissions::roles_read;
+        response.result.message = std::string("Permission denied: ") +
+                                  std::string(domain::permissions::roles_read) + " required";
+        return response;
+    }
+
+    // The people are ordered by name, which needs their accounts, so the whole
+    // list of holders is named and the requested page cut from it. A role is
+    // held by tens of people, not thousands, and the screen sees one page.
+    repository::account_repository accounts;
+    struct holder {
+        messaging::role_holder row;
+        std::string sort_key;
+    };
+    std::vector<holder> named;
+    for (const auto& assignment : account_role_repo_.read_latest_by_role(role_id)) {
+        const auto found = accounts.read_latest(ctx_, boost::uuids::to_string(assignment.account_id));
+        if (found.empty())
+            continue;
+        const auto& account = found.front();
+        messaging::role_holder row;
+        row.account_id = boost::uuids::to_string(account.id);
+        row.username = account.username;
+        row.full_name = account.full_name;
+        row.image_id = account.image_id ? boost::uuids::to_string(*account.image_id) : "";
+        row.assigned_by = assignment.assigned_by;
+        auto key = account.full_name.empty() ? account.username : account.full_name;
+        std::transform(key.begin(), key.end(), key.begin(), [](unsigned char ch) {
+            return static_cast<char>(std::tolower(ch));
+        });
+        named.push_back({std::move(row), std::move(key)});
+    }
+    std::sort(named.begin(), named.end(), [](const holder& a, const holder& b) {
+        return a.sort_key < b.sort_key;
+    });
+
+    constexpr int max_page = 500;
+    const auto size = static_cast<std::size_t>(std::clamp(limit, 1, max_page));
+    const auto start = static_cast<std::size_t>(std::max(offset, 0));
+    response.total_count = static_cast<int>(named.size());
+    for (std::size_t i = start; i < named.size() && i < start + size; ++i)
+        response.holders.push_back(std::move(named[i].row));
+    return response;
+}
+
 std::vector<account_access_entry>
 authorization_service::compose_account_access(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Composing access for account: " << account_id;

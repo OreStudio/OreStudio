@@ -135,6 +135,13 @@ public:
                                         const std::vector<std::string>& args);
 
     /**
+     * @brief list-role-holders <role_id> [--offset <v>] [--limit <v>]
+     */
+    static void process_list_role_holders(std::ostream& out,
+                                          ores::nats::service::nats_client& session,
+                                          const std::vector<std::string>& args);
+
+    /**
      * @brief get-role-permissions <role_id>
      */
     static void process_get_role_permissions(std::ostream& out,

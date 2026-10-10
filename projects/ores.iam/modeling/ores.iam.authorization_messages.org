@@ -601,6 +601,94 @@ A note the administrator adds to the reason. It is stored on the grant.
  */
 #+end_src
 
+** role_holder
+
+#+begin_src cpp :name comment
+/**
+ * @brief One person who holds a role, as the role's page draws them.
+ *
+ * Carries what a screen needs to name and show the person and say who gave the
+ * role, so the page makes no second read per person. The picture is the
+ * identifier of the account's image, empty when it has none.
+ */
+#+end_src
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** full_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** image_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** assigned_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** list_role_holders_request
+:PROPERTIES:
+:subject: iam.v1.ops.list_role_holders
+:response: role_holders_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One page of the people who hold a role, by name.
+ *
+ * The caller needs iam::roles:read, as reading who holds a role does. The page
+ * is the server's: =offset= and =limit= bound the rows and =total_count= says
+ * how many people hold the role.
+ */
+#+end_src
+
+*** role_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 15
+:END:
+
+** role_holders_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** holders
+:PROPERTIES:
+:cpp_type: std::vector<role_holder>
+:END:
+
+*** total_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
 ** account_role_access
 
 #+begin_src cpp :name comment

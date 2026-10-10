@@ -25,6 +25,7 @@ import {
     uuidSchema,
     type AccountAccess,
     type PermissionPage,
+    type RoleHolders,
     type RolePage,
     type PermissionEntry,
     type RoleSummary,
@@ -38,6 +39,7 @@ import {
     type ListAccountPermissionsRequest,
     type ListMyPermissionsRequest,
     type ListRolePermissionsRequest,
+    type ListRoleHoldersRequest,
     type ListRolesPageRequest,
     type GetRolePermissionsRequest,
     type PutRolePermissionsRequest,
@@ -61,6 +63,7 @@ export const ACCESS_SUBJECTS = {
     myPermissions: authorizationSubjects.list_my_permissions_request,
     rolePermissionsPage: authorizationSubjects.list_role_permissions_request,
     rolesPage: authorizationSubjects.list_roles_page_request,
+    roleHolders: authorizationSubjects.list_role_holders_request,
     accountPermissions: authorizationSubjects.list_account_permissions_request,
     rolePermissions: authorizationSubjects.get_role_permissions_request,
     putRolePermissions: authorizationSubjects.put_role_permissions_request,
@@ -574,4 +577,60 @@ export async function changeRolePermissions(
     for (const code of change.remove) held.delete(code);
     for (const code of change.add) held.add(code);
     return saveRolePermissions(caller, roleId, [...held], note);
+}
+
+const roleHoldersReplySchema = z
+    .object({
+        result: resultEnvelopeSchema,
+        holders: z
+            .array(
+                z.object({
+                    account_id: uuidSchema,
+                    username: z.string(),
+                    full_name: z.string().default(''),
+                    image_id: z.string().default(''),
+                    assigned_by: z.string().default(''),
+                }),
+            )
+            .default([]),
+        total_count: z.int().default(0),
+    })
+    .transform((row) => ({
+        result: row.result,
+        page: {
+            holders: row.holders.map((holder) => ({
+                accountId: holder.account_id,
+                username: holder.username,
+                fullName: holder.full_name,
+                imageId: holder.image_id === '' ? null : holder.image_id,
+                assignedBy: holder.assigned_by,
+            })),
+            totalCount: row.total_count,
+        } satisfies RoleHolders,
+    }));
+
+/**
+ * One page of the people who hold a role, by name.
+ *
+ * The server allows it to a holder of `iam::roles:read`, and answers the people
+ * with their names and pictures, so the role's page reads nobody's access one
+ * account at a time.
+ */
+export async function readRoleHolders(
+    caller: AuthenticatedCaller,
+    roleId: string,
+    page: { readonly offset: number; readonly limit: number },
+): Promise<RoleHolders> {
+    const request: ListRoleHoldersRequest = {
+        role_id: roleId,
+        offset: page.offset,
+        limit: page.limit,
+    };
+    const reply = await caller.callAuthenticated(
+        ACCESS_SUBJECTS.roleHolders,
+        request,
+        roleHoldersReplySchema,
+    );
+    ok(ACCESS_SUBJECTS.roleHolders, reply.result);
+    return reply.page;
 }

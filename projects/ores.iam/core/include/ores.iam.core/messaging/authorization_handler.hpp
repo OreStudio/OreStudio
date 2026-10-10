@@ -457,6 +457,47 @@ public:
         }
     }
 
+    /**
+     * @brief Serves iam.v1.ops.list_role_holders: one page of the people who
+     * hold a role. Needs roles:read, checked in the service.
+     */
+    void role_holders(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
+        auto req = decode<list_role_holders_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            boost::uuids::string_generator sg;
+            service::authorization_service svc(ctx);
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      role_holders_response{
+                          .result = failed_result(std::string{no_account_answer})});
+                return;
+            }
+            reply(nats_,
+                  msg,
+                  svc.read_role_holders(*caller_id, sg(req->role_id), req->offset, req->limit));
+            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, role_holders_response{.result = failed_result(e.what())});
+        }
+    }
+
     void permissions(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(authorization_handler_lg(), msg);

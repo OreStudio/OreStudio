@@ -259,6 +259,40 @@ describe('Roles', () => {
         expect(html).not.toContain('type="checkbox"');
     });
 
+    it('lists the people who hold a role a page at a time, named by the server', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(
+                    ['roles-page', 'one', TRADING],
+                    rolesPage([roleRow(TRADING, 'Trading', 3)]),
+                );
+                client.setQueryData(['my-access'], {
+                    roles: [held(ADMIN, 'TenantAdmin', ['*'])],
+                });
+                client.setQueryData(['role-holders', TRADING, 0, 15], {
+                    totalCount: 31,
+                    holders: [
+                        {
+                            accountId: '99999999-9999-9999-9999-999999999999',
+                            username: 'daniel',
+                            fullName: 'Daniel Okafor',
+                            imageId: null,
+                            assignedBy: 'priya',
+                        },
+                    ],
+                });
+            },
+            `/roles/${TRADING}`,
+            <Route path="/roles/:roleId" element={<RolePage />} />,
+        );
+
+        expect(html).toContain('Daniel Okafor');
+        expect(html).toContain('href="/people/daniel"');
+        expect(html).toContain('Showing 1–1 of 31 people');
+        // A role somebody holds cannot be deleted.
+        expect(html).toMatch(/<button[^>]*disabled=""[^>]*>(?:(?!<\/button>)[\s\S])*Delete/);
+    });
+
     it('edits a role a page of the catalogue at a time, with no all areas', () => {
         const html = render(
             (client) => {

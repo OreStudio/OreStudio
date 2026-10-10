@@ -593,6 +593,23 @@ export const rolePageSchema = z.object({
 });
 export type RolePage = z.infer<typeof rolePageSchema>;
 
+/** One person who holds a role, with what a screen needs to name and show them. */
+export const roleHolderSchema = z.object({
+    accountId: uuidSchema,
+    username: z.string(),
+    fullName: z.string(),
+    imageId: z.string().nullable(),
+    assignedBy: z.string(),
+});
+export type RoleHolder = z.infer<typeof roleHolderSchema>;
+
+/** One page of the people who hold a role, by name, and how many hold it in all. */
+export const roleHoldersSchema = z.object({
+    holders: z.array(roleHolderSchema),
+    totalCount: z.int().nonnegative(),
+});
+export type RoleHolders = z.infer<typeof roleHoldersSchema>;
+
 /**
  * One role of the tenant's catalogue.
  *

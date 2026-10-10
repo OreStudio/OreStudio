@@ -682,3 +682,42 @@ TEST_CASE("read_roles_page_is_refused_without_roles_read", tags) {
 
     CHECK(svc.read_roles_page(caller.id, {}).result.outcome == outcome::denied);
 }
+
+TEST_CASE("read_role_holders_pages_the_people_who_hold_a_role_by_name", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    const auto reader = write_role_bundling(h, gen, std::string(permissions::roles_read));
+    assign(h, gen, caller, reader);
+    const auto subject = write_role_bundling(h, gen, unique_area("zzheld") + "::kilo_one:read");
+    auto first = write_account(h, gen);
+    auto second = write_account(h, gen);
+    auto third = write_account(h, gen);
+    assign(h, gen, first, subject);
+    assign(h, gen, second, subject);
+    assign(h, gen, third, subject);
+
+    authorization_service svc(h.context());
+    const auto page_one = svc.read_role_holders(caller.id, subject.id, 0, 2);
+    const auto page_two = svc.read_role_holders(caller.id, subject.id, 2, 2);
+
+    CHECK(page_one.result.outcome == outcome::ok);
+    CHECK(page_one.total_count == 3);
+    CHECK(page_one.holders.size() == 2);
+    CHECK(page_two.holders.size() == 1);
+    // The pages do not overlap and each row names the person.
+    CHECK(page_one.holders.front().account_id != page_two.holders.front().account_id);
+    CHECK(!page_one.holders.front().username.empty());
+}
+
+TEST_CASE("read_role_holders_is_refused_without_roles_read", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    const auto subject = write_role_bundling(h, gen, unique_area("zzheld") + "::lima_one:read");
+    authorization_service svc(h.context());
+
+    CHECK(svc.read_role_holders(caller.id, subject.id, 0, 15).result.outcome == outcome::denied);
+}

@@ -349,6 +349,16 @@ public:
     messaging::role_page_response read_roles_page(const boost::uuids::uuid& caller_id,
                                                   const roles_query& query);
 
+    /**
+     * @brief Reads one page of the people who hold a role, by name.
+     *
+     * Needs roles:read and answers @c denied with that code otherwise.
+     */
+    messaging::role_holders_response read_role_holders(const boost::uuids::uuid& caller_id,
+                                                       const boost::uuids::uuid& role_id,
+                                                       int offset,
+                                                       int limit);
+
     // ========================================================================
     // Permission Checking
     // ========================================================================

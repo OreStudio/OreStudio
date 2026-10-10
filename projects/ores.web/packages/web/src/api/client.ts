@@ -25,6 +25,7 @@ import {
     accountAccessSchema,
     permissionPageSchema,
     rolePageSchema,
+    roleHoldersSchema,
     accountSignInsSchema,
     accountWriteViewSchema,
     contactViewSchema,
@@ -69,6 +70,7 @@ import {
     type InboxRequestView,
     type AccountAccess,
     type PermissionPage,
+    type RoleHolders,
     type RolePage,
     type PermissionEntry,
     type RoleSummary,
@@ -600,6 +602,18 @@ export const api = {
                 }).toString()}`,
                 { method: 'GET' },
             ),
+        );
+    },
+
+    /** One page of the people who hold a role, by name. */
+    async roleHolders(
+        roleId: string,
+        page: { readonly offset: number; readonly limit: number },
+    ): Promise<RoleHolders> {
+        return roleHoldersSchema.parse(
+            await request(`/api/roles/${encodeURIComponent(roleId)}/holders?${pageQuery(page)}`, {
+                method: 'GET',
+            }),
         );
     },
 

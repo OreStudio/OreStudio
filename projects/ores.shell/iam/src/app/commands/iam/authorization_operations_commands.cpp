@@ -166,6 +166,13 @@ void authorization_operations_commands::register_commands(cli::Menu& root_menu,
         "<v>]");
 
     menu->Insert(
+        "list-role-holders",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_list_role_holders(std::ref(out), std::ref(session), std::move(args));
+        },
+        "list-role-holders <role_id> [--offset <v>] [--limit <v>]");
+
+    menu->Insert(
         "get-role-permissions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_role_permissions(std::ref(out), std::ref(session), std::move(args));
@@ -768,6 +775,67 @@ void authorization_operations_commands::process_list_roles_page(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::iam::messaging::role_page_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void authorization_operations_commands::process_list_role_holders(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list-role-holders request.";
+
+    using request_type = ores::iam::messaging::list_role_holders_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list-role-holders." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 1;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.role_id = parsed->positionals[next++];
+        if (const auto& raw_offset = parsed->flag("offset"); !raw_offset.empty()) {
+            req.offset = ores::shell::app::from_token<int>(raw_offset, "offset");
+        }
+        if (const auto& raw_limit = parsed->flag("limit"); !raw_limit.empty()) {
+            req.limit = ores::shell::app::from_token<int>(raw_limit, "limit");
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::role_holders_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::role_holders_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::role_holders_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

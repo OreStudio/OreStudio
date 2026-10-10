@@ -229,6 +229,40 @@ export interface RolePageResponse {
 }
 
 /**
+ * @brief One person who holds a role, as the role's page draws them.
+ *
+ * Carries what a screen needs to name and show the person and say who gave the
+ * role, so the page makes no second read per person. The picture is the
+ * identifier of the account's image, empty when it has none.
+ */
+export interface RoleHolder {
+    account_id: string;
+    username: string;
+    full_name: string;
+    image_id: string;
+    assigned_by: string;
+}
+
+/**
+ * @brief One page of the people who hold a role, by name.
+ *
+ * The caller needs iam::roles:read, as reading who holds a role does. The page
+ * is the server's: =offset= and =limit= bound the rows and =total_count= says
+ * how many people hold the role.
+ */
+export interface ListRoleHoldersRequest {
+    role_id: string;
+    offset: number;
+    limit: number;
+}
+
+export interface RoleHoldersResponse {
+    result: Result;
+    holders: RoleHolder[];
+    total_count: number;
+}
+
+/**
  * @brief One role an account holds, with the permissions it grants and the
  * record of its assignment.
  *
@@ -299,6 +333,7 @@ export const subjects = {
     list_my_permissions_request: 'iam.v1.ops.list_my_permissions',
     list_role_permissions_request: 'iam.v1.ops.list_role_permissions',
     list_roles_page_request: 'iam.v1.ops.list_roles_page',
+    list_role_holders_request: 'iam.v1.ops.list_role_holders',
     get_role_permissions_request: 'iam.v1.ops.get_role_permissions',
     put_role_permissions_request: 'iam.v1.roles_permissions.put',
     suggest_role_commands_request: 'iam.v1.ops.suggest_role_commands',
@@ -319,6 +354,7 @@ export const requiresSession = {
     list_my_permissions_request: true,
     list_role_permissions_request: true,
     list_roles_page_request: true,
+    list_role_holders_request: true,
     get_role_permissions_request: true,
     put_role_permissions_request: true,
     suggest_role_commands_request: true,

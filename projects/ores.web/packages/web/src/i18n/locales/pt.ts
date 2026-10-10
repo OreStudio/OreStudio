@@ -217,6 +217,7 @@ const pt: SourceCatalogue = {
             saveTitle: 'Guardar {role}?',
             andMore: 'e mais {count}',
             reaches: '{people} têm este papel. A alteração chega-lhes dentro de 30 minutos.',
+            holdersShowing: 'A mostrar {from}–{to} de {total} pessoas',
             nowAllows: 'Passa a permitir',
             noLongerAllows: 'Deixa de permitir',
             whyChange: 'Porquê a alteração',

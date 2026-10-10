@@ -329,6 +329,49 @@ struct role_page_response {
 };
 
 /**
+ * @brief One person who holds a role, as the role's page draws them.
+ *
+ * Carries what a screen needs to name and show the person and say who gave the
+ * role, so the page makes no second read per person. The picture is the
+ * identifier of the account's image, empty when it has none.
+ */
+struct role_holder {
+    std::string account_id;
+    std::string username;
+    std::string full_name;
+    std::string image_id;
+    std::string assigned_by;
+};
+
+/**
+ * @brief One page of the people who hold a role, by name.
+ *
+ * The caller needs iam::roles:read, as reading who holds a role does. The page
+ * is the server's: =offset= and =limit= bound the rows and =total_count= says
+ * how many people hold the role.
+ */
+struct list_role_holders_request {
+    using response_type = struct role_holders_response;
+    static constexpr std::string_view nats_subject = "iam.v1.ops.list_role_holders";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string role_id;
+    int offset = 0;
+    int limit = 15;
+};
+
+struct role_holders_response {
+    ores::utility::domain::result result;
+    std::vector<role_holder> holders;
+    int total_count = 0;
+};
+
+/**
  * @brief One role an account holds, with the permissions it grants and the
  * record of its assignment.
  *

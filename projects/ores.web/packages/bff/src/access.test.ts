@@ -379,6 +379,49 @@ describe('access routes', () => {
         ]);
     });
 
+    it('asks for one page of the people who hold a role, with names and pictures', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.list_role_holders': {
+                result: ok,
+                holders: [
+                    {
+                        account_id: DANIEL,
+                        username: 'daniel',
+                        full_name: 'Daniel Okafor',
+                        image_id: PHOTO,
+                        assigned_by: 'priya',
+                    },
+                ],
+                total_count: 31,
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/roles/${TRADING}/holders?offset=15&limit=15`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]).toEqual({
+            subject: 'iam.v1.ops.list_role_holders',
+            body: { role_id: TRADING, offset: 15, limit: 15 },
+        });
+        expect(response.json()).toEqual({
+            totalCount: 31,
+            holders: [
+                {
+                    accountId: DANIEL,
+                    username: 'daniel',
+                    fullName: 'Daniel Okafor',
+                    imageId: PHOTO,
+                    assignedBy: 'priya',
+                },
+            ],
+        });
+    });
+
     it('refuses a change with no reason', async () => {
         const { server, cookies, calls } = buildTestServer({});
 

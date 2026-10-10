@@ -222,6 +222,27 @@ It is addressed at =iam.v1.ops.list_roles_page=.
 authorization list-roles-page __none__ __none__ __none__
 #+end_src
 
+** =list-role-holders=
+:PROPERTIES:
+:ID: 299903DD-318B-51E2-B662-E6A847EFF2A2
+:END:
+
+Sends =list_role_holders_request= and prints =role_holders_response=, so the shape is the protocol's and the meaning is the service's. It reads =role_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization list-role-holders <role_id> [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =iam.v1.ops.list_role_holders=.
+
+#+name: authorization-list-role-holders
+#+begin_src ores-shell :tangle authorization-list-role-holders.ores :exports none
+authorization list-role-holders __none__
+#+end_src
+
 ** =get-role-permissions=
 :PROPERTIES:
 :ID: D657A55F-ED53-5C39-92DC-F532C984173E

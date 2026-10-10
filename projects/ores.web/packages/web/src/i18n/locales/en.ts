@@ -217,6 +217,7 @@ export const en: SourceCatalogue = {
             saveTitle: 'Save {role}?',
             andMore: 'and {count} more',
             reaches: '{people} hold this role. The change reaches them within 30 minutes.',
+            holdersShowing: 'Showing {from}–{to} of {total} people',
             nowAllows: 'Now allows',
             noLongerAllows: 'No longer allows',
             whyChange: 'Why the change',

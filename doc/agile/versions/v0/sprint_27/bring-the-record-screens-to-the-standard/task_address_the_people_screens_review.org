@@ -112,6 +112,7 @@ task and name that file in the Command column.
 
 - Verified by the suites: web 609, BFF 347, wire-protocol 166, IAM core service 370 assertions, shell 1084. The tenant setup wizard has to be run from the browser before the staff exist, so the screens were not seen with the seeded staff in this session.
 - P18 is a change to the approval engine, which decides by permission and not by a named person. See the plan of its own task for the proposed shape.
+- The roles list, the role editor and the role's Held by list page on the server (list_roles_page, list_role_permissions, list_role_holders), so the pager on each screen is the data request.
 - Lesson from P3: a checkbox is ticked only when the screen shows what the comment says, tried against data of the real size. P3 was ticked on a reading that paged areas, and a test of that reading passed.
 - P8 waits on the choice between a close beacon and a shorter idle lifetime.
 

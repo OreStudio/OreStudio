@@ -69,6 +69,8 @@ import {
     readAccountPermissions,
     readRolePermissionsPage,
     readRolesPage,
+    readRoleHolders,
+    roleHoldersSchema,
     changeRolePermissions,
     rolePageSchema,
     readMyPermissions,
@@ -1189,6 +1191,22 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return permissionPageSchema.parse(
             await readRolePermissionsPage(session.client, roleId, query.data),
         );
+    });
+
+    /** One page of the people who hold a role. The server allows it to a holder of iam::roles:read. */
+    server.get('/api/roles/:roleId/holders', async (request) => {
+        const session = requireSession(request);
+        const { roleId } = request.params as { roleId: string };
+        const page = z
+            .object({
+                offset: z.coerce.number().int().nonnegative().default(0),
+                limit: z.coerce.number().int().positive().max(500).default(15),
+            })
+            .safeParse(request.query);
+        if (!isUuid(roleId) || !page.success) {
+            throw invalidRequest('The page asked for is not one.');
+        }
+        return roleHoldersSchema.parse(await readRoleHolders(session.client, roleId, page.data));
     });
 
     /** Adds and removes permissions from a role, without the browser holding the whole set. */

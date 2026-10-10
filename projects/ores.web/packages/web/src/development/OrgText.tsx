@@ -31,7 +31,9 @@ import { renderOrgHtml } from '@ores/org/render';
  *
  * An id link in the text points at a route of the app. A click on one goes to
  * `onDocLink` with the id, so the app navigates without a page load. Any other
- * link behaves as the browser makes it.
+ * link behaves as the browser makes it. Pass `docHref` with `onDocLink`: the
+ * handler gives the click, and `docHref` gives the link an address, so a
+ * modified click and a copied link still reach the doc.
  */
 export function OrgText({
     source,

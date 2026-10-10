@@ -28,9 +28,9 @@ import { useTranslation } from '../i18n/Provider.js';
 import { Notice } from '../ui/Primitives.js';
 import { OrgText } from './OrgText.js';
 
-/** The route that shows a doc, by its id. */
+/** The route that shows a doc, by its id. The id is encoded, as the read of the doc encodes it. */
 export function docRoute(id: string): string {
-    return `/development/docs/${id}`;
+    return `/development/docs/${encodeURIComponent(id)}`;
 }
 
 export function docKey(id: string): readonly [string, string] {

@@ -91,6 +91,19 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | docRoute does not encode the id | DocPanel.tsx | Fix | The route encodes the id, as the read of the doc does. A test covers an id with a slash, a question mark and a hash, and fails without the encoding. |
+| 2 | DocPage falls back to an empty id | DocPage.tsx | Decline | The route cannot match without an id. The typed hook returns an optional value, so the page needs the fallback to type check. |
+| 3 | Tab state resets when the scenario reloads | ScenarioPage.tsx | Confirm | The page keeps the scenario query out of refetch on focus and reconnect, and a background refetch leaves isSuccess true, so the runner stays mounted. The browser run showed one fetch. |
+| 4 | The dead-link message cannot tell a missing id from a kind not served | DocPanel.tsx | Accept | The message says the link may point at a doc the runner does not show. |
+| 5 | onDocLink without docHref gives a fragment link | OrgText.tsx | Document | The comment says to pass both. |
+| 6 | The French and Portuguese text needs a read | locales | Note | My translation, as the pull request says. |
+| 7 | Show the doc title in the crumb of the doc page | DocPage.tsx | Decline | Optional. The panel under the crumb shows the title. |
+| 8 | Floating promise lint on void navigate | DocPanel.tsx | Confirm | The local gate passes. |
 
 * Result
+
+The runner page has three tabs: Steps, Story and Task. The Story and Task tabs read the doc of the scenario's story or task from the doc route of task 3 and draw its title, its path and its text through the org renderer. An id link in a doc opens the doc it names on a new page, /development/docs/:id, and the app navigates without a page load. A link that does not resolve says that no story, task or scenario has the id, and that the link may point at a doc the runner does not show. A scenario that names no story or task shows a plain message. The runner stays mounted but hidden on the other tabs, so the marks and notes of a tester survive a look at the story.
+
+The web suite passes with 797 tests. Removing the hidden runner, unmounting it, dropping the dead-link message, dropping the link routing or dropping the id encoding each fails its own tests. A throwaway harness drove the real page in headless Chrome: 9 checks passed with no script errors, including an id link that opened its doc while a marker on the window survived, so there was no page load. The review found one real fault, an id that the doc route did not encode, and it is fixed.
+
+The app does not follow a file link inside a doc. The server answers not found for an id no doc has and for a doc kind it does not serve, so the dead-link message cannot tell the two apart. The French and Portuguese text is my translation and needs a read by a speaker. Task 7 takes pasted images for a step.

@@ -26,7 +26,7 @@ import { describe, expect, it } from 'vitest';
 import type { QaDoc } from '@ores/contracts';
 import { ApiFailure } from '../api/transport.js';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { DocPanel, docKey } from './DocPanel.js';
+import { DocPanel, docKey, docRoute } from './DocPanel.js';
 
 const ID = 'AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA';
 const OTHER = 'BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB';
@@ -68,6 +68,13 @@ function failWith(client: QueryClient, error: Error): void {
     const query = client.getQueryCache().build(client, { queryKey: docKey(ID) });
     query.setState({ ...query.state, status: 'error', error, fetchStatus: 'idle' });
 }
+
+describe('the route of a doc', () => {
+    it('names the id, and encodes one that is not a plain identifier', () => {
+        expect(docRoute(ID)).toBe(`/development/docs/${ID}`);
+        expect(docRoute('a/b?c#d')).toBe('/development/docs/a%2Fb%3Fc%23d');
+    });
+});
 
 describe('a doc beside the steps', () => {
     it('shows the title, the path and the rendered text, without the doc header', () => {

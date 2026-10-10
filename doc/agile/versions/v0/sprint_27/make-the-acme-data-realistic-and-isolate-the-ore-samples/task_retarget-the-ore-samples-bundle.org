@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 816DAA26-71D0-4AE3-AF13-FC52C3446B06
+:END:
+#+title: Task: Retarget the ORE samples bundle to the import needs
+#+description: Keep ore_samples, label every item as sample data, shrink it to the reference data the sample import needs, install it on every party, and land imports in a sandbox portfolio and book tree.
+#+type: task
+#+level: s1
+#+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Keep the =ore_samples= bundle and shrink it to the reference data the ORE
+sample import needs. Label every item as sample data. Install it on every
+party. Land every import in a sandbox portfolio tree.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The bundle holds only: the sample counterparty aliases, the sample netting
+  agreements, sets and CSAs the aliases resolve to, the netting set aliases,
+  the sample portfolio names, and the sandbox portfolio.
+- Every item has a code and a description that mark it as ORE sample data.
+- The sample CSAs keep ORE's terms.
+- The bundle installs on every party in =acme_demo=. Agreement numbers carry a
+  per-party part, so no two parties collide.
+- A sample import creates its portfolio and books inside the sandbox tree.
+  The ACME portfolio tree gets nothing.
+- After provisioning, each party resolves all 19 ORE netting set ids and the
+  portfolio names the samples use.
+- The methodology, catalogue and licence describe sample data, not ACME data.
+
+* Plan
+
+1. Take the item list from the current bundle. Remove everything the import
+   does not need.
+2. Rename the codes and descriptions to mark sample data. Give agreement
+   numbers a per-party part.
+3. Add the sandbox portfolio. Find where an import puts its books today, and
+   point it at the sandbox tree.
+4. Move the bundle from one party to every party in =acme_demo=.
+5. Update pgTAP. Provision ACME. Import a sample into two parties and check
+   that each lands in its own sandbox.
+
+* Measurements
+
+None yet.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Not started. It follows the realistic ACME base bundle.

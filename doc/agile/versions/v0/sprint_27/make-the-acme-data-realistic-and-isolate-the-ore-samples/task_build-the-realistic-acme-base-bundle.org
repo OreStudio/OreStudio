@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 0E7D53D5-235D-42EE-86EC-3478E84AE5A2
+:END:
+#+title: Task: Build the realistic ACME base bundle
+#+description: Derive realistic ACME agreements, netting sets, CSAs, portfolios and report configuration from the ORE samples, improved to look and behave like a real group's data, for each party's report definitions.
+#+type: task
+#+level: s1
+#+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give each ACME party realistic netting agreements, netting sets, CSAs and
+portfolios, built from the ORE samples and improved, and make the base bundle
+follow the report definitions each party holds. The result looks like a real
+group's data and carries ACME's own catalogue, methodology and licence.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- A new ACME methodology states how the data is built. It names the ORE
+  samples as the starting point and lists every improvement.
+- Each party has agreements with banks that fit its jurisdiction, with a
+  matching agreement type and governing law.
+- The CSAs cover variation margin, initial margin and none. Currencies,
+  thresholds, minimum transfer amounts, call frequencies and overnight indices
+  are realistic for each party. No CSA uses a retired index.
+- Every netting set, counterparty and portfolio that a seeded report definition
+  names exists for its party.
+- Nothing in the base bundle reads as test or sample data.
+- pgTAP and a fresh ACME provision pass.
+
+* Plan
+
+1. Audit what is published today, per party. Find every reference to the
+   current dataset codes, in profiles, tests, recipes and the manual.
+2. Read the report-needs investigation. List the netting sets, counterparties
+   and portfolios each party's report definitions need. The reports that read
+   =netting.xml= and =counterparty.xml= (SA-CCR, CVA, exposure) set the demand.
+3. Design the data: banks per legal entity, agreement types, CSA archetypes,
+   the portfolio and book tree.
+4. Write the ACME methodology, datasets and bundle. Wire them into
+   =acme_demo= at the step that follows each party's report definitions.
+5. Verify with pgTAP and a fresh ACME provision.
+
+* Measurements
+
+None yet.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Not started.

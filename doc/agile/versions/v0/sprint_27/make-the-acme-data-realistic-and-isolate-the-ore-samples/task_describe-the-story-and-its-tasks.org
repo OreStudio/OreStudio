@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 6F2B9202-0F43-48E2-B115-86D321B01228
+:END:
+#+title: Task: Describe the story and its tasks
+#+description: Write the story that splits the ACME data from the ORE samples, with its decisions, its open questions and its three tasks, from a read of the netting and portfolio datasets, the acme_demo profile and the party keys.
+#+type: task
+#+level: s1
+#+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
+#+owner: marco
+#+branch: feature/make-the-acme-data-realistic
+#+pr: 3056
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write the story that separates the realistic ACME data from the ORE sample
+data, with its decisions, its open questions and its three tasks.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The story states the two bundles, their order and their scope.
+- The story records the decisions taken and the open design questions.
+- The three work tasks exist, with goal, acceptance and plan.
+- The story and its row are in Sprint 27.
+
+* Plan
+
+Read the netting and portfolio dataset scripts, the Sprint 26 netting task,
+the =acme_demo= profile steps, the report-needs investigation and the party
+keys of the agreement, netting set and CSA tables. Write the story from them.
+
+* Measurements
+
+None. The schema facts come from reading the create scripts. The database was
+not queried.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3056][#3056]] | [agile] Add the story to make the ACME data realistic |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Blank line splits the Decisions list; the party-scoping decision has no date | story.org | Accepted | Bullets joined and dated. |
+| 2 | Next should name the task | story.org | Accepted | Next now names the party-scoping task. |
+| 3 | Acceptance depends on the undecided no-party rule | scope task | Accepted | Acceptance defers to a blocking open question in Notes. |
+| 4 | The lookup test has no pass condition | scope task | Accepted | The lookup raises an error and never picks a row from another party. |
+| 5 | Add a measurement of the lookup count | scope task | Accepted | Measurements row added, not yet measured. |
+| 6 | State that no real bank name or LEI appears in the ACME base bundle | story.org | Declined | ACME counterparties come from GLEIF and carry real LEIs. A realistic bundle needs them. Only the samples bundle must label them. |
+
+* Result
+
+The story and three work tasks are written and wired into Sprint 27. The story
+stays open. The work tasks have not started.

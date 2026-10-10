@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 4DE7AFB9-A06A-4844-8B11-C26A05B334E8
+:END:
+#+title: Story: Keep the record screens up to date
+#+description: The web screens read once and never learn that a record changed elsewhere. Add live updates from the change events to the browser, a Refresh button on the record page and the list, and a stated behaviour when the record under edit changed: tell the person, show what changed, and let them keep their edit or take the new values. Complete the 'Updates and refresh' section of the entity screen specification and the Change notification page.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The web screens read once and never learn that a record changed elsewhere. Add live updates from the change events to the browser, a Refresh button on the record page and the list, and a stated behaviour when the record under edit changed: tell the person, show what changed, and let them keep their edit or take the new values. Complete the 'Updates and refresh' section of the entity screen specification and the Change notification page.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- A list, a record page and a relationship view show a change made elsewhere without a reload, through the change events.
+- A Refresh button stands in the same place on each list and record page.
+- A screen with an edit open tells the person when the record changed, shows what changed, and lets them keep their edit or take the new values.
+- A save made against an old version is refused with a clear message and no data is lost.
+- The "Updates and refresh" section of the entity screen specification and the Change notification page describe what was built.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:48943E90-9B2B-41C9-83CD-6951391FED61][Carry an entity-changed time to the browser]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:C72D4C9F-59E5-4177-AC69-A78172F75044][Know when a screen is stale: useEntityChanges]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:84E9A065-C228-49A9-B571-A482DDB987C3][A Refresh button that pulses while the screen is stale]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:A699B0E9-6188-4E01-936F-30FD3052D11F][Mark the rows that changed after a reload]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:BC8E62C0-BE32-4BDF-80AD-729A837E5D7D][Tell a person editing that the record changed]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:E8453624-79DC-4470-9AC0-FAE741726149][Refresh the record page and its timeline]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:ADEE695C-905F-43EB-9A88-F7B189FC1D29][Complete the updates and refresh documents]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:ED7D9486-7BA6-4E74-A64F-096FA9AD8EA7][Move the change registry to the canonical event subjects]] | BACKLOG | | | Task for: Keep the record screens up to date |
+
+* Decisions
+
+What ores.qt does, read from =EntityListMdiWindow=, =RecencyPulseManager= and =RecencyTracker=:
+
+- A notification marks every open list of that entity stale. The list never reloads by itself.
+- The Reload icon changes to a gold colour (=stale_indicator=, 255 215 0, readable in light and dark themes) every 500 ms for six cycles, then stays gold until the person reloads. The tooltip changes to say why.
+- After a reload, a row whose =recorded_at= is newer than the last load is a recent row. Its text pulses in the same gold for six cycles, then the mark is cleared.
+- The first load only sets the baseline. Nothing is marked.
+
+What the web does the same way:
+
+- One accent colour for "changed", used for nothing else.
+- A slow pulse that stops, and a stable stale colour after it. A reader who asks for less motion gets the colour and no pulse.
+- The payload is a time, not a list, so a bulk import makes a screen stale once.
+- The rows that changed come from the data after the reload.
+- No automatic reload of a list, a form or an open dialog.
+
+What the web does differently:
+
+- The web has a record page, which Qt has as a modal dialog. A record page that is being edited shows a line above the form with the newer version, and the person chooses Load newer or Keep my edit.
+- Dependent screens (a book showing a country name) stay out of scope, as the Change notification page states.
+
+Open decisions for the product owner:
+
+- Whether a record page with no edit open may reload its cards by itself, or also waits for Refresh. The proposal is to wait, as lists do.
+- The stale colour. The proposal is the existing =warn= amber, which the timeline also uses for "Answered". A separate token would keep "changed" meaning one thing.
+
+* Out of scope
+
+- Approval requests: the inbox already polls and is not changed here.

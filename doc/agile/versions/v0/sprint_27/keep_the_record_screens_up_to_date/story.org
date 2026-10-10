@@ -41,8 +41,8 @@ The web screens read once and never learn that a record changed elsewhere. Add l
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:48943E90-9B2B-41C9-83CD-6951391FED61][Carry an entity-changed time to the browser]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
-| [[id:C72D4C9F-59E5-4177-AC69-A78172F75044][Know when a screen is stale: useEntityChanges]] | BACKLOG | | | Task for: Keep the record screens up to date |
-| [[id:84E9A065-C228-49A9-B571-A482DDB987C3][A Refresh button that pulses while the screen is stale]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:C72D4C9F-59E5-4177-AC69-A78172F75044][Know when a screen is stale: useEntityChanges]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
+| [[id:84E9A065-C228-49A9-B571-A482DDB987C3][A Refresh button that pulses while the screen is stale]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 | [[id:A699B0E9-6188-4E01-936F-30FD3052D11F][Mark the rows that changed after a reload]] | BACKLOG | | | Task for: Keep the record screens up to date |
 | [[id:BC8E62C0-BE32-4BDF-80AD-729A837E5D7D][Tell a person editing that the record changed]] | BACKLOG | | | Task for: Keep the record screens up to date |
 | [[id:E8453624-79DC-4470-9AC0-FAE741726149][Refresh the record page and its timeline]] | BACKLOG | | | Task for: Keep the record screens up to date |

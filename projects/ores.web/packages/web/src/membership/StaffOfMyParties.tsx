@@ -25,6 +25,8 @@ import { api } from '../api/client.js';
 import { Crumbs } from '../refdata/shared.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Input, PageHeader, Tag } from '../ui/Primitives.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { TREE_WATCHES } from './treeWatches.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { NodeAvatar, nameOf } from './NodeParts.js';
 import { partyLabel } from './organisation.js';
@@ -41,6 +43,7 @@ export function StaffOfMyParties(): ReactNode {
     const { t } = useTranslation();
     const [text, setText] = useState('');
     const tree = useQuery({ queryKey: ['reporting-tree'], queryFn: () => api.reportingTree() });
+    const news = useEntityChanges(TREE_WATCHES, tree);
     const parties = new Map((tree.data?.parties ?? []).map((entry) => [entry.partyId, entry]));
     const wanted = text.trim().toLowerCase();
     const people = [...(tree.data?.nodes ?? [])]
@@ -69,6 +72,8 @@ export function StaffOfMyParties(): ReactNode {
                         <RefreshButton
                             onClick={() => void tree.refetch()}
                             pending={tree.isFetching}
+                            stale={news.stale}
+                            changedAt={news.changedAt}
                         />
                     }
                 />

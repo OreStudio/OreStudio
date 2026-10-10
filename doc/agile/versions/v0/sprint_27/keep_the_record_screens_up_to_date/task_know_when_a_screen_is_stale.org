@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ One hook, useEntityChanges, tells a list or a record page that what it shows is 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -36,7 +36,8 @@ One hook, useEntityChanges, tells a list or a record page that what it shows is 
 * Acceptance
 
 - A change after the load makes the screen stale; a change before it does not.
-- The hook is used by a list, a relationship view and a record page.
+- A change that arrives while a load is in flight makes the screen stale, so no change is missed.
+- Lists, relationship views and record pages use the hook through tasks 4 and 7.
 
 * Plan
 
@@ -84,3 +85,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=useEntityChanges(watches, load)= takes the entities a screen shows and the query state (=dataUpdatedAt=, =isFetching=) and returns =stale= and =changedAt=. A screen is stale when a change reached the browser after the load that produced its data began. The comparison uses the browser's clock at both ends because the server's clock and the browser's differ; the server's time is kept only for the tooltip. The page Change notification said to compare the server's change time with the load time, and task 8 corrects that.

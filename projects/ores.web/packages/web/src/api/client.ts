@@ -239,6 +239,8 @@ const recordResourceViewSchema = z.object({
     writable: z.boolean(),
     search: z.boolean(),
     sortable: z.array(z.string()),
+    /** Where the services announce changes to this resource: the component and the events collection. */
+    events: z.object({ component: z.string(), entity: z.string() }),
     writePermission: z.string(),
     deletePermission: z.string(),
 });

@@ -32,6 +32,8 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { FlagOf, type FlagSource } from '../images/flags.js';
+import { type WatchedEntity } from '../events/EntityEvents.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Icon } from '../ui/Icon.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
@@ -75,6 +77,8 @@ export interface ListSource<Row> {
     readonly sortable: readonly string[];
     readonly filters?: readonly ListFilter[];
     readonly mayAdd: boolean;
+    /** The entities the rows come from, so the list can say when they changed on the server. */
+    readonly watches?: readonly WatchedEntity[];
     /** Reads a row's audit field by its server name; a source without one shows no audit columns. */
     readonly audit?: (row: Row, field: string) => unknown;
 }
@@ -143,6 +147,7 @@ export function useRecordSource(resource: string): ListSource<RecordRow> {
         search: entry?.search === true,
         sortable: entry?.sortable ?? [],
         mayAdd: may.write,
+        ...(entry === undefined ? {} : { watches: [entry.events] }),
         audit: (row, field) => (field === 'version' ? row.version : row[field]),
     };
 }
@@ -312,6 +317,19 @@ export function RecordList<Row>({
     const queries = useQueryClient();
     const state = useListState(source.filters);
     const fetching = useIsFetching({ queryKey: ['records', source.key] }) > 0;
+    // When the newest page on screen arrived, read from the cache because the pages
+    // are read by the table below.
+    const loadedAt = Math.max(
+        0,
+        ...queries
+            .getQueryCache()
+            .findAll({ queryKey: ['records', source.key] })
+            .map((query) => query.state.dataUpdatedAt),
+    );
+    const news = useEntityChanges(source.watches ?? [], {
+        dataUpdatedAt: loadedAt,
+        isFetching: fetching,
+    });
     const add =
         source.mayAdd && onAdd !== undefined && addLabel !== undefined
             ? { label: addLabel, onAdd }
@@ -331,7 +349,12 @@ export function RecordList<Row>({
                     description={lead}
                     actions={
                         <div className="flex gap-2">
-                            <RefreshButton onClick={refresh} pending={fetching} />
+                            <RefreshButton
+                                onClick={refresh}
+                                pending={fetching}
+                                stale={news.stale}
+                                changedAt={news.changedAt}
+                            />
                             {actions}
                             {add !== undefined && (
                                 <Button variant="primary" icon="add" onClick={add.onAdd}>

@@ -36,6 +36,8 @@ import { useActorPictures } from '../access/PersonRef.js';
 import { Crumbs } from '../refdata/shared.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { TREE_WATCHES } from './treeWatches.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
 import { Badges, NameLink, NodeAvatar, PartyLine, TENANT_ADMIN, nameOf } from './NodeParts.js';
@@ -116,6 +118,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     });
 
     const tree = useQuery({ queryKey: ['reporting-tree'], queryFn: () => api.reportingTree() });
+    const news = useEntityChanges(TREE_WATCHES, tree);
     const reasons = useQuery({
         queryKey: ['amend-reasons'],
         queryFn: api.amendReasons,
@@ -268,7 +271,14 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                 <PageHeader
                     title={t('access.hub.hierarchy')}
                     description={t('membership.reporting.lead')}
-                    actions={<RefreshButton onClick={refresh} pending={tree.isFetching} />}
+                    actions={
+                        <RefreshButton
+                            onClick={refresh}
+                            pending={tree.isFetching}
+                            stale={news.stale}
+                            changedAt={news.changedAt}
+                        />
+                    }
                 />
             </div>
 

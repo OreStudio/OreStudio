@@ -56,6 +56,7 @@ const PEOPLE: ListSource<Account> = {
     search: true,
     sortable: ['username', 'full_name'],
     mayAdd: false,
+    watches: [{ component: 'iam', entity: 'accounts' }],
 };
 
 /**

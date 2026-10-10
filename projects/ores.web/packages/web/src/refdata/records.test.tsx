@@ -49,6 +49,7 @@ function resource(key: string, keyFields: string[], versioned = true): RecordRes
         writable: true,
         search: key === 'currencies',
         sortable: key === 'currencies' ? ['iso_code', 'name'] : [],
+        events: { component: 'refdata', entity: key.replaceAll('-', '_') },
         writePermission: `refdata::${name}:write`,
         deletePermission: `refdata::${name}:delete`,
     };

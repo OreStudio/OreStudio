@@ -21,32 +21,47 @@
 
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
+import { formatDateTime } from './Time.js';
 import { Button } from './Primitives.js';
 
 /**
  * The one Refresh every list, tree and record page offers.
  *
  * It reads the data again and nothing else. When the server has said the data
- * changed, `stale` makes it pulse and explains why in its tooltip; it does not
- * refresh by itself, because a screen that moves while somebody reads it is
+ * changed, `stale` turns it gold, pulses it a few times and explains why in its
+ * tooltip, with the time of the change when the screen knows it. The gold stays
+ * until the screen loads again. It does not refresh by itself, because a screen that moves while somebody reads it is
  * worse than one that is briefly out of date.
  */
 export function RefreshButton({
     onClick,
     pending = false,
     stale = false,
+    changedAt,
 }: {
     readonly onClick: () => void;
     readonly pending?: boolean;
     readonly stale?: boolean;
+    /** The server's time of the newest change, for the tooltip. */
+    readonly changedAt?: string | undefined;
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     return (
         <Button
             icon="refresh"
             onClick={onClick}
             pending={pending}
-            {...(stale ? { className: 'stale-pulse', title: t('common.refreshStale') } : {})}
+            {...(stale
+                ? {
+                      className: 'stale-mark stale-pulse',
+                      title:
+                          changedAt === undefined || changedAt === ''
+                              ? t('common.refreshStale')
+                              : t('common.refreshStaleAt', {
+                                    time: formatDateTime(changedAt, language),
+                                }),
+                  }
+                : {})}
         >
             {t('common.refresh')}
         </Button>

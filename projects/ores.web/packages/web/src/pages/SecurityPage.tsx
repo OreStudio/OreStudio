@@ -21,8 +21,12 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { api } from '../api/client.js';
+import { SignInFacts } from '../access/SignInFacts.js';
+import { useTranslation } from '../i18n/Provider.js';
 import { Button, Detail, Field, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
+import { RefreshButton } from '../ui/RefreshButton.js';
+import { RelativeTime } from '../ui/Time.js';
 import type { LoginInfo, PasswordPolicy, Session, SessionView } from '@ores/wire-protocol/browser';
 
 /**
@@ -33,11 +37,6 @@ import type { LoginInfo, PasswordPolicy, Session, SessionView } from '@ores/wire
  * screen is the accepted prototype's variant B: the places the account is
  * signed in lead, because that is what a member opens *Security* to read, and
  * the password form and the sign-in state share the row under them.
- *
- * Two things the server cannot do yet are stated rather than hidden. Ending one
- * other sign-in has no operation, so the control is drawn unavailable with its
- * reason. And nothing writes a session's end time, so the list is every session
- * the deployment has created, not the open ones.
  */
 
 interface Loaded {
@@ -52,6 +51,7 @@ type State =
     | { readonly kind: 'failed'; readonly reason: string };
 
 export function SecurityPage({ session }: { readonly session: SessionView }): ReactNode {
+    const { t } = useTranslation();
     const [state, setState] = useState<State>({ kind: 'loading' });
 
     const load = useCallback(async (): Promise<void> => {
@@ -65,10 +65,10 @@ export function SecurityPage({ session }: { readonly session: SessionView }): Re
         } catch (error) {
             setState({
                 kind: 'failed',
-                reason: error instanceof Error ? error.message : 'The read failed.',
+                reason: error instanceof Error ? error.message : t('security.readFailed'),
             });
         }
-    }, [session.accountId]);
+    }, [session.accountId, t]);
 
     useEffect(() => {
         void load();
@@ -76,11 +76,8 @@ export function SecurityPage({ session }: { readonly session: SessionView }): Re
 
     return (
         <div className="mx-auto max-w-[1100px] space-y-6">
-            <PageHeader
-                title="Security"
-                description="Your password, and the places your account is signed in."
-            />
-            {state.kind === 'loading' && <Notice tone="info">Reading your account…</Notice>}
+            <PageHeader title={t('security.title')} description={t('security.lead')} />
+            {state.kind === 'loading' && <Notice tone="info">{t('security.reading')}</Notice>}
             {state.kind === 'failed' && <Notice tone="error">{state.reason}</Notice>}
             {state.kind === 'ready' && (
                 <Loaded session={session} loaded={state.loaded} onReload={load} />
@@ -110,11 +107,8 @@ function Loaded({
 }
 
 /**
- * The places the account is signed in.
- *
- * The list is the server's, and it leads the screen because it is the reason a
- * member opens *Security*. Every row carries what the read gives: the client,
- * the address, the country and when it started.
+ * The places the account is signed in, as the server lists them. The list leads
+ * the screen because it is the reason a member opens *Security*.
  */
 function SessionsPanel({
     sessions,
@@ -123,33 +117,38 @@ function SessionsPanel({
     readonly sessions: readonly Session[];
     readonly onReload: () => Promise<void>;
 }): ReactNode {
+    const { t } = useTranslation();
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-lg font-medium">Where you are signed in</h2>
-                <Button size="sm" variant="ghost" onClick={() => void onReload()}>
-                    Refresh
-                </Button>
+                <h2 className="text-lg font-medium">{t('security.sessions.title')}</h2>
+                <RefreshButton onClick={() => void onReload()} />
             </header>
 
-            <Notice tone="warn">
-                Nothing ends a session yet: no sign-out writes an end time, so every session the
-                deployment has created is listed here and an old one cannot be told from a live one.
-                Ending one other sign-in has no operation either, which is why no row offers it.
-            </Notice>
+            <Notice tone="warn">{t('security.sessions.caveat')}</Notice>
 
             {sessions.length === 0 ? (
-                <p className="text-sm text-ink-muted">No sessions are recorded for your account.</p>
+                <p className="text-sm text-ink-muted">{t('security.sessions.empty')}</p>
             ) : (
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead>
                             <tr className="border-b border-line text-xs text-ink-muted">
-                                <th className="py-2 pr-4 font-medium">Started</th>
-                                <th className="py-2 pr-4 font-medium">Client</th>
-                                <th className="py-2 pr-4 font-medium">Address</th>
-                                <th className="py-2 pr-4 font-medium">Country</th>
-                                <th className="py-2 text-right font-medium">Sent / received</th>
+                                <th className="py-2 pr-4 font-medium">
+                                    {t('security.sessions.started')}
+                                </th>
+                                <th className="py-2 pr-4 font-medium">
+                                    {t('security.sessions.client')}
+                                </th>
+                                <th className="py-2 pr-4 font-medium">
+                                    {t('security.sessions.address')}
+                                </th>
+                                <th className="py-2 pr-4 font-medium">
+                                    {t('security.sessions.country')}
+                                </th>
+                                <th className="py-2 text-right font-medium">
+                                    {t('security.sessions.traffic')}
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,19 +157,25 @@ function SessionsPanel({
                                     key={row.id}
                                     className="border-b border-line-subtle last:border-b-0"
                                 >
-                                    <td className="py-2 pr-4 whitespace-nowrap">{row.startTime}</td>
+                                    <td className="py-2 pr-4 whitespace-nowrap">
+                                        <RelativeTime at={row.startTime} />
+                                    </td>
                                     <td className="py-2 pr-4 font-mono text-xs">
                                         {row.clientIdentifier === ''
-                                            ? 'unknown client'
+                                            ? t('security.sessions.unknownClient')
                                             : row.clientIdentifier}
                                     </td>
                                     <td className="py-2 pr-4 font-mono text-xs">
-                                        {row.clientIp === '' ? 'no address' : row.clientIp}
+                                        {row.clientIp === ''
+                                            ? t('security.sessions.noAddress')
+                                            : row.clientIp}
                                     </td>
                                     <td className="py-2 pr-4 text-ink-muted">
-                                        {row.countryCode === '' ? 'unknown' : row.countryCode}
+                                        {row.countryCode === ''
+                                            ? t('security.sessions.unknownCountry')
+                                            : row.countryCode}
                                     </td>
-                                    <td className="py-2 text-right text-xs text-ink-faint whitespace-nowrap">
+                                    <td className="py-2 text-right font-mono text-xs text-ink-faint whitespace-nowrap">
                                         {String(row.bytesSent)} / {String(row.bytesReceived)}
                                     </td>
                                 </tr>
@@ -179,10 +184,6 @@ function SessionsPanel({
                     </table>
                 </div>
             )}
-            <p className="text-xs text-ink-faint">
-                One row per session the tenant holds for this account, in the order the server
-                states.
-            </p>
         </section>
     );
 }
@@ -201,6 +202,7 @@ function PasswordPanel({
     readonly policy: PasswordPolicy;
     readonly onChanged: () => Promise<void>;
 }): ReactNode {
+    const { t } = useTranslation();
     const [current, setCurrent] = useState('');
     const [chosen, setChosen] = useState('');
     const [acceptable, setAcceptable] = useState(false);
@@ -217,12 +219,12 @@ function PasswordPanel({
             setCurrent('');
             setChosen('');
             setAcceptable(false);
-            setOutcome({ ok: true, text: 'The password is changed. Use it at your next sign-in.' });
+            setOutcome({ ok: true, text: t('security.password.changed') });
             await onChanged();
         } catch (error) {
             setOutcome({
                 ok: false,
-                text: error instanceof Error ? error.message : 'The change was refused.',
+                text: error instanceof Error ? error.message : t('security.password.refused'),
             });
         } finally {
             setBusy(false);
@@ -232,13 +234,10 @@ function PasswordPanel({
     return (
         <section className="card space-y-4 p-6">
             <header className="space-y-1">
-                <h2 className="text-lg font-medium">Password</h2>
-                <p className="text-sm text-ink-muted">
-                    Change the password you sign in with. The server checks the current password
-                    before it changes anything.
-                </p>
+                <h2 className="text-lg font-medium">{t('security.password.title')}</h2>
+                <p className="text-sm text-ink-muted">{t('security.password.lead')}</p>
             </header>
-            <Field label="Current password" hint="Proves the request is yours.">
+            <Field label={t('security.password.current')} hint={t('security.password.currentHint')}>
                 <PasswordInput
                     value={current}
                     autoComplete="current-password"
@@ -247,7 +246,7 @@ function PasswordPanel({
             </Field>
             <NewPasswordField
                 policy={policy}
-                label="New password"
+                label={t('security.password.new')}
                 value={chosen}
                 onChange={(value, ok) => {
                     setChosen(value);
@@ -264,7 +263,7 @@ function PasswordPanel({
                     pending={busy}
                     onClick={() => void submit()}
                 >
-                    Change password
+                    {t('security.password.submit')}
                 </Button>
             </div>
         </section>
@@ -272,11 +271,8 @@ function PasswordPanel({
 }
 
 /**
- * What the server says about the account's sign-ins.
- *
- * Read-only, because the server writes this state as a side effect of signing
- * in. An account that has never signed in has no record, and the screen says
- * that rather than showing zeros.
+ * What the server says about the account's sign-ins. Read only, because the
+ * server writes this state as a side effect of signing in.
  */
 function SignInStatePanel({
     session,
@@ -285,44 +281,27 @@ function SignInStatePanel({
     readonly session: SessionView;
     readonly state: LoginInfo | null;
 }): ReactNode {
+    const { t } = useTranslation();
     return (
         <section className="card space-y-4 p-6">
             <header className="space-y-1">
-                <h2 className="text-lg font-medium">Sign-in state</h2>
-                <p className="text-sm text-ink-muted">
-                    Read-only. The server writes it as you sign in.
-                </p>
+                <h2 className="text-lg font-medium">{t('security.state.title')}</h2>
+                <p className="text-sm text-ink-muted">{t('security.state.lead')}</p>
             </header>
             <div className="flex flex-wrap gap-2">
                 <Tag tone="neutral">{session.username}</Tag>
-                <Tag tone={session.passwordResetRequired ? 'warn' : 'muted'}>
-                    {session.passwordResetRequired
-                        ? 'Password change required'
-                        : 'No change required'}
-                </Tag>
+                {session.passwordResetRequired && (
+                    <Tag tone="warn">{t('security.state.resetRequired')}</Tag>
+                )}
             </div>
-            {state === null ? (
-                <p className="text-sm text-ink-muted">
-                    This account has no login record yet, so there is no sign-in state to show.
-                </p>
-            ) : (
-                <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+            <SignInFacts state={state}>
+                {state !== null && (
                     <Detail
-                        label="Last sign-in"
-                        value={state.lastLogin === '' ? 'never' : state.lastLogin}
+                        label={t('security.state.account')}
+                        value={state.locked ? t('signInFacts.locked') : t('signInFacts.notLocked')}
                     />
-                    <Detail
-                        label="From"
-                        value={state.lastAttemptIp === '' ? 'unknown' : state.lastAttemptIp}
-                    />
-                    <Detail label="Failed attempts" value={String(state.failedLogins)} mono />
-                    <Detail label="Account" value={state.locked ? 'locked' : 'not locked'} />
-                </div>
-            )}
-            <p className="text-xs text-ink-faint">
-                Signing out is not recorded: nothing writes a session&rsquo;s end time, so this
-                panel cannot show when you last left.
-            </p>
+                )}
+            </SignInFacts>
         </section>
     );
 }

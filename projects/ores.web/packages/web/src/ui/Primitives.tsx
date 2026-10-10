@@ -324,7 +324,7 @@ export function Detail({
     external = false,
 }: {
     readonly label: string;
-    readonly value: string;
+    readonly value: ReactNode;
     readonly mono?: boolean;
     /** Makes the value a link, such as a `mailto:` address. */
     readonly href?: string;
@@ -333,7 +333,7 @@ export function Detail({
 }): ReactNode {
     return (
         <div className="min-w-0">
-            <dt className="text-[11px] uppercase tracking-wide text-ink-faint">{label}</dt>
+            <dt className="text-xs text-ink-faint">{label}</dt>
             <dd className={cx('mt-0.5 break-words text-sm', mono && 'font-mono text-xs')}>
                 {href === undefined ? (
                     value

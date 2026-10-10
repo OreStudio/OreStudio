@@ -690,6 +690,93 @@ const pt: SourceCatalogue = {
      * O ecrã do perfil: uma página com um painel por registo, para que cada
      * painel guarde sozinho e responda sozinho.
      */
+    signInFacts: {
+        lastSignIn: 'Último início de sessão',
+        never: 'Nunca iniciou sessão',
+        from: 'De',
+        unknown: 'Desconhecido',
+        failed: 'Tentativas falhadas',
+        none: 'Esta conta ainda não tem registo de início de sessão.',
+        locked: 'Bloqueada',
+        notLocked: 'Não bloqueada',
+    },
+    security: {
+        title: 'Segurança',
+        lead: 'A sua palavra-passe e os locais onde a sua conta tem sessão iniciada.',
+        reading: 'A ler a sua conta…',
+        readFailed: 'A leitura falhou.',
+        sessions: {
+            title: 'Onde tem sessão iniciada',
+            caveat: 'Nenhum fim de sessão escreve uma hora de fim, por isso esta lista contém todas as sessões da conta. Uma sessão antiga parece igual a uma sessão ativa.',
+            empty: 'Não há sessões registadas para a sua conta.',
+            started: 'Início',
+            client: 'Cliente',
+            address: 'Endereço',
+            country: 'País',
+            traffic: 'Enviado / recebido',
+            unknownClient: 'Cliente desconhecido',
+            noAddress: 'Sem endereço',
+            unknownCountry: 'Desconhecido',
+        },
+        password: {
+            title: 'Palavra-passe',
+            lead: 'Altere a palavra-passe com que inicia sessão. O servidor verifica primeiro a palavra-passe atual.',
+            current: 'Palavra-passe atual',
+            currentHint: 'Prova que o pedido é seu.',
+            new: 'Nova palavra-passe',
+            submit: 'Alterar palavra-passe',
+            changed: 'A palavra-passe foi alterada. Use-a no próximo início de sessão.',
+            refused: 'A alteração foi recusada.',
+        },
+        state: {
+            title: 'Estado dos inícios de sessão',
+            lead: 'Só de leitura. O servidor escreve-o quando inicia sessão.',
+            resetRequired: 'É necessário alterar a palavra-passe',
+            account: 'Conta',
+        },
+    },
+    rescue: {
+        title: 'Recuperação de acesso',
+        lead: 'Faça um colega voltar ao sistema, ou bloqueie a conta.',
+        find: 'Escolha o colega que pediu ajuda.',
+        another: 'Escolher outro colega',
+        reading: 'A ler a conta…',
+        readFailed: 'A leitura falhou.',
+        missing:
+            'Nenhuma conta deste inquilino se chama {username}. Pode ter sido renomeada ou removida.',
+        diagnosis: {
+            title: 'O que o estado sugere',
+            never: '{username} nunca iniciou sessão, por isso não há contagem de tentativas nem estado de bloqueio.',
+            locked: {
+                one: 'Tentativas falhadas bloquearam esta conta. Desbloqueie-a se o colega apenas esqueceu a palavra-passe.',
+                other: 'Tentativas falhadas bloquearam esta conta. Desbloqueie-a se o colega apenas esqueceu a palavra-passe.',
+            },
+            open: 'A conta não está bloqueada. Tentativas falhadas só a bloqueiam quando atingem o limite do servidor.',
+            failed: {
+                one: '{count} tentativa falhada',
+                other: '{count} tentativas falhadas',
+            },
+            online: 'Sessão aberta',
+            offline: 'Sem sessão',
+        },
+        lock: {
+            title: 'Bloquear a conta',
+            lead: 'Uma conta bloqueada não pode iniciar sessão. Desbloquear repõe a contagem de tentativas falhadas.',
+            sideLocked: 'Bloqueada',
+            sideUnlocked: 'Desbloqueada',
+            locked: 'A conta está bloqueada. As suas sessões abertas continuam abertas.',
+            unlocked: 'A conta está desbloqueada e a contagem de tentativas falhadas foi reposta.',
+            refused: 'A alteração foi recusada.',
+            lockTitle: 'Bloquear esta conta',
+            unlockTitle: 'Desbloquear esta conta',
+            lockAction: 'Bloquear a conta',
+            unlockAction: 'Desbloquear a conta',
+            lockBody:
+                '{username} deixa de poder iniciar sessão. As sessões que já estão abertas continuam abertas até expirarem.',
+            unlockBody:
+                '{username} pode iniciar sessão outra vez, e a contagem de tentativas falhadas foi reposta.',
+        },
+    },
     profile: {
         reason: {
             system_update: 'Alteração normal',
@@ -3016,6 +3103,7 @@ const pt: SourceCatalogue = {
         apply: 'Aplicar',
         back: 'Voltar',
         continue: 'Continuar',
+        cancel: 'Cancelar',
     },
 };
 

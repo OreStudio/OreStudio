@@ -24,7 +24,8 @@ import type { ReactNode } from 'react';
 import type { Account, SessionMode } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { RecordList, type ListSource } from '../refdata/RecordList.js';
+import { RecordList, type ListColumn, type ListSource } from '../refdata/RecordList.js';
+import { useAreaParts } from '../shell/AreaTrail.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { Tag } from '../ui/Primitives.js';
 import { displayName } from './names.js';
@@ -50,7 +51,7 @@ export function actorPathFor(mayOpen: boolean): (actor: string) => string | unde
 }
 
 /** The tenant's people, one page at a time, searched and ordered on the server. */
-const PEOPLE: ListSource<Account> = {
+export const PEOPLE: ListSource<Account> = {
     key: 'people',
     read: (page) => api.accountsPage(page),
     search: true,
@@ -72,6 +73,8 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
     const holds = useHolds();
     const system = mode === 'system-administration';
     const title = system ? t('accounts.title') : t('access.people.title');
+    const trail = useAreaParts('organisation', title);
+    const crumbs = system ? [{ label: t('shell.menu.home'), to: '/' }, { label: title }] : trail;
     /*
      * The roles column reads one person's grants a row at a time, and that read
      * is its own permission. A caller who does not hold it is not shown the
@@ -109,54 +112,10 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
             source={PEOPLE}
             title={title}
             lead={lead}
-            crumbs={
-                system
-                    ? [{ label: t('shell.menu.home'), to: '/' }, { label: title }]
-                    : [
-                          { label: t('shell.menu.home'), to: '/' },
-                          { label: t('access.hub.title'), to: '/organisation' },
-                          { label: title },
-                      ]
-            }
+            crumbs={crumbs}
             pathOf={(account) => personPath(account.username)}
             columns={[
-                {
-                    id: 'person',
-                    header: t('access.people.person'),
-                    sort: 'full_name',
-                    cell: (account) => (
-                        <span className="flex items-center gap-3">
-                            <Avatar
-                                name={displayName(account, account.username)}
-                                size="sm"
-                                src={account.imageId === null ? null : imageUrl(account.imageId)}
-                            />
-                            {displayName(account, account.username)}
-                        </span>
-                    ),
-                },
-                {
-                    id: 'username',
-                    header: t('access.people.username'),
-                    sort: 'username',
-                    mono: true,
-                    cell: (account) => account.username,
-                },
-                {
-                    id: 'kind',
-                    header: t('signIns.kind'),
-                    cell: (account) =>
-                        account.accountType === 'user' ? (
-                            <span className="text-ink-muted">{t('signIns.person')}</span>
-                        ) : (
-                            <Tag tone="accent">{t('signIns.service')}</Tag>
-                        ),
-                },
-                {
-                    id: 'job_title',
-                    header: t('access.people.jobTitle'),
-                    cell: (account) => account.jobTitle,
-                },
+                ...personColumns(t),
                 ...(system
                     ? []
                     : [
@@ -184,6 +143,55 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
             ]}
         />
     );
+}
+
+type Translate = ReturnType<typeof useTranslation>['t'];
+
+/**
+ * The columns every list of people starts with: the person with their photo,
+ * the username, the kind and the job title. The people list and the screens
+ * that pick a person from the tenant draw the same four.
+ */
+export function personColumns(t: Translate): readonly ListColumn<Account>[] {
+    return [
+        {
+            id: 'person',
+            header: t('access.people.person'),
+            sort: 'full_name',
+            cell: (account) => (
+                <span className="flex items-center gap-3">
+                    <Avatar
+                        name={displayName(account, account.username)}
+                        size="sm"
+                        src={account.imageId === null ? null : imageUrl(account.imageId)}
+                    />
+                    {displayName(account, account.username)}
+                </span>
+            ),
+        },
+        {
+            id: 'username',
+            header: t('access.people.username'),
+            sort: 'username',
+            mono: true,
+            cell: (account) => account.username,
+        },
+        {
+            id: 'kind',
+            header: t('signIns.kind'),
+            cell: (account) =>
+                account.accountType === 'user' ? (
+                    <span className="text-ink-muted">{t('signIns.person')}</span>
+                ) : (
+                    <Tag tone="accent">{t('signIns.service')}</Tag>
+                ),
+        },
+        {
+            id: 'job_title',
+            header: t('access.people.jobTitle'),
+            cell: (account) => account.jobTitle,
+        },
+    ];
 }
 
 /**

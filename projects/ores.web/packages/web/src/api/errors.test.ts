@@ -20,7 +20,7 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import { current, dismiss, dismissAll, report, reportError } from './errors.js';
+import { current, dismiss, dismissAll, report, reportError, reportQueryError } from './errors.js';
 import { ApiFailure } from './transport.js';
 
 /**
@@ -115,5 +115,28 @@ describe('turning a failure into a report', () => {
         reportError('the network went away');
 
         expect(current().map((entry) => entry.message)).toEqual(['the network went away']);
+    });
+});
+
+describe('a query that states its own failure', () => {
+    beforeEach(() => {
+        dismissAll();
+    });
+
+    it('is not reported to the banner when it says it is quiet', () => {
+        const refusal = new ApiFailure(403, { code: 'forbidden', message: 'You do not have access to this.' });
+
+        reportQueryError(refusal, { meta: { quiet: true } });
+
+        expect(current()).toEqual([]);
+    });
+
+    it('is reported when it does not say so', () => {
+        const refusal = new ApiFailure(403, { code: 'forbidden', message: 'You do not have access to this.' });
+
+        reportQueryError(refusal, {});
+        reportQueryError(refusal, { meta: { quiet: false } });
+
+        expect(current().map((entry) => entry.message)).toEqual(['You do not have access to this.']);
     });
 });

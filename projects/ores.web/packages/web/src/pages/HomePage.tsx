@@ -370,9 +370,9 @@ function TenantHome({
             icon: 'party',
         },
         {
-            title: t('home.tenant.people'),
-            body: t('home.tenant.peopleBody'),
-            to: '/people',
+            title: t('home.tenant.organisation'),
+            body: t('home.tenant.organisationBody'),
+            to: '/organisation',
             icon: 'people',
         },
         {
@@ -457,9 +457,9 @@ function PartyHome({
         ...(holds('iam::accounts:read')
             ? ([
                   {
-                      title: t('home.tenant.people'),
-                      body: t('home.tenant.peopleBody'),
-                      to: '/people',
+                      title: t('home.tenant.organisation'),
+                      body: t('home.tenant.organisationBody'),
+                      to: '/organisation',
                       icon: 'people',
                   },
               ] satisfies Tile[])

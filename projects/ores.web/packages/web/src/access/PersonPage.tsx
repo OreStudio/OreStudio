@@ -60,6 +60,8 @@ export function PersonPage({ me }: { readonly me: string }): ReactNode {
     const account = useQuery({
         queryKey: ['account', username],
         queryFn: () => api.account(username),
+        // The page states a refused read itself, so the banner stays quiet.
+        meta: { quiet: true },
     });
 
     if (account.isPending) {
@@ -146,7 +148,7 @@ function Person({
             <RecordHeader
                 crumbs={[
                     { label: t('shell.menu.home'), to: '/' },
-                    { label: t('access.hub.title'), to: '/people' },
+                    { label: t('access.hub.title'), to: '/organisation' },
                     { label: t('access.people.title'), to: '/staff' },
                     { label: name },
                 ]}

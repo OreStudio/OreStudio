@@ -143,14 +143,53 @@ describe('Reporting lines', () => {
         expect(html).toContain('/api/accounts/edsger.dijkstra/picture');
         expect(html).toContain('>You<');
         expect(html).not.toContain('Reporting tree');
+        // Each card opens the person, and the chart stands alone: no card beside it.
+        expect(html).toContain('href="/people/alan.turing"');
+        expect(html).toContain('href="/people/ada.lovelace"');
+        expect(html).not.toContain('Direct reports');
+    });
+
+    it('offers to zoom the org chart in and out, and to fit it to the window', () => {
+        const html = render(TREE, 0, 'grace.hopper', '/hierarchy?tab=chart');
+
+        expect(html).toContain('aria-label="Zoom in"');
+        expect(html).toContain('aria-label="Zoom out"');
+        expect(html).toContain('>Fit<');
+        // It opens at full size.
+        expect(html).toContain('100%');
+        expect(html).toContain('zoom:1');
+    });
+
+    it('lists the direct reports of the selected person, each opening that person', () => {
+        const html = render(TREE, 0, 'ada.lovelace');
+
+        // Ada is the signed-in person, so the card opens on her: Grace and Edsger report to her.
+        expect(html).toContain('Direct reports');
+        expect(html).toContain('(2)');
+        expect(html).toContain('href="/people/grace.hopper"');
+        expect(html).toContain('href="/people/edsger.dijkstra"');
+        // Alan reports to Grace, not to Ada, so he is not a direct report here.
+        const card = html.slice(html.indexOf('Direct reports'));
+        expect(card).not.toContain('href="/people/alan.turing"');
+    });
+
+    it('says when nobody reports to the selected person', () => {
+        const html = render(TREE, 0, 'alan.turing');
+
+        expect(html).toContain('(0)');
+        expect(html).toContain('No one reports to this person.');
     });
 
     it('opens the history on the standard timeline for one person at a time', () => {
         const html = render(TREE, 0, 'grace.hopper', '/hierarchy?tab=history');
 
-        // A person is chosen by name, and the timeline is the one the people pages draw.
-        expect(html).toContain('>Person<');
-        expect(html).toContain('<option value="' + GRACE + '" selected');
+        // A person is chosen by typing their name, and the timeline is the one the people pages draw.
+        expect(html).toContain('role="combobox"');
+        expect(html).toContain('placeholder="Grace Hopper"');
+        expect(html).toContain('value="Grace Hopper"');
+        // The person's card stands beside the timeline.
+        expect(html).toContain('Direct reports');
+        expect(html).toContain('/api/accounts/grace.hopper/picture');
         expect(html).not.toContain('Reporting tree');
     });
 

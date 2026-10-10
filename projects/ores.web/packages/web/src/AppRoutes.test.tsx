@@ -336,8 +336,8 @@ describe('the route table once the flag is clear', () => {
         expect(html).toContain('href="/where-i-work"');
     });
 
-    it('offers the staff list and the hierarchy as two cards on the People page', () => {
-        const html = render('/people', ready, authenticated);
+    it('offers the staff list and the hierarchy as two cards on the Organisation page', () => {
+        const html = render('/organisation', ready, authenticated);
 
         expect(html).toContain('href="/staff"');
         expect(html).toContain('href="/hierarchy"');

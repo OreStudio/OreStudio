@@ -289,7 +289,9 @@ describe('A person', () => {
         expect(html).toContain('>Contact<');
         expect(html).toContain('>Roles<');
         expect(html).toContain('>Sign-ins<');
-        expect(html).toContain('href="/people"');
+        // The trail back is Organisation, then Staff.
+        expect(html).toContain('href="/organisation"');
+        expect(html).toContain('href="/staff"');
         expect(html).not.toMatch(/Take away/);
     });
 

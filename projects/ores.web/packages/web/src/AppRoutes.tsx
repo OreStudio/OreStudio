@@ -54,7 +54,7 @@ import { SecurityPage } from './pages/SecurityPage.js';
 import { MyAccessPage } from './access/MyAccessPage.js';
 import { WhereIWorkPage } from './membership/WhereIWorkPage.js';
 import { ReportingLinesPage } from './membership/ReportingLinesPage.js';
-import { PeopleHubPage } from './access/PeopleHubPage.js';
+import { OrganisationPage } from './access/OrganisationPage.js';
 import { PeoplePage } from './access/PeoplePage.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
@@ -568,6 +568,18 @@ export function AppRoutes({
                 )}
             />
             <Route
+                path="/organisation"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <OrganisationPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
                 path="/people"
                 element={signedIn(
                     gate.version,
@@ -577,7 +589,7 @@ export function AppRoutes({
                         view.mode === 'system-administration' ? (
                             <PeoplePage mode={view.mode} />
                         ) : (
-                            <PeopleHubPage />
+                            <Navigate to="/organisation" replace />
                         ),
                     'workspace',
                 )}
@@ -898,6 +910,7 @@ export function ConnectedApp(): ReactNode {
         queryKey: ['account', username],
         queryFn: () => api.account(username),
         enabled: username !== '',
+        meta: { quiet: true },
     });
 
     return (

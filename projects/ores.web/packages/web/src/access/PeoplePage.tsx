@@ -82,7 +82,7 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
                     ? [{ label: t('shell.menu.home'), to: '/' }, { label: title }]
                     : [
                           { label: t('shell.menu.home'), to: '/' },
-                          { label: t('access.hub.title'), to: '/people' },
+                          { label: t('access.hub.title'), to: '/organisation' },
                           { label: title },
                       ]
             }

@@ -1226,6 +1226,8 @@ export function IdentityTab({
     const account = useQuery({
         queryKey: ['account', username],
         queryFn: () => api.account(username),
+        // The panel states a refused read itself, so the banner stays quiet.
+        meta: { quiet: true },
     });
     /*
      * The tenant list that names the manager is the administrator's read, so
@@ -1281,6 +1283,8 @@ export function ContactTab({
     const account = useQuery({
         queryKey: ['account', username],
         queryFn: () => api.account(username),
+        // The panel states a refused read itself, so the banner stays quiet.
+        meta: { quiet: true },
     });
     const accountId = account.data?.id ?? '';
     const contactKey = me ? 'me' : accountId;

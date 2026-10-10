@@ -347,10 +347,10 @@ describe('the application shell', () => {
         expect(application).not.toContain('Tenants');
     });
 
-    it('offers People only to a person who may read the accounts', () => {
-        expect(renderAppShell('Acme', 'application')).not.toContain('href="/people"');
+    it('offers Organisation only to a person who may read the accounts', () => {
+        expect(renderAppShell('Acme', 'application')).not.toContain('href="/organisation"');
         expect(renderAppShell('Acme', 'application', undefined, ['iam::accounts:read'])).toContain(
-            'href="/people"',
+            'href="/organisation"',
         );
     });
 

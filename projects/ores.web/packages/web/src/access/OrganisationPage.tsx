@@ -25,6 +25,9 @@ import { PageHeader } from '../ui/Primitives.js';
 import { Tiles, type Tile } from '../ui/Tiles.js';
 import { Crumbs } from '../refdata/shared.js';
 
+/** Where the organisation area lives. */
+export const ORGANISATION_PATH = '/organisation';
+
 /** Where the staff list lives. */
 export const STAFF_PATH = '/staff';
 
@@ -32,10 +35,10 @@ export const STAFF_PATH = '/staff';
 export const HIERARCHY_PATH = '/hierarchy';
 
 /**
- * People, the area: the staff of the tenant and the hierarchy they report in.
+ * Organisation, the area: the staff of the tenant and the hierarchy they report in.
  * Each is a tile, the same tile the landing page draws.
  */
-export function PeopleHubPage(): ReactNode {
+export function OrganisationPage(): ReactNode {
     const { t } = useTranslation();
     const tiles: readonly Tile[] = [
         {

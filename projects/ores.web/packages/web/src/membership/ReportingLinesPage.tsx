@@ -36,10 +36,11 @@ import { roleLabel } from '../access/words.js';
 import { Crumbs } from '../refdata/shared.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { AccountPicture } from '../ui/Images.js';
-import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
+import { Button, Detail, Field, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
 import { OrgChart } from './OrgChart.js';
+import { PersonSearch } from './PersonSearch.js';
 
 /** The role that makes a person their tenant's administrator. */
 const TENANT_ADMIN = 'TenantAdmin';
@@ -65,7 +66,10 @@ export function lineTimeline(
         .filter((event) => event.entityType === ACCOUNT_ENTITY)
         .map((event) => {
             const raw = fieldValue(event.fields, 'Reports To Account ID');
-            return { ...event, fields: [{ name: fieldName, value: nameOf(raw === '' ? null : raw) }] };
+            return {
+                ...event,
+                fields: [{ name: fieldName, value: nameOf(raw === '' ? null : raw) }],
+            };
         });
     return { subject: 'person', id: source?.id ?? '', events, gaps: [] };
 }
@@ -201,7 +205,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                 <Crumbs
                     parts={[
                         { label: t('shell.menu.home'), to: '/' },
-                        { label: t('access.hub.title'), to: '/people' },
+                        { label: t('access.hub.title'), to: '/organisation' },
                         { label: t('access.hub.hierarchy') },
                     ]}
                 />
@@ -274,53 +278,43 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
             )}
 
             {tab === 'chart' && (
-                <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-                    <section className="card p-4">
-                        <OrgChart
-                            roots={roots}
-                            children={children}
-                            selectedId={selected?.accountId ?? ''}
-                            meId={mine?.accountId ?? ''}
-                            admins={admins}
-                            onSelect={setSelectedId}
-                        />
-                    </section>
-                    {card}
-                </div>
+                <section className="card p-4">
+                    <OrgChart
+                        roots={roots}
+                        children={children}
+                        meId={mine?.accountId ?? ''}
+                        admins={admins}
+                    />
+                </section>
             )}
 
             {tab === 'history' && (
-                <section className="space-y-4">
-                    <Field label={t('membership.reporting.person')}>
-                        <Select
-                            className="max-w-sm"
-                            value={selected?.accountId ?? ''}
-                            onChange={(event) => setSelectedId(event.target.value)}
-                        >
-                            {[...nodes]
-                                .sort((a, b) => a.fullName.localeCompare(b.fullName))
-                                .map((node) => (
-                                    <option key={node.accountId} value={node.accountId}>
-                                        {node.fullName}
-                                    </option>
-                                ))}
-                        </Select>
-                    </Field>
-                    {story.isPending && selected !== undefined && (
-                        <p className="text-sm text-ink-muted">{t('common.loading')}</p>
-                    )}
-                    {story.isError && <Notice tone="error">{story.error.message}</Notice>}
-                    {story.data !== undefined && (
-                        <Timeline
-                            hideUnchanged
-                            timeline={lineTimeline(
-                                story.data,
-                                t('membership.reporting.reportsTo'),
-                                nameOf,
-                            )}
-                        />
-                    )}
-                </section>
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,1fr)]">
+                    <section className="space-y-4">
+                        <Field label={t('membership.reporting.person')}>
+                            <PersonSearch
+                                nodes={nodes}
+                                value={selected?.accountId ?? ''}
+                                onChange={setSelectedId}
+                            />
+                        </Field>
+                        {story.isPending && selected !== undefined && (
+                            <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                        )}
+                        {story.isError && <Notice tone="error">{story.error.message}</Notice>}
+                        {story.data !== undefined && (
+                            <Timeline
+                                hideUnchanged
+                                timeline={lineTimeline(
+                                    story.data,
+                                    t('membership.reporting.reportsTo'),
+                                    nameOf,
+                                )}
+                            />
+                        )}
+                    </section>
+                    {card}
+                </div>
             )}
 
             {unrooted.length > 0 && (
@@ -371,11 +365,18 @@ function PersonCard({
         selected.reportsToAccountId === null
             ? undefined
             : nodes.find((node) => node.accountId === selected.reportsToAccountId);
+    const reports = nodes
+        .filter((node) => node.reportsToAccountId === selected.accountId)
+        .sort((a, b) => a.fullName.localeCompare(b.fullName));
     return (
         <section className="card space-y-4 p-5">
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-4">
-                    <AccountPicture username={selected.username} name={selected.fullName} size="lg" />
+                    <AccountPicture
+                        username={selected.username}
+                        name={selected.fullName}
+                        size="lg"
+                    />
                     <div className="min-w-0">
                         <h2 className="text-base font-semibold">
                             <Link
@@ -405,7 +406,10 @@ function PersonCard({
                         {manager === undefined ? (
                             t('membership.reporting.noManager')
                         ) : (
-                            <Link to={personPath(manager.username)} className="flex items-center gap-2">
+                            <Link
+                                to={personPath(manager.username)}
+                                className="flex items-center gap-2"
+                            >
                                 <AccountPicture
                                     username={manager.username}
                                     name={manager.fullName}
@@ -419,10 +423,6 @@ function PersonCard({
                     </dd>
                 </div>
                 <Detail
-                    label={t('membership.reporting.directReports')}
-                    value={String(selected.directReports)}
-                />
-                <Detail
                     label={t('membership.reporting.depth')}
                     value={
                         selected.depth < 0
@@ -431,6 +431,37 @@ function PersonCard({
                     }
                 />
             </dl>
+
+            <section className="space-y-2 border-t border-line pt-4">
+                <h3 className="text-sm font-semibold">
+                    {t('membership.reporting.directReports')}{' '}
+                    <span className="font-normal text-ink-faint">({reports.length})</span>
+                </h3>
+                {reports.length === 0 ? (
+                    <p className="text-sm text-ink-muted">{t('membership.reporting.noReports')}</p>
+                ) : (
+                    <ul className="space-y-1">
+                        {reports.map((report) => (
+                            <li key={report.accountId}>
+                                <Link
+                                    to={personPath(report.username)}
+                                    className="flex items-center gap-2 rounded px-1 py-0.5 text-sm hover:bg-surface-overlay"
+                                >
+                                    <AccountPicture
+                                        username={report.username}
+                                        name={report.fullName}
+                                        size="sm"
+                                    />
+                                    <span className="font-medium">{report.fullName}</span>
+                                    <span className="text-xs text-ink-muted">
+                                        {report.jobTitle}
+                                    </span>
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
         </section>
     );
 }

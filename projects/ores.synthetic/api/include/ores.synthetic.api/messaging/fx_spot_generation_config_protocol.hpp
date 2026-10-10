@@ -41,7 +41,6 @@ struct fx_spot_generation_config_key {
 
 struct fx_spot_generation_config_write {
     boost::uuids::uuid id;
-    boost::uuids::uuid party_id;
     boost::uuids::uuid config_id;
     std::string base_currency_code;
     std::string quote_currency_code;

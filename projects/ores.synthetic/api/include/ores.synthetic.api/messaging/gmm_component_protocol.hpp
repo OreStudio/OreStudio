@@ -41,7 +41,6 @@ struct gmm_component_key {
 
 struct gmm_component_write {
     boost::uuids::uuid id;
-    boost::uuids::uuid party_id;
     boost::uuids::uuid fx_spot_config_id;
     int component_index;
     std::string description;

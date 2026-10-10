@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :implement-the-synthetic-market-data-journeys:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-the-bff-the-synthetic-routes
+#+pr: 3062
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,77 @@ The screens can read and write every synthetic entity the four journeys name, th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
 
 * Acceptance
 
--
+- Every synthetic entity the four journeys name is readable through the BFF:
+  all rows of a resource, and one row by its key.
+- The FX feed, its mixture, the IR curve feed, its parameter values and its
+  ladder rows are writable, and the process types are writable from a system
+  session. A save of one or many rows is one atomic call, and a stale version
+  is refused with 409.
+- The parameter definitions, the folders and the collections are read only,
+  and the route says why.
+- The previews, the feed start and stop, the folder start and stop, the
+  running set and the vintage validity have routes.
+- The history of every synthetic entity is served by the existing history
+  route.
+- Unit tests cover each route against canned replies, and each route answers
+  correctly against the running services.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+The synthetic CRUD is uniform: nine generated resources, each with list,
+put_many and delete subjects, one key field and one one-of filter. So the BFF
+holds one table of synthetic resources and serves generic routes over it,
+like the refdata record routes, rather than one route set per screen.
+
+- =bff/src/synthetic.ts= holds =SYNTHETIC_RECORDS=. A row names the URL key,
+  the entity type, the key field, the one-of filter, the reply field and the
+  subjects. A row with a write schema is writable. A row without one is read
+  only.
+- =GET /api/synthetic= returns the catalogue with the read, write and delete
+  permission of each resource.
+- =GET /api/synthetic/:resource= returns every row.
+  =GET /api/synthetic/:resource/key/:key= reads one row through the one-of
+  filter, not through =get=: a definition's =get= takes =parameter_name=,
+  which several process types share.
+- =PUT /api/synthetic/:resource= takes one or many changes and sends
+  =put_many=. The server checks every row's version and writes the set in one
+  statement, so one path serves a single save and a mixture reorder.
+- =DELETE /api/synthetic/:resource= takes one or many removals. One removal
+  sends =delete= with its version. Many send =delete_many=, which the server
+  accepts only without versions, so the BFF refuses a versioned batch.
+- The definitions are read only. The server reads and writes a definition by
+  =parameter_name= alone, so a write would reach whichever type's row it found
+  first. The gaps task fixes the key. Folders and collections are read only
+  because no journey step writes them. The process types are one catalogue
+  every tenant shares, so only a system session writes them.
+- The write schemas check structure only and satisfy the generated write
+  types. The table checks enforce the domain rules, so the BFF does not copy
+  the enumerations.
+- Operation routes: =GET /api/synthetic/running=,
+  =POST /api/synthetic/feeds/:id/start= and =/stop=,
+  =POST /api/synthetic/folders/:id/start= and =/stop=,
+  =GET /api/synthetic/vintages=, =POST /api/synthetic/simulate/fx=,
+  =POST /api/synthetic/simulate/ir= and =POST /api/synthetic/preview/ir-shape=.
+- =HISTORY_TYPES= takes the synthetic entity types, so =/api/history=
+  serves them through =synthetic.v1.history.get=.
+
+Out of scope: the refdata pickers the IR screen needs (tenors, payment
+frequencies, index conventions, instrument codes) and the market series
+coverage read. They are not synthetic entities, and each screen task adds the
+picker it needs.
 
 * Measurements
 
@@ -55,9 +110,37 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Synthetic resources in the table | 9, of which 6 writable and 1 writable only from a system session | =GET /api/synthetic= | 5f2fa0d085 |
+| Routes added | 14 | =grep -c "server\.\(get\|put\|delete\|post\)('/api/synthetic" bff/src/synthetic.ts= | 5f2fa0d085 |
+| BFF tests | 378 passed in 44 files, 26 of them in =synthetic.test.ts= | =npm test --workspace @ores/bff= | 5f2fa0d085 |
+| Deliberate breaks the synthetic tests catch | 6 of 7 | edit =synthetic.ts=, run =vitest=, restore | e6fd942d37 |
+| Process types an Acme user reads, before and after the fix | 0, then 5 | =GET /api/synthetic/process-types= on the live stack | 5f2fa0d085 |
+| Live write cycle steps that answered as designed | 11 of 11 | create, read, stale write, correction, mixture, history, batch removal, guarded removals, read after removal, definition write | 5f2fa0d085 |
+| Synthetic core tests | 41 cases, 992 assertions, all passed | =compass build test_ores.synthetic.core.tests= | 5f2fa0d085 |
 
 * Notes
+
+Three things the live stack showed that the canned tests could not.
+
+- *The process types were invisible to every tenant.* The catalogue lives in
+  the system tenant. The definition handler reads there, because its model
+  sets =system_tenant_validation=, but the process type model did not, so a
+  tenant listed an empty catalogue and a tenant write would have landed a
+  private row the validators never read. The SQL validator already checks the
+  system tenant, and regenerating the SQL with the flag changes no byte, so
+  the flag was missing only from the model. The flag is now set and the
+  handler regenerated.
+- *A system-owned write crosses tenants.* With the handler in the system
+  tenant, a tenant role that holds the write permission changes every
+  tenant's catalogue. The BFF now writes the process types only from a
+  system session. The server-side exposure, which the definitions already
+  had, is captured as [[id:46480D15-1E41-46D6-8042-A56516EBE2EE][A tenant can write a system catalogue]].
+- *A whole-number double fails to decode.* The reflect-cpp msgpack reader
+  refuses an integer for a =double=, and the web client writes =1= and =0= as
+  integers. The FX preview fails for a mixture with a weight of 1 or a mean
+  of 0. This is in the shared codec, so it is captured as
+  [[id:F079340B-2DF9-4F2A-90CD-B52202B010F6][The server refuses a whole number in a double field]]
+  and not fixed here.
 
 * Test Scenarios
 
@@ -74,12 +157,64 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3062][#3062]] | [web] Serve the synthetic routes from the BFF |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Important: the regenerated process type handler writes in the system tenant, so a tenant role holding the write permission changes the shared catalogue over the bus | =yield_curve_process_type_handler.hpp= | Accept | The BFF writes the process types only from a system session (=b365494626=). The server-side refusal belongs in the handler template, which every system-owned entity shares, so it is captured as [[id:46480D15-1E41-46D6-8042-A56516EBE2EE][A tenant can write a system catalogue]]. |
+| 2 | Minor: the write bodies carry =party_id= from the client | =synthetic.ts= | Accept (reversed) | First declined on the party policy and the book routes. Both reasons were wrong; see finding 16. |
+| 3 | Minor: =answer= repeats the conflict mapping of =records.ts= and =classifications.ts= | =synthetic.ts= | Decline | Each module words its own conflict. A shared mapper is a refactor of three modules, not part of this task. |
+| 4 | Minor: the feed and folder start and stop were not run against the live services | =synthetic.ts= | Accept | The test tenant has no feeds, and starting the system feeds would change shared state. Unit tests cover the request and the reply mapping; the collection screen task runs them live. |
+| 5 | Misspell check | changed files | Clean | =misspell-fixer= exit 0. |
+| 6 | Round 2, @claude: the whole-number defect reaches the saves, not only the FX preview | =synthetic.ts= | Accept | Verified live: a feed with price 1 and a component with weight 1 are refused, 1.05 saves. The codec capture now says so. A BFF-side float encoding would replace the shared wire codec's number handling, so it stays with the codec fix. |
+| 7 | Round 2: a batch save or removal can name one row twice | =synthetic.ts= | Accept | Both now refuse a repeated key with 400 before the call; two tests cover it. |
+| 8 | Round 2: the batch limit of 1000 has no stated reason | =synthetic.ts= | Accept | The limit is now =PAGE=, the page size the BFF reads with, so one request writes at most what one read returns. |
+| 9 | Round 2: the client sends =party_id= | =synthetic.ts= | Accept (reversed) | See finding 16. |
+| 10 | Round 2: the catalogue calls =readOnlyFor= twice per resource | =synthetic.ts= | Accept | Called once and reused. |
+| 11 | Round 2: =resourceName= parses the subject | =synthetic.ts= | Decline | Every generated subject is =component.v1.resource.verb= by the protocol specification; the refdata registry derives its permissions the same way. |
+| 12 | Round 2: one helper block uses =/* */= | =synthetic.ts= | Accept | Now a doc comment. |
+| 13 | Round 2: a single removal without a version does not guard against a stale row | =synthetic.ts= | Decline | The route takes the version when the screen has it; sending it is the screen tasks' decision. |
+| 14 | Round 2: give the codegen test failure its own item | backlog | Accept | Captured as [[id:2F4FEA08-EC25-4BB6-A090-7442E51D01E6][A codegen test fails only in the full suite]]. |
+| 15 | Round 2: run feed start and stop live | =synthetic.ts= | Accept | Run live: start answers 409 with the server's reason (a disabled collection, an unknown feed), stop answers 200 with its count. A feed was not left running, because the test collection stays disabled. |
+| 16 | Owner: the party is server owned, so a client never sends it | four synthetic models, =org_loader.py=, =synthetic.ts= | Accept | The protocol specification makes the party server owned. The four feed models marked =party_id= as a natural key, and the codegen keeps every key column on the write record, so the client sent it and the service copied it; =stamp()= overwrote it only when the session had a party. A new =:server_owned:= column flag keeps =party_id= in the natural key and the unique index but takes it off the write record, so =stamp()= alone sets it. The BFF write schemas are strict, so a write that states its party is refused with 400. The book and portfolio models have the same defect: [[id:B5AC9626-F030-44CF-9D71-FCDEBAF4DCD1][The book and portfolio writes carry the party]]. |
 
 * Result
+
+The BFF serves every synthetic entity the four journeys name. One table in
+=bff/src/synthetic.ts= holds the nine resources, and 14 routes serve them:
+the catalogue with each resource's permissions, all rows, one row by key,
+a save of one or many rows in one =put_many=, a removal of one row by
+version or of many rows at once, the three previews, the feed and folder
+start and stop, the running set and the vintage validity. The history route
+serves the synthetic types.
+
+All acceptance bullets are met. The writes refuse a stale version with 409
+in the server's words, and a save of a two-row mixture landed in one call
+on the live stack. The parameter definitions, the folders and the
+collections are read only, and the catalogue says why. Every route answered
+as designed against the running services, and 26 unit tests cover them.
+
+The live run also found and fixed one defect. Every tenant listed an empty
+process type catalogue, because the model lacked =system_tenant_validation=.
+The flag is set, the handler regenerated, and an Acme user now reads the
+five types. Because that handler writes in the system tenant, the BFF
+writes the process types only from a system session.
+
+Two defects stay open as captures, and one existing capture grows:
+
+- [[id:F079340B-2DF9-4F2A-90CD-B52202B010F6][The server refuses a whole number in a double field]].
+  The FX preview fails for a mixture with a weight of 1 or a mean of 0
+  until the codec accepts integers for doubles. The FX screen task depends
+  on it.
+- [[id:46480D15-1E41-46D6-8042-A56516EBE2EE][A tenant can write a system catalogue]].
+  The BFF guards the process types and the definitions; the bus does not.
+- The four template defects capture now also records that a table check or
+  a validation trigger refusal comes back as =failed=, so the BFF answers
+  502 with PostgreSQL text where a 400 belongs.
+
+The component audit did not run: none of its triggers applies. The task
+added one file to an existing BFF folder and one flag to a synthetic model,
+cleared no drift and changed no folder or template. =validate_docs.sh=
+passes for all 41 components.

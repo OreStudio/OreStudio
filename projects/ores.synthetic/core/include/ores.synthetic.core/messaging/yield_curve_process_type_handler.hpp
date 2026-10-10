@@ -34,6 +34,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/messaging/yield_curve_process_type_protocol.hpp"
 #include "ores.synthetic.core/service/yield_curve_process_type_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <optional>
 
 namespace ores::synthetic::messaging {
@@ -54,6 +55,9 @@ using namespace ores::logging;
 
 /**
  * @brief NATS message handler for yield curve process type operations.
+ *
+ * Yield Curve Process Types are system-owned global entities; list and history
+ * operations use the system tenant context.
  */
 class yield_curve_process_type_handler {
 public:
@@ -92,7 +96,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::yield_curve_process_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::yield_curve_process_type_service svc(sys_ctx);
         try {
             auto response = svc.list_yield_curve_process_types(*req);
             BOOST_LOG_SEV(yield_curve_process_type_handler_lg(), debug)
@@ -140,7 +146,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::yield_curve_process_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::yield_curve_process_type_service svc(sys_ctx);
         try {
             auto response = svc.get_yield_curve_process_type(*req);
             BOOST_LOG_SEV(yield_curve_process_type_handler_lg(), debug)
@@ -188,7 +196,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::yield_curve_process_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::yield_curve_process_type_service svc(sys_ctx);
         try {
             auto response = svc.get_many_yield_curve_process_types(*req);
             BOOST_LOG_SEV(yield_curve_process_type_handler_lg(), debug)
@@ -236,7 +246,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::yield_curve_process_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::yield_curve_process_type_service svc(sys_ctx);
         try {
             auto response = svc.put_yield_curve_process_type(*req);
             BOOST_LOG_SEV(yield_curve_process_type_handler_lg(), debug)
@@ -284,7 +296,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::yield_curve_process_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::yield_curve_process_type_service svc(sys_ctx);
         try {
             auto response = svc.put_many_yield_curve_process_types(*req);
             BOOST_LOG_SEV(yield_curve_process_type_handler_lg(), debug)
@@ -332,7 +346,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::yield_curve_process_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::yield_curve_process_type_service svc(sys_ctx);
         try {
             auto response = svc.delete_yield_curve_process_type(*req);
             BOOST_LOG_SEV(yield_curve_process_type_handler_lg(), debug)
@@ -380,7 +396,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::yield_curve_process_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::yield_curve_process_type_service svc(sys_ctx);
         try {
             auto response = svc.delete_many_yield_curve_process_types(*req);
             BOOST_LOG_SEV(yield_curve_process_type_handler_lg(), debug)
@@ -428,7 +446,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::yield_curve_process_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::yield_curve_process_type_service svc(sys_ctx);
         try {
             auto response = svc.list_yield_curve_process_type_versions(*req);
             BOOST_LOG_SEV(yield_curve_process_type_handler_lg(), debug)
@@ -476,7 +496,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::yield_curve_process_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::yield_curve_process_type_service svc(sys_ctx);
         try {
             auto response = svc.get_yield_curve_process_type_version(*req);
             BOOST_LOG_SEV(yield_curve_process_type_handler_lg(), debug)

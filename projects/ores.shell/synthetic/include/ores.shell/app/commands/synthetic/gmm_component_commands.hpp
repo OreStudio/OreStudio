@@ -87,24 +87,24 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <party_id> <fx_spot_config_id> <component_index> <description> <mean> <stdev>
-     * <weight> <reason> <commentary>
+     * @brief add <fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <party_id> <fx_spot_config_id> <component_index> <description> <mean> <stdev>
-     * <weight> <reason> <commentary> [--version <n>]
+     * @brief set <id> <fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <party_id> <fx_spot_config_id> <component_index>
-     * <description> <mean> <stdev> <weight> <reason> <commentary>
+     * @brief put-many --count <n> <id> <fx_spot_config_id> <component_index> <description> <mean>
+     * <stdev> <weight> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

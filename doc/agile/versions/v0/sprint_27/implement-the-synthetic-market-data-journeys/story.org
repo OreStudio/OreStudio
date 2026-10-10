@@ -23,10 +23,10 @@ A person authors an FX price feed, authors an IR curve feed, runs a collection a
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The scaffold is done and M06 is closed: synthetic has 21 generated TypeScript modules and the twin gate covers the component. |
+| Now           | The protocol and the BFF are done: synthetic has its TypeScript twins, and the BFF serves every synthetic entity, preview and feed operation the journeys name. |
 | Waiting on    | Nothing.                               |
-| Next          | Give the BFF the synthetic routes, then build the four screens. |
-| Last touched  | 2026-10-09                               |
+| Next          | Build the four screens. The FX preview waits on the codec accepting a whole number in a double field. |
+| Last touched  | 2026-10-10                               |
 
 * Acceptance
 
@@ -38,7 +38,7 @@ A person authors an FX price feed, authors an IR curve feed, runs a collection a
 |------+-------+-------+-----+-------------|
 | [[id:AF124B71-1F0B-4899-8707-F85B81FD51C3][Scaffold the synthetic implementation story]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. |
 | [[id:0091F10A-AC68-4C12-8536-F72E371E4E61][Close M06, the synthetic TypeScript twin]] | DONE | 2026-10-09 | 2026-10-09 | Synthetic had no committed TypeScript protocol, so ores.web could not speak it. The twins are generated, the four operation surfaces are modelled so both sides generate, and the twin gate covers the component. |
-| [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] | BACKLOG | | | The BFF has no route for any synthetic subject, and the web reaches the bus only through the BFF. |
+| [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] | DONE | 2026-10-10 | 2026-10-10 | The BFF has no route for any synthetic subject, and the web reaches the bus only through the BFF. |
 | [[id:2DCC5A20-11C5-4EDA-B8AA-386710F9F804][Build the yield curve process type screen]] | BACKLOG | | | Journey 4: the process types and their parameter definitions, as a record screen over the two catalogues. |
 | [[id:6E54699C-427C-471A-AA70-FCCCD27ABC85][Build the FX price feed screen]] | BACKLOG | | | Journey 1: the pair, the process, the GMM mixture and the sample paths, on the record-screen framework. |
 | [[id:1E325838-917A-4F74-B880-15DEF844CD90][Build the IR curve feed screen]] | BACKLOG | | | Journey 2: the identity, the short-rate process and its parameter values, the template ladder, and the shape and path previews. |
@@ -46,6 +46,21 @@ A person authors an FX price feed, authors an IR curve feed, runs a collection a
 | [[id:F8D3EEA7-E3A8-4CDE-BA1B-05C1F0031D8E][Close the gaps the synthetic journeys found]] | BACKLOG | | | No subject lists the vintages a price source offers; several lists filter on id_one_of where the screen needs the parent; the parameter definition's wire key drops the process type. |
 
 * Decisions
+
+- *One table, generic routes.* The BFF serves the synthetic resources from
+  one table (=bff/src/synthetic.ts=) over =/api/synthetic/:resource=, not a
+  route set per screen. The nine generated resources share one CRUD shape,
+  so a screen adds no BFF code to read or write them.
+- *A save is one =put_many=.* The server checks every row's version and
+  writes the set in one statement, so a mixture or a ladder lands whole or
+  not at all. A batch removal is unconditional, because =delete_many=
+  refuses versions.
+- *Read one row by its one-of filter, not by =get=.* A definition's =get=
+  takes =parameter_name=, which several process types share.
+- *Shared catalogues are written from the system tenant only.* The process
+  types and the definitions live in the system tenant. The definitions are
+  read only until their key names the process type, and the process types
+  are writable from a system session alone.
 
 * Out of scope
 

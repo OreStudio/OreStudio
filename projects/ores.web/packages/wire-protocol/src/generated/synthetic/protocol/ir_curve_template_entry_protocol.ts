@@ -34,7 +34,6 @@ export interface IrCurveTemplateEntryKey {
 
 export interface IrCurveTemplateEntryWrite {
     id: string;
-    party_id: string;
     ir_curve_config_id: string;
     sequence_index: number;
     start_tenor_code: string;

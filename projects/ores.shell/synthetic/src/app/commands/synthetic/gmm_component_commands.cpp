@@ -141,24 +141,24 @@ void gmm_component_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <party_id> <fx_spot_config_id> <component_index> <description> <mean> <stdev> "
-        "<weight> <reason> <commentary>");
+        "add <fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <party_id> <fx_spot_config_id> <component_index> <description> <mean> <stdev> "
-        "<weight> <reason> <commentary> [--version <n>]");
+        "set <id> <fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <party_id> <fx_spot_config_id> <component_index> <description> "
-        "<mean> <stdev> <weight> <reason> <commentary>");
+        "put-many --count <n> <id> <fx_spot_config_id> <component_index> <description> <mean> "
+        "<stdev> <weight> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -352,13 +352,12 @@ void gmm_component_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(
             req.change.write.fx_spot_config_id, parsed->positionals[next++], "fx_spot_config_id");
         read_token(
@@ -409,13 +408,12 @@ void gmm_component_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(
             req.change.write.fx_spot_config_id, parsed->positionals[next++], "fx_spot_config_id");
         read_token(
@@ -478,15 +476,14 @@ void gmm_component_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 8 + 2) {
-            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 7 + 2) {
+            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::gmm_component_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.party_id, parsed->positionals[next++], "party_id");
             read_token(
                 change.write.fx_spot_config_id, parsed->positionals[next++], "fx_spot_config_id");
             read_token(

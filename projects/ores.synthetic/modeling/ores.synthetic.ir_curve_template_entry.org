@@ -63,6 +63,7 @@ Surrogate UUID uniquely identifying this template entry.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :natural_key: true
+:server_owned: true
 :END:
 
 Owning party (legal entity) this entry's configuration belongs to.

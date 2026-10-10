@@ -32,6 +32,7 @@ until it is genuinely shared by something else, per this story's own
 :product:   ores
 :component: synthetic
 :profile:   simple-lookup
+:system_tenant_validation: true
 :END:
 
 * Columns

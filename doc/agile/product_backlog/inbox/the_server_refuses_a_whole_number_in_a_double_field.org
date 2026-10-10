@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: F079340B-2DF9-4F2A-90CD-B52202B010F6
+:END:
+#+title: The server refuses a whole number in a double field
+#+description: The msgpack reader of reflect-cpp refuses an integer for a double, and a JavaScript client writes every whole-valued double as an integer, so a web request with a weight of 1 or a mean of 0 fails to decode.
+#+type: capture
+#+level: cross
+#+filetags: :nats:codec:web:defect:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The server decodes every request with reflect-cpp. In the msgpack format,
+its reader accepts only a msgpack float for a =double= field
+(=rfl/msgpack/Reader.hpp=, the floating-point branch of =to_basic_type=).
+The web client encodes with =@msgpack/msgpack=, which writes a whole
+JavaScript number as a msgpack integer, because JavaScript has one number
+type. So a request that carries a whole-valued double fails to decode, and
+the handler answers "bad request".
+
+Observed on 2026-10-10 against =synthetic.v1.ops.simulate_fx_spot_paths=
+through the BFF route =POST /api/synthetic/simulate/fx=. A mixture with
+weights =[0.8, 0.2]= and means =[0.0005, 0.0001]= decodes. The same request
+with a mean of =0.0= or a weight of =1= fails, and the service logs:
+
+#+begin_example
+Failed to decode ores.dev.swift_curie.synthetic.v1.ops.simulate_fx_spot_paths
+(130 bytes): Failed to parse field 'gmm_weights': Could not cast to numeric
+value. The type must be float or double.
+#+end_example
+
+=0.0= also fails, because the BFF parses the JSON body and encodes it
+again, and JavaScript writes =0.0= as =0=.
+
+The saves fail the same way. Through =PUT /api/synthetic/fx-feeds= a feed
+with =gmm_initial_price= =1= is refused as =bad_request= and the same feed
+with =1.05= saves; a GMM component with =weight= =1= is refused through
+=PUT /api/synthetic/gmm-components=. So every write and every preview that
+carries a whole-valued double fails, not only the FX preview.
+
+The candidate fix is in the decoder, not in each client: accept a msgpack
+positive or negative integer for a floating-point field. That is a patch to
+the reflect-cpp port through a vcpkg overlay, or a custom reader. A client
+cannot fix it, because =@msgpack/msgpack= has no per-field float encoding,
+and forcing every number to a float breaks the integer fields.
+
+* Why
+
+Every double field a web screen writes is exposed: a GMM weight of 1, a
+mean of 0, an IR parameter value of 0, a price of 1, a currency pair's
+=pip_factor= of 1. The FX price feed preview fails for a one-component
+mixture, which is the first thing a person tries. The defect is not
+specific to synthetic; synthetic is where it was first seen.
+
+* References
+
+- [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] — the task that found it.
+
+* See also
+
+-

@@ -34,7 +34,6 @@ export interface GmmComponentKey {
 
 export interface GmmComponentWrite {
     id: string;
-    party_id: string;
     fx_spot_config_id: string;
     component_index: number;
     description: string;

@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: B5AC9626-F030-44CF-9D71-FCDEBAF4DCD1
+:END:
+#+title: The book and portfolio writes carry the party
+#+description: The refdata book and portfolio models mark party_id as a natural key, so their write records carry it from the client against the server-owned field rule; mark it server_owned as the synthetic feeds now do.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:protocol:security:codegen:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The protocol specification lists the party as a server-owned field: the
+service takes it from the authenticated context, it never appears in a write
+record, and a request that carries it is invalid
+([[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol Specification]],
+=Server-owned fields=).
+
+=ores.refdata.book= and =ores.refdata.portfolio= break that rule. Both models
+mark =party_id= as =:natural_key: true=, so it scopes their unique index to a
+party, and the codegen keeps every key column on the write record. So
+=BookWrite= and =PortfolioWrite= carry =party_id=, =book_service.cpp= copies
+it from the request, and the BFF book routes accept it from the browser
+(=bff/src/books.ts=, =writeBodySchema=).
+
+The generated =stamp()= then overwrites =party_id= with the session's party
+when the session has one, so a party-scoped session cannot write a row into
+another party. A session with no acting party keeps the client's value, and
+the field is on the wire either way.
+
+The fix is the one the synthetic feeds took in PR 3062: mark =party_id=
+=:server_owned: true= in both models. It stays in the natural key and the
+unique index, it leaves the write record, and =stamp()= alone sets it. Then
+drop =party_id= from the BFF write schema and from the web client that sends
+it (=web/src/journeys/booksState.ts=).
+
+* Why
+
+Tenancy and party scoping are trustworthy only because a caller never states
+them. A field the client sends and the server overwrites is still a field a
+client can send, and with no acting party it is the value the server keeps.
+
+* References
+
+- Found while addressing the review of
+  [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]].
+
+* See also
+
+-

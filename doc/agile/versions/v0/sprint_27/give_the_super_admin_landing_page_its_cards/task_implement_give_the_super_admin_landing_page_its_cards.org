@@ -8,7 +8,7 @@
 #+filetags: :give_the_super_admin_landing_page_its_cards:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-give-the-super-admin-landing-page-its-cards
-#+pr:
+#+pr: 3028
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3028][#3028]] | [web] Give the system administrator's home its cards |
 
 * Review
 

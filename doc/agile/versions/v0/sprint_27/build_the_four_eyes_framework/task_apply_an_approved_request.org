@@ -35,6 +35,8 @@ The last approval applies every line of the request in one transaction, and a re
 
 * Acceptance
 
+- The apply re-checks each line's base version against the live row, because the book can change between the raise and the apply. It replays the write with the maker's reason and commentary, which the line keeps.
+
 - The last approval starts an apply workflow whose steps re-check, apply every line in one transaction, marking each applied once, and tell the maker.
 - A refusal at apply moves the request to apply_failed with the line and reason and ends the run as failed.
 - An infrastructure failure or missed deadline stops the run, and the retry verb resumes it until the kind's window ends, then the request moves to apply_failed.

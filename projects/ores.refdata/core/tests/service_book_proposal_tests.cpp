@@ -19,6 +19,7 @@
  */
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.core/repository/approval_policy_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.refdata.api/generators/book_change_generator.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
@@ -350,4 +351,75 @@ TEST_CASE("a_line_for_a_request_that_does_not_exist_is_refused", tags) {
 
     ores::refdata::repository::book_change_repository repo;
     CHECK_THROWS(repo.write(w.ctx, line));
+}
+
+TEST_CASE("a_raise_with_no_lines_or_no_reason_raises_nothing", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+
+    const auto none = svc.raise({}, "Open the desk");
+    CHECK_FALSE(none.request.has_value());
+    CHECK_FALSE(none.message.empty());
+
+    const auto unexplained = svc.raise({new_book_line(h, w)}, "");
+    CHECK_FALSE(unexplained.request.has_value());
+    CHECK_FALSE(unexplained.message.empty());
+}
+
+TEST_CASE("a_line_with_an_unknown_operation_is_refused", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    auto line = new_book_line(h, w);
+    line.operation = "x'); drop table ores_refdata_books_tbl; --";
+
+    const auto preview = svc.preview({line});
+
+    REQUIRE(preview.lines.size() == 1);
+    CHECK_FALSE(preview.lines[0].refusal.empty());
+    ores::refdata::service::book_service books(w.ctx);
+    CHECK_FALSE(books.get_book(line.entity_id).has_value());
+}
+
+TEST_CASE("a_part_a_tenant_adds_to_an_act_is_named_with_the_system_parts", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    const auto created = new_book_line(h, w);
+    const auto live = make_live(w, created);
+
+    ores::inbox::domain::approval_policy extra;
+    extra.tenant_id = w.ctx.tenant_id();
+    extra.code = "book.put.description.tenant";
+    extra.name = "Book description by the tenant";
+    extra.description = "The tenant asks the controller to see a description change";
+    extra.entity_type = "book";
+    extra.operation = "put";
+    extra.field_name = "description";
+    extra.part_code = "controller";
+    extra.display_order = 900;
+    extra.modified_by = w.ctx.actor();
+    extra.change_reason_code = "system.test";
+    ores::inbox::repository::approval_policy_repository policies;
+    policies.write(w.ctx, extra);
+    // The tenant is shared by every case of a run, so the row is removed
+    // however the case ends, or it would add a part to the other cases.
+    struct remove_on_exit {
+        ores::inbox::repository::approval_policy_repository& repo;
+        const ores::database::context& ctx;
+        std::string code;
+        ~remove_on_exit() {
+            try {
+                repo.remove(ctx, code);
+            } catch (...) {
+            }
+        }
+    } cleanup{policies, w.ctx, extra.code};
+
+    auto edit = edit_line(live, created);
+    edit.description = "Only the words change";
+
+    const auto preview = book_proposal_service(w.ctx).preview({edit});
+
+    CHECK(preview.part_codes == std::vector<std::string>{"controller"});
 }

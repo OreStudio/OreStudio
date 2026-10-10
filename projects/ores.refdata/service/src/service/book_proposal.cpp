@@ -183,22 +183,33 @@ std::string run_write(book_service& svc,
     return "The operation must be put or delete: " + line.operation;
 }
 
+/**
+ * @brief The parts the policy names for an act, read as the caller.
+ *
+ * The helper opens its own connection and sets the caller's tenant and party
+ * on it, so the tenant's own policy rows are read as well as the system's.
+ * Every value is a bound parameter: the operation comes from the caller.
+ */
 std::vector<std::string> policy_parts(const ores::database::context& ctx,
                                       const std::string& operation,
                                       const std::vector<std::string>& cols) {
-    std::string list = "array[]::text[]";
-    if (!cols.empty()) {
-        list = "array[";
-        for (std::size_t i = 0; i < cols.size(); ++i)
-            list += std::string(i ? ",'" : "'") + cols[i] + "'";
-        list += "]::text[]";
-    }
-    return db::execute_raw_string_query(
+    std::string list = "{";
+    for (std::size_t i = 0; i < cols.size(); ++i)
+        list += (i ? ",\"" : "\"") + cols[i] + "\"";
+    list += "}";
+
+    std::vector<std::string> codes;
+    const auto rows = db::execute_parameterized_multi_column_query(
         ctx,
-        std::string("select ores_inbox_policy_parts_fn('") + entity_type + "','" + operation +
-            "'," + list + ")",
+        "select p from ores_inbox_policy_parts_fn($1, $2, $3::text[]) as p",
+        {entity_type, operation, list},
         log(),
         "Reading the parts the policy names");
+    for (const auto& row : rows) {
+        if (!row.empty() && row[0])
+            codes.push_back(*row[0]);
+    }
+    return codes;
 }
 
 }
@@ -239,6 +250,9 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
         }
         // A failed statement aborts the transaction until the savepoint is
         // rolled back, so a refusal rolls back and the next line starts clean.
+        // If the savepoint statement itself fails the transaction is
+        // unusable: the exception leaves the preview and the unit of work
+        // rolls back.
         in_transaction(ctx,
                        std::string(out.refusal.empty() ? "release savepoint " :
                                                          "rollback to savepoint ") +
@@ -266,6 +280,9 @@ book_proposal book_proposal_service::raise(const std::vector<domain::book_change
         return out;
     }
 
+    // The preview and the raise are separate transactions, so a book can
+    // change between them. The stored base version is then stale, and the
+    // apply re-checks it against the live row before it writes.
     out.preview = preview(lines);
     if (out.preview.refused()) {
         out.message = "A change was refused. Nothing was raised.";
@@ -301,7 +318,10 @@ book_proposal book_proposal_service::raise(const std::vector<domain::book_change
             row.line_no = line_no;
             row.modified_by = ctx.actor();
             row.performed_by = ctx.service_account();
-            row.change_reason_code = "system.new_record";
+            // The maker's reason and commentary are the intent the apply
+            // replays, so they are kept. A line with none takes the default.
+            if (row.change_reason_code.empty())
+                row.change_reason_code = "system.new_record";
         }
         repository::book_change_repository{}.write(ctx, rows);
         uow.commit();

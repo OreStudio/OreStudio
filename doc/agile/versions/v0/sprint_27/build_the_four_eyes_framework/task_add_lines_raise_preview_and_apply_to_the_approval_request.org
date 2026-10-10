@@ -102,7 +102,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Operation text goes into the policy SQL unescaped | book_proposal.cpp | Accept | The query binds the entity type, operation and columns as parameters. A test sends a hostile operation and it is refused. |
+| 2 | Raise overwrites the maker's reason code | book_proposal.cpp | Accept | The stored line keeps the maker's reason and commentary, and takes the default only when empty. |
+| 3 | Preview and raise are separate transactions | book_proposal.cpp | Accept | A comment states it. The apply task re-checks the base version. |
+| 4 | Policy read may use another connection | book_proposal.cpp | Accept | The helper sets the caller's tenant and party on its own connection. A test shows a tenant's own policy row adds a part. |
+| 5 | Savepoint failure is not handled | book_proposal.cpp | Accept | A comment states that the unit of work rolls back. |
+| 6 | Column table repeats the book schema | book_proposal.cpp | Decline | Only a column the policy names can gate a change. The next gate task adds the generated list. |
+| 7 | No tests for empty lines or no reason | tests | Accept | Added. |
 
 * Result
 
@@ -114,7 +120,7 @@ A maker can propose changes to books as typed lines. The preview and the raise a
 - A line number is unique inside a request. The derived model declares the request and line number as a natural key, and the generator emits the unique index.
 - The policy names the book's columns. The kind =refdata.book_change= and the function =ores_inbox_policy_parts_fn= are new.
 
-Evidence: ten new =[book_proposal]= cases pass (30 assertions) on a recreated database. They cover a valid new book and its three parts, a preview that writes nothing, a refused line followed by a good line, a stale version, a one-column change naming one part, a raise that writes the request, parts and line, a refused line that raises nothing, a change no policy row gates, a duplicate line number, and a line for an unknown request. The generated =book_change= test and the 20 =[approval]= cases still pass. The cmake source, populate reference, handler permission, test case reachability, pasted block symbol and derived-model checks pass.
+Evidence: thirteen =[book_proposal]= cases pass (38 assertions) on a recreated database. They cover a valid new book and its three parts, a preview that writes nothing, a refused line followed by a good line, a stale version, a one-column change naming one part, a raise that writes the request, parts and line, a refused line that raises nothing, a change no policy row gates, a duplicate line number, and a line for an unknown request. The generated =book_change= test and the 20 =[approval]= cases still pass. The cmake source, populate reference, handler permission, test case reachability, pasted block symbol and derived-model checks pass.
 
 The ER diagram check on main failed for the parts and policies tables of the earlier task, which had no row-level security. This task adds a tenant policy to both. A tenant reads its own rows and the system tenant's, and writes only its own. The pending book lines also gain the party and sandbox policies the book has. The ER diagrams are regenerated, and the strict parse and the diagram check pass.
 

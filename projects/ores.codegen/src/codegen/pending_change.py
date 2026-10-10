@@ -94,6 +94,20 @@ The version of the live row the maker read, or zero for a new row.
 0
 #+end_src
 
+** applied
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Whether the apply has written this line. A line is applied once.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
 """
 
 
@@ -105,6 +119,7 @@ FOREIGN_KEYS_HEAD = """\
 :table:         ores_inbox_approval_requests_tbl
 :target_column: id
 :nullable:      false
+:list_by:       true
 :error_message: Invalid request_id: %. No approval request found with this id.
 :END:
 

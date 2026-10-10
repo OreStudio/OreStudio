@@ -81,6 +81,8 @@ public:
     get_book_change(const messaging::get_book_change_request& request);
     messaging::get_many_book_changes_response
     get_many_book_changes(const messaging::get_many_book_changes_request& request);
+    messaging::list_by_request_id_book_changes_response list_by_request_id_book_changes(
+        const messaging::list_by_request_id_book_changes_request& request);
     messaging::list_book_change_versions_response
     list_book_change_versions(const messaging::list_book_change_versions_request& request);
     messaging::get_book_change_version_response
@@ -102,6 +104,27 @@ public:
      * @return Total number of active book changes.
      */
     std::uint32_t count_book_changes();
+
+
+    /**
+     * @brief Lists book changes filtered by request_id, with pagination.
+     *
+     * @param request_id The request_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching book changes for the requested page.
+     */
+    std::vector<domain::book_change> list_book_changes_by_request_id(const std::string& request_id,
+                                                                     std::uint32_t offset,
+                                                                     std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active book changes filtered by request_id.
+     *
+     * @param request_id The request_id to filter by.
+     * @return Total number of matching book changes.
+     */
+    std::uint32_t count_book_changes_by_request_id(const std::string& request_id);
 
 
     /**

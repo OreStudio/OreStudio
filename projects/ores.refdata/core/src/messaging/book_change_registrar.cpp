@@ -61,6 +61,10 @@ register_book_change_handlers(ores::nats::service::client& nats,
             h->get_many_book_changes(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        list_by_request_id_book_changes_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_request_id_book_changes(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         list_book_change_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->list_book_change_versions(std::move(msg));
         }));

@@ -95,6 +95,12 @@ book_change_service::list_book_changes(const messaging::list_book_changes_reques
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->request_id_one_of &&
+        request.filter->request_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "request_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -109,6 +115,39 @@ book_change_service::list_book_changes(const messaging::list_book_changes_reques
     response.book_changes = repo_.read_latest(
         ctx_, request.offset, request.limit, request.order, request.filter, as_of);
     response.total = repo_.get_total_book_change_count(ctx_, request.filter, as_of);
+    return response;
+}
+
+messaging::list_by_request_id_book_changes_response
+book_change_service::list_by_request_id_book_changes(
+    const messaging::list_by_request_id_book_changes_request& request) {
+    messaging::list_by_request_id_book_changes_response response;
+    if (!request.order.field.empty() &&
+        !repository::book_change_repository::is_sortable(request.order.field)) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "book changes", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->request_id_one_of &&
+        request.filter->request_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "request_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result = refuse(outcome_code::scope_not_supported, {.entity = "book changes"});
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.request_id);
+    response.book_changes = repo_.read_latest_by_request_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_book_change_count_by_request_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -189,6 +228,18 @@ std::vector<domain::book_change> book_change_service::list_book_changes(std::uin
 std::uint32_t book_change_service::count_book_changes() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total book changes count";
     return repo_.get_total_book_change_count(ctx_);
+}
+
+
+std::vector<domain::book_change> book_change_service::list_book_changes_by_request_id(
+    const std::string& request_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing book changes by request_id: " << request_id;
+    return repo_.read_latest_by_request_id(ctx_, request_id, offset, limit);
+}
+
+std::uint32_t book_change_service::count_book_changes_by_request_id(const std::string& request_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total book changes count by request_id: " << request_id;
+    return repo_.get_total_book_change_count_by_request_id(ctx_, request_id);
 }
 
 

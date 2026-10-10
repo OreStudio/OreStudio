@@ -48,6 +48,7 @@
 \ir ./inbox_approval_decisions_notify_trigger_create.sql
 \ir ./inbox_approval_decision_rules_create.sql
 \ir ./inbox_approval_decide_fn_create.sql
+\ir ./inbox_approval_fail_apply_fn_create.sql
 \ir ./inbox_approval_policy_parts_fn_create.sql
 \ir ./inbox_approval_expire_fn_create.sql
 

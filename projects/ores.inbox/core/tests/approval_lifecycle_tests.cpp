@@ -359,3 +359,40 @@ TEST_CASE("the_sweep_closes_what_ran_out_and_leaves_what_did_not", tags) {
     CHECK_FALSE(closed(sweep.expire_overdue(), overdue_id));
     CHECK(lifecycle.request(overdue_id)->version == after->version);
 }
+
+TEST_CASE("an_approved_request_that_cannot_be_applied_ends_in_apply_failed", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto decider = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+    const auto raised = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Please", asker.id);
+    const auto id = boost::uuids::to_string(raised.id);
+    REQUIRE(lifecycle.decide(id, raised.version, "approve", decider.id, "").state_code ==
+            "approved");
+
+    const auto failed = lifecycle.fail_apply(id, "Line 2: the book changed since it was read");
+
+    CHECK(failed.outcome == "ok");
+    CHECK(failed.state_code == "apply_failed");
+    const auto stored = lifecycle.request(id);
+    CHECK(stored->state_code == "apply_failed");
+    CHECK(stored->change_commentary == "Line 2: the book changed since it was read");
+
+    // A repeated call changes nothing.
+    const auto again = lifecycle.fail_apply(id, "Another reason");
+    CHECK(again.outcome == "ok");
+    CHECK(lifecycle.request(id)->version == stored->version);
+}
+
+TEST_CASE("a_request_that_is_not_approved_cannot_fail_to_apply", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+    const auto raised = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Please", asker.id);
+    const auto id = boost::uuids::to_string(raised.id);
+
+    const auto refused = lifecycle.fail_apply(id, "Not applied");
+
+    CHECK(refused.outcome == "conflict");
+    CHECK(lifecycle.request(id)->state_code == "waiting");
+}

@@ -264,6 +264,27 @@ decision_result approval_lifecycle::decide(const std::string& request_id,
                            .version = row[3] ? std::stoi(*row[3]) : 0};
 }
 
+decision_result approval_lifecycle::fail_apply(const std::string& request_id,
+                                               const std::string& reason) {
+    BOOST_LOG_SEV(lg(), info) << "Request " << request_id << " could not be applied: " << reason;
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "select outcome, message, state_code, version::text "
+        "from ores_inbox_fail_apply_fn($1::uuid, $2, $3)",
+        {request_id, reason, ctx_.actor().empty() ? ctx_.service_account() : ctx_.actor()},
+        lg(),
+        "Moving an approved request to apply_failed");
+
+    if (rows.empty() || rows.front().size() != 4)
+        throw std::runtime_error("The apply failure returned no result.");
+
+    const auto& row = rows.front();
+    return decision_result{.outcome = row[0].value_or(""),
+                           .message = row[1].value_or(""),
+                           .state_code = row[2].value_or(""),
+                           .version = row[3] ? std::stoi(*row[3]) : 0};
+}
+
 request_page approval_lifecycle::queue(const std::vector<std::string>& kind_codes,
                                        const boost::uuids::uuid& excluding,
                                        int offset,

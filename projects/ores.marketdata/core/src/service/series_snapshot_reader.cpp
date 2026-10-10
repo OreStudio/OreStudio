@@ -27,6 +27,7 @@
 #include "ores.marketdata.core/service/series_shape.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <cstddef>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -69,21 +70,26 @@ read_provenance(ores::database::context ctx,
     const auto annexes =
         repository::observation_lineage_repository{}.read_latest_for_points(ctx, series_id, keys);
 
+    std::map<std::pair<std::string, std::chrono::system_clock::time_point>,
+             const domain::observation_lineage*>
+        annex_of;
+    for (const auto& annex : annexes)
+        annex_of.emplace(std::pair{annex.oresmd_uri, annex.observation_datetime}, &annex);
+
     std::vector<messaging::point_provenance> result(node_count);
     for (std::size_t i = 0; i < placed.size(); ++i) {
         auto& entry = result[placed_nodes[i]];
         entry.source_kind = "quoted";
-        for (const auto& annex : annexes) {
-            if (annex.oresmd_uri != placed[i].observation.oresmd_uri ||
-                annex.observation_datetime != placed[i].observation.observation_datetime)
-                continue;
-            entry.source_kind = annex.point_source_kind;
-            entry.modified_by = annex.modified_by;
-            entry.change_reason_code = annex.change_reason_code;
-            entry.change_commentary = annex.change_commentary;
-            entry.recorded_at = annex.recorded_at;
-            break;
-        }
+        const auto found = annex_of.find(
+            {placed[i].observation.oresmd_uri, placed[i].observation.observation_datetime});
+        if (found == annex_of.end())
+            continue;
+        const auto& annex = *found->second;
+        entry.source_kind = annex.point_source_kind;
+        entry.modified_by = annex.modified_by;
+        entry.change_reason_code = annex.change_reason_code;
+        entry.change_commentary = annex.change_commentary;
+        entry.recorded_at = annex.recorded_at;
     }
     return result;
 }

@@ -412,7 +412,8 @@ export interface GetCurveSnapshotRequest {
      * @brief Whether the response states where each value came from.
      *
      * The annex is read only when this is set, so a caller that does not ask pays
-     * nothing for it.
+     * nothing for it. The provenance is the current annex row of each point shown, the
+     * same generation the values come from, not the row as it stood at the instant.
      */
     include_provenance: boolean;
 }

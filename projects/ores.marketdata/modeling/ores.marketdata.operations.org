@@ -1080,14 +1080,16 @@ The object, as the typed identity the resolver already takes.
 
 Whether the response states where each value came from. The annex is cold and
 holds only the derived and manual points, so a caller that does not ask pays
-nothing for it.
+nothing for it. The provenance is the current annex row of each point shown, the
+same generation the values come from, not the row as it stood at the instant.
 
 #+begin_src cpp :name comment
 /**
  * @brief Whether the response states where each value came from.
  *
  * The annex is read only when this is set, so a caller that does not ask pays
- * nothing for it.
+ * nothing for it. The provenance is the current annex row of each point shown, the
+ * same generation the values come from, not the row as it stood at the instant.
  */
 #+end_src
 

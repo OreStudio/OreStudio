@@ -19,10 +19,12 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.marketdata.core/service/series_evolution_reader.hpp"
+#include "ores.marketdata.core/service/series_shape.hpp"
 #include "ores.marketdata.core/service/series_snapshot_reader.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -245,11 +247,19 @@ TEST_CASE("a_snapshot_asked_for_provenance_names_the_source_of_each_value", tags
         ores::marketdata::repository::market_series_identity_reader{}.read(h.context(), identity);
     REQUIRE(series.size() == 1);
     ores::marketdata::repository::market_observation_repository obs_repo;
+    // The point to over-key is the one whose expiry coordinate is 2Y at the ATM
+    // strike, found by its coordinates and not by the layout of its URI.
     std::string over_keyed_uri;
-    for (const auto& obs : obs_repo.read_latest_for_series(h.context(), series.front().id))
-        if (obs.oresmd_uri.find("maturity=2Y") != std::string::npos ||
-            obs.oresmd_uri.find("expiry=2Y") != std::string::npos)
+    for (const auto& obs : obs_repo.read_latest_for_series(h.context(), series.front().id)) {
+        const auto parsed = ores::marketdata::datum::oresmd_uri_codec::read(obs.oresmd_uri);
+        REQUIRE(parsed);
+        const auto expiry = ores::marketdata::service::coordinate_of(
+            *parsed, *ores::marketdata::datum::field_named("expiry"));
+        const auto strike = ores::marketdata::service::coordinate_of(
+            *parsed, *ores::marketdata::datum::field_named("strike_label"));
+        if (expiry == "2Y" && strike == "ATM")
             over_keyed_uri = obs.oresmd_uri;
+    }
     REQUIRE_FALSE(over_keyed_uri.empty());
 
     const auto at = instant("2017-09-11T12:00:00Z");

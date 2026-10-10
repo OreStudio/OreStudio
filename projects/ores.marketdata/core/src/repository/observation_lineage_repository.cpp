@@ -43,6 +43,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
+#include <set>
 #include <sqlgen/delete_from.hpp>
 #include <sqlgen/dynamic/Condition.hpp>
 #include <sqlgen/dynamic/OrderBy.hpp>
@@ -431,15 +432,14 @@ std::vector<domain::observation_lineage> observation_lineage_repository::read_la
         lg(),
         "Reading latest observation lineages for points");
 
+    std::set<std::pair<std::string, std::chrono::system_clock::time_point>> stated;
+    for (const auto& point : points)
+        stated.emplace(point.oresmd_uri, point.observation_datetime);
+
     std::vector<domain::observation_lineage> result;
-    for (const auto& row : rows) {
-        const auto stated = std::ranges::any_of(points, [&](const point_key& point) {
-            return point.oresmd_uri == row.oresmd_uri &&
-                   point.observation_datetime == row.observation_datetime;
-        });
-        if (stated)
+    for (const auto& row : rows)
+        if (stated.contains({row.oresmd_uri, row.observation_datetime}))
             result.push_back(row);
-    }
     return result;
 }
 

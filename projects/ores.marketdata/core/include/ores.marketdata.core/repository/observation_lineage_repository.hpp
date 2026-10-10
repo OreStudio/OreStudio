@@ -207,6 +207,15 @@ public:
         std::string oresmd_uri;
     };
 
+    /**
+     * @brief The current annex rows of the stated points, one per point that has one.
+     *
+     * A point with no row is quoted, so the answer is shorter than @p points when any
+     * is. The query takes the stated URIs and the span of the stated instants, which
+     * is a cross-product, and the rows are then narrowed to the exact points, so a
+     * wide span can read more rows than it returns. The rows are the current ones,
+     * the same generation the as-of observation read uses for its values.
+     */
     std::vector<domain::observation_lineage> read_latest_for_points(
         context ctx, const boost::uuids::uuid& series_id, const std::vector<point_key>& points);
 

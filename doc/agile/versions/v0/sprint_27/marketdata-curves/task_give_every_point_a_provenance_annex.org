@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-every-point-a-provenance-annex
+#+pr: 3054
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A reader can tell a quoted point from a derived one from a manual override, and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -44,9 +44,25 @@ A reader can tell a quoted point from a derived one from a manual override, and 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The annex already exists. =observation_lineage= carries =point_source_kind=
+(=derived= or =manual=, with quoted as the absence of a row), the actor, the
+reason and the record time, and =write_manual_point= writes it with the point in
+one transaction. What no read did was return it. So the work is the read:
+
+1. Add =observation_lineage_repository::read_latest_for_points=, which reads the
+   current annex rows of the points a caller states and nothing else.
+2. Add =include_provenance= to the snapshot request and a =provenance= entry per
+   node to the response, in the operations model, then regenerate the header and
+   its TypeScript twin.
+3. In =series_snapshot_reader=, read the annex only when asked and only for the
+   points the read placed.
+4. Test quoted, manual and hole entries, and that a caller who does not ask gets
+   none.
+
+Decision: provenance rides on the snapshot, because the snapshot is the read that
+returns the value, and a flag keeps the annex off the point path. The evolution
+read does not carry it. It returns many instants, so a per-instant annex read
+would need its own decision.
 
 * Measurements
 
@@ -60,7 +76,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| marketdata core suite | 161 test cases, 6642 assertions, all pass | =ores.marketdata.core.tests= on a recreated database | =fc09a30ec2= plus the working tree |
 
 * Notes
 
@@ -79,12 +95,42 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3054][#3054]] | [marketdata] Return a point's provenance with the snapshot |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The annex read ignores =as_of= | series_snapshot_reader.cpp | Declined, documented | The values come from current rows, so the annex is current too, and the handler always reads as of now. The limit is stated on =include_provenance= and in the knowledge doc. |
+| 2 | Matching is quadratic | observation_lineage_repository.cpp, series_snapshot_reader.cpp | Accepted | Both use a set or map keyed on the URI and the instant. |
+| 3 | The query over-fetches | observation_lineage_repository.hpp | Accepted | The declaration comment in the lineage model states the post-filter. |
+| 4 | The test guesses URI key names | service_series_snapshot_reader_tests.cpp | Accepted | The test finds the point by its expiry and strike coordinates. |
+| 5 | A hole and the epoch | snapshots_and_cuts.org | Accepted | The knowledge doc tells a client to test =source_kind=, never =recorded_at=. |
+| 6 | No doc comment on read_latest_for_points | observation_lineage.org | Accepted | Added, with the meaning of an absent row. |
 
 * Result
+
+A reader can now tell a quoted point from a derived one from a manual override,
+and name who over-keyed a manual point and why.
+
+The annex was already one table. =observation_lineage= carries =point_source_kind=,
+the actor, the reason and the record time, and =write_manual_point= writes it with
+the point in one transaction. A point with no row is quoted. What no read did was
+return it, so this task adds the read.
+
+- =get_curve_snapshot_request= takes =include_provenance=. The response then
+  carries one =point_provenance= per node: the source kind, who set the point, the
+  reason code and commentary, and when the annex row was recorded. A hole has an
+  empty entry.
+- =observation_lineage_repository::read_latest_for_points= reads the annex rows of
+  the points the snapshot placed and nothing else. The snapshot reader calls it
+  only when asked, so a caller that does not ask pays nothing.
+- The method is in the lineage model, not hand-written, so the codegen drift check
+  stays clean. The header and its TypeScript twin regenerate from the operations
+  model.
+
+Two tests cover it. One reads a quoted node, a manual node with its actor, reason
+and time, and a hole. The other shows a caller that does not ask gets none.
+
+Not done here. The evolution read does not carry provenance. It returns many
+instants, so a per-instant annex read needs its own decision.

@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: C5846977-529F-4E36-A9DB-EA48A7476E6F
+:END:
+#+title: Book types and the controls on each
+#+description: Which kinds of book the system holds, which process opens, changes, moves and closes each, and who must approve each act.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:trading:book:controls:four-eyes:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+* Summary
+
+The system holds two kinds of book, and the controls on a book follow from
+which kind it is. An *official book* maps to a book in the general ledger,
+is created by Finance, and goes through the heavyweight multi-party process
+the lifecycle note describes. A *virtual book* is the one exception: the
+trading system creates it inside a [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandbox]], it is never mapped to the
+ledger, and it holds no position of the firm. Within the official books the
+classification axes (regulatory type, ledger feed, purpose) say what a book
+is for, and they do not change which process opens it. The existing notes
+state the controls for opening and closing an official book and for opening a
+sandbox. They were silent on changing a book, moving a book under another
+portfolio, granting rights and creating a portfolio, and the product owner has
+decided each of those below: every act that changes an official book or its
+rights is gated by a second person, and sandboxes are not.
+
+* Detail
+
+** The two kinds of book
+
+| Kind | Maps to the ledger | Created by | Lives in |
+|------+--------------------+------------+----------|
+| Official book | Yes. Its ledger feed is automatic or manual | Finance, after the multi-party process | The firm's portfolio tree |
+| Virtual book | Never. Its ledger feed is none | The trading system, for the user or process that needs it | Exactly one sandbox's own portfolio tree |
+
+The sandbox note states the split in one sentence: every book the firm trades
+in maps to a book in the ledger and is created by Finance, and the trading
+system holds a view of them and cannot create one. A virtual book is the one
+exception ([[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]], /Virtual books/). A *dynamic book* is neither: it is a saved
+filter that behaves like a book without being one, and it has no lifecycle
+of its own ([[id:44C9D99B-979B-43AB-90BC-AF7E7D8BDE7C][Dynamic books]]).
+
+** What a book is for: the classification, not the kind
+
+An official book carries three independent classification fields and one
+flag ([[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]]). They say what the book is for. None of them selects
+a different opening process.
+
+| Field | Values | What it decides |
+|-------+--------+-----------------|
+| Regulatory book type | Trading, Banking | The capital treatment ([[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB boundary]]) |
+| Ledger feed type | None, Automatic, Manual | How the ledger balance is fed. A manual ledger book is updated by hand. A virtual book has none |
+| Book purpose type | Trading, Reserve, Funding, Wash, Write-off, Test, Sales, Sweep target, Remittance target | The one risk role the book plays |
+| Sweepable | yes or no | Whether the spot sweep centralises its cash |
+
+A wash book has an extra property the system enforces: every client trade
+booked into it is offset by a generated back-to-back trade that routes the risk
+into a designated risk book ([[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]]). A test book is an
+official book "isolated from the main book population, ideally owned by test
+entities restricted to IT users". It is not a virtual book, because it is not
+created by the system inside a sandbox.
+
+** The controls the existing notes state
+
+*** Opening an official book
+
+The process is controlled and multi-party ([[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]):
+
+1. The desk initiates the request. The desk cannot create or enrich a book.
+2. A controller reviews and approves it. This step exists so that a desk
+   cannot authorise its own new book.
+3. Finance, Market Risk and Operations enrich the book in parallel, and each
+   approves its own contribution. No one function's sign-off implies the others.
+4. The access review begins. Operations sets the book up on the booking
+   systems and the ledger counterpart is set up.
+
+The system must track where a book sits in this process and who still needs to
+authorise or enrich it.
+
+*** Closing an official book
+
+A book closes only when it is flat, meaning every balance held against it is
+zero. Closure runs as a clean-down: all live deals move to a different book and
+the closed book is retired, not deleted. Finance executes the closure
+([[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]).
+
+*** Opening and ending a virtual book
+
+A virtual book has no approval chain. A trader opens a sandbox at a node of the
+official tree only where they hold the right to open sandboxes there, and the
+sandbox's virtual books are created for them. The owner confirms the
+sandbox is still needed by its review date, or archives it, and an archived
+sandbox is read only. Nothing in it is deleted ([[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]).
+
+*** Access to a book
+
+Access to an official book is permissioned at a fine grain and lapses unless
+renewed, and Operations administers the recurring review ([[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and
+permissions]]). A right at a portfolio node covers every node below it. A
+sandbox's visibility follows its anchor.
+
+** Decisions on the acts the notes do not state
+
+The existing notes are silent on these acts. The product owner took the
+recommendation for each on 2026-10-10, and they are the rule the prototypes and
+the screens follow. Each gated act raises an approval request, and the person
+who decides is never the person who asked.
+
+| # | Act | Decision | Who asks | Who decides |
+|---+-----+----------+----------+-------------|
+| 1 | Change an official book after it is live | Gated by the function that owns the field. A description-only edit is not gated | The desk or the owning function | Finance for the functional currency, GL account reference, cost center and owner unit. Market Risk for the regulatory type, purpose, rates centre and sweepable flag. Operations for the allowed currencies and products and the status. A status change that closes the book is not a status edit: it follows the closing process above, with the flat check, and Finance executes it |
+| 2 | Move a book under another portfolio | Gated. A move changes who can see the book, because a right at a node covers everything below it | The desk | Operations, who administers book access |
+| 3 | Grant or remove a right at an official portfolio node | Gated, as the deferred HBAC capture proposes | The head of desk | Operations |
+| 4 | Change a book's classification | Gated. This is the same ownership as row 1, stated for the axes: regulatory type and purpose to Market Risk, ledger feed to Finance | The desk or the owning function | Market Risk or Finance |
+| 5 | Open a test, wash, reserve, funding, write-off, sweep-target or remittance-target book | The ordinary opening process. A purpose adds no approver, because Market Risk already establishes the classification and Finance the ledger set-up. A test book is owned by IT users | The desk | The opening chain |
+| 6 | Create an official portfolio | Gated, because a portfolio is where rights inherit from | The desk | Operations |
+| 7 | The book structure screen's "new book" | It is the desk's request that starts the opening process. It does not create a live book. The book goes live when the chain completes | The desk | The opening chain |
+
+*Virtual books and sandboxes are not gated.* A trader creates a sandbox and its
+virtual books at a node where they hold the right to open sandboxes, with no
+approval. A sandbox's portfolios and its rights follow the sandbox, not this
+table. Nothing in a sandbox reaches the ledger, official risk or reporting.
+
+** The controls on the other reference-data journeys
+
+The same rule reaches the four other refdata journeys: a change that touches
+legal-entity, convention or tenor data needs a second person from the function
+that owns it, the person who asks cannot decide, and a request applies only when
+every function it names has approved. The decisions for books above were taken by
+the product owner. The rows below are the working rule the prototypes draw, taken
+from the owner of each kind of data, and the product owner confirms them at
+sign-off.
+
+| Journey | Act | Needs a second person | Who decides |
+|---------+-----+-----------------------+-------------|
+| Onboard a counterparty | A new counterparty | Yes | Operations |
+| Onboard a counterparty | Change a counterparty's identity, parent, status or business centre | Yes | Operations |
+| Onboard a counterparty | Change an identifier | Yes | Operations |
+| Onboard a counterparty | Change a netting agreement, a netting set or a collateral term | Yes | Market Risk |
+| Onboard a counterparty | Link or unlink a party that may see it | Yes | Operations |
+| Onboard a counterparty | Change a contact | No | none |
+| Keep a party's details current | Change the party's names, type, status, parent, centre or registration default | Yes | Finance |
+| Keep a party's details current | Change an identifier | Yes | Finance |
+| Keep a party's details current | Close or open a country or currency membership | Yes | Operations |
+| Keep a party's details current | Link or unlink a counterparty | Yes | Operations |
+| Keep a party's details current | Reclassify a business unit | Yes | Finance |
+| Keep a party's details current | Change a contact | No | none |
+| Define the conventions for an instrument | A new convention, or a change to its terms | Yes | Market Risk |
+| Define how tenors resolve | A new tenor, or a change to a tenor, a convention or a convention's set | Yes | Market Risk |
+
+A contact and a description are not material, so they are written directly. A
+convention or a tenor changes the date or the rate a trade, a curve or a report
+reads, so Market Risk, which owns how the book is risk-managed, decides it. A
+party is the tenant's own legal entity, which starts the accounting hierarchy
+that Finance owns ([[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]]), so Finance decides its identity. A
+counterparty is the middle office's to keep, so Operations decides it, and
+Market Risk decides the agreements and collateral that set the exposure to it.
+
+** Who plays each part in Acme
+
+The Acme Corporation dataset has 58 staff accounts across three legal entities
+and a group account, under three roles: Trading (30), Operations (16) and Viewer
+(12). The roles the system seeds are SuperAdmin, TenantAdmin, Trading,
+Operations, Viewer, Support and Quant. No role is named for a controller, for
+Finance or for Market Risk. The table matches each part the controls name to
+the accounts Acme holds. It was read from =accounts.json= and the role seed.
+
+| Part | Needed for | Acme today | Gap |
+|------+------------+------------+-----|
+| Desk requester | Initiating a new book; proposing a rights grant | Head of Desk (9) and Head of Trading (3), role Trading | none |
+| Controller | The first independent check on a new book | No account, no job title, no role | *missing* |
+| Finance | Wiring the book into the accounting hierarchy; executing a closure | No account. A Group Treasury unit exists, and no account sits in it as Finance | *missing* |
+| Market Risk | Classification, capital treatment, rates centre | Head of Market Risk (3) and Head of Risk (3), role Operations | exists, but shares a role with Operations |
+| Operations | Allowed currencies and products; set-up on the booking systems; access review | Head of Middle Office (3) and COO (3), role Operations | exists |
+| A second person for each part | A decider who is not the asker | The heads above come in threes, one per entity. Controller and Finance have none | *missing* for Controller and Finance |
+| Sandbox user | Opening a sandbox and its virtual books | Traders and analysts hold accounts. No account is a quant or an IT user, and the Quant role has no Acme account | *missing* |
+| Test-book owner | Owning a test book, "restricted to IT users" | No IT account | *missing* |
+| Tenant administrator | Administering the tenant | Not in the dataset. It comes from tenant provisioning | check |
+
+Two further facts matter before the prototypes are drawn. The deciders in an
+approval request are chosen by permission, so a Controller and a Finance part
+need either their own roles or an agreed permission on an existing role. And
+the seeded roles do not separate Market Risk from Operations, so a
+Market Risk approval and an Operations approval would be decided by the same
+role unless that changes. The task [[id:C37EA3F0-1A82-4E42-A21B-599C6873191A][Add the missing book-control actors to Acme]] adds the missing
+accounts. The recommendation, taken as the working rule, is a role for each of
+Controller, Finance and Market Risk that holds the permission to decide the
+approvals its part owns, and the existing Operations role keeps Operations'.
+
+** How the controls map onto approval requests
+
+Every second-person control above is one case of the approval request: a record
+for anything that waits on a person's decision, with a rule that the person who
+decides is not the person who asked ([[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]). Each gated act
+becomes a request kind. The multi-party opening is a request that several
+deciders must each answer. The deferred [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][four-eyes authorisation framework]]
+is what would hold the pending change and apply it when the decision lands, and
+it is not built.
+
+* See also
+
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — the hub note.
+- [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] — opening, moving deals, closing.
+- [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] — the independent axes.
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — virtual books and the sandbox right.
+- [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] — rights and the periodic review.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record a second-person control uses.
+- [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][Implement four-eyes authorisation framework]] — the deferred item.
+- [[id:AA65B657-A731-41CE-9891-24B380944F36][Add HBAC support for books and portfolios]] — the maker and checker for rights.

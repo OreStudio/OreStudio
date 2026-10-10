@@ -37,6 +37,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Button, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
 import { HistoryPanel } from '../refdata/HistoryPanel.js';
+import { Picker, optionsOf } from './pickers.js';
 import {
     PARTY_ENTITY_TYPE,
     cardinalityProblems,
@@ -131,42 +132,6 @@ function refusalOf(
         message: outcome.message,
         fields: outcome.fields,
     };
-}
-
-function optionsOf(
-    rows: readonly { readonly code: string; readonly name: string }[],
-): readonly { readonly value: string; readonly label: string }[] {
-    return rows.map((row) => ({ value: row.code, label: row.name === '' ? row.code : row.name }));
-}
-
-function Picker({
-    label,
-    value,
-    options,
-    empty,
-    onChange,
-}: {
-    readonly label: string;
-    readonly value: string;
-    readonly options: readonly { readonly value: string; readonly label: string }[];
-    readonly empty?: string;
-    readonly onChange: (value: string) => void;
-}): ReactNode {
-    return (
-        <Field label={label}>
-            <Select value={value} onChange={(event) => onChange(event.target.value)}>
-                {empty !== undefined && <option value="">{empty}</option>}
-                {value !== '' && !options.some((option) => option.value === value) && (
-                    <option value={value}>{value}</option>
-                )}
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
-                ))}
-            </Select>
-        </Field>
-    );
 }
 
 /** Stands above every step once a party is open, so the record stays in view. */

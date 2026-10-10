@@ -1007,3 +1007,46 @@ describe('OresClient reading inside a tenant', () => {
         expect(client.token).toBe('token-one');
     });
 });
+
+describe('the service heartbeat', () => {
+    it('publishes the message on the heartbeat subject, encoded as every other body is', () => {
+        const published: { relative: string; body: Uint8Array }[] = [];
+        const transport: Transport = {
+            request: () => Promise.reject(new Error('a heartbeat is not asked for')),
+            close: () => Promise.resolve(),
+            publish: (relative, body) => {
+                published.push({ relative, body });
+            },
+        };
+        const message = {
+            service_name: 'ores.web.service',
+            instance_id: '0197d2a1-0000-7000-8000-000000000001',
+            host_id: '',
+            version: '0.0.27',
+        };
+
+        new OresClient({ transport }).publishServiceHeartbeat(message);
+
+        expect(published).toHaveLength(1);
+        expect(published[0]?.relative).toBe('telemetry.v1.ops.service_heartbeat');
+        expect(new WireCodec('msgpack').decode(published[0]?.body ?? new Uint8Array())).toEqual(
+            message,
+        );
+    });
+
+    it('does nothing on a transport that cannot publish', () => {
+        const transport: Transport = {
+            request: () => Promise.reject(new Error('unused')),
+            close: () => Promise.resolve(),
+        };
+
+        expect(() =>
+            new OresClient({ transport }).publishServiceHeartbeat({
+                service_name: 'ores.web.service',
+                instance_id: 'x',
+                host_id: '',
+                version: '0.0.27',
+            }),
+        ).not.toThrow();
+    });
+});

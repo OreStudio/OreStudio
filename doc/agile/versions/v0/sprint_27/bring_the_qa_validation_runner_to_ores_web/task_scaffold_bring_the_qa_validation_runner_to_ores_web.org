@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: B27572F6-212D-49DB-90D5-1A36A6C2A9A4
+:END:
+#+title: Task: Scaffold story: Bring the QA validation runner to ores.web
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
+#+owner: marco
+#+branch: feature/bring-the-qa-validation-runner-to-ores-web
+#+pr: 3061
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the story, its prototype task and the sprint wiring, and record the arc the story starts.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The story page records the arc, the decisions and the open questions.
+- The prototype task exists and the sprint lists the story.
+- The docs check gate passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3061][#3061]] | [agile] Scaffold the Bring the QA validation runner to ores.web story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Story state contradicts its status and the sprint row | story.org, sprint.org | Accept | The story is STARTED, its Now row says the scaffold is in review, and the sprint row is STARTED. |
+| 2 | Story Next row is stale | story.org | Accept | Next now says to prototype the runner. |
+| 3 | Prototype task Next row says begin implementation | prototype task | Accept | Next now says to draw the prototype. |
+| 4 | Scaffold task goal and acceptance are placeholders | scaffold task | Accept | Both are filled in. |
+| 5 | Prototype task copies the story's goal and acceptance | prototype task | Accept | It has its own, narrower goal and acceptance. |
+| 6 | The arc says the module replaces the old tools now | story.org | Accept | It says story 2 replaces them. |
+| 7 | Goal and decisions disagree on where results go | story.org | Accept | The goal now says compass records results and the prototype confirms it. |
+| 8 | BFF never parses org, yet the browser parses it | story.org | Accept | A note separates display from parsing the tree. The verb is named as a task. |
+| 9 | Table padding is uneven | story.org | Decline | Cosmetic. Compass writes those cells. |
+
+* Result
+
+The story, its prototype task and the sprint wiring exist. The story page records the arc: a regular module for development and testing, three stories, and the decisions on compass as the only writer, on the work tree it reads and on retiring ores.org-js and ores.dsh_kanban.

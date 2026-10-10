@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 4D5ECB2D-7156-49E6-805A-3BE52327DA33
+:END:
+#+title: Task: Summarise the installation on the Operations services screen
+#+description: Open the services screen with an overview: services running of expected, lost, missing, errors and warnings in a range, and version skew. Built from the roster and the logs total, with no new backend.
+#+type: task
+#+level: s1
+#+filetags: :make_the_services_screen_tell_the_truth:sprint_27:v0:
+#+owner: marco
+#+branch: feature/summarise-the-installation-on-the-services-screen
+#+pr: 3053
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0251A201-7674-4ABD-BB5B-7AEC42C88D8D][Make the services screen tell the truth about the installation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A system administrator reads how healthy the installation is before reading the instance table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0251A201-7674-4ABD-BB5B-7AEC42C88D8D][Make the services screen tell the truth about the installation]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The overview states services running of expected, lost, missing, errors and warnings in the chosen range, and version skew.
+- The figures come from the roster read and the logs total, and a failed logs read leaves the roster figures standing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3053][#3053]] | [web] Summarise the installation on the services screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Does the warn level include errors | InstallationHealth.tsx | Declined | Checked: the server filters level = and has a separate minimum level; the two figures do not overlap |
+| 2 | Loading looks like unread | InstallationHealth.tsx | Accepted | A note says could not be read when the read failed; test added |
+| 3 | Page size of one and the total | InstallationHealth.tsx | Declined | Checked: the total is a count with the same filters, not the page size |
+| 4 | Compute runner constant duplicated | ServicesPage.tsx | Accepted | Exported from one place |
+| 5 | Re-export of the query key | ServicesPage.tsx | Accepted | Importers moved; re-export removed |
+| 6 | Links lose the range | InstallationHealth.tsx | Declined | The logs screen keeps its filter in state, not the URL; a separate change |
+| 7 | Zero expected painted green | InstallationHealth.tsx | Accepted | Neutral when nothing is expected; test added |
+| 8 | Range change test | InstallationHealth.test.tsx | Accepted | A test reads the counts of the range given |
+
+* Result
+
+The Operations services screen now opens with an installation overview: services running of those expected, lost, missing, errors and warnings in a chosen range, and the newest release with how many services run an older one. The roster gives the service figures. The logs read gives the error and warning totals, as a read with a page size of one, so no backend changed. Each figure leads to the services or logs screen. A failed logs read leaves the roster figures standing and shows a dash for the counts. The code sits in one hook and one component, InstallationHealth, which the home will reuse. The web package passes 638 tests and the format check. I did not look at the screen in a browser.

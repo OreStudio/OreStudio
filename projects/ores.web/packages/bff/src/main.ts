@@ -22,6 +22,7 @@
 import { parseArgs } from 'node:util';
 import { buildServer } from './server.js';
 import { loadConfig } from './config.js';
+import { releaseVersion } from './heartbeat.js';
 import { loadSiteConfiguration } from './site-config.js';
 
 /**
@@ -55,7 +56,11 @@ async function main(): Promise<void> {
         ...(values.env === undefined ? {} : { environmentId: values.env }),
     });
 
-    const server = buildServer({ config, site });
+    const server = buildServer({
+        config,
+        site,
+        heartbeat: { version: releaseVersion(process.cwd()) },
+    });
 
     // Say which environment this process serves, first thing, because the worst
     // failure mode is not knowing whether you are looking at staging or

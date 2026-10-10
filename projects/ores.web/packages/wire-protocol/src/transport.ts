@@ -57,6 +57,13 @@ export interface Transport {
      * assumed.
      */
     subscribe?(relative: string, onMessage: (payload: Uint8Array) => void): () => void;
+    /**
+     * Sends a message nobody replies to.
+     *
+     * Optional for the same reason as {@link Transport.subscribe}: a transport
+     * that cannot publish is still usable for everything that asks and answers.
+     */
+    publish?(relative: string, body: Uint8Array): void;
 }
 
 /** mTLS material, as file paths or inline PEM. */
@@ -177,6 +184,15 @@ export class NatsTransport implements Transport {
         return () => {
             subscription.unsubscribe();
         };
+    }
+
+    /** Publishes without waiting for an answer, as a heartbeat does. */
+    publish(relative: string, body: Uint8Array): void {
+        const connection = this.#connection;
+        if (connection === undefined || connection.isClosed()) {
+            throw new TransportError('Cannot publish: not connected');
+        }
+        connection.publish(this.absoluteSubject(relative), body);
     }
 
     async request(

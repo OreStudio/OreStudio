@@ -361,3 +361,38 @@ TEST_CASE("mapper_roundtrip_knock_out_swap_reverse", tags) {
     CHECK(d.LegData[1].LegType == ores::ore::domain::legType::Fixed);
     BOOST_LOG_SEV(lg, info) << "KnockOutSwap reverse-mapper test passed";
 }
+
+// =============================================================================
+// InflationSwap mapper tests
+// =============================================================================
+
+TEST_CASE("mapper_roundtrip_inflation_swap_reverse", tags) {
+    auto lg(make_logger(test_suite));
+    const auto t = load_first_trade("Inflation_CPI_Swap.xml");
+    const auto result = swap_instrument_mapper::forward_inflation_swap(t);
+    REQUIRE(result.header.identity.trade_type_code == "InflationSwap");
+
+    const auto reconstructed = swap_instrument_mapper::reverse_inflation_swap(
+        result.header,
+        std::get<ores::trading::domain::inflation_swap_instrument>(result.facts),
+        result.legs,
+        result.leg_amounts,
+        result.leg_rates);
+
+    CHECK(reconstructed.TradeType == ores::ore::domain::oreTradeType::InflationSwap);
+    REQUIRE(reconstructed.InflationSwapData.operator bool());
+    const auto& legs = reconstructed.InflationSwapData->LegData;
+    REQUIRE(legs.size() == 2);
+    CHECK(legs[0].LegType == ores::ore::domain::legType::Floating);
+    REQUIRE(legs[0].Currency.operator bool());
+    CHECK(std::string(*legs[0].Currency) == "GBP");
+    CHECK(legs[1].LegType == ores::ore::domain::legType::CPI);
+    REQUIRE(legs[1].Currency.operator bool());
+    CHECK(std::string(*legs[1].Currency) == "GBP");
+    REQUIRE(legs[0].ScheduleData);
+    REQUIRE(!legs[0].ScheduleData->Rules.empty());
+    CHECK(std::string(legs[0].ScheduleData->Rules[0].StartDate) == "2023-07-10");
+    REQUIRE(legs[0].ScheduleData->Rules[0].EndDate.operator bool());
+    CHECK(std::string(*legs[0].ScheduleData->Rules[0].EndDate) == "2028-07-09");
+    BOOST_LOG_SEV(lg, info) << "InflationSwap reverse-mapper test passed";
+}

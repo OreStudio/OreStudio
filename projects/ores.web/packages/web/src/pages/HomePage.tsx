@@ -38,6 +38,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
 import { PaintedValue } from './TenantParts.js';
+import { DEFAULT_HEALTH_RANGE, InstallationFigures } from '../operations/InstallationHealth.js';
 import { Tiles, TilesSection, type Tile } from '../ui/Tiles.js';
 
 /**
@@ -101,16 +102,6 @@ function SystemHome({ name }: { readonly name: string }): ReactNode {
                 {...(data === undefined
                     ? {}
                     : { description: plural('home.system.lead', data.totalCount) })}
-                actions={
-                    <div className="flex flex-wrap gap-2">
-                        <LinkButton to="/tenants" variant="secondary">
-                            {t('home.system.manageTenants')}
-                        </LinkButton>
-                        <LinkButton to="/tenants/new" variant="primary">
-                            {t('home.system.addTenant')}
-                        </LinkButton>
-                    </div>
-                }
             />
             {overview.isError && <Notice tone="error">{overview.error.message}</Notice>}
             {data !== undefined && (
@@ -119,6 +110,10 @@ function SystemHome({ name }: { readonly name: string }): ReactNode {
                     {data.attention.length > 0 && <Attention overview={data} />}
                 </>
             )}
+            <section className="card space-y-4 p-5">
+                <h2 className="text-sm font-semibold text-ink">{t('home.system.installation')}</h2>
+                <InstallationFigures range={DEFAULT_HEALTH_RANGE} />
+            </section>
             <SystemTiles />
             {data !== undefined && (
                 <FirstTenants
@@ -148,46 +143,16 @@ function SystemTiles(): ReactNode {
             icon: 'party',
         },
         {
-            title: t('home.system.addTenant'),
-            body: t('home.system.addTenantBody'),
-            to: '/tenants/new',
-            icon: 'add',
-        },
-        {
-            title: t('home.tenant.people'),
-            body: t('home.tenant.peopleBody'),
+            title: t('shell.menu.accounts'),
+            body: t('home.system.accountsBody'),
             to: '/people',
             icon: 'people',
         },
         {
-            title: t('operations.screens.services'),
-            body: t('operations.screens.servicesBody'),
-            to: '/operations/services',
+            title: t('shell.menu.operations'),
+            body: t('operations.hub.description'),
+            to: '/operations',
             icon: 'server',
-        },
-        {
-            title: t('operations.screens.grid'),
-            body: t('operations.screens.gridBody'),
-            to: '/operations/grid',
-            icon: 'apps',
-        },
-        {
-            title: t('operations.screens.bus'),
-            body: t('operations.screens.busBody'),
-            to: '/operations/bus',
-            icon: 'bus',
-        },
-        {
-            title: t('operations.screens.logs'),
-            body: t('operations.screens.logsBody'),
-            to: '/operations/logs',
-            icon: 'log',
-        },
-        {
-            title: t('home.tenant.versions'),
-            body: t('home.tenant.versionsBody'),
-            to: '/operations/versions',
-            icon: 'history',
         },
         {
             title: t('home.tenant.security'),
@@ -502,6 +467,18 @@ function TenantHome({
             body: t('home.tenant.counterpartyOnboardBody'),
             to: '/counterparties/onboard',
             icon: 'people',
+        },
+        {
+            title: t('home.tenant.bookStructure'),
+            body: t('home.tenant.bookStructureBody'),
+            to: '/books/structure',
+            icon: 'database',
+        },
+        {
+            title: t('home.tenant.conventions'),
+            body: t('home.tenant.conventionsBody'),
+            to: '/conventions',
+            icon: 'database',
         },
         {
             title: t('home.tenant.rescue'),

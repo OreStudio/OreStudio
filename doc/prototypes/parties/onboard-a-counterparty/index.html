@@ -27,6 +27,11 @@
     ?fail=duplicate|missing|duplicate_set_id   the server's refusal; ?fail=1 is the first kind
     ?refuse=duplicate                      an alias of ?fail
     ?version=3                             the history version to read
+    ?state=waiting|decide|declined         a raised request waiting, the checker's
+                                           decision screen, and a declined request
+    ?actor=o.ops|m.risk|...                who answers on the decision screen (decide only)
+    ?maker=h.desk|o.ops|...                who raised the request; the maker cannot decide it
+    ?check=identifier                      make the authoritative-identifier check fail
 
   The bar at the foot mirrors the states as buttons.
 -->
@@ -35,6 +40,7 @@
 <div id="app"></div>
 <div class="proto-bar" id="proto-bar"></div>
 
+<script src="four-eyes.js"></script>
 <script src="prototype.js"></script>
 </body>
 </html>

@@ -99,6 +99,32 @@ its own. A refused write leaves the record exactly as it was and the person can
 try again. The journey is a run of screens over immediate operations, so it
 needs no [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]].
 
+* Four-eyes controls
+
+A change that touches data other functions rely on needs a second person, and the
+person who asks cannot decide. [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]] records the rule for each act of this
+journey:
+
+- The party's names, type, status, parent, business center or registration default, an identifier, and a business unit's type: *Finance* decides, because a party starts the accounting hierarchy Finance owns.
+- Closing or opening a country or currency membership, and linking or unlinking a counterparty: *Operations* decides.
+- A contact: not gated. It is written directly.
+
+Review marks each change as needing a named function or no approval. When any
+change is gated, the confirm becomes *Raise request*: the system raises one
+approval request (=inbox.v1.ops.raise_approval=), shows it waiting, and leaves the
+record as it was. A decider from the named function opens the request with
+=inbox.v1.ops.get_approval=, reads what would change and the check, and approves or
+declines with a comment (=inbox.v1.ops.decide_approval=). The request applies only when
+every named function has approved, and one decline ends it. The prototype draws the
+waiting, decide and declined states (=?state=waiting=, =?state=decide=, =?state=declined=); the check it draws is that the party is still at the version the maker read, which =?check=stale= makes fail.
+
+The approval operations exist. No request kind is seeded for these acts, a request
+holds no pending change, and nothing applies the change when the last decider
+approves, so a screen cannot yet raise or apply a gated change. The deferred
+[[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][four-eyes authorisation framework]] is that missing piece. The deciders are Operations,
+Finance and Market Risk, and the Acme dataset holds no Finance account; the task
+[[id:C37EA3F0-1A82-4E42-A21B-599C6873191A][Add the missing book-control actors to Acme]] adds it.
+
 * Screens and wireframes
 
 One screen, ten states. The first state is the party list, which the person

@@ -139,6 +139,19 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate the anchor pin to ores_trading_trades_tbl
+    if NEW.trade_id is not null and NEW.party_id is not null and NEW.trade_type_code is not null and not exists (
+        select 1 from ores_trading_trades_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_id
+          and party_id = NEW.party_id
+          and trade_type = NEW.trade_type_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_id: %. The party and trade type must be the trade''s own.', NEW.trade_id
+            using errcode = '23503';
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

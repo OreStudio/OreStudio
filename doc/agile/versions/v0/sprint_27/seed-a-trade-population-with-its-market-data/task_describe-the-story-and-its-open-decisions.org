@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 0761EA1F-4ACB-4C8E-ADFE-4CEFAFB7420C
+:END:
+#+title: Task: Describe the story and its open decisions
+#+description: Write the story for the relative-time trade corpus and its market data, with its goal, acceptance, open decisions and scope, from a read of the fixing store, the ORE import and export paths and the synthetic component.
+#+type: task
+#+level: s1
+#+filetags: :seed-a-trade-population-with-its-market-data:sprint_27:v0:
+#+owner: marco
+#+branch: feature/analyse-the-fixing-data-source
+#+pr: 3043
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:86B6BF9C-CEEA-4FCB-8048-7CA94E927584][Seed a relative-time trade population with the market data it needs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Turn the finding from #3026 into a story. 1,166 of 1,171 seeded conventions
+point at market data that does not exist, because =acme_demo= seeds no
+fixing series. The story states why the data cannot be seeded as fixed rows,
+what to build instead, and what is still undecided.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:86B6BF9C-CEEA-4FCB-8048-7CA94E927584][Seed a relative-time trade population with the market data it needs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The story states the need for a trade corpus with install-relative dates.
+- The story states the need for a way to generate the market data that
+  corpus requires, including historical fixings.
+- The story lists its open decisions and what it excludes.
+- The story is in the Sprint 27 Stories table.
+
+* Plan
+
+Read the fixing store, the ORE import and export paths, the report run
+setup and the synthetic component. Write the story from what they show.
+
+* Measurements
+
+None. The 1,171 and 1,166 figures come from the #3026 report and were not
+re-measured here.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3043][#3043]] | [agile] Add the story to seed a relative-time trade population |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Missing blank line before Out of scope | story.org | Accepted | Fixed. |
+| 2 | STARTED state with Now and Next saying not started | story.org | Accepted | Now and Next rewritten. State stays STARTED, as the describe task ran. |
+| 3 | Status table padding | story.org, task | Declined | Template output. Cosmetic. |
+| 4 | Link the source of the 1,171 and 1,166 figures | story.org | Accepted | Link to PR #3026 added to the Goal. |
+| 5 | Acceptance hard to test | story.org | Accepted | Join named. The 5 conventions are the floor. |
+| 6 | Order the decisions by dependency | story.org | Accepted | Reordered and numbered. |
+| 7 | Rebuild the new task page | task | Accepted | Story, task and sprint pages rebuilt, 0 failures. |
+
+* Result
+
+The story is written and wired into Sprint 27. It records the open decisions:
+when the data is generated, party ownership of fixings, the corpus scope and
+where the corpus lives. The task changes no code and queried no database. The
+story stays open: it has no work tasks yet.

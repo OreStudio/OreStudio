@@ -8,12 +8,12 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-instrument-convention-screen
-#+pr:
+#+pr: 3042
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,21 @@ A tenant administrator defines an instrument's conventions in ores.web, and the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- A person who maintains reference data opens /conventions from the home page and sees the 25 instrument families with how many conventions each holds.
+- The person lists a family's conventions, opens one or starts a new one.
+- The terms of the swap and the deposit are authored in full, each term badged as from a list or free text.
+- The review lists every term that differs from the version read, and nothing is written before the confirm.
+- The history reads every saved version.
+- The BFF serves every call the screen makes.
 
 * Plan
 
@@ -74,12 +79,51 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3042][#3042]] | [web] Build the instrument convention screen |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | One failing count call fails the whole families route | =conventions.ts= | Accept | Each count is read in its own try, and a failure leaves that count null. A test covers it. |
+| 2 | The 25 calls run one after another | =conventions.ts= | Decline | Sequential on purpose. The session's broker client answers concurrent requests far slower than sequential ones, as classifications.ts records. |
+| 3 | crypto.randomUUID inside the reducer | =conventionsState.ts= | Accept in part | The id is made in the handler and passed in the action, so this reducer is pure. The same pattern is in the book and party reducers, the counterparty draft and records.tsx, and a secure context is already assumed there. That is a wider follow-up. |
+| 4 | writePlan sends the whole opened row | =conventionsState.ts= | Accept | The write is the id and the spec columns only, and the unused party id is dropped from the journey. A test asserts no version or audit column is sent. |
+| 5 | Redundant branch in termText | =conventionsState.ts= | Accept | Reduced to String(value). |
+| 6 | Explain why a flag is not checked | =conventionsState.ts= | Accept | Comment added. |
+| 7 | Check terms against the pick lists | =conventions.ts= | Decline | The server's term check is task ABEC57F4. The screen offers only codes it has read. |
+| 8 | Allowlist the written columns per family | =conventions.ts= | Decline | The term specs live in the web package, so the BFF would need shared code. The BFF already refuses a family whose terms are not drawn. |
+| 9 | Typed tuple for the family table | =conventions.ts= | Accept | The table is typed and the casts are gone. |
+| 10 | Say when the search covers loaded rows only | =conventionsSteps.tsx= | Accept | A warning shows when the total is larger than the rows loaded. |
 
 * Result
+
+Built journey 8 and the BFF half it needs, on the pattern the book screen set.
+
+** What was built
+
+| File | What it carries |
+|------+-----------------|
+| =bff/src/conventions.ts= | The 25 families and the entity that serves each, their counts, one family's rows, the term pick lists and the write of the two drawn families. |
+| =api/conventions.ts=, =journeys/conventionsServer.ts= | The browser client and the server interface the journey is handed. |
+| =journeys/conventionsState.ts= | The term specs of the swap and the deposit, the draft, the review's changes, the problems and the write plan. |
+| =journeys/conventionsSteps.tsx=, =ConventionJourney.tsx= | The six steps and the page. |
+| =AppRoutes.tsx=, =HomePage.tsx= | The /conventions route and a home tile. |
+
+** Verification
+
+| Command | Result |
+|---------+--------|
+| =npm run typecheck= | exit 0 |
+| =npm run format:check= | exit 0 |
+| =npm test= | exit 0; bff 358 tests, web 627, wire-protocol 166 |
+
+The tests answer from canned replies. *Nothing ran against the live fleet.*
+
+** What is not done
+
+1. *Only the swap and the deposit are written.* The journey draws their terms in full and says the other 23 families are listed, not drawn. Their cards say so and the BFF refuses a write to them.
+2. *The family-to-entity mapping is the BFF's.* The server has no list that maps a family to its entity. Task "Serve the convention family mapping, its term filter and term rules" is still open.
+3. *The search filters the rows loaded here.* The server filters a convention list by id only, so the BFF returns up to 500 rows and the screen filters them.
+4. *The server does not check a term against its list.* A term naming a value the list no longer holds is written, not refused. The screen offers only codes it has read from the lists.
+5. *The history has no draft version and no revert.*

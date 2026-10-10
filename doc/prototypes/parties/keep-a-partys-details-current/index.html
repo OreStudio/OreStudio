@@ -41,6 +41,11 @@
     ?with=1                            the registration-default flag
     ?reason=common.rectification       the change reason code
     ?version=7                         the history version whose diff is shown
+    ?state=waiting|decide|declined     a raised request waiting, the checker's
+                                       decision screen, and a declined request
+    ?actor=f.ledger|o.ops|...          who answers on the decision screen (decide only)
+    ?maker=h.desk|f.ledger|...         who raised the request; the maker cannot decide it
+    ?check=stale                       make the party-version check fail
 
   The bar at the foot mirrors the states, the refusals, and the fail switch.
 -->
@@ -49,6 +54,7 @@
 <div id="app"></div>
 <div class="proto-bar" id="proto-bar"></div>
 
+<script src="four-eyes.js"></script>
 <script src="prototype.js"></script>
 </body>
 </html>

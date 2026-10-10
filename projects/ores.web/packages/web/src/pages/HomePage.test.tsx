@@ -26,10 +26,17 @@ import { MemoryRouter } from 'react-router';
 import type {
     Account,
     DeploymentOverview,
+    ServiceRosterRow,
     SessionMode,
     TenantSummary,
 } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
+import { enFlat } from '../i18n/locales/en.js';
+import {
+    DEFAULT_HEALTH_RANGE,
+    SERVICES_QUERY_KEY,
+    logCountKey,
+} from '../operations/InstallationHealth.js';
 import { HomePage } from './HomePage.js';
 
 /**
@@ -118,8 +125,14 @@ const signedInAccount: Account = {
     recordedAt: '2026-10-05 09:30:00Z',
 };
 
-function home(mode: SessionMode, overview?: DeploymentOverview, self?: Account | null): string {
+function home(
+    mode: SessionMode,
+    overview?: DeploymentOverview,
+    self?: Account | null,
+    seed?: (client: QueryClient) => void,
+): string {
     const client = new QueryClient();
+    seed?.(client);
     if (overview !== undefined) {
         client.setQueryData(['overview'], overview);
         client.setQueryData(['tenant-types'], []);
@@ -156,14 +169,18 @@ describe('every home', () => {
 });
 
 describe("the system administrator's home", () => {
-    it('welcomes the person and offers to add and manage tenants', () => {
+    it('welcomes the person and states how many tenants there are', () => {
         const html = home('system-administration', busy);
 
         expect(html).toContain('Welcome, marco');
         expect(html).toContain('This deployment runs 9 tenants.');
-        expect(html).toContain('href="/tenants/new"');
-        expect(html).toContain('>Add tenant<');
-        expect(html).toContain('>Manage tenants<');
+    });
+
+    it('does not offer to add a tenant, which the Tenants screen does', () => {
+        const html = home('system-administration', busy);
+
+        expect(html).not.toContain('href="/tenants/new"');
+        expect(html).not.toContain('Add tenant');
     });
 
     it('states the counts and how many tenants need attention', () => {
@@ -211,22 +228,26 @@ describe("the system administrator's home", () => {
 });
 
 describe("the system administrator's cards", () => {
-    it('leads to every screen the system administrator works in', () => {
+    it('offers four cards and reaches the operations screens through one of them', () => {
         const html = home('system-administration', busy);
+        const active = html.slice(html.indexOf('Active Modules'), html.indexOf('Upcoming Modules'));
 
-        expect(html).toContain('Active Modules');
-        for (const href of [
-            '/tenants',
-            '/tenants/new',
-            '/people',
-            '/operations/services',
-            '/operations/grid',
-            '/operations/bus',
-            '/operations/logs',
-            '/operations/versions',
-            '/security',
-        ]) {
-            expect(html).toContain(`href="${href}"`);
+        expect(active).toContain('Active Modules');
+        for (const href of ['/tenants', '/people', '/operations', '/security']) {
+            expect(active).toContain(`href="${href}"`);
+        }
+        expect(active.match(/href="/g)).toHaveLength(4);
+        expect(active).not.toContain('href="/operations/');
+    });
+
+    it('shows words and never a translation key on any card', () => {
+        for (const html of [home('system-administration', busy), home('system-administration')]) {
+            const cards = html.slice(
+                html.indexOf('Active Modules'),
+                html.indexOf('Tenants</span>', html.indexOf('Upcoming Modules')),
+            );
+
+            expect(cards).not.toMatch(/\b(home|shell|operations)\.[a-zA-Z]+\.?[a-zA-Z]*/);
         }
     });
 
@@ -253,8 +274,50 @@ describe("the system administrator's cards", () => {
     it('offers the cards before the overview has been read', () => {
         const html = home('system-administration');
 
-        expect(html).toContain('href="/operations/grid"');
+        expect(html).toContain('href="/operations"');
         expect(html).not.toContain('System health');
+    });
+});
+
+describe("the system administrator's installation figures", () => {
+    const running = (name: string, state: 'running' | 'lost' | 'missing'): ServiceRosterRow => ({
+        service_name: name,
+        display_name: name,
+        description: '',
+        service_account: null,
+        slot: 1,
+        state,
+        instance_id: state === 'missing' ? null : 'instance',
+        host_id: null,
+        version: state === 'missing' ? null : '0.0.27',
+        sampled_at: null,
+        age_seconds: null,
+    });
+
+    it('states how many services run and how many errors the logs hold, beside the tenants', () => {
+        const html = home('system-administration', busy, undefined, (client) => {
+            client.setQueryData(SERVICES_QUERY_KEY, [
+                running('ores.iam.service', 'running'),
+                running('ores.web.service', 'running'),
+                running('ores.dq.service', 'lost'),
+            ]);
+            client.setQueryData(logCountKey('error', DEFAULT_HEALTH_RANGE), 7);
+            client.setQueryData(logCountKey('warn', DEFAULT_HEALTH_RANGE), 31);
+        });
+
+        expect(html).toContain('>Installation<');
+        expect(html).toMatch(/>2 of 3<\/span><span[^>]*>Services running</);
+        expect(html).toMatch(/>7<\/span><span[^>]*>Errors, Last hour</);
+        expect(html).toMatch(/>31<\/span><span[^>]*>Warnings, Last hour</);
+        expect(html).toContain('System health');
+    });
+
+    it('is not shown to a tenant administrator or a member', () => {
+        const label = enFlat['operations.overview.running'] ?? '';
+
+        expect(label).not.toBe('');
+        expect(home('tenant-administration')).not.toContain(label);
+        expect(home('application')).not.toContain(label);
     });
 });
 

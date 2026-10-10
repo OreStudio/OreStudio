@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:index:ui:
 #+created: 2026-09-11
-#+updated: 2026-10-09
+#+updated: 2026-10-10
 
 * Summary
 
@@ -47,6 +47,7 @@ This page is the top of the tree and the only inventory.
 | [[file:conventions/][Conventions]] | The market terms an instrument is built on, and the reference data lists each convention picks from | 1 |
 | [[file:tenors/][Tenors]] | Tenor codes and the resolution the system computes from them | 1 |
 | [[file:market_data/][Market data]] | Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time | 21 |
+| [[file:testing/][Testing]] | Working through a test scenario in the browser, and what waits for a tester | 1 |
 
 Two groups have no prototype yet: Currencies and FX, and
 Calendars. Their journeys are the first place a new prototype would go.

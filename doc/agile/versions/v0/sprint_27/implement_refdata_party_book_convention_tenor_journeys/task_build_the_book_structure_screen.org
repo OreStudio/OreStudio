@@ -8,12 +8,12 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-book-structure-screen
-#+pr:
+#+pr: 3041
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,21 @@ A tenant administrator shapes the book structure in ores.web, and the screen mat
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- A tenant administrator opens /books/structure from the home page, sees the portfolios and the books under them, and searches both.
+- The person places a new book in an existing portfolio or in one created in the same walk, and names its fields.
+- The person sets the status and the three classification axes, and the owner unit picker marks a unit outside the portfolio ancestry.
+- The review lists every difference, and nothing is written before the confirm.
+- The confirm writes the portfolio before the book and stops at the first refusal, listing what was already written.
+- The BFF serves every call the screen makes.
 
 * Plan
 
@@ -74,12 +79,50 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3041][#3041]] | [web] Build the book structure screen |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A move to another portfolio is not on the review | =booksState.ts= | Accept | The review lists a Portfolio change when an opened book is placed elsewhere. A test covers it. |
+| 2 | A retry after a partial write writes the portfolio again | =booksSteps.tsx= | Accept | Once the portfolio is written the draft selects it as an existing portfolio and the tree is read again. A test covers it. |
+| 3a | The BFF forwards party_id as sent | =books.ts= | Decline | The service sets tenancy from the session and row-level security scopes the write. The screen takes the party from the session, as the counterparty screen does. |
+| 3b | The reply row is taken from either key | =books.ts= | Accept | Each route reads the key of its own row. |
+| 4 | Pick lists read one after another; the tree reads everything | =books.ts= | Decline | Sequential on purpose, as classifications.ts records. The tree read is a recorded limit. |
+| 5a | A correction reason is the default for a new book | =booksState.ts= | Accept | A new book starts under system.new_record, and the reason select shows the value the draft holds. |
+| 5b | Comment that stamp() leaves audit fields empty | =booksState.ts= | Accept | Comment added. |
+| 5c | Shared constant for the Active status | =booksState.ts= | Decline | No shared constant exists, and adding one is outside this task. |
 
 * Result
+
+Built journey 7 and the BFF half it needs, on the pattern the party screen set.
+
+** What was built
+
+| File | What it carries |
+|------+-----------------|
+| =bff/src/books.ts= | The tree, the pick lists, the rights at a node, and the book and portfolio writes. |
+| =api/books.ts=, =journeys/booksServer.ts= | The browser client and the server interface the journey is handed. |
+| =journeys/booksState.ts= | The draft, the review's changes, the write plan, the problems and the owner unit ancestry. |
+| =journeys/booksSteps.tsx=, =BookStructureJourney.tsx= | The eight steps and the page. |
+| =journeys/pickers.tsx= | The picker the party and book steps share. |
+| =AppRoutes.tsx=, =HomePage.tsx= | The /books/structure route and a home tile. |
+
+** Verification
+
+| Command | Result |
+|---------+--------|
+| =npm run typecheck= | exit 0 |
+| =npm run format:check= | exit 0 |
+| =npm test= | exit 0; bff 352 tests, web 606, wire-protocol 166 |
+
+The tests answer from canned replies. *Nothing ran against the live fleet.*
+
+** What is not done
+
+1. *The rights step is read only.* The server addresses a portfolio right by its code alone (=PortfolioRightKey= holds =right_code=, and the service reads =read_latest_by_right_code=). A grant of a code another account holds would collide, and a removal would reach whichever account's row it found first. The new task "Address a portfolio right by account, portfolio and code" fixes the key.
+2. *A history revert is not offered.* The book has no composite-as-of read, and the history panel's field values are display labels, not the book's fields.
+3. *Closing a book is not checked against open activity.* The journey document records this as unenforceable until a cross-component read exists. The classification step says so.
+4. The tree reads every portfolio and every book on each load.
+5. The confirm is two calls when the walk creates a portfolio. A refusal of the book leaves the portfolio written, and the refusal lists it.

@@ -103,6 +103,18 @@ public:
                            const std::vector<ores::trading::domain::swap_leg_rate>& rates);
 
     /**
+     * @brief Reverse-maps ORES domain types back to an InflationSwap ORE XSD
+     * trade. The forward mapper keeps the legs only, so the export writes
+     * the legs only.
+     */
+    static trade
+    reverse_inflation_swap(const ores::trading::domain::rate_instrument& header,
+                           const ores::trading::domain::inflation_swap_instrument& instr,
+                           const std::vector<ores::trading::domain::swap_leg>& legs,
+                           const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+                           const std::vector<ores::trading::domain::swap_leg_rate>& rates);
+
+    /**
      * @brief Forward-maps an InflationSwap trade (InflationSwapData) to ORES
      * domain types, producing an inflation_swap_instrument.
      */

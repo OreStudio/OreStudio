@@ -41,7 +41,8 @@ import {
     compareVersions,
     newestVersionOf,
 } from './OperationsParts.js';
-import { ServicesPage, SERVICES_QUERY_KEY, formatAge, readTime } from './ServicesPage.js';
+import { SERVICES_QUERY_KEY } from './InstallationHealth.js';
+import { ServicesPage, formatAge, readTime } from './ServicesPage.js';
 import {
     BusPage,
     BUS_QUERY_KEY,
@@ -513,6 +514,19 @@ describe('the route to the versions screen', () => {
 });
 
 describe('the services screen', () => {
+    it('opens with the installation at a glance, before the instance table', () => {
+        const html = withProviders(<ServicesPage />, '/', [
+            rosterRow({ slot: 1 }),
+            rosterRow({ service_name: 'ores.dq.service', state: 'lost', age_seconds: 900 }),
+        ]);
+
+        expect(html).toContain('The installation at a glance');
+        expect(html).toContain('>1 of 2<');
+        expect(html.indexOf('The installation at a glance')).toBeLessThan(
+            html.indexOf('Instances'),
+        );
+    });
+
     it('shows one row per expected instance, as running, lost or missing', () => {
         const html = withProviders(<ServicesPage />, '/', [
             rosterRow({ slot: 1 }),

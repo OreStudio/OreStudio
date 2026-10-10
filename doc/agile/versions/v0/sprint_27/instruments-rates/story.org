@@ -49,8 +49,8 @@ Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types t
 | [[id:B8D25D9B-4994-4483-B499-E8530AEBB767][Carry the cross-currency swap's own type]] | DONE | 2026-10-09 | 2026-10-09 | The ORE importer wrote trade_type_code Swap for a cross-currency swap as well as for a plain swap, and the reverse always emitted SwapData, so the two products were one after a round trip. Both directions keep the type the document states. |
 | [[id:26C13950-9C56-4E27-B4CD-B5148EF2B968][Move the rates family onto its header]] | DONE | 2026-10-09 | 2026-10-09 | Author ores.trading.rate_instruments: the family's coverage check, the shared dates and description, the trade-activity key, and the delete cascade that owns the family's rows. Convert the eight product tables from instrument entities into fact tables keyed by the trade, route the family's codes to the header through the catalogue, and wire the import and the export. |
 | [[id:EB32E142-7CA3-4A6F-842D-E301C685D3E0][Move the rates family's shared children onto the bond shapes]] | DONE | 2026-10-09 | 2026-10-10 | Move the cap/floor strikes and schedules and the swaption option block onto the shapes the bond pilot built, into the header's delete cascade, and move their registration to the root that owns them. Retype the option block's text dates and collections. (Staging unit 4; findings R5, R11.) |
-| [[id:A1319B90-C06B-4220-A3BA-7471F75F4BB8][Pin the rates instruments to the anchor's key]] | BACKLOG | | | Add the trade anchor's unique index and pin every rates instrument row to it with the composite foreign key on the party and the trade type. The one unit that changes the trade model. (Staging unit 5; finding R7.) |
-| [[id:1E1BA14F-E8A2-4DD4-B538-DA125EC7B7A1][Close the rates round trip]] | BACKLOG | | | Add the missing reverse mappers for InflationSwap, BalanceGuaranteedSwap and FlexiSwap, and decide the hand-written rates carrier's and codec's disposition: replace them with the generated per-entity protocols, or record why the carrier must stay hand-written. (Staging unit 6; findings R10, R13.) |
+| [[id:A1319B90-C06B-4220-A3BA-7471F75F4BB8][Pin the rates instruments to the anchor's key]] | DONE | | 2026-10-10 | Add the trade anchor's unique index and pin every rates instrument row to it with the composite foreign key on the party and the trade type. The one unit that changes the trade model. (Staging unit 5; finding R7.) |
+| [[id:1E1BA14F-E8A2-4DD4-B538-DA125EC7B7A1][Close the rates round trip]] | DONE | | 2026-10-10 | Add the missing reverse mappers for InflationSwap, BalanceGuaranteedSwap and FlexiSwap, and decide the hand-written rates carrier's and codec's disposition: replace them with the generated per-entity protocols, or record why the carrier must stay hand-written. (Staging unit 6; findings R10, R13.) |
 | [[id:4A53F30C-42AB-41D1-9C3C-55321FC38920][Generate the blotter's common-date view]] | BACKLOG | | | Finding R9: each product states its dates under its own name - start_date, maturity_date, expiry_date, end_date - so a deal grid cannot read one date column across the family. The view maps each product's dates to one set of names, and it is generated because the mapping is a property of the models. This first family creates the view; each later family adds its mapping. (Staging unit 7; finding R9.) |
 | [[id:1EFA46D4-8562-4C63-A1D3-4CF33551BEB2][Prove the rates round trip over the corpus]] | BACKLOG | | | Run the ORE round trip over the family's corpus at the new shape, write the migration script that moves the rows of the legacy tables into the header and the facts, and add the repository, service and eventing coverage the family has none of. (Staging unit 8; findings R9, R14.) |
 
@@ -60,6 +60,13 @@ Distilled from =design.org=, which carries the argument and the
 evidence. The design stays in this folder as the record of why these
 decisions are what they are.
 
+- *The anchor pin is a trigger check on the header alone.* The trade
+  anchor is versioned and has no unique key a database foreign key could
+  name, so the header declares a =Pinned keys= row over =(trade_id,
+  party_id, trade_type_code)=. The fact and child tables hold neither
+  column and join through the header (D3). The check runs at insert, so an
+  amendment of the anchor does not re-check the header; the trade model's
+  owner decides whether an amendment re-pins its children.
 - *The family boundary is the asset class, not the catalogue's
   =product_type=.* The rates family is the =interest_rates= codes:
   Swap, CrossCurrencySwap, FlexiSwap, ForwardRateAgreement, CapFloor,
@@ -147,7 +154,7 @@ The acceptance against the tree as unit 3 left it:
 |------------+-------|
 | The header's =trade_type= check lists exactly the family's codes | met |
 | Each product fact table checks its own | not expressible: the catalogue states one routing per trade type, so the header carries the family's check and the facts carry none, as the bond pilot does |
-| Every instrument row is keyed by its trade and pinned to the anchor's trade type and party by a composite foreign key | open: the tasks' =Pin the rates instruments to the anchor's key= |
+| Every instrument row is keyed by its trade and pinned to the anchor's trade type and party by a composite foreign key | met in a weaker form: the header is pinned by an insert-trigger check, because the anchor is versioned and no database key can name it; the fact tables carry neither column and join through the header |
 | The family's trade types route through the catalogue, not hand-written code | met |
 | The ORE round trip stays lossless across the family's corpus | open and unproven: =Move the rates family's shared children onto the bond shapes=, =Close the rates round trip= and =Prove the rates round trip over the corpus= |
 | The blotter's common-date view is generated | open: =Generate the blotter's common-date view= |

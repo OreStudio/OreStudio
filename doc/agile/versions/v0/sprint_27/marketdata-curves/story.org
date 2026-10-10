@@ -23,9 +23,9 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The representation, the manual point path, staleness, the typed identity, the shape tables, the shape enforcement, the import declaration, the typed axis values, the slice read, the aligned evolution read, the reshaped single-instant read, the provenance annex and the manual precedence rule are done. The curve_builds decision is done: no build table. All tasks are DONE. The acceptance list has not been audited bullet by bullet, so the story stays STARTED. |
+| Now           | The representation, the manual point path, staleness, the typed identity, the shape tables, the shape enforcement, the import declaration, the typed axis values, the slice read, the aligned evolution read, the reshaped single-instant read, the provenance annex and the manual precedence rule are done. The acceptance audit is done: fifteen of seventeen bullets are met. Two are open, typed coordinates and the recipe on a point's provenance, and each has a BACKLOG task. |
 | Waiting on    | Nothing.                               |
-| Next          | Audit the acceptance list against the tree, then close the story. |
+| Next          | Decide how a node's coordinate is queryable, and expose the recipe on a point's provenance. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -51,7 +51,9 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 | [[id:A76EE364-10BE-4FA8-98D6-E55E4F0D9C8A][Give every point a provenance annex]] | DONE | 2026-10-10 | 2026-10-10 | Record the source kind of every point, quoted, derived or manual, and for a manual point the actor, the time and the reason, in one cold annex keyed by the point's natural key. |
 | [[id:7552F7C6-1B44-4A8C-B902-6BCF1B12830E][State what a later automatic write does to a manual point]] | DONE | 2026-10-10 | 2026-10-10 | Decide and record what an automatic write does to a point an operator keyed by hand, and cover the rule with a test. |
 | [[id:2559483D-1A40-45CB-A888-83CCDD166729][Decide the curve_builds table]] | DONE | 2026-10-10 | 2026-10-10 | Decide whether a curve_builds table is needed, from the agreed journeys, once the shape, the reads and the provenance are settled. |
-| [[id:1349F997-C4E4-4D6B-B45B-8939CCD5D832][Audit the story acceptance against the tree]] | BACKLOG | | | Check each bullet of the story's acceptance list against the tree, record the evidence, and close the story or name what is left. |
+| [[id:1349F997-C4E4-4D6B-B45B-8939CCD5D832][Audit the story acceptance against the tree]] | DONE | 2026-10-10 | 2026-10-10 | Check each bullet of the story's acceptance list against the tree, record the evidence, and close the story or name what is left. |
+| [[id:18E34E18-6EC3-4E3B-A5C1-4084FE2D2882][Expose the recipe on a point's provenance]] | BACKLOG | | | Return the derivation config, its version and the source as-of beside a derived point's provenance, so a reader sees which recipe built it. |
+| [[id:379ED141-98E9-4115-8A0B-9723ED977415][Decide how a node's coordinate is queryable]] | BACKLOG | | | Decide whether a node's coordinate tuple must be a SQL-queryable column set, or whether the typed oresmd URI parsed in the service tier meets the acceptance. |
 
 * Decisions
 

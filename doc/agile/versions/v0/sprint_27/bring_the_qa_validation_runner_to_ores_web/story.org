@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A tester works through a test scenario in ores.web: open a scenario, read its steps beside its story and task, mark each step PASS or FAIL with a note, and save the result. The browser cannot write repo files, so compass records the results. The prototype confirms that first cut.
+A tester works through a test scenario in ores.web: open a scenario, read its steps beside its story and task, mark each step PASS or FAIL with a note, and save the result. The browser cannot write repo files, so the BFF reads the scenario docs and writes the results into them. Compass only creates the docs.
 
 * Status
 
@@ -25,7 +25,7 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | The prototype is accepted: layout B. |
 | Waiting on    | Nothing.                               |
-| Next          | Record and read scenarios through compass. |
+| Next          | Parse org text in a shared package. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -41,13 +41,13 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 |------+-------+-------+-----+-------------|
 | [[id:B27572F6-212D-49DB-90D5-1A36A6C2A9A4][Scaffold story: Bring the QA validation runner to ores.web]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D][Prototype the QA validation runner]] | DONE | 2026-10-10 | 2026-10-10 | Show the Tests tab and the runner, and confirm how results are written. |
-| [[id:21382786-E000-4410-9863-94BB6E409570][Record and read scenarios through compass]] | BACKLOG | | | Add a compass scenario verb to list scenarios, show one with its steps and results, and record a run into the scenario doc and the journal. Port the results writer the Qt tool had. |
-| [[id:59E83768-A749-44BC-AFDA-7548B44C5A4D][Serve scenarios from the BFF]] | BACKLOG | | | Add BFF routes that list, read and save scenarios by calling compass. Any signed-in user may call them for now. |
-| [[id:FD623109-FFE6-4722-BA63-25B9B2BD38B2][Render org text in the web package]] | BACKLOG | | | Port the org parser and renderer from ores.org-js into the web package, so scenario steps and linked docs show as formatted text. This is the first step of retiring ores.org-js. |
+| [[id:21382786-E000-4410-9863-94BB6E409570][Read and write scenario docs in the BFF]] | BACKLOG | | | Add a scenario store to the BFF that reads the scenario docs compass creates and writes a tester's results into them, behind an interface. The BFF never calls compass. |
+| [[id:59E83768-A749-44BC-AFDA-7548B44C5A4D][Serve scenarios from the BFF]] | BACKLOG | | | Add BFF routes that list, read and save scenarios through the scenario store. Any signed-in user may call them for now. |
+| [[id:FD623109-FFE6-4722-BA63-25B9B2BD38B2][Parse org text in a shared package]] | BACKLOG | | | Port the org parser and renderer from ores.org-js into a package the BFF and the web package share. |
 | [[id:3B1DDD28-FD85-4ED3-9F94-7EDEA52EB397][Build the Tests queue]] | BACKLOG | | | Add the Development area and its Tests tab to ores.web: the scenarios waiting and the scenarios done, each opening in the runner. Draw the accepted prototype, without a heading of its own. |
 | [[id:4E45A124-F1E7-4371-BFAC-4E63A84F8F8B][Build the scenario runner]] | BACKLOG | | | Build the accepted layout B: one step at a time with a progress bar. A Pass moves on and a Fail stays so the tester can write the note. Save closes a decided scenario, a done scenario reopens read-only, and Retest asks first. |
 | [[id:45004307-1EBD-4503-A2F4-E1CDEFA3CA38][Show the story and the task beside the steps]] | BACKLOG | | | Add the Story and Task tabs to the runner. They show the docs that drive the scenario, rendered from org, and their links open the doc they point to. |
-| [[id:D4D50543-F5EC-454B-A119-E50276507A65][Take pasted images for a step]] | BACKLOG | | | A browser cannot capture the screen, so a step takes a pasted or dropped image. Add a BFF route that saves it beside the scenario doc and a compass step that names it in the step's note. |
+| [[id:D4D50543-F5EC-454B-A119-E50276507A65][Take pasted images for a step]] | BACKLOG | | | A browser cannot capture the screen, so a step takes a pasted or dropped image. Add a BFF route that saves it beside the scenario doc and names it in the step's note. |
 
 * The arc
 
@@ -66,23 +66,23 @@ story 2. This story is the first step.
 
 | Step | Task | Needs |
 |------+------+-------|
-| 1 | Record and read scenarios through compass | nothing |
-| 2 | Serve scenarios from the BFF | 1 |
-| 3 | Render org text in the web package | nothing, and it can run beside 1 and 2 |
-| 4 | Build the Tests queue | 2 |
-| 5 | Build the scenario runner | 2 |
-| 6 | Show the story and the task beside the steps | 3 and 5 |
-| 7 | Take pasted images for a step | 1 and 5 |
+| 1 | Parse org text in a shared package | nothing |
+| 2 | Read and write scenario docs in the BFF | 1 |
+| 3 | Serve scenarios from the BFF | 2 |
+| 4 | Build the Tests queue | 3 |
+| 5 | Build the scenario runner | 3 |
+| 6 | Show the story and the task beside the steps | 1, 3 and 5 |
+| 7 | Take pasted images for a step | 3 and 5 |
 
 * Decisions
 
 - The module is a regular module. It does not use =developerTools=. A trader may run test scenarios without developer tools. How a development mode works, and whether the module runs in production, are open.
-- Compass stays the only reader and writer of the org tree. The BFF calls compass and never parses or writes org files itself. The browser still renders org text it receives, which is display and not parsing the tree. A new =compass scenario= verb records the results. The verb does not exist yet, and building it is a task of this story after the prototype. so the rule that only compass changes agile artefacts holds. The first cut writes straight into the story's own folder, which is where scenarios already live.
+- ores.web does not call compass and cannot rely on it. Compass creates scenario docs from its test_scenario template, and ores.web parses those docs and writes results into them. The format the template creates is the contract. The BFF holds a scenario store behind an interface. The first cut is file backed and reads and writes the docs in the work tree the BFF runs in, so a database store can replace it. The compass journal stamp the Qt tool wrote is dropped, because git keeps the history.
 - Until the production question is settled, the module reads the work tree the BFF runs in. It never merges work trees, as the =ores.dsh_kanban= contract says.
 - The browser cannot capture the screen, so a step takes a pasted or dropped image. The BFF saves it next to the scenario doc.
 - =ores.org-js= leaves the public website. The new module needs a running BFF and does not replace the public static view, and there is no static export. Story 2 removes the project and its publishing: the copy into the site in =ores-build-site.el=, the exclude patterns in =ores-build-site.el=, =ores-sync-org-roam.el=, =ores-check-org-links.el= and =compass.py=, and the memory, tag and modeling pages that name it. Story 2 also checks that no page on the site links to the old agile view.
 - The runner uses layout B, one step at a time, accepted on 2026-10-10. A Pass moves on and a Fail stays on the step. The queue carries no heading, because the Tests tab names it. The prototype is under =doc/prototypes/testing/=.
-- Org text renders in the browser with the parser from =ores.org-js=, ported into the web package. The port is the first step of retiring that project.
+- One shared package parses and renders org text. The BFF reads and writes scenario docs with it and the browser renders step text with it. The port from =ores.org-js= is the first step of retiring that project.
 
 * Open questions
 
@@ -95,3 +95,4 @@ story 2. This story is the first step.
 - Starting or closing tasks from the browser.
 - A tester account, assignment and review. They belong to story 3.
 - =ores.dsh_environment=, which this arc does not retire.
+- A compass verb to list, show or record scenarios. ores.web does not rely on compass.

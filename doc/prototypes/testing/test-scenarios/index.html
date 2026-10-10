@@ -190,7 +190,7 @@ tbody tr.open:hover { background: var(--overlay); }
     <li><strong>The overall result is inferred, never set.</strong> Any FAIL makes the scenario FAILED. All PASS makes it PASSED. Anything else leaves it PENDING. The tester marks steps, not the scenario.</li>
     <li><strong>Story and Task sit beside the steps.</strong> They are the docs that drive the scenario, so the tester need not leave to recover the context. The links in them open the linked doc.</li>
     <li><strong>A finished scenario reopens read-only.</strong> A <em>Retest</em> button clears the steps and starts again. The build must decide whether a retest overwrites the result in the org file, where git keeps the history, or keeps each run.</li>
-    <li><strong>Nothing writes yet.</strong> <span class="code">compass scenario</span> does not exist. The runner needs a read of the scenario and a write of its results, and the BFF must call compass for both, because compass is the only writer of the org tree.</li>
+    <li><strong>Nothing reads or writes a scenario yet.</strong> The BFF has no scenario store. ores.web cannot rely on compass, so the BFF parses the docs that compass creates and writes the results into them itself, behind an interface that a database store can replace later.</li>
     <li><strong>The queue has no owner.</strong> A scenario names a target dialog and an environment and no tester. The queue shows every scenario in state PENDING. Assignment comes with the tester role.</li>
     <li><strong>A browser cannot capture the screen.</strong> The step takes a pasted or dropped image. The BFF has no upload route that saves it beside the scenario doc.</li>
     <li><strong>The web package renders no org text.</strong> Step instructions are org. The parser in ores.org-js is the one to port.</li>
@@ -483,7 +483,7 @@ tbody tr.open:hover { background: var(--overlay); }
       <section class="gaps">
         <h2>What the build must close</h2>
         <ol>
-          <li><strong>No read and no write.</strong> <span class="code">compass scenario</span> does not exist. The BFF must call compass to list and read scenarios and to record results, because compass is the only writer of the org tree.</li>
+          <li><strong>No read and no write.</strong> The BFF has no scenario store. ores.web cannot rely on compass, so the BFF must parse the docs compass creates and write results into them itself, behind an interface that a database store can replace later.</li>
           <li><strong>No notification for a waiting test.</strong> The inbox raises none. The queue here is every scenario in state PENDING.</li>
           <li><strong>No tester on a scenario.</strong> The doc carries a target and an environment and no assignee.</li>
           <li><strong>No image upload.</strong> A browser cannot capture the screen. The BFF needs a route that saves a pasted image beside the scenario.</li>

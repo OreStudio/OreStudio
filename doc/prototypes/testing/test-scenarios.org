@@ -68,9 +68,10 @@ PASSED. Anything else leaves it PENDING. The same rule ran in the Qt tool.
 
 ** What the screens cannot do, and say
 
-1. *Nothing reads or writes a scenario.* =compass scenario= does not exist. The
-   BFF must call compass to list and read scenarios and to record results,
-   because compass is the only writer of the org tree.
+1. *Nothing reads or writes a scenario.* The BFF has no scenario store. ores.web
+   cannot rely on compass, so the BFF must parse the docs compass creates and
+   write results into them itself, behind an interface that a database store can
+   replace later.
 2. *No notification for a waiting test.* The inbox raises none. The queue is
    every scenario in state PENDING.
 3. *A scenario has no tester.* The doc carries a target and an environment and

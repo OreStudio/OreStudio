@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: 21382786-E000-4410-9863-94BB6E409570
 :END:
-#+title: Task: Record and read scenarios through compass
-#+description: Add a compass scenario verb to list scenarios, show one with its steps and results, and record a run into the scenario doc and the journal. Port the results writer the Qt tool had.
+#+title: Task: Read and write scenario docs in the BFF
+#+description: Add a scenario store to the BFF. A file-backed implementation reads the scenario docs that compass creates and writes a tester's results into them. The store sits behind an interface so a database store can replace it. The BFF never calls compass.
 #+type: task
 #+level: s1
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
-#+branch: feature/record-and-read-scenarios-through-compass
+#+branch: feature/read-and-write-scenario-docs-in-the-bff
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A tester's results land in the org file through compass, the only writer of the org tree. compass scenario lists the scenarios and their state, shows one with its steps, its story and its task, and records each step's status, note and image names plus the overall state.
+The BFF lists scenarios, reads one with its steps, finds a story or task doc by its id, and records a run in place. The format that the compass test_scenario template creates is the contract. ores.web cannot rely on compass, so the BFF parses and writes the docs itself.
 
 * Status
 
@@ -35,10 +35,13 @@ A tester's results land in the org file through compass, the only writer of the 
 
 * Acceptance
 
-- compass scenario list shows every scenario with its state, target and story, and tells waiting from done.
-- compass scenario show returns the steps, each with its client, status and note, and the ids of the story and the task, as JSON.
-- compass scenario record writes each step's Result table and the overall State and Results in place, and stamps the journal.
-- Tests cover a single-client and a multi-client scenario and a re-record over an earlier result.
+- The store lists every scenario with its state, target, story and task, and tells waiting from done.
+- The store reads a scenario's steps, each with its client, status and note, and the ids of its story and task.
+- The store finds any doc under the doc root by its :ID: property.
+- The store records each step's Result table and the overall State and Results in place, in the format the compass template creates.
+- A write that would leave the doc root is refused, and a write names the steps it changes.
+- Tests run against copies of real compass-created scenario docs: single client, several clients and an earlier result.
+- The doc root is configuration. No code path runs compass.
 
 * Plan
 

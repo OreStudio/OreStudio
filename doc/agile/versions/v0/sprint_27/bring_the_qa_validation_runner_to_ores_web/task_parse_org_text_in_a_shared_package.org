@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: FD623109-FFE6-4722-BA63-25B9B2BD38B2
 :END:
-#+title: Task: Render org text in the web package
-#+description: Port the org parser and renderer from ores.org-js into the web package, so scenario steps and linked docs show as formatted text. This is the first step of retiring ores.org-js.
+#+title: Task: Parse org text in a shared package
+#+description: Port the org parser and renderer from ores.org-js into a package that both the BFF and the web package use. The BFF reads scenario docs with it and the browser renders step text with it. This is the first step of retiring ores.org-js.
 #+type: task
 #+level: s1
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
-#+branch: feature/render-org-text-in-the-web-package
+#+branch: feature/parse-org-text-in-a-shared-package
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The web package turns org text into safe, formatted output. Step instructions, a story and a task read as they do on the site.
+One package turns org text into a tree and the tree into safe, formatted output, in Node and in the browser. Scenario docs, stories and tasks read as they do on the site.
 
 * Status
 
@@ -35,9 +35,10 @@ The web package turns org text into safe, formatted output. Step instructions, a
 
 * Acceptance
 
-- The parser handles headings, paragraphs, lists, tables, bold and italic, code, links and id links.
-- Output is escaped, so org text cannot inject markup.
-- Tests cover each construct and a hostile input.
+- The parser handles keywords, property drawers, headings, paragraphs, lists, tables, bold and italic, code, links and id links.
+- The renderer escapes everything, so org text cannot inject markup.
+- The package runs in Node for the BFF and in the browser for the web package.
+- Tests cover each construct, a real compass-created scenario doc and a hostile input.
 - The port keeps the behaviour of ores.org-js for the constructs the scenarios use.
 
 * Plan

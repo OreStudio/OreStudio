@@ -2,7 +2,7 @@
 :ID: 59E83768-A749-44BC-AFDA-7548B44C5A4D
 :END:
 #+title: Task: Serve scenarios from the BFF
-#+description: Add BFF routes that list, read and save scenarios by calling compass. Any signed-in user may call them for now.
+#+description: Add BFF routes that list, read and save scenarios through the scenario store. Any signed-in user may call them for now.
 #+type: task
 #+level: s1
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The browser reads and saves scenarios through the BFF, which calls compass and never reads or writes org files itself.
+The browser reads and saves scenarios through the BFF, which uses the scenario store and never touches the files directly in a route.
 
 * Status
 
@@ -35,10 +35,10 @@ The browser reads and saves scenarios through the BFF, which calls compass and n
 
 * Acceptance
 
-- A route lists the scenarios, a route reads one with its steps and the ids of its story and task, and a route saves a run.
+- A route lists the scenarios, a route reads one with its steps and the ids of its story and task, a route reads a doc by id, and a route saves a run.
 - The routes require a signed-in session and refuse a request with no session.
 - A save that names a step the scenario does not have is refused with a clear message.
-- BFF tests cover the three routes with compass replaced by a stub.
+- BFF tests cover the routes with the store replaced by an in-memory one.
 
 * Plan
 

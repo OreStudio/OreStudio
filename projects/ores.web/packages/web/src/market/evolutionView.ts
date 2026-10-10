@@ -94,6 +94,30 @@ export function endOfDay(day: string): string {
     return `${day} 23:59:59Z`;
 }
 
+/** The range the two days state, or why they state none. */
+export type RangeResult =
+    | { readonly ok: true; readonly range: { readonly from: string; readonly to: string } }
+    | { readonly ok: false; readonly reason: 'missing' | 'range' };
+
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * The range from the first second of one day to the last second of another.
+ *
+ * An empty or malformed day is refused, so a cleared date input does not become
+ * a request with a blank instant. Days are written year first, so the text order
+ * is the time order.
+ */
+export function rangeOf(from: string, to: string): RangeResult {
+    if (!DAY.test(from) || !DAY.test(to)) {
+        return { ok: false, reason: 'missing' };
+    }
+    if (from > to) {
+        return { ok: false, reason: 'range' };
+    }
+    return { ok: true, range: { from: startOfDay(from), to: endOfDay(to) } };
+}
+
 /** The label of a node: its coordinates in the order the shape declares them. */
 export function nodeLabel(coordinates: readonly string[]): string {
     return coordinates.join(' / ');

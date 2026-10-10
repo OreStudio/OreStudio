@@ -42,13 +42,12 @@ import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
 import { Button, Field, Input, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import {
-    endOfDay,
     formatAge,
     identityOf,
     matrixOf,
     neverQuoted,
     nowRowsOf,
-    startOfDay,
+    rangeOf,
     type IdentityForm,
 } from './evolutionView.js';
 
@@ -125,8 +124,8 @@ export function MatrixPanel({ evolution }: { readonly evolution: CurveEvolution 
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line-subtle">
-                            {matrix.rows.map((row) => (
-                                <tr key={row.label}>
+                            {matrix.rows.map((row, index) => (
+                                <tr key={`${index}-${row.label}`}>
                                     <td className="py-2 pr-4 font-mono">{row.label}</td>
                                     <td className="py-2 pr-4">
                                         <Tag
@@ -215,8 +214,8 @@ export function NowPanel({
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-line-subtle">
-                        {rows.map((row) => (
-                            <tr key={row.label}>
+                        {rows.map((row, index) => (
+                            <tr key={`${index}-${row.label}`}>
                                 <td className="py-2 pr-4 font-mono">{row.label}</td>
                                 <td className="py-2 pr-4 font-mono">
                                     {row.value === '' ? (
@@ -278,15 +277,17 @@ export function EvolutionPage(): ReactNode {
     const [provenance, setProvenance] = useState(false);
     const [asked, setAsked] = useState<Asked | null>(null);
     const [problem, setProblem] = useState<string | null>(null);
+    // Every submit gets its own number, so reading the same object again reads it afresh.
+    const [reads, setReads] = useState(0);
 
     const evolution = useQuery({
-        queryKey: ['market-evolution', asked?.identity, asked?.range],
+        queryKey: ['market-evolution', asked?.identity, asked?.range, reads],
         queryFn: () => curves.evolution(asked!.identity, asked!.range),
         enabled: asked !== null,
         retry: false,
     });
     const snapshot = useQuery({
-        queryKey: ['market-snapshot', asked?.identity, asked?.provenance],
+        queryKey: ['market-snapshot', asked?.identity, asked?.provenance, reads],
         queryFn: () => curves.snapshot(asked!.identity, asked!.provenance),
         enabled: asked !== null,
         retry: false,
@@ -299,16 +300,14 @@ export function EvolutionPage(): ReactNode {
             setProblem(t(`market.evolution.errors.${identity.reason}`));
             return;
         }
-        if (from > to) {
-            setProblem(t('market.evolution.errors.range'));
+        const span = rangeOf(from, to);
+        if (!span.ok) {
+            setProblem(t(`market.evolution.errors.${span.reason === 'range' ? 'range' : 'day'}`));
             return;
         }
         setProblem(null);
-        setAsked({
-            identity: identity.identity,
-            range: { from: startOfDay(from), to: endOfDay(to) },
-            provenance,
-        });
+        setReads(reads + 1);
+        setAsked({ identity: identity.identity, range: span.range, provenance });
     };
 
     const text = (key: keyof IdentityForm) => ({

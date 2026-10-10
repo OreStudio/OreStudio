@@ -1603,6 +1603,7 @@ const pt: SourceCatalogue = {
                     'Indique a classe de ativos, o âmbito, o tipo de instrumento e o tipo de cotação.',
                 field: 'Escreva cada outro campo como nome=valor.',
                 range: 'O período termina antes de começar.',
+                day: 'Escolha os dois dias.',
             },
             matrix: {
                 title: 'No período',

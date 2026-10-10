@@ -29,6 +29,7 @@ import {
     neverQuoted,
     nodeLabel,
     nowRowsOf,
+    rangeOf,
     startOfDay,
 } from './evolutionView.js';
 
@@ -81,6 +82,29 @@ describe('the day edges', () => {
     it('writes a day as the first and the last second it holds', () => {
         expect(startOfDay('2026-10-01')).toBe('2026-10-01 00:00:00Z');
         expect(endOfDay('2026-10-01')).toBe('2026-10-01 23:59:59Z');
+    });
+});
+
+describe('rangeOf', () => {
+    it('opens on the first second of the first day and closes on the last of the last', () => {
+        expect(rangeOf('2026-10-01', '2026-10-09')).toEqual({
+            ok: true,
+            range: { from: '2026-10-01 00:00:00Z', to: '2026-10-09 23:59:59Z' },
+        });
+    });
+
+    it('accepts a single day', () => {
+        expect(rangeOf('2026-10-01', '2026-10-01').ok).toBe(true);
+    });
+
+    it('refuses a cleared or malformed day', () => {
+        expect(rangeOf('', '2026-10-09')).toEqual({ ok: false, reason: 'missing' });
+        expect(rangeOf('2026-10-01', '')).toEqual({ ok: false, reason: 'missing' });
+        expect(rangeOf('10/01/2026', '2026-10-09')).toEqual({ ok: false, reason: 'missing' });
+    });
+
+    it('refuses a range that ends before it starts', () => {
+        expect(rangeOf('2026-10-09', '2026-10-01')).toEqual({ ok: false, reason: 'range' });
     });
 });
 
@@ -145,6 +169,12 @@ describe('nowRowsOf', () => {
 
     it('ages a value from its record time to the snapshot instant', () => {
         expect(nowRowsOf(snapshot)[0]?.ageSeconds).toBe(3 * 3600);
+    });
+
+    it('gives no age when the record times are shorter than the nodes', () => {
+        const rows = nowRowsOf({ ...snapshot, recorded_at: [] });
+        expect(rows[0]?.value).toBe('0.080');
+        expect(rows[0]?.ageSeconds).toBeUndefined();
     });
 
     it('gives no age to a hole or to a value with no record time', () => {

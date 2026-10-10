@@ -1609,6 +1609,7 @@ const fr: SourceCatalogue = {
                     'Indiquez la classe d’actifs, le périmètre, le type d’instrument et le type de cotation.',
                 field: 'Écrivez chaque autre champ sous la forme nom=valeur.',
                 range: 'La période se termine avant de commencer.',
+                day: 'Choisissez les deux jours.',
             },
             matrix: {
                 title: 'Sur la période',

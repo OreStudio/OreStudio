@@ -1594,6 +1594,7 @@ export const en: SourceCatalogue = {
                     'State the asset class, the scope, the instrument type and the quote type.',
                 field: 'Write each other field as name=value.',
                 range: 'The range ends before it starts.',
+                day: 'Pick both days.',
             },
             matrix: {
                 title: 'Over the range',

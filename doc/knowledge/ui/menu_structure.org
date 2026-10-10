@@ -17,7 +17,9 @@ A card is drawn for a person who holds the read of its screen. Nothing in the
 menu or in an area is written for a kind of user, because permissions change
 over time and a role is only a bundle of them. Every screen belongs to one
 area, and that area is the middle of its breadcrumb: Home, the area, the
-screen. A person's own pages are in the account menu and not in the menu.
+screen. An area is a topic that a person looks in, such as Reference data, and
+never one kind of record. A party and everything about a party is in Reference
+data. A person's own pages are in the account menu and not in the menu.
 
 * Detail
 
@@ -59,28 +61,92 @@ areas and says which screen belongs to which.
 - A screen has one area. A card on Home or in another area leads to it, and the
   screen still shows the trail of its own area.
 
+** Why the menu was confusing
+
+The menu had seven entries, and they were of three different kinds.
+
+- Some were a kind of record: Parties.
+- Some were a body of data: Reference data.
+- Some were a question the person asks: Requests, Operations.
+
+A person cannot guess where a screen is when the entries answer different
+questions. Parties was drawn beside Reference data, but the party journeys are
+reference data: a party is made of identifiers, contacts, countries, currencies
+and business centres, all of which are reference data. So a person who looked in
+Reference data for a party did not find it.
+
+Four other faults made it worse.
+
+- The same screen had two addresses, such as =/classifications= and
+  =/refdata/classifications=, and =/hierarchy= and =/reporting-lines=.
+- Home repeated the screens as cards with other names, so one screen had two
+  labels.
+- A person's own pages (=/access=, =/where-i-work=, =/profile=, =/security=) were
+  mixed with the pages about other people.
+- Some areas were named for a record kind and others for a topic, so the menu
+  had no one rule for what an entry is.
+
+** The rule for an area
+
+An area is a /topic/ that a person goes to, and its name is the journey group
+that [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] uses for it. It is never one kind of record. A kind of
+record is a card inside the area whose topic it belongs to.
+
+The test for a screen is one question: which topic would a person look in?
+
+| Topic | The question the person asks |
+|-------+------------------------------|
+| Reference data | What are the things the work is made of? |
+| Organisation | Who is here, and what may they do? |
+| Requests | What is waiting for an answer? |
+| Operations | How is the installation running, and who has signed in? |
+| Tenants | Which tenants does this installation hold? |
+
 ** The areas
 
 #+begin_src text
-  Home   Tenants   Parties   Organisation   Requests   Reference data   Operations
+  Home   Reference data   Organisation   Requests   Operations   Tenants
 #+end_src
 
 | Area | Screens | Drawn when the person holds the read of |
 |------+---------+------------------------------------------|
 | Home | The dashboard, Active modules, Upcoming modules | Always |
-| Tenants | The tenants, their parties and people, and onboarding | Any tenant screen |
-| Parties | The parties, their details and counterparty onboarding | Any party screen |
-| Organisation | Staff, Hierarchy, People, Roles and Rescue access | Any one of those screens |
+| Reference data | The groups below | Any screen of any group |
+| Organisation | People (Staff for a member), Hierarchy, Roles and Rescue access | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
-| Reference data | Currencies, calendars, classifications and the other shared lists | Any list |
 | Operations | Services, the compute grid, the message queue, telemetry, versions, the database and Sign-ins | Any one of those screens |
+| Tenants | The tenants, their parties and people, and onboarding | Any tenant screen |
+
+Tenants is last because it serves only the installation, and it is drawn only
+for a session that acts on the deployment (see [[*How today's menu differs][How today's menu differs]]).
+
+*** Reference data, in groups
+
+The Reference data page draws its cards in groups. Each group is a journey
+group, with its heading, so the page reads as an index of topics and not as a
+long row of tiles. A group is drawn when the person holds the read of any card
+in it.
+
+| Group | Cards | Journeys |
+|-------+-------+----------|
+| Parties and counterparties | Parties, Add a party, Correct a party's details, Onboard a counterparty | [[id:86CB724A-66E3-4FB3-A943-3CE22D41213A][Parties]], and new party in [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup]] |
+| Books and portfolios | Book structure | [[id:A08424B7-E6D7-4993-955C-53AEC241ABA5][Books and portfolios]] |
+| Currencies and FX | Currencies, Currency pairs, Desk groups | [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX]] |
+| Calendars and tenors | Holiday calendars | [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars]], [[id:296089DE-83BF-4493-9DD1-E265A168773D][Tenors]] |
+| Conventions | Conventions | [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions]] |
+| Classifications | The classification lists | [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] |
+
+A party and everything about a party is reference data: the party list, a
+party's details, counterparty onboarding and the book structure that the
+parties own. None of them has an entry in the menu.
 
 Operations is not an area of one kind of user. It holds every screen that says
 how the installation or the tenant is running. Each screen in it needs its own
 read, so a person sees the cards they may open. Versions needs no read,
 because every person must be able to report a problem to IT and says which
-build they use. So the Operations area is drawn for every person. A later screen that serves only some people is
-added to Operations and guarded by its read. It does not get an area of its own.
+build they use. So the Operations area is drawn for every person. A later screen
+that serves only some people is added to Operations and guarded by its read. It
+does not get an area of its own.
 
 ** The account menu
 
@@ -92,24 +158,53 @@ areas. A person reaches each in one place, as the entity specification says.
 
 | Screen | Area | Why |
 |--------+------+-----|
-| Staff, Hierarchy, People | Organisation | They are about the people of the tenant |
+| Parties, Add a party, Party details, Onboard a counterparty | Reference data | A party is reference data. The journeys group it with the countries, currencies and business centres it connects to |
+| Book structure | Reference data | The parties own the books |
+| Currencies, Currency pairs, Desk groups, Calendars, Conventions, Classifications | Reference data | They are the shared lists |
+| People (Staff for a member), Hierarchy | Organisation | They are about the people of the tenant |
 | Roles | Organisation | A role is held by a person |
 | Rescue access | Organisation | It acts on one person's account |
 | Sign-ins | Operations | It reads sessions and failed sign-ins. It is the Audit of how the installation is used |
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
+| Tenants | Tenants | The roster of the installation |
 
-** How today's menus differ
+** Addresses
 
-The menu is one list (=MENU= in =shell/areas.ts=), and an area or a card is
-drawn by the read of its screens. Sign-ins, Roles and Rescue access are in
-their areas, and each stands under its area in the breadcrumb. One difference
-is left.
+A screen is under the address of its area, so the address and the breadcrumb say
+the same thing. A screen has one address.
+
+| Screen | Address |
+|--------+---------|
+| Parties | =/refdata/parties= |
+| Add a party | =/refdata/parties/new= |
+| Party details | =/refdata/parties/details= |
+| Onboard a counterparty | =/refdata/counterparties/onboard= |
+| Book structure | =/refdata/books/structure= |
+| Conventions | =/refdata/conventions= |
+| Classifications | =/refdata/classifications= |
+| People | =/organisation/people= |
+| Hierarchy | =/organisation/hierarchy= |
+| Roles | =/organisation/roles= |
+| Rescue access | =/organisation/rescue= |
+| Sign-ins | =/operations/sign-ins= |
+
+The earlier addresses (=/parties=, =/people=, =/hierarchy=, =/staff=, =/roles=,
+=/rescue=, =/audit=, =/classifications=, =/reporting-lines=) redirect to the new
+ones, so a saved link still works.
+
+** How today's menu differs
+
+The code still draws Parties as its own entry and keeps the earlier addresses.
+These differences are left, and each is a change to make.
 
 | Where | Today | The rule |
 |-------+-------+----------|
+| Menu | Parties is an entry | Parties is a group of cards in Reference data |
+| Reference data page | A row of tiles with no groups, and no party cards | Cards in the groups above |
+| Addresses | Each of the screens in the table above has an earlier address | The address under its area |
+| Home | Active modules repeats the screens with names of its own | Active modules uses the card names of the area page |
 | Tenants, and the Services, Grid, Message queue and Telemetry cards | Drawn only where the session acts on the deployment (the =installation= scope), because the server guards these reads by the session mode | Drawn by a read |
-| Other Operations cards | Versions needs no read. Sign-ins needs the read of sessions or sign-in records | As the rule |
 
 ** Open points
 
@@ -118,6 +213,12 @@ is left.
   decides who sees them. A tenant's administrator holds every read, so a read
   that the wildcard grants would show them the installation. The new read must
   be one that the wildcard of a tenant does not grant.
+- Whether Rescue access belongs in Organisation, because it acts on a person, or
+  in Operations with Sign-ins, because it answers a problem with signing in.
+  This page puts it in Organisation.
+- Market data (curves, surfaces and their feeds) has journeys and no web
+  screens yet. When it has screens it may need an area of its own, because it is
+  data that changes by the minute and not a list that changes by the month.
 - Whether Requests is an area or a card of Organisation.
 
 ** Changing the menu
@@ -125,8 +226,8 @@ is left.
 Work in this order. Each step ends in something to check.
 
 1. Name the screen and the narrowest read it needs.
-2. Choose its one area from the table above. If none fits, add the area here
-   first.
+2. Choose its one area by asking which topic a person would look in. If none
+   fits, add the topic here first. Never add an area for one kind of record.
 3. Add the screen to the area page as a card, drawn only for a person who holds
    the read.
 4. Give the screen a breadcrumb of Home, the area and the screen.

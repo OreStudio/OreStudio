@@ -102,6 +102,7 @@ domain::netting_agreement to_domain(const messaging::netting_agreement_write& wr
     domain::netting_agreement v;
     v.id = write.id;
     v.agreement_number = write.agreement_number;
+    v.party_id = write.party_id;
     v.counterparty_id = write.counterparty_id;
     v.agreement_type = write.agreement_type;
     v.governing_law = write.governing_law;

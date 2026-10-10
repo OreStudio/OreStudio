@@ -58,7 +58,7 @@ Surrogate key for the agreement record.
 
 The reference the two parties give the agreement.
 
-Unique within the tenant.
+Unique within the legal entity that signed it.
 
 #+begin_src cpp :name generator
 std::string("NA-") + std::string(faker::string::alphanumeric(10))
@@ -66,9 +66,10 @@ std::string("NA-") + std::string(faker::string::alphanumeric(10))
 
 ** party_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:fixed:    true
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:fixed:       true
 :END:
 
 The legal entity of the firm that signed the agreement.

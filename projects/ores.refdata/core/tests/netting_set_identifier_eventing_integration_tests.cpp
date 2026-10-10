@@ -39,6 +39,12 @@
 #include "ores.refdata.api/messaging/netting_set_identifier_protocol.hpp"
 #include "ores.refdata.core/repository/netting_set_identifier_repository.hpp"
 #include "ores.refdata.core/service/netting_set_identifier_service.hpp"
+// Party seeds (mandatory party_id soft FKs, direct or via a parent's own
+// mandatory party_id FK): the party generator and repository are used
+// regardless of the child's generator facet, hence the fully-qualified
+// refdata paths.
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 // Soft-FK parent seeding (ores_refdata_netting_sets_tbl): the parent may live in another
 // component, so its own component names the headers. A system-tenant parent
 // is read rather than generated, so it needs no generator.
@@ -127,9 +133,42 @@ TEST_CASE("write_netting_set_identifier_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto netting_set_id_parent = ores::refdata::generators::generate_synthetic_netting_set(ctx);
     netting_set_id_parent.change_reason_code = "system.test";
+    // netting_set's own mandatory party_id FK (session-set in
+    // production) needs an active party too: seed one, attached under the
+    // tenant's root party like the direct-party branch below.
+    auto netting_set_id_party = ores::refdata::generators::generate_synthetic_party(ctx);
+    netting_set_id_party.change_reason_code = "system.test";
+    auto netting_set_id_party_existing =
+        ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : netting_set_id_party_existing) {
+        if (e.tenant_id == netting_set_id_party.tenant_id) {
+            netting_set_id_party.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::refdata::repository::party_repository netting_set_id_party_repo;
+    netting_set_id_party_repo.write(party_ctx, netting_set_id_party);
+    netting_set_id_parent.party_id = netting_set_id_party.id;
     ores::refdata::repository::netting_set_repository netting_set_id_repo;
     netting_set_id_repo.write(party_ctx, netting_set_id_parent);
     v.netting_set_id = netting_set_id_parent.id;
+    // Seed the active party row ores_refdata_parties_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto party_id_parent = ores::refdata::generators::generate_synthetic_party(ctx);
+    party_id_parent.change_reason_code = "system.test";
+    // Only one root party (parent_party_id null) is allowed per tenant:
+    // attach to the existing root party instead of creating a second one.
+    auto party_id_existing = ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : party_id_existing) {
+        if (e.tenant_id == party_id_parent.tenant_id) {
+            party_id_parent.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::refdata::repository::party_repository party_id_repo;
+    party_id_repo.write(party_ctx, party_id_parent);
+    v.party_id = party_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Netting Set Identifier: " << v;
 
@@ -192,7 +231,13 @@ TEST_CASE("write_netting_set_identifier_publishes_an_event", tags) {
     // (the notify re-drive above may have written more than once), so
     // only growth is asserted, not an exact count.
     {
-        const auto& crud_ctx = party_ctx;
+        // The row's party (seeded above for the mandatory party FK)
+        // scopes the service reads: point the session's visible-party
+        // set at it directly, the way write_test_party_and_scope_context
+        // does for party-scoped entities.
+        const auto crud_party = v.party_id;
+        const auto crud_ctx =
+            party_ctx.with_party(party_ctx.tenant_id(), crud_party, {crud_party}, h.db_user());
         ores::refdata::service::netting_set_identifier_service svc(crud_ctx);
         v.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);

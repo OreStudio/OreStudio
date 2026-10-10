@@ -687,9 +687,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
--- Party isolation: a set read from an ORE document has no legal entity
--- yet and stays visible across the tenant until one is assigned. FOR SELECT
--- only, as for books.
+-- Party isolation: a set belongs to the legal entity that holds it and is
+-- visible to the parties that can see that entity. FOR SELECT only, as for
+-- books.
 drop policy if exists netting_sets_party_isolation_policy
     on ores_refdata_netting_sets_tbl;
 
@@ -697,5 +697,5 @@ create policy netting_sets_party_isolation_policy
 on ores_refdata_netting_sets_tbl
 as restrictive
 for select using (
-    party_id is null or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );

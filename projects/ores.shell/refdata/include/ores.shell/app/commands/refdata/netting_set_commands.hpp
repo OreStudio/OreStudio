@@ -87,15 +87,15 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <netting_agreement_id> <counterparty_id> <call_type> <initial_margin_type>
-     * <risk_weight> <description> <reason> <commentary>
+     * @brief add <code> <party_id> <netting_agreement_id> <counterparty_id> <call_type>
+     * <initial_margin_type> <risk_weight> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <code> <netting_agreement_id> <counterparty_id> <call_type>
+     * @brief set <id> <code> <party_id> <netting_agreement_id> <counterparty_id> <call_type>
      * <initial_margin_type> <risk_weight> <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -103,8 +103,8 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <code> <netting_agreement_id> <counterparty_id> <call_type>
-     * <initial_margin_type> <risk_weight> <description> <reason> <commentary>
+     * @brief put-many --count <n> <id> <code> <party_id> <netting_agreement_id> <counterparty_id>
+     * <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

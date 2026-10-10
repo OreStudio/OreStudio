@@ -47,6 +47,7 @@ domain::csa csa_mapper::map(const csa_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.netting_set_id = boost::lexical_cast<boost::uuids::uuid>(v.netting_set_id);
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.is_active = v.is_active;
     r.bilateral = v.bilateral;
     r.csa_currency = v.csa_currency;
@@ -85,6 +86,7 @@ csa_entity csa_mapper::map(const domain::csa& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.netting_set_id = boost::uuids::to_string(v.netting_set_id);
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.is_active = v.is_active;
     r.bilateral = v.bilateral;
     r.csa_currency = v.csa_currency;

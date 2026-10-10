@@ -86,6 +86,14 @@ struct netting_set_identifier final {
     std::string id_value;
 
     /**
+     * @brief The legal entity of the firm the identifier belongs to.
+     *
+     * References the parties table. Equal to the party of its netting set, and fixed for the
+     * identifier's life. Two legal entities may each hold a set that answers to the same ORE id.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief Optional description of this identifier.
      *
      * Free text description providing additional context.

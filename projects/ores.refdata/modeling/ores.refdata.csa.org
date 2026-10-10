@@ -59,6 +59,23 @@ References the netting sets table.
 ctx.generate_uuid()
 #+end_src
 
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:fixed:    true
+:END:
+
+The legal entity of the firm the CSA belongs to.
+
+References the parties table. Equal to the party of its netting set, and fixed
+for the CSA's life. A CSA is a contract between one legal entity and one
+counterparty.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
 ** is_active
 :PROPERTIES:
 :type:     boolean
@@ -369,6 +386,7 @@ std::nullopt
 :PROPERTIES:
 :tablename: ores_refdata_csas_tbl
 :rls_tenant_isolation: true
+:rls_party_isolation: true
 :END:
 
 ** Checks
@@ -389,6 +407,12 @@ std::nullopt
 |-------------------+----------------+--------+--------------+-------------|
 | active_set        | netting_set_id | true   | true         | is_active   |
 
+** Pinned keys
+
+| name        | columns                | table                      | target_columns | error_message                                                         |
+|-------------+------------------------+----------------------------+----------------+-----------------------------------------------------------------------|
+| netting_set | netting_set_id, party_id | ores_refdata_netting_sets_tbl | id, party_id   | Invalid netting_set_id: %. The CSA's party must be the netting set's. |
+
 * Foreign keys
 
 ** netting_set_id
@@ -399,6 +423,15 @@ std::nullopt
 :error_message: Invalid netting_set_id: %. No active netting set found with this id.
 :list_by:       true
 :list_by_uuid:  true
+:END:
+
+** party_id
+:PROPERTIES:
+:table:          ores_refdata_parties_tbl
+:parent_entity:  party
+:reuse_existing: true
+:nullable:       false
+:error_message:  Invalid party_id: %. No active party found with this id.
 :END:
 
 * C++

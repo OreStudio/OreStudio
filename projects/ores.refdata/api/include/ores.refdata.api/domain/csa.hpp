@@ -76,6 +76,14 @@ struct csa final {
     boost::uuids::uuid netting_set_id;
 
     /**
+     * @brief The legal entity of the firm the CSA belongs to.
+     *
+     * References the parties table. Equal to the party of its netting set, and fixed for the CSA's
+     * life. A CSA is a contract between one legal entity and one counterparty.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief Whether the CSA is in force.
      *
      * ORE's ActiveCSAFlag. A set has at most one active CSA; an inactive one keeps its terms.

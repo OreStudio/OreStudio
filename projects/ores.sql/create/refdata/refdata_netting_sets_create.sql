@@ -33,8 +33,9 @@
  * counterparty and legal entity, and a pinned key holds the copy to the
  * agreement, so a set cannot be filed under another counterparty's
  * agreement. A set with no agreement holds trades that do not net; its
- * counterparty and legal entity may be unknown, as they are for a set read
- * from an ORE document, which names neither.
+ * counterparty may be unknown, as it is for a set read from an ORE document,
+ * which names none. Every set belongs to a legal entity of the firm, and the
+ * entity that imports the document is the one it belongs to.
  *
  * The code is the netting set id ORE uses. The call type and initial margin
  * type are the remaining parts of ORE's netting set details, and the risk
@@ -46,9 +47,9 @@ create table if not exists "ores_refdata_netting_sets_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "code" text not null,
+    "party_id" uuid not null,
     "netting_agreement_id" uuid null,
     "counterparty_id" uuid null,
-    "party_id" uuid null,
     "call_type" text null,
     "initial_margin_type" text null,
     "risk_weight" double precision null,
@@ -67,13 +68,13 @@ create table if not exists "ores_refdata_netting_sets_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("netting_agreement_id" is null or ("counterparty_id" is not null and "party_id" is not null)),
+    check ("netting_agreement_id" is null or "counterparty_id" is not null),
     check ("risk_weight" is null or "risk_weight" >= 0)
 );
 
--- Unique code for active records
-create unique index if not exists netting_sets_code_uniq_idx
-on "ores_refdata_netting_sets_tbl" (tenant_id, code)
+-- Composite natural key: unique combination for active records
+create unique index if not exists netting_sets_code_party_id_uniq_idx
+on "ores_refdata_netting_sets_tbl" (tenant_id, code, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -123,17 +124,15 @@ begin
         end if;
     end if;
 
-    -- Validate party_id (optional soft FK to ores_refdata_parties_tbl)
-    if NEW.party_id is not null then
-        if not exists (
-            select 1 from ores_refdata_parties_tbl
-            where tenant_id = NEW.tenant_id
-              and id = NEW.party_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid party_id: %. No active party found with this id.', NEW.party_id
-                using errcode = '23503';
-        end if;
+    -- Validate party_id (soft FK to ores_refdata_parties_tbl)
+    if not exists (
+        select 1 from ores_refdata_parties_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.party_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid party_id: %. No active party found with this id.', NEW.party_id
+            using errcode = '23503';
     end if;
 
     -- Validate the agreement pin to ores_refdata_netting_agreements_tbl

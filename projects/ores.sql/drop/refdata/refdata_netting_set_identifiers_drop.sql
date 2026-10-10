@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists netting_set_identifiers_tbl_party_isolation_policy on "ores_refdata_netting_set_identifiers_tbl";
 drop policy if exists netting_set_identifiers_tbl_tenant_isolation_policy on "ores_refdata_netting_set_identifiers_tbl";
 drop rule if exists ores_refdata_netting_set_identifiers_delete_rule on "ores_refdata_netting_set_identifiers_tbl";
 drop trigger if exists ores_refdata_netting_set_identifiers_insert_trg on "ores_refdata_netting_set_identifiers_tbl";

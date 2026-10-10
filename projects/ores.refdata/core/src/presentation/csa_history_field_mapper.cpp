@@ -40,6 +40,7 @@ std::vector<ores::diff::domain::field_value> render_csa_fields(const domain::csa
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back(
         {.name = "Netting Set ID", .value = boost::uuids::to_string(v.netting_set_id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Is Active", .value = v.is_active ? "true" : "false"});
     fields.push_back({.name = "Bilateral", .value = v.bilateral.value_or(std::string{})});
     fields.push_back({.name = "Csa Currency", .value = v.csa_currency.value_or(std::string{})});

@@ -36,15 +36,18 @@
 #include "ores.refdata.api/domain/netting_set_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/netting_set_event.hpp"
 #include "ores.refdata.api/generators/netting_set_generator.hpp"
-#include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.refdata.core/repository/netting_set_repository.hpp"
-#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/service/netting_set_service.hpp"
+// Party seeds (mandatory party_id soft FKs, direct or via a parent's own
+// mandatory party_id FK): the party generator and repository are used
+// regardless of the child's generator facet, hence the fully-qualified
+// refdata paths.
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -66,25 +69,6 @@ namespace {
 const std::string_view test_suite("refdata.tests");
 const std::string tags("[eventing][integration]");
 
-// Netting Set writes are party-scoped: the session-level
-// app.current_party_id GUC must be set before writing.
-ores::database::context
-write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
-                                   ores::utility::generation::generation_context& ctx) {
-    using ores::refdata::repository::party_repository;
-    party_repository party_repo;
-    auto party = ores::refdata::generators::generate_synthetic_party(ctx);
-    party.change_reason_code = "system.test";
-    auto existing = party_repo.read_latest(h.context());
-    for (const auto& e : existing) {
-        if (e.tenant_id == party.tenant_id) {
-            party.parent_party_id = e.id;
-            break;
-        }
-    }
-    party_repo.write(h.context(), party);
-    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
-}
 
 }
 
@@ -99,7 +83,7 @@ TEST_CASE("write_netting_set_publishes_an_event", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+    auto& party_ctx = h.context();
 
     // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
     // production event-registrar wires in the live service, assembled
@@ -139,7 +123,23 @@ TEST_CASE("write_netting_set_publishes_an_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_netting_set(ctx);
     v.change_reason_code = "system.test";
-    v.party_id = *party_ctx.party_id();
+    // Seed the active party row ores_refdata_parties_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto party_id_parent = ores::refdata::generators::generate_synthetic_party(ctx);
+    party_id_parent.change_reason_code = "system.test";
+    // Only one root party (parent_party_id null) is allowed per tenant:
+    // attach to the existing root party instead of creating a second one.
+    auto party_id_existing = ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : party_id_existing) {
+        if (e.tenant_id == party_id_parent.tenant_id) {
+            party_id_parent.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::refdata::repository::party_repository party_id_repo;
+    party_id_repo.write(party_ctx, party_id_parent);
+    v.party_id = party_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Netting Set: " << v;
 
@@ -201,9 +201,13 @@ TEST_CASE("write_netting_set_publishes_an_event", tags) {
     // (the notify re-drive above may have written more than once), so
     // only growth is asserted, not an exact count.
     {
-        // party_ctx already carries the visible-party set: v's own
-        // party is the session party the RLS policies filter by.
-        const auto& crud_ctx = party_ctx;
+        // The row's party (seeded above for the mandatory party FK)
+        // scopes the service reads: point the session's visible-party
+        // set at it directly, the way write_test_party_and_scope_context
+        // does for party-scoped entities.
+        const auto crud_party = v.party_id;
+        const auto crud_ctx =
+            party_ctx.with_party(party_ctx.tenant_id(), crud_party, {crud_party}, h.db_user());
         ores::refdata::service::netting_set_service svc(crud_ctx);
         v.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);

@@ -103,6 +103,7 @@ domain::approval_decision to_domain(const messaging::approval_decision_write& wr
     v.id = write.id;
     v.request_id = write.request_id;
     v.decision_code = write.decision_code;
+    v.part_code = write.part_code;
     v.decided_by = write.decided_by;
     v.decided_at = write.decided_at;
     v.comment = write.comment;

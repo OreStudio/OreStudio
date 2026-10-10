@@ -41,6 +41,7 @@ create table if not exists "ores_inbox_approval_decisions_tbl" (
     "version" integer not null,
     "request_id" uuid not null,
     "decision_code" text not null,
+    "part_code" text null,
     "decided_by" uuid not null,
     "decided_at" timestamp with time zone not null,
     "comment" text not null,
@@ -117,6 +118,19 @@ begin
     ) then
         raise exception 'Invalid decided_by: %. No account found with this id.', NEW.decided_by
             using errcode = '23503';
+    end if;
+
+    -- Validate part_code (optional soft FK to ores_inbox_approval_parts_tbl)
+    if NEW.part_code is not null then
+        if not exists (
+            select 1 from ores_inbox_approval_parts_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.part_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid part_code: %. No approval part found with this code.', NEW.part_code
+                using errcode = '23503';
+        end if;
     end if;
 
     -- Validate change_reason_code

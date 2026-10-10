@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 28AFF48B-A9A2-5F69-A77D-41252747E5CC
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the approval_policies commands from the shell?
+#+description: Every command the approval_policies submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:approval_policies:
+
+This file documents the approval_policies resource at the shell, one section per command. Every command is a subcommand of =approval_policies=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5554CFEC-2AF7-5E3F-AD90-E9F6564A5CED
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_policies list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.approval_policies.list=.
+
+#+name: approval_policies-list
+#+begin_src ores-shell :tangle approval_policies-list.ores :exports none
+approval_policies list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 618EE50B-2384-587B-A93D-0A2C4F023EBC
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_policies get <code>
+#+end_example
+
+It is addressed at =inbox.v1.approval_policies.get=.
+
+#+name: approval_policies-get
+#+begin_src ores-shell :tangle approval_policies-get.ores :exports none
+approval_policies get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D041E0F3-B5CD-5AEA-874E-E7C5FED754F2
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_policies get-many <code>
+#+end_example
+
+It is addressed at =inbox.v1.approval_policies.get_many=.
+
+#+name: approval_policies-get-many
+#+begin_src ores-shell :tangle approval_policies-get-many.ores :exports none
+approval_policies get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C8A60EA6-9182-5466-B3C2-E6A508A5DB84
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_policies add <code> <name> <description> <entity_type> <operation> <field_name> <part_code> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_policies.put=.
+
+#+name: approval_policies-add
+#+begin_src ores-shell :tangle approval_policies-add.ores :exports none
+approval_policies add __none__ __none__ __none__ __none__ __none__ - __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 58B014F9-95CF-5F6E-91E7-6666133A3FD9
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_policies set <code> <name> <description> <entity_type> <operation> <field_name> <part_code> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.approval_policies.put=.
+
+#+name: approval_policies-set
+#+begin_src ores-shell :tangle approval_policies-set.ores :exports none
+approval_policies set __none__ __none__ __none__ __none__ __none__ - __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 20B838D6-27DC-529A-B5A1-947EA3055242
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_policies put-many --count <n> <code> <name> <description> <entity_type> <operation> <field_name> <part_code> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_policies.put_many=.
+
+#+name: approval_policies-put-many
+#+begin_src ores-shell :tangle approval_policies-put-many.ores :exports none
+approval_policies put-many --count 1 __none__ __none__ __none__ __none__ __none__ - __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 2239B1FE-7F4A-5E46-86D5-32744CC90D42
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_policies delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.approval_policies.delete=.
+
+#+name: approval_policies-delete
+#+begin_src ores-shell :tangle approval_policies-delete.ores :exports none
+approval_policies delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 004B5676-882B-55FF-8C70-C2EA1827B874
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_policies delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_policies.delete_many=.
+
+#+name: approval_policies-delete-many
+#+begin_src ores-shell :tangle approval_policies-delete-many.ores :exports none
+approval_policies delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 7CF4C759-8981-5B5B-947F-46DB63A6EB9E
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_policies versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.approval_policies_versions.list=.
+
+#+name: approval_policies-versions
+#+begin_src ores-shell :tangle approval_policies-versions.ores :exports none
+approval_policies versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 8B717A8E-AD4B-5DCC-B3FD-D62B325B3EF7
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_policies version <code> --version <n>
+#+end_example
+
+It is addressed at =inbox.v1.approval_policies_versions.get=.
+
+#+name: approval_policies-version
+#+begin_src ores-shell :tangle approval_policies-version.ores :exports none
+approval_policies version __none__ --version 1
+#+end_src
+

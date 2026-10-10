@@ -1577,6 +1577,67 @@ const pt: SourceCatalogue = {
         },
     },
 
+    market: {
+        area: 'Dados de mercado',
+        evolution: {
+            screen: 'Acompanhar a evolução de uma curva',
+            title: 'Acompanhar a evolução de uma curva ou superfície',
+            description:
+                'Indique um objeto e um período. Leia os instantes por nós no período e o objeto como está agora.',
+            reading: 'A ler o objeto...',
+            form: {
+                title: 'O objeto',
+                asset: 'Classe de ativos',
+                scope: 'Âmbito',
+                instrumentType: 'Tipo de instrumento',
+                quoteType: 'Tipo de cotação',
+                fields: 'Outros campos de identidade',
+                fieldsHint: 'Um nome=valor por linha, por exemplo ccy=PLN.',
+                from: 'De',
+                to: 'Até',
+                provenance: 'Mostrar a origem de cada valor',
+                submit: 'Acompanhar',
+            },
+            errors: {
+                missing:
+                    'Indique a classe de ativos, o âmbito, o tipo de instrumento e o tipo de cotação.',
+                field: 'Escreva cada outro campo como nome=valor.',
+                range: 'O período termina antes de começar.',
+                day: 'Escolha os dois dias.',
+            },
+            matrix: {
+                title: 'No período',
+                node: 'Nó',
+                status: 'Mudança',
+                hole: 'Sem ponto',
+                noNodes: 'O objeto não declara nenhum nó.',
+                noInstants: 'O objeto não tem nenhum instante neste período.',
+                neverQuoted: '{count} nós não têm valor em nenhum instante deste período.',
+            },
+            status: {
+                persistent: 'Persistente',
+                added: 'Acrescentado',
+                dropped: 'Retirado',
+                intermittent: 'Intermitente',
+                never_quoted: 'Nunca cotado',
+            },
+            now: {
+                title: 'Agora',
+                value: 'Valor',
+                age: 'Idade',
+                source: 'Origem',
+                detail: 'Detalhe',
+                summary: 'O valor mais antigo tem {oldest}. Os valores abrangem {spread}.',
+            },
+            source: {
+                quoted: 'Cotado',
+                derived: 'Derivado',
+                manual: 'Manual',
+            },
+            gap: 'Ainda não se lê nenhuma lista de séries, por isso o objeto é indicado pela sua identidade.',
+        },
+    },
+
     component: {
         entities: 'Entidades',
         shortcuts: 'Tarefas comuns',

@@ -451,8 +451,8 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    () => (
-                        <OperationsArea />
+                    (view) => (
+                        <OperationsArea mode={view.mode} />
                     ),
                     'workspace',
                 )}

@@ -349,18 +349,43 @@ describe('the application shell', () => {
     });
 
     /*
-     * The menu is the areas of the mode, and a mode whose journeys no group has
-     * implemented has no areas. It is asserted as an absence because an empty
-     * menu is not the same defect as a menu that names an area nobody can open.
+     * The menu is one list for every person. A mode does not change it: what
+     * changes it is the reads the person holds, and a screen that reads the
+     * whole deployment, which only a session acting on the deployment may open.
      */
-    it('offers the areas of its mode, and no area of another', () => {
-        const system = renderAppShell('Acme Operations', 'system-administration');
-        expect(system).toContain('Tenants');
-        expect(system).toContain('>Accounts<');
-        expect(system).toContain('href="/people"');
+    it('is the same menu in every mode for the areas that need no read', () => {
+        for (const mode of [
+            'system-administration',
+            'tenant-administration',
+            'application',
+        ] as const) {
+            const html = renderAppShell('Acme Operations', mode);
+            for (const href of ['/', '/requests', '/refdata', '/operations']) {
+                expect(html).toContain(`href="${href}"`);
+            }
+        }
+    });
 
-        const application = renderAppShell('Acme Operations', 'application');
-        expect(application).not.toContain('Tenants');
+    it('draws Tenants only where the session acts on the deployment', () => {
+        expect(renderAppShell('Acme Operations', 'system-administration')).toContain(
+            'href="/tenants"',
+        );
+        expect(renderAppShell('Acme Operations', 'application')).not.toContain('href="/tenants"');
+    });
+
+    it('draws Parties and Organisation by the read, in every mode', () => {
+        for (const mode of ['system-administration', 'application'] as const) {
+            const without = renderAppShell('Acme', mode);
+            expect(without).not.toContain('href="/parties"');
+            expect(without).not.toContain('href="/organisation"');
+
+            const withReads = renderAppShell('Acme', mode, undefined, [
+                'refdata::parties:read',
+                'iam::roles:read',
+            ]);
+            expect(withReads).toContain('href="/parties"');
+            expect(withReads).toContain('href="/organisation"');
+        }
     });
 
     it('offers Organisation only to a person who may read the accounts', () => {

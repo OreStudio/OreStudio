@@ -101,23 +101,23 @@ areas. A person reaches each in one place, as the entity specification says.
 
 ** How today's menus differ
 
+The menu is one list (=MENU= in =shell/areas.ts=), and an area or a card is
+drawn by the read of its screens. Sign-ins, Roles and Rescue access are in
+their areas, and each stands under its area in the breadcrumb. One difference
+is left.
+
 | Where | Today | The rule |
 |-------+-------+----------|
-| =SHELL_MENUS= in =shell/areas.ts= | Three lists, one per mode | One list, drawn by the reads |
-| Menu entries | Some entries are tied to a mode, such as Tenants and Accounts | An entry is drawn by the read of its screens |
-| Tenant administration | Roles, Rescue access and Sign-ins are top-level entries | Roles and Rescue access in Organisation, Sign-ins in Operations |
-| Application | My access is a menu entry | My access is in the account menu |
-| Sign-ins (=/audit=) | No area. The breadcrumb is Home, Sign-ins | Home, Operations, Sign-ins |
-| Operations screens | Not guarded by a read. The menu is the only guard | Each screen is guarded by its own read |
-
-Each difference is a follow-up. The [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] page says that the
-Operations area belongs to one kind of user. That rule is replaced by the one
-here.
+| Tenants, and the Services, Grid, Message queue and Telemetry cards | Drawn only where the session acts on the deployment (the =installation= scope), because the server guards these reads by the session mode | Drawn by a read |
+| Other Operations cards | Versions needs no read. Sign-ins needs the read of sessions or sign-in records | As the rule |
 
 ** Open points
 
-- The installation screens read the whole installation. They need a read of
-  their own, so that the read decides who sees them and the menu does not.
+- The installation screens read the whole installation, and the server guards
+  them by the session mode. They need a read of their own, so that the read
+  decides who sees them. A tenant's administrator holds every read, so a read
+  that the wildcard grants would show them the installation. The new read must
+  be one that the wildcard of a tenant does not grant.
 - Whether Requests is an area or a card of Organisation.
 
 ** Changing the menu

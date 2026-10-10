@@ -33,7 +33,7 @@ import { enFlat } from '../i18n/locales/en.js';
 import { frFlat } from '../i18n/locales/fr.js';
 import { createTranslator } from '../i18n/translate.js';
 import { AppRoutes } from '../AppRoutes.js';
-import { menuFor } from '../shell/areas.js';
+import { MENU } from '../shell/areas.js';
 import type { BootstrapState } from '../session/BootstrapProvider.js';
 import { OperationsArea } from './OperationsArea.js';
 import {
@@ -137,9 +137,26 @@ function withProviders(
     grid: GridView = gridView(),
     bus: BusView = busView(),
     logs: LogsView = logsView(),
+    permissionCodes: readonly string[] = [],
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['my-access'], { roles: [] });
+    client.setQueryData(['my-access'], {
+        roles:
+            permissionCodes.length === 0
+                ? []
+                : [
+                      {
+                          roleId: 'r',
+                          name: 'Viewer',
+                          description: '',
+                          permissionCodes: [...permissionCodes],
+                          givenBy: 'system',
+                          givenAt: '2026-10-05 09:30:00Z',
+                          reasonCode: 'access.initial',
+                          commentary: '',
+                      },
+                  ],
+    });
     client.setQueryData(SERVICES_QUERY_KEY, roster);
     client.setQueryData(GRID_QUERY_KEY, grid);
     client.setQueryData([BUS_QUERY_KEY, '1h'], bus);
@@ -366,7 +383,15 @@ function logsView(overrides: Partial<LogsView> = {}): LogsView {
 
 describe('the operations area', () => {
     it('lists its screens, and links every one of them', () => {
-        const html = withProviders(<OperationsArea />);
+        const html = withProviders(
+            <OperationsArea mode="system-administration" />,
+            '/',
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            ['iam::sessions:read'],
+        );
 
         expect(html).toContain('href="/operations/versions"');
         expect(html).toContain('href="/operations/services"');
@@ -382,13 +407,34 @@ describe('the operations area', () => {
         expect(html.match(/Not built yet/g) ?? []).toHaveLength(0);
     });
 
-    it('is offered to system administration alone', () => {
-        const routes = (mode: 'system-administration' | 'tenant-administration' | 'application') =>
-            menuFor(mode).map((item) => item.to);
+    it('draws Versions for every person, and only that where the session reads no installation', () => {
+        const html = withProviders(<OperationsArea mode="application" />);
 
-        expect(routes('system-administration')).toContain('/operations');
-        expect(routes('tenant-administration')).not.toContain('/operations');
-        expect(routes('application')).not.toContain('/operations');
+        expect(html).toContain('href="/operations/versions"');
+        for (const href of ['services', 'grid', 'bus', 'logs']) {
+            expect(html).not.toContain(`href="/operations/${href}"`);
+        }
+        expect(html).not.toContain('href="/audit"');
+    });
+
+    it('draws Sign-ins for a person who may read sessions, in any mode', () => {
+        const html = withProviders(
+            <OperationsArea mode="application" />,
+            '/',
+            [],
+            gridView(),
+            busView(),
+            logsView(),
+            ['iam::sessions:read'],
+        );
+
+        expect(html).toContain('href="/audit"');
+    });
+
+    it('is drawn in the menu of every mode', () => {
+        expect(MENU.map((item) => item.to)).toContain('/operations');
+        expect(MENU.find((item) => item.to === '/operations')?.permission).toBeUndefined();
+        expect(MENU.find((item) => item.to === '/operations')?.scope).toBeUndefined();
     });
 });
 

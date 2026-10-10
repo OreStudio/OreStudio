@@ -58,6 +58,7 @@ import {
     SERVICES_QUERY_KEY,
 } from './InstallationHealth.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
 
 /** The ranges the error and warning counts can be read over, as the logs screen offers them. */
 const HEALTH_RANGES: readonly LogsRange[] = ['15m', '1h', '6h', '24h'];
@@ -210,23 +211,26 @@ export function ServicesPage(): ReactNode {
 
     return (
         <div className="space-y-6">
-            <PageHeader
-                title={t('operations.services.title')}
-                description={t('operations.services.description')}
-                actions={
-                    <div className="flex items-center gap-3">
-                        <span className="text-xs text-ink-faint">
-                            {t('operations.services.updated', {
-                                at: readTime(roster.dataUpdatedAt),
-                            })}
-                        </span>
-                        <Button variant="secondary" onClick={() => void roster.refetch()}>
-                            {t('operations.services.refresh')}
-                        </Button>
-                        <OperationsBack />
-                    </div>
-                }
-            />
+            <div>
+                <AreaTrail area="operations" screen={t('operations.screens.services')} />
+                <PageHeader
+                    title={t('operations.services.title')}
+                    description={t('operations.services.description')}
+                    actions={
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs text-ink-faint">
+                                {t('operations.services.updated', {
+                                    at: readTime(roster.dataUpdatedAt),
+                                })}
+                            </span>
+                            <Button variant="secondary" onClick={() => void roster.refetch()}>
+                                {t('operations.services.refresh')}
+                            </Button>
+                            <OperationsBack />
+                        </div>
+                    }
+                />
+            </div>
 
             <section className="card space-y-4 p-6">
                 <header className="flex flex-wrap items-baseline justify-between gap-2">

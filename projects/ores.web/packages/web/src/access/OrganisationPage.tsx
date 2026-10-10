@@ -61,6 +61,26 @@ export function OrganisationPage(): ReactNode {
             to: HIERARCHY_PATH,
             icon: 'people',
         },
+        ...(holds('iam::roles:read')
+            ? ([
+                  {
+                      title: t('home.tenant.roles'),
+                      body: t('home.tenant.rolesBody'),
+                      to: '/roles',
+                      icon: 'access',
+                  },
+              ] satisfies Tile[])
+            : []),
+        ...(holds('iam::accounts:lock')
+            ? ([
+                  {
+                      title: t('home.tenant.rescue'),
+                      body: t('home.tenant.rescueBody'),
+                      to: '/rescue',
+                      icon: 'unlock',
+                  },
+              ] satisfies Tile[])
+            : []),
     ];
     return (
         <div className="space-y-6">

@@ -30,7 +30,7 @@ import { Button } from '../ui/Primitives.js';
 import { useHolds } from '../access/holds.js';
 import { displayName } from '../access/names.js';
 import { NotificationBell } from '../inbox/NotificationBell.js';
-import { menuFor, modeKey, offered } from '../shell/areas.js';
+import { MENU, modeKey, offered } from '../shell/areas.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
 import { VersionFooter } from './VersionFooter.js';
 
@@ -96,7 +96,7 @@ export function AppShell({
 }: AppShellProps): ReactNode {
     const { t } = useTranslation();
     const holds = useHolds();
-    const menu = menuFor(mode).filter((item) => offered(item, holds));
+    const menu = MENU.filter((item) => offered(item, holds, mode));
 
     return (
         <div className="flex min-h-full flex-col bg-bg-primary">

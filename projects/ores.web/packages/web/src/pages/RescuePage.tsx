@@ -36,6 +36,7 @@ import {
     cx,
 } from '../ui/Primitives.js';
 import type { Account, LoginInfo } from '@ores/wire-protocol/browser';
+import { AreaTrail } from '../shell/AreaTrail.js';
 
 /**
  * Rescue access, the tenant administrator's screen.
@@ -116,10 +117,13 @@ export function RescuePage(): ReactNode {
 
     return (
         <div className="mx-auto max-w-[1100px] space-y-6">
-            <PageHeader
-                title="Rescue access"
-                description="Get one colleague back into the system, or shut the account down."
-            />
+            <div>
+                <AreaTrail area="organisation" screen="Rescue access" />
+                <PageHeader
+                    title="Rescue access"
+                    description="Get one colleague back into the system, or shut the account down."
+                />
+            </div>
             {state.kind === 'idle' && <Finder />}
             {state.kind === 'missing' && (
                 <div className="space-y-6">

@@ -21,11 +21,11 @@ The system administrator's home opens on a dashboard of four panels that all sta
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -38,9 +38,9 @@ The system administrator's home opens on a dashboard of four panels that all sta
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:26BDE5D5-784E-4BA1-A7A5-44922E2126D1][Scaffold story: Review the system administrator's home screen]] | STARTED | 2026-10-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:8F166685-B0E1-4418-8B1C-4DDA9E7F301B][Rework the system home into three tabs with four dashboard panels]] | BACKLOG | | | Initial task for: Review the system administrator's home screen |
-| [[id:537F5B54-7A87-4D65-AFD9-03217DCBC0CC][File the Gemini review of the system home and take its layout]] | STARTED | 2026-10-10 | | Gemini drew the system administrator's home as a dashboard of four panels. File it as a review of the Home screen prototype, and take from it what the data supports. |
+| [[id:26BDE5D5-784E-4BA1-A7A5-44922E2126D1][Scaffold story: Review the system administrator's home screen]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8F166685-B0E1-4418-8B1C-4DDA9E7F301B][Rework the system home into three tabs with four dashboard panels]] | DONE | | 2026-10-10 | Initial task for: Review the system administrator's home screen |
+| [[id:537F5B54-7A87-4D65-AFD9-03217DCBC0CC][File the Gemini review of the system home and take its layout]] | DONE | 2026-10-10 | 2026-10-10 | Gemini drew the system administrator's home as a dashboard of four panels. File it as a review of the Home screen prototype, and take from it what the data supports. |
 
 * Decisions
 

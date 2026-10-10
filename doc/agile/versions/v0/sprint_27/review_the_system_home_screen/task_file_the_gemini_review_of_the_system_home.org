@@ -26,11 +26,11 @@ The review sits beside the Home screen prototype with its paperwork, and the bui
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2F4E0D76-607B-48BC-8824-DF1D1209FF67][Review the system administrator's home screen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance

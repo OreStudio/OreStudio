@@ -39,11 +39,11 @@ would say about an empty log.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Fix verified against a running installation. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | PR, then merge.                        |
+| Next          | Nothing.                               |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -65,3 +65,12 @@ would say about an empty log.
 * Out of scope
 
 -
+
+* Result
+
+Merged as PR #3022. A sign-in that completes at party selection now records
+its =login_success= against the chosen party, and a failure to record cannot
+refuse a sign-in that already succeeded. A refusal records the tenant that was
+reached for and the bare username. The time bounds are cast through =nullif=,
+so the events read answers for the day window and for all. Verified against a
+running installation.

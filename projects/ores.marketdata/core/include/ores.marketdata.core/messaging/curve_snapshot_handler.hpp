@@ -23,9 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
-#include "ores.marketdata.core/repository/curve_snapshot_staleness.hpp"
-#include "ores.marketdata.core/repository/market_observation_repository.hpp"
-#include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/service/series_snapshot_reader.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -50,12 +48,12 @@ using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 /**
- * @brief NATS message handler for the single-instant curve snapshot read -- a
- * thin wrapper around market_observation_repository::read_as_of_records(), with
- * series_id resolved server-side from the series' oresmd identity, so callers
- * do not need to know internal series ids.
+ * @brief NATS message handler for the single-instant read of a composite object.
  *
- * The evolution over a range is its own read, in series_evolution_handler.
+ * The handler owns the session, the permission, the wire and the instant, which
+ * is now; the read itself is service::series_snapshot_reader, which a test drives
+ * without NATS. The evolution over a range is its own read, in
+ * series_evolution_handler.
  */
 class curve_snapshot_handler {
 public:
@@ -79,45 +77,24 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        get_curve_snapshot_response resp;
-        // Set before the series is resolved, so an empty snapshot still carries
-        // the instant it is relative to rather than leaving it at the epoch.
-        const auto as_of = std::chrono::system_clock::now();
-        resp.as_of = as_of;
         if (auto req = decode<get_curve_snapshot_request>(msg)) {
+            const auto as_of = std::chrono::system_clock::now();
+            get_curve_snapshot_response resp;
+            resp.as_of = as_of;
             try {
-                repository::market_series_repository series_repo;
-                auto series = series_repo.read_latest_by_uri(req_ctx, req->oresmd_uri);
-                if (!series.empty()) {
-                    repository::market_observation_repository obs_repo;
-                    const auto records =
-                        obs_repo.read_as_of_records(req_ctx, series.front().id, as_of);
-                    resp.observations.reserve(records.size());
-                    resp.recorded_at.reserve(records.size());
-                    for (const auto& record : records) {
-                        resp.observations.push_back(record.observation);
-                        resp.recorded_at.push_back(record.recorded_at);
-                    }
-                    const auto summary = repository::summarise_staleness(records, as_of);
-                    resp.oldest_age_seconds = summary.oldest_age_seconds;
-                    resp.spread_seconds = summary.spread_seconds;
-                    resp.warning = summary.warning;
-                }
-                // No series yet (feed hasn't published) is not an error -- empty snapshot.
-                resp.success = true;
+                resp = service::series_snapshot_reader::read(req_ctx, *req, as_of);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(curve_snapshot_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }
-        } else {
-            BOOST_LOG_SEV(curve_snapshot_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            BOOST_LOG_SEV(curve_snapshot_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
             return;
         }
-        BOOST_LOG_SEV(curve_snapshot_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        BOOST_LOG_SEV(curve_snapshot_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        error_reply(nats_, msg, ores::service::error_code::bad_request);
     }
 
 private:

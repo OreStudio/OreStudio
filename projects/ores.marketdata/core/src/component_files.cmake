@@ -100,6 +100,7 @@ set(files
     "service/series_shape.cpp"
     "service/series_shape_writer.cpp"
     "service/series_slice_reader.cpp"
+    "service/series_snapshot_reader.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -191,4 +192,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/series_shape.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/series_shape_writer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/series_slice_reader.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/series_snapshot_reader.hpp"
 )

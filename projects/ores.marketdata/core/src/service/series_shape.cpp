@@ -24,9 +24,55 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace ores::marketdata::service {
+
+std::optional<std::string> coordinate_of(const datum::market_datum& point, datum::field axis) {
+    if (!point.holds(axis))
+        return std::nullopt;
+    const auto& held = point.at(axis);
+    if (std::holds_alternative<datum::none_t>(held))
+        return std::nullopt;
+    return datum::text_of(held);
+}
+
+series_grid::series_grid(const series_shape& shape)
+    : shape_(shape)
+    , strides_(shape.axes.size(), 1) {
+    // The last axis varies fastest, so a node's index is the sum of each value's
+    // position times that axis's stride.
+    for (std::size_t i = shape_.axes.size(); i-- > 0;) {
+        strides_[i] = size_;
+        size_ *= shape_.values.at(shape_.axes[i]).size();
+    }
+}
+
+std::vector<std::string> series_grid::coordinates(std::size_t index) const {
+    std::vector<std::string> labels;
+    labels.reserve(shape_.axes.size());
+    for (std::size_t i = 0; i < shape_.axes.size(); ++i) {
+        const auto& values = shape_.values.at(shape_.axes[i]);
+        labels.push_back(values[(index / strides_[i]) % values.size()]);
+    }
+    return labels;
+}
+
+std::optional<std::size_t> series_grid::node_of(const datum::market_datum& point) const {
+    std::size_t index = 0;
+    for (std::size_t i = 0; i < shape_.axes.size(); ++i) {
+        const auto held = coordinate_of(point, shape_.axes[i]);
+        if (!held)
+            return std::nullopt;
+        const auto& values = shape_.values.at(shape_.axes[i]);
+        const auto at = std::ranges::find(values, *held);
+        if (at == values.end())
+            return std::nullopt;
+        index += static_cast<std::size_t>(at - values.begin()) * strides_[i];
+    }
+    return index;
+}
 
 series_shape read_series_shape(ores::database::context ctx, const std::string& series_id) {
     using namespace ores::marketdata;

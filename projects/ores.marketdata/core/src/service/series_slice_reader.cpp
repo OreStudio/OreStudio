@@ -32,7 +32,6 @@
 #include <string>
 #include <string_view>
 #include <utility>
-#include <variant>
 #include <vector>
 
 namespace ores::marketdata::service {
@@ -53,16 +52,6 @@ inline std::string_view logger_name = "ores.marketdata.core.series_slice_reader"
 constexpr std::size_t max_axes = 2;
 
 using datum::field;
-
-/// The value @p point holds on @p axis, or nothing when it holds none.
-std::optional<std::string> coordinate_of(const datum::market_datum& point, field axis) {
-    if (!point.holds(axis))
-        return std::nullopt;
-    const auto& held = point.at(axis);
-    if (std::holds_alternative<datum::none_t>(held))
-        return std::nullopt;
-    return datum::text_of(held);
-}
 
 /// A refusal the caller reads, rather than an outcome it must infer.
 messaging::get_series_slice_response refuse(std::string why) {

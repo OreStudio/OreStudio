@@ -22,7 +22,6 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { MarketObservation } from '../domain/market_observation.js';
 import type { MarketSeries } from '../domain/market_series.js';
 
 /**
@@ -204,68 +203,6 @@ export interface ComputeCurveResponse {
 }
 
 /**
- * @brief Requests the latest-as-of snapshot of a curve/grid series: one
- * observation per point_id, reconstructed from independently-ticking
- * market_observation rows.
- *
- * oresmd_uri identifies the series, the same identity every market_series
- * row is keyed by and the one the feed's ticks land under -- the caller does
- * not need to know the internal series_id, and it does not need the
- * registry's decomposition of the key either. Always "latest" (now) for the
- * as-of time; no as-of-in-the-past parameter yet.
- */
-export interface GetCurveSnapshotRequest {
-    oresmd_uri: string;
-}
-
-export interface GetCurveSnapshotResponse {
-    observations: MarketObservation[];
-    /**
-     * @brief The instant the snapshot is as of, which is what an age is measured
-     * from.
-     *
-     * Without it a reader measures an age from its own clock, so clock skew shows
-     * up as staleness that is not in the curve.
-     */
-    as_of: string;
-    /** When each point was recorded, index-for-index with observations: the
-     * bitemporal valid_from of the row it was read from. Two ages are readable
-     * from a point and they answer different questions: the snapshot instant
-     * minus the point's instant is market staleness, the age of the market state
-     * it belongs to; now minus its record time is record staleness, how long ago
-     * the value arrived.
-     */
-    recorded_at: string[];
-    /**
-     * @brief The age of the snapshot's oldest point, in seconds.
-     *
-     * Market staleness, not record staleness: the age of the market state the
-     * point belongs to, which is what decides whether a drawn curve is one market
-     * read or a stitching of several. Zero for an empty snapshot.
-     */
-    oldest_age_seconds: number;
-    /**
-     * @brief The spread between the oldest and the newest point, in seconds.
-     *
-     * The number that measures the mixing: points that share one instant have a
-     * spread of zero however old that instant is, and a curve stitched across
-     * market horizons does not. A point whose instant is after the snapshot
-     * instant carries no age at all, and one exactly at it is age zero and counts.
-     */
-    spread_seconds: number;
-    /**
-     * @brief Whether the snapshot is mixed enough that a view must not draw it
-     * silently.
-     *
-     * The threshold is stated by the evolution journey, not by this message: the
-     * read reports the crossing, and the view decides what to show.
-     */
-    warning: boolean;
-    success: boolean;
-    message: string;
-}
-
-/**
  * @brief One instant of a slice: the object as it stood then.
  */
 export interface SeriesSliceInstant {
@@ -437,6 +374,90 @@ export interface GetSeriesEvolutionResponse {
     nodes: EvolutionNode[];
     /** Oldest first, one entry per distinct market instant read. */
     instants: EvolutionInstant[];
+}
+
+/**
+ * @brief Requests a composite object as it stands now, as one instant by nodes.
+ *
+ * The object is named the way the resolver names one, as the slice read and the
+ * evolution read name it, so the three cannot disagree about what the object is.
+ * The instant is always now; there is no as-of-in-the-past parameter, because the
+ * evolution read answers that question.
+ */
+export interface GetCurveSnapshotRequest {
+    /** The object, as the typed identity the resolver already takes. */
+    identity: ResolveSeriesIdentityRequest;
+}
+
+/**
+ * @brief The object at one instant, against the same grid of declared nodes the
+ * evolution read states.
+ *
+ * The evolution read of that object gives the same coordinate fields and the same
+ * nodes. The snapshot carries the latest value of a node forward from before the
+ * instant, which the evolution does not, and adds the age of each value, because a
+ * composite of several market states must not be taken for one.
+ */
+export interface GetCurveSnapshotResponse {
+    success: boolean;
+    /** Why the read was refused, when it was. */
+    message: string;
+    /**
+     * @brief The instant the snapshot is as of, which is what an age is measured
+     * from.
+     *
+     * Without it a reader measures an age from its own clock, so clock skew shows
+     * up as staleness that is not in the curve.
+     */
+    as_of: string;
+    /** The axis names, in the order the shape stores them. */
+    coordinate_fields: string[];
+    /**
+     * @brief The declared grid, with the last axis varying fastest.
+     *
+     * The status of a node is empty: one instant shows no change.
+     */
+    nodes: EvolutionNode[];
+    /**
+     * @brief The value at each node, index for index with nodes.
+     *
+     * The empty string is a hole: the shape declares the node and no point held a
+     * value for it.
+     */
+    values: string[];
+    /** When each point was recorded, index-for-index with observations: the
+     * bitemporal valid_from of the row it was read from. Two ages are readable
+     * from a point and they answer different questions: the snapshot instant
+     * minus the point's instant is market staleness, the age of the market state
+     * it belongs to; now minus its record time is record staleness, how long ago
+     * the value arrived.
+     */
+    recorded_at: string[];
+    /**
+     * @brief The age of the snapshot's oldest point, in seconds.
+     *
+     * Market staleness, not record staleness: the age of the market state the
+     * point belongs to, which is what decides whether a drawn curve is one market
+     * read or a stitching of several. Zero for an empty snapshot.
+     */
+    oldest_age_seconds: number;
+    /**
+     * @brief The spread between the oldest and the newest point, in seconds.
+     *
+     * The number that measures the mixing: points that share one instant have a
+     * spread of zero however old that instant is, and a curve stitched across
+     * market horizons does not. A point whose instant is after the snapshot
+     * instant carries no age at all, and one exactly at it is age zero and counts.
+     */
+    spread_seconds: number;
+    /**
+     * @brief Whether the snapshot is mixed enough that a view must not draw it
+     * silently.
+     *
+     * The threshold is stated by the evolution journey, not by this message: the
+     * read reports the crossing, and the view decides what to show.
+     */
+    warning: boolean;
 }
 
 /**
@@ -734,9 +755,9 @@ export const subjects = {
     get_crm_rates_request: 'marketdata.v1.ops.get_crm_rates',
     republish_curve_request: 'marketdata.v1.ops.republish_curve',
     compute_curve_request: 'marketdata.v1.ops.compute_curve',
-    get_curve_snapshot_request: 'marketdata.v1.curve_snapshot.get',
     get_series_slice_request: 'marketdata.v1.ops.get_series_slice',
     get_series_evolution_request: 'marketdata.v1.ops.get_series_evolution',
+    get_curve_snapshot_request: 'marketdata.v1.curve_snapshot.get',
     import_market_data_request: 'marketdata.v1.ops.import_market_data',
     start_feeds_under_folder_request: 'marketdata.v1.ops.start_feeds_under_folder',
     stop_feeds_under_folder_request: 'marketdata.v1.ops.stop_feeds_under_folder',
@@ -757,9 +778,9 @@ export const requiresSession = {
     get_crm_rates_request: true,
     republish_curve_request: true,
     compute_curve_request: true,
-    get_curve_snapshot_request: true,
     get_series_slice_request: true,
     get_series_evolution_request: true,
+    get_curve_snapshot_request: true,
     import_market_data_request: true,
     start_feeds_under_folder_request: true,
     stop_feeds_under_folder_request: true,

@@ -26,13 +26,10 @@
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.marketdata.core/service/series_shape.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
-#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
-#include <variant>
 #include <vector>
 
 namespace ores::marketdata::service {
@@ -48,24 +45,12 @@ inline std::string_view logger_name = "ores.marketdata.core.series_evolution_rea
     return instance;
 }
 
-using datum::field;
-
 /// The words a node's status takes, in the order the rule checks them.
 constexpr std::string_view status_never_quoted = "never_quoted";
 constexpr std::string_view status_persistent = "persistent";
 constexpr std::string_view status_added = "added";
 constexpr std::string_view status_dropped = "dropped";
 constexpr std::string_view status_intermittent = "intermittent";
-
-/// The value @p point holds on @p axis, or nothing when it holds none.
-std::optional<std::string> coordinate_of(const datum::market_datum& point, field axis) {
-    if (!point.holds(axis))
-        return std::nullopt;
-    const auto& held = point.at(axis);
-    if (std::holds_alternative<datum::none_t>(held))
-        return std::nullopt;
-    return datum::text_of(held);
-}
 
 /// A refusal the caller reads, rather than an outcome it must infer.
 messaging::get_series_evolution_response refuse(std::string why) {
@@ -105,15 +90,8 @@ series_evolution_reader::read(ores::database::context ctx,
     if (declared.axes.empty())
         return refuse("the object declares no axis, so it is not a composite object");
 
-    // The declared grid: every combination of the declared values, with the
-    // last axis varying fastest, so a node's index is the sum of each value's
-    // position times that axis's stride.
-    std::vector<std::size_t> strides(declared.axes.size(), 1);
-    std::size_t node_count = 1;
-    for (std::size_t i = declared.axes.size(); i-- > 0;) {
-        strides[i] = node_count;
-        node_count *= declared.values.at(declared.axes[i]).size();
-    }
+    const series_grid grid(declared);
+    const auto node_count = grid.size();
 
     messaging::get_series_evolution_response response;
     response.coordinate_fields.reserve(declared.axes.size());
@@ -121,15 +99,8 @@ series_evolution_reader::read(ores::database::context ctx,
         response.coordinate_fields.emplace_back(name_of(axis));
 
     response.nodes.reserve(node_count);
-    for (std::size_t n = 0; n < node_count; ++n) {
-        messaging::evolution_node node;
-        node.coordinates.reserve(declared.axes.size());
-        for (std::size_t i = 0; i < declared.axes.size(); ++i) {
-            const auto& values = declared.values.at(declared.axes[i]);
-            node.coordinates.push_back(values[(n / strides[i]) % values.size()]);
-        }
-        response.nodes.push_back(std::move(node));
-    }
+    for (std::size_t n = 0; n < node_count; ++n)
+        response.nodes.push_back({grid.coordinates(n), {}});
 
     const auto instants =
         repository::market_observation_repository{}.read_instants(ctx,
@@ -139,24 +110,6 @@ series_evolution_reader::read(ores::database::context ctx,
                                                                   request.instants,
                                                                   max_instants);
 
-    // The node a point belongs to, or nothing when it leaves an axis out or
-    // holds a value the shape does not declare. Neither can be written today,
-    // and a point that is neither is not a node of this object.
-    const auto node_of = [&](const datum::market_datum& point) -> std::optional<std::size_t> {
-        std::size_t index = 0;
-        for (std::size_t i = 0; i < declared.axes.size(); ++i) {
-            const auto held = coordinate_of(point, declared.axes[i]);
-            if (!held)
-                return std::nullopt;
-            const auto& values = declared.values.at(declared.axes[i]);
-            const auto at = std::ranges::find(values, *held);
-            if (at == values.end())
-                return std::nullopt;
-            index += static_cast<std::size_t>(at - values.begin()) * strides[i];
-        }
-        return index;
-    };
-
     for (const auto& instant : instants) {
         messaging::evolution_instant row;
         row.as_of = instant.as_of;
@@ -165,7 +118,7 @@ series_evolution_reader::read(ores::database::context ctx,
             const auto parsed = datum::oresmd_uri_codec::read(point.oresmd_uri);
             if (!parsed)
                 throw std::runtime_error("a stored oresmd URI does not read: " + point.oresmd_uri);
-            const auto node = node_of(*parsed);
+            const auto node = grid.node_of(*parsed);
             if (!node)
                 continue;
             row.values[*node] = point.value;

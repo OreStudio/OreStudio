@@ -8,7 +8,7 @@
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
 #+branch: feature/scope-agreements-netting-sets-and-csas-to-the-party
-#+pr:
+#+pr: 3073
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -161,7 +161,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3073][#3073]] | [refdata,codegen,dq,ore,web] Scope agreements, netting sets, CSAs and identifiers to the party |
 
 * Review
 

@@ -24,9 +24,9 @@
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.iam.api/generators/account_contact_information_generator.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.api/generators/account_party_generator.hpp"
 #include "ores.iam.api/generators/tenant_generator.hpp"
 #include "ores.iam.core/repository/account_contact_information_repository.hpp"
-#include "ores.iam.api/generators/account_party_generator.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
@@ -847,8 +847,7 @@ TEST_CASE("a_viewer_who_works_in_several_parties_sees_all_of_them", tags) {
     ores::iam::messaging::get_reporting_tree_request req;
     const auto tree = sut.get_reporting_tree(req, head);
 
-    CHECK(tree_accounts(tree) ==
-          std::set<std::string>{text(head), text(in_north), text(in_south)});
+    CHECK(tree_accounts(tree) == std::set<std::string>{text(head), text(in_north), text(in_south)});
     const auto* node = tree_node(tree, head);
     REQUIRE(node != nullptr);
     CHECK(node->party_ids.size() == 2);
@@ -881,8 +880,7 @@ TEST_CASE("a_viewer_sees_everyone_who_reports_to_them_whatever_their_party", tag
 
     // The outsider shares the subsidiary with the people below the CEO, but the
     // CEO is not linked to it and the outsider does not report to the CEO.
-    CHECK(tree_accounts(tree) ==
-          std::set<std::string>{text(ceo), text(director), text(analyst)});
+    CHECK(tree_accounts(tree) == std::set<std::string>{text(ceo), text(director), text(analyst)});
     CHECK(tree_depth(tree, analyst) == 2);
     // The parties of the people below the CEO are drawn too.
     CHECK(tree.parties.size() == 2);

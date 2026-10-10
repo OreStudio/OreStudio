@@ -659,8 +659,7 @@ void append_schedule(trading::domain::swap_instrument_data& result,
 // The shared strike table holds one row per trade, keyed by the trade
 // alone, while the schema states a cap/floor's strikes as two lists. The
 // first cap, or the first floor when no cap is stated, is the row.
-void append_capfloor_strike(trading::domain::swap_instrument_data& result,
-                            const capFloorData& cf) {
+void append_capfloor_strike(trading::domain::swap_instrument_data& result, const capFloorData& cf) {
     std::optional<double> value;
     if (cf.Caps && !cf.Caps->Cap.empty())
         value = static_cast<double>(cf.Caps->Cap.front());
@@ -678,12 +677,12 @@ void append_capfloor_strike(trading::domain::swap_instrument_data& result,
 /**
  * One of an owner's schedules, rebuilt from the rows that hold it.
  */
-std::optional<scheduleData> schedule_for(
-    const std::vector<trading::domain::instrument_schedule>& schedules,
-    const std::vector<trading::domain::instrument_schedule_date>& schedule_dates,
-    const std::string& owner_role,
-    int owner_number,
-    const std::string& schedule_role) {
+std::optional<scheduleData>
+schedule_for(const std::vector<trading::domain::instrument_schedule>& schedules,
+             const std::vector<trading::domain::instrument_schedule_date>& schedule_dates,
+             const std::string& owner_role,
+             int owner_number,
+             const std::string& schedule_role) {
     std::vector<const trading::domain::instrument_schedule*> rows;
     for (const auto& row : schedules)
         if (row.owner_role == owner_role && row.owner_number == owner_number &&
@@ -706,8 +705,8 @@ std::optional<scheduleData> schedule_for(
                 r.EndDate = xsd::optional<domain::date>(d);
             }
             if (row->adjust_end_date_to_previous_month_end)
-                r.AdjustEndDateToPreviousMonthEnd = parse_code(
-                    *row->adjust_end_date_to_previous_month_end, bool__count, bool_::N);
+                r.AdjustEndDateToPreviousMonthEnd =
+                    parse_code(*row->adjust_end_date_to_previous_month_end, bool__count, bool_::N);
             static_cast<std::string&>(r.Tenor) = row->tenor.value_or("");
             if (row->calendar)
                 r.Calendar = *row->calendar;
@@ -715,8 +714,9 @@ std::optional<scheduleData> schedule_for(
                 r.Convention = parse_code(
                     *row->convention, business_day_convention_count, businessDayConvention::MF);
             if (row->term_convention)
-                r.TermConvention = parse_code(
-                    *row->term_convention, business_day_convention_count, businessDayConvention::MF);
+                r.TermConvention = parse_code(*row->term_convention,
+                                              business_day_convention_count,
+                                              businessDayConvention::MF);
             if (row->rule)
                 r.Rule = parse_code(*row->rule, date_rule_count, dateRule::Forward);
             if (row->end_of_month)
@@ -772,8 +772,8 @@ std::optional<scheduleData> schedule_for(
 /**
  * The exercise dates the option owner stated, in document order.
  */
-std::vector<std::chrono::year_month_day> exercise_dates_of(
-    const std::vector<trading::domain::instrument_schedule_date>& schedule_dates) {
+std::vector<std::chrono::year_month_day>
+exercise_dates_of(const std::vector<trading::domain::instrument_schedule_date>& schedule_dates) {
     std::vector<const trading::domain::instrument_schedule_date*> rows;
     for (const auto& row : schedule_dates)
         if (row.owner_role == "option" && row.owner_number == 1 &&
@@ -910,15 +910,15 @@ void append_option_block(trading::domain::swap_instrument_data& result, const op
     // The exercise price list pairs one price with each exercise date the
     // group states, in order. The two lists are stored apart, so a price
     // with no date beside it has no row.
-    const auto exercise_dates = od.exerciseDatesGroup && od.exerciseDatesGroup->ExerciseDates ?
-                                    [&] {
-                                        std::vector<std::chrono::year_month_day> out;
-                                        for (const auto& date :
-                                             od.exerciseDatesGroup->ExerciseDates->ExerciseDate)
-                                            out.push_back(to_domain_date(std::string(date)));
-                                        return out;
-                                    }() :
-                                    std::vector<std::chrono::year_month_day>{};
+    const auto exercise_dates =
+        od.exerciseDatesGroup && od.exerciseDatesGroup->ExerciseDates ?
+            [&] {
+                std::vector<std::chrono::year_month_day> out;
+                for (const auto& date : od.exerciseDatesGroup->ExerciseDates->ExerciseDate)
+                    out.push_back(to_domain_date(std::string(date)));
+                return out;
+            }() :
+            std::vector<std::chrono::year_month_day>{};
     if (od.ExercisePrices) {
         const auto prices = split_numbers(std::string(*od.ExercisePrices));
         for (std::size_t i = 0; i < prices.size() && i < exercise_dates.size(); ++i) {
@@ -1060,13 +1060,12 @@ void reverse_option_block(
         }
         if (row.payment_lag || row.payment_calendar || row.payment_convention) {
             optionPaymentData_Rules_t rules;
-            rules.Lag = static_cast<std::uint64_t>(std::max<std::int64_t>(
-                row.payment_lag.value_or(0), 0));
+            rules.Lag =
+                static_cast<std::uint64_t>(std::max<std::int64_t>(row.payment_lag.value_or(0), 0));
             set_text(rules.Calendar, row.payment_calendar.value_or(""));
-            rules.Convention = parse_code(
-                row.payment_convention.value_or(""),
-                business_day_convention_count,
-                businessDayConvention::MF);
+            rules.Convention = parse_code(row.payment_convention.value_or(""),
+                                          business_day_convention_count,
+                                          businessDayConvention::MF);
             if (row.payment_relative_to)
                 rules.RelativeTo = parse_code(*row.payment_relative_to,
                                               option_pay_relative_to_count,

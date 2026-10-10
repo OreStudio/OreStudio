@@ -99,9 +99,8 @@ public:
             }
             reply(nats_,
                   msg,
-                  lookup_country_response{.country_code = located->country_code,
-                                          .found = true,
-                                          .success = true});
+                  lookup_country_response{
+                      .country_code = located->country_code, .found = true, .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(geo_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, lookup_country_response{.success = false, .message = e.what()});

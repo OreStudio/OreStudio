@@ -149,14 +149,13 @@ void oresmd_index_commands::process(std::ostream& out, const std::vector<std::st
 }
 
 void oresmd_index_commands::register_verb(cli::Menu& marketdata_menu) {
-    marketdata_menu.Insert(
-        "oresmd-index",
-        [](std::ostream& out, std::vector<std::string> args) {
-            process(std::ref(out), std::move(args));
-        },
-        "Turn ORE index names (one per line; blank and '#' lines skipped; stdin "
-        "when --in is unset) into oresmd fixing URIs, offline",
-        {"[--in <path>] [--out <path>]"});
+    marketdata_menu.Insert("oresmd-index",
+                           [](std::ostream& out, std::vector<std::string> args) {
+                               process(std::ref(out), std::move(args));
+                           },
+                           "Turn ORE index names (one per line; blank and '#' lines skipped; stdin "
+                           "when --in is unset) into oresmd fixing URIs, offline",
+                           {"[--in <path>] [--out <path>]"});
 }
 
 }

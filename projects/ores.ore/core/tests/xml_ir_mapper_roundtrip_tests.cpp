@@ -301,8 +301,7 @@ TEST_CASE("mapper_roundtrip_ccs_forward", tags) {
     const auto t = load_first_trade("IRFX_Cross_Currency_Swap_rebalancing.xml");
 
     const auto result = swap_instrument_mapper::forward_swap(t);
-    REQUIRE(
-        std::holds_alternative<ores::trading::domain::vanilla_swap_instrument>(result.facts));
+    REQUIRE(std::holds_alternative<ores::trading::domain::vanilla_swap_instrument>(result.facts));
     const auto& legs = result.legs;
 
     REQUIRE(legs.size() >= 2);
@@ -318,10 +317,8 @@ TEST_CASE("mapper_roundtrip_knock_out_swap_forward", tags) {
     const auto t = load_first_trade("Exotic_KnockOutSwap.xml");
 
     const auto result = swap_instrument_mapper::forward_knock_out_swap(t);
-    REQUIRE(std::holds_alternative<ores::trading::domain::knock_out_swap_instrument>(
-        result.facts));
-    const auto& instr =
-        std::get<ores::trading::domain::knock_out_swap_instrument>(result.facts);
+    REQUIRE(std::holds_alternative<ores::trading::domain::knock_out_swap_instrument>(result.facts));
+    const auto& instr = std::get<ores::trading::domain::knock_out_swap_instrument>(result.facts);
 
     CHECK(result.header.identity.trade_type_code == "KnockOutSwap");
     CHECK(instr.barrier_type == "UpAndOut");

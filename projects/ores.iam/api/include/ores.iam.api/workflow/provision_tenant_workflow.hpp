@@ -572,8 +572,7 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
  * notation, so a kind means one thing on both sides and the executor that
  * serves one serves the other.
  */
-inline void
-register_tenant_setup_workflow(ores::workflow::service::workflow_registry& registry) {
+inline void register_tenant_setup_workflow(ores::workflow::service::workflow_registry& registry) {
 
     using namespace ores::workflow::service;
 

@@ -288,8 +288,7 @@ TEST_CASE("a profile that orders nothing still runs the step that finishes each 
 
     // The system run has nothing to hand over before it hands over, so the
     // handing step is its only step.
-    const auto system_steps =
-        definition().build_steps(request_json({}), tenant_id, correlation_id);
+    const auto system_steps = definition().build_steps(request_json({}), tenant_id, correlation_id);
     REQUIRE(system_steps.size() == 1);
     CHECK(system_steps.front().name == start_tenant_setup_step_kind);
     CHECK(system_steps.front().consumes.empty());
@@ -367,14 +366,12 @@ TEST_CASE("the step list is the same on every call", tags) {
 }
 
 TEST_CASE("a kind the catalogue does not know is refused by either run", tags) {
-    CHECK_THROWS_AS(
-        definition().build_steps(
-            request_json({declared("publish_everything")}), tenant_id, correlation_id),
-        std::runtime_error);
-    CHECK_THROWS_AS(
-        setup_definition().build_steps(
-            request_json({declared("publish_everything")}), tenant_id, correlation_id),
-        std::runtime_error);
+    CHECK_THROWS_AS(definition().build_steps(
+                        request_json({declared("publish_everything")}), tenant_id, correlation_id),
+                    std::runtime_error);
+    CHECK_THROWS_AS(setup_definition().build_steps(
+                        request_json({declared("publish_everything")}), tenant_id, correlation_id),
+                    std::runtime_error);
 }
 
 TEST_CASE("every kind the catalogue declares has a runner in this build", tags) {

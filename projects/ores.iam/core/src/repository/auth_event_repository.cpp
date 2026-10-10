@@ -183,18 +183,17 @@ auth_event_repository::read_events(const context& ctx,
         "order by event_time desc "
         "limit $6::bigint offset $7::bigint";
 
-    const auto rows = execute_parameterized_multi_column_query(
-        ctx,
-        sql,
-        {tenant_id,
-         account_id,
-         event_type,
-         from_time,
-         to_time,
-         std::to_string(limit),
-         std::to_string(offset)},
-        lg(),
-        "Reading auth events");
+    const auto rows = execute_parameterized_multi_column_query(ctx,
+                                                               sql,
+                                                               {tenant_id,
+                                                                account_id,
+                                                                event_type,
+                                                                from_time,
+                                                                to_time,
+                                                                std::to_string(limit),
+                                                                std::to_string(offset)},
+                                                               lg(),
+                                                               "Reading auth events");
 
     std::vector<repository::auth_event_entity> events;
     events.reserve(rows.size());

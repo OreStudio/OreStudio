@@ -1165,15 +1165,13 @@ private:
      * and reports the child's instance id so the handover is visible in the
      * parent's step result.
      */
-    void
-    start_tenant_setup_step(const ores::service::messaging::workflow_step_context& wf,
-                            const ores::iam::workflow::provision_tenant_step_command& command,
-                            const std::string& correlation_id) {
+    void start_tenant_setup_step(const ores::service::messaging::workflow_step_context& wf,
+                                 const ores::iam::workflow::provision_tenant_step_command& command,
+                                 const std::string& correlation_id) {
         // The step's argument is the whole run request, so the child works from
         // exactly what this run received rather than from a request composed
         // again here.
-        const auto run =
-            ores::iam::workflow::detail::read_workflow_request(command.arguments_json);
+        const auto run = ores::iam::workflow::detail::read_workflow_request(command.arguments_json);
         const auto actor = resolve_step_actor(command);
 
         boost::uuids::random_generator generate;
@@ -1202,9 +1200,8 @@ private:
             << "Started " << start.type << " for tenant " << run.tenant_code
             << " (instance: " << instance_id << ")";
 
-        wf.complete(rfl::json::write(provision_step_result{.kind = command.kind,
-                                                           .tenant_id = run.tenant_id,
-                                                           .child_instance_id = instance_id}));
+        wf.complete(rfl::json::write(provision_step_result{
+            .kind = command.kind, .tenant_id = run.tenant_id, .child_instance_id = instance_id}));
     }
 
     /// Marks the tenant active and clears bootstrap mode, the two operations

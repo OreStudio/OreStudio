@@ -948,12 +948,6 @@ const fr: SourceCatalogue = {
         upcomingModules: 'Modules à venir / Aperçu de la feuille de route',
         welcome: 'Bienvenue, {name}',
         system: {
-            installation: 'Installation',
-            lead: {
-                one: 'Ce déploiement héberge {count} locataire.',
-                other: 'Ce déploiement héberge {count} locataires.',
-            },
-            health: 'État du système',
             inService: 'En service',
             onEvaluation: 'En évaluation',
             settingUp: 'En cours de création',
@@ -998,6 +992,56 @@ const fr: SourceCatalogue = {
                 failed: "{tenant} : la création s'est arrêtée après {done} étapes sur {count}",
                 compensating: '{tenant} : la création est en cours d’annulation',
                 compensated: '{tenant} : la création a été annulée',
+            },
+            tabs: {
+                label: 'Vues de l’accueil',
+                dashboard: 'Tableau de bord',
+                active: 'Modules actifs',
+                upcoming: 'Modules à venir',
+            },
+            panels: {
+                open: 'Ouvrir',
+                unread: 'N’a pas pu être lu',
+                sampled: 'Échantillon de',
+                summary: {
+                    needAttention: {
+                        one: '{count} zone demande votre attention',
+                        other: '{count} zones demandent votre attention',
+                    },
+                },
+                services: {
+                    title: 'Services',
+                    needAttention: {
+                        one: '{count} service demande votre attention',
+                        other: '{count} services demandent votre attention',
+                    },
+                },
+                grid: {
+                    title: 'Grille',
+                    noNodes: 'Aucun nœud n’a encore signalé sa présence',
+                    needAttention: {
+                        one: '{count} nœud demande votre attention',
+                        other: '{count} nœuds demandent votre attention',
+                    },
+                    online: 'Nœuds en ligne',
+                    idle: 'Inactifs',
+                    activeBatches: 'Lots actifs',
+                    failed: 'Résultats en échec',
+                },
+                queue: {
+                    title: 'File de messages',
+                    noSample: 'Aucun échantillon pour l’instant',
+                    needAttention: {
+                        one: '{count} consommateur lent demande votre attention',
+                        other: '{count} consommateurs lents demandent votre attention',
+                    },
+                    connections: 'Connexions',
+                    slowConsumers: 'Consommateurs lents',
+                    streams: 'Flux',
+                    stored: 'Messages stockés',
+                    throughput: 'Messages reçus par seconde',
+                    perSecond: '{rate} msg/s',
+                },
             },
         },
         tenant: {
@@ -1072,6 +1116,7 @@ const fr: SourceCatalogue = {
             running: 'Services en marche',
             lost: 'Perdus',
             missing: 'Absents',
+            lostOrMissing: 'Perdus ou absents',
             errors: 'Erreurs, {range}',
             warnings: 'Avertissements, {range}',
             release: 'Version la plus récente',

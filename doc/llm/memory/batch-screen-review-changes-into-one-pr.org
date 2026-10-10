@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: CC036FAF-3137-4273-A276-86EC80A9F968
+:END:
+#+title: Batch screen review changes into one story and one PR
+#+description: A screen review produces many small changes. Put them in one story on one branch with one PR, and add every review round to that PR. Do not raise a PR per change.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :web:pr:process:memory:feedback:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+When the user reviews a screen and asks for a run of changes, make them all in one story on one branch and raise one PR. Add later requests from the same review to that PR instead of opening another.
+
+*Why:* A separate story and PR for each small change, each with its own scaffold PR, bot review and merge, took too long to merge. The user said the changes were all screen review changes and asked not to create lots of small PRs.
+
+*How to apply:* At the start of a screen review, create one story and one task. Fold the story scaffold into the same PR as the first change. Keep adding changes, tests and bookkeeping to that branch until the review ends. Open a second PR only for work that is not part of the review.

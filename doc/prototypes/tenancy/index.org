@@ -27,7 +27,7 @@ generated alternative kept beside the agreed design, never instead of it.
 | Prototype                                  | What it argues | Open it | Review |
 |--------------------------------------------+----------------+---------+--------|
 | [[file:navigation.org][Application shell]] | The shell the journeys hang from: a menu of areas, the cards it opens, and the person's own journeys under their name — seen through the four sign-ins that decide the mode. It sits here rather than in Profile because the Home prototype replaced its landing page, and both answer to the sign-in's tenant. | [[file:navigation/][prototype]] | [[file:navigation/review/][Gemini review]] |
-| [[file:home.org][Home screen]]             | Home and tenant management in a person's own words: the state of the work instead of journey cards, tenants as a list with add and remove, a tenant opened in place with no entering or leaving, and colour for each tenant's state. | [[file:home/][prototype]] | none |
+| [[file:home.org][Home screen]]             | Home and tenant management in a person's own words: the state of the work instead of journey cards, tenants as a list with add and remove, a tenant opened in place with no entering or leaving, and colour for each tenant's state. | [[file:home/][prototype]] | [[file:home/review/][Gemini review]] |
 
 * Adding a prototype
 

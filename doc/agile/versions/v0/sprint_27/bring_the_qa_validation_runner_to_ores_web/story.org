@@ -23,9 +23,9 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The prototype is accepted: layout B. |
+| Now           | The shared org package is built. |
 | Waiting on    | Nothing.                               |
-| Next          | Parse org text in a shared package. |
+| Next          | Read and write scenario docs in the BFF. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -43,7 +43,7 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 | [[id:658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D][Prototype the QA validation runner]] | DONE | 2026-10-10 | 2026-10-10 | Show the Tests tab and the runner, and confirm how results are written. |
 | [[id:21382786-E000-4410-9863-94BB6E409570][Read and write scenario docs in the BFF]] | BACKLOG | | | Add a scenario store to the BFF that reads the scenario docs compass creates and writes a tester's results into them, behind an interface. The BFF never calls compass. |
 | [[id:59E83768-A749-44BC-AFDA-7548B44C5A4D][Serve scenarios from the BFF]] | BACKLOG | | | Add BFF routes that list, read and save scenarios through the scenario store. Any signed-in user may call them for now. |
-| [[id:FD623109-FFE6-4722-BA63-25B9B2BD38B2][Parse org text in a shared package]] | BACKLOG | | | Port the org parser and renderer from ores.org-js into a package the BFF and the web package share. |
+| [[id:FD623109-FFE6-4722-BA63-25B9B2BD38B2][Parse org text in a shared package]] | DONE | 2026-10-10 | 2026-10-10 | Port the org parser and renderer from ores.org-js into a package the BFF and the web package share. |
 | [[id:3B1DDD28-FD85-4ED3-9F94-7EDEA52EB397][Build the Tests queue]] | BACKLOG | | | Add the Development area and its Tests tab to ores.web: the scenarios waiting and the scenarios done, each opening in the runner. Draw the accepted prototype, without a heading of its own. |
 | [[id:4E45A124-F1E7-4371-BFAC-4E63A84F8F8B][Build the scenario runner]] | BACKLOG | | | Build the accepted layout B: one step at a time with a progress bar. A Pass moves on and a Fail stays so the tester can write the note. Save closes a decided scenario, a done scenario reopens read-only, and Retest asks first. |
 | [[id:45004307-1EBD-4503-A2F4-E1CDEFA3CA38][Show the story and the task beside the steps]] | BACKLOG | | | Add the Story and Task tabs to the runner. They show the docs that drive the scenario, rendered from org, and their links open the doc they point to. |

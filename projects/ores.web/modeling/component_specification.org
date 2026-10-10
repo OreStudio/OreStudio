@@ -16,9 +16,9 @@ The interface is not built yet. The component is a shell and a transport. It
 holds a session and it reaches the server, and no screen is wired to it. This
 document specifies those parts and nothing else.
 
-* 1. The four packages
+* 1. The five packages
 
-The component is one npm workspace with four packages. Each package has one job.
+The component is one npm workspace with five packages. Each package has one job.
 
 | Package | Path | Job |
 |---|---|---|
@@ -26,6 +26,7 @@ The component is one npm workspace with four packages. Each package has one job.
 | =@ores/bff= | =packages/bff= | The Fastify server. It owns the NATS connection and the session token. |
 | =@ores/contracts= | =packages/contracts= | The HTTP shapes shared between the server and the interface. It has no Node dependency, so the browser can parse them. Only the BFF imports it today, and the browser parses with =@ores/wire-protocol/browser= instead; the intent is that both sides parse one schema and the split is not yet finished. |
 | =@ores/wire-protocol= | =packages/wire-protocol= | The ORE NATS protocol: the msgpack codec, the subjects, the schemas, the session lifecycle, and the mTLS transport. |
+| =@ores/org= | =packages/org= | Parses org text into a line-indexed outline and renders it as safe HTML. The outline entry has no dependency and serves the BFF, which reads and writes scenario docs. The =render= entry serves the browser. |
 
 Only =@ores/wire-protocol= carries generated code. See §6.
 

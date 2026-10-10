@@ -8,12 +8,12 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/parse-org-text-in-a-shared-package
-#+pr:
+#+pr: 3071
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ One package turns org text into a tree and the tree into safe, formatted output,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -78,12 +78,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3071][#3071]] | [web] Add the @ores/org package to parse and render org text |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The line guard works per line, but the parser works per paragraph | render.ts | Fix | The guard now counts markers per paragraph and skips source and example blocks. A test with 2000 near-limit lines passes. Without the guard that test does not finish in 200 seconds. |
+| 2 | stripHeader removes #+keyword lines everywhere | render.ts | Fix | It strips only the keyword lines that open the document. A keyword line in a block stays, and a test shows it. |
+| 3 | A file link can become a protocol-relative URL | render.ts | Fix | A file: target that starts with two slashes loses its href or src. A test covers two forms. |
+| 4 | The id prefix of the sanitiser does not match the id link | render.ts | Decline | The renderer emits no id attributes, so nothing is renamed. I printed the output for a heading with an ID and a custom id to check. |
+| 5 | An unterminated property drawer reads past its section | outline.ts | Fix | A drawer needs its :END: before the section ends, or before the first heading for the file drawer. Else it is not a drawer. Three tests cover it. |
+| 6 | An unterminated plain drawer hides the rest of the section | outline.ts | Test | This matches org. A test records it. |
+| 7 | cells splits on every pipe | outline.ts | Document | The comment on cells states the limit. Compass output has no such cell. |
+| 8 | sectionChildren skips deeper children | outline.ts | Document | The comment says a section that skips a level is not a child. A test covers it. |
+| 9 | Silent cut at 2,000,000 characters, BOM, mixed line ends | render.ts, outline.ts | Fix, Document | The cut now adds a visible note. A byte order mark is dropped. The eol comment says a mixed file reports CRLF. |
 
 * Result
+
+The new package, @ores/org in projects/ores.web/packages/org, has two entries. The root entry parses org text into a line-indexed outline with no dependency. The render entry turns org text into sanitised HTML with unified and uniorg. The outline names the lines of every section, table and list item, so task 2 can replace one table and keep every other line. It follows the shape that compass creates: the file drawer, the keyword block, nested sections, field tables and src blocks. A src block is left alone, and a star line in one needs a comma, as org says.
+
+The tests number 50. Two real scenario docs are fixtures, and one test parses every scenario doc in the repository. The renderer is tested against twelve hostile inputs, parsed back as a browser would. Removing the sanitiser fails four of those tests, and removing the line guard fails the stress test. The uniorg parser overflows its stack on a few thousand nested markers and slows sharply on an emphasis-heavy line, so a line with more than 300 markers shows as fixed-width text, and any error falls back to an escaped block. ores.org-js is untouched. It leaves the site in story 2.

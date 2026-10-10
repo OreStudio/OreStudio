@@ -8,6 +8,9 @@
       "path": "./packages/contracts"
     },
     {
+      "path": "./packages/org"
+    },
+    {
       "path": "./packages/web"
     },
     {

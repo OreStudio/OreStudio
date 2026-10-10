@@ -1,0 +1,37 @@
+{
+  "name": "@ores/org",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Parses org text into a line-indexed outline and renders it as safe HTML. Shared by the BFF, which reads and writes scenario docs, and by the browser, which renders them.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./render": {
+      "types": "./dist/render.d.ts",
+      "default": "./dist/render.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --build --force",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "rehype-sanitize": "6.0.0",
+    "rehype-stringify": "10.0.1",
+    "unified": "11.0.5",
+    "uniorg-parse": "3.2.2",
+    "uniorg-rehype": "2.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "rehype-parse": "9.0.1",
+    "vitest": "5.0.1"
+  }
+}

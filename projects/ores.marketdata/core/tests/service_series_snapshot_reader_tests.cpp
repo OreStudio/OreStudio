@@ -22,6 +22,7 @@
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
+#include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.marketdata.core/service/series_evolution_reader.hpp"
 #include "ores.marketdata.core/service/series_shape.hpp"
@@ -291,6 +292,70 @@ TEST_CASE("a_snapshot_asked_for_provenance_names_the_source_of_each_value", tags
     CHECK(resp.provenance[2].recorded_at != std::chrono::system_clock::time_point{});
     // A hole has no source.
     CHECK(resp.provenance[3].source_kind.empty());
+}
+
+TEST_CASE("a_derived_point_names_the_recipe_that_built_it", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    import(h,
+           "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/1Y/ATM 0.080\n"
+           "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/2Y/ATM 0.085\n");
+
+    const auto identity = fx_option_identity("NZD", "PLN");
+    const auto series =
+        ores::marketdata::repository::market_series_identity_reader{}.read(h.context(), identity);
+    REQUIRE(series.size() == 1);
+    ores::marketdata::repository::market_observation_repository obs_repo;
+    const auto stored = obs_repo.read_latest_for_series(h.context(), series.front().id);
+    REQUIRE(stored.size() == 2);
+
+    // The annex row of a derivation: the second point is the recipe's output.
+    const auto config_id = boost::uuids::random_generator()();
+    const auto source_as_of = instant("2017-09-10T06:00:00Z");
+    const auto& derived = stored.back();
+    ores::marketdata::domain::observation_lineage lineage;
+    lineage.id = boost::uuids::random_generator()();
+    lineage.tenant_id = h.tenant_id();
+    lineage.party_id = series.front().party_id;
+    lineage.series_id = series.front().id;
+    lineage.observation_datetime = derived.observation_datetime;
+    lineage.oresmd_uri = derived.oresmd_uri;
+    lineage.point_source_kind = "derived";
+    lineage.derivation_config_id = config_id;
+    lineage.derivation_config_version = 3;
+    lineage.source_as_of = source_as_of;
+    lineage.source_series_ids = "[]";
+    lineage.modified_by = h.db_user();
+    lineage.performed_by = h.db_user();
+    lineage.change_reason_code = "system.test";
+    ores::marketdata::repository::observation_lineage_repository{}.write(
+        h.context().with_party(
+            h.tenant_id(), series.front().party_id, {series.front().party_id}, h.db_user()),
+        lineage);
+
+    auto req = snapshot_request(identity);
+    req.include_provenance = true;
+    const auto resp =
+        series_snapshot_reader::read(h.context(), req, instant("2017-09-11T12:00:00Z"));
+
+    REQUIRE(resp.success);
+    REQUIRE(resp.provenance.size() == resp.nodes.size());
+    std::size_t derived_nodes = 0;
+    for (const auto& p : resp.provenance) {
+        if (p.source_kind == "derived") {
+            ++derived_nodes;
+            CHECK(p.derivation_config_id == boost::uuids::to_string(config_id));
+            CHECK(p.derivation_config_version == 3);
+            CHECK(p.source_as_of == source_as_of);
+        } else {
+            // A quoted point and a hole were built by no recipe.
+            CHECK(p.derivation_config_id.empty());
+            CHECK(p.derivation_config_version == 0);
+            CHECK(p.source_as_of == std::chrono::system_clock::time_point{});
+        }
+    }
+    CHECK(derived_nodes == 1);
 }
 
 TEST_CASE("a_snapshot_not_asked_for_provenance_carries_none", tags) {

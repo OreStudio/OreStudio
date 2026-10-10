@@ -90,6 +90,12 @@ read_provenance(ores::database::context ctx,
         entry.change_reason_code = annex.change_reason_code;
         entry.change_commentary = annex.change_commentary;
         entry.recorded_at = annex.recorded_at;
+        if (annex.derivation_config_id) {
+            entry.derivation_config_id = boost::uuids::to_string(*annex.derivation_config_id);
+            entry.derivation_config_version = annex.derivation_config_version;
+        }
+        if (annex.source_as_of)
+            entry.source_as_of = *annex.source_as_of;
     }
     return result;
 }

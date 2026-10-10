@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ One package turns org text into a tree and the tree into safe, formatted output,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -87,3 +87,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The new package, @ores/org in projects/ores.web/packages/org, has two entries. The root entry parses org text into a line-indexed outline with no dependency. The render entry turns org text into sanitised HTML with unified and uniorg. The outline names the lines of every section, table and list item, so task 2 can replace one table and keep every other line. It follows the shape that compass creates: the file drawer, the keyword block, nested sections, field tables and src blocks. A src block is left alone, and a star line in one needs a comma, as org says.
+
+The tests number 50. Two real scenario docs are fixtures, and one test parses every scenario doc in the repository. The renderer is tested against twelve hostile inputs, parsed back as a browser would. Removing the sanitiser fails four of those tests, and removing the line guard fails the stress test. The uniorg parser overflows its stack on a few thousand nested markers and slows sharply on an emphasis-heavy line, so a line with more than 300 markers shows as fixed-width text, and any error falls back to an escaped block. ores.org-js is untouched. It leaves the site in story 2.

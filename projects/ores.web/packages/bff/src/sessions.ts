@@ -314,6 +314,18 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
         async destroy(id) {
             const record = sessions.get(hash(id));
             if (record !== undefined) {
+                /*
+                 * A person signing out tells the IAM service, which marks the
+                 * account offline, writes the session's end time and records
+                 * the sign-out. Closing the connection alone leaves the session
+                 * looking open for ever. The call is best effort: a service
+                 * that is down must not keep someone signed in here.
+                 */
+                try {
+                    await record.client.logout();
+                } catch {
+                    // The session is removed below whatever the service said.
+                }
                 await closeAndRemove(id, record);
             }
         },

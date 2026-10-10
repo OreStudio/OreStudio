@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-parts-and-policy-to-the-approval-request
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Let a request name several deciding parts, each answered by a person who holds t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

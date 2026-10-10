@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: E5BD501A-CB63-465A-9F5A-02F62A417F9A
+:END:
+#+title: Task: Carry the FlexiSwap and BalanceGuaranteedSwap fields
+#+description: Add the fields the model lacks for these two products, so the export writes the elements the ORE schema requires.
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/carry-the-flexi-and-balance-guaranteed-swap-fields
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+FlexiSwap and BalanceGuaranteedSwap trades import, store and export every element the ORE schema requires, so both leave the known export gaps.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- FlexiSwap stores OptionLongShort and its lower notional bounds, and the export writes them.
+- BalanceGuaranteedSwap stores ReferenceSecurity, its tranches with their notionals, and the tranche schedule, and the export writes them.
+- Both products re-read after export, and neither appears in the corpus gate's known export gaps.
+- The inbox capture for this work is removed.
+
+* Plan
+
+1. *Name what the schema requires.* =flexiSwapData= requires
+   =OptionLongShort= and the lower notional bounds. =bgSwapData= requires
+   =ReferenceSecurity= and =Tranches=, and a =Tranches= block holds tranches
+   (description, security id, seniority, dated notionals) and a schedule.
+2. *Model each as the family's pattern.* A product's own scalar goes on its
+   fact table; a list goes in a child table keyed by the trade and the
+   ordinal, as =callable_swap_call_date= is. A schedule goes in the shared
+   =instrument_schedule= rows under a new owner role, so no schedule table
+   is repeated.
+   - =flexi_swap_instrument= is a new fact table, because a flexi swap
+     stored a =vanilla_swap_instrument= row with no fields of its own.
+   - =flexi_swap_lower_notional= holds one notional per row, with its block
+     ordinal and currency.
+   - =balance_guaranteed_swap_instrument= gains =reference_security=.
+   - =balance_guaranteed_swap_tranche= and
+     =balance_guaranteed_swap_tranche_notional= hold the tranches.
+   - =instrument_schedule= accepts the owner role =tranches=.
+3. *Wire them.* Generate the stacks, add them to the header's delete cascade
+   and the catalogue's child list, seed the permissions, register the
+   handlers, extend the carrier, the batch mapper, the export read and the
+   import write.
+4. *Map both ways.* Forward and reverse mappers in the ORE mapper, the
+   exporter dispatch, and round-trip cases with literal values.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ORE core suite | 633 cases, all passing, against a recreated database | =ctest --preset linux-clang-debug-make -R ore.core= | working tree |
+| Trading, ORE service and ORE API suites | 4, 1 and 1 test binaries, all passing | =ctest ... -R trading=, =-R ore.service=, =-R ore.api= | working tree |
+| Corpus gate's known export gaps that hold a rates document | 0 | =known_export_gaps()= in =xml_exporter_directory_roundtrip_tests.cpp= | working tree |
+| New tables | 4 (=flexi_swap_instruments=, =flexi_swap_lower_notionals=, =balance_guaranteed_swap_tranches=, =balance_guaranteed_swap_tranche_notionals=) | =git status --short projects/ores.sql/create/trading= | working tree |
+| Handler permission seeding | 1012 codes seeded | =check_handler_permissions.py= | working tree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+FlexiSwap and BalanceGuaranteedSwap now import, store and export every
+element the ORE schema requires. Neither is a known export gap.
+
+- *FlexiSwap.* A new fact table holds =OptionLongShort=. The lower notional
+  bounds are rows of =flexi_swap_lower_notional=, one per notional, with the
+  block's ordinal and currency, so the export regroups them into the blocks the
+  document stated. A flexi swap used to store an empty vanilla swap row.
+- *BalanceGuaranteedSwap.* The fact table gains =reference_security=. The
+  tranches are rows of =balance_guaranteed_swap_tranche= and their dated
+  notionals are rows of =balance_guaranteed_swap_tranche_notional=. The
+  tranche schedule reuses the shared =instrument_schedule= rows under the new
+  owner role =tranches=, so no schedule table is repeated.
+- *The path.* The carrier, the batch mapper, the export read, the import write,
+  the handlers, the permissions and the ORE mapper both ways all carry the new
+  rows. The mapper cases check literal values from the two corpus documents.
+- *A table name is shorter than the convention.* The generator cuts derived
+  identifiers at 63 characters but the C++ entity keeps the full table name, so
+  the conventional name for the tranche notionals would have made the SQL and
+  the entity disagree. The table is =ores_trading_bg_swap_tranche_notionals_tbl=
+  and the model says why. The mismatch is a generator defect and is not fixed
+  here.
+- The inbox capture for this work is removed.
+
+Not done: the reverse mappers rebuild each leg's schedule from the header
+dates, as the other reverse mappers do, so the leg schedules of these two
+documents are not byte-equal to the source. The ER diagrams are not
+regenerated. No end-to-end ORE import ran against a live service.

@@ -91,6 +91,14 @@
 \ir ./trading_swaption_instruments_drop.sql
 \ir ./trading_balance_guaranteed_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_balance_guaranteed_swap_instruments_drop.sql
+\ir ./trading_balance_guaranteed_swap_tranches_notify_trigger_drop.sql
+\ir ./trading_balance_guaranteed_swap_tranches_drop.sql
+\ir ./trading_balance_guaranteed_swap_tranche_notionals_notify_trigger_drop.sql
+\ir ./trading_balance_guaranteed_swap_tranche_notionals_drop.sql
+\ir ./trading_flexi_swap_instruments_notify_trigger_drop.sql
+\ir ./trading_flexi_swap_instruments_drop.sql
+\ir ./trading_flexi_swap_lower_notionals_notify_trigger_drop.sql
+\ir ./trading_flexi_swap_lower_notionals_drop.sql
 \ir ./trading_callable_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_callable_swap_instruments_drop.sql
 \ir ./trading_callable_swap_call_dates_notify_trigger_drop.sql

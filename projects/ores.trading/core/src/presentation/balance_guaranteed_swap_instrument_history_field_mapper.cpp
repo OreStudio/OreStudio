@@ -41,6 +41,7 @@ std::vector<ores::diff::domain::field_value> render_balance_guaranteed_swap_inst
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back(
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
+    fields.push_back({.name = "Reference Security", .value = v.reference_security});
     fields.push_back({.name = "Lockout Days",
                       .value = v.lockout_days ? std::to_string(*v.lockout_days) : std::string{}});
     using ores::history::domain::provenance_fields;

@@ -204,12 +204,16 @@ shape whichever family states the rows.
 | child                             |
 |-----------------------------------|
 | balance_guaranteed_swap_instrument |
+| balance_guaranteed_swap_tranche   |
+| balance_guaranteed_swap_tranche_notional |
 | callable_swap_call_date           |
 | callable_swap_instrument          |
 | cap_floor_instrument              |
 | commodity_basket_constituent      |
 | composite_leg                     |
 | equity_position_option_underlying |
+| flexi_swap_instrument             |
+| flexi_swap_lower_notional         |
 | fra_instrument                    |
 | inflation_swap_instrument         |
 | instrument_option                 |

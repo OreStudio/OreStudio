@@ -51,6 +51,7 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:7297F657-B695-46B5-BBCA-89A9DA3D1191][ores.trading.inflation_swap_instrument]] | Inflation-linked interest rate swap instrument. |
 | [[id:0303FDE5-5929-4126-A5F8-2519BFF027DD][ores.trading.knock_out_swap_instrument]] | Knock-out interest rate swap instrument. |
 | [[id:15329B09-2CA2-47C8-A20E-70CC757970B3][ores.trading.balance_guaranteed_swap_instrument]] | Balance Guaranteed Swap (BGS) instrument. |
+| [[id:FFE4182F-0FA0-4F7C-B7F9-8DFD59141493][ores.trading.flexi_swap_instrument]] | Flexi swap instrument: a swap whose owner may vary the notional between a lower bound and the leg notional. |
 | [[id:BF079887-725E-4BB5-94C1-7462AB8BB198][ores.trading.swaption_instrument]] | Swaption (option on an interest rate swap) instrument. |
 | [[id:2446DB5D-CDEF-46C8-A8F8-0829CBB733E2][ores.trading.cap_floor_instrument]] | Interest rate cap or floor instrument. |
 | [[id:104DDBF1-12E8-435F-90F0-A701AAD9078F][ores.trading.fra_instrument]] | Forward Rate Agreement (FRA) instrument. |

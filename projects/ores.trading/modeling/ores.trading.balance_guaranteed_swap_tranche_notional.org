@@ -1,0 +1,257 @@
+:PROPERTIES:
+:ID: 1DBC0C39-809C-4083-8180-311F2ED02C5B
+:END:
+#+title: ores.trading.balance_guaranteed_swap_tranche_notional
+#+description: Codegen entity model for the trading =balance_guaranteed_swap_tranche_notional= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One dated notional of a balance guaranteed swap tranche, keyed to the trade, the tranche and the notional's ordinal.
+#+entity_singular: balance_guaranteed_swap_tranche_notional
+#+entity_plural: balance_guaranteed_swap_tranche_notionals
+#+entity_title: Balance Guaranteed Swap Tranche Notional
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+One row per notional a tranche states, keyed to the instrument, the
+tranche and the notional's ordinal within that tranche.
+
+A tranche's notional amortises, so the document states a list of notionals,
+each dated from the day it applies. The first notional states no date and
+applies from the start of the swap. The export writes the rows back in the
+order the document stated them.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+The trade whose balance guaranteed swap states this tranche notional.
+
+** trade_activity_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The activity that wrote this version.
+
+** tranche_number
+:PROPERTIES:
+:primary_key: true
+:type:        integer
+:cpp_type:    int
+:END:
+
+Ordinal of the tranche this notional belongs to, matching the tranche row's own.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 2)
+#+end_src
+** sequence_number
+:PROPERTIES:
+:primary_key: true
+:type:        integer
+:cpp_type:    int
+:END:
+
+Ordinal of this notional within the tranche, counting from one, in the order the
+document states it.
+** start_date
+:PROPERTIES:
+:type:        date
+:cpp_type:    std::optional<std::chrono::year_month_day>
+:nullable:    true
+:END:
+
+The day this notional starts to apply.
+
+Null when the document states the notional without a start date.
+** notional
+:PROPERTIES:
+:type:        numeric(28, 10)
+:cpp_type:    ores::utility::decimal::decimal
+:nullable:    false
+:END:
+
+The tranche's notional from =start_date= onwards.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("1000000").value()
+#+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+The table name is shorter than the conventional composition. The longest
+identifier the generator derives from the table name, the delete rule, adds
+eleven characters, and PostgreSQL cuts an identifier at 63; the conventional
+name would run past that and the generated SQL would no longer name the table
+the C++ entity names.
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bg_swap_tranche_notionals_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "tranche_number" > 0 |
+| "sequence_number" > 0 |
+| "notional" >= 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: balance_guaranteed_swap_tranche_notional
+:entity_plural_short:   balance_guaranteed_swap_tranche_notionals
+:entity_singular_words: balance guaranteed swap tranche notional
+:entity_plural_words:   balance guaranteed swap tranche notionals
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tranche_notional
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| trade_id        | Instrument  |
+| tranche_number  | Tranche     |
+| sequence_number | Sequence    |
+| start_date      | From        |
+| notional        | Notional    |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+The trade read path fetches the tranche notionals of many instruments at once
+when it assembles the export payload, and no generated read covers that.
+The batch read below is one statement over the instrument set.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: 5907d66f-1631-46de-85c2-f70046745d59
+:END:
+
+Reads every current balance guaranteed swap tranche notional of the given instruments, ordered by
+instrument and ordinal, in one statement. An empty input reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::balance_guaranteed_swap_tranche_notional>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::balance_guaranteed_swap_tranche_notional>
+balance_guaranteed_swap_tranche_notional_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<balance_guaranteed_swap_tranche_notional_entity>> |
+                       where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "tranche_number"_c, "sequence_number"_c);
+    return execute_read_query<balance_guaranteed_swap_tranche_notional_entity, domain::balance_guaranteed_swap_tranche_notional>(
+        ctx,
+        query,
+        [](const auto& entities) { return balance_guaranteed_swap_tranche_notional_mapper::map(entities); },
+        lg(),
+        "Reading balance guaranteed swap tranche notionals for multiple instruments.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:3DE90726-CC38-4410-8A41-B262FA59F577][ores.trading.balance_guaranteed_swap_tranche]] — the tranche these notionals belong to.

@@ -46,7 +46,10 @@ swap_instrument_data as_swap(const instrument_batch& batch,
                                 find_all(batch.instrument_option_premiums, trade_id),
                                 find_all(batch.instrument_option_exercise_fees, trade_id),
                                 find_all(batch.instrument_option_payment_dates, trade_id),
-                                find_all(batch.instrument_option_exercise_prices, trade_id)};
+                                find_all(batch.instrument_option_exercise_prices, trade_id),
+                                find_all(batch.flexi_swap_lower_notionals, trade_id),
+                                find_all(batch.balance_guaranteed_swap_tranches, trade_id),
+                                find_all(batch.balance_guaranteed_swap_tranche_notionals, trade_id)};
 }
 
 /**
@@ -109,6 +112,17 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                     batch.instrument_option_exercise_prices.end(),
                     v.option_exercise_prices.begin(),
                     v.option_exercise_prices.end());
+                batch.flexi_swap_lower_notionals.insert(batch.flexi_swap_lower_notionals.end(),
+                                                        v.lower_notionals.begin(),
+                                                        v.lower_notionals.end());
+                batch.balance_guaranteed_swap_tranches.insert(
+                    batch.balance_guaranteed_swap_tranches.end(),
+                    v.tranches.begin(),
+                    v.tranches.end());
+                batch.balance_guaranteed_swap_tranche_notionals.insert(
+                    batch.balance_guaranteed_swap_tranche_notionals.end(),
+                    v.tranche_notionals.begin(),
+                    v.tranche_notionals.end());
             } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
                 append_variant(batch, v);
             } else if constexpr (std::is_same_v<T, equity_instrument_data>) {
@@ -147,6 +161,8 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
         if (const auto* v = find(batch.swaption_instruments, trade_id))
             return as_swap(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.balance_guaranteed_swap_instruments, trade_id))
+            return as_swap(batch, *header, *v, trade_id);
+        if (const auto* v = find(batch.flexi_swap_instruments, trade_id))
             return as_swap(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.callable_swap_instruments, trade_id))
             return as_swap(batch, *header, *v, trade_id);

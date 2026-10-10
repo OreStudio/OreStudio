@@ -21,7 +21,10 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
+#include "ores.trading.core/repository/balance_guaranteed_swap_tranche_notional_repository.hpp"
+#include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
+#include "ores.trading.core/repository/flexi_swap_lower_notional_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
@@ -33,6 +36,7 @@
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/callable_swap_instrument_service.hpp"
+#include "ores.trading.core/service/flexi_swap_instrument_service.hpp"
 #include "ores.trading.core/service/cap_floor_instrument_service.hpp"
 #include "ores.trading.core/service/commodity_instrument_service.hpp"
 #include "ores.trading.core/service/composite_instrument_service.hpp"
@@ -221,6 +225,15 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::callable_swap_call_date_repository call_date_repo;
         auto dates = call_date_repo.read_by_instruments_batch(ctx, rate_ids);
         take(dates, batch.callable_swap_call_dates);
+        repository::flexi_swap_lower_notional_repository lower_notional_repo;
+        auto lower_notionals = lower_notional_repo.read_by_instruments_batch(ctx, rate_ids);
+        take(lower_notionals, batch.flexi_swap_lower_notionals);
+        repository::balance_guaranteed_swap_tranche_repository tranche_repo;
+        auto tranches = tranche_repo.read_by_instruments_batch(ctx, rate_ids);
+        take(tranches, batch.balance_guaranteed_swap_tranches);
+        repository::balance_guaranteed_swap_tranche_notional_repository tranche_notional_repo;
+        auto tranche_notionals = tranche_notional_repo.read_by_instruments_batch(ctx, rate_ids);
+        take(tranche_notionals, batch.balance_guaranteed_swap_tranche_notionals);
         // The shared children the rates family writes: the strikes, the
         // schedules and the option block, read for the same trade ids.
         auto schedules = repository::read_schedules_by_trade_ids(ctx, rate_ids);
@@ -309,6 +322,11 @@ void populate_instruments_for_trades(const Ctx& ctx,
         service::balance_guaranteed_swap_instrument_service svc(ctx);
         auto rows = svc.get_balance_guaranteed_swap_instruments(rate_ids);
         take(rows, batch.balance_guaranteed_swap_instruments);
+    }
+    if (!rate_ids.empty()) {
+        service::flexi_swap_instrument_service svc(ctx);
+        auto rows = svc.get_flexi_swap_instruments(rate_ids);
+        take(rows, batch.flexi_swap_instruments);
     }
     if (!rate_ids.empty()) {
         service::callable_swap_instrument_service svc(ctx);

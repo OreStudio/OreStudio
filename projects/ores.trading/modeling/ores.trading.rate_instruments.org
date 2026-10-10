@@ -312,6 +312,30 @@ them rather than widening them.
 :column: trade_id
 :END:
 
+** balance_guaranteed_swap_tranches
+:PROPERTIES:
+:table:  ores_trading_balance_guaranteed_swap_tranches_tbl
+:column: trade_id
+:END:
+
+** balance_guaranteed_swap_tranche_notionals
+:PROPERTIES:
+:table:  ores_trading_bg_swap_tranche_notionals_tbl
+:column: trade_id
+:END:
+
+** flexi_swap_instruments
+:PROPERTIES:
+:table:  ores_trading_flexi_swap_instruments_tbl
+:column: trade_id
+:END:
+
+** flexi_swap_lower_notionals
+:PROPERTIES:
+:table:  ores_trading_flexi_swap_lower_notionals_tbl
+:column: trade_id
+:END:
+
 ** callable_swap_instruments
 :PROPERTIES:
 :table:  ores_trading_callable_swap_instruments_tbl

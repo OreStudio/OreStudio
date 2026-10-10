@@ -396,3 +396,195 @@ TEST_CASE("mapper_roundtrip_inflation_swap_reverse", tags) {
     CHECK(std::string(*legs[0].ScheduleData->Rules[0].EndDate) == "2028-07-09");
     BOOST_LOG_SEV(lg, info) << "InflationSwap reverse-mapper test passed";
 }
+
+// =============================================================================
+// FlexiSwap mapper tests
+// =============================================================================
+
+TEST_CASE("mapper_roundtrip_flexi_swap_forward", tags) {
+    const auto t = load_first_trade("IR_Flexi_Swap.xml");
+    const auto result = swap_instrument_mapper::forward_flexi_swap(t);
+    REQUIRE(result.header.identity.trade_type_code == "FlexiSwap");
+
+    const auto& fact = std::get<ores::trading::domain::flexi_swap_instrument>(result.facts);
+    CHECK(fact.option_long_short == "Short");
+
+    REQUIRE(result.lower_notionals.size() == 36);
+    CHECK(result.lower_notionals.front().sequence_number == 1);
+    CHECK(result.lower_notionals.front().bound_number == 1);
+    CHECK(result.lower_notionals.back().sequence_number == 36);
+    CHECK(result.lower_notionals.back().notional.to_double() == 0.0);
+    CHECK(result.lower_notionals.front().notional.to_double() == 451389568.0);
+}
+
+TEST_CASE("mapper_roundtrip_flexi_swap_reverse", tags) {
+    const auto t = load_first_trade("IR_Flexi_Swap.xml");
+    const auto result = swap_instrument_mapper::forward_flexi_swap(t);
+
+    const auto reconstructed = swap_instrument_mapper::reverse_flexi_swap(
+        result.header,
+        std::get<ores::trading::domain::flexi_swap_instrument>(result.facts),
+        result.legs,
+        result.leg_amounts,
+        result.leg_rates,
+        result.lower_notionals);
+
+    CHECK(reconstructed.TradeType == ores::ore::domain::oreTradeType::FlexiSwap);
+    REQUIRE(reconstructed.FlexiSwapData.operator bool());
+    const auto& original = *t.FlexiSwapData;
+    const auto& rebuilt = *reconstructed.FlexiSwapData;
+
+    CHECK(rebuilt.OptionLongShort == original.OptionLongShort);
+    REQUIRE(rebuilt.LowerNotionalBounds.size() == original.LowerNotionalBounds.size());
+    for (std::size_t b = 0; b < original.LowerNotionalBounds.size(); ++b) {
+        const auto& want = original.LowerNotionalBounds[b].Notional;
+        const auto& got = rebuilt.LowerNotionalBounds[b].Notional;
+        REQUIRE(got.size() == want.size());
+        for (std::size_t i = 0; i < want.size(); ++i)
+            CHECK(static_cast<float>(got[i]) == static_cast<float>(want[i]));
+    }
+    CHECK(rebuilt.LegData.size() == 2);
+}
+
+TEST_CASE("mapper_flexi_swap_keeps_each_lower_bound_block_and_its_currency", tags) {
+    ores::ore::domain::trade t;
+    t.TradeType = ores::ore::domain::oreTradeType::FlexiSwap;
+    ores::ore::domain::flexiSwapData fd;
+    for (const auto& [currency, values] :
+         std::vector<std::pair<std::string, std::vector<std::pair<std::string, float>>>>{
+             {"EUR", {{"", 100.f}, {"2024-01-15", 80.f}}}, {"USD", {{"", 50.f}}}}) {
+        ores::ore::domain::flexiSwapData_LowerNotionalBounds_t block;
+        block.currency = xsd::string(currency);
+        for (const auto& [start, value] : values) {
+            ores::ore::domain::flexiSwapData_LowerNotionalBounds_t_Notional_t n;
+            static_cast<float&>(n) = value;
+            if (!start.empty())
+                n.startDate = xsd::string(start);
+            block.Notional.push_back(n);
+        }
+        fd.LowerNotionalBounds.push_back(block);
+    }
+    t.FlexiSwapData = fd;
+
+    const auto result = swap_instrument_mapper::forward_flexi_swap(t);
+    REQUIRE(result.lower_notionals.size() == 3);
+    CHECK(result.lower_notionals[0].bound_number == 1);
+    CHECK(result.lower_notionals[1].bound_number == 1);
+    CHECK(result.lower_notionals[2].bound_number == 2);
+    REQUIRE(result.lower_notionals[2].currency.has_value());
+    CHECK(*result.lower_notionals[2].currency == "USD");
+    CHECK(!result.lower_notionals[0].start_date.has_value());
+    CHECK(result.lower_notionals[1].start_date.has_value());
+
+    const auto rebuilt = swap_instrument_mapper::reverse_flexi_swap(
+        result.header,
+        std::get<ores::trading::domain::flexi_swap_instrument>(result.facts),
+        result.legs,
+        result.leg_amounts,
+        result.leg_rates,
+        result.lower_notionals);
+    REQUIRE(rebuilt.FlexiSwapData.operator bool());
+    const auto& bounds = rebuilt.FlexiSwapData->LowerNotionalBounds;
+    REQUIRE(bounds.size() == 2);
+    CHECK(bounds[0].Notional.size() == 2);
+    CHECK(bounds[1].Notional.size() == 1);
+    REQUIRE(bounds[0].currency.operator bool());
+    CHECK(std::string(*bounds[0].currency) == "EUR");
+    REQUIRE(bounds[1].currency.operator bool());
+    CHECK(std::string(*bounds[1].currency) == "USD");
+}
+
+// =============================================================================
+// BalanceGuaranteedSwap mapper tests
+// =============================================================================
+
+TEST_CASE("mapper_roundtrip_balance_guaranteed_swap_forward", tags) {
+    const auto t = load_first_trade("IR_BalanceGuaranteedSwap.xml");
+    const auto result = swap_instrument_mapper::forward_balance_guaranteed_swap(t);
+    REQUIRE(result.header.identity.trade_type_code == "BalanceGuaranteedSwap");
+
+    const auto& fact =
+        std::get<ores::trading::domain::balance_guaranteed_swap_instrument>(result.facts);
+    CHECK(fact.reference_security == "ISIN:XS0983610930");
+
+    REQUIRE(result.tranches.size() == 2);
+    CHECK(result.tranches[0].sequence_number == 1);
+    REQUIRE(result.tranches[0].description.has_value());
+    CHECK(*result.tranches[0].description == "Class A");
+    CHECK(result.tranches[0].security_id == "ISIN:XS0983610930");
+    CHECK(result.tranches[0].seniority == 1);
+    CHECK(result.tranches[1].security_id == "NA");
+    CHECK(result.tranches[1].seniority == 2);
+
+    // The first tranche states twelve notionals, the second fourteen, and
+    // the first notional of each states no date.
+    std::size_t first = 0;
+    std::size_t second = 0;
+    for (const auto& n : result.tranche_notionals) {
+        if (n.tranche_number == 1)
+            ++first;
+        if (n.tranche_number == 2)
+            ++second;
+    }
+    CHECK(first == 12);
+    CHECK(second == 14);
+    REQUIRE(result.tranche_notionals.size() == 26);
+    CHECK(!result.tranche_notionals.front().start_date.has_value());
+    CHECK(result.tranche_notionals[1].start_date.has_value());
+
+    // The tranche schedule lives in the shared schedule rows.
+    std::size_t tranche_schedules = 0;
+    for (const auto& s : result.schedules)
+        if (s.owner_role == "tranches")
+            ++tranche_schedules;
+    CHECK(tranche_schedules == 1);
+}
+
+TEST_CASE("mapper_roundtrip_balance_guaranteed_swap_reverse", tags) {
+    const auto t = load_first_trade("IR_BalanceGuaranteedSwap.xml");
+    const auto result = swap_instrument_mapper::forward_balance_guaranteed_swap(t);
+
+    const auto reconstructed = swap_instrument_mapper::reverse_balance_guaranteed_swap(
+        result.header,
+        std::get<ores::trading::domain::balance_guaranteed_swap_instrument>(result.facts),
+        result.legs,
+        result.leg_amounts,
+        result.leg_rates,
+        result.tranches,
+        result.tranche_notionals,
+        result.schedules,
+        result.schedule_dates);
+
+    CHECK(reconstructed.TradeType == ores::ore::domain::oreTradeType::BalanceGuaranteedSwap);
+    REQUIRE(reconstructed.BalanceGuaranteedSwapData.operator bool());
+    const auto& original = *t.BalanceGuaranteedSwapData;
+    const auto& rebuilt = *reconstructed.BalanceGuaranteedSwapData;
+
+    CHECK(std::string(rebuilt.ReferenceSecurity) == std::string(original.ReferenceSecurity));
+    REQUIRE(rebuilt.Tranches.Tranche.size() == original.Tranches.Tranche.size());
+    for (std::size_t i = 0; i < original.Tranches.Tranche.size(); ++i) {
+        const auto& want = original.Tranches.Tranche[i];
+        const auto& got = rebuilt.Tranches.Tranche[i];
+        CHECK(std::string(got.SecurityId) == std::string(want.SecurityId));
+        CHECK(got.Seniority == want.Seniority);
+        REQUIRE(got.Description.operator bool());
+        CHECK(std::string(*got.Description) == std::string(*want.Description));
+        REQUIRE(got.Notionals.Notional.size() == want.Notionals.Notional.size());
+        for (std::size_t n = 0; n < want.Notionals.Notional.size(); ++n) {
+            const auto& wn = want.Notionals.Notional[n];
+            const auto& gn = got.Notionals.Notional[n];
+            CHECK(static_cast<float>(gn) == static_cast<float>(wn));
+            CHECK(gn.startDate.operator bool() == wn.startDate.operator bool());
+            if (wn.startDate && gn.startDate)
+                CHECK(std::string(*gn.startDate) == std::string(*wn.startDate));
+        }
+    }
+
+    REQUIRE(rebuilt.Tranches.ScheduleData.Rules.size() == 1);
+    const auto& rule = rebuilt.Tranches.ScheduleData.Rules.front();
+    CHECK(std::string(rule.StartDate) == "2021-12-27");
+    REQUIRE(rule.EndDate.operator bool());
+    CHECK(std::string(*rule.EndDate) == "2035-12-28");
+    CHECK(std::string(rule.Tenor) == "6M");
+    CHECK(rebuilt.LegData.size() == 2);
+}

@@ -26,6 +26,8 @@
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_BATCH_HPP
 
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
@@ -45,6 +47,8 @@
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/flexi_swap_instrument.hpp"
+#include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
@@ -181,6 +185,14 @@ struct instrument_batch {
      */
     std::vector<balance_guaranteed_swap_instrument> balance_guaranteed_swap_instruments;
     /**
+     * @brief The balance_guaranteed_swap_tranche rows, keyed by trade id.
+     */
+    std::vector<balance_guaranteed_swap_tranche> balance_guaranteed_swap_tranches;
+    /**
+     * @brief The balance_guaranteed_swap_tranche_notional rows, keyed by trade id.
+     */
+    std::vector<balance_guaranteed_swap_tranche_notional> balance_guaranteed_swap_tranche_notionals;
+    /**
      * @brief The callable_swap_call_date rows, keyed by trade id.
      */
     std::vector<callable_swap_call_date> callable_swap_call_dates;
@@ -204,6 +216,14 @@ struct instrument_batch {
      * @brief The equity_position_option_underlying rows, keyed by trade id.
      */
     std::vector<equity_position_option_underlying> equity_position_option_underlyings;
+    /**
+     * @brief The flexi_swap_instrument rows, keyed by trade id.
+     */
+    std::vector<flexi_swap_instrument> flexi_swap_instruments;
+    /**
+     * @brief The flexi_swap_lower_notional rows, keyed by trade id.
+     */
+    std::vector<flexi_swap_lower_notional> flexi_swap_lower_notionals;
     /**
      * @brief The fra_instrument rows, keyed by trade id.
      */
@@ -450,6 +470,20 @@ inline void append(instrument_batch& batch, balance_guaranteed_swap_instrument v
 }
 
 /**
+ * @brief Adds one balance_guaranteed_swap_tranche to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, balance_guaranteed_swap_tranche v) {
+    batch.balance_guaranteed_swap_tranches.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one balance_guaranteed_swap_tranche_notional to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, balance_guaranteed_swap_tranche_notional v) {
+    batch.balance_guaranteed_swap_tranche_notionals.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one callable_swap_call_date to the array that holds its type.
  */
 inline void append(instrument_batch& batch, callable_swap_call_date v) {
@@ -489,6 +523,20 @@ inline void append(instrument_batch& batch, composite_leg v) {
  */
 inline void append(instrument_batch& batch, equity_position_option_underlying v) {
     batch.equity_position_option_underlyings.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one flexi_swap_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, flexi_swap_instrument v) {
+    batch.flexi_swap_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one flexi_swap_lower_notional to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, flexi_swap_lower_notional v) {
+    batch.flexi_swap_lower_notionals.push_back(std::move(v));
 }
 
 /**

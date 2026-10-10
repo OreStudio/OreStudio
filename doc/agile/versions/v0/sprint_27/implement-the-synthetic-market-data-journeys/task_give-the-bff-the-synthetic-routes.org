@@ -163,7 +163,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Important: the regenerated process type handler writes in the system tenant, so a tenant role holding the write permission changes the shared catalogue over the bus | =yield_curve_process_type_handler.hpp= | Accept | The BFF writes the process types only from a system session (=b365494626=). The server-side refusal belongs in the handler template, which every system-owned entity shares, so it is captured as [[id:46480D15-1E41-46D6-8042-A56516EBE2EE][A tenant can write a system catalogue]]. |
+| 2 | Minor: the write bodies carry =party_id= from the client | =synthetic.ts= | Decline | The feed tables carry a restrictive party isolation policy whose write check limits =party_id= to the session's visible parties. The book routes take =party_id= the same way. |
+| 3 | Minor: =answer= repeats the conflict mapping of =records.ts= and =classifications.ts= | =synthetic.ts= | Decline | Each module words its own conflict. A shared mapper is a refactor of three modules, not part of this task. |
+| 4 | Minor: the feed and folder start and stop were not run against the live services | =synthetic.ts= | Accept | The test tenant has no feeds, and starting the system feeds would change shared state. Unit tests cover the request and the reply mapping; the collection screen task runs them live. |
+| 5 | Misspell check | changed files | Clean | =misspell-fixer= exit 0. |
 
 * Result
 

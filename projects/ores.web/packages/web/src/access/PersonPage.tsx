@@ -34,7 +34,11 @@ import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { ContactTab, IdentityTab, useAccountWrites } from './PersonForms.js';
 import { ACCOUNT_ENTITY, PersonRevertDialog, isRevertable, latestVersion } from './PersonRevert.js';
-import { Timeline } from '../timeline/Timeline.js';
+import { Timeline, timelineEntryKey } from '../timeline/Timeline.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { useLoadState } from '../events/useLoadState.js';
+import { useChangedRows } from '../refdata/changedRows.js';
+import { RefreshButton } from '../ui/RefreshButton.js';
 import { useHolds } from './holds.js';
 import { actorPathFor } from './PeoplePage.js';
 import { useActorPictures } from './PersonRef.js';
@@ -71,6 +75,26 @@ export function PersonPage({ me }: { readonly me: string }): ReactNode {
         return <Notice tone="warn">{t('access.person.notFound')}</Notice>;
     }
     return <Person account={account.data} self={account.data.username === me} />;
+}
+
+/** What a person's page shows: the account, the contact record, the roles, the sign-ins and the history. */
+const PERSON_WATCHES = [
+    { component: 'iam', entity: 'accounts' },
+    { component: 'iam', entity: 'account_contact_informations' },
+    { component: 'iam', entity: 'roles' },
+    { component: 'iam', entity: 'login_info' },
+    { component: 'iam', entity: 'sessions' },
+] as const;
+
+/** The reads that make up a person's page, named by the start of their keys. */
+function personQueries(account: Account): readonly (readonly string[])[] {
+    return [
+        ['account', account.username],
+        ['contact-information'],
+        ['account-access', account.id],
+        ['account-sign-ins', account.username],
+        ['timeline', 'person', account.username],
+    ];
 }
 
 function Person({
@@ -117,6 +141,23 @@ function Person({
         queryFn: () => api.timeline('person', account.username),
     });
     const name = displayName(account, account.username);
+    /*
+     * The page never reloads by itself. A change to anything it shows makes
+     * Refresh stale, and one Refresh reads the cards and the history again.
+     */
+    const load = useLoadState(personQueries(account));
+    const news = useEntityChanges(PERSON_WATCHES, load);
+    const newEntries = useChangedRows(
+        'person-history',
+        story.data?.events ?? [],
+        (event) => timelineEntryKey(event),
+        { dataUpdatedAt: story.dataUpdatedAt, isPlaceholder: story.isPlaceholderData },
+    );
+    const refreshPage = (): void => {
+        for (const key of personQueries(account)) {
+            void queries.invalidateQueries({ queryKey: key });
+        }
+    };
     const refresh = () => {
         void queries.invalidateQueries({ queryKey: ['account-access', account.id] });
         /*
@@ -153,6 +194,14 @@ function Person({
                 version={null}
                 subdued
                 access={null}
+                own={
+                    <RefreshButton
+                        onClick={refreshPage}
+                        pending={load.isFetching}
+                        stale={news.stale}
+                        changedAt={news.changedAt}
+                    />
+                }
                 mark={
                     <Avatar
                         name={name}
@@ -185,6 +234,7 @@ function Person({
                             timeline={story.data}
                             actorPath={actorPathFor(holds('iam::accounts:read'))}
                             actorPicture={actorPicture}
+                            marked={newEntries}
                             /*
                              * Two entries can be acted on. A grant is taken
                              * away, which closes it and is the write the roles

@@ -64,6 +64,7 @@ export function Timeline({
     renderHead,
     actorPath,
     actorPicture,
+    marked,
     hideUnchanged = false,
 }: {
     readonly timeline: Stream;
@@ -88,6 +89,8 @@ export function Timeline({
      * the versions where that field moved.
      */
     readonly hideUnchanged?: boolean;
+    /** The entries that are new since the history was last read, by `timelineEntryKey`, which pulse for a moment. */
+    readonly marked?: ReadonlySet<string>;
 }): ReactNode {
     const { t } = useTranslation();
     if (timeline.events.length === 0) {
@@ -120,6 +123,7 @@ export function Timeline({
                             actorPath={actorPath}
                             actorPicture={actorPicture}
                             current={newest.has(`${entryKeyOf(event)}#${String(event.version)}`)}
+                            isNew={marked?.has(timelineEntryKey(event)) === true}
                         />
                     </Fragment>
                 ))}
@@ -261,6 +265,11 @@ function EventChart({ events }: { readonly events: readonly TimelineEvent[] }): 
 /** What names one entry in the stream: no two entries come from one version twice. */
 function entryKey(event: TimelineEvent, index: number): string {
     return `${event.entityType}#${event.entityId}#${String(event.version)}#${String(index)}`;
+}
+
+/** What names one entry across reads: the record, its version, what it was and when. */
+export function timelineEntryKey(event: TimelineEvent): string {
+    return `${event.entityType}#${event.entityId}#${String(event.version)}#${event.kind}#${event.at}`;
 }
 
 /** What names the record an entry is a version of. */
@@ -412,6 +421,7 @@ function Entry({
     actorPath,
     actorPicture,
     current,
+    isNew,
 }: {
     readonly event: TimelineEvent;
     readonly before: TimelineEvent | undefined;
@@ -421,12 +431,17 @@ function Entry({
     readonly actorPicture: ((actor: string) => string | null) | undefined;
     /** Whether this entry is the newest version of its record. */
     readonly current: boolean;
+    /** Whether the entry arrived with the last read, and is marked for a moment. */
+    readonly isNew: boolean;
 }): ReactNode {
     const { t, language } = useTranslation();
     const changed = changedFields(event, before);
     const quiet = isAnAct(event.kind);
     return (
-        <li className={`${ROW} scroll-mt-4`} data-ms={parseTimestamp(event.at).getTime()}>
+        <li
+            className={`${ROW} scroll-mt-4${isNew ? ' row-changed' : ''}`}
+            data-ms={parseTimestamp(event.at).getTime()}
+        >
             <div className="flex items-start justify-end gap-1.5 pr-2.5 pt-[6px]">
                 <span className="pt-[3px] font-mono text-[0.72rem] text-ink-faint">
                     {timeOf(event.at, language)}

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The person page and the other record pages get the same Refresh button, which re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -84,3 +84,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The person page has the Refresh button in its header, beside the access mark. It turns gold when the account, the contact record, a role definition, the sign-in record or the history changed on the server (=iam= =accounts=, =account_contact_informations=, =roles=, =login_info=, =sessions=). One Refresh reads the account, the contact record, the roles, the sign-ins and the history again (=useLoadState= groups the page's reads, so the page is stale when any of them is older than a change). A history entry that arrives with a read is marked for a moment, the same pulse as a changed list row. The page does not reload by itself, apart from react-query's reload when the window regains focus, which lists share.
+
+Finding: granting or taking away a role raises =role_assigned_event= and =role_revoked_event= on the in-process bus only; neither is published to NATS. A person page therefore cannot hear that a role was granted elsewhere. That needs a published event for the grant, which is a service change and is not in this story.
+
+Only the person page is done. The other record pages (currency, calendar, desk group and the rest) use =RecordHeader=, so they take the same Refresh with their own watches and reads; that follows once the person page is accepted.

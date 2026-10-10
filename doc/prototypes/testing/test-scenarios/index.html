@@ -31,17 +31,16 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { background: var(--bg); color: var(--ink); }
-body { margin: 0; font: 12.5px/1.45 var(--sans); padding-bottom: 8rem; }
+body { margin: 0; font: 14px/1.5 var(--sans); padding-bottom: 8rem; }
 button, input, select, textarea { font: inherit; color: inherit; }
 a { color: var(--accent); text-decoration: none; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.01em; }
-h1 { font-size: 1rem; } h2 { font-size: 0.875rem; } h3 { font-size: 0.8125rem; }
+h1 { font-size: 1.375rem; } h2 { font-size: 1rem; } h3 { font-size: 0.875rem; }
 p { margin: 0; }
 .muted { color: var(--ink-muted); } .faint { color: var(--ink-faint); }
 .code { font-family: var(--mono); font-size: 12px; }
-.mini { font-size: 11px; }
-.count { font-size: 10px; font-variant-numeric: tabular-nums; color: var(--ink-muted); }
+.mini { font-size: 12px; }
 
 /* Header */
 .top { position: sticky; top: 0; z-index: 5; background: var(--raised); border-bottom: 1px solid var(--line); }
@@ -55,46 +54,46 @@ p { margin: 0; }
 .bell-wrap { position: relative; }
 .bell { position: relative; background: none; border: 1px solid transparent; border-radius: 999px; padding: 0.25rem 0.625rem; cursor: pointer; color: var(--ink-muted); }
 .bell:hover { border-color: var(--line); }
-.badge { position: absolute; top: -0.125rem; right: -0.125rem; min-width: 1rem; height: 1rem; padding: 0 0.25rem; border-radius: 999px; background: var(--accent); color: var(--ink-inverse); font-size: 9px; font-weight: 700; display: grid; place-items: center; }
+.badge { position: absolute; top: -0.125rem; right: -0.125rem; min-width: 1.125rem; height: 1.125rem; padding: 0 0.25rem; border-radius: 999px; background: var(--accent); color: var(--ink-inverse); font-size: 11px; font-weight: 700; display: grid; place-items: center; }
 .bell-menu { position: absolute; right: 0; top: 2.5rem; width: 22rem; background: var(--overlay); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.5rem; box-shadow: 0 12px 32px rgba(0,0,0,0.45); z-index: 8; display: grid; gap: 0.25rem; }
 .bell-menu .item { text-align: left; background: none; border: 0; padding: 0.5rem; border-radius: 6px; cursor: pointer; display: grid; gap: 0.125rem; }
 .bell-menu .item:hover { background: var(--raised); }
 .avatar { width: 1.75rem; height: 1.75rem; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--accent-dim); color: var(--accent-bright); }
 
 /* Page */
-main { max-width: 72rem; margin: 0 auto; padding: 1rem; display: grid; gap: 0.875rem; }
+main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem; display: grid; gap: 1.25rem; }
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 .head > div { min-width: 0; display: grid; gap: 0.25rem; }
 .crumbs { font-size: 12px; color: var(--ink-faint); display: flex; gap: 0.375rem; flex-wrap: wrap; }
 .crumbs button { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; }
 section.card { background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); }
-.pad { padding: 0.75rem 0.875rem; }
-.grid { display: grid; gap: 0.625rem; }
+.pad { padding: 1rem; }
+.grid { display: grid; gap: 1rem; }
 .tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 0.5rem 0.875rem; cursor: pointer; color: var(--ink-muted); }
 .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
 .tabs button.soon { color: var(--ink-faint); cursor: default; }
 
 /* Chips and buttons */
-.chip { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 10px; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap; }
+.chip { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 11px; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap; }
 .chip.pass { border-color: var(--up-strong); color: var(--up); background: var(--up-dim); }
 .chip.fail { border-color: var(--down); color: var(--down); background: var(--down-dim); }
 .chip.pending { color: var(--ink-muted); }
 .chip.run { border-color: var(--accent); color: var(--accent-bright); background: var(--accent-dim); }
 .chip.client { border-color: var(--purple); color: #c4a7f5; }
-.btn { border: 1px solid var(--line); background: var(--raised); padding: 0.3rem 0.625rem; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.btn { border: 1px solid var(--line); background: var(--raised); padding: 0.375rem 0.75rem; border-radius: 6px; cursor: pointer; white-space: nowrap; }
 .btn:hover:not(:disabled) { border-color: var(--line-strong); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--ink-inverse); font-weight: 600; }
 .btn.pass[aria-pressed="true"] { background: var(--up-strong); border-color: var(--up-strong); color: #fff; }
 .btn.fail[aria-pressed="true"] { background: var(--down); border-color: var(--down); color: #fff; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn.small { padding: 0.25rem 0.5rem; font-size: 12px; }
-textarea { width: 100%; min-height: 3.25rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.5rem 0.625rem; resize: vertical; }
+textarea { width: 100%; min-height: 4.5rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.5rem 0.625rem; resize: vertical; }
 textarea:disabled { opacity: 0.7; }
 
 /* Queue */
 table { width: 100%; border-collapse: collapse; }
-th, td { text-align: left; padding: 0.4rem 0.75rem; border-bottom: 1px solid var(--line-subtle); vertical-align: middle; }
+th, td { text-align: left; padding: 0.625rem 0.875rem; border-bottom: 1px solid var(--line-subtle); vertical-align: middle; }
 th { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; }
 tbody tr:last-child td { border-bottom: 0; }
 tbody tr.open { cursor: pointer; }
@@ -105,26 +104,26 @@ tbody tr.open:hover { background: var(--overlay); }
 .progress.bad > span { background: var(--down); }
 
 /* Runner */
-.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.5rem 1rem; font-size: 12px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 0.75rem 1.25rem; }
 .fact { display: grid; gap: 0.125rem; }
-.fact .label { font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); }
+.fact .label { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); }
 .split { display: grid; grid-template-columns: minmax(16rem, 0.9fr) minmax(0, 1.6fr); gap: 1rem; align-items: start; }
 @media (max-width: 54rem) { .split { grid-template-columns: 1fr; } }
 .steps { display: grid; }
-.step-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.5rem; align-items: center; padding: 0.4rem 0.75rem; border: 0; border-bottom: 1px solid var(--line-subtle); background: none; text-align: left; cursor: pointer; width: 100%; }
+.step-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.625rem; align-items: center; padding: 0.625rem 0.875rem; border: 0; border-bottom: 1px solid var(--line-subtle); background: none; text-align: left; cursor: pointer; width: 100%; }
 .step-row:last-child { border-bottom: 0; }
 .step-row[aria-current="true"] { background: var(--overlay); box-shadow: inset 3px 0 0 var(--accent); }
 .dot { width: 0.75rem; height: 0.75rem; border-radius: 50%; border: 2px solid var(--line-strong); }
 .dot.pass { background: var(--up); border-color: var(--up); }
 .dot.fail { background: var(--down); border-color: var(--down); }
 .body p { color: var(--ink-muted); margin-top: 0.5rem; }
-.body .org { border-left: 2px solid var(--line); padding-left: 0.625rem; margin-top: 0.25rem; display: grid; gap: 0.25rem; }
+.body .org { border-left: 2px solid var(--line); padding-left: 0.75rem; margin-top: 0.5rem; display: grid; gap: 0.375rem; }
 .verdict { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
 .shots { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
 .shot { font-family: var(--mono); font-size: 12px; border: 1px solid var(--line); border-radius: 6px; padding: 0.125rem 0.5rem; background: var(--bg); }
 .overall { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-.body p.stepper-big, .stepper-big { font-size: 0.875rem; font-weight: 600; color: var(--ink); margin: 0; }
-.doc-step { padding: 0.75rem 0.875rem; border-bottom: 1px solid var(--line-subtle); display: grid; gap: 0.5rem; }
+.body p.stepper-big, .stepper-big { font-size: 1.125rem; font-weight: 600; color: var(--ink); margin: 0; }
+.doc-step { padding: 1rem; border-bottom: 1px solid var(--line-subtle); display: grid; gap: 0.625rem; }
 .doc-step:last-child { border-bottom: 0; }
 .context a { color: var(--accent); }
 .context .links { margin-top: 0.75rem; display: grid; gap: 0.25rem; }
@@ -316,7 +315,7 @@ tbody tr.open:hover { background: var(--overlay); }
         <tr class="open" data-open="${esc(s.id)}" tabindex="0">
           <td><div><strong>${esc(s.title)}</strong></div><div class="mini faint">${esc(s.story)} · ${esc(s.task)}</div></td>
           <td><span class="code">${esc(s.target)}</span>${s.clients.length ? ` ${s.clients.map((c) => `<span class="chip client">${esc(c)}</span>`).join(' ')}` : ''}</td>
-          <td><div class="progress ${o === 'fail' ? 'bad' : ''}"><span style="width:${pct}%"></span></div><div class="count">${n} of ${s.steps.length} steps</div></td>
+          <td><div class="progress ${o === 'fail' ? 'bad' : ''}"><span style="width:${pct}%"></span></div><div class="mini faint">${n} of ${s.steps.length} steps</div></td>
           <td><span class="chip ${o === 'pending' ? (n ? 'run' : 'pending') : o}">${o === 'pending' && n ? 'IN PROGRESS' : label[o]}</span></td>
           <td class="mini muted">${esc(s.updated)}</td>
         </tr>`;
@@ -348,7 +347,7 @@ tbody tr.open:hover { background: var(--overlay); }
       <section class="card pad grid">
         <div class="head">
           <div><h1>${esc(s.title)}</h1><p class="muted">${esc(s.story)} · ${esc(s.task)}</p></div>
-          <div class="overall"><span class="chip ${o}">${label[o]}</span><span class="count">${done(s)} of ${s.steps.length} steps marked</span></div>
+          <div class="overall"><span class="chip ${o}">${label[o]}</span><span class="mini muted">${done(s)} of ${s.steps.length} steps marked</span></div>
         </div>
         <div class="facts">
           <div class="fact"><span class="label">Target</span><span class="code">${esc(s.target)}</span></div>
@@ -391,7 +390,7 @@ tbody tr.open:hover { background: var(--overlay); }
     const ro = isReadOnly(s);
     return `
       <section class="card pad grid body">
-        <div class="head"><div>${state.variant === 'b' ? '' : `<span class="count">Step ${ix + 1} of ${s.steps.length}</span>`}<p class="stepper-big">${stepLabel(s, st)}</p></div><span class="chip ${st.status}">${st.status.toUpperCase()}</span></div>
+        <div class="head"><div><h2>Step ${ix + 1} of ${s.steps.length}</h2><p class="stepper-big">${stepLabel(s, st)}</p></div><span class="chip ${st.status}">${st.status.toUpperCase()}</span></div>
         <div class="org">${st.body.map((l) => `<p>${inline(l)}</p>`).join('')}</div>
         <div class="verdict">
           <button class="btn pass" data-verdict="pass" aria-pressed="${st.status === 'pass'}" ${ro ? 'disabled' : ''}>Pass</button>
@@ -440,13 +439,13 @@ tbody tr.open:hover { background: var(--overlay); }
     const n = s.steps.length;
     const pct = Math.round((done(s) / n) * 100);
     return `${contextTabs(s)}
-      <section class="card pad grid" style="max-width:30rem;margin:0 auto;width:100%">
+      <section class="card pad grid" style="max-width:34rem;margin:0 auto;width:100%">
         <div class="progress ${overall(s) === 'fail' ? 'bad' : ''}"><span style="width:${pct}%"></span></div>
         <div class="overall"><button class="btn small" data-prev="1" ${state.stepIx === 0 ? 'disabled' : ''}>Back</button>
-          <span class="count">Step ${state.stepIx + 1} of ${n}</span>
+          <span class="mini muted">Step ${state.stepIx + 1} of ${n}</span>
           <button class="btn small" data-next="1" ${state.stepIx === n - 1 ? 'disabled' : ''}>Skip</button></div>
       </section>
-      <div style="max-width:30rem;margin:0 auto;width:100%;display:grid;gap:0.625rem">${detail(s, state.stepIx)}</div>`;
+      <div style="max-width:34rem;margin:0 auto;width:100%;display:grid;gap:1rem">${detail(s, state.stepIx)}</div>`;
   }
 
   /* ---------- variant C: the document ---------- */

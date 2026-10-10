@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 8493EF5E-F6D7-4CE4-B8AC-3C871FEF3059
+:END:
+#+title: Story: Edit parties as an entity under four-eyes
+#+description: Replace the party wizards with a standard entity page for a party: a list, a page with cards and tabs, and dialogs. A save proposes the change, and the change applies when a second person approves it. Two PRs: the server gating of parties, then the web screens.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:refdata:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A party is edited on one standard page, and every gated change goes into a four-eyes approval request that applies when approved.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- The party record and its identifiers can be proposed, previewed, raised and applied on the server like a book.
+- The party page edits every card in a dialog, and a save proposes the change.
+- The three party wizards are removed.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4E67658D-2523-4DC8-8C72-309F9721E5A7][Scaffold story: Edit parties as an entity under four-eyes]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:775FD373-90C1-469E-8FCA-0A5210858813][Gate party changes on the server]] | BACKLOG | | | Initial task for: Edit parties as an entity under four-eyes |
+
+* Decisions
+
+* Out of scope
+
+-

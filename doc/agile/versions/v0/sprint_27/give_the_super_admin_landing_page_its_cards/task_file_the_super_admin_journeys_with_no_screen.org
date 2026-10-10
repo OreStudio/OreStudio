@@ -8,12 +8,12 @@
 #+filetags: :give_the_super_admin_landing_page_its_cards:sprint_27:v0:
 #+owner: marco
 #+branch: feature/file-the-super-admin-journeys-with-no-screen
-#+pr:
+#+pr: 3029
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5F88F874-7A41-4CAE-BEC5-5C4A35334A1B][Give the super administrator's landing page its cards]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Each super administrator journey with no screen has a capture in the backlog tha
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:5F88F874-7A41-4CAE-BEC5-5C4A35334A1B][Give the super administrator's landing page its cards]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -75,12 +75,18 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3029][#3029]] | [agile] File the super administrator journeys that have no screen |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Subject names unverified | the three captures | Accepted | Checked: every subject and permission name exists in the code |
+| 2 | Empty Review row | this task | Accepted | Table filled |
+| 3 | Table padding | status tables | Declined | Harmless; org re-aligns on edit |
+| 4 | Capture pages not built | inbox captures | Accepted | Built with compass site page; 0 failures |
+| 5 | Loose wording | market data capture | Declined | Clear enough; the exact gaps are listed in the journey |
 
 * Result
+
+Three captures now sit in the inbox, one for each super administrator journey that has no screen: the market data feeds, the yield curve process types and the compute catalogue. Each names the subjects that exist, the gaps its journey records, and the first slice to build. The system home already shows all three as upcoming cards.

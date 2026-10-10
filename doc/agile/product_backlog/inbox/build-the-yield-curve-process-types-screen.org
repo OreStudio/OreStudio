@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 3E376909-0309-429B-AE5F-992CC717C789
+:END:
+#+title: Build the yield curve process types screen for the system administrator
+#+description: The Manage the yield curve process types journey has a design and generated subjects, and no web page, BFF route or shell verb reaches the catalogues. The system home lists it as upcoming.
+#+type: capture
+#+level: cross
+#+filetags: :web:marketdata:synthetic:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The system administrator has no screen for the yield curve process types. The
+journey [[id:AFABC8A2-61A8-486E-80EC-65856914AA17][Manage the yield curve process types]]
+keeps the short-rate models the IR curve editor offers and the parameters each
+model takes. The web client has no page, and no HTTP route or shell verb reaches
+either catalogue. The system home shows it as an upcoming card.
+
+* Why
+
+Reads and writes exist as generated subjects:
+=synthetic.v1.yield_curve_process_types.list=, =.get_many=, =.put_many=, and the
+same set for the parameter definitions. Today the catalogues change only by seed
+SQL and migration. The journey lists the gaps: the catalogue and the build
+disagree about which engines work, saving a type is not atomic, no list is scoped
+to a type, a definition is addressed by a name several types share, and a removal
+is unguarded.
+
+The first slice is a read-only page that groups the definitions by type on the
+page. Writes wait on the atomic apply operation and the guarded removal.
+
+* References
+
+- [[id:AFABC8A2-61A8-486E-80EC-65856914AA17][User Journey: Manage the yield curve process types]]
+
+* See also
+
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]

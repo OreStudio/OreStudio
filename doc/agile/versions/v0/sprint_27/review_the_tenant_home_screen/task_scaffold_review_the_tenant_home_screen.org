@@ -8,7 +8,7 @@
 #+filetags: :review_the_tenant_home_screen:sprint_27:v0:
 #+owner: marco
 #+branch: feature/review-the-tenant-home-screen
-#+pr:
+#+pr: 3066
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -72,7 +72,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3066][#3066]] | [web] Rework the tenant administrator's home into tabs with a dashboard |
 
 * Review
 

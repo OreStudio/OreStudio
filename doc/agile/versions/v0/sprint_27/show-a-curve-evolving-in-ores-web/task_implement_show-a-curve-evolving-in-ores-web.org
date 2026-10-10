@@ -8,7 +8,7 @@
 #+filetags: :show-a-curve-evolving-in-ores-web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-show-a-curve-evolving-in-ores-web
-#+pr:
+#+pr: 3092
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3092][#3092]] | [web] Give the BFF the curve read routes |
 
 * Review
 

@@ -80,7 +80,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Raw Org link in the generated artefact header | dq_currency_groups_artefact_create.sql | Decline | The template copies the model description. The other generated artefact scripts do the same. |
+| 2 | Dataset note says Librarian bundle before a bundle exists | refdata_currency_groups_seed_populate.sql | Decline | Every seed script uses this phrase for its dataset note. The provisioning task adds the bundle. |
+| 3 | Catalog description may differ from other scripts | refdata_currency_groups_seed_populate.sql | Decline | The text is identical to the currency pairs seed that registers the same catalog. |
+| 4 | Regenerate the ER diagrams in a follow-up | ores.sql/modeling | Decline | The ER story in the sprint owns the regeneration. This branch adds no diagram change. |
 
 * Result
 

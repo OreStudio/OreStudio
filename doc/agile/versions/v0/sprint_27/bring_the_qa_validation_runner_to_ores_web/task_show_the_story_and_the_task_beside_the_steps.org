@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The tester recovers the context of a scenario without leaving the runner.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,14 @@ The tester recovers the context of a scenario without leaving the runner.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The runner page gets three tabs through =useTabs=: Steps, Story and Task. The page needs no new BFF route, because task 3 serves a story, a task or a scenario by :ID: at =GET /api/qa/docs/:id=.
+
+- =DocPanel= reads a doc by id and draws its title, its path and its text through =renderOrgHtml=. The renderer strips the file header, shows raw HTML as text and removes unsafe links. An id link in the text points at =/development/docs/:id=.
+- =OrgText= follows an id link inside the app. A click on a link that carries =data-org-id= goes to the handler, so the app navigates without a page load. A click with a modifier key, or on any other link, behaves as the browser makes it.
+- =DocPage= is the route an id link opens, so a link in the story reaches the task, and a link in the task reaches the story or any other doc.
+- A doc the server cannot find answers not found, and the panel says that no story, task or scenario has the id and that the link may point at a doc the runner does not show. The server answers the same for an id no doc has and for a doc of a kind it does not serve, so the panel does not tell the two apart.
+- A scenario that names no story or task shows a plain message on that tab. It is not an error.
+- The runner stays mounted but hidden on the other tabs, so the marks and notes of a tester survive a look at the story.
 
 * Measurements
 
@@ -61,6 +66,9 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- A link to a file, such as a =file:= link, is rewritten to a relative address by the renderer and is not followed by the app. Following those is not part of this task.
+- The tests render the panels as markup with a seeded cache. A throwaway harness, not committed, mounted the real page against an in-memory fake of the endpoints and drove it in headless Chrome: 9 checks covered the Story tab, the hidden runner, marks and a Fail surviving a tab switch, an id link opening its doc without a page load (a marker set on the window survived), a link inside that doc, and a dead link saying so. All 9 passed with no script errors.
 
 * Test Scenarios
 

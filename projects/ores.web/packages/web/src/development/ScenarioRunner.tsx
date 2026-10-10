@@ -261,7 +261,7 @@ function StepCard({ runner, dispatch, saving }: ScenarioRunnerProps): ReactNode 
                     {t(`development.runner.stepStates.${step.status}`)}
                 </Tag>
             </div>
-            <OrgText lines={step.instructions} />
+            <OrgText source={step.instructions.join('\n')} />
             <div className="flex gap-2">
                 <Button
                     type="button"

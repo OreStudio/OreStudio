@@ -1152,6 +1152,21 @@ const fr: SourceCatalogue = {
                 failed: 'Échoué',
             },
         },
+        scenario: {
+            tabsLabel: 'Vues du scénario',
+            tabs: {
+                steps: 'Étapes',
+                story: 'Récit',
+                task: 'Tâche',
+            },
+            noStory: 'Ce scénario ne nomme aucun récit.',
+            noTask: 'Ce scénario ne nomme aucune tâche.',
+        },
+        docs: {
+            title: 'Document',
+            unresolved:
+                "Aucun récit, aucune tâche ni aucun scénario n'a l'identifiant {id}. Le lien peut pointer vers un document que l'exécuteur n'affiche pas.",
+        },
         runner: {
             states: {
                 PENDING: 'En attente',

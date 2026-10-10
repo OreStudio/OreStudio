@@ -27,6 +27,8 @@ import { qa } from '../api/qa.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
 import { Notice } from '../ui/Primitives.js';
+import { useTabs } from '../ui/Tabs.js';
+import { DocPanel } from './DocPanel.js';
 import { openRunner, outcomeOf, reduce, saveRequest, type Action, type Outcome } from './runner.js';
 import { ScenarioRunner } from './ScenarioRunner.js';
 import { QA_SCENARIOS_KEY } from './TestsQueue.js';
@@ -57,8 +59,54 @@ export function ScenarioPage(): ReactNode {
             />
             {scenario.isError && <Notice tone="error">{scenario.error.message}</Notice>}
             {scenario.isPending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
-            {scenario.isSuccess && <Run id={id} scenario={scenario.data} />}
+            {scenario.isSuccess && <Loaded id={id} scenario={scenario.data} />}
         </div>
+    );
+}
+
+const TABS = ['steps', 'story', 'task'] as const;
+
+/**
+ * A loaded scenario: its runner, and the story and task it belongs to.
+ *
+ * The runner stays mounted while another tab shows, only hidden, so a tester
+ * who looks at the story does not lose the marks and notes made so far.
+ */
+function Loaded({ id, scenario }: { readonly id: string; readonly scenario: Scenario }): ReactNode {
+    const { t } = useTranslation();
+    const { tab, bar } = useTabs({
+        label: t('development.scenario.tabsLabel'),
+        tabs: TABS,
+        titleOf: (candidate) => t(`development.scenario.tabs.${candidate}`),
+    });
+    return (
+        <div className="space-y-4">
+            {bar}
+            <div hidden={tab !== 'steps'}>
+                <Run id={id} scenario={scenario} />
+            </div>
+            {tab === 'story' && (
+                <Context link={scenario.story} none={t('development.scenario.noStory')} />
+            )}
+            {tab === 'task' && (
+                <Context link={scenario.task} none={t('development.scenario.noTask')} />
+            )}
+        </div>
+    );
+}
+
+/** The doc a scenario names, or a plain message when it names none. */
+function Context({
+    link,
+    none,
+}: {
+    readonly link: Scenario['story'];
+    readonly none: string;
+}): ReactNode {
+    return link === null ? (
+        <p className="text-sm text-ink-muted">{none}</p>
+    ) : (
+        <DocPanel id={link.id} />
     );
 }
 

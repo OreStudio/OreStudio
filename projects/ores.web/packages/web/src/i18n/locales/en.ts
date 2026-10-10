@@ -1141,6 +1141,21 @@ export const en: SourceCatalogue = {
                 failed: 'Failed',
             },
         },
+        scenario: {
+            tabsLabel: 'Scenario views',
+            tabs: {
+                steps: 'Steps',
+                story: 'Story',
+                task: 'Task',
+            },
+            noStory: 'This scenario names no story.',
+            noTask: 'This scenario names no task.',
+        },
+        docs: {
+            title: 'Doc',
+            unresolved:
+                'No story, task or scenario has the id {id}. The link may point at a doc the runner does not show.',
+        },
         runner: {
             states: {
                 PENDING: 'Pending',

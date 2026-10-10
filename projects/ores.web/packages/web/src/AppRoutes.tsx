@@ -50,6 +50,7 @@ import { PublicShell } from './components/PublicShell.js';
 import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { DevelopmentArea } from './development/DevelopmentArea.js';
+import { DocPage } from './development/DocPage.js';
 import { ScenarioPage } from './development/ScenarioPage.js';
 import { OperationsArea } from './operations/OperationsArea.js';
 import { BusPage } from './operations/BusPage.js';
@@ -461,6 +462,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <ScenarioPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/development/docs/:id"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <DocPage />
                     ),
                     'workspace',
                 )}

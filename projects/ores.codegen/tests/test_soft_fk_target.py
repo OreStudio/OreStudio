@@ -53,7 +53,7 @@ def test_a_check_against_an_immutable_target_reads_its_row_as_it_is(
     real = org_loader._entity_org_by_table
 
     def with_immutable_target(projects_dir):
-        mapping = real(projects_dir)
+        mapping = dict(real(projects_dir))
         mapping["ores_trading_trades_tbl"] = dict(
             mapping["ores_inbox_delivery_outcome_types_tbl"])
         return mapping

@@ -1044,6 +1044,41 @@ const fr: SourceCatalogue = {
                 },
             },
         },
+        tenantDashboard: {
+            read: 'Lu',
+            people: {
+                title: 'Personnes',
+                accounts: 'Comptes',
+                locked: 'Verrouillés',
+                resets: 'Mot de passe à changer',
+                needAttention: {
+                    one: '{count} compte verrouillé demande votre attention',
+                    other: '{count} comptes verrouillés demandent votre attention',
+                },
+            },
+            signIns: {
+                title: 'Connexions',
+                signedIn: 'Connectés maintenant',
+                failed: 'Comptes avec connexions échouées',
+                needAttention: {
+                    one: '{count} compte avec connexions échouées demande votre attention',
+                    other: '{count} comptes avec connexions échouées demandent votre attention',
+                },
+            },
+            requests: {
+                title: 'Demandes d’accès',
+                waiting: 'En attente',
+                answered: 'Traitées',
+                needAttention: {
+                    one: '{count} demande demande votre attention',
+                    other: '{count} demandes demandent votre attention',
+                },
+            },
+            parties: {
+                count: 'Entités',
+                none: 'Aucune entité pour l’instant',
+            },
+        },
         tenant: {
             organisation: 'Organisation',
             organisationBody: 'Le personnel, et la hiérarchie dans laquelle il rend compte.',

@@ -26,6 +26,7 @@ import { MemoryRouter } from 'react-router';
 import type {
     Account,
     BusView,
+    LoginInfo,
     DeploymentOverview,
     GridView,
     ServiceRosterRow,
@@ -41,6 +42,11 @@ import {
 } from '../operations/InstallationHealth.js';
 import { BUS_QUERY_KEY } from '../operations/BusPage.js';
 import { GRID_QUERY_KEY } from '../operations/GridPage.js';
+import {
+    AUDIT_ACCOUNTS_QUERY_KEY,
+    AUDIT_FAILURES_QUERY_KEY,
+    AUDIT_SESSIONS_QUERY_KEY,
+} from './AuditPage.js';
 import { HomePage } from './HomePage.js';
 
 /**
@@ -511,15 +517,179 @@ describe('the greeting', () => {
     });
 });
 
+/** What the tenant dashboard reads, for a tenant with nothing wrong. */
+function loginRow(overrides: Partial<LoginInfo> = {}): LoginInfo {
+    return {
+        tenantId: '22222222-2222-4222-8222-222222222222',
+        accountId: '11111111-1111-4111-8111-111111111111',
+        lastIp: '',
+        lastAttemptIp: '',
+        failedLogins: 0,
+        locked: false,
+        lastLogin: '',
+        online: false,
+        passwordResetRequired: false,
+        ...overrides,
+    };
+}
+
+function seedTenant(
+    options: {
+        readonly logins?: readonly LoginInfo[];
+        readonly waiting?: number;
+        readonly mayAnswer?: boolean;
+    } = {},
+): (client: QueryClient) => void {
+    return (client) => {
+        client.setQueryData(['my-access'], {
+            roles:
+                options.mayAnswer === false
+                    ? [{ permissionCodes: ['iam::accounts:read'] }]
+                    : [{ permissionCodes: ['iam::roles:assign'] }],
+        });
+        client.setQueryData([AUDIT_ACCOUNTS_QUERY_KEY], { accounts: [], totalCount: 12 });
+        client.setQueryData([AUDIT_FAILURES_QUERY_KEY], {
+            loginInfo: options.logins ?? [loginRow()],
+            totalCount: (options.logins ?? [loginRow()]).length,
+        });
+        client.setQueryData([AUDIT_SESSIONS_QUERY_KEY], [{}, {}, {}]);
+        client.setQueryData(['tenant-home-requests'], {
+            items: [],
+            total: options.waiting ?? 0,
+            answered: [{}, {}],
+        });
+        client.setQueryData(['tenant-home-parties'], { parties: [], totalCount: 4 });
+    };
+}
+
 describe("the tenant administrator's home", () => {
-    it("offers the tenant's own screens and no tenant management", () => {
+    it('is the tenant, with the tabs Dashboard, Active modules and Upcoming modules', () => {
+        const html = home('tenant-administration', undefined, undefined, seedTenant());
+
+        expect(html).toContain('>Acme Corporation<');
+        for (const title of ['Dashboard', 'Active modules', 'Upcoming modules']) {
+            expect(html).toContain(`>${title}<`);
+        }
+        expect(html).toMatch(/aria-selected="true"[^>]*>Dashboard</);
+    });
+
+    it('has a People, a Sign-ins, an Access requests and a Parties panel', () => {
+        const html = home('tenant-administration', undefined, undefined, seedTenant());
+
+        for (const title of ['People', 'Sign-ins', 'Access requests', 'Parties']) {
+            expect(html).toContain(`>${title}</h2>`);
+        }
+        expect(html).toContain('href="/requests"');
+    });
+
+    it('leaves the Access requests panel out for a person who may not answer them', () => {
+        const html = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant({ mayAnswer: false }),
+        );
+
+        expect(html).not.toContain('>Access requests</h2>');
+        expect(html).not.toContain('href="/requests"');
+    });
+
+    it('states the figures behind each panel', () => {
+        const html = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant({ logins: [loginRow({ passwordResetRequired: true })], waiting: 0 }),
+        );
+
+        expect(html).toMatch(/>12<\/span><span[^>]*>Accounts</);
+        expect(html).toMatch(/>1<\/span><span[^>]*>Password reset due</);
+        expect(html).toMatch(/>3<\/span><span[^>]*>Signed in now</);
+        expect(html).toMatch(/>4<\/span><span[^>]*>Parties</);
+        expect(html).toMatch(/>2<\/span><span[^>]*>Answered</);
+    });
+
+    it('says Everything is running once, at the top, when nothing needs the person', () => {
+        const html = home('tenant-administration', undefined, undefined, seedTenant());
+
+        expect(occurrences(html, `>${ALL_CLEAR}<`)).toBe(1);
+        expect(occurrences(html, `aria-label="${ALL_CLEAR}"`)).toBe(4);
+    });
+
+    it('says in the same words which panel needs the person, and counts them at the top', () => {
+        const html = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant({
+                logins: [
+                    loginRow({ locked: true, failedLogins: 5 }),
+                    loginRow({ failedLogins: 1 }),
+                    loginRow(),
+                ],
+                waiting: 3,
+            }),
+        );
+
+        expect(html).toContain('1 locked account needs attention');
+        expect(html).toContain('2 accounts with failed sign-ins need attention');
+        expect(html).toContain('3 requests need attention');
+        expect(html).toContain('3 areas need attention');
+        expect(occurrences(html, `>${ALL_CLEAR}<`)).toBe(0);
+    });
+
+    it('says nothing at the top until the panels have read', () => {
         const html = home('tenant-administration');
 
-        expect(html).toContain('Acme Corporation');
+        expect(html).not.toContain('area needs attention');
+        expect(html).not.toContain('areas need attention');
+        expect(html).not.toContain(ALL_CLEAR);
+        expect(html).toContain(enFlat['common.loading']);
+    });
+
+    it("offers the tenant's own screens on the Active modules tab, and no tenant management", () => {
+        const html = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant(),
+            '/?tab=active',
+        );
+
         for (const href of ['/parties', '/parties/new', '/rescue', '/audit', '/security']) {
             expect(html).toContain(`href="${href}"`);
         }
         expect(html).not.toContain('href="/tenants');
+    });
+
+    it('marks what is still to come on the Upcoming modules tab, without a link', () => {
+        const html = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant(),
+            '/?tab=upcoming',
+        );
+
+        for (const title of ['Market data', 'Trading', 'Reporting']) {
+            expect(html).toContain(title);
+        }
+        expect(html).toContain('Coming later');
+        expect(html).not.toContain('href=');
+    });
+
+    it('shows words and never a translation key on any tab', () => {
+        for (const path of ['/', '/?tab=active', '/?tab=upcoming']) {
+            const html = home(
+                'tenant-administration',
+                undefined,
+                undefined,
+                seedTenant({ waiting: 1 }),
+                path,
+            );
+
+            expect(html).not.toMatch(/\b(home|shell|operations)\.[a-zA-Z]+\.?[a-zA-Z]*/);
+        }
     });
 });
 

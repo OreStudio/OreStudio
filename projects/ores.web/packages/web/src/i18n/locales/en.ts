@@ -1029,6 +1029,41 @@ export const en: SourceCatalogue = {
                 },
             },
         },
+        tenantDashboard: {
+            read: 'Read',
+            people: {
+                title: 'People',
+                accounts: 'Accounts',
+                locked: 'Locked',
+                resets: 'Password reset due',
+                needAttention: {
+                    one: '{count} locked account needs attention',
+                    other: '{count} locked accounts need attention',
+                },
+            },
+            signIns: {
+                title: 'Sign-ins',
+                signedIn: 'Signed in now',
+                failed: 'Accounts with failed sign-ins',
+                needAttention: {
+                    one: '{count} account with failed sign-ins needs attention',
+                    other: '{count} accounts with failed sign-ins need attention',
+                },
+            },
+            requests: {
+                title: 'Access requests',
+                waiting: 'Waiting',
+                answered: 'Answered',
+                needAttention: {
+                    one: '{count} request needs attention',
+                    other: '{count} requests need attention',
+                },
+            },
+            parties: {
+                count: 'Parties',
+                none: 'No party yet',
+            },
+        },
         tenant: {
             organisation: 'Organisation',
             organisationBody: 'Staff, and the hierarchy they report in.',

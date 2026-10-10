@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 926CBA1E-D7C9-4324-AFC3-6B96A35DEED9
+:END:
+#+title: Task: Rework the tenant home into three tabs with a dashboard
+#+description: Initial task for: Review the tenant administrator's home screen
+#+type: task
+#+level: s1
+#+filetags: :review_the_tenant_home_screen:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AFA1723-1C43-4B95-BBEE-14281A950154][Review the tenant administrator's home screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tenant administrator lands on a dashboard of panels that say what needs them, with the active and upcoming modules on their own tabs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6AFA1723-1C43-4B95-BBEE-14281A950154][Review the tenant administrator's home screen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The tenant home has the tabs Dashboard, Active modules and Upcoming modules, held in the address.
+- The Dashboard has a People, a Sign-ins, an Access requests and a Parties panel, with the same marks, tiles and footers as the system home, and the Access requests panel only for a person who may assign roles.
+- One status next to the title counts the panels that need the person.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The tenant administrator's home has the system home's shape: the tenant's name with one status beside it, three tabs held in the address (Dashboard, Active modules, Upcoming modules), and a dashboard of panels that share the Panel, Metric tile and footer code with the system home, which moved into DashboardParts. The panels are People (accounts, locked accounts, password resets due), Sign-ins (signed in now, accounts with failed sign-ins), Access requests (waiting, answered; only for a person who may assign roles) and Parties (how many, with a way to add one). A panel that is fine shows a check beside its title, and one that needs the person says why in the same words. The top status counts the panels that need the person, and says Everything is running only when none needs them and none is still being read. Every figure comes from a read that exists; the locked, failed and password-reset counts come from the login records, which the sign-ins screen already reads, and share its cache keys. The Active modules tab holds the cards the home had, and the Upcoming modules tab holds Market data, Trading and Reporting. The failed sign-in rule is any account with failed attempts since its last good sign-in. The tenant home moved into its own file. The web package passes 712 tests and the format check. I did not look at the home in a browser.
+

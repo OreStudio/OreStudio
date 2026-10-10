@@ -488,7 +488,7 @@ describe('the route to the versions screen', () => {
     });
 
     it('is offered from home in the modes with no operations menu entry', () => {
-        const tenant = renderRoute('/', sessionWith({ mode: 'tenant-administration' }));
+        const tenant = renderRoute('/?tab=active', sessionWith({ mode: 'tenant-administration' }));
         const party = renderRoute('/', sessionWith({ mode: 'application' }));
 
         expect(tenant).toContain('href="/operations/versions"');

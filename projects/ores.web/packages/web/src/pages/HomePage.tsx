@@ -27,6 +27,7 @@ import type { Account, SessionMode } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { PageHeader } from '../ui/Primitives.js';
 import { SystemHome } from './SystemHome.js';
+import { TenantHome } from './TenantHome.js';
 import { Tiles, TilesSection, type Tile } from '../ui/Tiles.js';
 
 /**
@@ -69,105 +70,6 @@ export function HomePage({
         return <TenantHome name={name} tenantName={tenantName} />;
     }
     return <PartyHome name={name} partyName={partyName} />;
-}
-
-function TenantHome({
-    name,
-    tenantName,
-}: {
-    readonly name: string;
-    readonly tenantName: string;
-}): ReactNode {
-    const { t } = useTranslation();
-    const tiles: Tile[] = [
-        {
-            title: t('home.tenant.parties'),
-            body: t('home.tenant.partiesBody'),
-            to: '/parties',
-            icon: 'party',
-        },
-        {
-            title: t('home.tenant.organisation'),
-            body: t('home.tenant.organisationBody'),
-            to: '/organisation',
-            icon: 'people',
-        },
-        {
-            title: t('home.tenant.roles'),
-            body: t('home.tenant.rolesBody'),
-            to: '/roles',
-            icon: 'access',
-        },
-        {
-            title: t('home.party.refdata'),
-            body: t('home.party.refdataBody'),
-            to: '/refdata',
-            icon: 'database',
-        },
-        {
-            title: t('home.tenant.newParty'),
-            body: t('home.tenant.newPartyBody'),
-            to: '/parties/new',
-            icon: 'add',
-        },
-        {
-            title: t('home.tenant.partyDetails'),
-            body: t('home.tenant.partyDetailsBody'),
-            to: '/parties/details',
-            icon: 'party',
-        },
-        {
-            title: t('home.tenant.counterpartyOnboard'),
-            body: t('home.tenant.counterpartyOnboardBody'),
-            to: '/counterparties/onboard',
-            icon: 'people',
-        },
-        {
-            title: t('home.tenant.bookStructure'),
-            body: t('home.tenant.bookStructureBody'),
-            to: '/books/structure',
-            icon: 'database',
-        },
-        {
-            title: t('home.tenant.conventions'),
-            body: t('home.tenant.conventionsBody'),
-            to: '/conventions',
-            icon: 'database',
-        },
-        {
-            title: t('home.tenant.rescue'),
-            body: t('home.tenant.rescueBody'),
-            to: '/rescue',
-            icon: 'unlock',
-        },
-        {
-            title: t('home.tenant.audit'),
-            body: t('home.tenant.auditBody'),
-            to: '/audit',
-            icon: 'record',
-        },
-        {
-            title: t('home.tenant.versions'),
-            body: t('home.tenant.versionsBody'),
-            to: '/operations/versions',
-            icon: 'history',
-        },
-        {
-            title: t('home.tenant.security'),
-            body: t('home.tenant.securityBody'),
-            to: '/security',
-            icon: 'locked',
-        },
-    ];
-
-    return (
-        <div className="space-y-6">
-            <PageHeader title={tenantName} description={t('home.tenant.lead', { name })} />
-            <TilesSection title={t('home.activeModules')} icon="apps">
-                <Tiles tiles={tiles} />
-            </TilesSection>
-        </div>
-    );
 }
 
 function PartyHome({

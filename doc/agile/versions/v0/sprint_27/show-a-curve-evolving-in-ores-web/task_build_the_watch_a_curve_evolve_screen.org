@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :show-a-curve-evolving-in-ores-web:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-watch-a-curve-evolve-screen
 #+pr:
 #+blocked_on: Give the BFF the curve read routes
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AD390F50-FE3D-47E5-BA8C-58F8C0D5FB02][Show a curve evolving in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person watches a named curve or surface evolve in ores.web, as the journey and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AD390F50-FE3D-47E5-BA8C-58F8C0D5FB02][Show a curve evolving in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | The BFF curve read routes.             |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -41,9 +41,12 @@ A person watches a named curve or surface evolve in ores.web, as the journey and
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add the contract schemas for the evolution and snapshot replies, a small api module that
+posts to the two BFF routes, and a pure view module that turns the replies into a matrix
+and a "now" table. Draw them in one page at =/market-data/evolution=: a form for the
+object and the range, the matrix with each node's change, and the now table with age and,
+on request, source. Open the page from the home's market data tile for a person who holds
+=marketdata::curve_snapshots:read=. Catalogue every message in three languages.
 
 * Measurements
 
@@ -57,7 +60,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| View helper and page tests | 24 pass in 2 files | =npx vitest run src/market= in =packages/web= | 55a2c532b5 plus the uncommitted change |
+| Whole web suite | 76 files, 822 tests, all pass after the home test update | =npx vitest run= in =packages/web= | 55a2c532b5 plus the uncommitted change |
+| Web type check | clean | =npx tsc --noEmit -p .= in =packages/web= | 55a2c532b5 plus the uncommitted change |
+| Catalogue parity | 3 tests pass | =npx vitest run src/i18n= in =packages/web= | 55a2c532b5 plus the uncommitted change |
 
 * Notes
 
@@ -85,3 +91,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A person who may read curves opens ores.web, follows the Market data tile on the home,
+names an object by its typed identity and a range of days, and reads two things. The
+matrix has a row per node and a column per instant, with each node's change over the
+range (persistent, added, dropped, intermittent or never quoted). A missing value is a
+hole drawn as a dash, never a zero. The now table gives each node's current value and its
+age, and when the person asks, the source of each value with the recipe behind a derived
+one and the author of a manual one. A server warning about stale values is shown, and a
+refused read is shown as the server's reason.
+
+The page is =market/EvolutionPage.tsx=. The matrix and now rows come from pure functions in
+=evolutionView.ts=, which have their own tests. The home tile moves from Upcoming to Active
+for a holder of =marketdata::curve_snapshots:read=; a person without it still sees it as
+coming. All messages exist in English, French and Portuguese.
+
+*What was not done.* The screen has not been looked at in a running stack. It is tested
+with rendered markup and canned data, not with a browser, a live BFF or a database. The
+object is named by typing its identity, because no read lists the series yet. A series
+list route and a picker are the next improvement, and the story's Notes name them.

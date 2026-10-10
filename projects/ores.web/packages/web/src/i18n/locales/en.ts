@@ -1568,6 +1568,66 @@ export const en: SourceCatalogue = {
         },
     },
 
+    market: {
+        area: 'Market data',
+        evolution: {
+            screen: 'Watch a curve evolve',
+            title: 'Watch a curve or surface evolve',
+            description:
+                'Name an object and a range. Read the instants by nodes over the range, and the object as it stands now.',
+            reading: 'Reading the object...',
+            form: {
+                title: 'The object',
+                asset: 'Asset class',
+                scope: 'Scope',
+                instrumentType: 'Instrument type',
+                quoteType: 'Quote type',
+                fields: 'Other identity fields',
+                fieldsHint: 'One name=value per line, such as ccy=PLN.',
+                from: 'From',
+                to: 'To',
+                provenance: 'Show where each value came from',
+                submit: 'Watch',
+            },
+            errors: {
+                missing:
+                    'State the asset class, the scope, the instrument type and the quote type.',
+                field: 'Write each other field as name=value.',
+                range: 'The range ends before it starts.',
+            },
+            matrix: {
+                title: 'Over the range',
+                node: 'Node',
+                status: 'Change',
+                hole: 'No point',
+                noNodes: 'The object declares no node.',
+                noInstants: 'The object holds no instant in this range.',
+                neverQuoted: '{count} nodes hold no value at any instant of this range.',
+            },
+            status: {
+                persistent: 'Persistent',
+                added: 'Added',
+                dropped: 'Dropped',
+                intermittent: 'Intermittent',
+                never_quoted: 'Never quoted',
+            },
+            now: {
+                title: 'Now',
+                value: 'Value',
+                age: 'Age',
+                source: 'Source',
+                detail: 'Detail',
+                summary: 'The oldest value is {oldest} old. The values span {spread}.',
+            },
+            source: {
+                quoted: 'Quoted',
+                derived: 'Derived',
+                manual: 'Manual',
+            },
+            gap: 'No list of series is read yet, so the object is named by its identity.',
+        },
+    },
+
     component: {
         entities: 'Entities',
         shortcuts: 'Common tasks',

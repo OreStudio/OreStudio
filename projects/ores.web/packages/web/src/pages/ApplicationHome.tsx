@@ -69,6 +69,7 @@ const PERMISSION = {
     partiesRead: 'refdata::parties:read',
     partiesWrite: 'refdata::parties:write',
     counterpartiesWrite: 'refdata::counterparties:write',
+    curveSnapshotsRead: 'marketdata::curve_snapshots:read',
 } as const;
 
 /** Which panels this person may see, from the permissions they hold. */
@@ -265,7 +266,7 @@ export function ApplicationHome({
                 <Dashboard data={data} translator={translator} visible={visible} />
             )}
             {tab === 'active' && <ActiveModules holds={holds} />}
-            {tab === 'upcoming' && <UpcomingModules />}
+            {tab === 'upcoming' && <UpcomingModules holds={holds} />}
         </div>
     );
 }
@@ -463,6 +464,12 @@ function ActiveModules({ holds }: { readonly holds: (code: string) => boolean })
             to: '/roles',
             icon: 'access',
         }),
+        ...maybe(holds(PERMISSION.curveSnapshotsRead), {
+            title: t('home.party.marketdata'),
+            body: t('home.party.marketdataBody'),
+            to: '/market-data/evolution',
+            icon: 'chart',
+        }),
         {
             title: t('home.party.refdata'),
             body: t('home.party.refdataBody'),
@@ -522,10 +529,14 @@ function ActiveModules({ holds }: { readonly holds: (code: string) => boolean })
     return <Tiles tiles={active} />;
 }
 
-function UpcomingModules(): ReactNode {
+function UpcomingModules({ holds }: { readonly holds: (code: string) => boolean }): ReactNode {
     const { t } = useTranslation();
     const icons = { marketdata: 'chart', trading: 'trend', reporting: 'document' } as const;
-    const coming: Tile[] = (['marketdata', 'trading', 'reporting'] as const).map((area) => ({
+    // Market data is active for a person who may read it, so it is not also upcoming.
+    const areas = (['marketdata', 'trading', 'reporting'] as const).filter(
+        (area) => area !== 'marketdata' || !holds(PERMISSION.curveSnapshotsRead),
+    );
+    const coming: Tile[] = areas.map((area) => ({
         title: t(`home.party.${area}`),
         body: t(`home.party.${area}Body`),
         icon: icons[area],

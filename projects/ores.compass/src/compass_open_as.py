@@ -561,7 +561,9 @@ def run(argv, project_root=None, env_file=None) -> int:
     elif not args.text:
         parser.error(f"{args.by} needs the text to match")
     elif args.by == "name":
-        found = by_name(staff, args.text)
+        found = ([ADMINS[args.text.strip().lower()]]
+                 if args.text.strip().lower() in ADMINS
+                 else by_name(staff, args.text))
     elif args.by == "title":
         found = by_title(staff, args.text, args.location)
     else:

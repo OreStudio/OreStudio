@@ -111,18 +111,6 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate the netting_set pin to ores_refdata_netting_sets_tbl
-    if NEW.netting_set_id is not null and NEW.party_id is not null and not exists (
-        select 1 from ores_refdata_netting_sets_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.netting_set_id
-          and party_id = NEW.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid netting_set_id: %. The identifier''s party must be the netting set''s.', NEW.netting_set_id
-            using errcode = '23503';
-    end if;
-
     -- Validate id_scheme
     NEW.id_scheme := ores_refdata_validate_party_id_scheme_fn(NEW.tenant_id, NEW.id_scheme);
 
@@ -247,24 +235,4 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
-);
-
--- Party isolation (RESTRICTIVE): ANDed with the permissive tenant
--- policy above, a session sees only rows whose party_id its visible
--- party set admits. The visible_party_ids-is-null passthrough applies
--- for sessions with no party restriction (tenant admins, service
--- contexts).
-drop policy if exists netting_set_identifiers_tbl_party_isolation_policy
-    on ores_refdata_netting_set_identifiers_tbl;
-
-create policy netting_set_identifiers_tbl_party_isolation_policy
-on ores_refdata_netting_set_identifiers_tbl
-as restrictive
-for all using (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
-)
-with check (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );

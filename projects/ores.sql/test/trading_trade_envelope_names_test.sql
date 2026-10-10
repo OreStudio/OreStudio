@@ -118,17 +118,20 @@ insert into ores_refdata_netting_sets_tbl (
      current_user, current_user, 'system.test', 'Trading pgTAP fixture');
 
 insert into ores_refdata_netting_set_identifiers_tbl (
-    id, tenant_id, version, netting_set_id, id_scheme, id_value, description,
+    id, tenant_id, version, netting_set_id, party_id, id_scheme, id_value, description,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values
     ('00000000-0000-0000-0000-0000000cf141'::uuid, ores_utility_system_tenant_id_fn(), 0,
-     '00000000-0000-0000-0000-0000000cf131'::uuid, 'ORE', 'NS', null,
+     '00000000-0000-0000-0000-0000000cf131'::uuid,
+     '00000000-0000-0000-0000-0000000cf001'::uuid, 'ORE', 'NS', null,
      current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
     ('00000000-0000-0000-0000-0000000cf142'::uuid, ores_utility_system_tenant_id_fn(), 0,
-     '00000000-0000-0000-0000-0000000cf132'::uuid, 'ORE', 'CPTY_B', null,
+     '00000000-0000-0000-0000-0000000cf132'::uuid,
+     '00000000-0000-0000-0000-0000000cf001'::uuid, 'ORE', 'CPTY_B', null,
      current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
     ('00000000-0000-0000-0000-0000000cf143'::uuid, ores_utility_system_tenant_id_fn(), 0,
-     '00000000-0000-0000-0000-0000000cf133'::uuid, 'ORE', 'CPTY_B_full', null,
+     '00000000-0000-0000-0000-0000000cf133'::uuid,
+     '00000000-0000-0000-0000-0000000cf001'::uuid, 'ORE', 'CPTY_B_full', null,
      current_user, current_user, 'system.test', 'Trading pgTAP fixture');
 
 insert into ores_refdata_portfolios_tbl (

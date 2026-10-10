@@ -37,6 +37,7 @@ export interface NettingSetIdentifier {
     netting_set_id: string;
     id_scheme: string;
     id_value: string;
+    party_id: string;
     description: string;
     modified_by: string;
     performed_by: string;

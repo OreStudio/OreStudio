@@ -53,7 +53,7 @@ generate_synthetic_netting_set_identifier(utility::generation::generation_contex
         return std::string(schemes[idx % 2]);
     }();
     r.id_value = std::string(faker::string::alphanumeric(20)) + "-" + std::to_string(idx);
-    r.party_id = uuid_gen();
+    r.party_id = ctx.generate_uuid();
     r.description = std::string("Test identifier");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

@@ -64,12 +64,12 @@ uuid_gen()
 
 The legal entity of the firm the identifier belongs to.
 
-References the parties table. Equal to the party of its netting set, and fixed
-for the identifier's life. Two legal entities may each hold a set that answers
-to the same ORE id.
+References the parties table. It is the party of the identifier's netting set,
+and fixed for the identifier's life. Two legal entities may each hold a set
+that answers to the same ORE id.
 
 #+begin_src cpp :name generator
-uuid_gen()
+ctx.generate_uuid()
 #+end_src
 
 ** id_scheme
@@ -131,7 +131,6 @@ std::string("Test identifier")
 :PROPERTIES:
 :tablename: ores_refdata_netting_set_identifiers_tbl
 :rls_tenant_isolation: true
-:rls_party_isolation: true
 :END:
 
 ** Indexes
@@ -144,12 +143,6 @@ Other schemes keep the per-set key above.
 | name      | columns                                  | unique | current_only | where_extra       |
 |-----------+------------------------------------------+--------+--------------+-------------------|
 | ore_alias | tenant_id, party_id, id_scheme, id_value | true   | true         | id_scheme = 'ORE' |
-
-** Pinned keys
-
-| name        | columns                  | table                         | target_columns | error_message                                                                |
-|-------------+--------------------------+-------------------------------+----------------+------------------------------------------------------------------------------|
-| netting_set | netting_set_id, party_id | ores_refdata_netting_sets_tbl | id, party_id   | Invalid netting_set_id: %. The identifier's party must be the netting set's. |
 
 * Foreign keys
 

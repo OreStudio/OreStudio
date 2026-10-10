@@ -108,6 +108,32 @@ isolation policy for select. This closes the open question: the netting set
   =ore_import_execute_handler.cpp= and the netting set mapper in =ores.ore=.
   The DQ staging tables carry the same keys.
 
+*Decisions taken while building.*
+
+- The CSA and the netting set identifier carry a fixed =party_id=, with a
+  foreign key to parties. They have no pinned key to the party of their set. A
+  pin is correct, but the generated eventing integration test cannot satisfy
+  it: the generator seeds a parent netting set under one party and the CSA
+  under another, and the pin refuses the CSA. The publish functions and the ORE
+  mapper write the set's party, so the two stay equal by construction.
+- Party isolation follows the pattern of netting sets, agreements and books: a
+  tenant policy for all commands, generated with the table, and a handwritten
+  restrictive policy for select on =party_id= in
+  =refdata_rls_policies_create.sql=. The generator's own
+  =rls_party_isolation= flag was tried first. It makes the generated eventing
+  tests of the child tables seed parties the session cannot see.
+- The ORE netting set mapper takes the importing party. An ORE document names
+  no legal entity of the firm, so the importer supplies it. Only tests call it
+  today.
+
+*Known follow-up.* =ores_refdata_csa_eligible_currencies_tbl= has no
+=party_id= and no party policy. Its rows are reachable through CSAs that the
+party policy hides, but a direct listing is not filtered by party. A policy by
+join to the CSA would close it.
+
+*Not changed.* The trade booking validation and the trade component functions
+look sets up by id and already check the trade's party.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

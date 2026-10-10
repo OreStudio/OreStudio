@@ -22,6 +22,7 @@
 #include "ores.ore.core/domain/netting_set_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <stdexcept>
@@ -36,6 +37,9 @@ const std::string tags("[ore][xml][roundtrip][nettingsetdefinitions][mapper]");
 using ores::ore::domain::netting_set_mapper;
 using ores::ore::domain::nettingsetdefinitions;
 using namespace ores::logging;
+
+const boost::uuids::uuid importing_party =
+    boost::uuids::string_generator()("0e7d53d5-235d-42ee-86ec-3478e84ae5a2");
 
 std::vector<std::filesystem::path> netting_documents() {
     const auto root = ores::testing::project_root::resolve("external/ore/examples");
@@ -83,8 +87,12 @@ TEST_CASE("every_ore_netting_document_roundtrips_through_the_entities", tags) {
     for (const auto& path : documents) {
         INFO(path.string());
         const auto original = parse(ores::platform::filesystem::file::read_content(path));
-        const auto mapped = netting_set_mapper::map(original);
+        const auto mapped = netting_set_mapper::map(original, importing_party);
         CHECK(mapped.sets.size() == original.NettingSet.size());
+        for (const auto& s : mapped.sets)
+            CHECK(s.party_id == importing_party);
+        for (const auto& c : mapped.csas)
+            CHECK(c.party_id == importing_party);
 
         const auto expected = ores::ore::domain::save_data(without_layout_text(original));
         const auto actual = ores::ore::domain::save_data(netting_set_mapper::reverse(mapped));
@@ -108,7 +116,7 @@ TEST_CASE("netting_set_details_carry_call_type_and_initial_margin_type", tags) {
 </NettingSetDefinitions>)";
     const auto original = parse(xml);
 
-    const auto mapped = netting_set_mapper::map(original);
+    const auto mapped = netting_set_mapper::map(original, importing_party);
     REQUIRE(mapped.sets.size() == 1);
     CHECK(mapped.sets.front().code == "CPTY_A");
     CHECK(mapped.sets.front().call_type == "Call");
@@ -130,14 +138,14 @@ TEST_CASE("netting_set_details_naming_a_legal_entity_are_refused", tags) {
   </NettingSet>
 </NettingSetDefinitions>)";
 
-    CHECK_THROWS_AS(netting_set_mapper::map(parse(xml)), std::runtime_error);
+    CHECK_THROWS_AS(netting_set_mapper::map(parse(xml), importing_party), std::runtime_error);
 }
 
 TEST_CASE("an_inactive_csa_keeps_its_terms", tags) {
     const auto path = ores::testing::project_root::resolve(
         "external/ore/examples/ExposureWithCollateral/Input/netting.xml");
-    const auto mapped =
-        netting_set_mapper::map(parse(ores::platform::filesystem::file::read_content(path)));
+    const auto mapped = netting_set_mapper::map(
+        parse(ores::platform::filesystem::file::read_content(path)), importing_party);
 
     std::size_t inactive = 0;
     for (const auto& c : mapped.csas) {
@@ -160,7 +168,7 @@ TEST_CASE("netting_set_details_naming_an_agreement_type_are_refused", tags) {
   </NettingSet>
 </NettingSetDefinitions>)";
 
-    CHECK_THROWS_AS(netting_set_mapper::map(parse(xml)), std::runtime_error);
+    CHECK_THROWS_AS(netting_set_mapper::map(parse(xml), importing_party), std::runtime_error);
 }
 
 TEST_CASE("an_active_csa_flag_without_details_is_refused", tags) {
@@ -171,14 +179,14 @@ TEST_CASE("an_active_csa_flag_without_details_is_refused", tags) {
   </NettingSet>
 </NettingSetDefinitions>)";
 
-    CHECK_THROWS_AS(netting_set_mapper::map(parse(xml)), std::runtime_error);
+    CHECK_THROWS_AS(netting_set_mapper::map(parse(xml), importing_party), std::runtime_error);
 }
 
 TEST_CASE("a_csa_with_one_margining_frequency_is_refused_on_export", tags) {
     const auto path = ores::testing::project_root::resolve(
         "external/ore/examples/ExposureWithCollateral/Input/netting.xml");
-    auto mapped =
-        netting_set_mapper::map(parse(ores::platform::filesystem::file::read_content(path)));
+    auto mapped = netting_set_mapper::map(
+        parse(ores::platform::filesystem::file::read_content(path)), importing_party);
     REQUIRE(!mapped.csas.empty());
     mapped.csas.front().post_frequency.reset();
 

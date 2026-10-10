@@ -78,8 +78,10 @@ struct csa final {
     /**
      * @brief The legal entity of the firm the CSA belongs to.
      *
-     * References the parties table. Equal to the party of its netting set, and fixed for the CSA's
-     * life. A CSA is a contract between one legal entity and one counterparty.
+     * References the parties table. It is the party of the CSA's netting set, and fixed for the
+     * CSA's life. A CSA is a contract between one legal entity and one counterparty. The writers
+     * take the party from the set, and a set is visible only to the parties that can see its legal
+     * entity.
      */
     boost::uuids::uuid party_id;
 

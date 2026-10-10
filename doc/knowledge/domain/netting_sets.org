@@ -200,11 +200,20 @@ is a key on the trade's booking rather than a membership table.
 *** Integrity the schema can enforce
 
 - A set's counterparty and legal entity are those of its agreement.
+- Every set belongs to a legal entity of the firm. The agreement number
+  and the set code are unique within that legal entity, not across the
+  tenant, because an agreement reference means something only between
+  the two parties to it. Two legal entities may each hold an ISDA with
+  the same bank under the same reference.
 - A trade's counterparty and legal entity equal its set's. A
   composite key from the trade's booking to the set enforces this, so
   a trade cannot be filed in another counterparty's set.
 - A CSA references exactly one set, and a set has at most one active
-  CSA at a time.
+  CSA at a time. A CSA has the legal entity of its set. The writers take
+  it from the set, and a set shows only to the parties that can see its
+  legal entity, so a session cannot file a CSA on another entity's set.
+- An ORE netting set id names one set within a legal entity. Another
+  legal entity may use the same id for its own set.
 - Moving a trade to another set is a change to the trade's booking and
   is versioned with it. Re-papering — moving a population of trades to
   a new agreement — is a [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade group]] with an identity,

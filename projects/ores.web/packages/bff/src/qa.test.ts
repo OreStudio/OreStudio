@@ -405,6 +405,15 @@ describe('when the store fails', () => {
         expect(response.body).not.toContain('/srv/doc');
     });
 
+    it('answers 500 for a Node error code that is not a file fault', async () => {
+        const store = new MemoryStore();
+        store.failWith = Object.assign(new Error('bad argument'), {
+            code: 'ERR_INVALID_ARG_TYPE',
+        });
+        const response = await request(store);
+        expect(response.statusCode).toBe(500);
+    });
+
     it('answers 422 for a doc that is not in the scenario format', async () => {
         const store = new MemoryStore();
         store.failWith = new ScenarioFormatError('The scenario has no Steps section.');

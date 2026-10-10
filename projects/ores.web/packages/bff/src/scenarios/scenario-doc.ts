@@ -98,7 +98,8 @@ export interface StepOutcome extends StepRef {
 /**
  * A tester's save. It carries no overall state: the state follows from the
  * steps once the save is in. A scenario closes when no step is pending, and
- * then it is FAILED if any step failed, else PASSED. `completedAt` is written
+ * then it is FAILED if any step failed, else PASSED. A scenario in which no
+ * step passed or failed stays PENDING. `completedAt` is written
  * only when the save closes the scenario.
  */
 export interface RunInput {
@@ -434,11 +435,15 @@ export function recordRun(text: string, input: RunInput): RecordedRun {
             outcomeOf.get(l) ??
             stepStatus(l.result === undefined ? '' : (fieldTable(l.result).get('status') ?? '')),
     );
-    const state: ScenarioState = statuses.includes('PENDING')
-        ? 'PENDING'
-        : statuses.includes('FAIL')
-          ? 'FAILED'
-          : 'PASSED';
+    // A scenario in which nothing passed or failed, such as one whose steps
+    // are all dropped, has not been run, so it stays open.
+    const ran = statuses.some((status) => status === 'PASS' || status === 'FAIL');
+    const state: ScenarioState =
+        statuses.includes('PENDING') || !ran
+            ? 'PENDING'
+            : statuses.includes('FAIL')
+              ? 'FAILED'
+              : 'PASSED';
 
     const resultsTable = results.tables[0];
     const run: [string, string][] = [

@@ -250,6 +250,14 @@ describe('scanning', () => {
         expect((await store().list()).map((x) => x.id)).toContain(id);
     });
 
+    it('reads the type and title of a doc from its text, not from the index', async () => {
+        const s = new FileScenarioStore(root, { rescanAfterMs: 600_000 });
+        await s.list();
+        const file = join(root, 'sprint_23/story/story.org');
+        writeFileSync(file, readFileSync(file, 'utf8').replace('#+type: story', '#+type: recipe'));
+        expect((await s.readDoc(STORY))?.type).toBe('recipe');
+    });
+
     it('skips a file that vanishes during the walk', async () => {
         const s = store();
         rmSync(join(root, 'sprint_23/story/notes.txt'));
@@ -341,6 +349,29 @@ describe('recording a run', () => {
                 input([{ client: 'blue', title: 'Read', status: 'FAIL', notes: 'second' }]),
             ),
         ]);
+        const back = await s.read(MULTI);
+        expect(back?.steps.find((x) => x.title === 'Read')).toMatchObject({
+            status: 'FAIL',
+            notes: 'second',
+        });
+        expect(back?.steps.find((x) => x.title === 'Update')?.notes).toBe('only first');
+    });
+
+    it('serialises saves that start on a cold index and a warm one', async () => {
+        const s = store();
+        const first = s.record(
+            MULTI,
+            input([
+                { client: 'blue', title: 'Read', status: 'PASS', notes: 'first' },
+                { client: 'blue', title: 'Update', status: 'PASS', notes: 'only first' },
+            ]),
+        );
+        await s.read(MULTI);
+        const second = s.record(
+            MULTI,
+            input([{ client: 'blue', title: 'Read', status: 'FAIL', notes: 'second' }]),
+        );
+        await Promise.all([first, second]);
         const back = await s.read(MULTI);
         expect(back?.steps.find((x) => x.title === 'Read')).toMatchObject({
             status: 'FAIL',

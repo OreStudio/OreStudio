@@ -53,10 +53,26 @@ const SERVED_TYPES: ReadonlySet<string> = new Set(['story', 'task', 'test_scenar
 const RUNNER_OFF =
     'The QA validation runner is off. Set ORES_WEB_DOC_ROOT to the folder that holds the scenarios.';
 
-/** An error code that Node gives a failed file call, such as EACCES. */
+/**
+ * The codes of a file call that fails for a reason outside the code, such as a
+ * folder that is locked or a disk that is busy. A code bug is not on the list,
+ * so it stays a 500.
+ */
+const FILE_ERROR_CODES: ReadonlySet<string> = new Set([
+    'EACCES',
+    'EBUSY',
+    'EIO',
+    'EMFILE',
+    'ENFILE',
+    'ENOENT',
+    'ENOTDIR',
+    'EPERM',
+    'ETIMEDOUT',
+]);
+
 function isFileError(error: unknown): boolean {
     const code = (error as { code?: unknown } | null)?.code;
-    return typeof code === 'string' && /^E[A-Z0-9]+$/.test(code);
+    return typeof code === 'string' && FILE_ERROR_CODES.has(code);
 }
 
 /** Say what a store refused in the words of the browser-facing contract. */

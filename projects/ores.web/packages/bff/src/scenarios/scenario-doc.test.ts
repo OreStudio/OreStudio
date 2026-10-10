@@ -241,6 +241,21 @@ describe('writing a run into a scenario', () => {
         expect(recordRun(single, run([outcome(null, first, 'FAIL')])).state).toBe('FAILED');
     });
 
+    it('keeps a scenario open when every step is dropped, and closes it when the rest passed', () => {
+        const titles = parseScenario(single).steps.map((s) => s.title);
+        const dropped = recordRun(single, run(all(null, titles, 'DROPPED')));
+        expect(dropped.state).toBe('PENDING');
+        expect(parseScenario(dropped.text).run.completedAt).toBe('');
+        const mixed = recordRun(
+            single,
+            run([
+                ...all(null, titles.slice(0, 1), 'PASS'),
+                ...all(null, titles.slice(1), 'DROPPED'),
+            ]),
+        );
+        expect(mixed.state).toBe('PASSED');
+    });
+
     it('opens a closed scenario again when a step goes back to pending', () => {
         const first = parseScenario(single).steps[0]?.title ?? '';
         const done = recordRun(single, run([outcome(null, first, 'PENDING')]));

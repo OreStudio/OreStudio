@@ -8,7 +8,7 @@
 #+filetags: :make_the_services_screen_tell_the_truth:sprint_27:v0:
 #+owner: marco
 #+branch: feature/make-the-services-screen-tell-the-truth
-#+pr:
+#+pr: 3050
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -72,7 +72,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3050][#3050]] | [agile] Scaffold the services screen story |
 
 * Review
 

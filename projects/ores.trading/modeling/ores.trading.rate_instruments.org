@@ -118,6 +118,7 @@ The activity that wrote this version.
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:common_date: start_date
 :END:
 
 The instrument's start date.
@@ -132,6 +133,7 @@ ISO 8601 date string (YYYY-MM-DD).
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:common_date: maturity_date
 :END:
 
 The instrument's maturity date. A forward rate agreement's end date is this

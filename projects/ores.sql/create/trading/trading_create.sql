@@ -382,3 +382,6 @@
 
 \ir ./trading_trades_functions_create.sql
 \ir ./trading_trades_bu_functions_create.sql
+
+-- Common-date views (read the family tables above)
+\ir ./trading_common_dates_vw_create.sql

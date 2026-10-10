@@ -27,6 +27,8 @@ table that holds it; the instrument tables' checks read that routing through
 | Archetype | Description |
 |-----------+-------------|
 | [[id:e37eee11-119f-456a-ad08-541b2c226db4][ores.sql.trade_type.catalogue_populate]] | The trade types seed, generated from the trade-type catalogue. |
+| [[id:9a49a67f-f32a-4573-8e84-9e6af5f83150][ores.sql.trade_type.common_dates_create]] | The common-date views, one per family that maps its dates. |
+| [[id:e508025c-2907-458f-aa99-56bd6a04779c][ores.sql.trade_type.common_dates_drop]] | The drop script of the common-date views. |
 
 * See also
 

@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: e508025c-2907-458f-aa99-56bd6a04779c
+:END:
+#+title: ores.sql.trade_type.common_dates_drop
+#+description: The drop script of the common-date views, generated from the same declarations as the views.
+#+type: archetype
+#+output: projects/ores.sql/drop/trading/trading_common_dates_vw_drop.sql
+#+facet: ores.sql.trade_type
+#+model_types: trade_type_catalogue
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+Drops every view the create script makes. The views read the family tables,
+so the drop script runs before the tables go.
+
+* Template
+
+#+begin_src mustache :tangle sql_trade_type_common_dates_drop.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.trade_type.common_dates_drop.org. Edit the org source. }}
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_trade_type_common_dates_drop.mustache
+ *
+ * Drops the common-date views.
+ */
+
+{{#trade_type_catalogue}}
+{{#common_dates}}
+{{#views}}
+drop view if exists {{view}};
+{{/views}}
+{{/common_dates}}
+{{/trade_type_catalogue}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:a476651f-1e28-4606-9543-fa5ac8e64f1c][ores.sql.trade_type]]

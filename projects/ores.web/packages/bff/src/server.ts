@@ -31,6 +31,7 @@ import { ChangeEventRegistry, type Watch } from './change-events.js';
 import { registerClassificationRoutes } from './classifications.js';
 import { registerCounterpartyRoutes } from './counterparties.js';
 import { registerPartyDetailsRoutes } from './party-details.js';
+import { registerBookRoutes } from './books.js';
 import { registerAuditRoutes } from './audit.js';
 import { registerTimelineRoutes } from './timeline.js';
 import { registerInboxRoutes } from './inbox.js';
@@ -2384,6 +2385,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerClassificationRoutes(server, requireSession);
     registerCounterpartyRoutes(server, requireSession);
     registerPartyDetailsRoutes(server, requireSession);
+    registerBookRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
     registerAuditRoutes(server, requireSession);

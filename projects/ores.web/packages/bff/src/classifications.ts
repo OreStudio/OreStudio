@@ -101,6 +101,8 @@ const HISTORY_TYPES = new Set([
     'ores.refdata.party',
     'ores.refdata.party_identifier',
     'ores.refdata.party_contact_information',
+    'ores.refdata.book',
+    'ores.refdata.portfolio',
     'ores.refdata.counterparty',
     'ores.refdata.counterparty_identifier',
     'ores.refdata.counterparty_contact_information',

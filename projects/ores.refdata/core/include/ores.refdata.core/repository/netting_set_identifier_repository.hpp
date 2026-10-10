@@ -149,6 +149,7 @@ public:
     std::optional<domain::netting_set_identifier>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest netting set identifiers filtered by netting_set_id, with pagination.
      * @param ctx Repository context with database connection

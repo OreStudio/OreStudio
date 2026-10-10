@@ -150,9 +150,9 @@ TEST_CASE("write_netting_set_identifier_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto netting_set_id_parent = ores::refdata::generators::generate_synthetic_netting_set(ctx);
     netting_set_id_parent.change_reason_code = "system.test";
-    // The netting_set_identifier takes its party from this netting_set,
-    // so the netting_set carries the party already seeded for the
-    // netting_set_identifier: under any other party the stored row would belong to a
+    // The netting_set_identifier and this netting_set belong to the same
+    // party, so the netting_set carries the party already seeded for
+    // the netting_set_identifier: under any other party the stored row would belong to a
     // party the netting_set_identifier's own reads do not name. The party foreign key
     // is declared first in the model, so that party is written by now.
     netting_set_id_parent.party_id = v.party_id;

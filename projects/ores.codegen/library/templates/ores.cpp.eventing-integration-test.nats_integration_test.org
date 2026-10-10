@@ -325,9 +325,9 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
 {{#parent_requires_party}}
 {{^parent_supplies_party}}
 {{#seed_parent_party_id}}
-    // The {{entity_singular}} takes its party from this {{parent_entity_singular}},
-    // so the {{parent_entity_singular}} carries the party already seeded for the
-    // {{entity_singular}}: under any other party the stored row would belong to a
+    // The {{entity_singular}} and this {{parent_entity_singular}} belong to the same
+    // party, so the {{parent_entity_singular}} carries the party already seeded for
+    // the {{entity_singular}}: under any other party the stored row would belong to a
     // party the {{entity_singular}}'s own reads do not name. The party foreign key
     // is declared first in the model, so that party is written by now.
     {{column}}_parent.{{{parent_party_prefix}}}party_id = v.{{{scaffold_prefix}}}party_id;

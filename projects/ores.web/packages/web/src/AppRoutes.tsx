@@ -36,6 +36,8 @@ import { NewTenantJourney } from './journeys/NewTenantJourney.js';
 import { NewPartyJourney } from './journeys/NewPartyJourney.js';
 import { CounterpartyJourney } from './journeys/CounterpartyJourney.js';
 import { useCounterpartyServer } from './journeys/counterpartyServer.js';
+import { PartyDetailsJourney } from './journeys/PartyDetailsJourney.js';
+import { usePartyDetailsServer } from './journeys/partyDetailsServer.js';
 import { SignUpJourney } from './journeys/SignUpJourney.js';
 import { TenantSetupJourney } from './journeys/TenantSetupJourney.js';
 import { AppShell } from './components/AppShell.js';
@@ -144,6 +146,14 @@ export interface AppRoutesProps {
      */
     readonly counterpartyJourney: ReactNode;
     /**
+     * The party details screen, which a tenant administrator runs to correct
+     * one of the tenant's own parties.
+     *
+     * It is a route for the same reason the counterparty screen is: the session
+     * already names the tenant.
+     */
+    readonly partyDetailsJourney: ReactNode;
+    /**
      * The registration door, which a visitor with no account runs.
      *
      * It is a route rather than a gate for the same reason the other two are:
@@ -183,6 +193,7 @@ export function AppRoutes({
     newTenantJourney,
     newPartyJourney,
     counterpartyJourney,
+    partyDetailsJourney,
     signUpJourney,
     journeyInProgress,
     self,
@@ -799,6 +810,10 @@ export function AppRoutes({
                 path="/counterparties/onboard"
                 element={signedIn(gate.version, session, shell, () => counterpartyJourney)}
             />
+            <Route
+                path="/parties/details"
+                element={signedIn(gate.version, session, shell, () => partyDetailsJourney)}
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
@@ -812,6 +827,7 @@ export function ConnectedApp(): ReactNode {
     const { t } = useTranslation();
     const server = useJourneyServer();
     const counterpartyServer = useCounterpartyServer();
+    const partyDetailsServer = usePartyDetailsServer();
     const navigate = useNavigate();
     const [journeyInProgress, setJourneyInProgress] = useState(false);
     const username = session.status === 'authenticated' ? session.session.username : '';
@@ -960,6 +976,12 @@ export function ConnectedApp(): ReactNode {
                              * The journey ends at the counterparty list it opened
                              * on, or at the home page a person came from.
                              */
+                            onFinished={() => navigate('/')}
+                        />
+                    }
+                    partyDetailsJourney={
+                        <PartyDetailsJourney
+                            server={partyDetailsServer}
                             onFinished={() => navigate('/')}
                         />
                     }

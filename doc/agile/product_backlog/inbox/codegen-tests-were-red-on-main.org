@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A597114A-6214-490D-90A6-E0B7EAEFA2F6
+:END:
+#+title: The codegen test suite was red on main in seven places
+#+description: Seven codegen-tests failures sit on origin/main, none of them any branch's. Four RLS fixtures do not carry has_tenant_id (the parser defaults it to true, so a hand-built model dict reads as false and the new validator refuses it) and one has no party_id column; test_sql_name_base's RLS fixture needs one too. test_soft_fk_target expected the trade anchor to be immutable, but [trading] Make every trading entity a regular, versioned table moved it to a regular versioned table, so the trade_id check now reads the current row. Fixed in the working tree; the immutable branch of target_immutable now has no fixture at all, because ores.inbox.delivery_outcome_type is the only immutable entity and nothing references it.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

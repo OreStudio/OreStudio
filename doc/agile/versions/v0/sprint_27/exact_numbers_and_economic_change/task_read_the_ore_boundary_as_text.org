@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: B06A7058-C406-42E8-98E2-4A7E929C6261
+:END:
+#+title: Task: Read the ORE boundary as text
+#+description: The XML binding keeps the document's lexical form so a money value is parsed exactly.
+#+type: task
+#+level: s1
+#+filetags: :exact_numbers_and_economic_change:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A money element's own digits survive the XML binding, so the mapper parses them with a decimal parse rather than inheriting a binary float.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] |
+| Now          | Landed and verified: the binding keeps the lexical form, the mapper reads it, and the four new cases pass. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing on this task. The full ORE core suite is still to be run by the agent that owns it. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The binding carries the lexical form of a money leaf, and a regeneration cannot silently drop that.
+- The mapper reads money with a decimal parse, so the stored decimal equals the document's own digits.
+
+The second criterion is stated against the *stored decimal*, not against the
+round trip. The round trip cannot see this bug: the exporter re-renders through
+ORE's =float=, so an XML that goes out identical came in wrong. The earlier
+wording — "the round trip's numeric bucket falls to zero" — is worthless as a
+test and is replaced. See the same correction in
+[[id:B9DAC38A-BEB1-4658-87BC-DFF901033E84][Exact numbers and economic change]].
+
+*How to check it.* The defect is only visible for a lexical that is not the
+float's rendering, because those are the digits the float cannot carry. The
+test document states one deliberately — =<Spread>0.00999999978</Spread>= is
+*not* enough, since a nine-significant-digit render of that float is exactly
+that text; use a leaf such as =<Rate>0.123456789</Rate>, whose float renders as
+=0.12345679=. The assertion is on the mapped decimal: it must equal
+=decimal::from_string("0.123456789").value()=, and a second assertion must show
+that =from_double(0.123456789f)= does *not* equal it, or the test proves
+nothing.
+
+*The round trip is unaffected, and that is a separate claim.* Both before and
+after, the write side ends at =float(float32(lexical))= — before by
+=lexical → float → from_double → decimal → to_double → float=, after by
+=lexical → float → decimal(lexical) → to_double → float=. So exports do not
+move. Measured over the golden corpus: 132 files, 1639 numeric leaf texts, and
+the 21 that a nine-digit render does not reproduce — mostly dates caught by the
+same scan and trailing zeros such as =3200.00= — already differed before the
+change. The patch moves the column, not the wire.
+
+* Plan
+
+*Where the text dies.* The document's text reaches the generated binding intact
+and is discarded by the leaf setter. =domain.cpp= holds 1147 =_set_= functions;
+only 37 call =xsdcpp::set_float= (35) or =set_double= (2). Those 37 are the
+numeric leaves that lose the text, and they are listed in
+=doc/knowledge/architecture/ore_numeric_leaf_setters.txt=.
+
+*The patch, in four parts.*
+
+1. =xsd::base<T>= in =domain_xsd.hpp= gains a lexical form. Only
+   floating-point =T= carries storage, through a conditional base, because
+   =base<T>= is instantiated for very many types and a =std::string= member on
+   all of them would bloat every domain object.
+2. The 37 leaf setters pass the binding to =set_float=/=set_double=, and those
+   helpers stash the lexical before converting.
+3. =exact_decimal(binding)=, in =ore_boundary_decimal.hpp=, returns
+   =decimal::from_string(lexical).value()= when a lexical form is present, and
+   falls back to =from_double= otherwise. The mappers that write money read the
+   value through it.
+4. The patch is generated-code, and the generator is external. It is re-applied
+   by a script in the shape of =reapply_export_macros.py=, invoked from
+   =xsdcpp_generate_ore.sh=. The script refuses to run when an anchor is
+   missing, because a reapply that silently does nothing is the failure this
+   mechanism exists to prevent.
+
+*Scope of the mapper sweep.* 76 =from_double= sites sit in the ORE mappers.
+Only the money quantities move to the lexical parse; continuous quantities
+(volatility, correlation, day-count fraction, unit quantity) stay binary float,
+and a target column that is not decimal is not converted through
+=exact_decimal= at all.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The four boundary cases | **15 assertions in 4 cases, all passing** | =build/output/linux-clang-debug-make/publish/bin/ores.ore.core.tests "[boundary]"= with =.env= sourced, against the binary built at 00:49 | uncommitted (working tree over =ca0bea89af=) |
+| Floating setters in =domain.cpp= | 42 (35 =set_float=, 7 =set_double=) | match every =_set_= body against the setter calls | uncommitted (working tree over =ca0bea89af=) |
+| Of those, the ones the patch rewrites | 37 | =doc/knowledge/architecture/ore_numeric_leaf_setters.txt= | same |
+| The five it leaves alone | =positiveDecimal=, =correlationValue=, =recoveryRate=, =non_negative_decimal=, =offPeakPowerIndexDataType_OffPeakHours_t= — all plain =typedef double=, so no lexical form to keep | parse every =_set_= body and match its pointee type against =struct X : xsd::base<...>=; the 42 bodies split 37 bindings / 5 typedefs, and no =set_float= site has a plain =float= pointee, so the retained =set_double(double*)= overload covers all five | same |
+| Golden-corpus numeric leaf texts | 1639 over 132 XML files | scan =assets/test_data/golden_dataset= | same |
+| Texts whose exported float differs between the pre- and post-patch path | 0 | =f32(float(text)) vs f32(f32(float(text)))= over the corpus | same |
+| Texts a nine-significant-digit render does not reproduce | 21, mostly dates caught by the same scan and trailing zeros such as =3200.00= | render each float with ={:.9g}= and compare | same |
+
+* Notes
+
+**The patch's third bug, and the one the build found.** The first version of the
+patch made `set_float` and `set_double` templates over `xsd::base<T>*`, and the
+setter bodies called them with the binding. It type-checked everywhere except
+two lines, and those two lines are why it could not work:
+
+#+begin_src cpp
+const xsdcpp::ElementInfo _float_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                         (xsdcpp::set_value_t)&xsdcpp::set_float};
+const xsdcpp::ElementInfo _double_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                          (xsdcpp::set_value_t)&xsdcpp::set_double};
+#+end_src
+
+These are the generic leaf tables for elements declared as a plain
+=xs:float=/=xs:double= rather than a named simple type — the anonymous leaves,
+which is exactly the five =typedef double= leaves and their siblings. They take
+the *address* of the helper. With one non-overloaded function that was
+unambiguous and the explicit function-pointer cast finished the job; with a
+template the name is an overload set, the cast supplies =void *= as the target,
+and deduction fails.
+
+The fix is to leave the two helpers alone and stash the lexical in the setter
+bodies, which keeps one function per name:
+
+#+begin_src cpp
+float& base = *obj;
+xsdcpp::set_float(&base, pos, std::move(val));
+obj->lexical(val);
+#+end_src
+
+=set_float= binds the string and never moves from it, so =val= is still the
+document's text on the next line. The general lesson, and the reason the earlier
+"37 functions, not a 108k-line file" measurement was not by itself enough: a
+generated file can reference a helper by name in ways a grep for *calls* does
+not show. Addressing a function and calling it are different, and only one of
+them appears in a call-site count.
+
+**Confirmed by a build.** With the fix in, `domain.cpp` compiled and
+`ores.ore.core.lib` went past it and on through the eight mappers with 0
+errors — the first time the patch has compiled. The three bugs the patch
+carried, in the order they were found, were: the welding `\s*$` in the reapply
+path, the generator-block search that reached a neighbour's block, and this one,
+the function-pointer table. All three were found by running something, and none
+by reading.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

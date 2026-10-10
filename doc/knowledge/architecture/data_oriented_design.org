@@ -200,6 +200,8 @@ Decision checks — walk per entity model:
 | Core/cold split | =field_group= and table design separate core fields from cold annexes (change-reason cache, history, versioning, audit). |
 | Batched collection access | Repositories and services return collections, not row-at-a-time callbacks. |
 | Explicit variation | A family of related entities (for example, instruments) states its variation explicitly — per-type tables or a closed variant — not open inheritance webs. |
+| Exact money at rest | A money quantity — rate, spread, notional, amount, price, strike, fee, premium, margin, face value — is exact decimal in both the domain type and the column, and the two agree. A continuous quantity — volatility, correlation, weight, probability, recovery rate, tranche fraction, day-count fraction, unit quantity — stays binary float. |
+| One-way numeric conversion | A =double= never enters the persisted domain. Conversion runs from decimal to double, at the numerical-kernel seam, and only there. A value that arrives as text is read with a decimal parse, not through a binary float. |
 
 Invariant checks — spot-check once per component:
 

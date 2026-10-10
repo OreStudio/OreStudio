@@ -174,8 +174,19 @@ public:
                                                     "The signed-in account was not found.")});
                 return;
             }
-            const auto raised = lifecycle.raise(*kind, req->reason, *me);
-            tell_deciders(*ctx, *kind, raised);
+            for (const auto& code : req->part_codes) {
+                if (!lifecycle.part(code)) {
+                    reply(nats_,
+                          msg,
+                          raise_approval_request_response{
+                              .result = approval_result(outcome::invalid,
+                                                        "unknown_part",
+                                                        "No such approval part: " + code)});
+                    return;
+                }
+            }
+            const auto raised = lifecycle.raise(*kind, req->reason, *me, req->part_codes);
+            tell_open_parts(*ctx, lifecycle, *kind, raised);
             reply(nats_,
                   msg,
                   raise_approval_request_response{.result = approval_result(outcome::ok, "", ""),
@@ -294,7 +305,7 @@ public:
                 return;
             }
             const auto kind = lifecycle.kind(current->kind_code);
-            if (!kind || !has_permission(*ctx, kind->decide_permission_code)) {
+            if (!kind) {
                 reply(nats_,
                       msg,
                       decide_approval_request_response{
@@ -302,6 +313,46 @@ public:
                                                     "not_a_decider",
                                                     "You may not decide this kind of request.")});
                 return;
+            }
+            const auto parts = lifecycle.parts_of(req->request_id);
+            const bool answers_for_part =
+                !parts.empty() && (req->decision_code == "approve" || req->decision_code == "refuse");
+            if (answers_for_part) {
+                const auto named = std::ranges::find_if(
+                    parts, [&](const auto& p) { return p.code == req->part_code; });
+                if (named == parts.end()) {
+                    reply(nats_,
+                          msg,
+                          decide_approval_request_response{
+                              .result = approval_result(outcome::invalid,
+                                                        "part_required",
+                                                        "Name one of the parts this request needs.")});
+                    return;
+                }
+                if (!has_permission(*ctx, named->decide_permission_code)) {
+                    reply(nats_,
+                          msg,
+                          decide_approval_request_response{
+                              .result = approval_result(outcome::denied,
+                                                        "not_a_decider",
+                                                        "You may not decide for this part.")});
+                    return;
+                }
+            } else {
+                const bool may_decide =
+                    parts.empty() ? has_permission(*ctx, kind->decide_permission_code)
+                                  : std::ranges::any_of(parts, [&](const auto& p) {
+                                        return has_permission(*ctx, p.decide_permission_code);
+                                    });
+                if (!may_decide) {
+                    reply(nats_,
+                          msg,
+                          decide_approval_request_response{
+                              .result = approval_result(outcome::denied,
+                                                        "not_a_decider",
+                                                        "You may not decide this kind of request.")});
+                    return;
+                }
             }
             const auto me = lifecycle.actor_account_id();
             if (!me) {
@@ -313,11 +364,17 @@ public:
                                                     "The signed-in account was not found.")});
                 return;
             }
-            const auto r = lifecycle.decide(
-                req->request_id, req->version, req->decision_code, *me, req->comment);
+            const auto r = lifecycle.decide(req->request_id,
+                                            req->version,
+                                            req->decision_code,
+                                            *me,
+                                            req->comment,
+                                            answers_for_part ? req->part_code : std::string{});
             const auto after = lifecycle.request(req->request_id).value_or(*current);
             if (after.state_code != current->state_code)
                 tell_asker(*ctx, *kind, after, req->comment);
+            else if (answers_for_part && r.outcome == "ok" && req->decision_code == "approve")
+                tell_open_parts(*ctx, lifecycle, *kind, after);
             reply(nats_,
                   msg,
                   decide_approval_request_response{.result = decision_reply(r), .request = after});
@@ -622,6 +679,26 @@ public:
 
 private:
     /**
+     * @brief Tells the deciders whose turn it is.
+     *
+     * A request of a kind with one decider permission tells its holders. A
+     * request that names parts tells the holders of the parts that are open:
+     * those of the earliest answer order that has not yet approved.
+     */
+    void tell_open_parts(const ores::database::context& ctx,
+                         service::approval_lifecycle& lifecycle,
+                         const domain::approval_kind& kind,
+                         const domain::approval_request& raised) {
+        const auto parts = lifecycle.parts_of(boost::uuids::to_string(raised.id));
+        if (parts.empty()) {
+            tell_deciders(ctx, kind, raised, kind.decide_permission_code);
+            return;
+        }
+        for (const auto& open : lifecycle.open_parts_of(boost::uuids::to_string(raised.id)))
+            tell_deciders(ctx, kind, raised, open.decide_permission_code);
+    }
+
+    /**
      * @brief Tells the people who may decide a request that it waits.
      *
      * Telling is never the operation: a failure here is logged, and the
@@ -629,10 +706,11 @@ private:
      */
     void tell_deciders(const ores::database::context& ctx,
                        const domain::approval_kind& kind,
-                       const domain::approval_request& raised) {
+                       const domain::approval_request& raised,
+                       const std::string& permission_code) {
         try {
             service::notification_center center(ctx);
-            auto deciders = center.holders_of(kind.decide_permission_code);
+            auto deciders = center.holders_of(permission_code);
             std::erase(deciders, boost::uuids::to_string(raised.requested_by));
             if (deciders.empty())
                 return;
@@ -643,7 +721,7 @@ private:
                                                        {.name = "requester", .value = ctx.actor()},
                                                        {.name = "reason", .value = raised.reason}},
                                          .account_ids = {},
-                                         .audience_permission_code = kind.decide_permission_code};
+                                         .audience_permission_code = permission_code};
             center.raise(n, deciders, raised.requested_by);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(approval_operations_handler_lg(), warn)

@@ -18,19 +18,11 @@
  *
  */
 
-/**
- * Inbox Population Script
- *
- * Seeds the approval request and notification lookups. The approval kinds
- * come after the states and decision types, because each names an IAM
- * permission.
- */
-
-\ir inbox_approval_request_states_populate.sql
-\ir inbox_approval_decision_types_populate.sql
-\ir inbox_approval_kinds_populate.sql
-\ir inbox_approval_parts_populate.sql
-\ir inbox_approval_policies_populate.sql
-\ir inbox_notification_channels_populate.sql
-\ir inbox_notification_kinds_populate.sql
-\ir inbox_delivery_outcome_types_populate.sql
+drop rule if exists ores_inbox_approval_request_parts_delete_rule on "ores_inbox_approval_request_parts_tbl";
+drop trigger if exists ores_inbox_approval_request_parts_insert_trg on "ores_inbox_approval_request_parts_tbl";
+drop function if exists ores_inbox_approval_request_parts_insert_fn;
+drop index if exists approval_request_parts_request_idx;
+drop index if exists approval_request_parts_part_idx;
+drop index if exists approval_request_parts_uniq_idx;
+drop index if exists approval_request_parts_tenant_idx;
+drop table if exists "ores_inbox_approval_request_parts_tbl";

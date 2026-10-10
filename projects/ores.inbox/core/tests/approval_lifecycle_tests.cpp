@@ -190,6 +190,85 @@ TEST_CASE("the_queue_shows_a_decider_others_requests_and_not_their_own", tags) {
     CHECK_FALSE(in(lifecycle.raised_by(decider.id, 0, 100)));
 }
 
+TEST_CASE("a_part_cannot_answer_before_the_parts_ahead_of_it_approve", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto controller = seed_account(h);
+    const auto finance = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(
+        *lifecycle.kind("iam.role_grant"), "Open a book", asker.id, {"controller", "finance"});
+    const auto id = boost::uuids::to_string(raised.id);
+
+    const auto early = lifecycle.decide(id, raised.version, "approve", finance.id, "", "finance");
+    CHECK(early.outcome == "conflict");
+    CHECK(lifecycle.request(id)->state_code == "waiting");
+
+    const auto first =
+        lifecycle.decide(id, raised.version, "approve", controller.id, "", "controller");
+    CHECK(first.outcome == "ok");
+    CHECK(first.state_code == "waiting");
+
+    const auto second = lifecycle.decide(id, first.version, "approve", finance.id, "", "finance");
+    CHECK(second.outcome == "ok");
+    CHECK(second.state_code == "approved");
+}
+
+TEST_CASE("parts_of_the_same_order_answer_in_either_order", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto finance = seed_account(h);
+    const auto operations = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(
+        *lifecycle.kind("iam.role_grant"), "Change a book", asker.id, {"finance", "operations"});
+    const auto id = boost::uuids::to_string(raised.id);
+    CHECK(lifecycle.open_parts_of(id).size() == 2);
+
+    const auto first =
+        lifecycle.decide(id, raised.version, "approve", operations.id, "", "operations");
+    CHECK(first.state_code == "waiting");
+    CHECK(lifecycle.open_parts_of(id).size() == 1);
+
+    const auto second = lifecycle.decide(id, first.version, "approve", finance.id, "", "finance");
+    CHECK(second.state_code == "approved");
+    CHECK(lifecycle.open_parts_of(id).empty());
+}
+
+TEST_CASE("an_answer_names_a_part_the_request_needs", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto decider = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(
+        *lifecycle.kind("iam.role_grant"), "Change a book", asker.id, {"finance"});
+    const auto id = boost::uuids::to_string(raised.id);
+
+    CHECK(lifecycle.decide(id, raised.version, "approve", decider.id, "").outcome == "invalid");
+    CHECK(lifecycle.decide(id, raised.version, "approve", decider.id, "", "operations").outcome ==
+          "invalid");
+    CHECK(lifecycle.request(id)->state_code == "waiting");
+}
+
+TEST_CASE("a_refusal_from_a_part_refuses_the_request", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto controller = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(
+        *lifecycle.kind("iam.role_grant"), "Open a book", asker.id, {"controller", "finance"});
+    const auto id = boost::uuids::to_string(raised.id);
+
+    const auto r = lifecycle.decide(
+        id, raised.version, "refuse", controller.id, "Not this desk", "controller");
+    CHECK(r.outcome == "ok");
+    CHECK(r.state_code == "refused");
+}
+
 TEST_CASE("the_sweep_closes_what_ran_out_and_leaves_what_did_not", tags) {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);

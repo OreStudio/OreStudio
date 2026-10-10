@@ -21,6 +21,8 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
+#include "ores.inbox.core/repository/approval_part_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_part_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -88,7 +90,8 @@ std::optional<domain::approval_request> approval_lifecycle::request(const std::s
 
 domain::approval_request approval_lifecycle::raise(const domain::approval_kind& kind,
                                                    const std::string& reason,
-                                                   const boost::uuids::uuid& requested_by) {
+                                                   const boost::uuids::uuid& requested_by,
+                                                   const std::vector<std::string>& part_codes) {
     const auto now = std::chrono::system_clock::now();
 
     domain::approval_request r;
@@ -109,28 +112,116 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
     repository::approval_request_repository repo;
     repo.write(ctx_, r, ores::utility::domain::precondition{});
 
+    if (!part_codes.empty()) {
+        std::vector<domain::approval_request_part> links;
+        for (const auto& code : part_codes) {
+            domain::approval_request_part link;
+            link.tenant_id = ctx_.tenant_id().to_string();
+            link.request_id = r.id;
+            link.part_code = code;
+            link.modified_by = ctx_.actor();
+            link.change_reason_code = "system.new_record";
+            links.push_back(std::move(link));
+        }
+        repository::approval_request_part_repository parts_repo(ctx_);
+        parts_repo.write(links);
+    }
+
     const auto written = request(boost::uuids::to_string(r.id));
     if (!written)
         throw std::runtime_error("The raised request could not be read back.");
     return *written;
 }
 
+std::optional<domain::approval_part> approval_lifecycle::part(const std::string& code) {
+    repository::approval_part_repository repo;
+    const auto system_ctx = ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor());
+    const auto found = repo.read_latest(system_ctx, code);
+    if (found.empty())
+        return std::nullopt;
+    return found.front();
+}
+
+std::vector<domain::approval_part> approval_lifecycle::parts_of(const std::string& request_id) {
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "select rp.part_code "
+        "from ores_inbox_approval_request_parts_tbl rp "
+        "join ores_inbox_approval_parts_tbl p "
+        "  on p.tenant_id = ores_utility_system_tenant_id_fn() "
+        " and p.code = rp.part_code "
+        " and p.valid_to = ores_utility_infinity_timestamp_fn() "
+        "where rp.request_id = $1::uuid "
+        "  and rp.valid_to = ores_utility_infinity_timestamp_fn() "
+        "order by p.answer_order, p.display_order, p.code",
+        {request_id},
+        lg(),
+        "Reading the parts a request needs");
+
+    std::vector<domain::approval_part> parts;
+    for (const auto& row : rows) {
+        if (row.empty() || !row.front())
+            continue;
+        if (auto found = part(*row.front()))
+            parts.push_back(std::move(*found));
+    }
+    return parts;
+}
+
+std::vector<domain::approval_part>
+approval_lifecycle::open_parts_of(const std::string& request_id) {
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "with waiting as ( "
+        "  select rp.part_code, p.answer_order, p.display_order "
+        "  from ores_inbox_approval_request_parts_tbl rp "
+        "  join ores_inbox_approval_parts_tbl p "
+        "    on p.tenant_id = ores_utility_system_tenant_id_fn() "
+        "   and p.code = rp.part_code "
+        "   and p.valid_to = ores_utility_infinity_timestamp_fn() "
+        "  where rp.request_id = $1::uuid "
+        "    and rp.valid_to = ores_utility_infinity_timestamp_fn() "
+        "    and not exists ( "
+        "      select 1 from ores_inbox_approval_decisions_tbl d "
+        "      where d.request_id = rp.request_id "
+        "        and d.part_code = rp.part_code "
+        "        and d.decision_code = 'approve' "
+        "        and d.valid_to = ores_utility_infinity_timestamp_fn())) "
+        "select part_code from waiting "
+        "where answer_order = (select min(answer_order) from waiting) "
+        "order by display_order, part_code",
+        {request_id},
+        lg(),
+        "Reading the parts a request waits on");
+
+    std::vector<domain::approval_part> parts;
+    for (const auto& row : rows) {
+        if (row.empty() || !row.front())
+            continue;
+        if (auto found = part(*row.front()))
+            parts.push_back(std::move(*found));
+    }
+    return parts;
+}
+
 decision_result approval_lifecycle::decide(const std::string& request_id,
                                            int version,
                                            const std::string& decision_code,
                                            const boost::uuids::uuid& decided_by,
-                                           const std::string& comment) {
+                                           const std::string& comment,
+                                           const std::string& part_code) {
     BOOST_LOG_SEV(lg(), info) << "Deciding request " << request_id << ": " << decision_code;
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
         "select outcome, message, state_code, version::text "
-        "from ores_inbox_decide_approval_request_fn($1::uuid, $2::integer, $3, $4::uuid, $5, $6)",
+        "from ores_inbox_decide_approval_request_fn($1::uuid, $2::integer, $3, $4::uuid, $5, $6, nullif($7, ''))",
         {request_id,
          std::to_string(version),
          decision_code,
          boost::uuids::to_string(decided_by),
          comment,
-         ctx_.actor()},
+         ctx_.actor(),
+         part_code},
         lg(),
         "Deciding an approval request");
 

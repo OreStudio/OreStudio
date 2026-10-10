@@ -28,6 +28,11 @@
 #include "ores.inbox.core/messaging/approval_decision_type_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_kind_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_kind_registrar.hpp"
+#include "ores.inbox.core/messaging/approval_part_history_provider_registrar.hpp"
+#include "ores.inbox.core/messaging/approval_part_registrar.hpp"
+#include "ores.inbox.core/messaging/approval_policy_history_provider_registrar.hpp"
+#include "ores.inbox.core/messaging/approval_policy_registrar.hpp"
+#include "ores.inbox.core/messaging/approval_request_part_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_operations_handler.hpp"
 #include "ores.inbox.core/messaging/approval_request_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_request_registrar.hpp"
@@ -89,6 +94,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Every inbox entity stack is generated: the CRUD, version and change
     // verbs come from each entity's registrar.
     add(register_approval_kind_handlers(nats, ctx, verifier));
+    add(register_approval_part_handlers(nats, ctx, verifier));
+    add(register_approval_policy_handlers(nats, ctx, verifier));
+    add(register_approval_request_part_handlers(nats, ctx, verifier));
     add(register_approval_request_state_handlers(nats, ctx, verifier));
     add(register_approval_decision_type_handlers(nats, ctx, verifier));
     add(register_approval_request_handlers(nats, ctx, verifier));
@@ -179,6 +187,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto& hist_registry = history_registry();
         register_approval_kind_history_provider(hist_registry);
+        register_approval_part_history_provider(hist_registry);
+        register_approval_policy_history_provider(hist_registry);
         register_approval_request_state_history_provider(hist_registry);
         register_approval_decision_type_history_provider(hist_registry);
         register_approval_request_history_provider(hist_registry);

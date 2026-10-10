@@ -44,6 +44,9 @@
 #include "ores.shell/app/commands/inbox/approval_decision_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_decision_type_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_kind_commands.hpp"
+#include "ores.shell/app/commands/inbox/approval_part_commands.hpp"
+#include "ores.shell/app/commands/inbox/approval_policy_commands.hpp"
+#include "ores.shell/app/commands/inbox/approval_request_part_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_operations_operations_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_request_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_request_state_commands.hpp"
@@ -155,6 +158,9 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     workflow_operations_commands::register_commands(*root, session_);
     workflow_run_commands::register_commands(*root, session_);
     approval_kind_commands::register_commands(*root, session_);
+    approval_part_commands::register_commands(*root, session_);
+    approval_policy_commands::register_commands(*root, session_);
+    approval_request_part_commands::register_commands(*root, session_);
     approval_request_state_commands::register_commands(*root, session_);
     approval_decision_type_commands::register_commands(*root, session_);
     approval_request_commands::register_commands(*root, session_);

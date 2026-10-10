@@ -25,15 +25,7 @@ import { useHolds } from '../access/holds.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Tiles, type Tile } from '../ui/Tiles.js';
 import { MENU, offered } from './areas.js';
-import {
-    ACCOUNT_CARDS,
-    AREA_GROUPS,
-    FOLDERS,
-    cardOf,
-    type CardArea,
-    type CardGroup,
-    type CardId,
-} from './cards.js';
+import { ACCOUNT_CARDS, AREA_CARDS, FOLDERS, cardOf, type CardArea, type CardId } from './cards.js';
 
 /** The cards of one list that this person is offered, named and worded in their language. */
 function useTiles(ids: readonly CardId[], mode: SessionMode): readonly Tile[] {
@@ -51,32 +43,10 @@ function useTiles(ids: readonly CardId[], mode: SessionMode): readonly Tile[] {
         }));
 }
 
-function Group({
-    group,
-    mode,
-    heading,
-}: {
-    readonly group: CardGroup;
-    readonly mode: SessionMode;
-    readonly heading: boolean;
-}): ReactNode {
-    const { t } = useTranslation();
-    const tiles = useTiles(group.cards, mode);
-    if (tiles.length === 0) {
-        return null;
-    }
-    return (
-        <section className="space-y-3">
-            {heading && <h2 className="text-sm font-semibold text-ink">{t(group.titleKey)}</h2>}
-            <Tiles tiles={tiles} />
-        </section>
-    );
-}
-
 /**
- * The cards of one area. An area with several groups heads each group, so the
- * page reads as an index of topics. A group with no card the person may open is
- * not drawn.
+ * The cards of one area, as the area page draws them: the ones the person may
+ * open, packed close together, with no headings. A workflow card is told from a
+ * screen card by its hue and its tag.
  */
 export function AreaCards({
     area,
@@ -85,14 +55,8 @@ export function AreaCards({
     readonly area: CardArea;
     readonly mode: SessionMode;
 }): ReactNode {
-    const groups: readonly CardGroup[] = AREA_GROUPS[area];
-    return (
-        <div className="space-y-8">
-            {groups.map((group) => (
-                <Group key={group.titleKey} group={group} mode={mode} heading={groups.length > 1} />
-            ))}
-        </div>
-    );
+    const ids: readonly CardId[] = AREA_CARDS[area];
+    return <Tiles tiles={useTiles(ids, mode)} dense />;
 }
 
 /**

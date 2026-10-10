@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 import { enFlat } from '../i18n/locales/en.js';
 import { frFlat } from '../i18n/locales/fr.js';
 import { ptFlat } from '../i18n/locales/pt.js';
-import { AREA_GROUPS, CARDS, areaOfCard, cardOf, type CardId } from './cards.js';
+import { AREA_CARDS, CARDS, areaOfCard, cardOf, workflowsOn, type CardId } from './cards.js';
 
 /**
  * A file card leads to one screen and names it word for word, in every
@@ -67,19 +67,34 @@ describe('the cards', () => {
     });
 
     it('belong to one area each, except the cards of the person themselves', () => {
-        const homeless = IDS.filter((id) => areaOfCard(id) === undefined);
+        const homeless = IDS.filter(
+            (id) => areaOfCard(id) === undefined && cardOf(id).on === undefined,
+        );
 
         expect(homeless).toEqual(['myAccess', 'security']);
     });
 
-    it('keep the workflows together, apart from the screens', () => {
-        for (const groups of Object.values(AREA_GROUPS)) {
-            for (const group of groups) {
-                const kinds = new Set(group.cards.map((id) => cardOf(id).kind ?? 'screen'));
-                expect(kinds.size, group.titleKey).toBe(1);
-                if (kinds.has('workflow')) {
-                    expect(group.titleKey).toMatch(/workflows$/);
-                }
+    it('list the workflows after the screens on an area page', () => {
+        for (const [area, ids] of Object.entries(AREA_CARDS)) {
+            const kinds = (ids as readonly CardId[]).map((id) => cardOf(id).kind ?? 'screen');
+            const firstWorkflow = kinds.indexOf('workflow');
+            if (firstWorkflow >= 0) {
+                expect(
+                    kinds.slice(firstWorkflow).every((kind) => kind === 'workflow'),
+                    area,
+                ).toBe(true);
+            }
+        }
+    });
+
+    it('list a workflow once: on the screen it acts on, or on the area page', () => {
+        for (const id of IDS.filter((candidate) => cardOf(candidate).kind === 'workflow')) {
+            const onArea = areaOfCard(id) !== undefined;
+            const on = cardOf(id).on;
+            expect(onArea !== (on !== undefined), id).toBe(true);
+            if (on !== undefined) {
+                expect(IDS, `${id} acts on ${on}`).toContain(on);
+                expect(workflowsOn(on as CardId)).toContain(id);
             }
         }
     });
@@ -95,10 +110,8 @@ describe('the cards', () => {
         }
     });
 
-    it('are drawn by no group twice', () => {
-        const drawn = Object.values(AREA_GROUPS).flatMap((groups) =>
-            groups.flatMap((group) => [...group.cards]),
-        );
+    it('are drawn by no area twice', () => {
+        const drawn = Object.values(AREA_CARDS).flatMap((ids) => [...ids]);
 
         expect(new Set(drawn).size).toBe(drawn.length);
     });

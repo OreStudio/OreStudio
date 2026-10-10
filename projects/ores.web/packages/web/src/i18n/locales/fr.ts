@@ -788,6 +788,7 @@ const fr: SourceCatalogue = {
     },
     cardKind: {
         workflow: 'Flux de travail',
+        workflows: 'Flux de travail',
     },
 
     profile: {
@@ -2667,13 +2668,6 @@ const fr: SourceCatalogue = {
 
     refdata: {
         crumbs: "Fil d'Ariane",
-        groups: {
-            parties: 'Parties et contreparties',
-            currencies: 'Devises et change',
-            calendars: 'Calendriers et échéances',
-            classifications: 'Classifications',
-            workflows: 'Flux de travail',
-        },
         area: {
             title: 'Données de référence',
             lead: 'Les données sur lesquelles reposent chaque opération, chaque courbe et chaque rapport.',

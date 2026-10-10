@@ -784,6 +784,7 @@ const pt: SourceCatalogue = {
     },
     cardKind: {
         workflow: 'Fluxo de trabalho',
+        workflows: 'Fluxos de trabalho',
     },
 
     profile: {
@@ -2654,13 +2655,6 @@ const pt: SourceCatalogue = {
 
     refdata: {
         crumbs: 'Caminho',
-        groups: {
-            parties: 'Partes e contrapartes',
-            currencies: 'Moedas e câmbio',
-            calendars: 'Calendários e prazos',
-            classifications: 'Classificações',
-            workflows: 'Fluxos de trabalho',
-        },
         area: {
             title: 'Dados de referência',
             lead: 'Os dados em que assentam todas as operações, curvas e relatórios.',

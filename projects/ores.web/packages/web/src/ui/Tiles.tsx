@@ -64,23 +64,77 @@ const MARK_CLASSES: Readonly<Record<MarkTone, string>> = {
         'border-flow-line bg-flow-dim text-flow transition-colors group-hover:bg-flow group-hover:text-ink-inverse',
 };
 
-function Mark({ name, tone }: { readonly name: IconName; readonly tone: MarkTone }): ReactNode {
+function Mark({
+    name,
+    tone,
+    small = false,
+}: {
+    readonly name: IconName;
+    readonly tone: MarkTone;
+    readonly small?: boolean;
+}): ReactNode {
     return (
         <span
-            className={`flex h-9 w-9 items-center justify-center rounded-chip border ${MARK_CLASSES[tone]}`}
+            className={`flex shrink-0 items-center justify-center rounded-chip border ${small ? 'h-7 w-7' : 'h-9 w-9'} ${MARK_CLASSES[tone]}`}
         >
             <Icon name={name} />
         </span>
     );
 }
 
+/**
+ * A dense tile: the glyph beside the name and one line, so an area page of a
+ * dozen cards fits on a screen. The line is cut at two rows.
+ */
+function DenseTile({ tile, to }: { readonly tile: Tile; readonly to: string }): ReactNode {
+    const workflow = tile.workflow !== undefined;
+    return (
+        <Link
+            to={to}
+            className={`card group flex items-start gap-3 p-3 transition-[border-color,box-shadow] focus-visible:outline-accent ${workflow ? 'border-flow-line hover:border-flow' : 'hover:border-accent-line hover:shadow-glow'}`}
+        >
+            {tile.icon !== undefined && (
+                <Mark name={tile.icon} tone={workflow ? 'workflow' : 'live'} small />
+            )}
+            <span className="min-w-0 flex-1">
+                <span className="flex items-center justify-between gap-2">
+                    <span
+                        className={`text-sm font-semibold text-ink transition-colors ${workflow ? 'group-hover:text-flow' : 'group-hover:text-accent-bright'}`}
+                    >
+                        {tile.title}
+                    </span>
+                    {tile.workflow !== undefined && (
+                        <span className="rounded-chip border border-flow-line bg-flow-dim px-1.5 text-micro tracking-label text-flow uppercase">
+                            {tile.workflow}
+                        </span>
+                    )}
+                </span>
+                <span className="mt-0.5 line-clamp-2 text-xs text-ink-muted">{tile.body}</span>
+            </span>
+        </Link>
+    );
+}
+
 export function Tiles({
     tiles,
     later,
+    dense = false,
 }: {
     readonly tiles: readonly Tile[];
     readonly later?: string;
+    readonly dense?: boolean;
 }): ReactNode {
+    if (dense) {
+        return (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {tiles.map((tile) =>
+                    tile.to === undefined ? null : (
+                        <DenseTile key={tile.title} tile={tile} to={tile.to} />
+                    ),
+                )}
+            </div>
+        );
+    }
     return (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {tiles.map((tile) =>

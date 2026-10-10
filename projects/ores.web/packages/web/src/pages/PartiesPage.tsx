@@ -22,6 +22,7 @@
 import type { ReactNode } from 'react';
 import type { TenantParty } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
+import { WorkflowMenu } from '../shell/WorkflowMenu.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { FlaggedCode } from '../images/flags.js';
 import { RecordList, type ListColumn, type ListSource } from '../refdata/RecordList.js';
@@ -124,6 +125,7 @@ export function PartiesPage(): ReactNode {
             lead={t('parties.description')}
             crumbs={[{ label: t('shell.menu.home'), to: '/' }, { label: t('parties.title') }]}
             keyOf={(party) => party.id}
+            actions={<WorkflowMenu on="parties" />}
             columns={partyColumns(t)}
         />
     );

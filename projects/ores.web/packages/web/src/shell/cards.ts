@@ -47,6 +47,12 @@ export interface CardDef extends Pick<MenuItem, 'permission' | 'scope'> {
      * is a verb and its object, and it wears its own hue and a tag.
      */
     readonly kind?: 'workflow';
+    /**
+     * The screen card a workflow acts on. The workflow is listed on that
+     * screen, in its Workflows menu, and not on the area page. A workflow with
+     * no such screen is drawn in the area's Workflows group.
+     */
+    readonly on?: string;
 }
 
 export const CARDS = {
@@ -65,6 +71,7 @@ export const CARDS = {
         icon: 'add',
         permission: 'refdata::parties:write',
         kind: 'workflow',
+        on: 'parties',
     },
     partyDetails: {
         titleKey: 'home.tenant.partyDetails',
@@ -73,6 +80,7 @@ export const CARDS = {
         icon: 'party',
         permission: 'refdata::parties:write',
         kind: 'workflow',
+        on: 'parties',
     },
     onboardCounterparty: {
         titleKey: 'home.tenant.counterpartyOnboard',
@@ -81,6 +89,7 @@ export const CARDS = {
         icon: 'people',
         permission: 'refdata::counterparties:write',
         kind: 'workflow',
+        on: 'parties',
     },
     bookStructure: {
         titleKey: 'home.tenant.bookStructure',
@@ -235,46 +244,28 @@ export const CARDS = {
 
 export type CardId = keyof typeof CARDS;
 
-/** A heading and the cards under it. An area with one group draws no heading. */
-export interface CardGroup {
-    readonly titleKey: string;
-    readonly cards: readonly CardId[];
-}
-
-/** The cards of each area, in the order the area page draws them. */
-export const AREA_GROUPS = {
+/**
+ * The cards of each area, in the order the area page draws them: the screens,
+ * then the workflows that have no screen to be listed on. The page has no
+ * headings. A workflow is told from a screen by its hue and its tag.
+ */
+export const AREA_CARDS = {
     refdata: [
-        { titleKey: 'refdata.groups.parties', cards: ['parties'] },
-        {
-            titleKey: 'refdata.groups.currencies',
-            cards: ['currencies', 'currencyPairs', 'deskGroups'],
-        },
-        { titleKey: 'refdata.groups.calendars', cards: ['calendars'] },
-        { titleKey: 'refdata.groups.classifications', cards: ['classifications'] },
-        {
-            titleKey: 'refdata.groups.workflows',
-            cards: [
-                'newParty',
-                'partyDetails',
-                'onboardCounterparty',
-                'bookStructure',
-                'conventions',
-            ],
-        },
+        'parties',
+        'currencies',
+        'currencyPairs',
+        'deskGroups',
+        'calendars',
+        'classifications',
+        'bookStructure',
+        'conventions',
     ],
-    organisation: [
-        { titleKey: 'access.hub.title', cards: ['people', 'hierarchy', 'roles', 'rescue'] },
-    ],
-    operations: [
-        {
-            titleKey: 'shell.menu.operations',
-            cards: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
-        },
-    ],
-    tenants: [{ titleKey: 'shell.menu.tenants', cards: ['tenants'] }],
-} as const satisfies Record<string, readonly CardGroup[]>;
+    organisation: ['people', 'hierarchy', 'roles', 'rescue'],
+    operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
+    tenants: ['tenants'],
+} as const satisfies Record<string, readonly CardId[]>;
 
-export type CardArea = keyof typeof AREA_GROUPS;
+export type CardArea = keyof typeof AREA_CARDS;
 
 /** The cards of a person's own account, which Home offers beside the areas. */
 export const ACCOUNT_CARDS: readonly CardId[] = ['myAccess', 'security'];
@@ -286,8 +277,8 @@ export function cardOf(id: CardId): CardDef {
 
 /** The area whose page draws this card, or undefined for a card outside the areas. */
 export function areaOfCard(id: CardId): CardArea | undefined {
-    return (Object.keys(AREA_GROUPS) as CardArea[]).find((area) =>
-        AREA_GROUPS[area].some((group) => (group.cards as readonly CardId[]).includes(id)),
+    return (Object.keys(AREA_CARDS) as CardArea[]).find((area) =>
+        (AREA_CARDS[area] as readonly CardId[]).includes(id),
     );
 }
 
@@ -309,3 +300,8 @@ export const FOLDERS: readonly FolderDef[] = [
     { to: PATHS.operations, bodyKey: 'operations.hub.description', icon: 'server' },
     { to: '/tenants', bodyKey: 'home.system.tenantsLead', icon: 'party' },
 ];
+
+/** The workflows listed on a screen: those that act on it. */
+export function workflowsOn(screen: CardId): readonly CardId[] {
+    return (Object.keys(CARDS) as CardId[]).filter((id) => (CARDS[id] as CardDef).on === screen);
+}

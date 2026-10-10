@@ -24,15 +24,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { TranslationProvider } from '../i18n/Provider.js';
+import { textOf } from '../textOf.js';
 import { AreaCards } from './AreaCards.js';
+import { WorkflowMenu } from './WorkflowMenu.js';
 
 /**
- * An area page tells a screen card from a workflow card at a glance: the
- * workflows stand together under their own heading, in their own hue, each with
- * a tag.
+ * Which cards a person is offered, by the permissions they hold. These tests
+ * read the names and the addresses a person would click, and nothing about how
+ * the cards are laid out.
  */
 
-function reference(permissionCodes: readonly string[]): string {
+function render(permissionCodes: readonly string[], page: 'area' | 'menu'): string {
     const client = new QueryClient();
     client.setQueryData(['my-access'], {
         roles: [
@@ -52,7 +54,11 @@ function reference(permissionCodes: readonly string[]): string {
         <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter>
-                    <AreaCards area="refdata" mode="application" />
+                    {page === 'area' ? (
+                        <AreaCards area="refdata" mode="application" />
+                    ) : (
+                        <WorkflowMenu on="parties" />
+                    )}
                 </MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,
@@ -60,29 +66,58 @@ function reference(permissionCodes: readonly string[]): string {
 }
 
 describe('the Reference data cards', () => {
-    it('draw the workflows apart, in their own hue and with a tag', () => {
-        const html = reference(['*']);
+    it('offer every screen, and the workflows that have no screen of their own', () => {
+        const words = textOf(render(['refdata::parties:read'], 'area'));
 
-        expect(html).toMatch(/Workflows<\/h2>/);
-        expect(html).toContain('Onboard a party');
-        expect(html).toContain('Onboard a counterparty');
-        expect(html).toContain('text-flow');
-        expect(html).toMatch(/Workflow<\/span>/);
+        for (const name of [
+            'Parties',
+            'Currencies',
+            'Currency pairs',
+            'Desk groups',
+            'Holiday calendars',
+            'Classifications',
+            'Shape the book structure',
+            'Define instrument conventions',
+        ]) {
+            expect(words, name).toContain(name);
+        }
     });
 
-    it('draw the screens under their topics', () => {
-        const html = reference(['refdata::parties:read']);
+    it('leave the party workflows to the Parties screen', () => {
+        const words = textOf(render(['*'], 'area'));
+
+        expect(words).not.toContain('Onboard a party');
+        expect(words).not.toContain('Onboard a counterparty');
+    });
+
+    it('lead to the screens by their addresses under Reference data', () => {
+        const html = render(['refdata::parties:read'], 'area');
 
         expect(html).toContain('href="/refdata/parties"');
         expect(html).toContain('href="/refdata/currencies"');
-        expect(html).not.toContain('Onboard a party');
+        expect(html).toContain('href="/refdata/books/structure"');
+    });
+});
+
+describe('the workflows on the Parties screen', () => {
+    it('are offered to a person who may write parties and counterparties', () => {
+        const html = render(['refdata::parties:write', 'refdata::counterparties:write'], 'menu');
+        const words = textOf(html);
+
+        expect(words).toContain('Onboard a party');
+        expect(words).toContain("Correct a party's details");
+        expect(words).toContain('Onboard a counterparty');
+        expect(html).toContain('href="/refdata/parties/new"');
     });
 
-    it('draw the workflows that need no write permission', () => {
-        const html = reference([]);
+    it('offer only the workflows the person may start', () => {
+        const words = textOf(render(['refdata::counterparties:write'], 'menu'));
 
-        expect(html).toContain('Shape the book structure');
-        expect(html).toContain('Define instrument conventions');
-        expect(html).not.toContain('Onboard a counterparty');
+        expect(words).toContain('Onboard a counterparty');
+        expect(words).not.toContain('Onboard a party');
+    });
+
+    it('are not drawn at all for a person who may start none', () => {
+        expect(render(['refdata::parties:read'], 'menu')).toBe('');
     });
 });

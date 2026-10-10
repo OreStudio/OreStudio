@@ -781,6 +781,7 @@ export const en: SourceCatalogue = {
     },
     cardKind: {
         workflow: 'Workflow',
+        workflows: 'Workflows',
     },
 
     profile: {
@@ -2636,13 +2637,6 @@ export const en: SourceCatalogue = {
 
     refdata: {
         crumbs: 'Breadcrumb',
-        groups: {
-            parties: 'Parties and counterparties',
-            currencies: 'Currencies and FX',
-            calendars: 'Calendars and tenors',
-            classifications: 'Classifications',
-            workflows: 'Workflows',
-        },
         area: {
             title: 'Reference data',
             lead: 'The data every trade, curve and report is built on.',

@@ -55,6 +55,8 @@ export const profileWriteSchema = z.object({
     imageId: z.string().default(''),
     reasonCode: z.string().default(''),
     commentary: z.string().default(''),
+    /** The version the screen read; a record saved since is refused as a conflict. */
+    expectedVersion: z.string().optional(),
 });
 
 export type ProfileWrite = z.infer<typeof profileWriteSchema>;

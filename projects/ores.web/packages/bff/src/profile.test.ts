@@ -364,6 +364,37 @@ describe('PUT /api/accounts/:username/profile', () => {
         commentary: '',
     };
 
+    it('refuses a write made against a version the record has left, and writes nothing', async () => {
+        const { server, cookies, calls } = buildTestServer(profileAnswers());
+
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/api/accounts/ada/profile',
+            cookies,
+            payload: { ...payload, expectedVersion: '6' },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(409);
+        expect(response.json()).toMatchObject({ code: 'conflict' });
+        expect(calls.map((call) => call.subject)).toEqual(['iam.v1.accounts.get']);
+    });
+
+    it('writes when the version the screen read is the current one', async () => {
+        const { server, cookies, calls } = buildTestServer(profileAnswers());
+
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/api/accounts/ada/profile',
+            cookies,
+            payload: { ...payload, expectedVersion: '7' },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(calls.map((call) => call.subject)).toContain('iam.v1.ops.update_account');
+    });
+
     it('reads the account and writes it whole, echoing what it does not set', async () => {
         const { server, cookies, calls } = buildTestServer(profileAnswers());
 

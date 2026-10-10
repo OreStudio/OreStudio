@@ -44,7 +44,7 @@ The web screens read once and never learn that a record changed elsewhere. Add l
 | [[id:C72D4C9F-59E5-4177-AC69-A78172F75044][Know when a screen is stale: useEntityChanges]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 | [[id:84E9A065-C228-49A9-B571-A482DDB987C3][A Refresh button that pulses while the screen is stale]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 | [[id:A699B0E9-6188-4E01-936F-30FD3052D11F][Mark the rows that changed after a reload]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
-| [[id:BC8E62C0-BE32-4BDF-80AD-729A837E5D7D][Tell a person editing that the record changed]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:BC8E62C0-BE32-4BDF-80AD-729A837E5D7D][Tell a person editing that the record changed]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 | [[id:E8453624-79DC-4470-9AC0-FAE741726149][Refresh the record page and its timeline]] | BACKLOG | | | Task for: Keep the record screens up to date |
 | [[id:ADEE695C-905F-43EB-9A88-F7B189FC1D29][Complete the updates and refresh documents]] | BACKLOG | | | Task for: Keep the record screens up to date |
 | [[id:ED7D9486-7BA6-4E74-A64F-096FA9AD8EA7][Move the change registry to the canonical event subjects]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |

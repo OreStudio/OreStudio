@@ -812,6 +812,15 @@ const fr: SourceCatalogue = {
             version: "Enregistré. L'enregistrement est maintenant en version {version}.",
             failed: "L'écriture a échoué.",
         },
+        newer: {
+            title: 'La version {version} de cet enregistrement a été sauvegardée pendant votre modification.',
+            titleBy:
+                '{by} a sauvegardé la version {version} de cet enregistrement pendant votre modification.',
+            change: '{field} : {before} → {after}',
+            empty: 'rien',
+            keep: 'Garder ma modification',
+            take: 'Prendre les nouvelles valeurs',
+        },
         refused: {
             notYours:
                 "Le serveur a refusé l'écriture : un champ ici ne vous appartient pas. Un administrateur du locataire détient votre nom d'utilisateur et votre adresse de connexion.",

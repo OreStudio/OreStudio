@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A record page or an edit dialog never reloads under the person. A line above the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -85,3 +85,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An open edit dialog (identity, contact details, reporting line) keeps its form and learns of a newer version. The dialog listens for a change to its entity and reads the record again behind the form. =useNewerVersion= keeps the version the edit started from; when the live record is newer, a warning above the form says who saved it, lists the fields that moved (before and after), and offers Keep my edit (take the newest version as the base and replace it knowingly) or Take the new values (drop the edit). The form is never reloaded under the person. A save claims the version the edit started from, so a save made against an old version is refused and the edit stays. The account profile write carried no claim, so =PUT /api/accounts/:username/profile= and =PUT /api/me/profile= now take =expectedVersion= and answer 409 =conflict= when the account is newer. That check is in the BFF, which reads the account just before it writes; a claim in the C++ =update_account_request= would close the small gap between the two and is a follow-up. Contact details and the reporting line already claimed a version, and now claim the one the edit started from, not the live one. Tests: the field comparison, and the 409 and the accepted write on the profile route. The notice has not been seen live.

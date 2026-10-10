@@ -805,6 +805,14 @@ const pt: SourceCatalogue = {
             version: 'Guardado. O registo está agora na versão {version}.',
             failed: 'A escrita falhou.',
         },
+        newer: {
+            title: 'A versão {version} deste registo foi guardada enquanto editava.',
+            titleBy: '{by} guardou a versão {version} deste registo enquanto editava.',
+            change: '{field}: {before} → {after}',
+            empty: 'nada',
+            keep: 'Manter a minha edição',
+            take: 'Usar os novos valores',
+        },
         refused: {
             notYours:
                 'O servidor recusou a escrita: um campo aqui não lhe pertence. Um administrador do inquilino é dono do seu nome de utilizador e do seu endereço de entrada.',

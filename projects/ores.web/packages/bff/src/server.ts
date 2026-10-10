@@ -197,6 +197,28 @@ import {
  * route here talks to the same place for as long as the process runs.
  */
 
+/**
+ * Refuses a write made against a version the record has left.
+ *
+ * The profile write replaces the account whole and carries no claim of its own,
+ * so the route compares the version the screen read with the one it just read. A
+ * screen that states none is not checked, which is how a caller that never read
+ * the record behaves.
+ */
+function refuseMovedRecord(current: number | undefined, claimed: string | undefined): void {
+    if (
+        claimed === undefined ||
+        claimed === '' ||
+        current === undefined ||
+        String(current) === claimed
+    )
+        return;
+    throw new HttpFailure(409, {
+        code: 'conflict',
+        message: 'This record was saved by somebody else since you opened it.',
+    });
+}
+
 /** A page of the people list: the order is one the account model declares sortable. */
 const accountPageQuerySchema = z.object({
     offset: z.coerce.number().pipe(z.int().min(0)).default(0),
@@ -1485,6 +1507,10 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (!body.success) {
             throw invalidRequest('The profile fields must be text.');
         }
+        if (body.data.expectedVersion !== undefined && body.data.expectedVersion !== '') {
+            const own = await readMyAccount(session.client);
+            refuseMovedRecord(own?.version, body.data.expectedVersion);
+        }
         return accountWriteViewSchema.parse(await updateSelfAccount(session.client, body.data));
     });
 
@@ -1537,6 +1563,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (account === null) {
             throw notFound('No account has this username.');
         }
+        refuseMovedRecord(account.version, body.data.expectedVersion);
         await updateAccount(session.client, account, body.data);
         return { success: true };
     });

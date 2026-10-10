@@ -801,6 +801,14 @@ export const en: SourceCatalogue = {
             version: 'Saved. The record is now at version {version}.',
             failed: 'The write failed.',
         },
+        newer: {
+            title: 'Version {version} of this record was saved while you were editing.',
+            titleBy: '{by} saved version {version} of this record while you were editing.',
+            change: '{field}: {before} → {after}',
+            empty: 'nothing',
+            keep: 'Keep my edit',
+            take: 'Take the new values',
+        },
         refused: {
             notYours:
                 'The server refused the write: a field here is not yours to change. A tenant administrator owns your username and your sign-in address.',

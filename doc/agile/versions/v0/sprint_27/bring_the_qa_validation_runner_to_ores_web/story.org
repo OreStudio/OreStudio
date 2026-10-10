@@ -61,11 +61,11 @@ story is the first step.
 - Compass stays the only reader and writer of the org tree. The BFF calls compass and never parses or writes org files itself. A new =compass scenario= verb records the results, so the rule that only compass changes agile artefacts holds. The first cut writes straight into the story's own folder, which is where scenarios already live.
 - Until the production question is settled, the module reads the work tree the BFF runs in. It never merges work trees, as the =ores.dsh_kanban= contract says.
 - The browser cannot capture the screen, so a step takes a pasted or dropped image. The BFF saves it next to the scenario doc.
+- =ores.org-js= leaves the public website. The new module needs a running BFF and does not replace the public static view, and there is no static export. Story 2 removes the project and its publishing: the copy into the site in =ores-build-site.el=, the exclude patterns in =ores-build-site.el=, =ores-sync-org-roam.el=, =ores-check-org-links.el= and =compass.py=, and the memory, tag and modeling pages that name it. Story 2 also checks that no page on the site links to the old agile view.
 - Org text renders in the browser with the parser from =ores.org-js=, ported into the web package. The port is the first step of retiring that project.
 
 * Open questions
 
-- =ores.org-js= is also the public, static view on the project site. The new module needs a running BFF, so it cannot replace that view. Keep a static export, or drop the public view?
 - Who may use the module? The first cut allows any signed-in user. A permission and a tester role come with story 3.
 - Does the module run in production? A deployed BFF has no work tree, so it has no org files to read or write. The answer decides where scenarios and their results live. Settle it before the module leaves development.
 - How does a development mode work? It is open. The module does not assume one.

@@ -932,6 +932,16 @@ const pt: SourceCatalogue = {
             open: 'Abrir',
             tenants: 'Inquilinos',
             tenantsLead: 'As organizações que esta instalação serve, e o estado de cada uma.',
+            addTenantBody: 'Crie um inquilino a partir de um perfil inicial e entregue-o.',
+            feeds: 'Fluxos de dados de mercado',
+            feedsBody:
+                'Que fluxos estão a correr, quando cada um emitiu pela última vez, e iniciar ou parar um.',
+            processTypes: 'Tipos de processo de curva',
+            processTypesBody:
+                'Os modelos de taxa curta que o editor de curvas oferece, e os seus parâmetros.',
+            catalogue: 'O que a grelha executa',
+            catalogueBody:
+                'As aplicações, versões e pacotes que a grelha de cálculo pode executar.',
             showing: {
                 one: '{shown} de {count} inquilino',
                 other: '{shown} de {count} inquilinos',

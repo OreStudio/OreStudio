@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :give_the_super_admin_landing_page_its_cards:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-give-the-super-admin-landing-page-its-cards
+#+pr: 3028
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5F88F874-7A41-4CAE-BEC5-5C4A35334A1B][Give the super administrator's landing page its cards]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A system administrator lands on cards for the screens they use, and sees which j
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:5F88F874-7A41-4CAE-BEC5-5C4A35334A1B][Give the super administrator's landing page its cards]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -76,12 +76,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3028][#3028]] | [web] Give the system administrator's home its cards |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Duplicate tenantsBody string | en.ts, fr.ts, pt.ts | Accepted | Card reuses tenantsLead; key dropped |
+| 2 | Full upcoming title is longer | en.ts | Declined | The heading is the review's own wording; tests match a prefix |
+| 3 | No test that upcoming cards have no link | HomePage.test.tsx | Accepted | Test added |
+| 4 | No quiet-case test | HomePage.test.tsx | Declined | The change does not touch that path; an existing test covers it |
+| 5 | Layout not checked in a browser | HomePage.tsx | Declined | Tiles is the existing responsive grid, unchanged |
+| 6 | Order of health, attention and cards | HomePage.tsx | Declined | Chosen: what needs action first, then the places |
 
 * Result
+
+The system administrator's home now shows an Active Modules run of nine cards: tenants, add tenant, people, services, grid, bus, logs, versions and security. An Upcoming Modules run marks the three journeys with no screen: the market data feeds, the yield curve process types and what the grid runs. The health figures and the attention list stay above the cards. The tenant table moves below them. The cards show before the overview has loaded. The package passes 513 tests and the format check. I did not open the page in a browser.

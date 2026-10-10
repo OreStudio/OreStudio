@@ -117,14 +117,112 @@ function SystemHome({ name }: { readonly name: string }): ReactNode {
                 <>
                     <Health overview={data} />
                     {data.attention.length > 0 && <Attention overview={data} />}
-                    <FirstTenants
-                        overview={data}
-                        types={types.data ?? []}
-                        statuses={statuses.data ?? []}
-                    />
                 </>
             )}
+            <SystemTiles />
+            {data !== undefined && (
+                <FirstTenants
+                    overview={data}
+                    types={types.data ?? []}
+                    statuses={statuses.data ?? []}
+                />
+            )}
         </div>
+    );
+}
+
+/**
+ * The places the system administrator works in, and the ones still to come.
+ *
+ * The first run holds the screens that exist. The second holds the system
+ * administrator journeys that are designed and have a backend but no screen,
+ * so the person can see what the installation will offer next.
+ */
+function SystemTiles(): ReactNode {
+    const { t } = useTranslation();
+    const active: Tile[] = [
+        {
+            title: t('home.system.tenants'),
+            body: t('home.system.tenantsLead'),
+            to: '/tenants',
+            icon: 'party',
+        },
+        {
+            title: t('home.system.addTenant'),
+            body: t('home.system.addTenantBody'),
+            to: '/tenants/new',
+            icon: 'add',
+        },
+        {
+            title: t('home.tenant.people'),
+            body: t('home.tenant.peopleBody'),
+            to: '/people',
+            icon: 'people',
+        },
+        {
+            title: t('operations.screens.services'),
+            body: t('operations.screens.servicesBody'),
+            to: '/operations/services',
+            icon: 'server',
+        },
+        {
+            title: t('operations.screens.grid'),
+            body: t('operations.screens.gridBody'),
+            to: '/operations/grid',
+            icon: 'apps',
+        },
+        {
+            title: t('operations.screens.bus'),
+            body: t('operations.screens.busBody'),
+            to: '/operations/bus',
+            icon: 'bus',
+        },
+        {
+            title: t('operations.screens.logs'),
+            body: t('operations.screens.logsBody'),
+            to: '/operations/logs',
+            icon: 'log',
+        },
+        {
+            title: t('home.tenant.versions'),
+            body: t('home.tenant.versionsBody'),
+            to: '/operations/versions',
+            icon: 'history',
+        },
+        {
+            title: t('home.tenant.security'),
+            body: t('home.tenant.securityBody'),
+            to: '/security',
+            icon: 'locked',
+        },
+    ];
+    const coming: Tile[] = [
+        {
+            title: t('home.system.feeds'),
+            body: t('home.system.feedsBody'),
+            icon: 'chart',
+        },
+        {
+            title: t('home.system.processTypes'),
+            body: t('home.system.processTypesBody'),
+            icon: 'trend',
+        },
+        {
+            title: t('home.system.catalogue'),
+            body: t('home.system.catalogueBody'),
+            icon: 'database',
+        },
+    ];
+
+    return (
+        <>
+            <TilesSection title={t('home.activeModules')} icon="apps">
+                <Tiles tiles={active} />
+            </TilesSection>
+            <TilesSection title={t('home.upcomingModules')} icon="chart">
+                <Tiles tiles={coming} later={t('home.party.comingLater')} />
+            </TilesSection>
+        </>
     );
 }
 

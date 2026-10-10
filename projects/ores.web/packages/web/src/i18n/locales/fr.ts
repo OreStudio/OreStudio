@@ -938,6 +938,15 @@ const fr: SourceCatalogue = {
             open: 'Ouvrir',
             tenants: 'Locataires',
             tenantsLead: 'Les organisations que sert ce déploiement, et l’état de chacune.',
+            addTenantBody: 'Créez un locataire à partir d’un profil de départ, puis remettez-le.',
+            feeds: 'Flux de données de marché',
+            feedsBody: 'Quels flux tournent, quand chacun a émis, et démarrer ou arrêter un flux.',
+            processTypes: 'Types de processus de courbe',
+            processTypesBody:
+                'Les modèles de taux courts que propose l’éditeur de courbes, et leurs paramètres.',
+            catalogue: 'Ce que la grille exécute',
+            catalogueBody:
+                'Les applications, versions et paquets que la grille de calcul peut exécuter.',
             showing: {
                 one: '{shown} sur {count} locataire',
                 other: '{shown} sur {count} locataires',

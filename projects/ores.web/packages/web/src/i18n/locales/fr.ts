@@ -67,13 +67,14 @@ const fr: SourceCatalogue = {
             'tenant-administration': 'Administration du locataire',
             application: 'Application',
         },
+        account: 'Votre compte',
         menu: {
             home: 'Accueil',
             accounts: 'Comptes',
             tenants: 'Locataires',
             operations: 'Opérations',
             parties: 'Parties',
-            rescue: 'Rétablir un accès',
+            rescue: "Récupération d'accès",
             audit: 'Connexions',
             requests: 'Demandes',
             organisation: 'Organisation',
@@ -384,7 +385,7 @@ const fr: SourceCatalogue = {
     },
 
     auditSignIns: {
-        title: 'Audit : connexions',
+        title: 'Connexions',
         description: 'Qui est connecté, ce que chacun fait, et qui échoue à se connecter.',
         readAt: 'Lu à {at}',
         tabs: 'Lectures de l’audit',
@@ -1187,19 +1188,19 @@ const fr: SourceCatalogue = {
                 "Corriger la fiche, les identifiants et la structure d'une entité juridique.",
             counterpartyOnboard: 'Intégrer une contrepartie',
             counterpartyOnboardBody: 'Intégrer une entité juridique avec laquelle vous traitez.',
-            bookStructure: 'Façonner la structure des livres',
+            bookStructure: 'Structure des livres',
             bookStructureBody:
                 'Placer les livres dans des portefeuilles, les classer et lire qui peut les voir.',
-            conventions: "Définir les conventions d'instruments",
+            conventions: 'Conventions',
             conventionsBody: "Rédiger les termes qu'ORE utilise pour un instrument.",
-            rescue: 'Verrouiller ou déverrouiller un compte',
+            rescue: "Récupération d'accès",
             rescueBody: 'Aider quelqu’un qui ne peut pas se connecter, ou bloquer un compte.',
             audit: 'Connexions',
             auditBody: 'Qui est connecté maintenant, et les connexions qui ont échoué.',
             versions: 'Versions et base de données',
             versionsBody:
                 'Ce que ce navigateur exécute, ce que le déploiement exécute et ce que la base de données stocke.',
-            security: 'Votre mot de passe et vos connexions',
+            security: 'Sécurité',
             securityBody: 'Changez votre mot de passe et voyez où vous êtes connecté.',
         },
         party: {
@@ -1214,7 +1215,7 @@ const fr: SourceCatalogue = {
             tradingBody: 'Saisir, modifier et consulter les opérations.',
             reporting: 'Rapports',
             reportingBody: 'Rapports de risque et de P&L pour vos portefeuilles.',
-            security: 'Votre mot de passe et vos connexions',
+            security: 'Sécurité',
             securityBody: 'Changez votre mot de passe et voyez où vous êtes connecté.',
         },
     },
@@ -1266,7 +1267,7 @@ const fr: SourceCatalogue = {
             logsBody: 'Les lignes écrites par les services, les plus récentes en premier.',
         },
         services: {
-            title: 'Opérations : services',
+            title: 'Services en cours',
             description:
                 'Chaque service attendu par le registre, confronté aux instances qui se signalent. Les exécutants de calcul appartiennent à l’écran de la grille.',
             updated: 'Mis à jour à {at}',
@@ -1310,7 +1311,7 @@ const fr: SourceCatalogue = {
             },
         },
         grid: {
-            title: 'Opérations : grille de calcul',
+            title: 'Grille de calcul',
             description:
                 'Le résumé des hôtes et du travail de l’installation, une ligne par machine, portant l’exécutant qui se signale pour elle.',
             updated: 'Mis à jour à {at}',
@@ -1385,7 +1386,7 @@ const fr: SourceCatalogue = {
             },
         },
         bus: {
-            title: 'Opérations : bus de messages',
+            title: 'Bus de messages',
             description: 'Les signes vitaux du serveur NATS et une ligne par flux.',
             range: {
                 label: 'Plage',
@@ -1452,7 +1453,7 @@ const fr: SourceCatalogue = {
             },
         },
         logs: {
-            title: 'Opérations : journaux de télémétrie',
+            title: 'Journaux de télémétrie',
             description:
                 'Les lignes derrière un symptôme, trouvées par heure, niveau, source, composant, étiquette ou message.',
             readAt: 'Lu à {at}',
@@ -1532,7 +1533,7 @@ const fr: SourceCatalogue = {
             },
         },
         versions: {
-            title: 'Opérations : versions et base de données',
+            title: 'Versions et base de données',
             description:
                 'Ce que ce navigateur exécute, ce que le déploiement exécute et ce que le déploiement stocke.',
             unknown: 'inconnu',
@@ -2662,6 +2663,14 @@ const fr: SourceCatalogue = {
 
     refdata: {
         crumbs: "Fil d'Ariane",
+        groups: {
+            parties: 'Parties et contreparties',
+            books: 'Livres et portefeuilles',
+            currencies: 'Devises et change',
+            calendars: 'Calendriers et échéances',
+            conventions: 'Conventions',
+            classifications: 'Classifications',
+        },
         area: {
             title: 'Données de référence',
             lead: 'Les données sur lesquelles reposent chaque opération, chaque courbe et chaque rapport.',

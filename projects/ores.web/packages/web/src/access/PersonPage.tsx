@@ -24,6 +24,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
 import type { Account, HeldRole, TimelineEvent } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { PATHS } from '../shell/paths.js';
 import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
@@ -144,8 +145,8 @@ function Person({
             <RecordHeader
                 crumbs={[
                     { label: t('shell.menu.home'), to: '/' },
-                    { label: t('access.hub.title'), to: '/organisation' },
-                    { label: t('access.people.title'), to: '/staff' },
+                    { label: t('access.hub.title'), to: PATHS.organisation },
+                    { label: t('access.people.title'), to: PATHS.people },
                     { label: name },
                 ]}
                 title={name}

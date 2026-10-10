@@ -40,9 +40,30 @@ areas and says which screen belongs to which.
 |------+---------|
 | /Menu/ | The list of areas in the header. It is one list |
 | /Area/ | One entry of the menu, and the page of cards it opens |
-| /Card/ | A tile on an area page. It leads to one screen of that area |
+| /Card/ | A tile. It is a folder card or a file card |
+| /Folder card/ | A card that opens a page of more cards, such as an area. It is named for the area |
+| /File card/ | A card that opens one screen. It has the screen's name, word for word, in every language |
 | /Read/ | The permission a screen needs. It is the only thing that decides what is drawn |
 | /Account menu/ | The person's own pages and signing out. It is not part of the menu |
+
+** Folder cards and file cards
+
+A card is like an entry in a file manager.
+
+- A /folder card/ opens a page of cards. The areas are folders. A folder card
+  has the name of its area and a line about what is in it.
+- A /file card/ opens one screen. Its title is the title of the screen, word for
+  word, in English, French and Portuguese. Its line is a short form of the
+  screen's own lead. It has the glyph of the screen.
+
+A screen has one definition of its card (=shell/cards.ts=). The area page and
+Home both draw from it, so a screen has the same name, line and glyph wherever it
+is offered. A screen that has no header of its own, such as a journey, takes its
+title, its line and its trail from its file card (=CardScreen=). A test holds
+the card title and the screen title equal in every language.
+
+Home's Active modules tab shows the file cards of each folder under that
+folder's name.
 
 ** The rule
 
@@ -116,6 +137,12 @@ The test for a screen is one question: which topic would a person look in?
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Services, the compute grid, the message queue, telemetry, versions, the database and Sign-ins | Any one of those screens |
 | Tenants | The tenants, their parties and people, and onboarding | Any tenant screen |
+
+Requests is the one entry that is not a topic. It is an inbox: the work that
+waits for a person, with the notification bell beside it. It is not in
+Operations, which says how the system is running, and not in Organisation,
+because four-eyes approval will cover reference data as well as access. Every
+person has their own requests, so the entry is drawn for everyone.
 
 Tenants is last because it serves only the installation, and it is drawn only
 for a session that acts on the deployment (see [[*How today's menu differs][How today's menu differs]]).
@@ -195,15 +222,11 @@ ones, so a saved link still works.
 
 ** How today's menu differs
 
-The code still draws Parties as its own entry and keeps the earlier addresses.
-These differences are left, and each is a change to make.
+The menu, the Reference data groups, the addresses and the cards follow this
+page. One difference is left.
 
 | Where | Today | The rule |
 |-------+-------+----------|
-| Menu | Parties is an entry | Parties is a group of cards in Reference data |
-| Reference data page | A row of tiles with no groups, and no party cards | Cards in the groups above |
-| Addresses | Each of the screens in the table above has an earlier address | The address under its area |
-| Home | Active modules repeats the screens with names of its own | Active modules uses the card names of the area page |
 | Tenants, and the Services, Grid, Message queue and Telemetry cards | Drawn only where the session acts on the deployment (the =installation= scope), because the server guards these reads by the session mode | Drawn by a read |
 
 ** Open points
@@ -219,7 +242,6 @@ These differences are left, and each is a change to make.
 - Market data (curves, surfaces and their feeds) has journeys and no web
   screens yet. When it has screens it may need an area of its own, because it is
   data that changes by the minute and not a list that changes by the month.
-- Whether Requests is an area or a card of Organisation.
 
 ** Changing the menu
 

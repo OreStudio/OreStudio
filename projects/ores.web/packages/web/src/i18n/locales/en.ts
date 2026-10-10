@@ -73,6 +73,7 @@ export const en: SourceCatalogue = {
             'tenant-administration': 'Tenant administration',
             application: 'Application',
         },
+        account: 'Your account',
         menu: {
             home: 'Home',
             accounts: 'Accounts',
@@ -387,7 +388,7 @@ export const en: SourceCatalogue = {
     },
 
     auditSignIns: {
-        title: 'Audit: sign-ins',
+        title: 'Sign-ins',
         description: 'Who is signed in, what they are doing, and who is failing to get in.',
         readAt: 'Read at {at}',
         tabs: 'Audit readings',
@@ -1171,19 +1172,19 @@ export const en: SourceCatalogue = {
                 'Correct the record, the identifiers and the structure of a legal entity.',
             counterpartyOnboard: 'Onboard a counterparty',
             counterpartyOnboardBody: 'Bring a legal entity you trade with on board.',
-            bookStructure: 'Shape the book structure',
+            bookStructure: 'Book structure',
             bookStructureBody:
                 'Place books in portfolios, classify them and read who may see them.',
-            conventions: 'Define instrument conventions',
+            conventions: 'Conventions',
             conventionsBody: 'Author the terms ORE uses for one instrument.',
-            rescue: 'Lock or unlock an account',
+            rescue: 'Rescue access',
             rescueBody: 'Help someone who cannot sign in, or stop an account from being used.',
             audit: 'Sign-ins',
             auditBody: 'Who is signed in now, and the sign-ins that failed.',
             versions: 'Versions and the database',
             versionsBody:
                 'What this browser runs, what the deployment runs, and what the database stores.',
-            security: 'Your password and sign-ins',
+            security: 'Security',
             securityBody: 'Change your password and see where you are signed in.',
         },
         party: {
@@ -1197,7 +1198,7 @@ export const en: SourceCatalogue = {
             tradingBody: 'Book, amend and review trades.',
             reporting: 'Reporting',
             reportingBody: 'Risk and P&L reports for your books.',
-            security: 'Your password and sign-ins',
+            security: 'Security',
             securityBody: 'Change your password and see where you are signed in.',
         },
     },
@@ -1253,7 +1254,7 @@ export const en: SourceCatalogue = {
             logsBody: 'The lines the services wrote, newest first.',
         },
         services: {
-            title: 'Operations: services',
+            title: 'Running services',
             description:
                 'Every service the registry expects, met by the instances that report. The compute runners belong to the grid screen.',
             updated: 'Updated {at}',
@@ -1296,7 +1297,7 @@ export const en: SourceCatalogue = {
             },
         },
         grid: {
-            title: 'Operations: compute grid',
+            title: 'Compute grid',
             description:
                 "The installation's host and work summary, one row per machine, carrying the runner that reports for it.",
             updated: 'Updated {at}',
@@ -1370,7 +1371,7 @@ export const en: SourceCatalogue = {
             },
         },
         bus: {
-            title: 'Operations: message bus',
+            title: 'Message bus',
             description: "The NATS server's vitals and one row per stream.",
             range: {
                 label: 'Range',
@@ -1437,7 +1438,7 @@ export const en: SourceCatalogue = {
             },
         },
         logs: {
-            title: 'Operations: telemetry logs',
+            title: 'Telemetry logs',
             description:
                 'The lines behind a symptom, found by time, level, source, component, tag or message.',
             readAt: 'Read at {at}',
@@ -1517,7 +1518,7 @@ export const en: SourceCatalogue = {
             },
         },
         versions: {
-            title: 'Operations: versions and the database',
+            title: 'Versions and the database',
             description:
                 'What this browser runs, what the deployment runs, and what the deployment stores.',
             unknown: 'unknown',
@@ -2631,6 +2632,14 @@ export const en: SourceCatalogue = {
 
     refdata: {
         crumbs: 'Breadcrumb',
+        groups: {
+            parties: 'Parties and counterparties',
+            books: 'Books and portfolios',
+            currencies: 'Currencies and FX',
+            calendars: 'Calendars and tenors',
+            conventions: 'Conventions',
+            classifications: 'Classifications',
+        },
         area: {
             title: 'Reference data',
             lead: 'The data every trade, curve and report is built on.',

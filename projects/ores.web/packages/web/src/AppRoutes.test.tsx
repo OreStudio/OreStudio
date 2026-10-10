@@ -304,63 +304,65 @@ describe('the route table once the flag is clear', () => {
         expect(html).not.toContain('New tenant journey');
     });
 
-    it('offers the new party journey to a signed-in person', () => {
-        const html = render('/parties/new', ready, authenticated);
+    it('offers the new party journey to a signed-in person, under Reference data and named by its card', () => {
+        const html = render('/refdata/parties/new', ready, authenticated);
 
         expect(html).toContain('New party journey');
+        expect(html).toContain('href="/refdata"');
+        expect(html).toContain('Add party');
         expect(html).toContain('Sign out');
     });
 
     it('sends a visitor to sign in rather than to the party journey', () => {
-        const html = render('/parties/new', readyAnonymous, anonymous);
+        const html = render('/refdata/parties/new', readyAnonymous, anonymous);
 
         expect(html).not.toContain('New party journey');
     });
 
     it('offers the counterparty onboarding screen to a signed-in person', () => {
-        const html = render('/counterparties/onboard', ready, authenticated);
+        const html = render('/refdata/counterparties/onboard', ready, authenticated);
 
         expect(html).toContain('Counterparty onboarding');
     });
 
     it('offers the party details screen to a signed-in person', () => {
-        const html = render('/parties/details', ready, authenticated);
+        const html = render('/refdata/parties/details', ready, authenticated);
 
         expect(html).toContain('Party details');
     });
 
     it('offers the book structure screen to a signed-in person', () => {
-        const html = render('/books/structure', ready, authenticated);
+        const html = render('/refdata/books/structure', ready, authenticated);
 
         expect(html).toContain('Book structure');
     });
 
     it('offers the convention screen to a signed-in person', () => {
-        const html = render('/conventions', ready, authenticated);
+        const html = render('/refdata/conventions', ready, authenticated);
 
         expect(html).toContain('Instrument conventions');
     });
 
     it('sends a visitor to sign in rather than to the convention screen', () => {
-        const html = render('/conventions', readyAnonymous, anonymous);
+        const html = render('/refdata/conventions', readyAnonymous, anonymous);
 
         expect(html).not.toContain('Instrument conventions');
     });
 
     it('sends a visitor to sign in rather than to the book structure screen', () => {
-        const html = render('/books/structure', readyAnonymous, anonymous);
+        const html = render('/refdata/books/structure', readyAnonymous, anonymous);
 
         expect(html).not.toContain('Book structure');
     });
 
     it('sends a visitor to sign in rather than to the party details screen', () => {
-        const html = render('/parties/details', readyAnonymous, anonymous);
+        const html = render('/refdata/parties/details', readyAnonymous, anonymous);
 
         expect(html).not.toContain('Party details');
     });
 
     it('sends a visitor to sign in rather than to the counterparty screen', () => {
-        const html = render('/counterparties/onboard', readyAnonymous, anonymous);
+        const html = render('/refdata/counterparties/onboard', readyAnonymous, anonymous);
 
         expect(html).not.toContain('Counterparty onboarding');
     });
@@ -385,14 +387,14 @@ describe('the route table once the flag is clear', () => {
             }),
         );
 
-        expect(html).toContain('href="/staff"');
-        expect(html).toContain('href="/hierarchy"');
+        expect(html).toContain('href="/organisation/people"');
+        expect(html).toContain('href="/organisation/hierarchy"');
         expect(html).toContain('>Staff<');
         expect(html).toContain('>Hierarchy<');
     });
 
     it('opens the staff list and the hierarchy at their own routes', () => {
-        const staff = render('/staff', ready, authenticated, {}, [], (client) =>
+        const staff = render('/organisation/people', ready, authenticated, {}, [], (client) =>
             client.setQueryData(['records', 'people', '', 'page', 0], {
                 accounts: [],
                 totalCount: 0,
@@ -400,7 +402,7 @@ describe('the route table once the flag is clear', () => {
         );
         expect(staff).toContain('>Staff<');
 
-        const tree = render('/hierarchy', ready, authenticated, {}, [], (client) =>
+        const tree = render('/organisation/hierarchy', ready, authenticated, {}, [], (client) =>
             client.setQueryData(['reporting-tree'], {
                 unrooted: 0,
                 nodes: [

@@ -38,7 +38,7 @@ import { FlagOf, FlaggedCode } from '../images/flags.js';
 import { managerCandidates } from '../membership/managers.js';
 import { Button, Detail, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
 import { displayName } from './names.js';
-import { personPath } from './PeoplePage.js';
+import { personPath } from '../shell/paths.js';
 import { useHolds } from './holds.js';
 /**
  * The forms of a person's account: who they are and how to reach them.

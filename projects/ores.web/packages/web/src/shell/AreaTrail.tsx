@@ -28,6 +28,7 @@ const AREAS = {
     organisation: { nameKey: 'shell.menu.organisation', to: '/organisation' },
     operations: { nameKey: 'shell.menu.operations', to: '/operations' },
     requests: { nameKey: 'shell.menu.requests', to: '/requests' },
+    refdata: { nameKey: 'shell.menu.refdata', to: '/refdata' },
 } as const;
 
 export type AreaName = keyof typeof AREAS;

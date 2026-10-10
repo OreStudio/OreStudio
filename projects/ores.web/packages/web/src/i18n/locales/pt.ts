@@ -72,13 +72,14 @@ const pt: SourceCatalogue = {
             'tenant-administration': 'Administração do inquilino',
             application: 'Aplicação',
         },
+        account: 'A sua conta',
         menu: {
             home: 'Início',
             accounts: 'Contas',
             tenants: 'Inquilinos',
             operations: 'Operações',
             parties: 'Partes',
-            rescue: 'Recuperar acesso',
+            rescue: 'Recuperação de acesso',
             audit: 'Entradas',
             requests: 'Pedidos',
             organisation: 'Organização',
@@ -383,7 +384,7 @@ const pt: SourceCatalogue = {
     },
 
     auditSignIns: {
-        title: 'Auditoria: inícios de sessão',
+        title: 'Inícios de sessão',
         description: 'Quem tem sessão iniciada, o que cada um faz, e quem falha ao entrar.',
         readAt: 'Lido às {at}',
         tabs: 'Leituras da auditoria',
@@ -1179,19 +1180,19 @@ const pt: SourceCatalogue = {
                 'Corrigir o registo, os identificadores e a estrutura de uma entidade jurídica.',
             counterpartyOnboard: 'Integrar uma contraparte',
             counterpartyOnboardBody: 'Integrar uma entidade jurídica com que negoceia.',
-            bookStructure: 'Moldar a estrutura dos livros',
+            bookStructure: 'Estrutura dos livros',
             bookStructureBody:
                 'Colocar livros em carteiras, classificá-los e ler quem os pode ver.',
-            conventions: 'Definir convenções de instrumentos',
+            conventions: 'Convenções',
             conventionsBody: 'Redigir os termos que o ORE usa para um instrumento.',
-            rescue: 'Bloquear ou desbloquear uma conta',
+            rescue: 'Recuperação de acesso',
             rescueBody: 'Ajudar quem não consegue entrar, ou impedir que uma conta seja usada.',
-            audit: 'Entradas',
+            audit: 'Inícios de sessão',
             auditBody: 'Quem está ligado agora, e as entradas que falharam.',
             versions: 'Versões e base de dados',
             versionsBody:
                 'O que este navegador executa, o que a instalação executa e o que a base de dados guarda.',
-            security: 'A sua palavra-passe e entradas',
+            security: 'Segurança',
             securityBody: 'Mude a sua palavra-passe e veja onde tem sessão iniciada.',
         },
         party: {
@@ -1205,7 +1206,7 @@ const pt: SourceCatalogue = {
             tradingBody: 'Registar, alterar e rever operações.',
             reporting: 'Relatórios',
             reportingBody: 'Relatórios de risco e de P&L para as suas carteiras.',
-            security: 'A sua palavra-passe e entradas',
+            security: 'Segurança',
             securityBody: 'Mude a sua palavra-passe e veja onde tem sessão iniciada.',
         },
     },
@@ -1257,7 +1258,7 @@ const pt: SourceCatalogue = {
             logsBody: 'As linhas escritas pelos serviços, as mais recentes primeiro.',
         },
         services: {
-            title: 'Operações: serviços',
+            title: 'Serviços em execução',
             description:
                 'Cada serviço que o registo espera, confrontado com as instâncias que se anunciam. Os executores de cálculo pertencem ao ecrã da grelha.',
             updated: 'Atualizado às {at}',
@@ -1301,7 +1302,7 @@ const pt: SourceCatalogue = {
             },
         },
         grid: {
-            title: 'Operações: grelha de cálculo',
+            title: 'Grelha de cálculo',
             description:
                 'O resumo dos anfitriões e do trabalho da instalação, uma linha por máquina, com o executor que se anuncia por ela.',
             updated: 'Atualizado às {at}',
@@ -1376,7 +1377,7 @@ const pt: SourceCatalogue = {
             },
         },
         bus: {
-            title: 'Operações: barramento de mensagens',
+            title: 'Barramento de mensagens',
             description: 'Os sinais vitais do servidor NATS e uma linha por fluxo.',
             range: {
                 label: 'Intervalo',
@@ -1444,7 +1445,7 @@ const pt: SourceCatalogue = {
             },
         },
         logs: {
-            title: 'Operações: registos de telemetria',
+            title: 'Registos de telemetria',
             description:
                 'As linhas por trás de um sintoma, encontradas por hora, nível, origem, componente, etiqueta ou mensagem.',
             readAt: 'Lido às {at}',
@@ -1524,7 +1525,7 @@ const pt: SourceCatalogue = {
             },
         },
         versions: {
-            title: 'Operações: versões e base de dados',
+            title: 'Versões e base de dados',
             description:
                 'O que este navegador executa, o que a instalação executa e o que a instalação guarda.',
             unknown: 'desconhecido',
@@ -2649,6 +2650,14 @@ const pt: SourceCatalogue = {
 
     refdata: {
         crumbs: 'Caminho',
+        groups: {
+            parties: 'Partes e contrapartes',
+            books: 'Livros e carteiras',
+            currencies: 'Moedas e câmbio',
+            calendars: 'Calendários e prazos',
+            conventions: 'Convenções',
+            classifications: 'Classificações',
+        },
         area: {
             title: 'Dados de referência',
             lead: 'Os dados em que assentam todas as operações, curvas e relatórios.',

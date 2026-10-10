@@ -26,6 +26,7 @@ import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { RecordList, type ListColumn, type ListSource } from '../refdata/RecordList.js';
 import { useAreaParts } from '../shell/AreaTrail.js';
+import { personPath } from '../shell/paths.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { Tag } from '../ui/Primitives.js';
 import { displayName } from './names.js';
@@ -33,11 +34,6 @@ import { roleLabel } from './words.js';
 import { useHolds } from './holds.js';
 import { partyLabel } from '../membership/organisation.js';
 import { StaffOfMyParties } from '../membership/StaffOfMyParties.js';
-
-/** The address of one person's page. */
-export function personPath(username: string): string {
-    return `/people/${encodeURIComponent(username)}`;
-}
 
 /**
  * Where an entry's author is opened, for a reader who may open people.

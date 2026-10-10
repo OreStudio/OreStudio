@@ -29,6 +29,7 @@ import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { RecordList } from '../refdata/RecordList.js';
 import { AreaTrail, useAreaParts } from '../shell/AreaTrail.js';
+import { PATHS, rescuePath } from '../shell/paths.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { Button, Dialog, LinkButton, Notice, PageHeader, Tag, cx } from '../ui/Primitives.js';
 
@@ -44,8 +45,6 @@ import { Button, Dialog, LinkButton, Notice, PageHeader, Tag, cx } from '../ui/P
  * and sorts on the server. Nothing sends mail and no table holds a token, so the
  * screen offers no recovery link: it offers only what the server can do.
  */
-
-const rescuePath = (username: string): string => `/rescue?username=${encodeURIComponent(username)}`;
 
 interface Rescued {
     readonly account: Account;
@@ -126,7 +125,7 @@ function Rescue({ username }: { readonly username: string }): ReactNode {
                 <PageHeader
                     title={t('rescue.title')}
                     description={t('rescue.lead')}
-                    actions={<LinkButton to="/rescue">{t('rescue.another')}</LinkButton>}
+                    actions={<LinkButton to={PATHS.rescue}>{t('rescue.another')}</LinkButton>}
                 />
             </div>
             {state.kind === 'missing' && (

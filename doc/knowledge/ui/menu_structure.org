@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: 339F0405-43AE-4049-B6B3-EB12E5A38CA4
+:END:
+#+title: Menu structure
+#+description: The one menu of the web shell: the same entries in the same order for every person, an entry offered by the narrowest read its screens need, and the area each screen belongs to, which is the middle of its breadcrumb.
+#+type: knowledge
+#+level: cross
+#+filetags: :web:ux:standards:navigation:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+* Summary
+
+Every person has the same menu. It has one set of entries in one order, and
+the entries do not depend on the session mode. A permission removes an entry
+for a person who cannot use it. A mode never does. Each entry is an /area/ and
+opens a page of cards. Every screen belongs to one area, and that area is the
+middle of its breadcrumb: Home, the area, the screen. A person's own pages are
+not in the menu. They are in the account menu.
+
+* Detail
+
+** Where this page applies
+
+This page governs the menu in the header of the shell and the breadcrumb of
+every screen. It does not govern the cards on Home. A card is a shortcut to a
+screen and is not a second home for it.
+
+The [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] and the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] already say that a
+breadcrumb is Home, the area, the list, then the subject, and that the menu
+offers an entry by the narrowest read the screen needs. This page names the
+areas and says which screen belongs to which.
+
+** Words
+
+| Word | Meaning |
+|------+---------|
+| /Menu/ | The list of areas in the header. It is the same list for every person |
+| /Area/ | One entry of the menu, and the page of cards it opens |
+| /Card/ | A tile on an area page. It leads to one screen of that area |
+| /Offered/ | An area is offered to a person who holds a read that one of its screens needs |
+| /Account menu/ | The person's own pages and signing out. It is not part of the menu |
+
+** The rule
+
+- The menu is one list. No mode has a list of its own.
+- An area is offered when the person holds the narrowest read that any of its
+  screens needs. An area the person cannot use is not drawn. It is not
+  disabled.
+- The cards in an area follow the same rule. A card is drawn only for a person
+  who may open its screen.
+- The breadcrumb of a screen is Home, then its area, then the screen. A record
+  page adds the list and the subject, as the entity specification says.
+- A screen has one area. A card on Home or in another area leads to it, and the
+  screen still shows the trail of its own area.
+
+** The areas
+
+#+begin_src text
+  Home   Tenants   Parties   Organisation   Requests   Reference data   Operations
+#+end_src
+
+| Area | Screens | Offered to |
+|------+---------+------------|
+| Home | The dashboard, Active modules, Upcoming modules | Everyone |
+| Tenants | The tenants of the installation, their parties and people, and onboarding | The system administrator |
+| Parties | The parties of the tenant, their details and counterparty onboarding | A person who may read parties |
+| Organisation | Staff, Hierarchy, People, Roles and Rescue access | A person who may read the organisation or accounts |
+| Requests | Every request, the person's own, and the queue for a person who decides | Everyone |
+| Reference data | Currencies, calendars, classifications and the other shared lists | Everyone |
+| Operations | Services, the compute grid, the message queue, telemetry, versions, the database and Sign-ins | Everyone. The cards follow the reads |
+
+The Organisation area is the one the entity specification calls the area of
+Staff. A member sees Staff and Hierarchy, built from the organisation read. An
+administrator sees the fuller list.
+
+** The account menu
+
+The account menu stands in the header with the notification bell. It holds My
+profile, My access, Where I work, Security and signing out. These are not
+areas. A person reaches each in one place, as the entity specification says.
+
+** Where a screen belongs
+
+| Screen | Area | Why |
+|--------+------+-----|
+| Staff, Hierarchy, People | Organisation | They are about the people of the tenant |
+| Roles | Organisation | A role is held by a person |
+| Rescue access | Organisation | It acts on one person's account |
+| Sign-ins | Operations | It reads sessions and failed sign-ins. It is the Audit of the installation's use |
+| Versions and the database | Operations | They state the build and the store |
+| Requests | Requests | It is the one place for every kind of request |
+
+** What differs between people
+
+A system administrator, a tenant administrator and a member see the same
+menu. They differ in how many areas are offered and in the cards inside each.
+
+| Area | System administrator | Tenant administrator | Member |
+|------+----------------------+----------------------+--------|
+| Tenants | Offered | Not offered | Not offered |
+| Parties | Not offered | Offered | When the read is held |
+| Organisation | Offered, as People | Offered | Offered, as Staff and Hierarchy |
+| Operations | All the cards | Sign-ins and Versions | Versions |
+
+** How today's menus differ
+
+| Where | Today | The rule |
+|-------+-------+----------|
+| =SHELL_MENUS= in =shell/areas.ts= | Three lists, one per mode | One list |
+| System administration | Accounts, Tenants, Operations | Accounts are People in Organisation |
+| Tenant administration | Eight entries, among them Roles, Rescue access and Sign-ins | Roles and Rescue access in Organisation, Sign-ins in Operations |
+| Application | Organisation, Requests, Reference data, My access | My access is in the account menu |
+| Sign-ins (=/audit=) | No area. The breadcrumb is Home, Sign-ins | Home, Operations, Sign-ins |
+| Operations journeys | The area is absent from every menu but the system administrator's | The area is offered to everyone |
+
+Each difference is a follow-up. The [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] page
+says that the Operations area is the system administrator's alone. It stays
+true until the installation screens have a read that only the system
+administrator holds. Those cards must not be drawn for anyone else.
+
+** Open points
+
+- The installation screens read the whole installation. They need a permission
+  that only the system administrator holds, so the area can be offered to all.
+- Whether Operations earns its place for a member who sees only Versions.
+- Whether Requests is an area or a card of Organisation.
+
+** Changing the menu
+
+Work in this order. Each step ends in something to check.
+
+1. Name the screen and its narrowest read.
+2. Choose its one area from the table above. If none fits, add the area here
+   first.
+3. Add the screen to the area page as a card, drawn only for a person who holds
+   the read.
+4. Give the screen a breadcrumb of Home, the area and the screen.
+5. Check it as a system administrator, a tenant administrator and a member. Each
+   sees the area only if they hold the read.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the cluster this page belongs to, and the order to read it in
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the breadcrumb of a list and a page, the menu's narrowest read, and the account menu
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the addresses and the breadcrumb of a record list and page
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — History versus Audit, and the access mark
+- [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the navigation context a screen needs
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] — the screens of the Operations area
+- [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] — the journey of the Sign-ins screen
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — what each person is trying to do

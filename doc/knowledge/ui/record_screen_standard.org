@@ -646,11 +646,14 @@ decides differently, on purpose.
 
 * See also
 
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][The entity specification (superseded)]] — the Qt-derived standard this page replaces for record screens
 - [[id:2BF2FFC1-B6A0-495E-9B14-E26ACF09EA55][Qt account screen: raw reference analysis]] — the Qt dialog, save, delete and history flows in detail
 - [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]]
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — colours, labels, and History versus Audit
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]
+- [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — the entry each record screen belongs to, which is the middle of its breadcrumb
 - [[id:46F465EE-7693-4852-B125-12C56290B695][Icon reference]]
 - [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge catalogue]]
 - [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]]

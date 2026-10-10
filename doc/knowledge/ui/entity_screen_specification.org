@@ -80,7 +80,8 @@ and to other subjects through people links. A relationship view opens the page o
 any subject it draws.
 
 A reader sees a screen only if the menu offers it, and the menu offers it by the
-narrowest read the screen needs. A member does not hold the read of accounts, so
+narrowest read the screen needs. [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] names the areas and the screen that
+belongs to each. A member does not hold the read of accounts, so
 Staff is a different list for them, built from the organisation read. See
 [[*Who sees what][Who sees what]].
 
@@ -130,7 +131,8 @@ Staff is a different list for them, built from the organisation read. See
 
 *** Header
 
-- The breadcrumb is Home, the area, the list, then the subject.
+- The breadcrumb is Home, the area, the list, then the subject. The areas are in
+  [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]].
 - The photo stands large beside the title. The title is the person's name.
 - Under the title, in small subdued type, is the subject's identifier. Nothing
   else. The version stands on each card, beside its title, because each card is a
@@ -495,7 +497,8 @@ by a direct edit for those who hold the update permission.
 - The header names an administrator's mode and says nothing for an ordinary
   member, whose mode has no meaning to them.
 - The notification bell and the account menu stand in the header. The account
-  menu holds the person's own pages and signing out.
+  menu holds the person's own pages and signing out. It is not part of the menu
+  of areas in [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]].
 - A person's own pages are My profile, My access and Where I work. They are
   reached from the account menu and from the profile's doors, each in one place.
 
@@ -616,7 +619,10 @@ a test of that, and still showed a screen with every permission on it.
 
 * See also
 
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the screen of one kind of record, which this page extends
+- [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — the areas of the menu and the screen that belongs to each
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — colours, labels, the access mark, History versus Audit
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]
 - [[id:46F465EE-7693-4852-B125-12C56290B695][Icon reference]]

@@ -37,6 +37,9 @@ already stores everything they show, with the gaps recorded below.
 
 * Who reaches the screens
 
+The rule below is under review. [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] proposes one menu for every person,
+with Operations offered to all and its cards following the permissions.
+
 The shell draws the line with an area, not with a permission on a screen: the
 *system-administration* menu carries *Operations* and no other menu does, and
 a screen that belongs to another mode is absent rather than disabled, because
@@ -90,3 +93,7 @@ planned here; *dropped* means a web client does not need it.
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]
 - [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] — the parent extraction this group belongs to
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster, and where to read this page in it.

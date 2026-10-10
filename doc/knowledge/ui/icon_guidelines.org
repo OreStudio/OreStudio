@@ -1023,6 +1023,8 @@ Update this skill document:
 
 * See also
 
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — broader design language.
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the umbrella visual-language reference linking
   icons, colour semantics and journey screen anatomy.

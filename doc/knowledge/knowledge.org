@@ -42,6 +42,7 @@ one, start there rather than here.
 | [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] | How a subject is addressed, what a message must look like, and where a service binds to the bus |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | Where the durable data lives, which interface reaches each store, and how to choose one |
 | [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] | How a report is scheduled, prepared, run on the compute grid, and recorded |
+| [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] | How a screen looks, what its marks mean, where it lives, and how it behaves for a record and for an entity |
 
 Every structure note carries the =structure_note= tag, so listing that
 tag returns the complete set.
@@ -128,6 +129,8 @@ features. Each component's own page carries its script inventory.
 
 * UI
 
+- [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — the one menu every person sees, the entry that
+  owns each screen, and the breadcrumb trail that follows.
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — design direction, typography, colour, spacing,
   depth and motion, and the icon catalogue that follows from them.
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — what a person is trying to

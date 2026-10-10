@@ -8,7 +8,7 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/bring-the-qa-validation-runner-to-ores-web
-#+pr: 3061
+#+pr: 3064
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -76,6 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3064][#3064]] | [agile] Plan the QA runner build tasks |
 | [[https://github.com/OreStudio/OreStudio/pull/3061][#3061]] | [agile] Scaffold the Bring the QA validation runner to ores.web story |
 
 * Review

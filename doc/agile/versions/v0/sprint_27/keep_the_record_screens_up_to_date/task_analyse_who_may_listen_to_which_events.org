@@ -1,7 +1,7 @@
 :PROPERTIES:
-:ID: 48943E90-9B2B-41C9-83CD-6951391FED61
+:ID: 2263A9B5-802A-4C95-B2BA-0B301CDEF523
 :END:
-#+title: Task: Carry an entity-changed time to the browser
+#+title: Task: Analyse who may listen to which tenant and party events
 #+description: Task for: Keep the record screens up to date
 #+type: task
 #+level: s1
@@ -13,20 +13,20 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment: brave_hopper
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The one event stream per session sends entity-changed with component, entity and a time, and not a list of records. A screen watches an entity and stops watching when it closes.
+A session must hear only the changes of the tenant and the parties it may see. A published entity event names no tenant or party, in its subject or its payload, and ores.qt does not filter either. Analyse how events reach a session today, what each option costs, and recommend one: a tenant and party header from the generated registrar, the tenant in the subject, a NATS account or permission per tenant, or a check in the BFF before it relays. State what the options mean for a party-scoped reader.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,8 +35,9 @@ The one event stream per session sends entity-changed with component, entity and
 
 * Acceptance
 
-- A thousand changes in one import make a screen stale once.
-- A screen that watches nothing holds no subscription.
+- The analysis states how an event travels from the store to a browser and where tenant and party are lost.
+- It compares the options by cost, by what they protect, and by what they change in the generated code.
+- It ends with one recommendation and the tasks that would build it.
 
 * Plan
 
@@ -84,5 +85,3 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
-
-The browser holds one change stream for the signed-in session (=EntityEventStream=, mounted by =EntityEventsProvider= inside the shell). It opens when the first screen watches something and closes with the last. The union of the watches goes to =POST /api/events/watch= once for a burst of changes, and again after a reconnect, because the server forgets watches when a stream closes. A screen listens with =useEntityChangeEvents(component, entity, onChange)=. The news is a time, so a thousand changes make a screen stale once. Seven unit tests cover it. Not yet seen live: no screen watches an entity until task 3.

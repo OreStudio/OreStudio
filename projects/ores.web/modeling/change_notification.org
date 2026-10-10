@@ -17,11 +17,12 @@ may be reloaded out from under a person mid-sentence. This is the language for
 that, derived from what the Qt client does, written down so it is not reinvented
 per entity.
 
-*Status.* The transport survives: the BFF streams the events and holds the shared,
-routed subscriptions. Its registry still subscribes to the retired
-=ores.<component>.<entity>_changed= subjects, which no service publishes since the
-canonical protocol (=<component>.v1.<resource>_events.<action>=), so it must move
-to each entity's subject prefix before any screen can hear a change. The consumer
+*Status.* The transport is built: the BFF streams the events and holds the shared,
+routed subscriptions. The registry listens on each collection's canonical
+subject, =<component>.v1.<resource>_events.>=, and hands on the time of the change.
+A published event names no tenant, so the registry keeps its subscriptions per
+tenant but cannot yet drop another tenant's change; a change elsewhere can mark a
+screen stale, and a refresh then reads only the reader's own data. The consumer
 does not exist. There are no screens and no
 routes, so nothing subscribes, nothing marks a row, and nothing pulses. §5 and §6
 specify the consumer that is still to be built.

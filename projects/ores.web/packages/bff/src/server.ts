@@ -2781,7 +2781,12 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         const body = z
             .object({
                 watches: z
-                    .array(z.object({ component: z.string(), entity: z.string() }))
+                    .array(
+                        z.object({
+                            component: z.string().regex(/^[a-z][a-z0-9_]*$/),
+                            entity: z.string().regex(/^[a-z][a-z0-9_]*$/),
+                        }),
+                    )
                     .max(50)
                     .default([]),
             })

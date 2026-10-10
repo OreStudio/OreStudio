@@ -25,6 +25,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from './api/client.js';
 import { useTranslation } from './i18n/Provider.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
+import { EntityEventsProvider } from './events/EntityEvents.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
 import { useSite } from './session/SiteProvider.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
@@ -1112,19 +1113,21 @@ function signedIn(
      */
     const version = view.version !== '' ? view.version : serverVersion;
     return (
-        <AppShell
-            username={view.username}
-            tenantName={view.tenantName}
-            partyName={view.party.name}
-            mode={view.mode}
-            width={width}
-            serverVersion={version}
-            environment={shell.environment}
-            onSignOut={shell.onSignOut}
-            self={shell.self}
-        >
-            {screen(view, version)}
-        </AppShell>
+        <EntityEventsProvider>
+            <AppShell
+                username={view.username}
+                tenantName={view.tenantName}
+                partyName={view.party.name}
+                mode={view.mode}
+                width={width}
+                serverVersion={version}
+                environment={shell.environment}
+                onSignOut={shell.onSignOut}
+                self={shell.self}
+            >
+                {screen(view, version)}
+            </AppShell>
+        </EntityEventsProvider>
     );
 }
 

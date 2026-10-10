@@ -20,6 +20,7 @@
  */
 
 import { displayName } from '../access/names.js';
+import { AccountLockBadge } from '../ui/AccountLockBadge.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
@@ -302,9 +303,7 @@ function AccountHeader({
                         {account.accountType}
                     </p>
                 </div>
-                <Tag tone={loginInfo?.locked === true ? 'warn' : 'muted'}>
-                    {loginInfo?.locked === true ? 'Locked' : 'Not locked'}
-                </Tag>
+                <AccountLockBadge locked={loginInfo?.locked === true} />
             </header>
             <div className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
                 <Detail
@@ -381,9 +380,7 @@ function Diagnosis({
                         {String(state.failedLogins)} failed{' '}
                         {state.failedLogins === 1 ? 'attempt' : 'attempts'}
                     </Tag>
-                    <Tag tone={state.locked ? 'warn' : 'neutral'}>
-                        {state.locked ? 'Locked' : 'Not locked'}
-                    </Tag>
+                    <AccountLockBadge locked={state.locked} />
                     <Tag tone={state.online ? 'accent' : 'muted'}>
                         {state.online ? 'Session open' : 'No session'}
                     </Tag>

@@ -21,6 +21,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { Link } from 'react-router';
 import { isWireTimestamp } from '@ores/wire-protocol/browser';
 import type {
     AuthEvent,
@@ -32,6 +33,7 @@ import { api, type AuditPeriod } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { AccountLockBadge } from '../ui/AccountLockBadge.js';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { isZeroTimestamp } from '../ui/Time.js';
@@ -187,7 +189,16 @@ function AccountCell({
         username !== undefined && username !== '' ? username : (nameOf.get(accountId) ?? '');
     return (
         <div className="space-y-0.5">
-            {name !== '' && <div>{name}</div>}
+            {name !== '' && (
+                <div>
+                    <Link
+                        className="text-accent-bright hover:underline"
+                        to={`/people/${encodeURIComponent(name)}`}
+                    >
+                        {name}
+                    </Link>
+                </div>
+            )}
             <div className="font-mono text-xs text-ink-faint">{accountId}</div>
         </div>
     );
@@ -559,11 +570,22 @@ function FailuresPanel({
     readonly accountNames: ReadonlyMap<string, string>;
 }): ReactNode {
     const { t } = useTranslation();
-    const ordered = orderLoginRecords(query.data?.loginInfo ?? []);
+    const [hideNeverSignedIn, setHideNeverSignedIn] = useState(false);
+    const ordered = orderLoginRecords(query.data?.loginInfo ?? []).filter(
+        (row) => !hideNeverSignedIn || !isZeroTimestamp(row.lastLogin),
+    );
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-medium">{t('auditSignIns.failures.title')}</h2>
+                <label className="flex items-center gap-2 text-xs text-ink-muted">
+                    <input
+                        type="checkbox"
+                        checked={hideNeverSignedIn}
+                        onChange={(event) => setHideNeverSignedIn(event.target.checked)}
+                    />
+                    {t('auditSignIns.failures.hideNeverSignedIn')}
+                </label>
                 {query.data !== undefined && (
                     <span className="text-xs text-ink-faint">
                         {t('auditSignIns.failures.count', {
@@ -626,11 +648,7 @@ function FailuresPanel({
                                     )}
                                 </td>
                                 <td className="py-2">
-                                    <Tag tone={row.locked ? 'warn' : 'muted'}>
-                                        {row.locked
-                                            ? t('auditSignIns.failures.locked')
-                                            : t('auditSignIns.failures.notLocked')}
-                                    </Tag>
+                                    <AccountLockBadge locked={row.locked} />
                                 </td>
                             </tr>
                         ))}

@@ -21,6 +21,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
 import type { Account, LoginInfo } from '@ores/wire-protocol/browser';
 import { uuid } from '@ores/wire-protocol/browser';
@@ -76,9 +77,11 @@ function loginInfo(overrides: Partial<LoginInfo> = {}): LoginInfo {
 
 function render(row: Account, state: LoginInfo | null): string {
     return renderToStaticMarkup(
-        <MemoryRouter>
-            <RescueView account={row} loginInfo={state} onReload={async () => undefined} />
-        </MemoryRouter>,
+        <QueryClientProvider client={new QueryClient()}>
+            <MemoryRouter>
+                <RescueView account={row} loginInfo={state} onReload={async () => undefined} />
+            </MemoryRouter>
+        </QueryClientProvider>,
     );
 }
 
@@ -119,7 +122,7 @@ describe('RescueView', () => {
         const markup = render(account(), null);
 
         expect(markup).toContain('has never signed in');
-        expect(markup).toContain('Not locked');
+        expect(markup).toContain('Unlocked');
     });
 
     it('lists the operations the server does not have', () => {

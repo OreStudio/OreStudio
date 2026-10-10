@@ -54,7 +54,10 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
 
 const ok = { outcome: 'ok', code: '', message: '' };
 
-function buildTestServer(replies: Readonly<Record<string, unknown>>): {
+function buildTestServer(
+    replies: Readonly<Record<string, unknown>>,
+    tenantId = '44444444-4444-4444-4444-444444444444',
+): {
     readonly server: ReturnType<typeof buildServer>;
     readonly sessionId: string;
     readonly calls: { subject: string; body: unknown }[];
@@ -83,7 +86,7 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
         username: 'tenant_admin',
         email: 'tenant_admin@acme.example',
         accountId: '11111111-1111-1111-1111-111111111111',
-        tenantId: '44444444-4444-4444-4444-444444444444',
+        tenantId,
         tenantName: 'Acme',
         mode: 'tenant-administration',
         version: 'v0.0.25 (test)',
@@ -124,6 +127,7 @@ const OTHER = '66666666-6666-4666-8666-666666666666';
 const PARTY = '77777777-7777-4777-8777-777777777777';
 const COLLECTION = '88888888-8888-4888-8888-888888888888';
 const INTENT = { reason_code: 'common.correction', commentary: '' };
+const SYSTEM_TENANT = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 
 const COMPONENT = {
     id: ID,
@@ -336,10 +340,32 @@ describe('synthetic writes', () => {
         });
     });
 
-    it('removes a process type by its code', async () => {
-        const { server, sessionId, calls } = buildTestServer({
-            'synthetic.v1.yield_curve_process_types.delete': { result: ok },
+    it('refuses a tenant session a write to the shared process type catalogue', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const catalogue = await send(server, sessionId, 'GET', '/api/synthetic');
+        const types = (catalogue.json().resources as { key: string; writable: boolean }[]).find(
+            (resource) => resource.key === 'process-types',
+        );
+        expect(types?.writable).toBe(false);
+        const response = await send(server, sessionId, 'PUT', '/api/synthetic/process-types', {
+            intent: INTENT,
+            changes: [
+                {
+                    write: { code: 'vasicek', name: 'Vasicek', description: '', display_order: 1 },
+                    version: 1,
+                },
+            ],
         });
+        expect(response.statusCode).toBe(403);
+        expect(response.json().message).toContain('only the system tenant');
+        expect(calls).toHaveLength(0);
+    });
+
+    it('removes a process type by its code from a system session', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            { 'synthetic.v1.yield_curve_process_types.delete': { result: ok } },
+            SYSTEM_TENANT,
+        );
         const response = await send(server, sessionId, 'DELETE', '/api/synthetic/process-types', {
             intent: INTENT,
             removals: [{ key: 'vasicek' }],

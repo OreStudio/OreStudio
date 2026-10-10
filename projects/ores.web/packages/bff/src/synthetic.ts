@@ -21,6 +21,7 @@
 
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
+import { SYSTEM_TENANT_ID } from '@ores/wire-protocol';
 import { subjects as feedSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_config_protocol';
 import { subjects as folderSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/folder_protocol';
 import {
@@ -76,6 +77,10 @@ const text = z.string().max(2000);
  * `oneOf` is the list filter that reads rows by key. It is not always the key
  * field: a parameter definition is keyed by its name on the wire but filtered
  * by its id, and its id is what names one row.
+ *
+ * A system-owned resource is one catalogue every tenant reads. The server
+ * reads and writes it in the system tenant, so a write from a tenant session
+ * would change every tenant's catalogue; only a system session writes it.
  */
 interface SyntheticResource {
     readonly key: string;
@@ -91,6 +96,7 @@ interface SyntheticResource {
     };
     readonly writes?: z.ZodType<Record<string, unknown>>;
     readonly readOnlyBecause?: string;
+    readonly systemOwned?: true;
 }
 
 /**
@@ -263,6 +269,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
     },
     {
         key: 'process-types',
+        systemOwned: true,
         entityType: 'ores.synthetic.yield_curve_process_type',
         keyField: 'code',
         oneOf: 'code_one_of',
@@ -317,13 +324,28 @@ function resourceFor(request: FastifyRequest): SyntheticResource {
     return found;
 }
 
-function writableFor(request: FastifyRequest): {
+/** Why this session cannot write the resource, or undefined when it can. */
+function readOnlyFor(resource: SyntheticResource, session: LiveSession): string | undefined {
+    if (resource.writes === undefined) {
+        return resource.readOnlyBecause;
+    }
+    if (resource.systemOwned === true && session.tenantId !== SYSTEM_TENANT_ID) {
+        return 'Every tenant shares this catalogue, so only the system tenant changes it.';
+    }
+    return undefined;
+}
+
+function writableFor(
+    request: FastifyRequest,
+    session: LiveSession,
+): {
     readonly resource: SyntheticResource;
     readonly writes: z.ZodType<Record<string, unknown>>;
 } {
     const resource = resourceFor(request);
-    if (resource.writes === undefined) {
-        throw notPermitted(`${resource.key} is read only here. ${resource.readOnlyBecause ?? ''}`);
+    const because = readOnlyFor(resource, session);
+    if (resource.writes === undefined || because !== undefined) {
+        throw notPermitted(`${resource.key} is read only here. ${because ?? ''}`);
     }
     return { resource, writes: resource.writes };
 }
@@ -478,14 +500,14 @@ export function registerSyntheticRoutes(
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
     server.get('/api/synthetic', async (request) => {
-        requireSession(request);
+        const session = requireSession(request);
         return {
             resources: SYNTHETIC_RECORDS.map((resource) => ({
                 key: resource.key,
                 entityType: resource.entityType,
                 keyField: resource.keyField,
-                writable: resource.writes !== undefined,
-                readOnlyBecause: resource.readOnlyBecause ?? null,
+                writable: readOnlyFor(resource, session) === undefined,
+                readOnlyBecause: readOnlyFor(resource, session) ?? null,
                 readPermission: `synthetic::${resourceName(resource)}:read`,
                 writePermission: `synthetic::${resourceName(resource)}:write`,
                 deletePermission: `synthetic::${resourceName(resource)}:delete`,
@@ -562,7 +584,7 @@ export function registerSyntheticRoutes(
     /** Writes one or many rows in one call, and answers with the rows as written. */
     server.put('/api/synthetic/:resource', async (request) => {
         const session = requireSession(request);
-        const { resource, writes } = writableFor(request);
+        const { resource, writes } = writableFor(request, session);
         const body = input(saveBodySchema, request.body);
         const changes = body.changes.map((change) => ({
             write: input(writes, change.write),
@@ -586,7 +608,7 @@ export function registerSyntheticRoutes(
      */
     server.delete('/api/synthetic/:resource', async (request, reply) => {
         const session = requireSession(request);
-        const { resource } = writableFor(request);
+        const { resource } = writableFor(request, session);
         const body = input(removeBodySchema, request.body);
         const removals = body.removals.map((removal) => ({
             key: { [resource.keyField]: input(keySchema(resource), removal.key) },

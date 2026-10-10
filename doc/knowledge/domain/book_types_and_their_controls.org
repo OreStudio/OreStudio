@@ -20,9 +20,10 @@ ledger, and it holds no position of the firm. Within the official books the
 classification axes (regulatory type, ledger feed, purpose) say what a book
 is for, and they do not change which process opens it. The existing notes
 state the controls for opening and closing an official book and for opening a
-sandbox. They are silent on changing a book, on moving a book under another
-portfolio, and on granting rights, and this note lists those gaps as open
-decisions rather than filling them in.
+sandbox. They were silent on changing a book, moving a book under another
+portfolio, granting rights and creating a portfolio, and the product owner has
+decided each of those below: every one is gated by a second person, and
+sandboxes are not.
 
 * Detail
 
@@ -86,9 +87,9 @@ the closed book is retired, not deleted. Finance executes the closure
 
 *** Opening and ending a virtual book
 
-A virtual book has no approval chain. A user opens a sandbox at a node of the
+A virtual book has no approval chain. A trader opens a sandbox at a node of the
 official tree only where they hold the right to open sandboxes there, and the
-system creates the sandbox's virtual books for them. The owner confirms the
+sandbox's virtual books are created for them. The owner confirms the
 sandbox is still needed by its review date, or archives it, and an archived
 sandbox is read only. Nothing in it is deleted ([[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]).
 
@@ -99,20 +100,27 @@ renewed, and Operations administers the recurring review ([[id:C84899BD-5EC8-4AA
 permissions]]). A right at a portfolio node covers every node below it. A
 sandbox's visibility follows its anchor.
 
-** What the notes do not state
+** Decisions on the acts the notes do not state
 
-These acts have no stated control. Each is an open decision for the product
-owner, and the book prototypes and screens must not invent an answer.
+The existing notes are silent on these acts. The product owner took the
+recommendation for each on 2026-10-10, and they are the rule the prototypes and
+the screens follow. Each gated act raises an approval request, and the person
+who decides is never the person who asked.
 
-| # | Act | What the notes establish | What is open |
-|---+-----+--------------------------+--------------|
-| 1 | Change an official book after it is live | Finance owns the accounting fields, Market Risk the classification and rates centre, Operations the allowed currencies and products. The notes do not say a later change repeats the opening approvals | Which edits need a second person, and who decides each: the enriching function that owns the field, or a controller |
-| 2 | Move a book under another portfolio | Portfolios are the logical hierarchy and are never reflected into the ledger ([[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]]). Rights at a node cover everything below it | A move changes who can see the book, so it may need the same check as a rights grant. Whether it does, and who decides |
-| 3 | Grant or remove a right at a portfolio node | The deferred HBAC capture proposes a maker and a checker | Whether this is adopted, and whether a sandbox right follows the same rule or is lighter |
-| 4 | Change a book's classification | Regulatory type sets the capital treatment | Whether a change of regulatory type or ledger feed needs Market Risk or Finance approval |
-| 5 | Open a test, wash, reserve, funding or write-off book | They are official books, so the opening process applies | Whether any purpose adds an approver, for example Market Risk for the wash book's risk book |
-| 6 | Create a portfolio | A portfolio is a trading concept and the desk shapes it | Whether a new portfolio needs approval, and whether a sandbox's portfolio differs |
-| 7 | The book structure screen's "new book" | The notes say the trading system cannot create an official book | Which lifecycle step that screen is: the desk's request, or Operations' final set-up |
+| # | Act | Decision | Who asks | Who decides |
+|---+-----+----------+----------+-------------|
+| 1 | Change an official book after it is live | Gated by the function that owns the field. A description-only edit is not gated | The desk or the owning function | Finance for the functional currency, GL account reference, cost center and owner unit. Market Risk for the regulatory type, purpose, rates centre and sweepable flag. Operations for the allowed currencies and products and the status |
+| 2 | Move a book under another portfolio | Gated. A move changes who can see the book, because a right at a node covers everything below it | The desk | Operations, who administers book access |
+| 3 | Grant or remove a right at an official portfolio node | Gated, as the deferred HBAC capture proposes | The head of desk | Operations |
+| 4 | Change a book's classification | Gated. This is the same ownership as row 1, stated for the axes: regulatory type and purpose to Market Risk, ledger feed to Finance | The desk or the owning function | Market Risk or Finance |
+| 5 | Open a test, wash, reserve, funding, write-off, sweep-target or remittance-target book | The ordinary opening process. A purpose adds no approver, because Market Risk already establishes the classification and Finance the ledger set-up. A test book is owned by IT users | The desk | The opening chain |
+| 6 | Create an official portfolio | Gated, because a portfolio is where rights inherit from | The desk | Operations |
+| 7 | The book structure screen's "new book" | It is the desk's request that starts the opening process. It does not create a live book. The book goes live when the chain completes | The desk | The opening chain |
+
+*Virtual books and sandboxes are not gated.* A trader creates a sandbox and its
+virtual books at a node where they hold the right to open sandboxes, with no
+approval. A sandbox's portfolios and its rights follow the sandbox, not this
+table. Nothing in a sandbox reaches the ledger, official risk or reporting.
 
 ** Who plays each part in Acme
 
@@ -141,7 +149,9 @@ need either their own roles or an agreed permission on an existing role. And
 the seeded roles do not separate Market Risk from Operations, so a
 Market Risk approval and an Operations approval would be decided by the same
 role unless that changes. The task filed for the story adds the missing
-accounts, and the role question is an open decision above.
+accounts. The recommendation, taken as the working rule, is a role for each of
+Controller, Finance and Market Risk that holds the permission to decide the
+approvals its part owns, and the existing Operations role keeps Operations'.
 
 ** How the controls map onto approval requests
 

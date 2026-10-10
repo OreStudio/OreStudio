@@ -38,7 +38,7 @@ A person can walk every book control in the Acme tenant as a different maker and
 - Acme has a Controller account and a second Controller account, in different legal entities or desks.
 - Acme has a Finance account and a second Finance account, with the accounting reporting line the dataset already uses.
 - Acme has a quant user who can open a sandbox, and an IT user who owns a test book.
-- Each Market Risk, Operations, Finance and Controller account can decide the approvals its part owns, through a role or a permission agreed in the book controls note.
+- Each Market Risk, Operations, Finance and Controller account can decide the approvals its part owns, through a role of its own (Controller, Finance, Market Risk) or the existing Operations role, as the book controls note decides.
 - The dataset overview, the account count and the Acme provisioning recipe state the new accounts.
 
 * Plan

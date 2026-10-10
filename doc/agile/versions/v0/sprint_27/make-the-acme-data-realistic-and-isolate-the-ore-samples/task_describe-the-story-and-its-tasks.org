@@ -8,7 +8,7 @@
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
 #+branch: feature/make-the-acme-data-realistic
-#+pr:
+#+pr: 3056
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -69,7 +69,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3056][#3056]] | [agile] Add the story to make the ACME data realistic |
 
 * Review
 

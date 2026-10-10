@@ -56,6 +56,7 @@ import { subjects as marketdataOperationSubjects } from '@ores/wire-protocol/gen
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import {
     NO_ORDER,
+    PAGE,
     idSchema,
     input,
     intentSchema,
@@ -354,6 +355,13 @@ function keySchema(resource: SyntheticResource): z.ZodType<string> {
     return resource.keyField === 'id' ? idSchema : code;
 }
 
+/** A batch that names one row twice is refused, so its outcome never depends on the order. */
+function refuseRepeatedKeys(keys: readonly unknown[], verb: string): void {
+    if (new Set(keys).size !== keys.length) {
+        throw invalidRequest(`A ${verb} names each row once.`);
+    }
+}
+
 /**
  * Turns a refused write into the status that says why. The server sends no
  * words with some conflicts, so a conflict says what it means.
@@ -372,7 +380,7 @@ function answer(result: z.infer<typeof resultSchema>): void {
     throw refusal(result);
 }
 
-/*
+/**
  * An operation answers success and a message. A refused preview is a bad
  * input, a refused start or stop is a conflict with the feed's state, and a
  * refused read is the service failing.
@@ -408,7 +416,7 @@ const saveBodySchema = z.object({
             }),
         )
         .min(1)
-        .max(1000),
+        .max(PAGE),
 });
 
 /**
@@ -426,7 +434,7 @@ const removeBodySchema = z.object({
             }),
         )
         .min(1)
-        .max(1000),
+        .max(PAGE),
 });
 
 const operationReplySchema = z.object({
@@ -502,16 +510,19 @@ export function registerSyntheticRoutes(
     server.get('/api/synthetic', async (request) => {
         const session = requireSession(request);
         return {
-            resources: SYNTHETIC_RECORDS.map((resource) => ({
-                key: resource.key,
-                entityType: resource.entityType,
-                keyField: resource.keyField,
-                writable: readOnlyFor(resource, session) === undefined,
-                readOnlyBecause: readOnlyFor(resource, session) ?? null,
-                readPermission: `synthetic::${resourceName(resource)}:read`,
-                writePermission: `synthetic::${resourceName(resource)}:write`,
-                deletePermission: `synthetic::${resourceName(resource)}:delete`,
-            })),
+            resources: SYNTHETIC_RECORDS.map((resource) => {
+                const because = readOnlyFor(resource, session);
+                return {
+                    key: resource.key,
+                    entityType: resource.entityType,
+                    keyField: resource.keyField,
+                    writable: because === undefined,
+                    readOnlyBecause: because ?? null,
+                    readPermission: `synthetic::${resourceName(resource)}:read`,
+                    writePermission: `synthetic::${resourceName(resource)}:write`,
+                    deletePermission: `synthetic::${resourceName(resource)}:delete`,
+                };
+            }),
         };
     });
 
@@ -593,6 +604,10 @@ export function registerSyntheticRoutes(
                     ? { kind: 'must_not_exist', version: null }
                     : { kind: 'must_match_version', version: change.version },
         }));
+        refuseRepeatedKeys(
+            changes.map((change) => change.write[resource.keyField]),
+            'save',
+        );
         const reply = await session.client.callAuthenticated(
             resource.subjects.putMany,
             { changes, intent: body.intent },
@@ -617,6 +632,10 @@ export function registerSyntheticRoutes(
                     ? { kind: 'any', version: null }
                     : { kind: 'must_match_version', version: removal.version },
         }));
+        refuseRepeatedKeys(
+            body.removals.map((removal) => removal.key),
+            'removal',
+        );
         if (removals.length === 1) {
             const answered = await session.client.callAuthenticated(
                 resource.subjects.remove,

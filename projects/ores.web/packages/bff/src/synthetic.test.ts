@@ -395,6 +395,30 @@ describe('synthetic writes', () => {
         });
     });
 
+    it('refuses a save that names one row twice before it reaches the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'PUT', '/api/synthetic/gmm-components', {
+            intent: INTENT,
+            changes: [
+                { write: COMPONENT, version: 3 },
+                { write: { ...COMPONENT, weight: 0.2 }, version: 3 },
+            ],
+        });
+        expect(response.statusCode).toBe(400);
+        expect(response.json().message).toContain('names each row once');
+        expect(calls).toHaveLength(0);
+    });
+
+    it('refuses a removal that names one row twice before it reaches the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'DELETE', '/api/synthetic/gmm-components', {
+            intent: INTENT,
+            removals: [{ key: ID }, { key: ID }],
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
     it('refuses a batch removal that names a version, since the server cannot check it', async () => {
         const { server, sessionId, calls } = buildTestServer({});
         const response = await send(server, sessionId, 'DELETE', '/api/synthetic/gmm-components', {

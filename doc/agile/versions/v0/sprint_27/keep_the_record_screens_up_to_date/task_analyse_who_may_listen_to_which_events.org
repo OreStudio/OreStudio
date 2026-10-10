@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A session must hear only the changes of the tenant and the parties it may see. A
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
-| Now          | Not yet started.                       |
+| Now          | Analysis written; waiting for a decision. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Build the recommendation, if accepted. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -61,6 +61,98 @@ task and name that file in the Command column.
 
 * Notes
 
+** How an event travels today
+
+1. A trigger on the table sends =pg_notify= with =event_id=, =entity=, =key=,
+   =action=, =version=, =occurred_at= and =tenant_id=. The tenant is there.
+2. =postgres_event_source= reads the notification. It gives the mapping the
+   notification, and the mapping publishes the typed event on the bus. It also
+   publishes an =entity_change_event= that keeps the tenant, but only in process.
+3. The registrar's bus handler receives the typed event. The typed event has no
+   tenant. =publish_entity_event= sends it to
+   =component.v1.collection_events.action= with no headers.
+4. The BFF has one connection for listening (=eventClient=). It is not signed in.
+   It subscribes to =component.v1.collection_events.>=.
+5. =ChangeEventRegistry= keys its subscriptions by tenant. The subject does not
+   change with the tenant. Two tenants therefore open two subscriptions to the same
+   subject, and each receives the events of every tenant. The key shares work. It
+   filters nothing.
+6. The browser receives =entity-changed {component, entity, at}=.
+
+Tenant is lost in step 3. Party is never in the notification, even for the three
+party-owned tables (=party_identifiers=, =counterparty_identifiers=,
+=party_id_schemes=). Its triggers send =tenant_id= only.
+
+** What leaks today
+
+- A session hears that something changed in another tenant, and when.
+- The browser learns the entity name and the time. It learns no key and no value.
+- The next read is filtered by the database (row level security by tenant and
+  party), so no data leaks. The leak is the fact and the time of a change.
+- NATS has one account and mTLS only. Any holder of a service certificate can
+  subscribe to any subject. Nothing at the broker separates tenants.
+
+** The options
+
+| Option | What it protects | Cost | Change to generated code |
+|--------+------------------+------+--------------------------|
+| A. Check in the BFF only | The browser. A bug in the check leaks. | Small | None, but the check needs the tenant, so it needs B or C first |
+| B. Tenant and party as headers from the registrar | The browser, with a check in the BFF | Medium | The mapping hands the notification's tenant to the registrar. =publish_entity_event= sets =Ores-Tenant-Id= and =Ores-Party-Id=. The trigger template adds the party where the table has one. The BFF reads headers in =subscribeToEvents= |
+| C. Tenant in the subject | The browser and every subscriber. The broker does the filtering, so a BFF routing bug cannot leak another tenant | Medium | =event_subject= takes the tenant: =component.v1.collection_events.tenant.action=. All registrars change. Each subscriber chooses its tenant |
+| D. A NATS account or permission per tenant | Every client, even one with a certificate | High | None in the registrar, but the services need cross-account exports and imports, a key per tenant, and a change to provisioning |
+
+*** Party
+
+A party is not a stable property of a session. A person who may see three parties
+can switch between them, and an administrator sees all of them. A subject cannot
+say "these three parties" without one subscription for each party and entity. That
+is why party belongs in a header that the BFF checks against the session's current
+party list, and not in the subject. A tenant is fixed for a session, so it can
+stand in the subject.
+
+*** The system tenant
+
+Some rows belong to the system tenant and are visible to every tenant, such as
+change reasons and classification lists. A change to them is news to everybody. The
+BFF therefore listens to its own tenant and to the system tenant, and to no other.
+
+*** Qt
+
+ores.qt listens on the wildcard and does not filter. It must subscribe to its own
+tenant and to the system tenant, the same as the BFF, when the subject changes.
+
+** Recommendation
+
+Use C, and add the party as a header (the party half of B).
+
+- The tenant goes in the subject. The broker then delivers only the tenants a
+  client asked for, and the BFF can ask for no more than its sessions hold.
+- The party goes in a header on the events of party-owned tables. The BFF drops an
+  event whose party the session may not see. An event with no party header is
+  tenant-wide and passes.
+- Defence in depth (D) waits. It protects against a client with a certificate.
+  That is a broker hardening task, and it is not needed for the web.
+- A alone is rejected. It has nothing to check against.
+
+Cost of C to know before accepting: the subject changes for every entity, and all
+three kinds of subscriber change with it (BFF, Qt, any service that listens).
+Codegen does the producer side in one template change.
+
+** Tasks that would build it
+
+1. Carry the tenant to the registrar. The mapping gives the notification's tenant
+   to the bus handler. =event_subject= takes the tenant. Codegen regenerates all
+   registrars.
+2. Carry the party. The notify trigger template adds =party_id= where the table
+   has the column. The registrar sets =Ores-Party-Id=.
+3. Listen by tenant in the BFF. The registry subscribes to
+   =component.v1.collection_events.tenant.>= for the session's tenant and for the
+   system tenant. It drops an event whose party the session may not see, and it
+   checks again when the session switches party.
+4. Listen by tenant in ores.qt.
+5. Update the specification and the pipeline page. Remove the "known limit".
+6. Later, and apart from this story: a NATS permission per client (option D).
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -85,3 +177,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Analysis done. Recommendation: the tenant in the subject, and the party as a
+header that the BFF checks. Five tasks would build it. None is started, and the
+decision is the owner's.

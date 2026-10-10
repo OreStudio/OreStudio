@@ -36,11 +36,11 @@ export interface FxAccumulatorInstrument {
     identity: InstrumentIdentity;
     currency: string;
     fixing_amount: string;
-    strike: number;
+    strike: string;
     underlying_code: string;
     long_short: string;
     start_date: string;
-    knock_out_barrier: number | null;
+    knock_out_barrier: string | null;
     description: string;
     audit: AuditRecord;
 }

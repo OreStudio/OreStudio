@@ -28,6 +28,7 @@
 #include "ores.trading.api/domain/bond_repo.hpp"
 #include "ores.trading.api/domain/bond_repo_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/bond_repo_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -49,7 +50,10 @@ domain::bond_repo bond_repo_mapper::map(const bond_repo_entity& v) {
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.repo_type = v.repo_type;
-    r.repo_rate = v.repo_rate.value_or(0);
+    r.repo_rate =
+        v.repo_rate.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.repo_rate).value()) :
+            std::nullopt;
     r.repo_index = v.repo_index.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -70,7 +74,7 @@ bond_repo_entity bond_repo_mapper::map(const domain::bond_repo& v) {
     r.version = v.version;
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.repo_type = v.repo_type;
-    r.repo_rate = v.repo_rate == 0 ? std::nullopt : std::optional(v.repo_rate);
+    r.repo_rate = v.repo_rate.has_value() ? std::optional(v.repo_rate->to_string()) : std::nullopt;
     r.repo_index = v.repo_index.empty() ? std::nullopt : std::optional(v.repo_index);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

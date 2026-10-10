@@ -47,7 +47,7 @@ struct bond_forward_write {
     std::optional<std::string> forward_settlement_date;
     std::optional<std::string> settlement;
     std::optional<ores::utility::decimal::decimal> amount;
-    std::optional<double> lock_rate;
+    std::optional<ores::utility::decimal::decimal> lock_rate;
     std::optional<ores::utility::decimal::decimal> dv01;
     std::optional<std::string> lock_rate_day_counter;
     std::optional<std::string> settlement_dirty;

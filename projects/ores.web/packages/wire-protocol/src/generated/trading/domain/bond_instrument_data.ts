@@ -66,7 +66,7 @@ export interface BondInstrumentData {
     forward_settlement: BondForwardSettlement | null;
     forward_premium: BondForwardPremium | null;
     trs_payer: string | null;
-    trs_initial_price: number | null;
+    trs_initial_price: string | null;
     trs_schedule: BondScheduleData;
     bond_legs: BondLegData[];
     trs_funding_leg: BondLegData;

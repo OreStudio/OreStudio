@@ -40,6 +40,7 @@
 #include "ores.trading.api/domain/bond_schedule_data.hpp"
 #include "ores.trading.api/domain/bond_strike_data.hpp"
 #include "ores.trading.api/domain/bond_trs.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #include <vector>
@@ -176,7 +177,7 @@ struct bond_instrument_data {
     /**
      * @brief The TRS initial price, when the document states one.
      */
-    std::optional<double> trs_initial_price;
+    std::optional<ores::utility::decimal::decimal> trs_initial_price;
 
     /**
      * @brief The schedule the TRS total return follows.

@@ -25,6 +25,7 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CURVE_SEGMENT_HPP
 #define ORES_REFDATA_API_DOMAIN_CURVE_SEGMENT_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -198,7 +199,7 @@ struct curve_segment final {
     /**
      * @brief The spread an Ibor fallback segment adds to the risk free rate.
      */
-    std::optional<double> spread;
+    std::optional<ores::utility::decimal::decimal> spread;
 
     /**
      * @brief The base curve of a discount ratio segment.

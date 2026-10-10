@@ -31,7 +31,7 @@ document.
 
 ** price_value
 :PROPERTIES:
-:cpp_type: std::optional<double>
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :END:
 
 The strike as a price, when the document states one.
@@ -45,7 +45,7 @@ The currency the price strike is stated in.
 
 ** yield_value
 :PROPERTIES:
-:cpp_type: std::optional<double>
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :END:
 
 The strike as a yield, when the document states one.

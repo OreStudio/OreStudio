@@ -34,7 +34,7 @@ The date the holder may exercise on.
 
 ** price
 :PROPERTIES:
-:cpp_type: std::optional<double>
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :END:
 
 The price the exercise pays, when the document states one.

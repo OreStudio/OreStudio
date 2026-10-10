@@ -34,6 +34,7 @@ column beyond the type and the strike, so the option block is held whole.
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <vector>
 #include <string>
@@ -205,7 +206,7 @@ The document's own spelling of the TRS payer flag.
 
 ** trs_initial_price
 :PROPERTIES:
-:cpp_type: std::optional<double>
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :END:
 
 The TRS initial price, when the document states one.

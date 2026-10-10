@@ -104,7 +104,7 @@ struct fra_instrument final {
      *
      * Expressed as a decimal fraction.
      */
-    double strike = 0.0;
+    ores::utility::decimal::decimal strike = ores::utility::decimal::decimal{};
 
     /**
      * @brief Notional principal amount.

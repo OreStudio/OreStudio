@@ -277,7 +277,7 @@ bond_trs make_trs(const stamps& s, const boost::uuids::uuid& trade_id) {
     r.trade_activity_id = s.activity_id;
     r.return_type = "Total";
     r.funding_leg_type = "Fixed";
-    r.funding_rate = 3.0;
+    r.funding_rate = ores::utility::decimal::decimal::from_string("3.0").value();
     r.funding_index = "EURIBOR-6M";
     return r;
 }
@@ -873,7 +873,7 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", tags) {
 
     REQUIRE(option.exercise_data.has_value());
     CHECK(option.exercise_data->date == "2025-01-15");
-    CHECK(option.exercise_data->price == 101.0);
+    CHECK(option.exercise_data->price == ores::utility::decimal::decimal::from_string("101.0").value());
 
     REQUIRE(option.payment_data.has_value());
     CHECK(option.payment_data->dates.size() == 2);
@@ -895,7 +895,7 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", tags) {
     CHECK(option.premiums[1].pay_date == "2024-01-20");
 
     REQUIRE(option.exercise_fees.size() == 1);
-    CHECK(option.exercise_fees[0].amount == 25.0);
+    CHECK(option.exercise_fees[0].amount == ores::utility::decimal::decimal::from_string("25.0").value());
     CHECK(option.exercise_fees[0].type == "Percentage");
 
     // The exercise dates are a list on the container but a schedule block
@@ -927,7 +927,7 @@ TEST_CASE("read_instruments_rebuilds_a_strike_and_a_forward", tags) {
     forward.forward_maturity_date = "2026-03-15";
     forward.settlement = "Cash";
     forward.amount = ores::utility::decimal::decimal::from_string("250000").value();
-    forward.lock_rate = 2.5;
+    forward.lock_rate = ores::utility::decimal::decimal::from_string("2.5").value();
     forward.dv01 = ores::utility::decimal::decimal::from_string("12.75").value();
     forward.premium_amount = "1500";
     forward.premium_date = "2024-03-15";
@@ -941,7 +941,7 @@ TEST_CASE("read_instruments_rebuilds_a_strike_and_a_forward", tags) {
     const auto& rebuilt = instruments.at(id);
 
     REQUIRE(rebuilt.strike_data.has_value());
-    CHECK(rebuilt.strike_data->price_value == 101.5);
+    CHECK(rebuilt.strike_data->price_value == ores::utility::decimal::decimal::from_string("101.5").value());
     CHECK(rebuilt.strike_data->price_currency == "EUR");
 
     REQUIRE(rebuilt.forward_long_in_forward.has_value());
@@ -949,8 +949,8 @@ TEST_CASE("read_instruments_rebuilds_a_strike_and_a_forward", tags) {
     REQUIRE(rebuilt.forward_settlement.has_value());
     CHECK(rebuilt.forward_settlement->forward_maturity_date == "2026-03-15");
     CHECK(rebuilt.forward_settlement->settlement == "Cash");
-    CHECK(rebuilt.forward_settlement->amount == 250000.0);
-    CHECK(rebuilt.forward_settlement->lock_rate == 2.5);
+    CHECK(rebuilt.forward_settlement->amount == ores::utility::decimal::decimal::from_string("250000.0").value());
+    CHECK(rebuilt.forward_settlement->lock_rate == ores::utility::decimal::decimal::from_string("2.5").value());
     CHECK(rebuilt.forward_settlement->dv01 == 12.75);
     CHECK(!rebuilt.forward_settlement->forward_settlement_date.has_value());
 
@@ -997,7 +997,7 @@ TEST_CASE("read_instruments_rebuilds_the_trs_return_side", tags) {
     CHECK(*rebuilt.trs_payer == "true");
     CHECK(rebuilt.trs_price_type == "Clean");
     REQUIRE(rebuilt.trs_initial_price.has_value());
-    CHECK(*rebuilt.trs_initial_price == 99.25);
+    CHECK(*rebuilt.trs_initial_price == ores::utility::decimal::decimal::from_string("99.25").value());
 
     REQUIRE(rebuilt.trs_schedule.rules.size() == 1);
     CHECK(rebuilt.trs_schedule.rules[0].tenor == "3M");

@@ -106,6 +106,8 @@ domain::trade to_domain(const messaging::trade_write& write) {
     v.counterparty_scope = write.counterparty_scope;
     v.booking_nature = write.booking_nature;
     v.entry_channel = write.entry_channel;
+    v.external_version = write.external_version;
+    v.economic_digest = write.economic_digest;
     return v;
 }
 

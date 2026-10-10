@@ -59,7 +59,7 @@ fx_barrier_option_instrument make_instrument(database_helper& h) {
     r.option_type = "Call";
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2033-02-20");
     r.barrier_type = "UpAndIn";
-    r.lower_barrier = 1.2;
+    r.lower_barrier = ores::utility::decimal::decimal::from_string("1.2").value();
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
     r.audit.change_reason_code = "system.external_data_import";
@@ -93,7 +93,7 @@ TEST_CASE("fx_barrier_option_instrument_write_and_read_latest", tags) {
     CHECK(read[0].option_type == "Call");
     CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2033-02-20"));
     CHECK(read[0].barrier_type == "UpAndIn");
-    CHECK(read[0].lower_barrier == 1.2);
+    CHECK(read[0].lower_barrier == ores::utility::decimal::decimal::from_string("1.2").value());
     CHECK(!read[0].upper_barrier.has_value());
     BOOST_LOG_SEV(lg, debug) << "Read FX barrier option instrument: " << read[0];
 }

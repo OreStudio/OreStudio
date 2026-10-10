@@ -28,10 +28,12 @@
 #include "ores.refdata.api/domain/curve_segment.hpp"
 #include "ores.refdata.api/domain/curve_segment_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/curve_segment_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -70,7 +72,9 @@ domain::curve_segment curve_segment_mapper::map(const curve_segment_entity& v) {
     r.ibor_index = v.ibor_index;
     r.rfr_curve = v.rfr_curve;
     r.rfr_index = v.rfr_index;
-    r.spread = v.spread;
+    r.spread = v.spread.has_value() ?
+                   std::optional(ores::utility::decimal::decimal::from_string(*v.spread).value()) :
+                   std::nullopt;
     r.base_curve = v.base_curve;
     r.base_curve_currency = v.base_curve_currency;
     r.numerator_curve = v.numerator_curve;
@@ -119,7 +123,7 @@ curve_segment_entity curve_segment_mapper::map(const domain::curve_segment& v) {
     r.ibor_index = v.ibor_index;
     r.rfr_curve = v.rfr_curve;
     r.rfr_index = v.rfr_index;
-    r.spread = v.spread;
+    r.spread = v.spread.has_value() ? std::optional(v.spread->to_string()) : std::nullopt;
     r.base_curve = v.base_curve;
     r.base_curve_currency = v.base_curve_currency;
     r.numerator_curve = v.numerator_curve;

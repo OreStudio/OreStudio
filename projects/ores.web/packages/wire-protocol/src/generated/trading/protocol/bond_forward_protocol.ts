@@ -40,7 +40,7 @@ export interface BondForwardWrite {
     forward_settlement_date: string | null;
     settlement: string | null;
     amount: string | null;
-    lock_rate: number | null;
+    lock_rate: string | null;
     dv01: string | null;
     lock_rate_day_counter: string | null;
     settlement_dirty: string | null;

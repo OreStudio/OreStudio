@@ -99,7 +99,7 @@ refuses an empty name.
 
 ** strike
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: ores::utility::decimal::decimal
 :nullable: false
 :END:
@@ -111,8 +111,8 @@ money-role value per D11, so the column is an exact numeric.
 
 ** weight
 :PROPERTIES:
-:type:     numeric(28, 10)
-:cpp_type: std::optional<ores::utility::decimal::decimal>
+:type:          double precision
+:cpp_type:      std::optional<double>
 :nullable: true
 :END:
 

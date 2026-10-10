@@ -121,7 +121,7 @@ std::string("USD")
 
 ** notional
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :END:
@@ -149,7 +149,7 @@ std::string("Call")
 
 ** strike
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :END:
@@ -203,7 +203,7 @@ std::string("Long")
 
 ** lower_barrier
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :END:
@@ -231,7 +231,7 @@ std::string("UpAndOut")
 
 ** upper_barrier
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -251,7 +251,7 @@ Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrier
 
 ** rebate
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:

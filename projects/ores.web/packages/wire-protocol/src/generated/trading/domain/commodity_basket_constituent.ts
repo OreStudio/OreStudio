@@ -37,7 +37,7 @@ export interface CommodityBasketConstituent {
     sequence_number: number;
     trade_activity_id: string;
     underlying_code: string;
-    weight: string | null;
+    weight: number | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

@@ -131,10 +131,10 @@ Expressed as a decimal fraction (e.g., 0.5 for 50%).
 
 ** protection_fee
 :PROPERTIES:
-:type:          double precision
-:cpp_type:      std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: std::nullopt
+:default_value: ores::utility::decimal::decimal{}
 :END:
 
 Optional protection fee paid by the buyer.

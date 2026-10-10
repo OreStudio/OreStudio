@@ -48,9 +48,7 @@ render_rpa_instrument_fields(const domain::rpa_instrument& v) {
                       .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back({.name = "Reference Counterparty", .value = v.reference_counterparty});
     fields.push_back({.name = "Participation Rate", .value = std::to_string(v.participation_rate)});
-    fields.push_back(
-        {.name = "Protection Fee",
-         .value = v.protection_fee ? std::to_string(*v.protection_fee) : std::string{}});
+    fields.push_back({.name = "Protection Fee", .value = v.protection_fee.to_string()});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

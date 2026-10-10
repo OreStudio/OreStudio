@@ -61,7 +61,7 @@ fx_digital_option_instrument make_instrument(database_helper& h) {
     r.option_type = "Call";
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2033-02-20");
     r.long_short = "Long";
-    r.strike = 1.1;
+    r.strike = ores::utility::decimal::decimal::from_string("1.1").value();
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
     r.audit.change_reason_code = "system.external_data_import";
@@ -96,7 +96,7 @@ TEST_CASE("fx_digital_option_instrument_write_and_read_latest", tags) {
     CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2033-02-20"));
     CHECK(read[0].long_short == "Long");
     REQUIRE(read[0].strike.has_value());
-    CHECK(*read[0].strike == 1.1);
+    CHECK(*read[0].strike == ores::utility::decimal::decimal::from_string("1.1").value());
     CHECK(!read[0].lower_barrier.has_value());
     CHECK(!read[0].upper_barrier.has_value());
     BOOST_LOG_SEV(lg, debug) << "Read FX digital option instrument: " << read[0];

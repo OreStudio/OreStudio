@@ -45,14 +45,14 @@ render_fx_accumulator_instrument_fields(const domain::fx_accumulator_instrument&
                       .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Fixing Amount", .value = v.fixing_amount.to_string()});
-    fields.push_back({.name = "Strike", .value = std::to_string(v.strike)});
+    fields.push_back({.name = "Strike", .value = v.strike.to_string()});
     fields.push_back({.name = "Underlying Code", .value = v.underlying_code});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Start Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
     fields.push_back(
         {.name = "Knock Out Barrier",
-         .value = v.knock_out_barrier ? std::to_string(*v.knock_out_barrier) : std::string{}});
+         .value = v.knock_out_barrier ? v.knock_out_barrier->to_string() : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

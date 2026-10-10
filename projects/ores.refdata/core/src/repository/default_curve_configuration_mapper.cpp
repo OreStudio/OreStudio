@@ -28,10 +28,12 @@
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/default_curve_configuration_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -65,7 +67,10 @@ default_curve_configuration_mapper::map(const default_curve_configuration_entity
     r.calendar = v.calendar;
     r.conventions = v.conventions;
     r.extrapolation = v.extrapolation;
-    r.running_spread = v.running_spread;
+    r.running_spread =
+        v.running_spread.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.running_spread).value()) :
+            std::nullopt;
     r.index_term = v.index_term;
     r.imply_default_from_market = v.imply_default_from_market;
     r.allow_negative_rates = v.allow_negative_rates;
@@ -109,7 +114,8 @@ default_curve_configuration_mapper::map(const domain::default_curve_configuratio
     r.calendar = v.calendar;
     r.conventions = v.conventions;
     r.extrapolation = v.extrapolation;
-    r.running_spread = v.running_spread;
+    r.running_spread =
+        v.running_spread.has_value() ? std::optional(v.running_spread->to_string()) : std::nullopt;
     r.index_term = v.index_term;
     r.imply_default_from_market = v.imply_default_from_market;
     r.allow_negative_rates = v.allow_negative_rates;

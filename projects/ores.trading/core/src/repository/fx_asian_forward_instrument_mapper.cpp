@@ -81,7 +81,9 @@ fx_asian_forward_instrument_mapper::map(const fx_asian_forward_instrument_entity
         v.target_amount.has_value() ?
             std::optional(ores::utility::decimal::decimal::from_string(*v.target_amount).value()) :
             std::nullopt;
-    r.strike = v.strike;
+    r.strike = v.strike.has_value() ?
+                   std::optional(ores::utility::decimal::decimal::from_string(*v.strike).value()) :
+                   std::nullopt;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -125,7 +127,7 @@ fx_asian_forward_instrument_mapper::map(const domain::fx_asian_forward_instrumen
         v.fixing_amount.has_value() ? std::optional(v.fixing_amount->to_string()) : std::nullopt;
     r.target_amount =
         v.target_amount.has_value() ? std::optional(v.target_amount->to_string()) : std::nullopt;
-    r.strike = v.strike;
+    r.strike = v.strike.has_value() ? std::optional(v.strike->to_string()) : std::nullopt;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

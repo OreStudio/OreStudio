@@ -28,7 +28,6 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -44,7 +43,7 @@ render_knock_out_swap_instrument_fields(const domain::knock_out_swap_instrument&
     fields.push_back(
         {.name = "Barrier Start Date",
          .value = ores::platform::time::datetime::to_iso8601_date(v.barrier_start_date)});
-    fields.push_back({.name = "Barrier Level", .value = std::to_string(v.barrier_level)});
+    fields.push_back({.name = "Barrier Level", .value = v.barrier_level.to_string()});
     fields.push_back({.name = "Barrier Type", .value = v.barrier_type});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

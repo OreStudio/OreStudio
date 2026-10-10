@@ -57,7 +57,7 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     "version" integer not null,
     "security_id" text not null,
     "issuer" text null,
-    "face_value" numeric(28, 10) null,
+    "face_value" numeric(38, 12) null,
     "issue_date" date null,
     "settlement_days" integer null,
     "calendar" text null,
@@ -103,7 +103,7 @@ create index if not exists bond_issues_tenant_idx
 on "ores_trading_bond_issues_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists bond_issues_security_idx
+create index if not exists bond_issues_security_idx
 on "ores_trading_bond_issues_tbl" (tenant_id, security_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

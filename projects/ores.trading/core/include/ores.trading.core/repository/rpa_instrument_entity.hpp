@@ -51,7 +51,7 @@ struct rpa_instrument_entity {
     std::string maturity_date;
     std::string reference_counterparty;
     double participation_rate = 0.0;
-    std::optional<double> protection_fee;
+    std::string protection_fee;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

@@ -31,7 +31,7 @@ import type { BondOptionSettlement } from './bond_option_settlement.js';
  * writes. Renaming them breaks the wire silently, so they are not renamed.
  */
 export interface BondOptionPremium {
-    amount: number;
+    amount: string;
     currency: string;
     pay_date: string;
     settlement: BondOptionSettlement | null;

@@ -69,7 +69,7 @@ struct curve_segment_entity {
     std::optional<std::string> ibor_index;
     std::optional<std::string> rfr_curve;
     std::optional<std::string> rfr_index;
-    std::optional<double> spread;
+    std::optional<std::string> spread;
     std::optional<std::string> base_curve;
     std::optional<std::string> base_curve_currency;
     std::optional<std::string> numerator_curve;

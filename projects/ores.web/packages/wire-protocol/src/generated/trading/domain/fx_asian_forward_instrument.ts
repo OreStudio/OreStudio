@@ -44,7 +44,7 @@ export interface FxAsianForwardInstrument {
     currency: string;
     fixing_amount: string | null;
     target_amount: string | null;
-    strike: number | null;
+    strike: string | null;
     description: string;
     audit: AuditRecord;
 }

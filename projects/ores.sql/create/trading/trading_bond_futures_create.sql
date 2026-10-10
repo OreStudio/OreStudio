@@ -56,7 +56,7 @@ create table if not exists "ores_trading_bond_futures_tbl" (
     "version" integer not null,
     "trade_activity_id" uuid not null,
     "contract_name" text not null,
-    "contract_notional" numeric(28, 10) not null,
+    "contract_notional" numeric(38, 12) not null,
     "long_short" text not null,
     "apply_conversion_factor" boolean null,
     "use_future_price" boolean null,

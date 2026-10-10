@@ -62,7 +62,7 @@ struct fx_accumulator_instrument final {
     /**
      * @brief Fixed strike rate. Must be positive.
      */
-    double strike = 0.0;
+    ores::utility::decimal::decimal strike = ores::utility::decimal::decimal{};
 
     /**
      * @brief FX pair or index identifier (e.g. TR20H-EUR-JPY).
@@ -86,7 +86,7 @@ struct fx_accumulator_instrument final {
     /**
      * @brief Primary UpAndOut knock-out barrier level. Absent when no barrier.
      */
-    std::optional<double> knock_out_barrier;
+    std::optional<ores::utility::decimal::decimal> knock_out_barrier;
 
     /**
      * @brief Optional free-text description.

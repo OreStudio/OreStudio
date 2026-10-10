@@ -41,7 +41,7 @@ struct bond_option_premium {
     /**
      * @brief The premium amount.
      */
-    double amount;
+    ores::utility::decimal::decimal amount;
 
     /**
      * @brief The currency the premium pays in.

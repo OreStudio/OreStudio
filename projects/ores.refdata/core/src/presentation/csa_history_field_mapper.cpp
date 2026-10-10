@@ -51,16 +51,15 @@ std::vector<ores::diff::domain::field_value> render_csa_fields(const domain::csa
          .value = v.threshold_receive ? std::to_string(*v.threshold_receive) : std::string{}});
     fields.push_back({.name = "Minimum Transfer Amount Pay",
                       .value = v.minimum_transfer_amount_pay ?
-                                   std::to_string(*v.minimum_transfer_amount_pay) :
+                                   v.minimum_transfer_amount_pay->to_string() :
                                    std::string{}});
     fields.push_back({.name = "Minimum Transfer Amount Receive",
                       .value = v.minimum_transfer_amount_receive ?
-                                   std::to_string(*v.minimum_transfer_amount_receive) :
+                                   v.minimum_transfer_amount_receive->to_string() :
                                    std::string{}});
     fields.push_back({.name = "Independent Amount Held",
-                      .value = v.independent_amount_held ?
-                                   std::to_string(*v.independent_amount_held) :
-                                   std::string{}});
+                      .value = v.independent_amount_held ? v.independent_amount_held->to_string() :
+                                                           std::string{}});
     fields.push_back({.name = "Independent Amount Type",
                       .value = v.independent_amount_type.value_or(std::string{})});
     fields.push_back({.name = "Call Frequency", .value = v.call_frequency.value_or(std::string{})});
@@ -69,11 +68,11 @@ std::vector<ores::diff::domain::field_value> render_csa_fields(const domain::csa
                       .value = v.margin_period_of_risk.value_or(std::string{})});
     fields.push_back({.name = "Collateral Compounding Spread Receive",
                       .value = v.collateral_compounding_spread_receive ?
-                                   std::to_string(*v.collateral_compounding_spread_receive) :
+                                   v.collateral_compounding_spread_receive->to_string() :
                                    std::string{}});
     fields.push_back({.name = "Collateral Compounding Spread Pay",
                       .value = v.collateral_compounding_spread_pay ?
-                                   std::to_string(*v.collateral_compounding_spread_pay) :
+                                   v.collateral_compounding_spread_pay->to_string() :
                                    std::string{}});
     fields.push_back({.name = "Apply Initial Margin",
                       .value = v.apply_initial_margin ?

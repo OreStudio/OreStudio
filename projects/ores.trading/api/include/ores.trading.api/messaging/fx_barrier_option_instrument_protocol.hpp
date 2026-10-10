@@ -51,8 +51,8 @@ struct fx_barrier_option_instrument_write {
     std::chrono::year_month_day expiry_date;
     std::string settlement;
     std::string barrier_type;
-    double lower_barrier;
-    std::optional<double> upper_barrier;
+    ores::utility::decimal::decimal lower_barrier;
+    std::optional<ores::utility::decimal::decimal> upper_barrier;
     std::string underlying_code;
     std::string description;
 };

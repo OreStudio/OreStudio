@@ -36,7 +36,7 @@ export interface KnockOutSwapInstrument {
     trade_id: string;
     trade_activity_id: string;
     barrier_start_date: string;
-    barrier_level: number;
+    barrier_level: string;
     barrier_type: string;
     modified_by: string;
     performed_by: string;

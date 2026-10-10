@@ -39,7 +39,7 @@ create table if not exists "ores_trading_knock_out_swap_instruments_tbl" (
     "version" integer not null,
     "trade_activity_id" uuid not null,
     "barrier_start_date" date not null,
-    "barrier_level" numeric(18, 10) not null,
+    "barrier_level" numeric(38, 12) not null,
     "barrier_type" text not null,
     "modified_by" text not null,
     "performed_by" text not null,

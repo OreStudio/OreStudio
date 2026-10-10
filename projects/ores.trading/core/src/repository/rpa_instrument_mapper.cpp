@@ -29,6 +29,7 @@
 #include "ores.trading.api/domain/rpa_instrument.hpp"
 #include "ores.trading.api/domain/rpa_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/rpa_instrument_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -55,7 +56,7 @@ domain::rpa_instrument rpa_instrument_mapper::map(const rpa_instrument_entity& v
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.reference_counterparty = v.reference_counterparty;
     r.participation_rate = v.participation_rate;
-    r.protection_fee = v.protection_fee;
+    r.protection_fee = ores::utility::decimal::decimal::from_string(v.protection_fee).value();
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -80,7 +81,7 @@ rpa_instrument_entity rpa_instrument_mapper::map(const domain::rpa_instrument& v
     r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.reference_counterparty = v.reference_counterparty;
     r.participation_rate = v.participation_rate;
-    r.protection_fee = v.protection_fee;
+    r.protection_fee = v.protection_fee.to_string();
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

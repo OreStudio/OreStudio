@@ -50,10 +50,10 @@ struct fx_digital_option_instrument_write {
     std::string option_type;
     std::chrono::year_month_day expiry_date;
     std::string long_short;
-    std::optional<double> strike;
+    std::optional<ores::utility::decimal::decimal> strike;
     std::string barrier_type;
-    std::optional<double> lower_barrier;
-    std::optional<double> upper_barrier;
+    std::optional<ores::utility::decimal::decimal> lower_barrier;
+    std::optional<ores::utility::decimal::decimal> upper_barrier;
     std::string description;
 };
 

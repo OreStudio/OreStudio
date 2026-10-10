@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_SWAP_LEG_RATE_HPP
 #define ORES_TRADING_API_DOMAIN_SWAP_LEG_RATE_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -101,7 +102,7 @@ struct swap_leg_rate final {
     /**
      * @brief The rate or the spread, as a decimal: 0.05 is five per cent.
      */
-    double value;
+    ores::utility::decimal::decimal value;
 
     /**
      * @brief Username of the person who last modified this swap leg rate.

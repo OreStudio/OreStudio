@@ -42,7 +42,8 @@ std::vector<ores::diff::domain::field_value> render_bond_trs_fields(const domain
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Return Type", .value = v.return_type});
     fields.push_back({.name = "Funding Leg Type", .value = v.funding_leg_type});
-    fields.push_back({.name = "Funding Rate", .value = std::to_string(v.funding_rate)});
+    fields.push_back({.name = "Funding Rate",
+                      .value = v.funding_rate ? v.funding_rate->to_string() : std::string{}});
     fields.push_back({.name = "Funding Index", .value = v.funding_index});
     fields.push_back({.name = "Payer", .value = v.payer.value_or(std::string{})});
     fields.push_back({.name = "Price Type", .value = v.price_type.value_or(std::string{})});

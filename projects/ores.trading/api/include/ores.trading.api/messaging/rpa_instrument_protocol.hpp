@@ -46,7 +46,7 @@ struct rpa_instrument_write {
     std::chrono::year_month_day maturity_date;
     std::string reference_counterparty;
     double participation_rate;
-    std::optional<double> protection_fee;
+    ores::utility::decimal::decimal protection_fee;
     std::string description;
 };
 

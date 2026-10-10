@@ -496,6 +496,11 @@ export interface ReportingTreeNode {
     full_name: string;
     job_title: string;
     /**
+     * @brief The account's kind: =user= for a person, otherwise the kind of service
+     * account. A reader tells a person from a service by it.
+     */
+    account_type: string;
+    /**
      * @brief The id of the account's picture, or empty when it has none. The
      * picture is drawn from this identifier, so a reader who may see the tree needs
      * no read of the account to draw the person.

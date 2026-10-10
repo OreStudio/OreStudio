@@ -144,6 +144,27 @@ public:
             throw std::runtime_error(reason);
 
         auto sys_ctx = tenant_context::with_system_tenant(ctx_);
+        /*
+         * A tenant that already holds the code or the hostname is refused with
+         * a sentence about it. The insert would refuse it too, but with a
+         * constraint violation no person can act on.
+         */
+        const auto taken = execute_parameterized_multi_column_query(
+            sys_ctx,
+            "SELECT code, hostname FROM ores_iam_tenants_tbl"
+            " WHERE valid_to = ores_utility_infinity_timestamp_fn()"
+            " AND (code = $1 OR hostname = $2)",
+            {code, hostname},
+            lg(),
+            "Checking the tenant code and hostname are free");
+        for (const auto& row : taken) {
+            if (row.size() >= 2 && row[0] && *row[0] == code)
+                throw std::runtime_error("A tenant with the code '" + code +
+                                         "' already exists. Sign in to it, or choose another name.");
+            throw std::runtime_error("A tenant with the hostname '" + hostname +
+                                     "' already exists. Choose another hostname.");
+        }
+
         const auto rows = execute_parameterized_multi_column_query(
             sys_ctx,
             "SELECT tenant_id::text, system_party_id::text"

@@ -1096,6 +1096,18 @@ from here is what the registrar subscribes with.
 :cpp_type: std::string
 :END:
 
+*** account_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account's kind: =user= for a person, otherwise the kind of service
+ * account. A reader tells a person from a service by it.
+ */
+#+end_src
+
 *** image_id
 :PROPERTIES:
 :cpp_type: std::string

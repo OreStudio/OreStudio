@@ -672,6 +672,11 @@ struct reporting_tree_node {
     std::string full_name;
     std::string job_title;
     /**
+     * @brief The account's kind: =user= for a person, otherwise the kind of service
+     * account. A reader tells a person from a service by it.
+     */
+    std::string account_type;
+    /**
      * @brief The id of the account's picture, or empty when it has none. The
      * picture is drawn from this identifier, so a reader who may see the tree needs
      * no read of the account to draw the person.

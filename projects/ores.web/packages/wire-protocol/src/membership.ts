@@ -234,6 +234,8 @@ export const reportingTreeNodeSchema = z.object({
     username: z.string(),
     fullName: z.string(),
     jobTitle: z.string(),
+    /** =user= for a person, otherwise the kind of service account. */
+    accountType: z.string(),
     /** The picture's id, or null: a reader draws the person without reading the account. */
     imageId: z.string().nullable(),
     /** The manager, or null when the account is a root or the manager is out of view. */
@@ -272,6 +274,7 @@ const wireReportingTreeNodeSchema = z.object({
     username: z.string(),
     full_name: z.string(),
     job_title: z.string(),
+    account_type: z.string().default('user'),
     image_id: z.string().default(''),
     reports_to_account_id: z.string().default(''),
     reports_outside_scope: z.boolean().default(false),
@@ -303,6 +306,7 @@ const wireReportingTreeSchema = z
                 username: node.username,
                 fullName: node.full_name,
                 jobTitle: node.job_title,
+                accountType: node.account_type,
                 imageId: node.image_id === '' ? null : node.image_id,
                 reportsToAccountId:
                     node.reports_to_account_id === '' ? null : node.reports_to_account_id,

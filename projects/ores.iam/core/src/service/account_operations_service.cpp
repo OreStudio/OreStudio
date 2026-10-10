@@ -1202,6 +1202,7 @@ messaging::get_reporting_tree_response account_operations_service::get_reporting
             .username = account->username,
             .full_name = account->full_name,
             .job_title = account->job_title,
+            .account_type = account->account_type,
             .image_id = account->image_id ? boost::uuids::to_string(*account->image_id) :
                                             std::string{},
             .reports_to_account_id = manager_of(*account).value_or(std::string{}),

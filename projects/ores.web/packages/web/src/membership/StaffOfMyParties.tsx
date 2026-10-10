@@ -86,6 +86,8 @@ export function StaffOfMyParties(): ReactNode {
                     <thead>
                         <tr className="border-b border-line text-left text-xs text-ink-muted">
                             <th className="px-4 py-2 font-medium">{t('access.people.person')}</th>
+                            <th className="px-4 py-2 font-medium">{t('access.people.username')}</th>
+                            <th className="px-4 py-2 font-medium">{t('signIns.kind')}</th>
                             <th className="px-4 py-2 font-medium">{t('access.people.jobTitle')}</th>
                             <th className="px-4 py-2 font-medium">
                                 {t('access.people.partiesColumn')}
@@ -100,6 +102,16 @@ export function StaffOfMyParties(): ReactNode {
                                         <NodeAvatar node={node} size="sm" />
                                         {nameOf(node)}
                                     </span>
+                                </td>
+                                <td className="px-4 py-2 font-mono">{node.username}</td>
+                                <td className="px-4 py-2">
+                                    {node.accountType === 'user' ? (
+                                        <span className="text-ink-muted">
+                                            {t('signIns.person')}
+                                        </span>
+                                    ) : (
+                                        <Tag tone="accent">{t('signIns.service')}</Tag>
+                                    )}
                                 </td>
                                 <td className="px-4 py-2">{node.jobTitle}</td>
                                 <td className="px-4 py-2">
@@ -116,7 +128,7 @@ export function StaffOfMyParties(): ReactNode {
                         ))}
                         {people.length === 0 && (
                             <tr>
-                                <td colSpan={3} className="px-4 py-3 text-ink-muted">
+                                <td colSpan={5} className="px-4 py-3 text-ink-muted">
                                     {t('access.nothingMatches')}
                                 </td>
                             </tr>

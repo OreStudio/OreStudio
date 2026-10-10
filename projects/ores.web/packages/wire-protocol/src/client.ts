@@ -20,7 +20,11 @@
  */
 
 import type { ListPartiesRequest } from './generated/refdata/protocol/party_protocol.js';
-import type { ServiceRosterSlot } from './generated/telemetry/protocol/service_samples_protocol.js';
+import {
+    subjects as serviceSampleSubjects,
+    type ServiceHeartbeatMessage,
+    type ServiceRosterSlot,
+} from './generated/telemetry/protocol/service_samples_protocol.js';
 import type { Host } from './generated/compute/domain/host.js';
 import type {
     NatsServerSample,
@@ -997,6 +1001,21 @@ export class OresClient {
                 // An event this build does not understand is one it cannot act on.
             }
         });
+    }
+
+    /**
+     * Tells the registry this process is running.
+     *
+     * Published, not asked for, and not authenticated: the subject needs no
+     * session. A transport that cannot publish makes this a no-op, because a
+     * heartbeat that cannot be sent is a service the roster shows as missing,
+     * which is the truth.
+     */
+    publishServiceHeartbeat(message: ServiceHeartbeatMessage): void {
+        this.#transport.publish?.(
+            serviceSampleSubjects.service_heartbeat_message,
+            this.#codec.encode(message),
+        );
     }
 
     /** Lists one page of accounts. */

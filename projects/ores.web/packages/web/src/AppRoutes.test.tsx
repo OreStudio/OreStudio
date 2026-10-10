@@ -309,7 +309,7 @@ describe('the route table once the flag is clear', () => {
 
         expect(html).toContain('New party journey');
         expect(html).toContain('href="/refdata"');
-        expect(html).toContain('Add party');
+        expect(html).toContain('Onboard a party');
         expect(html).toContain('Sign out');
     });
 

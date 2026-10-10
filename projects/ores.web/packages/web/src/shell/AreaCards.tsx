@@ -47,6 +47,7 @@ function useTiles(ids: readonly CardId[], mode: SessionMode): readonly Tile[] {
             body: t(card.bodyKey),
             to: card.to,
             icon: card.icon,
+            ...(card.kind === 'workflow' ? { workflow: t('cardKind.workflow') } : {}),
         }));
 }
 

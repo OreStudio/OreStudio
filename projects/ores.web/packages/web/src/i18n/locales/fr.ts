@@ -786,6 +786,10 @@ const fr: SourceCatalogue = {
         slow: "Le serveur est lent à répondre. Le menu et l'accueil peuvent manquer de parties tant qu'il ne répond pas.",
         failed: "Vos accès n'ont pas pu être lus, donc des parties du menu et de l'accueil manquent.",
     },
+    cardKind: {
+        workflow: 'Flux de travail',
+    },
+
     profile: {
         reason: {
             system_update: 'Modification courante',
@@ -1181,17 +1185,17 @@ const fr: SourceCatalogue = {
             lead: 'Connecté en tant que {name}',
             parties: 'Parties',
             partiesBody: 'Les sociétés et succursales de votre groupe, et leurs liens.',
-            newParty: 'Ajouter une partie',
+            newParty: 'Intégrer une partie',
             newPartyBody: 'Ajouter une société ou une succursale à votre groupe.',
-            partyDetails: 'Corriger une partie',
+            partyDetails: "Corriger les détails d'une partie",
             partyDetailsBody:
                 "Corriger la fiche, les identifiants et la structure d'une entité juridique.",
             counterpartyOnboard: 'Intégrer une contrepartie',
             counterpartyOnboardBody: 'Intégrer une entité juridique avec laquelle vous traitez.',
-            bookStructure: 'Structure des livres',
+            bookStructure: 'Façonner la structure des livres',
             bookStructureBody:
                 'Placer les livres dans des portefeuilles, les classer et lire qui peut les voir.',
-            conventions: 'Conventions',
+            conventions: "Définir les conventions d'instruments",
             conventionsBody: "Rédiger les termes qu'ORE utilise pour un instrument.",
             rescue: "Récupération d'accès",
             rescueBody: 'Aider quelqu’un qui ne peut pas se connecter, ou bloquer un compte.',
@@ -2665,11 +2669,10 @@ const fr: SourceCatalogue = {
         crumbs: "Fil d'Ariane",
         groups: {
             parties: 'Parties et contreparties',
-            books: 'Livres et portefeuilles',
             currencies: 'Devises et change',
             calendars: 'Calendriers et échéances',
-            conventions: 'Conventions',
             classifications: 'Classifications',
+            workflows: 'Flux de travail',
         },
         area: {
             title: 'Données de référence',

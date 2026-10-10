@@ -41,6 +41,11 @@ export interface Tile {
      * meaning.
      */
     readonly icon?: IconName;
+    /**
+     * A workflow tile starts a guided run of steps and not a screen, so it wears
+     * its own hue and a tag with this word.
+     */
+    readonly workflow?: string;
 }
 
 /**
@@ -50,14 +55,19 @@ export interface Tile {
  * when the pointer arrives. A place that cannot yet wears the future hue, so
  * the grid says which is which before a word of it is read.
  */
-function Mark({ name, future }: { readonly name: IconName; readonly future: boolean }): ReactNode {
+type MarkTone = 'live' | 'future' | 'workflow';
+
+const MARK_CLASSES: Readonly<Record<MarkTone, string>> = {
+    live: 'border-accent-line bg-accent-dim text-accent transition-colors group-hover:bg-accent group-hover:text-ink-inverse',
+    future: 'border-roadmap-line bg-roadmap-dim text-roadmap',
+    workflow:
+        'border-flow-line bg-flow-dim text-flow transition-colors group-hover:bg-flow group-hover:text-ink-inverse',
+};
+
+function Mark({ name, tone }: { readonly name: IconName; readonly tone: MarkTone }): ReactNode {
     return (
         <span
-            className={
-                future
-                    ? 'flex h-9 w-9 items-center justify-center rounded-chip border border-roadmap-line bg-roadmap-dim text-roadmap'
-                    : 'flex h-9 w-9 items-center justify-center rounded-chip border border-accent-line bg-accent-dim text-accent transition-colors group-hover:bg-accent group-hover:text-ink-inverse'
-            }
+            className={`flex h-9 w-9 items-center justify-center rounded-chip border ${MARK_CLASSES[tone]}`}
         >
             <Icon name={name} />
         </span>
@@ -77,7 +87,7 @@ export function Tiles({
                 tile.to === undefined ? (
                     <div key={tile.title} className="card flex flex-col p-4">
                         <div className="flex items-start">
-                            {tile.icon !== undefined && <Mark name={tile.icon} future />}
+                            {tile.icon !== undefined && <Mark name={tile.icon} tone="future" />}
                         </div>
                         <span className="mt-3 text-sm font-semibold text-ink">{tile.title}</span>
                         <span className="mt-1 text-sm text-ink-muted">{tile.body}</span>
@@ -93,12 +103,32 @@ export function Tiles({
                     <Link
                         key={tile.title}
                         to={tile.to}
-                        className="card group flex flex-col p-4 transition-[border-color,box-shadow] hover:border-accent-line hover:shadow-glow focus-visible:outline-accent"
+                        className={
+                            tile.workflow === undefined
+                                ? 'card group flex flex-col p-4 transition-[border-color,box-shadow] hover:border-accent-line hover:shadow-glow focus-visible:outline-accent'
+                                : 'card group flex flex-col border-flow-line p-4 transition-[border-color,box-shadow] hover:border-flow focus-visible:outline-flow'
+                        }
                     >
-                        <div className="flex items-start">
-                            {tile.icon !== undefined && <Mark name={tile.icon} future={false} />}
+                        <div className="flex items-start justify-between">
+                            {tile.icon !== undefined && (
+                                <Mark
+                                    name={tile.icon}
+                                    tone={tile.workflow === undefined ? 'live' : 'workflow'}
+                                />
+                            )}
+                            {tile.workflow !== undefined && (
+                                <span className="rounded-chip border border-flow-line bg-flow-dim px-1.5 py-0.5 text-micro tracking-label text-flow uppercase">
+                                    {tile.workflow}
+                                </span>
+                            )}
                         </div>
-                        <span className="mt-3 text-sm font-semibold text-ink transition-colors group-hover:text-accent-bright">
+                        <span
+                            className={
+                                tile.workflow === undefined
+                                    ? 'mt-3 text-sm font-semibold text-ink transition-colors group-hover:text-accent-bright'
+                                    : 'mt-3 text-sm font-semibold text-ink transition-colors group-hover:text-flow'
+                            }
+                        >
                             {tile.title}
                         </span>
                         <span className="mt-1 text-sm text-ink-muted">{tile.body}</span>

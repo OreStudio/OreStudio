@@ -42,6 +42,11 @@ export interface CardDef extends Pick<MenuItem, 'permission' | 'scope'> {
      * texts equal in every language.
      */
     readonly screenTitleKey?: string;
+    /**
+     * A workflow card starts a guided run of steps and not a screen. Its title
+     * is a verb and its object, and it wears its own hue and a tag.
+     */
+    readonly kind?: 'workflow';
 }
 
 export const CARDS = {
@@ -59,6 +64,7 @@ export const CARDS = {
         to: PATHS.newParty,
         icon: 'add',
         permission: 'refdata::parties:write',
+        kind: 'workflow',
     },
     partyDetails: {
         titleKey: 'home.tenant.partyDetails',
@@ -66,6 +72,7 @@ export const CARDS = {
         to: PATHS.partyDetails,
         icon: 'party',
         permission: 'refdata::parties:write',
+        kind: 'workflow',
     },
     onboardCounterparty: {
         titleKey: 'home.tenant.counterpartyOnboard',
@@ -73,12 +80,14 @@ export const CARDS = {
         to: PATHS.onboardCounterparty,
         icon: 'people',
         permission: 'refdata::counterparties:write',
+        kind: 'workflow',
     },
     bookStructure: {
         titleKey: 'home.tenant.bookStructure',
         bodyKey: 'home.tenant.bookStructureBody',
         to: PATHS.bookStructure,
         icon: 'database',
+        kind: 'workflow',
     },
     currencies: {
         titleKey: 'refdata.area.screens.currencies',
@@ -113,6 +122,7 @@ export const CARDS = {
         bodyKey: 'home.tenant.conventionsBody',
         to: PATHS.conventions,
         icon: 'document',
+        kind: 'workflow',
     },
     classifications: {
         titleKey: 'refdata.classifications.title',
@@ -234,18 +244,23 @@ export interface CardGroup {
 /** The cards of each area, in the order the area page draws them. */
 export const AREA_GROUPS = {
     refdata: [
-        {
-            titleKey: 'refdata.groups.parties',
-            cards: ['parties', 'newParty', 'partyDetails', 'onboardCounterparty'],
-        },
-        { titleKey: 'refdata.groups.books', cards: ['bookStructure'] },
+        { titleKey: 'refdata.groups.parties', cards: ['parties'] },
         {
             titleKey: 'refdata.groups.currencies',
             cards: ['currencies', 'currencyPairs', 'deskGroups'],
         },
         { titleKey: 'refdata.groups.calendars', cards: ['calendars'] },
-        { titleKey: 'refdata.groups.conventions', cards: ['conventions'] },
         { titleKey: 'refdata.groups.classifications', cards: ['classifications'] },
+        {
+            titleKey: 'refdata.groups.workflows',
+            cards: [
+                'newParty',
+                'partyDetails',
+                'onboardCounterparty',
+                'bookStructure',
+                'conventions',
+            ],
+        },
     ],
     organisation: [
         { titleKey: 'access.hub.title', cards: ['people', 'hierarchy', 'roles', 'rescue'] },

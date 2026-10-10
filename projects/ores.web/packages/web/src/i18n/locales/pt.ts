@@ -782,6 +782,10 @@ const pt: SourceCatalogue = {
         slow: 'O servidor demora a responder. O menu e o início podem ter partes em falta até responder.',
         failed: 'Não foi possível ler o seu acesso, por isso faltam partes do menu e do início.',
     },
+    cardKind: {
+        workflow: 'Fluxo de trabalho',
+    },
+
     profile: {
         reason: {
             system_update: 'Alteração normal',
@@ -1173,17 +1177,17 @@ const pt: SourceCatalogue = {
             lead: 'Entrou como {name}',
             parties: 'Partes',
             partiesBody: 'As empresas e sucursais do seu grupo, e como se relacionam.',
-            newParty: 'Adicionar parte',
+            newParty: 'Integrar uma parte',
             newPartyBody: 'Adicionar uma empresa ou uma sucursal ao seu grupo.',
-            partyDetails: 'Corrigir uma parte',
+            partyDetails: 'Corrigir os detalhes de uma parte',
             partyDetailsBody:
                 'Corrigir o registo, os identificadores e a estrutura de uma entidade jurídica.',
             counterpartyOnboard: 'Integrar uma contraparte',
             counterpartyOnboardBody: 'Integrar uma entidade jurídica com que negoceia.',
-            bookStructure: 'Estrutura dos livros',
+            bookStructure: 'Moldar a estrutura dos livros',
             bookStructureBody:
                 'Colocar livros em carteiras, classificá-los e ler quem os pode ver.',
-            conventions: 'Convenções',
+            conventions: 'Definir convenções de instrumentos',
             conventionsBody: 'Redigir os termos que o ORE usa para um instrumento.',
             rescue: 'Recuperação de acesso',
             rescueBody: 'Ajudar quem não consegue entrar, ou impedir que uma conta seja usada.',
@@ -2652,11 +2656,10 @@ const pt: SourceCatalogue = {
         crumbs: 'Caminho',
         groups: {
             parties: 'Partes e contrapartes',
-            books: 'Livros e carteiras',
             currencies: 'Moedas e câmbio',
             calendars: 'Calendários e prazos',
-            conventions: 'Convenções',
             classifications: 'Classificações',
+            workflows: 'Fluxos de trabalho',
         },
         area: {
             title: 'Dados de referência',

@@ -779,6 +779,10 @@ export const en: SourceCatalogue = {
         slow: 'The server is slow to answer. The menu and the home may be missing parts until it does.',
         failed: 'Your access could not be read, so parts of the menu and the home are missing.',
     },
+    cardKind: {
+        workflow: 'Workflow',
+    },
+
     profile: {
         reason: {
             system_update: 'Ordinary change',
@@ -1165,17 +1169,17 @@ export const en: SourceCatalogue = {
             lead: 'Signed in as {name}',
             parties: 'Parties',
             partiesBody: 'The companies and branches in your group, and how they relate.',
-            newParty: 'Add party',
+            newParty: 'Onboard a party',
             newPartyBody: 'Add a company or a branch to your group.',
-            partyDetails: 'Correct a party',
+            partyDetails: "Correct a party's details",
             partyDetailsBody:
                 'Correct the record, the identifiers and the structure of a legal entity.',
             counterpartyOnboard: 'Onboard a counterparty',
             counterpartyOnboardBody: 'Bring a legal entity you trade with on board.',
-            bookStructure: 'Book structure',
+            bookStructure: 'Shape the book structure',
             bookStructureBody:
                 'Place books in portfolios, classify them and read who may see them.',
-            conventions: 'Conventions',
+            conventions: 'Define instrument conventions',
             conventionsBody: 'Author the terms ORE uses for one instrument.',
             rescue: 'Rescue access',
             rescueBody: 'Help someone who cannot sign in, or stop an account from being used.',
@@ -2634,11 +2638,10 @@ export const en: SourceCatalogue = {
         crumbs: 'Breadcrumb',
         groups: {
             parties: 'Parties and counterparties',
-            books: 'Books and portfolios',
             currencies: 'Currencies and FX',
             calendars: 'Calendars and tenors',
-            conventions: 'Conventions',
             classifications: 'Classifications',
+            workflows: 'Workflows',
         },
         area: {
             title: 'Reference data',

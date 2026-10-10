@@ -72,6 +72,29 @@ describe('the cards', () => {
         expect(homeless).toEqual(['myAccess', 'security']);
     });
 
+    it('keep the workflows together, apart from the screens', () => {
+        for (const groups of Object.values(AREA_GROUPS)) {
+            for (const group of groups) {
+                const kinds = new Set(group.cards.map((id) => cardOf(id).kind ?? 'screen'));
+                expect(kinds.size, group.titleKey).toBe(1);
+                if (kinds.has('workflow')) {
+                    expect(group.titleKey).toMatch(/workflows$/);
+                }
+            }
+        }
+    });
+
+    it('name a workflow with a verb and its object, in English', () => {
+        const names = IDS.filter((id) => cardOf(id).kind === 'workflow').map(
+            (id) => enFlat[cardOf(id).titleKey] ?? '',
+        );
+
+        expect(names.length).toBeGreaterThan(0);
+        for (const name of names) {
+            expect(name, name).toMatch(/^(Onboard|Correct|Shape|Define) /);
+        }
+    });
+
     it('are drawn by no group twice', () => {
         const drawn = Object.values(AREA_GROUPS).flatMap((groups) =>
             groups.flatMap((group) => [...group.cards]),

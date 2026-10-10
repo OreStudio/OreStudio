@@ -182,8 +182,9 @@ begin
     if new.{{column}} is not null then
         if not exists (
             select 1 from {{table}}
-            where {{#junction.has_tenant_id}}tenant_id = new.tenant_id
-              and {{/junction.has_tenant_id}}{{target_column}} = new.{{column}}
+            where {{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
+              and {{/use_system_tenant}}{{^use_system_tenant}}{{#junction.has_tenant_id}}tenant_id = new.tenant_id
+              and {{/junction.has_tenant_id}}{{/use_system_tenant}}{{target_column}} = new.{{column}}
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception '{{error_message}}', new.{{column}}
@@ -196,8 +197,9 @@ begin
     -- Validate {{column}} (soft FK to {{table}})
     if not exists (
         select 1 from {{table}}
-        where {{#junction.has_tenant_id}}tenant_id = new.tenant_id
-          and {{/junction.has_tenant_id}}{{target_column}} = new.{{column}}
+        where {{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
+          and {{/use_system_tenant}}{{^use_system_tenant}}{{#junction.has_tenant_id}}tenant_id = new.tenant_id
+          and {{/junction.has_tenant_id}}{{/use_system_tenant}}{{target_column}} = new.{{column}}
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception '{{error_message}}', new.{{column}}

@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 3411B9E4-753C-456B-AE51-7CFA64B8EDF2
+:END:
+#+title: ores.inbox.approval_request_part
+#+description: Codegen junction model for approval_request_parts.
+#+type: ores.codegen.junction
+#+component: inbox
+#+filetags: :model:junction:inbox:
+#+name: approval_request_parts
+#+name_singular: approval_request_part
+#+name_title: Approval Request Part
+#+name_singular_words: approval request part
+#+brief: A part whose approval an approval request needs.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+A request needs the approval of one or more parts, and a part may be needed by
+many requests. Each row names one part a request needs, and is written when the
+request is raised. A decision carries the part it answers, so a request is
+approved when every part named here has an approval, in the order the parts give.
+
+A request with no rows here is a request of a kind that names one decider
+permission and a count, as the role request is, and it is decided as before.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
+
+* Left
+:PROPERTIES:
+:column:        request_id
+:column_short:  request
+:column_title:  Request
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for looking up the parts a request needs
+:list_by:       true
+:END:
+
+ID of the approval request.
+
+References ores_inbox_approval_requests_tbl.id.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        part_code
+:column_short:  part
+:column_title:  Part
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding the requests that need a part
+:END:
+
+Code of the part whose approval the request needs.
+
+References ores_inbox_approval_parts_tbl.code.
+
+#+begin_src cpp :name generator
+std::string("operations")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_inbox_approval_request_parts_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_inbox_approval_requests_tbl
+:error_message: Invalid request_id: %. No approval request found with this id.
+:END:
+
+The request; it must exist in ores_inbox_approval_requests_tbl.
+
+** part_code
+:PROPERTIES:
+:table:             ores_inbox_approval_parts_tbl
+:target_column:     code
+:use_system_tenant: true
+:error_message:     Invalid part_code: %. No approval part found with this code.
+:END:
+
+The part; it must exist in the parts the system tenant holds.
+
+* Repository
+:PROPERTIES:
+:name_singular_short: approval_request_part
+:name_short:          approval_request_parts
+:name_singular_words: approval request part
+:name_words:          approval request parts
+:order_column:        part_code
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: arp
+:END:
+
+** Table display
+
+| column               | header        |
+|----------------------+---------------|
+| request_id           | Request       |
+| part_code            | Part          |
+| modified_by          | Modified By   |
+| version              | Version       |
+
+* See also
+
+- [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — the request whose parts these rows name.

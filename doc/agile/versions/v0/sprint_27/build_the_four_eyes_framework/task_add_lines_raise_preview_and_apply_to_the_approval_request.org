@@ -8,7 +8,7 @@
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
 #+branch: feature/add-lines-raise-preview-and-apply-to-the-approval-request
-#+pr:
+#+pr: 3072
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3072][#3072]] | [refdata] Raise and preview book changes as typed lines |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/state-what-a-later-write-does-to-a-manual-point
-#+pr:
+#+pr: 3068
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3068][#3068]] | [marketdata] Keep an automatic write from replacing a manual point |
 
 * Review
 

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BB9037C9-387F-4ABF-83DF-DAD419A4D8C4
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.bond_yield_convention
 #+description: Codegen entity model for the refdata =bond_yield_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

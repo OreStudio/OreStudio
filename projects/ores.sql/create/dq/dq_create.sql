@@ -94,6 +94,34 @@
 \ir ./dq_currencies_artefact_create.sql
 \ir ./dq_currency_pairs_artefact_create.sql
 \ir ./dq_currency_pair_conventions_artefact_create.sql
+
+-- Instrument convention artefact tables. One per live party-scoped or
+-- world-data convention table. They all belong to the single
+-- ore.conventions dataset, so the DQ create order here is arbitrary.
+\ir ./dq_average_ois_conventions_artefact_create.sql
+\ir ./dq_bma_basis_swap_conventions_artefact_create.sql
+\ir ./dq_bond_yield_conventions_artefact_create.sql
+\ir ./dq_cds_conventions_artefact_create.sql
+\ir ./dq_cms_spread_option_conventions_artefact_create.sql
+\ir ./dq_commodity_forward_conventions_artefact_create.sql
+\ir ./dq_commodity_future_conventions_artefact_create.sql
+\ir ./dq_cross_currency_basis_conventions_artefact_create.sql
+\ir ./dq_cross_currency_fix_float_conventions_artefact_create.sql
+\ir ./dq_deposit_conventions_artefact_create.sql
+\ir ./dq_fra_conventions_artefact_create.sql
+\ir ./dq_future_conventions_artefact_create.sql
+\ir ./dq_fx_option_conventions_artefact_create.sql
+\ir ./dq_ibor_index_conventions_artefact_create.sql
+\ir ./dq_inflation_swap_conventions_artefact_create.sql
+\ir ./dq_intraday_power_load_conventions_artefact_create.sql
+\ir ./dq_ois_conventions_artefact_create.sql
+\ir ./dq_overnight_index_conventions_artefact_create.sql
+\ir ./dq_swap_conventions_artefact_create.sql
+\ir ./dq_swap_index_conventions_artefact_create.sql
+\ir ./dq_tenor_basis_swap_conventions_artefact_create.sql
+\ir ./dq_tenor_basis_two_swap_conventions_artefact_create.sql
+\ir ./dq_zero_conventions_artefact_create.sql
+\ir ./dq_zero_inflation_index_conventions_artefact_create.sql
 \ir ./dq_images_artefact_create.sql
 \ir ./dq_tags_artefact_create.sql
 \ir ./dq_image_tags_artefact_create.sql

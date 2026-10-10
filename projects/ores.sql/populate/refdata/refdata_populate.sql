@@ -37,6 +37,10 @@
 \ir ./refdata_currency_pair_conventions_seed_populate.sql
 
 \echo ''
+\echo '--- Instrument Conventions Seed Data ---'
+\ir ./refdata_conventions_seed_populate.sql
+
+\echo ''
 \echo '--- CRM Topology Bundles Seed Data ---'
 \ir ./refdata_crm_topology_bundles_populate.sql
 

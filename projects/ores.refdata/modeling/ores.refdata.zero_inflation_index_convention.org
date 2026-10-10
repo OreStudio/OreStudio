@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: E060E909-0088-43EA-808E-B87A3E8286D8
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.zero_inflation_index_convention
 #+description: Codegen entity model for the refdata =zero_inflation_index_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

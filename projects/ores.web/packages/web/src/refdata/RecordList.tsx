@@ -33,6 +33,7 @@ import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { FlagOf, type FlagSource } from '../images/flags.js';
 import { type WatchedEntity } from '../events/EntityEvents.js';
+import { useChangedRows } from './changedRows.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Icon } from '../ui/Icon.js';
@@ -425,6 +426,15 @@ export function RecordTable<Row>({
         placeholderData: keepPreviousData,
     });
 
+    const rowKey = (row: Row, index: number): string =>
+        keyOf?.(row) ?? pathOf?.(row) ?? String(index);
+    const changed = useChangedRows(
+        JSON.stringify(pageKey(source, page)),
+        rows.data?.rows ?? [],
+        rowKey,
+        { dataUpdatedAt: rows.dataUpdatedAt, isPlaceholder: rows.isPlaceholderData },
+    );
+
     const find = useRef(state.find);
     find.current = state.find;
     useEffect(() => {
@@ -619,13 +629,14 @@ export function RecordTable<Row>({
                         )}
                         {(data?.rows ?? []).map((row, index) => (
                             <tr
-                                key={keyOf?.(row) ?? pathOf?.(row) ?? String(index)}
+                                key={rowKey(row, index)}
                                 {...(open === undefined
-                                    ? { className: 'border-b border-line-subtle last:border-b-0' }
+                                    ? {
+                                          className: `border-b border-line-subtle last:border-b-0${changed.has(rowKey(row, index)) ? ' row-changed' : ''}`,
+                                      }
                                     : {
                                           tabIndex: 0,
-                                          className:
-                                              'cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover focus:bg-surface-hover focus:outline-none',
+                                          className: `cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover focus:bg-surface-hover focus:outline-none${changed.has(rowKey(row, index)) ? ' row-changed' : ''}`,
                                           onClick: (event: MouseEvent) => {
                                               if (!fromControl(event)) {
                                                   open(row);

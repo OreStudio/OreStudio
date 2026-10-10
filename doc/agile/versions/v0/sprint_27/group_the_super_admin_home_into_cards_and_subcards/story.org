@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: F6590721-A48A-45D8-B97B-DD56B165271A
+:END:
+#+title: Story: Group the super administrator's home into cards and subcards
+#+description: The system administrator's home lists nine flat cards, offers Add tenant that the Tenants screen already offers, and shows raw translation keys on the accounts card. Reduce it to four top-level cards, with the operations screens behind one Operations card, as the tenant administrator's home does.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A system administrator lands on Tenants, Accounts, Operations and Security cards, and reaches the operations screens through the Operations card.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The scaffold PR is in review.          |
+| Waiting on    | Nothing.                               |
+| Next          | Reduce the home to four cards.         |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- The home offers a Tenants, an Accounts, an Operations and a Security card, and no Add tenant card.
+- The Accounts card shows its words, not translation keys.
+- The operations screens are reached through the Operations card, which links to the existing hub.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AE922085-9F6C-4529-9283-795268EDA5CA][Scaffold story: Group the super administrator's home into cards and subcards]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B6C0FC5B-ADF3-4A29-91AC-C8C7DFF54676][Reduce the super administrator's home to four cards]] | BACKLOG | | | Initial task for: Group the super administrator's home into cards and subcards |
+
+* Decisions
+
+- The Operations card links to the existing operations hub. That hub already holds the services, grid, bus, telemetry logs and versions screens, so the story builds no new hub.
+- The home keeps its Upcoming Modules run of three cards: the market data feeds, the yield curve process types and what the grid runs.
+
+* Out of scope
+
+- Building the screens behind the upcoming cards.

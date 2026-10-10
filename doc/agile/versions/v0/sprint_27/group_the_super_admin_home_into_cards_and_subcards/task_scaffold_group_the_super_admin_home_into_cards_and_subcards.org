@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: AE922085-9F6C-4529-9283-795268EDA5CA
+:END:
+#+title: Task: Scaffold story: Group the super administrator's home into cards and subcards
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :group_the_super_admin_home_into_cards_and_subcards:sprint_27:v0:
+#+owner: marco
+#+branch: feature/group-the-super-admin-home-into-cards-and-subcards
+#+pr: 3046
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F6590721-A48A-45D8-B97B-DD56B165271A][Group the super administrator's home into cards and subcards]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the story, its task and the sprint row. This task changes no code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F6590721-A48A-45D8-B97B-DD56B165271A][Group the super administrator's home into cards and subcards]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The story, its work task and the sprint row exist.
+
+* Plan
+
+Create the story, the task and the sprint row.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3046][#3046]] | [agile] Scaffold the super administrator home grouping story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Story and sprint states disagree | sprint.org | Accepted | Sprint row set to STARTED with its start date |
+| 2 | Scaffold task DONE while its PR is open | task | Declined | By design; the task closes before the PR merges |
+| 3 | Plan holds template text | task | Accepted | One line written |
+| 4 | Result is short, Measurements empty | task | Declined | Fine for a task with no code |
+| 5 | Table padding | status tables | Declined | Template output; harmless |
+| 6 | Sprint row placement | sprint.org | Declined | The table structure is intact |
+| 7 | Decision lacks context | story.org | Accepted | The three cards are named |
+
+* Result
+
+The story and its work task exist, and the sprint row is wired. No code changes in this task.

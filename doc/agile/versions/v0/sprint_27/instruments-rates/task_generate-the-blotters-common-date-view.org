@@ -26,11 +26,11 @@ The blotter reads one set of date columns across the rates family, from a view g
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -66,7 +66,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Rows the rates view returns for a FRA and a swaption | 2: the FRA reads trade, start and maturity dates, the swaption reads its expiry | =./compass.sh sql -- -f= the probe =evidence/common_dates_probe.sql= (rolled back) | dea34a04e8 |
+| Tests that hold the mapping to the models | 8 passed, with the 6 catalogue tests | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests/test_common_dates.py projects/ores.codegen/tests/test_trade_type_catalogue.py= | dea34a04e8 |
+| Codegen drift, component trade | none | =check_component_drift.py --component trade= | dea34a04e8 |
 
 * Notes
 
@@ -98,3 +100,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The rates family now has a generated view, =ores_trading_rate_instruments_common_dates_vw=.
+It gives the deal grid four date columns, =trade_date=, =start_date=,
+=expiry_date= and =maturity_date=, whatever name a product states a date under.
+
+- *The vocabulary is in the catalogue.* A new =* Common dates= table in
+  =ores.trading.trade_type_catalogue= lists the four names. =trade_date= has
+  an owner outside every family, so the table names the entity and column that
+  hold it: =trade_booking.trade_date=.
+- *The mapping is on the models.* A column declares =:common_date: <name>=.
+  The rates header declares =start_date= and =maturity_date=. The swaption
+  fact declares =expiry_date=. A FRA states its end date as the header's
+  =maturity_date=, as unit 3 decided. A swaption's header dates are the
+  underlying swap's, and they read as null when the document does not carry
+  them.
+- *The view is generated.* The loader reads the declarations from each
+  routed header and the tables its =* Delete cascade= names. Two new archetypes
+  in the =ores.sql.trade_type= facet write the create and the drop script. A
+  later family declares =:common_date:= on its columns and gets its own view,
+  with no edit to a view.
+- *The loader refuses a bad mapping.* It fails on a name outside the
+  vocabulary, a date stated twice in one family, a name the catalogue holds
+  elsewhere, and a column in a table that is not keyed by the trade alone.
+- *Test.* =test_common_dates.py= holds the view's columns to the columns the
+  models declare, and holds the committed SQL to the loader's output.
+
+Not done: the view has no C++ reader yet, and no ER diagram shows it.

@@ -229,7 +229,12 @@ describe("the system administrator's cards", () => {
 
     it('shows words and never a translation key on any card', () => {
         for (const html of [home('system-administration', busy), home('system-administration')]) {
-            expect(html).not.toMatch(/home\.[a-z]+\.[a-zA-Z]+/);
+            const cards = html.slice(
+                html.indexOf('Active Modules'),
+                html.indexOf('Tenants</span>', html.indexOf('Upcoming Modules')),
+            );
+
+            expect(cards).not.toMatch(/\b(home|shell|operations)\.[a-zA-Z]+\.?[a-zA-Z]*/);
         }
     });
 

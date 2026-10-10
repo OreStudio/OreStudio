@@ -301,6 +301,25 @@ describe("the system administrator's home", () => {
         expect(html).toContain('4 areas need attention');
     });
 
+    it('still says what needs the person at the top when a panel has nothing to report', () => {
+        const html = home('system-administration', busy, undefined, (client) => {
+            seedHealthy(client);
+            client.setQueryData(GRID_QUERY_KEY, gridView());
+            client.setQueryData([BUS_QUERY_KEY, '15m'], busView(null));
+        });
+
+        expect(html).toContain('1 area needs attention');
+    });
+
+    it('says everything is running at the top when a panel has nothing to report and none needs the person', () => {
+        const html = home('system-administration', quiet, undefined, (client) => {
+            seedHealthy(client);
+            client.setQueryData(GRID_QUERY_KEY, gridView());
+        });
+
+        expect(occurrences(html, `>${ALL_CLEAR}<`)).toBe(1);
+    });
+
     it('says nothing at the top until every panel has read, and the panel that has read says so alone', () => {
         const html = home('system-administration', quiet);
 

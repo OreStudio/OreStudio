@@ -90,6 +90,14 @@ via its "Verifies task" field.
 | 6 | Inline query keys | SystemHome.tsx | Declined | Pre-existing across the home and its tests; a separate change |
 | 7 | French and Portuguese plural forms | locales | Declined | The plural helper picks the form by the locale's own rules |
 | 8 | Layout unchecked | SystemHome.tsx | Declined | The reviewing person builds and checks the screen |
+| 9 | The top status disappears when a panel has nothing to report | SystemHome.tsx | Accepted | Quiet and pending are separate states; a quiet panel no longer hides the status; tests added |
+| 10 | Everything is running while a panel is still reading | dashboardStatus.ts | Accepted | The all-clear waits for no pending panel; a test pins the mixed case |
+| 11 | Translator type between imports | SystemHome.tsx | Accepted | Moved below the imports |
+| 12 | Online tone when nodes are idle | SystemHome.tsx | Declined | Intended: online against total is the grid screen's own measure |
+| 13 | No curve with two samples | SystemHome.tsx | Declined | Correct: a rate needs two points; the figures still show |
+| 14 | Stretched sparkline | Sparkline.tsx | Declined | Fine today; no markers are drawn |
+| 15 | Duplicate health read | SystemHome.tsx | Accepted | A comment says the cache serves both |
+| 16 | Layout needs a screenshot pass | SystemHome.tsx | Declined | The person reviewing the screen has been using it in a browser |
 
 * Result
 

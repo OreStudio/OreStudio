@@ -31,8 +31,6 @@ import type {
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 
-/** What the translation hook answers, passed to the pure status functions. */
-type Translator = ReturnType<typeof useTranslation>;
 import { BUS_QUERY_KEY, sampleTime } from '../operations/BusPage.js';
 import { GRID_QUERY_KEY } from '../operations/GridPage.js';
 import {
@@ -48,12 +46,15 @@ import { Tiles, type Tile } from '../ui/Tiles.js';
 import { useTabs } from '../ui/Tabs.js';
 import {
     nodesNotOnline,
-    panelsNeedingAttention,
+    installationVerdict,
     slowConsumers,
     throughputSeries,
     type StatusTone,
 } from './dashboardStatus.js';
 import { PaintedValue } from './TenantParts.js';
+
+/** What the translation hook answers, passed to the pure status functions. */
+type Translator = ReturnType<typeof useTranslation>;
 
 /**
  * The system administrator's home.
@@ -105,7 +106,7 @@ function tenantsStatus(data: DashboardData, tr: Translator): PanelStatus {
     const { t, plural } = tr;
     const overview = data.overview.data;
     if (overview === undefined || data.overview.isError) {
-        return { tone: 'none', text: t('home.system.panels.unread') };
+        return { tone: 'pending', text: t('home.system.panels.unread') };
     }
     return overview.attention.length === 0
         ? { tone: 'ok', text: t('home.system.allClear') }
@@ -120,7 +121,7 @@ function servicesStatus(data: DashboardData, tr: Translator): PanelStatus {
     const { roster, rosterFailed } = data.health;
     if (roster === undefined) {
         return {
-            tone: 'none',
+            tone: 'pending',
             text: t(rosterFailed ? 'home.system.panels.unread' : 'common.loading'),
         };
     }
@@ -135,12 +136,12 @@ function gridStatus(data: DashboardData, tr: Translator): PanelStatus {
     const view = data.grid.data;
     if (view === undefined) {
         return {
-            tone: 'none',
+            tone: 'pending',
             text: t(data.grid.isError ? 'home.system.panels.unread' : 'common.loading'),
         };
     }
     if (view.total_hosts === 0) {
-        return { tone: 'none', text: t('home.system.panels.grid.noNodes') };
+        return { tone: 'quiet', text: t('home.system.panels.grid.noNodes') };
     }
     const offline = nodesNotOnline(view);
     return offline === 0
@@ -153,12 +154,12 @@ function queueStatus(data: DashboardData, tr: Translator): PanelStatus {
     const view = data.bus.data;
     if (view === undefined) {
         return {
-            tone: 'none',
+            tone: 'pending',
             text: t(data.bus.isError ? 'home.system.panels.unread' : 'common.loading'),
         };
     }
     if (view.samples[0] === undefined) {
-        return { tone: 'none', text: t('home.system.panels.queue.noSample') };
+        return { tone: 'quiet', text: t('home.system.panels.queue.noSample') };
     }
     const slow = slowConsumers(view);
     return slow === 0
@@ -182,29 +183,28 @@ export function SystemHome({ name }: { readonly name: string }): ReactNode {
         gridStatus(data, translator),
         queueStatus(data, translator),
     ];
-    const needing = panelsNeedingAttention(statuses.map((status) => status.tone));
-    const reads = statuses.every((status) => status.tone !== 'none');
+    const verdict = installationVerdict(statuses.map((status) => status.tone));
 
     return (
         <div className="space-y-6">
             <PageHeader
                 title={t('home.welcome', { name })}
                 actions={
-                    reads ? (
+                    verdict.kind === 'pending' ? undefined : (
                         <StatusChip
                             status={
-                                needing === 0
+                                verdict.kind === 'ok'
                                     ? { tone: 'ok', text: t('home.system.allClear') }
                                     : {
                                           tone: 'attention',
                                           text: plural(
                                               'home.system.panels.summary.needAttention',
-                                              needing,
+                                              verdict.count,
                                           ),
                                       }
                             }
                         />
-                    ) : undefined
+                    )
                 }
             />
             {bar}
@@ -218,7 +218,8 @@ export function SystemHome({ name }: { readonly name: string }): ReactNode {
 const MARK: Readonly<Record<StatusTone, { readonly glyph: string; readonly classes: string }>> = {
     ok: { glyph: '✓', classes: 'border-up/50 bg-up/10 text-up' },
     attention: { glyph: '!', classes: 'border-warn/50 bg-warn/10 text-warn' },
-    none: { glyph: '–', classes: 'border-line bg-surface-base text-ink-faint' },
+    quiet: { glyph: '–', classes: 'border-line bg-surface-base text-ink-faint' },
+    pending: { glyph: '…', classes: 'border-line bg-surface-base text-ink-faint' },
 };
 
 function StatusMark({
@@ -408,6 +409,7 @@ function ServicesPanel({ data: reads, translator }: PanelProps): ReactNode {
                 )
             }
         >
+            {/* The figures read the same queries as the status above, so the cache serves both. */}
             <InstallationFigures range={DEFAULT_HEALTH_RANGE} compact />
         </Panel>
     );

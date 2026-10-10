@@ -21,7 +21,11 @@
 import { describe, expect, it } from 'vitest';
 import type { BusView } from '@ores/wire-protocol/browser';
 import { sparklinePath } from '../ui/Sparkline.js';
-import { panelsNeedingAttention, throughputSeries } from './dashboardStatus.js';
+import {
+    installationVerdict,
+    panelsNeedingAttention,
+    throughputSeries,
+} from './dashboardStatus.js';
 
 /**
  * The dashboard's arithmetic: the rate of the bus from its counter, the line
@@ -102,7 +106,31 @@ describe('the line drawn through a series', () => {
 
 describe('the panels that want the person', () => {
     it('counts only those that need them, not those with nothing to say', () => {
-        expect(panelsNeedingAttention(['ok', 'attention', 'none', 'attention'])).toBe(2);
-        expect(panelsNeedingAttention(['ok', 'none'])).toBe(0);
+        expect(panelsNeedingAttention(['ok', 'attention', 'quiet', 'attention'])).toBe(2);
+        expect(panelsNeedingAttention(['ok', 'pending'])).toBe(0);
+    });
+});
+
+describe('the verdict on the whole installation', () => {
+    it('says everything is fine when every panel is fine or has nothing in it', () => {
+        expect(installationVerdict(['ok', 'ok', 'quiet', 'quiet'])).toEqual({ kind: 'ok' });
+    });
+
+    it('says nothing while a panel is still being read', () => {
+        expect(installationVerdict(['ok', 'ok', 'pending', 'ok'])).toEqual({ kind: 'pending' });
+    });
+
+    it('says what needs the person at once, even while another panel is being read', () => {
+        expect(installationVerdict(['attention', 'pending', 'quiet', 'ok'])).toEqual({
+            kind: 'attention',
+            count: 1,
+        });
+    });
+
+    it('is not held back by a panel that has nothing to report', () => {
+        expect(installationVerdict(['attention', 'ok', 'quiet', 'quiet'])).toEqual({
+            kind: 'attention',
+            count: 1,
+        });
     });
 });

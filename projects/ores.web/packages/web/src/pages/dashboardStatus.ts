@@ -29,8 +29,14 @@ import type { BusView, GridView } from '@ores/wire-protocol/browser';
  * both ask the same functions the same question.
  */
 
-/** How a panel is doing: fine, wants the person, or has nothing to say yet. */
-export type StatusTone = 'ok' | 'attention' | 'none';
+/**
+ * How a panel is doing.
+ *
+ * `quiet` is a known state with nothing in it, such as a grid with no nodes
+ * yet. `pending` is an unknown one: the read is under way or it failed. The
+ * difference decides whether the installation can be called fine.
+ */
+export type StatusTone = 'ok' | 'attention' | 'quiet' | 'pending';
 
 /** The nodes that are not online, which is what the grid panel asks the person to look at. */
 export function nodesNotOnline(grid: GridView): number {
@@ -80,4 +86,25 @@ export function throughputSeries(bus: BusView): readonly number[] {
 /** How many of the four panels want the person, which is what the status at the top counts. */
 export function panelsNeedingAttention(tones: readonly StatusTone[]): number {
     return tones.filter((tone) => tone === 'attention').length;
+}
+
+/**
+ * What the one status at the top says about the whole installation.
+ *
+ * A panel that wants the person is worth saying at once, even while another is
+ * still reading. "Everything is running" waits until no panel is pending, and a
+ * panel with nothing in it does not hold it back: an installation with no grid
+ * nodes yet has nothing there that is not running.
+ */
+export type Verdict =
+    | { readonly kind: 'attention'; readonly count: number }
+    | { readonly kind: 'ok' }
+    | { readonly kind: 'pending' };
+
+export function installationVerdict(tones: readonly StatusTone[]): Verdict {
+    const count = panelsNeedingAttention(tones);
+    if (count > 0) {
+        return { kind: 'attention', count };
+    }
+    return tones.some((tone) => tone === 'pending') ? { kind: 'pending' } : { kind: 'ok' };
 }

@@ -36,6 +36,7 @@ import { registerConventionRoutes } from './conventions.js';
 import { registerAuditRoutes } from './audit.js';
 import { registerTimelineRoutes } from './timeline.js';
 import { registerInboxRoutes } from './inbox.js';
+import { startHeartbeat } from './heartbeat.js';
 import { registerOperationsRoutes } from './operations.js';
 import { registerRecordRoutes } from './records.js';
 import {
@@ -274,6 +275,11 @@ export interface ServerDependencies {
     readonly policyLimiter?: RateLimiter;
     /** Injected in tests so no broker is needed. */
     readonly createClient?: () => { client: OresClient; connect: () => Promise<void> };
+    /**
+     * Whether this process tells the registry it is running, and under which
+     * release. Absent in tests, so no timer outlives one.
+     */
+    readonly heartbeat?: { readonly version: string };
 }
 
 export function buildServer(dependencies: ServerDependencies): FastifyInstance {
@@ -2572,7 +2578,20 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * than among them.
      */
     const eventClient = createClient();
-    void eventClient.connect().catch(() => undefined);
+    let stopHeartbeat: (() => void) | undefined;
+    const heartbeat = dependencies.heartbeat;
+    void eventClient
+        .connect()
+        .catch(() => undefined)
+        .then(() => {
+            if (heartbeat !== undefined) {
+                stopHeartbeat = startHeartbeat({
+                    sink: eventClient.client,
+                    version: heartbeat.version,
+                    log: server.log,
+                });
+            }
+        });
     const events = new ChangeEventRegistry(eventClient.client);
 
     server.get('/api/events', async (request, reply) => {
@@ -2632,6 +2651,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     server.addHook('onClose', async () => {
+        stopHeartbeat?.();
         await sessions.destroyAll();
     });
 

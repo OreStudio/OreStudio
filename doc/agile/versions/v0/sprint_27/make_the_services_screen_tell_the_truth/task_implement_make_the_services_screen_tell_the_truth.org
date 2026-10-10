@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make_the_services_screen_tell_the_truth:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-make-the-services-screen-tell-the-truth
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0251A201-7674-4ABD-BB5B-7AEC42C88D8D][Make the services screen tell the truth about the installation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The web service publishes the same heartbeat as the other services, so the Opera
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0251A201-7674-4ABD-BB5B-7AEC42C88D8D][Make the services screen tell the truth about the installation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -86,3 +86,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The web service now publishes the heartbeat the other services publish, on telemetry.v1.ops.service_heartbeat, once at start and every fifteen seconds. It reports the name ores.web.service, a per-process instance id, an empty host and the release the project declares (0.0.27). The transport gained an optional publish, the client gained publishServiceHeartbeat, and a new heartbeat module in the BFF owns the timer. A failed publish logs once when it starts and once when it ends. The registry received the beat from the running service, which shows its NATS identity may publish on that subject. The wire-protocol, bff and web packages pass 168, 364 and 629 tests, and the format check is clean. I did not look at the services screen in a browser.

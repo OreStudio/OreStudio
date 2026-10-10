@@ -33,6 +33,14 @@ that live in the shared templates, so every component carries them:
    entity without them, such as the time-series =market_fixing= and
    =market_observation=.
 
+The same catch also hides bad input. On 2026-10-10 the synthetic BFF routes
+wrote an FX feed whose =price_source= broke a table check, and a feed whose
+=config_id= named no collection, which a validation trigger refuses. Both came
+back as =failed= with =internal_error= and the raw PostgreSQL text, so the BFF
+answers 502 where the person should read a 400 that names the field. A check
+violation (=23514=) or a validation trigger refusal (=23503=) is =invalid=,
+and the message should not carry SQL.
+
 * Why
 
 G04 says a finding in generated code is a template defect and is fixed in the
@@ -43,6 +51,8 @@ and coverage gaps that every generated entity inherits.
 
 - Found by the G04 review in
   [[id:20980D32-EFDE-4030-A167-55E7A43BA849][Close the marketdata test coverage]].
+- The bad-input case was seen in
+  [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]].
 - The first was raised in the review of PR 2643.
 
 * See also

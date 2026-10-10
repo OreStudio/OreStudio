@@ -26,20 +26,21 @@ The screens can read and write every synthetic entity the four journeys name, th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
 
 * Acceptance
 
 - Every synthetic entity the four journeys name is readable through the BFF:
   all rows of a resource, and one row by its key.
-- The FX feed, its mixture, the IR curve feed, its parameter values, its
-  ladder rows and the process types are writable. A save of one or many rows
-  is one atomic call, and a stale version is refused with 409.
+- The FX feed, its mixture, the IR curve feed, its parameter values and its
+  ladder rows are writable, and the process types are writable from a system
+  session. A save of one or many rows is one atomic call, and a stale version
+  is refused with 409.
 - The parameter definitions, the folders and the collections are read only,
   and the route says why.
 - The previews, the feed start and stop, the folder start and stop, the
@@ -79,7 +80,8 @@ like the refdata record routes, rather than one route set per screen.
 - The definitions are read only. The server reads and writes a definition by
   =parameter_name= alone, so a write would reach whichever type's row it found
   first. The gaps task fixes the key. Folders and collections are read only
-  because no journey step writes them.
+  because no journey step writes them. The process types are one catalogue
+  every tenant shares, so only a system session writes them.
 - The write schemas check structure only and satisfy the generated write
   types. The table checks enforce the domain rules, so the BFF does not copy
   the enumerations.
@@ -108,9 +110,37 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Synthetic resources in the table | 9, of which 6 writable and 1 writable only from a system session | =GET /api/synthetic= | 5f2fa0d085 |
+| Routes added | 14 | =grep -c "server\.\(get\|put\|delete\|post\)('/api/synthetic" bff/src/synthetic.ts= | 5f2fa0d085 |
+| BFF tests | 378 passed in 44 files, 26 of them in =synthetic.test.ts= | =npm test --workspace @ores/bff= | 5f2fa0d085 |
+| Deliberate breaks the synthetic tests catch | 6 of 7 | edit =synthetic.ts=, run =vitest=, restore | e6fd942d37 |
+| Process types an Acme user reads, before and after the fix | 0, then 5 | =GET /api/synthetic/process-types= on the live stack | 5f2fa0d085 |
+| Live write cycle steps that answered as designed | 11 of 11 | create, read, stale write, correction, mixture, history, batch removal, guarded removals, read after removal, definition write | 5f2fa0d085 |
+| Synthetic core tests | 41 cases, 992 assertions, all passed | =compass build test_ores.synthetic.core.tests= | 5f2fa0d085 |
 
 * Notes
+
+Three things the live stack showed that the canned tests could not.
+
+- *The process types were invisible to every tenant.* The catalogue lives in
+  the system tenant. The definition handler reads there, because its model
+  sets =system_tenant_validation=, but the process type model did not, so a
+  tenant listed an empty catalogue and a tenant write would have landed a
+  private row the validators never read. The SQL validator already checks the
+  system tenant, and regenerating the SQL with the flag changes no byte, so
+  the flag was missing only from the model. The flag is now set and the
+  handler regenerated.
+- *A system-owned write crosses tenants.* With the handler in the system
+  tenant, a tenant role that holds the write permission changes every
+  tenant's catalogue. The BFF now writes the process types only from a
+  system session. The server-side exposure, which the definitions already
+  had, is captured as [[id:46480D15-1E41-46D6-8042-A56516EBE2EE][A tenant can write a system catalogue]].
+- *A whole-number double fails to decode.* The reflect-cpp msgpack reader
+  refuses an integer for a =double=, and the web client writes =1= and =0= as
+  integers. The FX preview fails for a mixture with a weight of 1 or a mean
+  of 0. This is in the shared codec, so it is captured as
+  [[id:F079340B-2DF9-4F2A-90CD-B52202B010F6][The server refuses a whole number in a double field]]
+  and not fixed here.
 
 * Test Scenarios
 
@@ -136,3 +166,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The BFF serves every synthetic entity the four journeys name. One table in
+=bff/src/synthetic.ts= holds the nine resources, and 14 routes serve them:
+the catalogue with each resource's permissions, all rows, one row by key,
+a save of one or many rows in one =put_many=, a removal of one row by
+version or of many rows at once, the three previews, the feed and folder
+start and stop, the running set and the vintage validity. The history route
+serves the synthetic types.
+
+All acceptance bullets are met. The writes refuse a stale version with 409
+in the server's words, and a save of a two-row mixture landed in one call
+on the live stack. The parameter definitions, the folders and the
+collections are read only, and the catalogue says why. Every route answered
+as designed against the running services, and 26 unit tests cover them.
+
+The live run also found and fixed one defect. Every tenant listed an empty
+process type catalogue, because the model lacked =system_tenant_validation=.
+The flag is set, the handler regenerated, and an Acme user now reads the
+five types. Because that handler writes in the system tenant, the BFF
+writes the process types only from a system session.
+
+Two defects stay open as captures, and one existing capture grows:
+
+- [[id:F079340B-2DF9-4F2A-90CD-B52202B010F6][The server refuses a whole number in a double field]].
+  The FX preview fails for a mixture with a weight of 1 or a mean of 0
+  until the codec accepts integers for doubles. The FX screen task depends
+  on it.
+- [[id:46480D15-1E41-46D6-8042-A56516EBE2EE][A tenant can write a system catalogue]].
+  The BFF guards the process types and the definitions; the bus does not.
+- The four template defects capture now also records that a table check or
+  a validation trigger refusal comes back as =failed=, so the BFF answers
+  502 with PostgreSQL text where a 400 belongs.
+
+The component audit did not run: none of its triggers applies. The task
+added one file to an existing BFF folder and one flag to a synthetic model,
+cleared no drift and changed no folder or template. =validate_docs.sh=
+passes for all 41 components.

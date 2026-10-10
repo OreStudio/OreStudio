@@ -171,3 +171,71 @@
     animation: none;
   }
 }
+
+/*
+ * The org chart: each person above the people who report to them, joined by
+ * lines. The lines are drawn by the list items' own edges, so a branch needs no
+ * markup of its own and the chart is the same tree the list shows.
+ */
+.orgchart ul {
+  display: flex;
+  justify-content: center;
+  padding-top: 1.25rem;
+  position: relative;
+}
+
+.orgchart li {
+  list-style: none;
+  text-align: center;
+  position: relative;
+  padding: 1.25rem 0.5rem 0;
+}
+
+.orgchart li::before,
+.orgchart li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  width: 50%;
+  height: 1.25rem;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.orgchart li::after {
+  right: auto;
+  left: 50%;
+  border-left: 1px solid var(--color-line-strong);
+}
+
+.orgchart li:only-child::before,
+.orgchart li:only-child::after {
+  display: none;
+}
+
+.orgchart li:only-child {
+  padding-top: 0;
+}
+
+.orgchart li:first-child::before,
+.orgchart li:last-child::after {
+  border: 0 none;
+}
+
+.orgchart li:last-child::before {
+  border-right: 1px solid var(--color-line-strong);
+  border-radius: 0 0.3rem 0 0;
+}
+
+.orgchart li:first-child::after {
+  border-radius: 0.3rem 0 0 0;
+}
+
+.orgchart ul ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 1.25rem;
+  border-left: 1px solid var(--color-line-strong);
+}

@@ -59,21 +59,39 @@ export function Timeline({
     timeline,
     renderActions,
     renderHead,
+    hideUnchanged = false,
 }: {
     readonly timeline: Stream;
     readonly renderActions?: (event: TimelineEvent) => ReactNode;
     readonly renderHead?: (event: TimelineEvent) => ReactNode;
+    /**
+     * Leaves out the versions that changed none of the fields the stream
+     * carries. A stream narrowed to one field, such as a reporting line, keeps
+     * every version so each is read against the one before it, and shows only
+     * the versions where that field moved.
+     */
+    readonly hideUnchanged?: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     if (timeline.events.length === 0) {
         return <p className="text-sm text-ink-muted">{t('timeline.empty')}</p>;
     }
     const previous = previousVersions(timeline.events);
+    const events = hideUnchanged
+        ? timeline.events.filter((event) => {
+              const before = previous.get(earlier(event));
+              return !(
+                  isAChange(event.kind) &&
+                  before !== undefined &&
+                  changedFields(event, before).length === 0
+              );
+          })
+        : timeline.events;
     return (
         <ol className="grid list-none gap-0 p-0">
-            {timeline.events.map((event, index) => (
+            {events.map((event, index) => (
                 <Fragment key={entryKey(event, index)}>
-                    {startsADay(event, timeline.events[index - 1]) && <DayDivider at={event.at} />}
+                    {startsADay(event, events[index - 1]) && <DayDivider at={event.at} />}
                     <Entry
                         event={event}
                         before={previous.get(earlier(event))}

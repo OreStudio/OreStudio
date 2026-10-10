@@ -27,7 +27,7 @@ import { MemoryRouter } from 'react-router';
 import type { ReportingTreeNode, TimelineEvent } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { managerCandidates } from './managers.js';
-import { reportingHistory, ReportingLinesPage } from './ReportingLinesPage.js';
+import { lineTimeline, ReportingLinesPage } from './ReportingLinesPage.js';
 
 /**
  * The Reporting lines screen, rendered from a seeded query cache.
@@ -69,7 +69,12 @@ const TREE = [
     person(ALAN, 'Alan Turing', GRACE, 2, 0),
 ];
 
-function render(nodes: readonly ReportingTreeNode[], unrooted = 0, me = ''): string {
+function render(
+    nodes: readonly ReportingTreeNode[],
+    unrooted = 0,
+    me = '',
+    entry = '/hierarchy',
+): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['reporting-tree'], { unrooted, nodes });
     client.setQueryData(
@@ -79,7 +84,7 @@ function render(nodes: readonly ReportingTreeNode[], unrooted = 0, me = ''): str
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <MemoryRouter>
+                <MemoryRouter initialEntries={[entry]}>
                     <ReportingLinesPage me={me} />
                 </MemoryRouter>
             </TranslationProvider>
@@ -116,6 +121,37 @@ describe('Reporting lines', () => {
         expect(html).toContain('Grace Hopper title');
         // Grace reports to Ada, drawn with her picture.
         expect(html).toContain('Reports to');
+    });
+
+    it('offers the tree, the org chart and the history as tabs', () => {
+        const html = render(TREE);
+
+        expect(html).toContain('>Tree<');
+        expect(html).toContain('>Org chart<');
+        expect(html).toContain('>History<');
+        // The tree is the page's own address, so it is the tab that is open.
+        expect(html).toContain('Reporting tree');
+        expect(html).not.toContain('class="orgchart');
+    });
+
+    it('draws the org chart with a card for each person, joined as a tree', () => {
+        const html = render(TREE, 0, 'grace.hopper', '/hierarchy?tab=chart');
+
+        expect(html).toContain('class="orgchart');
+        expect(html).toContain('Ada Lovelace');
+        expect(html).toContain('Alan Turing');
+        expect(html).toContain('/api/accounts/edsger.dijkstra/picture');
+        expect(html).toContain('>You<');
+        expect(html).not.toContain('Reporting tree');
+    });
+
+    it('opens the history on the standard timeline for one person at a time', () => {
+        const html = render(TREE, 0, 'grace.hopper', '/hierarchy?tab=history');
+
+        // A person is chosen by name, and the timeline is the one the people pages draw.
+        expect(html).toContain('>Person<');
+        expect(html).toContain('<option value="' + GRACE + '" selected');
+        expect(html).not.toContain('Reporting tree');
     });
 
     it('offers one Refresh, and no longer lists what it cannot do', () => {
@@ -172,39 +208,50 @@ function version(
 }
 
 describe('the history of a line', () => {
-    it('lists only the versions where the manager changed, newest first', () => {
-        const changes = reportingHistory([
-            version(1, ''),
-            version(2, GRACE),
-            // A version that left the manager alone is not a change of the line.
-            version(3, GRACE, { fields: [{ name: 'Reports To Account ID', value: GRACE }] }),
-            version(4, ADA),
-            version(5, ''),
-        ]);
+    const nameOf = (id: string | null): string =>
+        id === null ? 'No one' : (TREE.find((node) => node.accountId === id)?.fullName ?? id);
 
-        expect(changes.map((change) => [change.version, change.from, change.to])).toEqual([
-            [5, ADA, null],
-            [4, GRACE, ADA],
-            [2, null, GRACE],
-        ]);
+    function stream(...events: TimelineEvent[]) {
+        return { subject: 'person' as const, id: 'ana', events, gaps: [] };
+    }
+
+    it('keeps the account versions, each with only the line, the manager named', () => {
+        const narrowed = lineTimeline(
+            stream(version(1, ''), version(2, GRACE)),
+            'Reports to',
+            nameOf,
+        );
+
+        expect(narrowed.events.map((event) => event.version)).toEqual([1, 2]);
+        expect(narrowed.events[1]?.fields).toEqual([{ name: 'Reports to', value: 'Grace Hopper' }]);
+        expect(narrowed.events[0]?.fields).toEqual([{ name: 'Reports to', value: 'No one' }]);
     });
 
-    it('keeps the reason and the note a change was made with', () => {
-        const [change] = reportingHistory([
-            version(1, ''),
-            version(2, ADA, { reasonCode: 'common.rectification', commentary: 'Wrong manager' }),
-        ]);
+    it('keeps the reason, the note and the author a change was made with', () => {
+        const [, change] = lineTimeline(
+            stream(
+                version(1, ''),
+                version(2, ADA, { reasonCode: 'common.rectification', commentary: 'Wrong manager' }),
+            ),
+            'Reports to',
+            nameOf,
+        ).events;
 
         expect(change?.reasonCode).toBe('common.rectification');
         expect(change?.commentary).toBe('Wrong manager');
+        expect(change?.actor).toBe('tenant_admin');
     });
 
-    it('ignores the entries that are not versions of the account', () => {
-        const changes = reportingHistory([
-            version(1, ADA),
-            version(2, GRACE, { entityType: 'ores.iam.account_contact_information' }),
-        ]);
+    it('leaves out the entries that are not versions of the account', () => {
+        const narrowed = lineTimeline(
+            stream(
+                version(1, ADA),
+                version(2, GRACE, { entityType: 'ores.iam.account_contact_information' }),
+            ),
+            'Reports to',
+            nameOf,
+        );
 
-        expect(changes).toHaveLength(1);
+        expect(narrowed.events).toHaveLength(1);
     });
 });

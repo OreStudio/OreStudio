@@ -251,7 +251,6 @@ export function IdentityPanel({
                         <Detail
                             label={t('profile.identity.signInAddress')}
                             value={signInEmail === '' ? t('account.notSet') : signInEmail}
-                            {...mailto(signInEmail)}
                         />
                         <p className="mt-1 text-xs text-ink-faint">
                             {t('profile.identity.signInAddressWhy')}

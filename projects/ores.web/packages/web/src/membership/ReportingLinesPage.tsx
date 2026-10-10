@@ -25,7 +25,7 @@ import { Link } from 'react-router';
 import {
     fieldValue,
     type ReportingTreeNode,
-    type TimelineEvent,
+    type Timeline as Stream,
 } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
@@ -34,10 +34,12 @@ import { ReportingLineDialog } from '../access/PersonForms.js';
 import { useHolds } from '../access/holds.js';
 import { roleLabel } from '../access/words.js';
 import { Crumbs } from '../refdata/shared.js';
+import { Timeline } from '../timeline/Timeline.js';
 import { AccountPicture } from '../ui/Images.js';
-import { Button, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
-import { formatDateTime } from '../ui/Time.js';
+import { useTabs } from '../ui/Tabs.js';
+import { OrgChart } from './OrgChart.js';
 
 /** The role that makes a person their tenant's administrator. */
 const TENANT_ADMIN = 'TenantAdmin';
@@ -45,61 +47,38 @@ const TENANT_ADMIN = 'TenantAdmin';
 /** The entity whose versions carry a person's reporting line. */
 const ACCOUNT_ENTITY = 'ores.iam.account';
 
-/** One change of who a person reports to, as the account's versions state it. */
-export interface LineChange {
-    readonly version: number;
-    readonly at: string;
-    readonly actor: string;
-    /** The manager's account id before the change, or null for none. */
-    readonly from: string | null;
-    /** The manager's account id after the change, or null for none. */
-    readonly to: string | null;
-    readonly reasonCode: string;
-    readonly commentary: string;
-}
-
 /**
- * The changes of a person's reporting line, newest first.
+ * A person's story narrowed to their reporting line.
  *
- * The line is a field of the account, so its history is read from the
- * account's versions: a version where the manager differs from the version
- * before it is a change, and a first version that names one is the line being
- * set. The manager is an identifier here; the screen names the person.
+ * The line is a field of the account, so its history is the account's
+ * versions. Each version keeps only the line, with the manager named rather
+ * than identified, and the timeline hides the versions where it did not move.
+ * Every version stays in the stream so each is read against the one before it,
+ * which is how the timeline finds a change.
  */
-export function reportingHistory(events: readonly TimelineEvent[]): readonly LineChange[] {
-    const versions = events
+export function lineTimeline(
+    source: Stream | undefined,
+    fieldName: string,
+    nameOf: (accountId: string | null) => string,
+): Stream {
+    const events = (source?.events ?? [])
         .filter((event) => event.entityType === ACCOUNT_ENTITY)
-        .sort((a, b) => a.version - b.version);
-    const changes: LineChange[] = [];
-    let previous: string | null = null;
-    for (const event of versions) {
-        const raw = fieldValue(event.fields, 'Reports To Account ID');
-        const current = raw === '' ? null : raw;
-        if (current !== previous) {
-            changes.push({
-                version: event.version,
-                at: event.at,
-                actor: event.actor,
-                from: previous,
-                to: current,
-                reasonCode: event.reasonCode,
-                commentary: event.commentary,
-            });
-        }
-        previous = current;
-    }
-    return changes.reverse();
+        .map((event) => {
+            const raw = fieldValue(event.fields, 'Reports To Account ID');
+            return { ...event, fields: [{ name: fieldName, value: nameOf(raw === '' ? null : raw) }] };
+        });
+    return { subject: 'person', id: source?.id ?? '', events, gaps: [] };
 }
 
 /**
- * Hierarchy: who reports to whom, drawn as a tree.
+ * Hierarchy: who reports to whom, as a tree, as an org chart, and as history.
  *
- * The tree is the shape, and the card beside it is the selected person: who
- * they are, who they report to, and how that line has changed. It opens on the
- * signed-in person, because that is the place a reader starts from. The line
- * is changed in a dialog with the reason it states, like any other record, and
- * the manager picker cannot offer anybody who reports to the person, so the
- * screen cannot ask for a ring.
+ * It opens on the signed-in person, because that is the place a reader starts
+ * from. The tree and the chart are one read drawn two ways, and either selects
+ * a person; the card beside them is that person, and the history tab is the
+ * standard timeline of their line. The line is changed in a dialog with the
+ * reason it states, like any other record, and the manager picker cannot offer
+ * anybody who reports to the person, so the screen cannot ask for a ring.
  */
 export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     const { t } = useTranslation();
@@ -110,6 +89,11 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     const [selectedId, setSelectedId] = useState('');
     const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
     const [editing, setEditing] = useState(false);
+    const { tab, bar } = useTabs({
+        label: t('access.hub.hierarchy'),
+        tabs: ['tree', 'chart', 'history'],
+        titleOf: (part) => t(`membership.reporting.tabs.${part}`),
+    });
 
     const tree = useQuery({ queryKey: ['reporting-tree'], queryFn: () => api.reportingTree() });
     const reasons = useQuery({ queryKey: ['amend-reasons'], queryFn: api.amendReasons });
@@ -195,15 +179,21 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
 
     const roots = nodes.filter((node) => node.reportsToAccountId === null);
     const unrooted = nodes.filter((node) => node.depth < 0);
-    const manager =
-        selected?.reportsToAccountId == null
-            ? undefined
-            : nodes.find((node) => node.accountId === selected.reportsToAccountId);
     const nameOf = (accountId: string | null): string => {
         if (accountId === null) return t('membership.reporting.noManager');
         const node = nodes.find((candidate) => candidate.accountId === accountId);
         return node === undefined || node.fullName === '' ? accountId : node.fullName;
     };
+    const card = (
+        <PersonCard
+            selected={selected}
+            nodes={nodes}
+            isMe={selected?.accountId === mine?.accountId}
+            isAdmin={selected !== undefined && admins.has(selected.accountId)}
+            canEdit={mayChange && account.data != null}
+            onEdit={() => setEditing(true)}
+        />
+    );
 
     return (
         <div className="space-y-6">
@@ -222,148 +212,116 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                 />
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,1fr)]">
-                <section className="card">
-                    <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
-                        <h2 className="text-sm font-semibold">{t('membership.reporting.tree')}</h2>
-                        <div className="flex items-center gap-2">
-                            <Tag tone="muted">
-                                {t('membership.reporting.people', { count: nodes.length })}
-                            </Tag>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCollapsed(new Set())}
-                            >
-                                {t('membership.reporting.expandAll')}
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCollapsed(new Set(nodes.map((n) => n.accountId)))}
-                            >
-                                {t('membership.reporting.collapseAll')}
-                            </Button>
-                        </div>
-                    </div>
-                    <ul className="max-h-[36rem] overflow-auto p-3">
-                        {roots.map((node) => (
-                            <TreeNode
-                                key={node.accountId}
-                                node={node}
-                                children={children}
-                                collapsed={collapsed}
-                                selectedId={selected?.accountId ?? ''}
-                                meId={mine?.accountId ?? ''}
-                                admins={admins}
-                                onSelect={setSelectedId}
-                                onToggle={(id) =>
-                                    setCollapsed((previous) => {
-                                        const next = new Set(previous);
-                                        if (next.has(id)) {
-                                            next.delete(id);
-                                        } else {
-                                            next.add(id);
-                                        }
-                                        return next;
-                                    })
-                                }
-                            />
-                        ))}
-                    </ul>
-                </section>
+            {bar}
 
-                <section className="card space-y-4 p-5">
-                    {selected === undefined ? (
-                        <p className="text-sm text-ink-muted">
-                            {t('membership.reporting.pickSomeone')}
-                        </p>
-                    ) : (
-                        <>
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="flex items-center gap-4">
-                                    <AccountPicture
-                                        username={selected.username}
-                                        name={selected.fullName}
-                                        size="lg"
-                                    />
-                                    <div className="min-w-0">
-                                        <h2 className="text-base font-semibold">
-                                            <Link
-                                                to={personPath(selected.username)}
-                                                className="underline decoration-line-strong underline-offset-2 hover:decoration-accent"
-                                            >
-                                                {selected.fullName}
-                                            </Link>
-                                        </h2>
-                                        <p className="text-sm text-ink-muted">
-                                            {selected.jobTitle}
-                                        </p>
-                                        <Badges
-                                            isMe={selected.accountId === mine?.accountId}
-                                            isAdmin={admins.has(selected.accountId)}
-                                        />
-                                    </div>
-                                </div>
-                                {mayChange && selected.accountId !== mine?.accountId && (
-                                    <Button
-                                        icon="edit"
-                                        disabled={account.data == null}
-                                        onClick={() => setEditing(true)}
-                                    >
-                                        {t('refdata.records.edit')}
-                                    </Button>
-                                )}
+            {tab === 'tree' && (
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,1fr)]">
+                    <section className="card">
+                        <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+                            <h2 className="text-sm font-semibold">
+                                {t('membership.reporting.tree')}
+                            </h2>
+                            <div className="flex items-center gap-2">
+                                <Tag tone="muted">
+                                    {t('membership.reporting.people', { count: nodes.length })}
+                                </Tag>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setCollapsed(new Set())}
+                                >
+                                    {t('membership.reporting.expandAll')}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                        setCollapsed(new Set(nodes.map((n) => n.accountId)))
+                                    }
+                                >
+                                    {t('membership.reporting.collapseAll')}
+                                </Button>
                             </div>
-
-                            <dl className="grid grid-cols-2 gap-4">
-                                <div className="min-w-0">
-                                    <dt className="text-[11px] tracking-wide text-ink-faint uppercase">
-                                        {t('membership.reporting.reportsTo')}
-                                    </dt>
-                                    <dd className="mt-1 text-sm">
-                                        {manager === undefined ? (
-                                            t('membership.reporting.noManager')
-                                        ) : (
-                                            <Link
-                                                to={personPath(manager.username)}
-                                                className="flex items-center gap-2"
-                                            >
-                                                <AccountPicture
-                                                    username={manager.username}
-                                                    name={manager.fullName}
-                                                    size="sm"
-                                                />
-                                                <span className="underline decoration-line-strong underline-offset-2 hover:decoration-accent">
-                                                    {manager.fullName}
-                                                </span>
-                                            </Link>
-                                        )}
-                                    </dd>
-                                </div>
-                                <Detail
-                                    label={t('membership.reporting.directReports')}
-                                    value={String(selected.directReports)}
-                                />
-                                <Detail
-                                    label={t('membership.reporting.depth')}
-                                    value={
-                                        selected.depth < 0
-                                            ? t('membership.reporting.reachesNoRoot')
-                                            : String(selected.depth)
+                        </div>
+                        <ul className="max-h-[36rem] overflow-auto p-3">
+                            {roots.map((node) => (
+                                <TreeNode
+                                    key={node.accountId}
+                                    node={node}
+                                    children={children}
+                                    collapsed={collapsed}
+                                    selectedId={selected?.accountId ?? ''}
+                                    meId={mine?.accountId ?? ''}
+                                    admins={admins}
+                                    onSelect={setSelectedId}
+                                    onToggle={(id) =>
+                                        setCollapsed((previous) => {
+                                            const next = new Set(previous);
+                                            if (next.has(id)) {
+                                                next.delete(id);
+                                            } else {
+                                                next.add(id);
+                                            }
+                                            return next;
+                                        })
                                     }
                                 />
-                            </dl>
+                            ))}
+                        </ul>
+                    </section>
+                    {card}
+                </div>
+            )}
 
-                            <History
-                                changes={story.data === undefined ? [] : reportingHistory(story.data.events)}
-                                pending={story.isPending}
-                                nameOf={nameOf}
-                            />
-                        </>
+            {tab === 'chart' && (
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                    <section className="card p-4">
+                        <OrgChart
+                            roots={roots}
+                            children={children}
+                            selectedId={selected?.accountId ?? ''}
+                            meId={mine?.accountId ?? ''}
+                            admins={admins}
+                            onSelect={setSelectedId}
+                        />
+                    </section>
+                    {card}
+                </div>
+            )}
+
+            {tab === 'history' && (
+                <section className="space-y-4">
+                    <Field label={t('membership.reporting.person')}>
+                        <Select
+                            className="max-w-sm"
+                            value={selected?.accountId ?? ''}
+                            onChange={(event) => setSelectedId(event.target.value)}
+                        >
+                            {[...nodes]
+                                .sort((a, b) => a.fullName.localeCompare(b.fullName))
+                                .map((node) => (
+                                    <option key={node.accountId} value={node.accountId}>
+                                        {node.fullName}
+                                    </option>
+                                ))}
+                        </Select>
+                    </Field>
+                    {story.isPending && selected !== undefined && (
+                        <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                    )}
+                    {story.isError && <Notice tone="error">{story.error.message}</Notice>}
+                    {story.data !== undefined && (
+                        <Timeline
+                            hideUnchanged
+                            timeline={lineTimeline(
+                                story.data,
+                                t('membership.reporting.reportsTo'),
+                                nameOf,
+                            )}
+                        />
                     )}
                 </section>
-            </div>
+            )}
 
             {unrooted.length > 0 && (
                 <Notice tone="warn">
@@ -385,6 +343,98 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     );
 }
 
+/** The selected person: who they are, who they report to, and the way to change it. */
+function PersonCard({
+    selected,
+    nodes,
+    isMe,
+    isAdmin,
+    canEdit,
+    onEdit,
+}: {
+    readonly selected: ReportingTreeNode | undefined;
+    readonly nodes: readonly ReportingTreeNode[];
+    readonly isMe: boolean;
+    readonly isAdmin: boolean;
+    readonly canEdit: boolean;
+    readonly onEdit: () => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (selected === undefined) {
+        return (
+            <section className="card p-5">
+                <p className="text-sm text-ink-muted">{t('membership.reporting.pickSomeone')}</p>
+            </section>
+        );
+    }
+    const manager =
+        selected.reportsToAccountId === null
+            ? undefined
+            : nodes.find((node) => node.accountId === selected.reportsToAccountId);
+    return (
+        <section className="card space-y-4 p-5">
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-4">
+                    <AccountPicture username={selected.username} name={selected.fullName} size="lg" />
+                    <div className="min-w-0">
+                        <h2 className="text-base font-semibold">
+                            <Link
+                                to={personPath(selected.username)}
+                                className="underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+                            >
+                                {selected.fullName}
+                            </Link>
+                        </h2>
+                        <p className="text-sm text-ink-muted">{selected.jobTitle}</p>
+                        <Badges isMe={isMe} isAdmin={isAdmin} />
+                    </div>
+                </div>
+                {canEdit && !isMe && (
+                    <Button icon="edit" onClick={onEdit}>
+                        {t('refdata.records.edit')}
+                    </Button>
+                )}
+            </div>
+
+            <dl className="grid grid-cols-2 gap-4">
+                <div className="min-w-0">
+                    <dt className="text-[11px] tracking-wide text-ink-faint uppercase">
+                        {t('membership.reporting.reportsTo')}
+                    </dt>
+                    <dd className="mt-1 text-sm">
+                        {manager === undefined ? (
+                            t('membership.reporting.noManager')
+                        ) : (
+                            <Link to={personPath(manager.username)} className="flex items-center gap-2">
+                                <AccountPicture
+                                    username={manager.username}
+                                    name={manager.fullName}
+                                    size="sm"
+                                />
+                                <span className="underline decoration-line-strong underline-offset-2 hover:decoration-accent">
+                                    {manager.fullName}
+                                </span>
+                            </Link>
+                        )}
+                    </dd>
+                </div>
+                <Detail
+                    label={t('membership.reporting.directReports')}
+                    value={String(selected.directReports)}
+                />
+                <Detail
+                    label={t('membership.reporting.depth')}
+                    value={
+                        selected.depth < 0
+                            ? t('membership.reporting.reachesNoRoot')
+                            : String(selected.depth)
+                    }
+                />
+            </dl>
+        </section>
+    );
+}
+
 /** What marks a person out: that they are the signed-in person, or their tenant's administrator. */
 function Badges({
     isMe,
@@ -400,52 +450,6 @@ function Badges({
             {isMe && <Tag tone="accent">{t('membership.reporting.you')}</Tag>}
             {isAdmin && <Tag tone="warn">{roleLabel(t, TENANT_ADMIN)}</Tag>}
         </span>
-    );
-}
-
-/** How the selected person's line has changed, newest first. */
-function History({
-    changes,
-    pending,
-    nameOf,
-}: {
-    readonly changes: readonly LineChange[];
-    readonly pending: boolean;
-    readonly nameOf: (accountId: string | null) => string;
-}): ReactNode {
-    const { t, language } = useTranslation();
-    return (
-        <section className="space-y-2 border-t border-line pt-4">
-            <h3 className="text-sm font-semibold">{t('membership.reporting.history')}</h3>
-            {pending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
-            {!pending && changes.length === 0 && (
-                <p className="text-sm text-ink-muted">{t('membership.reporting.noHistory')}</p>
-            )}
-            <ol className="space-y-3">
-                {changes.map((change) => (
-                    <li key={change.version} className="text-sm">
-                        <p>
-                            <span className="text-ink-muted">{nameOf(change.from)}</span>
-                            {' → '}
-                            <span className="font-medium">{nameOf(change.to)}</span>
-                        </p>
-                        <p className="text-xs text-ink-faint">
-                            {formatDateTime(change.at, language)} · {change.actor} · v
-                            {String(change.version)}
-                            {change.reasonCode !== '' && (
-                                <>
-                                    {' · '}
-                                    {t(`profile.reason.${change.reasonCode.replace('.', '_')}`)}
-                                </>
-                            )}
-                        </p>
-                        {change.commentary !== '' && (
-                            <p className="text-xs text-ink-muted italic">{change.commentary}</p>
-                        )}
-                    </li>
-                ))}
-            </ol>
-        </section>
     );
 }
 

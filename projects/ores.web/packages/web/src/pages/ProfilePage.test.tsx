@@ -180,7 +180,8 @@ describe('ProfilePage', () => {
         expect(html).toContain('Photo and identity');
         expect(html).toContain('>Ada Lovelace<');
         expect(html).toContain('>Head of Desk<');
-        expect(html).toContain('href="mailto:ada@example.com"');
+        // The sign-in address names the account; only the contact address is mail.
+        expect(html).not.toContain('href="mailto:ada@example.com"');
         // The fields are read as text; the edit, and its reason, are in the dialog.
         expect(html).not.toContain('<input');
         expect(html).toContain('>Edit<');

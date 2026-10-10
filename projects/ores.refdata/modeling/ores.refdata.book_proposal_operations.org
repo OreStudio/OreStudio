@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: 8C4E1B27-5D90-4A3F-B6E2-9F7A0D3C5B18
+:END:
+#+title: ores.refdata.book_proposal_operations
+#+description: Codegen operation model for proposing changes to books -- a preview that runs the real write and writes nothing, and a raise that holds the lines in an approval request -- rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: refdata
+#+subcomponent: api
+#+entity_singular: book_proposal_operations
+#+namespace: ores::refdata::messaging
+#+brief: Propose and preview changes to books.
+#+filetags: :model:operation:refdata:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+The operations a person takes to propose a change to a book instead of writing
+it. A line is a pending book change: the book's own columns, the operation (put
+or delete) and the version the person read. The preview runs the real write for
+each line in a transaction it never commits and answers each line's refusal and
+the parts the policy names. The raise previews, then holds the lines in an
+approval request.
+
+The handler is hand-written beside this model, because each operation applies
+the rules of the four-eyes framework.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include "ores.refdata.api/domain/book_change.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <optional>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** book_line_outcome
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the real write said about one proposed line.
+ *
+ * The refusal is empty when the write would stand. The columns are the ones
+ * the line changes, which is what the policy reads to name the parts.
+ */
+#+end_src
+
+*** line_no
+:PROPERTIES:
+:cpp_type: int
+:END:
+
+*** operation
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** entity_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+*** columns
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** refusal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** preview_book_changes_request
+:PROPERTIES:
+:subject:  refdata.v1.ops.preview_book_changes
+:response: preview_book_changes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Runs each proposed line through the real write and writes nothing.
+ *
+ * A put line needs the permission to write books, a delete line the permission
+ * to delete them. The lines are checked in order inside one transaction that is
+ * never committed.
+ */
+#+end_src
+
+*** lines
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::book_change>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The proposed writes. The request, line number and part of a line are
+ * not read: the server numbers the lines and the policy names the parts.
+ */
+#+end_src
+
+** preview_book_changes_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** lines
+:PROPERTIES:
+:cpp_type: std::vector<book_line_outcome>
+:END:
+
+*** part_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The parts the policy needs for the lines together. Empty when no
+ * policy row gates them.
+ */
+#+end_src
+
+** raise_book_changes_request
+:PROPERTIES:
+:subject:  refdata.v1.ops.raise_book_changes
+:response: raise_book_changes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Holds the proposed lines in an approval request.
+ *
+ * Previews first. A refused line, or lines no policy row gates, raise nothing.
+ */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the person asks, in their words.
+ */
+#+end_src
+
+*** lines
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::book_change>
+:END:
+
+** raise_book_changes_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The id of the request as raised, when the outcome is ok. The inbox
+ * operations read the request itself.
+ */
+#+end_src
+
+*** lines
+:PROPERTIES:
+:cpp_type: std::vector<book_line_outcome>
+:END:
+
+*** part_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:

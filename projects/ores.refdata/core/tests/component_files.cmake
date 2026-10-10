@@ -112,6 +112,7 @@ set(files
     "ledger_feed_type_eventing_integration_tests.cpp"
     "leg_type_eventing_integration_tests.cpp"
     "main.cpp"
+    "messaging_book_proposal_mapping_tests.cpp"
     "monetary_nature_eventing_integration_tests.cpp"
     "netting_agreement_eventing_integration_tests.cpp"
     "netting_set_eventing_integration_tests.cpp"

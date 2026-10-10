@@ -27,6 +27,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.core/messaging/registrar.hpp"
 #include "ores.refdata.service/config/options.hpp"
+#include "ores.refdata.service/messaging/book_proposal_registrar.hpp"
 #include "ores.refdata.service/messaging/event_registrar.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -95,8 +96,14 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         make_context(cfg.database),
         "ores.refdata.service",
         [](auto& n, auto c, auto v) {
-            return ores::refdata::messaging::registrar::register_handlers(
+            auto subs = ores::refdata::messaging::registrar::register_handlers(n, c, v);
+            // The proposal operations raise approval requests, so they are
+            // registered here and not with the entity handlers.
+            auto proposals = ores::refdata::messaging::book_proposal_registrar::register_handlers(
                 n, std::move(c), std::move(v));
+            for (auto& sub : proposals)
+                subs.push_back(std::move(sub));
+            return subs;
         },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

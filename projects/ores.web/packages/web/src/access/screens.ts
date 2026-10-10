@@ -35,4 +35,27 @@ export const NEEDS = {
     staffOfMyParties: { all: [PERMISSION.organisationRead] },
     /** Either list, whichever the reader can use. */
     staff: { any: [PERMISSION.accountsRead, PERMISSION.organisationRead] },
+    /** The roles of the tenant and who holds them. */
+    roles: { all: [PERMISSION.rolesRead] },
+    /** The reporting hierarchy, read from the organisation. */
+    hierarchy: { any: [PERMISSION.accountsRead, PERMISSION.organisationRead] },
 } as const satisfies Record<string, Needs>;
+
+/** One tab of a screen, and what it needs. A tab with no needs is always there. */
+export interface TabDefinition<Name extends string> {
+    readonly name: Name;
+    readonly needs?: Needs;
+}
+
+/**
+ * The tabs a reader can use, in the order declared.
+ *
+ * A tab that reads something the reader may not read is not offered: showing it
+ * and then answering with a refusal teaches them only that something is broken.
+ */
+export function tabsFor<Name extends string>(
+    tabs: readonly TabDefinition<Name>[],
+    can: (needs: Needs) => boolean,
+): readonly Name[] {
+    return tabs.filter((tab) => tab.needs === undefined || can(tab.needs)).map((tab) => tab.name);
+}

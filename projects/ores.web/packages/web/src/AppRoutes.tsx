@@ -588,7 +588,9 @@ export function AppRoutes({
             <Route
                 path="/hierarchy"
                 element={signedIn(gate.version, session, shell, (view) => (
-                    <ReportingLinesPage me={view.username} />
+                    <Requires needs={NEEDS.hierarchy} screen={t('access.hub.hierarchy')}>
+                        <ReportingLinesPage me={view.username} />
+                    </Requires>
                 ))}
             />
             <Route
@@ -806,7 +808,9 @@ export function AppRoutes({
                     session,
                     shell,
                     () => (
-                        <RolesPage />
+                        <Requires needs={NEEDS.roles} screen={t('shell.menu.roles')}>
+                            <RolesPage />
+                        </Requires>
                     ),
                     'workspace',
                 )}
@@ -818,7 +822,9 @@ export function AppRoutes({
                     session,
                     shell,
                     () => (
-                        <RolePage />
+                        <Requires needs={NEEDS.roles} screen={t('shell.menu.roles')}>
+                            <RolePage />
+                        </Requires>
                     ),
                     'workspace',
                 )}

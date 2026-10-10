@@ -1487,7 +1487,7 @@ private:
             account_id = sg(claims_result->subject);
         } catch (const std::exception&) {
             BOOST_LOG_SEV(account_handler_lg(), warn)
-                << "Self write refused: token subject is not an account id: "
+                << "Self request refused: token subject is not an account id: "
                 << claims_result->subject;
             error_reply(nats_, msg, ores::service::error_code::unauthorized);
             return std::nullopt;

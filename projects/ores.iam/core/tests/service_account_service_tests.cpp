@@ -889,6 +889,33 @@ TEST_CASE("a_viewer_sees_everyone_who_reports_to_them_whatever_their_party", tag
 }
 
 /**
+ * A colleague who shares one of the viewer's parties and works in another one
+ * must not make that other party visible to the viewer.
+ */
+TEST_CASE("a_peers_other_party_is_not_named_to_the_viewer", tags) {
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto north = new_party(h, ctx);
+    const auto south = new_party(h, ctx);
+    const auto viewer = new_account(sut, ctx);
+    const auto peer = new_account(sut, ctx);
+    link_to(h, ctx, viewer, north);
+    link_to(h, ctx, peer, north);
+    link_to(h, ctx, peer, south);
+
+    ores::iam::messaging::get_reporting_tree_request req;
+    const auto tree = sut.get_reporting_tree(req, viewer);
+
+    REQUIRE(tree.parties.size() == 1);
+    CHECK(tree.parties.front().party_id == text(north));
+    const auto* node = tree_node(tree, peer);
+    REQUIRE(node != nullptr);
+    CHECK(node->party_ids == std::vector<std::string>{text(north)});
+}
+
+/**
  * A person with a manager is never drawn as one without. A manager the viewer
  * may not see is not named, and the person carries a marker saying so.
  */

@@ -1049,6 +1049,7 @@ messaging::get_reporting_tree_response account_operations_service::get_reporting
     // works in one party sees that party; the head of a holding group, linked
     // to each of its parties and with the group beneath them, sees everyone
     // under them.
+    std::unordered_set<std::string> nameable_parties;
     if (viewer) {
         const auto me = boost::uuids::to_string(*viewer);
         std::unordered_set<std::string> visible{me};
@@ -1057,6 +1058,7 @@ messaging::get_reporting_tree_response account_operations_service::get_reporting
         if (const auto mine = parties_of_all.find(me); mine != parties_of_all.end()) {
             my_parties.insert(mine->second.begin(), mine->second.end());
         }
+        nameable_parties = my_parties;
         for (const auto& [account, parties] : parties_of_all) {
             if (std::any_of(parties.begin(), parties.end(), [&](const std::string& party) {
                     return my_parties.count(party) > 0;
@@ -1086,6 +1088,10 @@ messaging::get_reporting_tree_response account_operations_service::get_reporting
                 if (visible.insert(report).second) {
                     below.push(report);
                 }
+                // The parties of the people under the viewer are the viewer's to see.
+                if (const auto linked = parties_of_all.find(report); linked != parties_of_all.end()) {
+                    nameable_parties.insert(linked->second.begin(), linked->second.end());
+                }
             }
         }
 
@@ -1094,16 +1100,22 @@ messaging::get_reporting_tree_response account_operations_service::get_reporting
         });
     }
 
-    // The parties the shape is drawn under: every party a visible person works
-    // in, so a head of group sees the parties of the people under them. Sorted,
-    // so the answer does not depend on the order the store returned the links.
+    // The parties the shape is drawn under. A viewer is shown their own parties
+    // and those of the people under them, so a colleague's other party stays
+    // unnamed. Sorted, so the answer does not depend on the order of the links.
     std::unordered_map<std::string, std::vector<std::string>> parties_of;
     std::set<std::string> scope_parties;
     for (const auto& account : accounts) {
         const auto id = boost::uuids::to_string(account.id);
-        if (const auto found = parties_of_all.find(id); found != parties_of_all.end()) {
-            parties_of[id] = found->second;
-            scope_parties.insert(found->second.begin(), found->second.end());
+        const auto found = parties_of_all.find(id);
+        if (found == parties_of_all.end()) {
+            continue;
+        }
+        for (const auto& party : found->second) {
+            if (!viewer || nameable_parties.count(party) > 0) {
+                parties_of[id].push_back(party);
+                scope_parties.insert(party);
+            }
         }
     }
     for (const auto& party : scope_parties) {

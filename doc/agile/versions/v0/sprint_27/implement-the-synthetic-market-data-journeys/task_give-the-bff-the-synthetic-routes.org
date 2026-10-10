@@ -8,7 +8,7 @@
 #+filetags: :implement-the-synthetic-market-data-journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/give-the-bff-the-synthetic-routes
-#+pr:
+#+pr: 3062
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -157,7 +157,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3062][#3062]] | [web] Serve the synthetic routes from the BFF |
 
 * Review
 

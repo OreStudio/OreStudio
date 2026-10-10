@@ -26,11 +26,11 @@ Every rates instrument row, the header and the facts alike, is pinned to the tra
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -71,7 +71,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trading core suite after the pin | 143 cases, all passed | =compass test run -- -R trading.core= | uncommitted (working tree over =efa0aab1c2=) |
+| ORE core suite after the pin | all passed | =compass test run -- -R ore.core= | same |
+| Component documentation audit | 41 of 41 components pass | =projects/ores.codegen/validate_docs.sh= | same |
 
 * Notes
 
@@ -105,3 +107,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The rates header is pinned to the trade anchor on the party and the trade
+type. The fleet check found one overlap: merry newton adds two columns to the
+trades table, which does not touch the pin.
+
+The task's premise was out of date, so the delivery differs from the plan:
+
+- The anchor is a versioned table now (=Make every trading entity a regular,
+  versioned table=), and its unique keys were removed because nothing
+  referenced them (=Stop the trade's children copying its party=). A database
+  composite foreign key cannot name a versioned table, and a unique index
+  would serve nothing. No index was added. The pin is a codegen =Pinned keys=
+  row on the header, which generates an insert-trigger check against the
+  anchor's current row over =(id, party_id, trade_type)=.
+- The fact and child tables carry neither =party_id= nor =trade_type_code=
+  (design decision D3), so the header is the only row of the family that can
+  disagree with the anchor. They are not pinned.
+- The trigger stamps =party_id= from the session and row-level security hides
+  other parties' anchors, so the observable refusal is the trade type. The
+  party column is held to the anchor as well.
+- Because the check runs at insert, a later amendment of the anchor does not
+  re-check the header. The trade model's owner decides whether an amendment
+  re-pins its children.
+
+Tests: the cascade test now books its anchor as a ForwardRateAgreement, and a
+new case refuses a header whose trade type differs from the anchor's.

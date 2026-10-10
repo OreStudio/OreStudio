@@ -125,6 +125,7 @@ TEST_CASE("rate_instrument_delete_closes_the_whole_family", tags) {
 
     auto trade = ores::trading::generators::generate_synthetic_trade(gen);
     trade.party_id = party_id;
+    trade.trade_type = "ForwardRateAgreement";
     trade_repository().write(ctx, trade);
     const auto trade_id = trade.id;
 
@@ -177,4 +178,32 @@ TEST_CASE("rate_instrument_delete_closes_the_whole_family", tags) {
 
     const auto anchor = trade_repository().read_latest(ctx, id_str);
     CHECK(anchor.size() == 1);
+}
+
+TEST_CASE("rate_instrument_refuses_a_trade_type_the_anchor_does_not_hold", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = ores::trading::tests::write_parent_party(h);
+    const auto party_id = *ctx.party_id();
+
+    auto trade = ores::trading::generators::generate_synthetic_trade(gen);
+    trade.party_id = party_id;
+    trade.trade_type = "ForwardRateAgreement";
+    trade_repository().write(ctx, trade);
+
+    const auto activity_id = ores::trading::tests::write_parent_activity(h);
+    rate_instrument_repository header_repo;
+
+    SECTION("a trade type other than the anchor's") {
+        auto header = make_header(h, trade.id, activity_id, party_id);
+        header.identity.trade_type_code = "Swap";
+        CHECK_THROWS(header_repo.write(ctx, header));
+    }
+
+    SECTION("the anchor's own party and trade type") {
+        const auto header = make_header(h, trade.id, activity_id, party_id);
+        CHECK_NOTHROW(header_repo.write(ctx, header));
+    }
 }

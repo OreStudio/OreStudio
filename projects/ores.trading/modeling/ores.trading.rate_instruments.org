@@ -352,6 +352,24 @@ them rather than widening them.
 | party      | tenant_id, party_id        | false  | true         |             |
 | trade_type | tenant_id, trade_type_code | false  | true         |             |
 
+** Pinned keys
+
+The header copies the anchor's party and trade type, so the insert trigger
+checks the copies against the anchor's current row and refuses a row that
+disagrees. The anchor is a versioned table, so a database foreign key cannot
+name it and the pin is a trigger check, as the =trade_id= key is. The fact and
+child tables carry neither column: they reach both through this row (design
+decision D3), so the header is the only row of the family that can disagree.
+
+The insert trigger stamps =party_id= from the session, and row-level
+security hides another party's anchor, so in practice the pin refuses a
+disagreeing =trade_type_code=; the party column is held to the anchor as
+well, so a path that bypasses the stamp cannot drift from it.
+
+| name   | columns                           | table                  | target_columns            | error_message                                                          |
+|--------+-----------------------------------+------------------------+---------------------------+------------------------------------------------------------------------|
+| anchor | trade_id, party_id, trade_type_code | ores_trading_trades_tbl | id, party_id, trade_type | Invalid trade_id: %. The party and trade type must be the trade's own. |
+
 The tenant isolation and the party isolation policies are hand-written in
 =trading_rls_policies_create.sql=, as =bond_instruments=' are: the header
 carries =party_id=, so it needs the restrictive party policy beside the

@@ -8,7 +8,7 @@
 #+filetags: :publish_the_currency_groups_with_acme:sprint_27:v0:
 #+owner: marco
 #+branch: feature/provision-the-currency-groups-with-acme
-#+pr:
+#+pr: 3038
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3038][#3038]] | [dq] Provision the currency groups with the base bundle |
 
 * Review
 

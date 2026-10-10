@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/expose-the-recipe-on-a-points-provenance
-#+pr:
+#+pr: 3081
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3081][#3081]] | [marketdata] Name the recipe on a derived point's provenance |
 
 * Review
 

@@ -38,7 +38,11 @@ Source: [[./book_lifecycle.puml][=book_lifecycle.puml=]]. Regenerate with
 
 ** Opening a book
 
-Creating a new book is a deliberately heavyweight, multi-party
+This applies to an *official* book, one that maps to a book in the
+ledger. A virtual book inside a sandbox follows no such process; see
+[[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]].
+
+Creating a new official book is a deliberately heavyweight, multi-party
 process:
 
 1. *Book initiation* — the request is authorised internally by the

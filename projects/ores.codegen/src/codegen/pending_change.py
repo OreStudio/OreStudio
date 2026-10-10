@@ -171,8 +171,8 @@ def derive_column(chunk):
     chunk = re.sub(r"(?m)^:natural_key:.*\n", "", chunk)
     if name == "id":
         chunk = re.sub(r"(?m)^:primary_key:.*\n", "", chunk)
+        assert chunk.startswith("** id\n"), "id column heading changed"
         chunk = chunk.replace("** id\n", "** entity_id\n", 1)
-        chunk = chunk.replace(":END:\n", ":END:\n", 1)
     return chunk
 
 
@@ -208,9 +208,16 @@ def derive(source, text):
     )
 
     by_name = {section_name(s): s for s in sections}
+    for needed in ("Flags", "Columns", "C++"):
+        if needed not in by_name:
+            raise SystemExit(f"{source}: gated model has no '* {needed}' section")
     flags = by_name["Flags"]
     flags = re.sub(r"(?m)^:gated:.*\n", "", flags)
-    flags = re.sub(r"(?m)^:profile:.*$", ":profile:   uuid-identified-lookup\n:client_read_only: true", flags)
+    flags, replaced = re.subn(
+        r"(?m)^:profile:.*$", ":profile:   uuid-identified-lookup\n:client_read_only: true", flags
+    )
+    if not replaced:
+        raise SystemExit(f"{source}: gated model has no ':profile:' flag")
     out.append(flags if flags.endswith("\n") else flags + "\n")
 
     _, columns = split_columns(by_name["Columns"])
@@ -273,6 +280,13 @@ def write_derived(source):
     return target
 
 
+def shown(path):
+    try:
+        return path.resolve().relative_to(ROOT)
+    except ValueError:
+        return path
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
@@ -288,9 +302,9 @@ def main():
         derived = derive(source, text)
         if args.check:
             if not target.exists() or target.read_text() != derived:
-                print(f"stale: {target.relative_to(ROOT)}")
+                print(f"stale: {shown(target)}")
                 stale += 1
         else:
             target.write_text(derived)
-            print(f"wrote {target.relative_to(ROOT)}")
+            print(f"wrote {shown(target)}")
     return 1 if stale else 0

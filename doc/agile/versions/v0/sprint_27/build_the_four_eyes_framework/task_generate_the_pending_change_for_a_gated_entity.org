@@ -95,7 +95,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No (request_id, line_no) uniqueness | book_changes_create.sql | Defer | The raise task adds the index and owns line numbering. |
+| 2 | Lines insertable after the request is decided | book_changes_create.sql | Defer | Only the raise operation writes lines. It checks the request state. |
+| 3 | entity_id and base_version are not tied | book_changes_create.sql | Defer | The dry run catches it. Stated in the raise task. |
+| 4 | Dead replace, silent id rename | pending_change.py | Accept | Dead line removed. An assert guards the rename. |
+| 5 | Bare KeyError on a missing section | pending_change.py | Accept | A clear error names the model and section. The regex reading stays. |
+| 6 | Fixed dates and title-based id | pending_change.py | Decline | Fixed dates keep --check stable. The id follows the source title on purpose. |
+| 7 | Silent loss of client_read_only | pending_change.py | Accept | A missing :profile: now fails. |
+| 8 | relative_to fails outside the repo | pending_change.py | Accept | Path shown as given when outside the repo. The parents[4] depth stays. |
+| 9 | Committed test for unknown request | tests | Defer | The raise task tests it through the raise operation. |
+| 10 | Say derived files are not to be edited | four_eyes_framework.org | Decline | The generated header and the docs paragraph already say so. |
 
 * Result
 

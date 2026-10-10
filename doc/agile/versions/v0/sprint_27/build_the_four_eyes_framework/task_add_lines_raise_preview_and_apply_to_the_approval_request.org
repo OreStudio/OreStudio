@@ -35,6 +35,10 @@ A request holds typed lines for several entities, is previewed and raised with e
 
 * Acceptance
 
+- A line number is unique inside a request (partial unique index on tenant, request and line number).
+- A line cannot be written for a request that is already decided.
+- A test refuses a line for an unknown request.
+
 - The dry run runs the real service database layer for each line inside a savepoint. It returns the refusals the service gives, publishes no event and sends no notification.
 - The apply writes each line through the real service in one transaction.
 

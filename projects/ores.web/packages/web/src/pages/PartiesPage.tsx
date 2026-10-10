@@ -50,6 +50,7 @@ const PARTIES: ListSource<TenantParty> = {
         'business_center_code',
     ],
     mayAdd: false,
+    watches: [{ component: 'refdata', entity: 'parties' }],
 };
 
 /**

@@ -3034,6 +3034,7 @@ const fr: SourceCatalogue = {
         clear: 'Effacer',
         refresh: 'Actualiser',
         refreshStale: 'Les données ont changé sur le serveur. Actualisez pour les voir.',
+        refreshStaleAt: 'Les données ont changé sur le serveur à {time}. Actualisez pour les voir.',
         all: 'Tous',
         close: 'Fermer',
         open: 'Ouvrir',

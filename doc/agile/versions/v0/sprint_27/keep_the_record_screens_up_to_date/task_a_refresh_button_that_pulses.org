@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ RefreshButton changes colour and pulses when the screen is stale, as the Qt relo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -85,3 +85,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=RefreshButton= takes =stale= and =changedAt=. A stale button turns gold (the new =--color-stale= token, used for nothing else), pulses four times at 1.8 s, and stays gold until the screen loads again. Its tooltip gives the time of the change. Reduced motion keeps the gold ring and drops the movement. =RecordList= (every refdata list), the people list, the parties and tenants lists, the staff list and the hierarchy use it through =useEntityChanges=. The refdata registry now states each resource's event collection (=events=), so no screen guesses a plural. A reporting line has no event of its own, so the staff list and hierarchy hear it only when the person or party changes too; that is a finding for the analysis or a later task.

@@ -43,25 +43,39 @@ export function EntityEventsProvider({ children }: { readonly children: ReactNod
     return <EntityEventsContext value={stream}>{children}</EntityEventsContext>;
 }
 
+/** An entity a screen shows, as the event subject names it: the events collection. */
+export interface WatchedEntity {
+    readonly component: string;
+    readonly entity: string;
+}
+
 /**
- * Calls back when an entity changes on the server.
+ * Calls back when any of the entities changes on the server.
  *
  * The entity is the events collection as the services name it, such as
  * `accounts`. A screen outside a provider hears nothing, which is how it behaved
  * before there was a stream.
  */
 export function useEntityChangeEvents(
-    component: string,
-    entity: string,
+    watches: readonly WatchedEntity[],
     onChange: ChangeListener,
 ): void {
     const stream = use(EntityEventsContext);
     const latest = useRef(onChange);
     latest.current = onChange;
+    // The list is a new array on every render, so what is watched is what its
+    // names say, and the subscription is renewed only when they change.
+    const names = watches.map((watch) => `${watch.component}\u0000${watch.entity}`).join('\u0001');
     useEffect(() => {
-        if (stream === undefined) return undefined;
-        return stream.watch(component, entity, (change) => {
-            latest.current(change);
+        if (stream === undefined || names === '') return undefined;
+        const stops = names.split('\u0001').map((name) => {
+            const [component = '', entity = ''] = name.split('\u0000');
+            return stream.watch(component, entity, (change) => {
+                latest.current(change);
+            });
         });
-    }, [stream, component, entity]);
+        return () => {
+            for (const stop of stops) stop();
+        };
+    }, [stream, names]);
 }

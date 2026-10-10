@@ -337,6 +337,10 @@ export function registerRecordRoutes(
                 writable: resource.writable,
                 search: resource.search,
                 sortable: resource.sortable,
+                events: {
+                    component: resource.subjects.put.split('.')[0] ?? '',
+                    entity: resourceName(resource),
+                },
                 writePermission: `refdata::${resourceName(resource)}:write`,
                 deletePermission: `refdata::${resourceName(resource)}:delete`,
             })),

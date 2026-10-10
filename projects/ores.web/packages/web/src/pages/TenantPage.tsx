@@ -201,6 +201,7 @@ function TenantParties({ code }: { readonly code: string }): ReactNode {
             'business_center_code',
         ],
         mayAdd: false,
+        watches: [{ component: 'refdata', entity: 'parties' }],
     };
     return (
         <RecordTable
@@ -225,6 +226,7 @@ function TenantPeople({ code }: { readonly code: string }): ReactNode {
         search: false,
         sortable: [],
         mayAdd: false,
+        watches: [{ component: 'iam', entity: 'accounts' }],
     };
     return (
         <RecordTable

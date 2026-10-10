@@ -38,6 +38,7 @@ function resource(key: string): RecordResourceView {
         keyFields: key === 'calendars' ? ['code'] : ['id'],
         versioned: true,
         writable: true,
+        events: { component: 'refdata', entity: name },
         writePermission: `refdata::${name}:write`,
         deletePermission: `refdata::${name}:delete`,
     };

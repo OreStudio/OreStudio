@@ -59,6 +59,11 @@
   --color-down: #f85149;
   --color-warn: #d29922;
 
+  /* News: something the screen shows changed on the server. Gold, as ores.qt
+     draws it, and used for nothing else, so it never means an error, a warning
+     or an action. */
+  --color-stale: #e3b341;
+
   /* Named first so a machine that has them uses them, and nothing is fetched
      to get them: the application still renders offline. */
   --font-sans:
@@ -129,24 +134,30 @@
  */
 @keyframes stale-pulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-accent) 55%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-stale) 60%, transparent);
   }
   70% {
-    box-shadow: 0 0 0 5px color-mix(in oklab, var(--color-accent) 0%, transparent);
+    box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-stale) 0%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-accent) 0%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-stale) 0%, transparent);
   }
 }
 
 .stale-pulse {
-  animation: stale-pulse 1.8s ease-out infinite;
+  animation: stale-pulse 1.8s ease-out 4;
+}
+
+/* The control stays gold while the news is true, after the pulse has stopped. */
+button.stale-mark {
+  border-color: var(--color-stale);
+  color: var(--color-stale);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .stale-pulse {
     animation: none;
-    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-accent) 40%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-stale) 45%, transparent);
   }
 }
 

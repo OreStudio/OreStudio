@@ -5,7 +5,7 @@
 #+description: A change to a person's reporting line is proposed, and the person it would make their manager approves it, like a role request. Today anyone with the update permission changes it directly.
 #+type: task
 #+level: s1
-#+filetags: :bring-the-record-screens-to-the-standard:sprint_27:v0:
+#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:sprint_27:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0245BF99-2467-4C68-898F-9608F50CD3A9][Approve a reporting line change by the proposed manager]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Make a reporting line change a four-eyes decision: one person proposes, the prop
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] |
+| Parent story | [[id:0245BF99-2467-4C68-898F-9608F50CD3A9][Approve a reporting line change by the proposed manager]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -41,7 +41,7 @@ Make a reporting line change a four-eyes decision: one person proposes, the prop
 
 * Plan
 
-Review item P18 of [[file:task_address_the_people_screens_review.org][Address the review of the people screens]]. Model the change on the role request journey: a proposal is a request, the person it names answers it, and only an approval writes.
+Review item P18 of =Address the review of the people screens=. This is the story's umbrella and end-to-end check; the build is split into the five tasks beside it, and the story's Design section holds the shape. Model the change on the role request journey: a proposal is a request, the person it names answers it, and only an approval writes.
 
 1. Read how a role request is stored, routed to its approver and answered, and reuse that shape for a reporting line request.
 2. Decide the request's data: the person, the proposed manager, the reason, the state, who proposed and who answered.

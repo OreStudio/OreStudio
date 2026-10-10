@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: FAF58D13-1A49-470C-9744-204D71584E7A
+:END:
+#+title: Task: Let an approval request name its decider
+#+description: The inbox decides by permission only. Add a kind rule that the decider is the person the request names, and enforce it where the decision is made.
+#+type: task
+#+level: s1
+#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:sprint_27:v0:
+#+owner: marco
+#+branch: feature/address-the-people-screens-review
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0245BF99-2467-4C68-898F-9608F50CD3A9][Approve a reporting line change by the proposed manager]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A kind can say that its requests are decided by one named person. The request records that person, the queue offers it to them alone, and a decision by anybody else is refused with a clear message, whatever permissions they hold.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0245BF99-2467-4C68-898F-9608F50CD3A9][Approve a reporting line change by the proposed manager]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- approval_request carries an optional assigned decider, and approval_kind declares whether a request of the kind needs one.
+- The decide operation refuses anyone but the named decider for such a kind, and still refuses the asker.
+- The queue read offers a request to its named decider, and to nobody else.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

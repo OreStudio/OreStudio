@@ -92,7 +92,7 @@ reason beside any box that does not. The groups are the order of work.
 - [x] P11 The bell list is polled and the request lists refresh when the count rises. A pushed update stays with Hear a change on the server and offer a refresh.
 
 ** Own task
-- [ ] P18 Approve a reporting line change by the proposed manager (task_approve_a_reporting_line_change_by_the_proposed_manager)
+- [ ] P18 Approve a reporting line change by the proposed manager: now its own story, approve_a_reporting_line_change_by_the_proposed_manager, with six tasks
 
 * Measurements
 
@@ -133,7 +133,7 @@ via its "Verifies task" field.
 
 * Review
 
-The batch from 2026-10-10, in the order given. Decisions: accept, question (needs an answer), defer (another task owns it), split (its own task).
+The batch from 2026-10-10, in the order given. Decisions: accept, question (needs an answer), defer (another task owns it), split (its own task or story).
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
@@ -154,7 +154,7 @@ The batch from 2026-10-10, in the order given. Decisions: accept, question (need
 | P15 | History everywhere: show the header, not every detail; expand on demand. | timeline/Timeline.tsx | accept | One line per event: time, what happened, record and version, reason, who, and the note. Details open on demand. |
 | P16 | History: the username should link to the person. | timeline/Timeline.tsx | accept | Where the reader may open the person. |
 | P17 | Hierarchy history: remove the person card. List the people whose line changed recently, then show one person's history. | membership/ReportingLinesPage.tsx | accept | Needs a read of recent reporting line changes across the tenant, or a client-side pass over the account history. |
-| P18 | Changing the hierarchy is not four-eyes. The proposed new manager should approve, like a role request. | server + web | split | Own task: Approve a reporting line change by the proposed manager. |
+| P18 | Changing the hierarchy is not four-eyes. The proposed new manager should approve, like a role request. | server + web | split | Own story: Approve a reporting line change by the proposed manager (six tasks in sprint 27). |
 | P19 | What does the 'Application' pill mean? Show the current party and tenant, very visibly, perhaps as pills at the bottom. | components/AppShell.tsx | accept | Explain or remove the Application pill. Add tenant and party pills to the footer. |
 
 * Result

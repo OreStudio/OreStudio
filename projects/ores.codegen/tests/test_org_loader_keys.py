@@ -517,3 +517,23 @@ def test_change_intent_is_still_kept_out_of_the_record():
     ]
     names = [f["name"] for f in write_record_for(entity)]
     assert names == ["id", "name", "party_id", "value"]
+
+
+def test_a_natural_key_marked_server_owned_leaves_the_write_record():
+    """A per-party row keyed by a surrogate id names its party from the session.
+
+    The party stays in the natural key, so the unique index still scopes the
+    row to its party, but a caller never states it: the service stamps it.
+    """
+    entity = _setting_entity()
+    entity["natural_keys"][1]["server_owned"] = True
+    names = [f["name"] for f in write_record_for(entity)]
+    assert names == ["id", "name", "value"]
+
+
+def test_server_owned_is_refused_on_a_field_the_caller_owns():
+    """Only a field the specification lists as server-owned can be marked so."""
+    entity = _setting_entity()
+    entity["natural_keys"][0]["server_owned"] = True
+    with pytest.raises(ValueError, match="name"):
+        write_record_for(entity)

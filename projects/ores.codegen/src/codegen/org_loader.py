@@ -2985,6 +2985,11 @@ def write_record_fields(
     caller's to state; stripping it would emit a write that cannot say what it
     writes.
 
+    A key column marked ``:server_owned:`` is stripped all the same. A row
+    keyed by a surrogate id keeps ``party_id`` in its natural key so the
+    unique index scopes it to a party, but the caller does not state that
+    party: the service stamps it from the session.
+
     Each field is shaped for the renderer, not handed back as the raw column:
     the message templates read ``name`` and ``cpp_type``, and a column dict
     passed through untouched would render an empty member.
@@ -2992,6 +2997,12 @@ def write_record_fields(
     fields: list[dict[str, Any]] = []
     for column in columns:
         name = _column_name(column)
+        if column.get("server_owned") is True:
+            if name not in SERVER_OWNED_FIELDS:
+                raise ValueError(
+                    f":server_owned: marks {name}, which a caller owns; only "
+                    f"{', '.join(sorted(SERVER_OWNED_FIELDS))} can be marked.")
+            continue
         if name not in key_columns and (
                 name in SERVER_OWNED_FIELDS or name in CHANGE_INTENT_FIELDS):
             continue

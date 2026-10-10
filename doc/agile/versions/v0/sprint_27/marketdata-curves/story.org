@@ -21,11 +21,11 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The representation, the manual point path, staleness, the typed identity, the shape tables, the shape enforcement, the import declaration, the typed axis values, the slice read, the aligned evolution read, the reshaped single-instant read, the provenance annex and the manual precedence rule are done. The acceptance audit is done: fifteen of seventeen bullets are met. Two were open. The recipe on a point's provenance is done. Typed coordinates remain, as a BACKLOG decision task. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Decide how a node's coordinate is queryable. |
+| Next          | Nothing. The publication record waits for the publish operation. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -53,7 +53,7 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 | [[id:2559483D-1A40-45CB-A888-83CCDD166729][Decide the curve_builds table]] | DONE | 2026-10-10 | 2026-10-10 | Decide whether a curve_builds table is needed, from the agreed journeys, once the shape, the reads and the provenance are settled. |
 | [[id:1349F997-C4E4-4D6B-B45B-8939CCD5D832][Audit the story acceptance against the tree]] | DONE | 2026-10-10 | 2026-10-10 | Check each bullet of the story's acceptance list against the tree, record the evidence, and close the story or name what is left. |
 | [[id:18E34E18-6EC3-4E3B-A5C1-4084FE2D2882][Expose the recipe on a point's provenance]] | DONE | 2026-10-10 | 2026-10-10 | Return the derivation config, its version and the source as-of beside a derived point's provenance, so a reader sees which recipe built it. |
-| [[id:379ED141-98E9-4115-8A0B-9723ED977415][Decide how a node's coordinate is queryable]] | BACKLOG | | | Decide whether a node's coordinate tuple must be a SQL-queryable column set, or whether the typed oresmd URI parsed in the service tier meets the acceptance. |
+| [[id:379ED141-98E9-4115-8A0B-9723ED977415][Decide how a node's coordinate is queryable]] | DONE | 2026-10-10 | 2026-10-10 | Decide whether a node's coordinate tuple must be a SQL-queryable column set, or whether the typed oresmd URI parsed in the service tier meets the acceptance. |
 
 * Decisions
 
@@ -202,6 +202,23 @@ the request sets =include_provenance=. The annex is read for the points the
 snapshot placed and for no others, so the point path pays nothing when nobody
 asks. The evolution read does not carry provenance, because a per-instant annex
 read over a range is a larger decision than this task.
+
+** A coordinate is typed in the service and is not a column
+
+Chosen 2026-10-10, with the coordinate task. The acceptance asks for a coordinate that
+is queryable and joinable. It is both, through the typed reads: the codec parses it, the
+write checks it against the declared shape, the shared grid places the point, and the
+slice and evolution reads select by it. It is not a SQL column, because the component
+made the URI the only identity, and no journey asks for points across series by
+coordinate. The reopening event is such a journey. The form then is an index on a
+derived projection of the URI's parts, not a column and not a table.
+
+The series identity is different. The "joinable identity" story projected a series'
+identity into one column per codec field on =market_series=, a cold table of few rows.
+This decision concerns the point, a hot hypertable row, and it leaves that story intact.
+
+Rejected: coordinate columns on the observation. They give a row two identities that
+can disagree, and they put one facet's coordinate on a generic table.
 
 ** A derived point names its recipe; the evolution read carries no provenance
 
@@ -1400,6 +1417,8 @@ evolution second, the representation third.
 - *Its nodes are typed coordinates.* A node's coordinate tuple — terms,
   expiries, strikes or deltas, dimensions — is queryable and joinable, not
   only text inside an identity string.
+  Met in the service tier: see /A coordinate is typed in the service and is not a
+  column/.
 - *Its axis values are typed codes.* ATM, 25RR and 25BF are validated
   vocabulary, so a component can be named and reconciled, and the quoting
   convention they imply is recorded.

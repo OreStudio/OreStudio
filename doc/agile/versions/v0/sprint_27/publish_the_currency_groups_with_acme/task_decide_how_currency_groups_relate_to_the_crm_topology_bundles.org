@@ -2,7 +2,7 @@
 :ID: EEA1A082-DC41-440E-9FF7-29AD624F9062
 :END:
 #+title: Task: Decide how currency groups relate to the CRM topology bundles
-#+description: Initial task for: Publish the currency groups with Acme
+#+description: Record why currency groups and CRM topologies are separate concepts.
 #+type: task
 #+level: s1
 #+filetags: :publish_the_currency_groups_with_acme:sprint_27:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A new tenant, Acme included, holds the desk currency groups and their members after provisioning. The groups come from a DQ dataset, as the currency calendars and countries do.
+Decide whether the CRM topology bundles and the currency groups are one concept. Record the answer on the currency groups knowledge page, so the DQ tasks build on a settled model.
 
 * Status
 
@@ -30,15 +30,13 @@ A new tenant, Acme included, holds the desk currency groups and their members af
 | Parent story | [[id:3BE72A38-774F-4DB9-A1BA-E026EAD27EF8][Publish the currency groups with Acme]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Record the analysis on the knowledge page. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
 
-- The domain analysis is recorded: currency groups and CRM topologies are distinct concepts with no foreign key between them.
-- A DQ dataset curates the groups and their currency membership and publishes into the tenant's group tables.
-- The dataset belongs to the bundle that provisions Acme, and a test proves the groups exist after provisioning.
-- The groups show in the web UI for an Acme user.
+- The knowledge page states that currency groups and CRM topologies are distinct concepts, and why: scope, membership and the pivot currency.
+- The page states that no foreign key links them, and names a group-seeded CRM as a later option.
 
 * Plan
 

@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/publish-the-currency-group-members-from-dq
 #+pr:
-#+blocked_on:
+#+blocked_on: Publish the currency groups from DQ
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10

@@ -124,3 +124,9 @@ via its "Verifies task" field.
 | 10 | Nits: queue key, same-tick edits, negative cache | file-scenario-store.ts | Comment, decline | The queue key has a comment. The other two are not worth the code. |
 
 * Result
+
+The BFF has a scenario store in projects/ores.web/packages/bff/src/scenarios. A pure codec, scenario-doc.ts, reads a scenario doc with parseScenario and writes a run into its text with recordRun. The write changes only the Result tables of the steps it names, the Results table and the State row, and every other line stays. The store sits behind the ScenarioStore interface, and the file store keeps its docs under ORES_WEB_DOC_ROOT. It lists scenarios, reads one with its steps, finds any doc by its :ID: and records a run. Nothing calls compass.
+
+A client is a level-two heading that has a child other than Result, and a step is named by its client and its title. A save that names a missing, repeated or doubled step refuses the whole save. A closed Results status outranks the State row, because the Qt runner never updated State: 89 old scenarios show PASSED in Results with State at PENDING. Of the 134 scenarios in the repository, 16 are waiting.
+
+The tests number 47 for the store and 2 for the config, and the BFF suite passes with 456. They use the two real fixtures of @ores/org, the current compass template rendered and parsed, and every scenario doc in the repository, each taking a full run back without losing a step. Removing the root guard, the id check, the shared scan, the retry after a failed scan or the long head read each fails its own test. The review found three real faults in the first scan code, and all three are fixed. A save is a read and a rename, so an editor that saves between the two loses its edit. Last write wins, and task 5 may add a conflict check. Task 3 serves the store and maps its errors to statuses.

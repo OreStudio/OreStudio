@@ -7001,7 +7001,7 @@ def _acquire_build_lock():
 
     There's no OS primitive to block on "whichever of N fds frees first",
     so once every slot is taken this polls at BUILD_LOCK_POLL_INTERVAL;
-    with only two slots and multi-minute compiles, the busy-wait cost is
+    with one slot and multi-minute compiles, the busy-wait cost is
     negligible.
 
     Returns (lock_file, slot_name, jobs) -- keep lock_file alive for as
@@ -7041,7 +7041,7 @@ def _acquire_build_lock():
             holders = ", ".join(
                 f"{name} ({build_lock_holder(name) or 'unknown'})"
                 for name, _ in BUILD_LOCK_SLOTS)
-            print(f"⏳ Waiting for a build lock — both slots busy: {holders}...")
+            print(f"⏳ Waiting for the build lock — slot busy: {holders}...")
             announced = True
         time.sleep(BUILD_LOCK_POLL_INTERVAL)
 

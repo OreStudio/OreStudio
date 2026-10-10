@@ -41,6 +41,11 @@ namespace ores::marketdata::repository {
  * The feed, the import and the republish all write through the insert, so this
  * one rule covers all three. Only write_manual_point writes a manual point, and
  * it does not pass through here.
+ *
+ * The guard reads the annex and the insert is a separate statement. A manual
+ * point committed between the two, by another transaction, can still be replaced
+ * by an automatic write at its instant. The window is one round trip wide, and
+ * closing it needs the check inside the insert statement.
  */
 class ORES_MARKETDATA_CORE_EXPORT manual_point_guard final {
 public:
@@ -49,7 +54,9 @@ public:
      * an operator owns, in their original order.
      *
      * The result is the whole batch when no point of it is shadowed, which is the
-     * case for every batch of a series nobody over-keyed.
+     * case for every batch of a series nobody over-keyed. A point is matched to
+     * the microsecond, which is the precision the store keeps. A dropped write is
+     * logged once per batch at info, with the count.
      */
     static std::vector<domain::market_observation>
     unshadowed(ores::database::context ctx,

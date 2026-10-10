@@ -41,7 +41,13 @@ auto& guard_lg() {
     return instance;
 }
 
-using owned_point = std::pair<std::string, std::chrono::system_clock::time_point>;
+using owned_point = std::pair<std::string, std::chrono::microseconds>;
+
+/// The store keeps instants to the microsecond, so a point is matched at that
+/// precision. A feed stamped from the clock carries more.
+std::chrono::microseconds key_of(std::chrono::system_clock::time_point instant) {
+    return std::chrono::duration_cast<std::chrono::microseconds>(instant.time_since_epoch());
+}
 
 }
 
@@ -60,13 +66,13 @@ manual_point_guard::unshadowed(ores::database::context ctx,
         auto& points = owned[obs.series_id];
         for (const auto& annex :
              observation_lineage_repository{}.read_manual_for_series(ctx, obs.series_id))
-            points.emplace(annex.oresmd_uri, annex.observation_datetime);
+            points.emplace(annex.oresmd_uri, key_of(annex.observation_datetime));
     }
 
     std::vector<domain::market_observation> kept;
     kept.reserve(observations.size());
     for (const auto& obs : observations) {
-        if (owned.at(obs.series_id).contains({obs.oresmd_uri, obs.observation_datetime})) {
+        if (owned.at(obs.series_id).contains({obs.oresmd_uri, key_of(obs.observation_datetime)})) {
             BOOST_LOG_SEV(guard_lg(), debug)
                 << "Dropped an automatic write to a manual point. Series: " << obs.series_id
                 << " coordinate: " << obs.oresmd_uri;
@@ -74,6 +80,10 @@ manual_point_guard::unshadowed(ores::database::context ctx,
         }
         kept.push_back(obs);
     }
+    if (kept.size() != observations.size())
+        BOOST_LOG_SEV(guard_lg(), info)
+            << "Dropped " << observations.size() - kept.size() << " of " << observations.size()
+            << " automatic writes to coordinates an operator owns.";
     return kept;
 }
 

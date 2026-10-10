@@ -66,7 +66,12 @@ import { MyAccessPage } from './access/MyAccessPage.js';
 import { WhereIWorkPage } from './membership/WhereIWorkPage.js';
 import { ReportingLinesPage } from './membership/ReportingLinesPage.js';
 import { OrganisationPage } from './access/OrganisationPage.js';
+import { RouteTrail } from './log/RouteTrail.js';
 import { PeoplePage } from './access/PeoplePage.js';
+import { FirstAvailable, Requires } from './access/Requires.js';
+import { RefusalGuard } from './access/RefusalGuard.js';
+import { NEEDS } from './access/screens.js';
+import { StaffOfMyParties } from './membership/StaffOfMyParties.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
@@ -651,7 +656,13 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <PeoplePage mode={view.mode} />
+                        <FirstAvailable
+                            screen={t('access.hub.staff')}
+                            variants={[
+                                { needs: NEEDS.people, screen: <PeoplePage mode={view.mode} /> },
+                                { needs: NEEDS.staffOfMyParties, screen: <StaffOfMyParties /> },
+                            ]}
+                        />
                     ),
                     'workspace',
                 )}
@@ -676,7 +687,9 @@ export function AppRoutes({
                     shell,
                     (view) =>
                         view.mode === 'system-administration' ? (
-                            <PeoplePage mode={view.mode} />
+                            <Requires needs={NEEDS.people} screen={t('shell.menu.accounts')}>
+                                <PeoplePage mode={view.mode} />
+                            </Requires>
                         ) : (
                             <Navigate to="/organisation" replace />
                         ),
@@ -1172,6 +1185,7 @@ function signedIn(
     const version = view.version !== '' ? view.version : serverVersion;
     return (
         <EntityEventsProvider>
+            <RouteTrail />
             <AppShell
                 username={view.username}
                 tenantName={view.tenantName}
@@ -1183,7 +1197,7 @@ function signedIn(
                 onSignOut={shell.onSignOut}
                 self={shell.self}
             >
-                {screen(view, version)}
+                <RefusalGuard>{screen(view, version)}</RefusalGuard>
             </AppShell>
         </EntityEventsProvider>
     );

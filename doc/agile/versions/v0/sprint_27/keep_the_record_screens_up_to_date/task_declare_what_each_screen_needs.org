@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: 708FDAB5-D9F2-40F8-914C-35924974325D
+:END:
+#+title: Task: Declare what each screen and form needs, and report failures by operation
+#+description: Task for: Keep the record screens up to date
+#+type: task
+#+level: s1
+#+filetags: :keep_the_record_screens_up_to_date:sprint_27:v0:
+#+owner: marco
+#+branch: feature/keep-the-record-screens-up-to-date
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A screen or a form declares the permissions it needs, as typed constants. The menu, the route guard and the buttons that open a form read that declaration, so a user never reaches a screen that will refuse them. Every form saves through one shared hook, and every failed request names its operation and is logged with the request id.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- A screen or form the user may not enter is not drawn, and a direct URL shows that it is not available
+- Nothing renders while the roles load, so no screen asks for data it may not read
+- The identity, contact and reporting-line dialogs save through one hook that closes the form and then refreshes
+- A failed request logs its operation, route, status, server code and request id, and the banner names the operation
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Found while testing the update screens together:
+
+- A save showed the "newer version" warning for the person's own save. The save
+  made version 5, the dialog read the record again while still open, and saw 5
+  against its base 4. The same order was copied into three dialogs.
+- A member who reloaded the browser was sent to the administrator's list for a
+  moment, because every permission reads as absent until the roles load. The
+  server refused with 403 and the banner said only "You do not have access to this."
+  This is the likely cause of the error seen in the member's window. The logs show
+  a 403 on the paged accounts list and no other refusal. It is not yet confirmed.
+
+What was built:
+
+- =access/permissions.ts=: typed permission constants, =Needs=, =meets=.
+- =access/screens.ts=: what each screen needs, read by the menu, the home page, the
+  organisation page and the routes.
+- =access/Requires.tsx=: =Requires= and =FirstAvailable=. They draw nothing but
+  "Loading" until the roles are known. A screen the reader cannot use says it is
+  not available.
+- =access/useRecordEdit.ts=: save, close, then read again. The three person dialogs
+  use it.
+- =log/clientLog.ts=, =log/RouteTrail.tsx=, =Dialog= in =ui/Primitives.tsx=: the
+  trail of screens and forms. The transport records every failed request with its
+  operation, status, code and request id.
+- BFF: =POST /api/client-log=, an =x-request-id= header on every answer, a warning
+  line for each refusal with its reason, and all BFF log lines in the line form of
+  the services (=log-format.ts=).
+
+Added after review: a screen the reader cannot use says what is missing in words
+and links to the request for a role that allows it (=access/NotAvailable.tsx=,
+=GET /api/me/ways-to-hold=, =access/permissionWords.ts=). A drawn screen whose read
+the server refuses is replaced by a panel with a log reference
+(=access/RefusalGuard.tsx=). A screen for the wrong mode, such as a tenant screen
+for a system administrator, is not covered yet.
+
+Not done, and left for the next tasks in this line:
+
+- The other screens still call =holds()= themselves (the roles column on People,
+  the tabs of the person page, the reporting lines screen, the requests and roles
+  pages). They compile against the typed list, but they are not yet declared
+  screens.
+- The BFF test =inbox.test.ts= (decides a request against the version read) fails
+  on main. The wire code sends =part_code= and the test does not expect it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Built as the first slice. Not seen live yet.

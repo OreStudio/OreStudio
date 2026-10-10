@@ -49,6 +49,7 @@ The web screens read once and never learn that a record changed elsewhere. Add l
 | [[id:ADEE695C-905F-43EB-9A88-F7B189FC1D29][Complete the updates and refresh documents]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 | [[id:ED7D9486-7BA6-4E74-A64F-096FA9AD8EA7][Move the change registry to the canonical event subjects]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 | [[id:2263A9B5-802A-4C95-B2BA-0B301CDEF523][Analyse who may listen to which tenant and party events]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
+| [[id:708FDAB5-D9F2-40F8-914C-35924974325D][Declare what each screen and form needs, and report failures by operation]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 
 * Decisions
 

@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -53,7 +53,7 @@ story must pick one (see Decisions).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -81,7 +81,7 @@ story must pick one (see Decisions).
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:0761EA1F-4ACB-4C8E-ADFE-4CEFAFB7420C][Describe the story and its open decisions]] | DONE | 2026-10-10 | 2026-10-10 | Write the story for the relative-time trade corpus and its market data, with its goal, acceptance, open decisions and scope, from a read of the fixing store, the ORE import and export paths and the synthetic component. |
 
 * Decisions
 

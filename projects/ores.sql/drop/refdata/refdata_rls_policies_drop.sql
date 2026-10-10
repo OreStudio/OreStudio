@@ -24,6 +24,8 @@
 -- Must be dropped before the corresponding tables are dropped.
 
 -- Books
+drop policy if exists book_changes_sandbox_isolation_policy on "ores_refdata_book_changes_tbl";
+drop policy if exists book_changes_party_isolation_policy on "ores_refdata_book_changes_tbl";
 drop policy if exists book_changes_tenant_isolation_policy on "ores_refdata_book_changes_tbl";
 drop policy if exists books_sandbox_isolation_policy on "ores_refdata_books_tbl";
 drop policy if exists books_tenant_isolation_policy on "ores_refdata_books_tbl";

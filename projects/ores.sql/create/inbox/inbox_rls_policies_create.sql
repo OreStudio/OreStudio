@@ -19,7 +19,7 @@
  */
 
 -- =============================================================================
--- Row-Level Security Policies for Inbox Junction Tables
+-- Row-Level Security Policies for Inbox Junction and Policy Tables
 -- =============================================================================
 -- The generated entity tables carry their own tenant isolation policy. The
 -- junctions do not, so their policies are stated here, as every component
@@ -50,6 +50,36 @@ drop policy if exists notification_recipients_tbl_tenant_isolation_policy on ore
 create policy notification_recipients_tbl_tenant_isolation_policy on ores_inbox_notification_recipients_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Approval Parts and Policies (the system tenant's rows are read by every
+-- tenant, which may add rows of its own and never changes the system's)
+-- -----------------------------------------------------------------------------
+alter table ores_inbox_approval_parts_tbl enable row level security;
+
+drop policy if exists approval_parts_tbl_tenant_isolation_policy on ores_inbox_approval_parts_tbl;
+
+create policy approval_parts_tbl_tenant_isolation_policy on ores_inbox_approval_parts_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+alter table ores_inbox_approval_policies_tbl enable row level security;
+
+drop policy if exists approval_policies_tbl_tenant_isolation_policy on ores_inbox_approval_policies_tbl;
+
+create policy approval_policies_tbl_tenant_isolation_policy on ores_inbox_approval_policies_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()

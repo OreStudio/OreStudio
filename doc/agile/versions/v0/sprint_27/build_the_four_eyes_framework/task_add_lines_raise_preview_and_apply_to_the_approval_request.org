@@ -116,4 +116,6 @@ A maker can propose changes to books as typed lines. The preview and the raise a
 
 Evidence: ten new =[book_proposal]= cases pass (30 assertions) on a recreated database. They cover a valid new book and its three parts, a preview that writes nothing, a refused line followed by a good line, a stale version, a one-column change naming one part, a raise that writes the request, parts and line, a refused line that raises nothing, a change no policy row gates, a duplicate line number, and a line for an unknown request. The generated =book_change= test and the 20 =[approval]= cases still pass. The cmake source, populate reference, handler permission, test case reachability, pasted block symbol and derived-model checks pass.
 
+The ER diagram check on main failed for the parts and policies tables of the earlier task, which had no row-level security. This task adds a tenant policy to both. A tenant reads its own rows and the system tenant's, and writes only its own. The pending book lines also gain the party and sandbox policies the book has. The ER diagrams are regenerated, and the strict parse and the diagram check pass.
+
 Not done here: the NATS operations, the apply and the screens. They are the next tasks.

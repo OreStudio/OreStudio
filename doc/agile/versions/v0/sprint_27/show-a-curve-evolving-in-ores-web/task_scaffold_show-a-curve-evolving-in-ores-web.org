@@ -8,7 +8,7 @@
 #+filetags: :show-a-curve-evolving-in-ores-web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-a-curve-evolving-in-ores-web
-#+pr:
+#+pr: 3089
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3089][#3089]] | [agile] Scaffold story: Show a curve evolving in ores.web |
 
 * Review
 

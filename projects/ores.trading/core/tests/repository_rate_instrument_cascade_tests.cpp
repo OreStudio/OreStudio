@@ -36,6 +36,7 @@
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <string>
 
 namespace {
@@ -199,7 +200,8 @@ TEST_CASE("rate_instrument_refuses_a_trade_type_the_anchor_does_not_hold", tags)
     SECTION("a trade type other than the anchor's") {
         auto header = make_header(h, trade.id, activity_id, party_id);
         header.identity.trade_type_code = "Swap";
-        CHECK_THROWS(header_repo.write(ctx, header));
+        CHECK_THROWS_WITH(header_repo.write(ctx, header),
+                          Catch::Matchers::ContainsSubstring("must be the trade"));
     }
 
     SECTION("the anchor's own party and trade type") {

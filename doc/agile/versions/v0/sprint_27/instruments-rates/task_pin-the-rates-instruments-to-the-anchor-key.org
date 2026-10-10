@@ -104,7 +104,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | CHECK_THROWS accepts any exception | repository_rate_instrument_cascade_tests.cpp | Accepted | The case now matches the pin's message text. |
+| 2 | Say whether the anchor's trade type can change | ores.trading.rate_instruments.org | Accepted | The model says the anchor documents it as fixed but its write path does not enforce it; the gap is open and belongs to the trade model. |
+| 3 | Name which of party and trade type disagreed | trading_rate_instruments_create.sql | Declined | The generated pin takes one message with one placeholder. |
+| 4 | Confirm CI runs the drift check | none | Noted | Drift is clean locally for trade and trading-cpp. |
 
 * Result
 

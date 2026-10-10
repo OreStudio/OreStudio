@@ -366,6 +366,12 @@ security hides another party's anchor, so in practice the pin refuses a
 disagreeing =trade_type_code=; the party column is held to the anchor as
 well, so a path that bypasses the stamp cannot drift from it.
 
+The anchor's model states that its party and trade type are fixed for the
+trade's life and that a change is a cancel and rebook. The anchor's write
+path does not enforce it, so an amendment that changed the trade type would
+leave the header unchecked. That gap belongs to the trade model, not to this
+family, and it is open.
+
 | name   | columns                           | table                  | target_columns            | error_message                                                          |
 |--------+-----------------------------------+------------------------+---------------------------+------------------------------------------------------------------------|
 | anchor | trade_id, party_id, trade_type_code | ores_trading_trades_tbl | id, party_id, trade_type | Invalid trade_id: %. The party and trade type must be the trade's own. |

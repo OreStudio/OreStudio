@@ -8,7 +8,7 @@
 #+filetags: :give_the_super_admin_landing_page_its_cards:sprint_27:v0:
 #+owner: marco
 #+branch: feature/file-the-super-admin-journeys-with-no-screen
-#+pr:
+#+pr: 3029
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3029][#3029]] | [agile] File the super administrator journeys that have no screen |
 
 * Review
 

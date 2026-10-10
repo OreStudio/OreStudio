@@ -8,7 +8,7 @@
 #+filetags: :bring_the_record_screens_to_the_entity_specification:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-bring-the-record-screens-to-the-entity-specification
-#+pr:
+#+pr: 3087
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3087][#3087]] | [web] Bring the existing screens to the entity screen specification |
 
 * Review
 

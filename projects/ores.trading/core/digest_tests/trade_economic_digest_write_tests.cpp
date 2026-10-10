@@ -28,20 +28,69 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.api/domain/trade_type_routing.hpp"
+#include "ores.trading.api/generators/bond_instrument_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_generator.hpp"
+#include "ores.trading.api/generators/commodity_instrument_generator.hpp"
+#include "ores.trading.api/generators/composite_instrument_generator.hpp"
+#include "ores.trading.api/generators/credit_instrument_generator.hpp"
+#include "ores.trading.api/generators/equity_accumulator_instrument_generator.hpp"
+#include "ores.trading.api/generators/equity_asian_option_instrument_generator.hpp"
+#include "ores.trading.api/generators/equity_barrier_option_instrument_generator.hpp"
+#include "ores.trading.api/generators/equity_digital_option_instrument_generator.hpp"
+#include "ores.trading.api/generators/equity_forward_instrument_generator.hpp"
+#include "ores.trading.api/generators/equity_option_instrument_generator.hpp"
+#include "ores.trading.api/generators/equity_position_instrument_generator.hpp"
+#include "ores.trading.api/generators/equity_swap_instrument_generator.hpp"
+#include "ores.trading.api/generators/equity_variance_swap_instrument_generator.hpp"
+#include "ores.trading.api/generators/fx_accumulator_instrument_generator.hpp"
+#include "ores.trading.api/generators/fx_asian_forward_instrument_generator.hpp"
+#include "ores.trading.api/generators/fx_barrier_option_instrument_generator.hpp"
+#include "ores.trading.api/generators/fx_digital_option_instrument_generator.hpp"
+#include "ores.trading.api/generators/fx_forward_instrument_generator.hpp"
+#include "ores.trading.api/generators/fx_vanilla_option_instrument_generator.hpp"
+#include "ores.trading.api/generators/fx_variance_swap_instrument_generator.hpp"
 #include "ores.trading.api/generators/rate_instrument_generator.hpp"
+#include "ores.trading.api/generators/scripted_instrument_generator.hpp"
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.api/generators/trade_identifier_generator.hpp"
+#include "ores.trading.api/generators/vanilla_swap_instrument_generator.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include "ores.trading.core/repository/bond_instrument_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_repository.hpp"
+#include "ores.trading.core/repository/commodity_instrument_repository.hpp"
+#include "ores.trading.core/repository/composite_instrument_repository.hpp"
+#include "ores.trading.core/repository/credit_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_accumulator_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_asian_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_digital_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_position_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_accumulator_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_asian_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_digital_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_vanilla_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
+#include "ores.trading.core/repository/scripted_instrument_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
-#include "ores.trading.api/generators/vanilla_swap_instrument_generator.hpp"
 #include "ores.trading.core/repository/vanilla_swap_instrument_repository.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <exception>
+#include <functional>
 #include <string>
+#include <type_traits>
+#include <vector>
 
 /*
  * These tests exercise the MECHANISM, not the final economic definition: a
@@ -49,13 +98,16 @@
  * move because this seam cannot ask the customer-visible boundary, and a null
  * amend changes neither.
  *
- * They drive the mechanism through trade_identifier only because it is one of
- * the seven components the fold observes today. trade_identifier is not
- * economic and will leave the fold when the component set is corrected to the
- * instruments and their legs and amounts, at which point cases 1 and 3 must
- * move to an instrument write. A red suite here after that correction is
- * expected and is not a defect: see the provisional-set comment above the fold
- * in trade_economic_digest_writer.cpp.
+ * Most cases drive the mechanism through trade_identifier, which is one of the
+ * components the fold observes today. trade_identifier is not economic and
+ * will leave the fold when the component set is corrected to the instruments
+ * and their legs and amounts, at which point those cases must move to an
+ * instrument write. A red suite here after that correction is expected and is
+ * not a defect: see the provisional-set comment above the fold in
+ * trade_economic_digest_writer.cpp.
+ *
+ * The per-family case writes the instrument of every family and checks that
+ * the trade's digest moves.
  *
  * The third case is the one that catches a future re-enablement of the bump
  * that forgets the boundary.
@@ -181,6 +233,148 @@ prepared_trade prepare(fixture& f) {
     return {trade_id, identifier};
 }
 
+
+/**
+ * @brief Writes one instrument of a family for a booked trade, through the
+ * family's own repository.
+ *
+ * The rates header also needs dates its check accepts: maturity after start.
+ */
+template <typename Repository, typename Generate, typename Adjust>
+void write_header(fixture& f,
+                  Generate generate,
+                  Adjust adjust,
+                  const boost::uuids::uuid& trade_id,
+                  const boost::uuids::uuid& activity_id,
+                  const std::string& trade_type) {
+    auto instrument = generate(f.gen);
+    instrument.identity.trade_id = trade_id;
+    instrument.identity.trade_activity_id = activity_id;
+    instrument.identity.party_id = f.party_id;
+    instrument.identity.trade_type_code = trade_type;
+    if constexpr (std::is_same_v<decltype(instrument), ores::trading::domain::rate_instrument>) {
+        instrument.start_date = ores::platform::time::datetime::from_iso8601_date("2025-01-15");
+        instrument.maturity_date = ores::platform::time::datetime::from_iso8601_date("2030-01-15");
+    }
+    adjust(f, instrument);
+    Repository().write(f.ctx, instrument);
+}
+
+/**
+ * @brief One instrument family: the table the catalogue routes a trade type
+ * to, that trade type, and how to write an instrument into the table.
+ */
+struct family final {
+    ores::trading::domain::instrument_table table;
+    std::string trade_type;
+    std::function<void(fixture&, const boost::uuids::uuid&, const boost::uuids::uuid&)> write;
+};
+
+/**
+ * @brief Leaves a generated instrument as it is.
+ */
+struct no_adjustment final {
+    template <typename Instrument>
+    void operator()(fixture&, Instrument&) const {}
+};
+
+/**
+ * @brief A bond instrument references a bond issue, which must exist first.
+ */
+struct with_a_bond_issue final {
+    void operator()(fixture& f, ores::trading::domain::bond_instrument& instrument) const {
+        auto issue = ores::trading::generators::generate_synthetic_bond_issue(f.gen);
+        ores::trading::repository::bond_issue_repository().write(f.ctx, issue);
+        instrument.issue_id = issue.issue_id;
+    }
+};
+
+/**
+ * @brief A digital option states either an option type and a strike, or a
+ * barrier level and a barrier type, never both. The generator states neither
+ * consistently.
+ */
+struct as_a_digital_option final {
+    void operator()(fixture&,
+                    ores::trading::domain::equity_digital_option_instrument& instrument) const {
+        instrument.option_type = "Call";
+        instrument.strike = ores::utility::decimal::decimal::from_string("100").value();
+        instrument.barrier_level.reset();
+        instrument.barrier_type.clear();
+    }
+};
+
+template <typename Repository, typename Generate, typename Adjust = no_adjustment>
+family make_family(ores::trading::domain::instrument_table table,
+                   std::string trade_type,
+                   Generate generate,
+                   Adjust adjust = {}) {
+    return {table, trade_type,
+            [trade_type, generate, adjust](fixture& f,
+                                           const boost::uuids::uuid& trade_id,
+                                           const boost::uuids::uuid& activity_id) {
+                write_header<Repository>(f, generate, adjust, trade_id, activity_id, trade_type);
+            }};
+}
+
+/**
+ * @brief Every value of instrument_table, once. A new family fails the count
+ * in the test below until it is listed here.
+ */
+std::vector<family> families() {
+    using ores::trading::domain::instrument_table;
+    namespace gen = ores::trading::generators;
+    namespace repo = ores::trading::repository;
+    return {
+        make_family<repo::bond_instrument_repository>(
+            instrument_table::bond_instrument, "Bond", &gen::generate_synthetic_bond_instrument,
+            with_a_bond_issue{}),
+        make_family<repo::commodity_instrument_repository>(
+            instrument_table::commodity_instrument, "CommodityForwardVolatilityAgreement", &gen::generate_synthetic_commodity_instrument),
+        make_family<repo::composite_instrument_repository>(
+            instrument_table::composite_instrument, "CompositeTrade", &gen::generate_synthetic_composite_instrument),
+        make_family<repo::credit_instrument_repository>(
+            instrument_table::credit_instrument, "RiskParticipationAgreement", &gen::generate_synthetic_credit_instrument),
+        make_family<repo::equity_accumulator_instrument_repository>(
+            instrument_table::equity_accumulator_instrument, "EquityAccumulator", &gen::generate_synthetic_equity_accumulator_instrument),
+        make_family<repo::equity_asian_option_instrument_repository>(
+            instrument_table::equity_asian_option_instrument, "EquityAsianOption", &gen::generate_synthetic_equity_asian_option_instrument),
+        make_family<repo::equity_barrier_option_instrument_repository>(
+            instrument_table::equity_barrier_option_instrument, "EquityBarrierOption", &gen::generate_synthetic_equity_barrier_option_instrument),
+        make_family<repo::equity_digital_option_instrument_repository>(
+            instrument_table::equity_digital_option_instrument, "EquityDigitalOption",
+            &gen::generate_synthetic_equity_digital_option_instrument, as_a_digital_option{}),
+        make_family<repo::equity_forward_instrument_repository>(
+            instrument_table::equity_forward_instrument, "EquityForward", &gen::generate_synthetic_equity_forward_instrument),
+        make_family<repo::equity_option_instrument_repository>(
+            instrument_table::equity_option_instrument, "EquityOption", &gen::generate_synthetic_equity_option_instrument),
+        make_family<repo::equity_position_instrument_repository>(
+            instrument_table::equity_position_instrument, "EquityPosition", &gen::generate_synthetic_equity_position_instrument),
+        make_family<repo::equity_swap_instrument_repository>(
+            instrument_table::equity_swap_instrument, "EquitySwap", &gen::generate_synthetic_equity_swap_instrument),
+        make_family<repo::equity_variance_swap_instrument_repository>(
+            instrument_table::equity_variance_swap_instrument, "EquityVarianceSwap", &gen::generate_synthetic_equity_variance_swap_instrument),
+        make_family<repo::fx_accumulator_instrument_repository>(
+            instrument_table::fx_accumulator_instrument, "FxAccumulator", &gen::generate_synthetic_fx_accumulator_instrument),
+        make_family<repo::fx_asian_forward_instrument_repository>(
+            instrument_table::fx_asian_forward_instrument, "FxAverageForward", &gen::generate_synthetic_fx_asian_forward_instrument),
+        make_family<repo::fx_barrier_option_instrument_repository>(
+            instrument_table::fx_barrier_option_instrument, "FxBarrierOption", &gen::generate_synthetic_fx_barrier_option_instrument),
+        make_family<repo::fx_digital_option_instrument_repository>(
+            instrument_table::fx_digital_option_instrument, "FxDigitalOption", &gen::generate_synthetic_fx_digital_option_instrument),
+        make_family<repo::fx_forward_instrument_repository>(
+            instrument_table::fx_forward_instrument, "FxForward", &gen::generate_synthetic_fx_forward_instrument),
+        make_family<repo::fx_vanilla_option_instrument_repository>(
+            instrument_table::fx_vanilla_option_instrument, "FxOption", &gen::generate_synthetic_fx_vanilla_option_instrument),
+        make_family<repo::fx_variance_swap_instrument_repository>(
+            instrument_table::fx_variance_swap_instrument, "FxVarianceSwap", &gen::generate_synthetic_fx_variance_swap_instrument),
+        make_family<repo::rate_instrument_repository>(
+            instrument_table::rate_instrument, "Swap", &gen::generate_synthetic_rate_instrument),
+        make_family<repo::scripted_instrument_repository>(
+            instrument_table::scripted_instrument, "ScriptedTrade", &gen::generate_synthetic_scripted_instrument)
+    };
+}
+
 }
 
 /*
@@ -272,4 +466,49 @@ TEST_CASE("an_amendment_moves_the_digest_and_the_external_version", tags) {
     REQUIRE(after.size() == 1);
     CHECK(after.front().economic_digest != before.front().economic_digest);
     CHECK(after.front().external_version == version_before + 1);
+}
+
+/*
+ * The fold reads the instrument the trade's type routes to. Each family is
+ * given a booked trade of its routed type; writing the family's instrument
+ * must move the digest the booking left, or the fold does not read that
+ * family. A missing or wrong arm in the fold fails exactly one family here.
+ */
+TEST_CASE("the_digest_observes_an_instrument_of_every_family", tags) {
+    using ores::trading::domain::instrument_table;
+    const auto all = families();
+
+    /*
+     * The count of instrument_table values. A new family must be added to
+     * families() and to the fold together, and this number moves with them.
+     */
+    REQUIRE(all.size() == 22);
+
+    fixture f;
+    for (const auto& fam : all) {
+        INFO("family trade type: " << fam.trade_type);
+        CHECK(ores::trading::domain::instrument_table_for(fam.trade_type) == fam.table);
+
+        auto request = f.request();
+        request.anchor.trade_type = fam.trade_type;
+        const auto trade_id = boost::uuids::to_string(request.anchor.id);
+        const auto booking = trade_operations_service(f.ctx).book_trade(request);
+        REQUIRE(booking.result.outcome == outcome::ok);
+        REQUIRE(booking.activity_id.has_value());
+
+        const auto before = trade_repository().read_latest(f.ctx, trade_id);
+        REQUIRE(before.size() == 1);
+
+        try {
+            fam.write(f, request.anchor.id, *booking.activity_id);
+        } catch (const std::exception& e) {
+            FAIL_CHECK("writing the " << fam.trade_type << " instrument failed: " << e.what());
+            continue;
+        }
+
+        const auto after = trade_repository().read_latest(f.ctx, trade_id);
+        REQUIRE(after.size() == 1);
+        CHECK_FALSE(after.front().economic_digest.empty());
+        CHECK(after.front().economic_digest != before.front().economic_digest);
+    }
 }

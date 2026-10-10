@@ -8,7 +8,7 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/take-pasted-images-for-a-step
-#+pr:
+#+pr: 3094
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3094][#3094]] | [web] Take pasted images for a step |
 
 * Review
 

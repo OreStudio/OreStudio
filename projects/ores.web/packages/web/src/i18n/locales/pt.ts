@@ -933,12 +933,6 @@ const pt: SourceCatalogue = {
         upcomingModules: 'Módulos futuros / Pré-visualização do roteiro',
         welcome: 'Bem-vindo, {name}',
         system: {
-            installation: 'Instalação',
-            lead: {
-                one: 'Esta instalação serve {count} inquilino.',
-                other: 'Esta instalação serve {count} inquilinos.',
-            },
-            health: 'Estado do sistema',
             inService: 'Em serviço',
             onEvaluation: 'Em avaliação',
             settingUp: 'Em criação',
@@ -983,6 +977,47 @@ const pt: SourceCatalogue = {
                 failed: '{tenant}: a criação parou após {done} de {count} passos',
                 compensating: '{tenant}: a criação está a ser desfeita',
                 compensated: '{tenant}: a criação foi desfeita',
+            },
+            tabs: {
+                label: 'Vistas da página inicial',
+                dashboard: 'Painel',
+                active: 'Módulos ativos',
+                upcoming: 'Módulos futuros',
+            },
+            panels: {
+                open: 'Abrir',
+                unread: 'Não foi possível ler',
+                services: {
+                    title: 'Serviços',
+                    needAttention: {
+                        one: '{count} serviço precisa de atenção',
+                        other: '{count} serviços precisam de atenção',
+                    },
+                },
+                grid: {
+                    title: 'Grelha',
+                    noNodes: 'Nenhum nó se apresentou ainda',
+                    needAttention: {
+                        one: '{count} nó precisa de atenção',
+                        other: '{count} nós precisam de atenção',
+                    },
+                    online: 'Nós em linha',
+                    idle: 'Inativos',
+                    activeBatches: 'Lotes ativos',
+                    failed: 'Resultados falhados',
+                },
+                queue: {
+                    title: 'Fila de mensagens',
+                    noSample: 'Ainda sem amostra',
+                    needAttention: {
+                        one: '{count} consumidor lento precisa de atenção',
+                        other: '{count} consumidores lentos precisam de atenção',
+                    },
+                    connections: 'Ligações',
+                    slowConsumers: 'Consumidores lentos',
+                    streams: 'Fluxos',
+                    stored: 'Mensagens guardadas',
+                },
             },
         },
         tenant: {

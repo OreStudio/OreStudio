@@ -185,7 +185,14 @@ function Figure({
 }
 
 /** The six figures for one range. */
-export function InstallationFigures({ range }: { readonly range: LogsRange }): ReactNode {
+export function InstallationFigures({
+    range,
+    compact = false,
+}: {
+    readonly range: LogsRange;
+    /** Two columns instead of six, for a panel a third of the page wide. */
+    readonly compact?: boolean;
+}): ReactNode {
     const { t, plural } = useTranslation();
     const { roster, rosterFailed, errors, warnings, logsFailed } = useInstallationHealth(range);
     const logsNote = logsFailed ? t('operations.overview.logsUnread') : undefined;
@@ -198,7 +205,11 @@ export function InstallationFigures({ range }: { readonly range: LogsRange }): R
     }
 
     return (
-        <div className="grid gap-6 sm:grid-cols-3 lg:grid-cols-6">
+        <div
+            className={
+                compact ? 'grid grid-cols-2 gap-4' : 'grid gap-6 sm:grid-cols-3 lg:grid-cols-6'
+            }
+        >
             <Figure
                 to="/operations/services"
                 label={t('operations.overview.running')}

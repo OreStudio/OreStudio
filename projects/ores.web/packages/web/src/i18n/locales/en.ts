@@ -927,12 +927,6 @@ export const en: SourceCatalogue = {
         upcomingModules: 'Upcoming Modules / Roadmap Preview',
         welcome: 'Welcome, {name}',
         system: {
-            installation: 'Installation',
-            lead: {
-                one: 'This deployment runs {count} tenant.',
-                other: 'This deployment runs {count} tenants.',
-            },
-            health: 'System health',
             inService: 'In service',
             onEvaluation: 'On evaluation',
             settingUp: 'Setting up',
@@ -975,6 +969,47 @@ export const en: SourceCatalogue = {
                 failed: '{tenant}: setup stopped after {done} of {count} steps',
                 compensating: '{tenant}: setup is being undone',
                 compensated: '{tenant}: setup was undone',
+            },
+            tabs: {
+                label: 'Home views',
+                dashboard: 'Dashboard',
+                active: 'Active modules',
+                upcoming: 'Upcoming modules',
+            },
+            panels: {
+                open: 'Open',
+                unread: 'Could not be read',
+                services: {
+                    title: 'Services',
+                    needAttention: {
+                        one: '{count} service needs attention',
+                        other: '{count} services need attention',
+                    },
+                },
+                grid: {
+                    title: 'Grid',
+                    noNodes: 'No node has reported yet',
+                    needAttention: {
+                        one: '{count} node needs attention',
+                        other: '{count} nodes need attention',
+                    },
+                    online: 'Nodes online',
+                    idle: 'Idle',
+                    activeBatches: 'Active batches',
+                    failed: 'Failed results',
+                },
+                queue: {
+                    title: 'Message queue',
+                    noSample: 'No sample yet',
+                    needAttention: {
+                        one: '{count} slow consumer needs attention',
+                        other: '{count} slow consumers need attention',
+                    },
+                    connections: 'Connections',
+                    slowConsumers: 'Slow consumers',
+                    streams: 'Streams',
+                    stored: 'Messages stored',
+                },
             },
         },
         tenant: {

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 2F4E0D76-607B-48BC-8824-DF1D1209FF67
+:END:
+#+title: Story: Review the system administrator's home screen
+#+description: The screen review of the system administrator's home. Three tabs: Dashboard, Active modules and Upcoming modules. The Dashboard has one panel each for tenants, services, grid and message queue, with one status language. The tenants sentence is gone. Every change from this review goes into this story and its one PR.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The system administrator's home opens on a dashboard of four panels that all state their status the same way, with the active and upcoming modules on their own tabs.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- The home has the tabs Dashboard, Active modules and Upcoming modules, held in the address.
+- The Dashboard has a Tenants, a Services, a Grid and a Message queue panel, and each states its status in the same words as the first: Everything is running, or how many need attention.
+- The header no longer says how many tenants the deployment runs.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:26BDE5D5-784E-4BA1-A7A5-44922E2126D1][Scaffold story: Review the system administrator's home screen]] | STARTED | 2026-10-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8F166685-B0E1-4418-8B1C-4DDA9E7F301B][Rework the system home into three tabs with four dashboard panels]] | BACKLOG | | | Initial task for: Review the system administrator's home screen |
+
+* Decisions
+
+* Out of scope
+
+-
+
+The system administrator's home has a Dashboard of four panels that share one status language, an Active modules tab and an Upcoming modules tab.

@@ -56,6 +56,7 @@ uuid_gen()
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :natural_key: true
+:filterable: true
 :END:
 
 Parent =fx_spot_generation_config= this component contributes to.

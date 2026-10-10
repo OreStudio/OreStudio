@@ -65,7 +65,9 @@ struct gmm_component_lookup {
 };
 
 struct gmm_components_filter {
+    std::optional<boost::uuids::uuid> fx_spot_config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> fx_spot_config_id_one_of;
 };
 
 struct gmm_component_event {

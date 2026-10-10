@@ -58,7 +58,9 @@ export interface GmmComponentLookup {
 }
 
 export interface GmmComponentsFilter {
+    fx_spot_config_id: string | null;
     id_one_of: string[] | null;
+    fx_spot_config_id_one_of: string[] | null;
 }
 
 export interface GmmComponentEvent {

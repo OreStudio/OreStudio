@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/generators/book_generator.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -27,10 +28,12 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.api/generators/rate_instrument_generator.hpp"
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.api/generators/trade_identifier_generator.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.api/generators/vanilla_swap_instrument_generator.hpp"
@@ -76,6 +79,7 @@ struct fixture final {
     ores::utility::generation::generation_context gen = ores::testing::make_generation_context(h);
     ores::database::context ctx = h.context();
     boost::uuids::uuid book_id{};
+    boost::uuids::uuid party_id{};
 
     fixture() {
         namespace gen_rd = ores::refdata::generators;
@@ -90,6 +94,7 @@ struct fixture final {
             }
         }
         repo::party_repository().write(h.context(), party);
+        party_id = party.id;
         ctx = h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
 
         auto currency = gen_rd::generate_synthetic_currency(gen);
@@ -121,6 +126,31 @@ struct fixture final {
 };
 
 /**
+ * @brief Writes a Swap: the rates family header, then the vanilla swap fact
+ * row that joins it by trade id.
+ */
+void write_swap(fixture& f,
+                const boost::uuids::uuid& trade_id,
+                const boost::uuids::uuid& activity_id,
+                const std::string& reason_code) {
+    auto header = ores::trading::generators::generate_synthetic_rate_instrument(f.gen);
+    header.identity.trade_id = trade_id;
+    header.identity.trade_activity_id = activity_id;
+    header.identity.party_id = f.party_id;
+    header.identity.trade_type_code = "Swap";
+    header.start_date = ores::platform::time::datetime::from_iso8601_date("2025-01-15");
+    header.maturity_date = ores::platform::time::datetime::from_iso8601_date("2030-01-15");
+    header.audit.change_reason_code = reason_code;
+    ores::trading::repository::rate_instrument_repository().write(f.ctx, header);
+
+    auto fact = ores::trading::generators::generate_synthetic_vanilla_swap_instrument(f.gen);
+    fact.trade_id = trade_id;
+    fact.trade_activity_id = activity_id;
+    fact.change_reason_code = reason_code;
+    ores::trading::repository::vanilla_swap_instrument_repository().write(f.ctx, fact);
+}
+
+/**
  * @brief Books a trade and builds the identifier a case will write.
  */
 struct prepared_trade final {
@@ -141,12 +171,7 @@ prepared_trade prepare(fixture& f) {
      * longer leaves a digest, because a book and a lifecycle state are terms
      * nobody agreed to.
      */
-    auto instrument =
-        ores::trading::generators::generate_synthetic_vanilla_swap_instrument(f.gen);
-    instrument.identity.trade_id = request.anchor.id;
-    instrument.identity.trade_type_code = "Swap";
-    instrument.identity.trade_activity_id = *booking.activity_id;
-    ores::trading::repository::vanilla_swap_instrument_repository().write(f.ctx, instrument);
+    write_swap(f, request.anchor.id, *booking.activity_id, "system.test");
 
     auto identifier = ores::trading::generators::generate_synthetic_trade_identifier(f.gen);
     identifier.trade_id = request.anchor.id;
@@ -237,10 +262,10 @@ TEST_CASE("an_amendment_moves_the_digest_and_the_external_version", tags) {
     const auto version_before = before.front().external_version;
 
     auto amended = ores::trading::generators::generate_synthetic_vanilla_swap_instrument(f.gen);
-    amended.identity.trade_id = boost::uuids::string_generator()(prepared.trade_id);
-    amended.identity.trade_type_code = "Swap";
-    amended.identity.trade_activity_id = prepared.identifier.trade_activity_id;
-    amended.audit.change_reason_code = "common.rectification";
+    amended.trade_id = boost::uuids::string_generator()(prepared.trade_id);
+    amended.trade_activity_id = prepared.identifier.trade_activity_id;
+    amended.settlement_lag = 2;
+    amended.change_reason_code = "common.rectification";
     ores::trading::repository::vanilla_swap_instrument_repository().write(f.ctx, amended);
 
     const auto after = trade_repository().read_latest(f.ctx, prepared.trade_id);

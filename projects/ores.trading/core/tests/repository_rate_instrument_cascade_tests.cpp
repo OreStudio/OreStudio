@@ -90,7 +90,7 @@ fra_instrument make_fact(database_helper& h,
     r.currency = "USD";
     r.rate_index = "SOFR";
     r.long_short = "Long";
-    r.strike = 0.0425;
+    r.strike = decimal::from_string("0.0425").value();
     r.notional = decimal::from_string("1000000").value();
     return r;
 }
@@ -160,7 +160,7 @@ TEST_CASE("rate_instrument_delete_closes_the_whole_family", tags) {
     CHECK(facts[0].currency == "USD");
     CHECK(facts[0].rate_index == "SOFR");
     CHECK(facts[0].long_short == "Long");
-    CHECK(facts[0].strike == 0.0425);
+    CHECK(facts[0].strike.to_double() == 0.0425);
     CHECK(facts[0].notional.to_double() == 1000000.0);
 
     const auto legs = leg_repo.read_latest(ctx, id_str, "1");

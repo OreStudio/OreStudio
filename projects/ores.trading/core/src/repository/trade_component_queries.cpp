@@ -44,6 +44,7 @@
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/scripted_instrument_repository.hpp"
 #include "ores.trading.core/repository/swaption_instrument_repository.hpp"
 #include "ores.trading.core/repository/vanilla_swap_instrument_repository.hpp"
@@ -170,65 +171,86 @@ read_instrument_digests(context ctx, const std::string& trade_id, const std::str
      * nowhere has no instrument, and contributes nothing.
      */
     if (const auto table = domain::instrument_table_for(trade_type)) {
-        switch (*table) {            case domain::instrument_table::balance_guaranteed_swap_instrument:
-                append(balance_guaranteed_swap_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::bond_instrument:
-                append(bond_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::callable_swap_instrument:
-                append(callable_swap_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::cap_floor_instrument:
-                append(cap_floor_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::commodity_instrument:
-                append(commodity_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::composite_instrument:
-                append(composite_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::credit_instrument:
-                append(credit_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::equity_accumulator_instrument:
-                append(equity_accumulator_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::equity_asian_option_instrument:
-                append(equity_asian_option_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::equity_barrier_option_instrument:
-                append(equity_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::equity_digital_option_instrument:
-                append(equity_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::equity_forward_instrument:
-                append(equity_forward_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::equity_option_instrument:
-                append(equity_option_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::equity_position_instrument:
-                append(equity_position_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::equity_swap_instrument:
-                append(equity_swap_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::equity_variance_swap_instrument:
-                append(equity_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::fra_instrument:
-                append(fra_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::fx_accumulator_instrument:
-                append(fx_accumulator_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::fx_asian_forward_instrument:
-                append(fx_asian_forward_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::fx_barrier_option_instrument:
-                append(fx_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::fx_digital_option_instrument:
-                append(fx_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::fx_forward_instrument:
-                append(fx_forward_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::fx_vanilla_option_instrument:
-                append(fx_vanilla_option_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::fx_variance_swap_instrument:
-                append(fx_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::inflation_swap_instrument:
-                append(inflation_swap_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::knock_out_swap_instrument:
-                append(knock_out_swap_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::scripted_instrument:
-                append(scripted_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::swaption_instrument:
-                append(swaption_instrument_repository{}.read_latest(ctx, trade_id));
-                break;            case domain::instrument_table::vanilla_swap_instrument:
-                append(vanilla_swap_instrument_repository{}.read_latest(ctx, trade_id));
-                break;        }
+        switch (*table) {
+        case domain::instrument_table::bond_instrument:
+            append(bond_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::commodity_instrument:
+            append(commodity_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::composite_instrument:
+            append(composite_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::credit_instrument:
+            append(credit_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_accumulator_instrument:
+            append(equity_accumulator_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_asian_option_instrument:
+            append(equity_asian_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_barrier_option_instrument:
+            append(equity_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_digital_option_instrument:
+            append(equity_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_forward_instrument:
+            append(equity_forward_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_option_instrument:
+            append(equity_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_position_instrument:
+            append(equity_position_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_swap_instrument:
+            append(equity_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::equity_variance_swap_instrument:
+            append(equity_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_accumulator_instrument:
+            append(fx_accumulator_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_asian_forward_instrument:
+            append(fx_asian_forward_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_barrier_option_instrument:
+            append(fx_barrier_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_digital_option_instrument:
+            append(fx_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_forward_instrument:
+            append(fx_forward_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_vanilla_option_instrument:
+            append(fx_vanilla_option_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::fx_variance_swap_instrument:
+            append(fx_variance_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::rate_instrument:
+            /*
+             * The header, then the one product fact table the trade type
+             * selects; the others hold no row for this trade.
+             */
+            append(rate_instrument_repository{}.read_latest(ctx, trade_id));
+            append(balance_guaranteed_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            append(callable_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            append(cap_floor_instrument_repository{}.read_latest(ctx, trade_id));
+            append(fra_instrument_repository{}.read_latest(ctx, trade_id));
+            append(inflation_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            append(knock_out_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            append(swaption_instrument_repository{}.read_latest(ctx, trade_id));
+            append(vanilla_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        case domain::instrument_table::scripted_instrument:
+            append(scripted_instrument_repository{}.read_latest(ctx, trade_id));
+            break;
+        }
     }
 
     /*

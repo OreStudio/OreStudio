@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_KNOCK_OUT_SWAP_INSTRUMENT_HPP
 #define ORES_TRADING_API_DOMAIN_KNOCK_OUT_SWAP_INSTRUMENT_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -81,7 +82,7 @@ struct knock_out_swap_instrument final {
      *
      * Expressed as a decimal fraction.
      */
-    double barrier_level = 0.0;
+    ores::utility::decimal::decimal barrier_level = ores::utility::decimal::decimal{};
 
     /**
      * @brief Barrier type: the ORE barrierType set.

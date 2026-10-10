@@ -1273,12 +1273,7 @@ std::string save_option_block(Nats& nats,
         req.change.write.has_exercise_data = block.exercise_data.has_value();
         if (block.exercise_data) {
             req.change.write.exercise_date = parse_date(block.exercise_data->date);
-            req.change.write.exercise_price =
-                block.exercise_data->price ?
-                    std::optional(
-                        ores::utility::decimal::decimal::from_double(*block.exercise_data->price)
-                            .value()) :
-                    std::nullopt;
+            req.change.write.exercise_price = block.exercise_data->price;
         }
 
         req.change.write.has_payment_data = block.payment_data.has_value();
@@ -1308,8 +1303,7 @@ std::string save_option_block(Nats& nats,
             child.change.write.trade_id = trade_id;
             child.change.write.trade_activity_id = trade_activity_id;
             child.change.write.sequence_number = ++sequence_number;
-            child.change.write.amount =
-                ores::utility::decimal::decimal::from_double(premium.amount).value();
+            child.change.write.amount = premium.amount;
             child.change.write.currency = premium.currency;
             child.change.write.pay_date =
                 ores::platform::time::datetime::from_iso8601_date(premium.pay_date);
@@ -1331,8 +1325,7 @@ std::string save_option_block(Nats& nats,
             child.change.write.trade_id = trade_id;
             child.change.write.trade_activity_id = trade_activity_id;
             child.change.write.sequence_number = ++sequence_number;
-            child.change.write.amount =
-                ores::utility::decimal::decimal::from_double(fee.amount).value();
+            child.change.write.amount = fee.amount;
             child.change.write.type = fee.type;
             child.change.write.start_date = parse_optional_date(fee.start_date);
             child.change.write.currency = fee.currency;
@@ -1422,11 +1415,7 @@ std::string save_strike(Nats& nats,
     put_instrument_strike_request req;
     req.change.write.trade_id = trade_id;
     req.change.write.trade_activity_id = trade_activity_id;
-    req.change.write.price_value =
-        strike.price_value ?
-            std::optional(
-                ores::utility::decimal::decimal::from_double(*strike.price_value).value()) :
-            std::nullopt;
+    req.change.write.price_value = strike.price_value;
     req.change.write.price_currency = strike.price_currency;
     req.change.write.yield_value = strike.yield_value;
     req.change.write.yield_compounding = strike.yield_compounding;
@@ -1471,11 +1460,7 @@ std::string save_forward(Nats& nats,
         req.change.write.forward_maturity_date = settlement.forward_maturity_date;
         req.change.write.forward_settlement_date = settlement.forward_settlement_date;
         req.change.write.settlement = settlement.settlement;
-        req.change.write.amount =
-            settlement.amount ?
-                std::optional(
-                    ores::utility::decimal::decimal::from_double(*settlement.amount).value()) :
-                std::nullopt;
+        req.change.write.amount = settlement.amount;
         req.change.write.lock_rate = settlement.lock_rate;
         req.change.write.dv01 =
             settlement.dv01 ?
@@ -1717,11 +1702,7 @@ save_bond_instrument(Nats& nats,
         fact_req.change.write.trade_id = instrument.identity.trade_id;
         fact_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
         fact_req.change.write.payer = data.trs_payer;
-        fact_req.change.write.initial_price =
-            data.trs_initial_price ?
-                std::optional(
-                    ores::utility::decimal::decimal::from_double(*data.trs_initial_price).value()) :
-                std::nullopt;
+        fact_req.change.write.initial_price = data.trs_initial_price;
         if (!data.trs_price_type.empty())
             fact_req.change.write.price_type = data.trs_price_type;
         auto fact_resp = nats_call(nats, fact_req, error);

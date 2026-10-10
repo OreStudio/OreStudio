@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 945D78DD-4BC2-4A52-8182-DDEF7F35FA95
+:END:
+#+title: Build the market data feeds screen for the system administrator
+#+description: The Keep the market data feeds running journey has a design and most of its subjects, and the web client has no screen or BFF route for it. The system home lists it as upcoming.
+#+type: capture
+#+level: cross
+#+filetags: :web:operations:marketdata:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The system administrator has no screen for the market data feeds. The journey
+[[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]]
+lists the feed bindings, says whether each source runs, and starts or stops a
+feed. The web client has no page and no BFF route for it. The system home shows
+it as an upcoming card.
+
+* Why
+
+The subjects the screen needs mostly exist: =marketdata.v1.feed_bindings.list=,
+=.get= and =.put=, =synthetic.v1.feed_configs.list= for the running set, and
+=synthetic.v1.ops.start_feed=, =.stop_feed=, =marketdata.v1.ops.start_feeds_under_folder=
+and =.stop_feeds_under_folder=. The journey records what is missing: no read for
+the last tick, no stored source-to-series mapping, no list for the IR generation
+configs, and no permission that gates start and stop. Start and stop are
+reachable from the shell only.
+
+The first slice is the read-only roster: the bindings joined to the running set.
+It needs one BFF route in =operations.ts= and one page under the operations area.
+Start, stop and the last tick wait on the server changes the journey names.
+
+* References
+
+- [[id:986CED57-341F-49DE-8F5D-F186771F10D8][User Journey: Keep the market data feeds running]]
+- =projects/ores.web/packages/bff/src/operations.ts=, where the sibling routes live.
+
+* See also
+
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]

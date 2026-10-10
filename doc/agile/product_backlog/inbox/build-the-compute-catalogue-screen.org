@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: F31CBC94-B6BA-41DA-AD24-212AE511CC30
+:END:
+#+title: Build the compute catalogue screen: what the grid runs
+#+description: The Keep what the grid runs journey has read and write subjects for apps, versions, platforms and packages, and no BFF route serves a compute screen. The system home lists it as upcoming.
+#+type: capture
+#+level: cross
+#+filetags: :web:compute:operations:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The system administrator has no screen for what the compute grid may run. The
+journey [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]] reads the
+apps, their versions, the platforms and packages, and the concurrency policy.
+A super administrator writes the catalogue. No BFF route serves a compute screen.
+The system home shows it as an upcoming card.
+
+* Why
+
+The read subjects exist: =compute.v1.apps.list=, =.app_versions.list=,
+=.app_version_platforms.list=, =.platforms.list= and
+=reporting.v1.concurrency_policies.list=. The write subjects exist too, gated by
+=compute::apps:write= and its siblings. The journey names what is missing: no
+aggregate of the builds each job pinned, no cap row to compare in-flight work
+against, and no browser upload path, because =compute publish-package= is
+shell-only.
+
+The first slice is the read-only catalogue for any signed-in person, as one
+hand-written BFF route on the journey runtime. The write controls follow, shown
+only to the super administrator.
+
+* References
+
+- [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][User Journey: Keep what the grid runs]]
+- [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]]
+
+* See also
+
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]

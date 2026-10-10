@@ -202,9 +202,9 @@ describe('Reporting lines', () => {
         expect(html).toContain('role="combobox"');
         expect(html).toContain('placeholder="Grace Hopper"');
         expect(html).toContain('value="Grace Hopper"');
-        // The person's card stands beside the timeline.
-        expect(html).toContain('Direct reports');
-        expect(html).toContain('/api/images/img-grace.hopper');
+        // The history has no person card: it lists who changed recently instead.
+        expect(html).not.toContain('Direct reports');
+        expect(html).toContain('Recently changed lines');
         expect(html).not.toContain('Reporting tree');
     });
 

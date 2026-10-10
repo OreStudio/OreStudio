@@ -2156,6 +2156,8 @@ const pt: SourceCatalogue = {
     },
 
     version: {
+        tenant: 'Inquilino: {name}',
+        party: 'Parte: {name}',
         client: 'Cliente: {version}',
         server: 'Servidor: {version}',
         serverUnknown: 'Servidor: desconhecido',
@@ -2618,6 +2620,8 @@ const pt: SourceCatalogue = {
             zoomReset: 'Repor',
             noReports: 'Ninguém reporta a esta pessoa.',
             findPerson: 'Procurar uma pessoa',
+            recentChanges: 'Linhas hierárquicas alteradas recentemente',
+            noRecentChanges: 'Nenhuma linha hierárquica mudou recentemente.',
             person: 'Pessoa',
             tabs: { tree: 'Árvore', chart: 'Organigrama', history: 'Histórico' },
             you: 'Você',

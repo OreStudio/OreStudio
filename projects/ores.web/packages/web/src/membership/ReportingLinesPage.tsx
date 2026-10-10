@@ -48,6 +48,7 @@ import {
     type Shape,
 } from './organisation.js';
 import { PersonSearch } from './PersonSearch.js';
+import { RecentLineChanges } from './RecentLineChanges.js';
 
 /** The entity whose versions carry a person's reporting line. */
 const ACCOUNT_ENTITY = 'ores.iam.account';
@@ -348,7 +349,13 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
             )}
 
             {tab === 'history' && (
-                <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,1fr)]">
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+                    <RecentLineChanges
+                        nodes={nodes}
+                        nameFor={nameFor}
+                        selectedId={selected?.accountId ?? ''}
+                        onSelect={setSelectedId}
+                    />
                     <section className="space-y-4">
                         <Field label={t('membership.reporting.person')}>
                             <PersonSearch
@@ -373,7 +380,6 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                             />
                         )}
                     </section>
-                    {card}
                 </div>
             )}
 

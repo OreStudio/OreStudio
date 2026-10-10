@@ -2167,6 +2167,8 @@ const fr: SourceCatalogue = {
     },
 
     version: {
+        tenant: 'Locataire : {name}',
+        party: 'Partie : {name}',
         client: 'Client : {version}',
         server: 'Serveur : {version}',
         serverUnknown: 'Serveur : inconnu',
@@ -2639,6 +2641,8 @@ const fr: SourceCatalogue = {
             zoomReset: 'Réinitialiser',
             noReports: 'Personne ne rend compte à cette personne.',
             findPerson: 'Chercher une personne',
+            recentChanges: 'Lignes hiérarchiques modifiées récemment',
+            noRecentChanges: 'Aucune ligne hiérarchique n’a changé récemment.',
             person: 'Personne',
             tabs: { tree: 'Arbre', chart: 'Organigramme', history: 'Historique' },
             you: 'Vous',

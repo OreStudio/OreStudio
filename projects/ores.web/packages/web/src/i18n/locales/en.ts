@@ -2138,6 +2138,8 @@ export const en: SourceCatalogue = {
     },
 
     version: {
+        tenant: 'Tenant: {name}',
+        party: 'Party: {name}',
         client: 'Client: {version}',
         server: 'Server: {version}',
         serverUnknown: 'Server: unknown',
@@ -2598,6 +2600,8 @@ export const en: SourceCatalogue = {
             zoomReset: 'Reset',
             noReports: 'No one reports to this person.',
             findPerson: 'Find a person',
+            recentChanges: 'Recently changed lines',
+            noRecentChanges: 'No reporting line has changed recently.',
             person: 'Person',
             tabs: { tree: 'Tree', chart: 'Org chart', history: 'History' },
             you: 'You',

@@ -51,6 +51,7 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 | [[id:A76EE364-10BE-4FA8-98D6-E55E4F0D9C8A][Give every point a provenance annex]] | DONE | 2026-10-10 | 2026-10-10 | Record the source kind of every point, quoted, derived or manual, and for a manual point the actor, the time and the reason, in one cold annex keyed by the point's natural key. |
 | [[id:7552F7C6-1B44-4A8C-B902-6BCF1B12830E][State what a later automatic write does to a manual point]] | DONE | 2026-10-10 | 2026-10-10 | Decide and record what an automatic write does to a point an operator keyed by hand, and cover the rule with a test. |
 | [[id:2559483D-1A40-45CB-A888-83CCDD166729][Decide the curve_builds table]] | DONE | 2026-10-10 | 2026-10-10 | Decide whether a curve_builds table is needed, from the agreed journeys, once the shape, the reads and the provenance are settled. |
+| [[id:1349F997-C4E4-4D6B-B45B-8939CCD5D832][Audit the story acceptance against the tree]] | BACKLOG | | | Check each bullet of the story's acceptance list against the tree, record the evidence, and close the story or name what is left. |
 
 * Decisions
 

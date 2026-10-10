@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
-#+updated: 2026-10-09
+#+updated: 2026-10-10
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ The curve_builds table is added only if the agreed journeys need it, and the dec
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-10-09                               |
+| Last touched | 2026-10-10                               |
 
 * Acceptance
 
@@ -59,10 +59,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Journeys under =doc/knowledge/journeys/market_data= that name a published marker, a candidate set or a publish act as missing (run in that directory) | 6 (ask, decide, publish, withdraw, see who changed, watch) | =grep -l -i "published marker\|candidate set\|published state\|candidate-against-published\|published version" journey_*.org= | 4c7f24a019 |
-| Journeys that need a build header to run (bootstrap, check, adjust, watch, blueprint) | 0 | =grep -l -i "build header\|build record\|builds table\|curve_build" journey_*.org= (no output; run in that directory) | 4c7f24a019 |
-| Lineage columns that already name a build's inputs | =derivation_config_id=, =derivation_config_version=, =source_as_of= | =grep -n "^\*\* " ores.marketdata.observation_lineage.org= | 4c7f24a019 |
-| Approval kinds seeded for market data | 0 | read of the ask and decide journeys | 4c7f24a019 |
+| Journeys that name a published marker, a candidate set or a publish act as missing | 6: ask, decide, publish, withdraw, see who changed, watch | =grep -l -i "published marker\|candidate set\|published state\|candidate-against-published\|published version" journey_*.org=, run in =doc/knowledge/journeys/market_data=. The 6 files are the ones the Result names; the pattern was read against each. | 4c7f24a019 |
+| Journeys that list a build header as missing | 0 | =grep -l -i "build header\|build record\|builds table\|curve_build" journey_*.org= prints nothing. Control: =grep -l -i "published marker" journey_*.org= prints 4 files, so the grep reads the pages. | 4c7f24a019 |
+| Lineage columns that name a build's inputs | =derivation_config_id=, =derivation_config_version=, =source_as_of= | =grep -n "^\*\* " projects/ores.marketdata/modeling/ores.marketdata.observation_lineage.org= | 4c7f24a019 |
+| Approval kinds seeded for market data | 0 | =grep -c "marketdata\." projects/ores.sql/populate/inbox/inbox_approval_kinds_populate.sql= prints 0. Control: =grep -c "iam.role_grant"= on the same file prints 1. | 4c7f24a019 |
 
 * Notes
 
@@ -87,7 +87,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Last touched and =#+updated= are stale | task | Accept | Both set to 2026-10-10. |
+| 2 | The task page has no start date | task | Decline | The task template has no start field. The story table row carries the dates. |
+| 3 | The Measurements greps are fragile and the zero has no control | task | Accept | Row 1 names its six files. Rows 2 and 4 now carry a positive control. |
+| 4 | Row 4 cites no command | task | Accept | A grep over the approval kind seed file. It finds no =marketdata.= kind. Main also seeds =refdata.book_change=, which is not market data. |
+| 5 | "Journeys 9 to 12" is undefined on this page | task | Accept | Replaced by the journey names. |
+| 6 | The acceptance audit has no task | story | Accept | Task "Audit the story acceptance against the tree" added in BACKLOG. |
+| 7 | Confirm the lint and site-page failure is on main | PR | Accept | Checked: the dangling id =A4DE852C-462B-4DB6-A6A2-3CF82473064B= is in =inbox.org= on =origin/main= and has no target. |
 
 * Result
 
@@ -119,7 +125,7 @@ its own small bitemporal record.
 *What that record is.* A publication, not a build: series, reference date,
 state (candidate, published, withdrawn, superseded), =published_by=,
 =published_at=, =superseded_by= and =request_id=. Its columns come from
-journeys 9 to 12 and are listed in the story's decision. It is not added in
+the ask, decide, publish and withdraw journeys and are listed in the story's decision. It is not added in
 this story, because no approval kind, no publish operation and no consumer
 exists to give the columns a test. A table with no reader repeats the mistake
 sprint 25 made.

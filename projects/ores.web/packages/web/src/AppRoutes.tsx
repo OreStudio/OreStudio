@@ -36,6 +36,8 @@ import { NewTenantJourney } from './journeys/NewTenantJourney.js';
 import { NewPartyJourney } from './journeys/NewPartyJourney.js';
 import { CounterpartyJourney } from './journeys/CounterpartyJourney.js';
 import { useCounterpartyServer } from './journeys/counterpartyServer.js';
+import { ConventionJourney } from './journeys/ConventionJourney.js';
+import { useConventionsServer } from './journeys/conventionsServer.js';
 import { BookStructureJourney } from './journeys/BookStructureJourney.js';
 import { useBooksServer } from './journeys/booksServer.js';
 import { PartyDetailsJourney } from './journeys/PartyDetailsJourney.js';
@@ -165,6 +167,11 @@ export interface AppRoutesProps {
      */
     readonly bookStructureJourney: ReactNode;
     /**
+     * The instrument convention screen, which a person who maintains reference
+     * data runs to author the terms ORE uses for one instrument.
+     */
+    readonly conventionJourney: ReactNode;
+    /**
      * The registration door, which a visitor with no account runs.
      *
      * It is a route rather than a gate for the same reason the other two are:
@@ -206,6 +213,7 @@ export function AppRoutes({
     counterpartyJourney,
     partyDetailsJourney,
     bookStructureJourney,
+    conventionJourney,
     signUpJourney,
     journeyInProgress,
     self,
@@ -858,6 +866,10 @@ export function AppRoutes({
                 path="/books/structure"
                 element={signedIn(gate.version, session, shell, () => bookStructureJourney)}
             />
+            <Route
+                path="/conventions"
+                element={signedIn(gate.version, session, shell, () => conventionJourney)}
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
@@ -873,6 +885,7 @@ export function ConnectedApp(): ReactNode {
     const counterpartyServer = useCounterpartyServer();
     const partyDetailsServer = usePartyDetailsServer();
     const booksServer = useBooksServer();
+    const conventionsServer = useConventionsServer();
     const navigate = useNavigate();
     const [journeyInProgress, setJourneyInProgress] = useState(false);
     const username = session.status === 'authenticated' ? session.session.username : '';
@@ -1035,6 +1048,12 @@ export function ConnectedApp(): ReactNode {
                         <BookStructureJourney
                             server={booksServer}
                             partyId={partyId}
+                            onFinished={() => navigate('/')}
+                        />
+                    }
+                    conventionJourney={
+                        <ConventionJourney
+                            server={conventionsServer}
                             onFinished={() => navigate('/')}
                         />
                     }

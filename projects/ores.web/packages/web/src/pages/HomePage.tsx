@@ -510,6 +510,12 @@ function TenantHome({
             icon: 'database',
         },
         {
+            title: t('home.tenant.conventions'),
+            body: t('home.tenant.conventionsBody'),
+            to: '/conventions',
+            icon: 'database',
+        },
+        {
             title: t('home.tenant.rescue'),
             body: t('home.tenant.rescueBody'),
             to: '/rescue',

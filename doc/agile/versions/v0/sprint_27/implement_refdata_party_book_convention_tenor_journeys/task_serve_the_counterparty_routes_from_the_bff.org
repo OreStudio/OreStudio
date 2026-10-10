@@ -85,7 +85,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Search comment names a codename the code does not check | =counterparties.ts= | Accept | Comment now says short code, full name or id. |
+| 2 | Centre replacement is not atomic | =counterparties.ts= | Accept in part | Adds now run before deletes, so a failure never leaves none. The deletes keep precondition any, because a junction row has no version. A part-way failure still leaves a mix, as the task Result states. |
+| 3 | Visibility write cannot unlink | =counterparties.ts= | Decline | The screen sends one party id and asks only to link. An unlink is a new screen action and would be its own task. |
+| 4 | Assert the exact children request bodies | =counterparties.test.ts= | Accept | The test now checks the centre filter. |
+| 5 | Every refusal becomes a 400 | =counterparties.ts= | Accept | denied is 403, missing 404, unavailable and failed 502. A test covers 403 and 404. |
+| 6 | Whole-list read per page | =counterparties.ts= | Decline | Already recorded as a limit. A cache needs an invalidation rule on the counterparty change events, which is its own task. |
+| 7 | localeCompare depends on host locale | =counterparties.ts= | Accept | Fixed to the en locale. |
+| 8 | Pick lists read one by one | =counterparties.ts= | Decline | Sequential on purpose. The session's broker client answers concurrent requests far slower than sequential ones, as classifications.ts records. |
+| 9 | Repeated params cast | =counterparties.ts= | Accept | paramId helper. |
+| 10 | Say the composite body is passed through | =counterparties.ts= | Accept | Comment added above the schema. |
 
 * Result
 

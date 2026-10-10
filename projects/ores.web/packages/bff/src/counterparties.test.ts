@@ -195,6 +195,9 @@ describe('counterparty routes', () => {
         expect(first.centres).toHaveLength(1);
         expect(second.contacts).toHaveLength(1);
         expect(calls).toHaveLength(3);
+        expect(calls[2]?.body).toMatchObject({
+            filter: { counterparty_id: null, counterparty_id_one_of: [ID, OTHER] },
+        });
         expect(
             (calls[0]?.body as { filter: { counterparty_id_one_of: string[] } }).filter
                 .counterparty_id_one_of,
@@ -302,14 +305,14 @@ describe('counterparty routes', () => {
         expect(response.json().result.outcome).toBe('ok');
         expect(calls.map((call) => call.subject)).toEqual([
             'refdata.v1.counterparty_business_centres.list',
-            'refdata.v1.counterparty_business_centres.delete',
             'refdata.v1.counterparty_business_centres.put',
+            'refdata.v1.counterparty_business_centres.delete',
         ]);
         expect(calls[1]?.body).toMatchObject({
-            removal: { key: { business_centre_code: 'USNY' } },
+            change: { write: { business_centre_code: 'JPTO' } },
         });
         expect(calls[2]?.body).toMatchObject({
-            change: { write: { business_centre_code: 'JPTO' } },
+            removal: { key: { business_centre_code: 'USNY' } },
         });
     });
 
@@ -345,5 +348,21 @@ describe('counterparty routes', () => {
             `/api/history?entityType=ores.refdata.counterparty&entityId=${ID}`,
         );
         expect(response.statusCode).toBe(200);
+    });
+
+    it('maps a denied read to 403 and a missing one to 404', async () => {
+        const denied = buildTestServer({
+            [list]: { result: { outcome: 'denied', code: '', message: 'No.' }, counterparties: [] },
+        });
+        const refused = await send(denied.server, denied.sessionId, 'GET', '/api/counterparties');
+        expect(refused.statusCode).toBe(403);
+        const missing = buildTestServer({
+            [list]: {
+                result: { outcome: 'missing', code: '', message: 'Gone.' },
+                counterparties: [],
+            },
+        });
+        const absent = await send(missing.server, missing.sessionId, 'GET', '/api/counterparties');
+        expect(absent.statusCode).toBe(404);
     });
 });

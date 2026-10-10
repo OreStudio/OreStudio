@@ -31,7 +31,7 @@ import { subjects as partyCounterpartySubjects } from '@ores/wire-protocol/gener
 import { subjects as partyIdSchemeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_id_scheme_protocol';
 import { subjects as partyStatusSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_status_protocol';
 import { subjects as partyTypeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_type_protocol';
-import { invalidRequest } from './errors.js';
+import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import type { LiveSession } from './sessions.js';
 
 const PAGE = 1000;
@@ -90,6 +90,11 @@ const visibilityBodySchema = z.object({
     intent: intentSchema,
 });
 
+/*
+ * The BFF checks the counterparty's id and the intent, and passes the child rows
+ * through untouched: the refdata service validates them and names the field it
+ * refuses.
+ */
 const compositeBodySchema = z.looseObject({
     intent: intentSchema,
     counterparty: z.looseObject({ id: idSchema }),
@@ -179,6 +184,24 @@ const PICK_LISTS: readonly PickList[] = [
     },
 ];
 
+/**
+ * Turns a refused read into the status that says why, so the browser can tell a
+ * missing permission from a bad request.
+ */
+function refusal(result: z.infer<typeof resultSchema>): HttpFailure {
+    switch (result.outcome) {
+        case 'denied':
+            return notPermitted(result.message);
+        case 'missing':
+            return notFound(result.message);
+        case 'unavailable':
+        case 'failed':
+            return new HttpFailure(502, { code: 'upstream-unavailable', message: result.message });
+        default:
+            return invalidRequest(result.message);
+    }
+}
+
 /** Every row of a list, read a page at a time until a page comes back short. */
 async function readAll(
     session: LiveSession,
@@ -194,7 +217,7 @@ async function readAll(
             z.looseObject({ result: resultSchema }),
         );
         if (reply.result.outcome !== 'ok') {
-            throw invalidRequest(reply.result.message);
+            throw refusal(reply.result);
         }
         const page = z.array(row).default([]).parse(reply[rows]);
         all.push(...page);
@@ -222,7 +245,7 @@ function text(value: unknown): string {
     return typeof value === 'string' ? value : '';
 }
 
-/** Whether a counterparty matches the search: its short code, name or codename. */
+/** Whether a counterparty matches the search: its short code, full name or id. */
 function matches(counterparty: Record<string, unknown>, search: string): boolean {
     if (search === '') {
         return true;
@@ -233,11 +256,16 @@ function matches(counterparty: Record<string, unknown>, search: string): boolean
     );
 }
 
+/** The counterparty id the address names, or a 400. */
+function paramId(request: FastifyRequest): string {
+    return input(idSchema, (request.params as { id: string }).id);
+}
+
 function isActive(counterparty: Record<string, unknown>): boolean {
     return text(counterparty['status']).toLowerCase() === 'active';
 }
 
-/** The key under which a children reply is grouped: the counterparty a row belongs to. */
+/** The rows of a children read that belong to one counterparty. */
 function grouped(
     rows: readonly Record<string, unknown>[],
     id: string,
@@ -354,7 +382,7 @@ export function registerCounterpartyRoutes(
 
     server.get('/api/counterparties/:id/visibility', async (request) => {
         const session = requireSession(request);
-        const id = input(idSchema, (request.params as { id: string }).id);
+        const id = paramId(request);
         return {
             partyCounterparties: await readAll(
                 session,
@@ -367,7 +395,7 @@ export function registerCounterpartyRoutes(
 
     server.put('/api/counterparties/:id/visibility', async (request) => {
         const session = requireSession(request);
-        const id = input(idSchema, (request.params as { id: string }).id);
+        const id = paramId(request);
         const body = input(visibilityBodySchema, request.body);
         const result = await write(
             session,
@@ -385,7 +413,7 @@ export function registerCounterpartyRoutes(
 
     server.put('/api/counterparties/:id/business-centres', async (request) => {
         const session = requireSession(request);
-        const id = input(idSchema, (request.params as { id: string }).id);
+        const id = paramId(request);
         const body = input(centresBodySchema, request.body);
         const wanted = new Set(body.codes);
         const held = await readAll(
@@ -395,25 +423,7 @@ export function registerCounterpartyRoutes(
             { filter: { counterparty_id: id, counterparty_id_one_of: null } },
         );
         const current = new Set(held.map((entry) => text(entry['business_centre_code'])));
-        for (const code of current) {
-            if (wanted.has(code)) {
-                continue;
-            }
-            const result = await write(
-                session,
-                businessCentreSubjects.delete_counterparty_business_centre_request,
-                {
-                    removal: {
-                        key: { counterparty_id: id, business_centre_code: code },
-                        precondition: { kind: 'any', version: null },
-                    },
-                    intent: body.intent,
-                },
-            );
-            if (result.outcome !== 'ok') {
-                return { result };
-            }
-        }
+        // Link before closing, so a failure part way never leaves the counterparty with none.
         for (const code of wanted) {
             if (current.has(code)) {
                 continue;
@@ -425,6 +435,25 @@ export function registerCounterpartyRoutes(
                     change: {
                         write: { counterparty_id: id, business_centre_code: code },
                         precondition: { kind: 'must_not_exist', version: null },
+                    },
+                    intent: body.intent,
+                },
+            );
+            if (result.outcome !== 'ok') {
+                return { result };
+            }
+        }
+        for (const code of current) {
+            if (wanted.has(code)) {
+                continue;
+            }
+            const result = await write(
+                session,
+                businessCentreSubjects.delete_counterparty_business_centre_request,
+                {
+                    removal: {
+                        key: { counterparty_id: id, business_centre_code: code },
+                        precondition: { kind: 'any', version: null },
                     },
                     intent: body.intent,
                 },

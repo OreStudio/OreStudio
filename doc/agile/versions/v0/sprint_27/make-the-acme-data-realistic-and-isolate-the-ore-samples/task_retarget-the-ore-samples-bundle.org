@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/retarget-the-ore-samples-bundle
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ party. Land every import in a sandbox portfolio tree.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -64,9 +64,47 @@ party. Land every import in a sandbox portfolio tree.
 
 * Measurements
 
-None yet.
+Measured on a database recreated from the scripts and a fresh ACME provision,
+then on the same database after calling the sandbox publish directly (see
+Result).
+
+| Party  | Sample agreements | Sample sets | Sample aliases | Sandboxes | PF1/PF2 in sandbox | Official PF1/PF2 |
+|--------+-------------------+-------------+----------------+-----------+--------------------+------------------|
+| ACMCOR |                 8 |          19 |             19 |         1 |                  2 |                0 |
+| ACCOUK |                 8 |          19 |             19 |         1 |                  2 |                0 |
+| ACCOUS |                 8 |          19 |             19 |         1 |                  2 |                0 |
+| ACCOHK |                 8 |          19 |             19 |         1 |                  2 |                0 |
+
+- Every sandbox is open, shared, purpose =sample=, anchored at =Global
+  Portfolio= and owned by =tenant_admin=.
+- The ACME base data from the earlier task is intact on every party.
+- pgTAP: 11 of 11 new sandbox tests pass. The sample netting and envelope names
+  tests pass.
 
 * Notes
+
+*Audit and design, 2026-10-10.*
+
+- *The sandbox already exists.* Sprint 26 added the sandbox entity: an owner, an
+  anchor in the official tree, visibility, and its own portfolio tree. The ORE
+  import does not use it yet. A sample import still creates portfolios and
+  books from the directory tree it reads.
+- *Decision (user, 2026-10-10).* This task seeds data only. It opens one shared
+  sample sandbox per party, anchored at the party's official top portfolio and
+  owned by the publishing actor. A separate task makes the importer place its
+  books in that sandbox.
+- *Decision: the artefact type.* The =named_portfolios= type published sample
+  names as official top-level portfolios. It is replaced by =sandbox_portfolios=,
+  which writes the same names as roots of the sandbox. The names PF1 and PF2
+  stay, because an import resolves them by name.
+- *Decision: codes.* Agreement numbers start =ORE-SAMPLE-=, netting set codes
+  start =ORE-SAMPLE-NS-=, and every description starts =ORE sample data:=. The
+  per-party part the acceptance asked for is not needed: agreement numbers are
+  unique per party since the party-scoping task.
+- *Decision: counterparty aliases.* They stay a tenant-level opt-in
+  (=ore.counterparty_aliases=). Counterparties are tenant-level, so one publish
+  serves every party.
+- *CSA terms.* Unchanged. They keep ORE's terms, including EUR-EONIA.
 
 * Test Scenarios
 
@@ -93,4 +131,39 @@ via its "Verifies task" field.
 
 * Result
 
-Not started. It follows the realistic ACME base bundle.
+The ORE samples bundle is labelled, installed on every party, and its
+portfolios are published into a sample sandbox.
+
+- Agreement numbers start =ORE-SAMPLE-=, netting set codes start =ORE-SAMPLE-NS-=
+  and each sample description starts =ORE sample data:=. The CSA terms are
+  ORE's own.
+- The bundle goes to Plc, UK, US and HK. Each holds 8 sample agreements, 19
+  sets and 19 aliases.
+- The new publish =sandbox_portfolios= replaces =named_portfolios=. It opens a
+  shared sample sandbox per party and writes PF1 and PF2 as its roots. The
+  owner is the publishing actor, else the tenant administrator.
+
+*Acceptance.* Met: labelling; the CSA terms; installation on every party; the
+sample portfolios outside the official tree; the methodology and dataset
+descriptions say sample data.
+
+*Not met.*
+
+- A sample import does not yet create its portfolios and books in the sandbox.
+  The importer still builds them from the directory tree it reads. The task
+  "Place the ORE import in the sample sandbox" covers it.
+- No import was run, so it is not shown that each party resolves the portfolio
+  names inside the sandbox. The 19 netting set ids and their aliases do exist
+  on every party.
+- The bundle does not hold the counterparty aliases. They stay a tenant-level
+  opt-in, because counterparties are tenant-level.
+
+*Proof limits.* The sandboxes were created by a direct call of the publish
+after a first provision. A clean provision through the bundle path was not
+completed: the database rebuild hung on a Postgres cluster shared with other
+worktrees. The first provision showed the publish ran with no actor and wrote
+nothing, which led to the tenant administrator fallback. The fallback was run
+by hand, not through the provisioning path.
+
+*Known gap.* The publish handler logs only inserted, updated and skipped
+counts. A =skipped_no_owner= or =skipped_no_anchor= result is silent.

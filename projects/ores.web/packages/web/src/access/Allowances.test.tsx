@@ -74,11 +74,17 @@ describe('RolesAllow', () => {
         expect(html).toContain('value="100"');
     });
 
-    it('offers every area to choose from', () => {
-        const html = render(<RolesAllow roles={[role]} catalogue={catalogue} />);
+    it('offers only the areas the roles grant something in', () => {
+        const alphaOnly: HeldRole = {
+            ...role,
+            permissionCodes: ['alpha::*', 'delta::things:read'],
+        };
+        const html = render(<RolesAllow roles={[alphaOnly]} catalogue={catalogue} />);
 
-        for (const component of COMPONENTS) {
-            expect(html).toContain(`value="${component}"`);
+        expect(html).toContain('value="alpha"');
+        expect(html).toContain('value="delta"');
+        for (const component of ['bravo', 'charlie', 'echo', 'foxtrot', 'golf']) {
+            expect(html).not.toContain(`value="${component}"`);
         }
     });
 

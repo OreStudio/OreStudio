@@ -24,7 +24,7 @@ import type { HeldRole, PermissionEntry } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { DEFAULT_PAGE_SIZE, Pager } from '../ui/Pager.js';
 import { Input } from '../ui/Primitives.js';
-import { areasOf, grantedBy, rolesGranting, search, type Area } from './catalogue.js';
+import { areasOf, covers, grantedBy, rolesGranting, search, type Area } from './catalogue.js';
 import { AreaFilter, PermissionAreas, areaLabel, permissionRows } from './PermissionAreas.js';
 import { roleLabel } from './words.js';
 
@@ -122,8 +122,17 @@ export function RolesAllow({
         );
     }
     const granted = grantedBy(roles);
+    // Only the areas the roles grant something in are offered: an area with
+    // nothing allowed has nothing to show, and choosing it would show an empty page.
+    const allowed = areas.filter((entry) =>
+        entry.resources.some((resource) =>
+            resource.actions.some((action) =>
+                covers(granted, `${entry.component}::${resource.name}:${action}`),
+            ),
+        ),
+    );
     const chosen: readonly Area[] =
-        area === '' ? areas : areas.filter((entry) => entry.component === area);
+        area === '' ? allowed : allowed.filter((entry) => entry.component === area);
     const rows = permissionRows(chosen, granted, {
         onlyGranted: true,
         filter,
@@ -145,7 +154,7 @@ export function RolesAllow({
                     aria-label={t('access.roles.find')}
                 />
                 <AreaFilter
-                    areas={areas}
+                    areas={allowed}
                     value={area}
                     onChange={(component) => {
                         setArea(component);

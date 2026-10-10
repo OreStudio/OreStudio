@@ -203,6 +203,7 @@ ores::refdata::messaging::portfolio_write to_write(const ores::refdata::domain::
             .purpose_type = p.purpose_type,
             .aggregation_ccy = p.aggregation_ccy,
             .is_virtual = p.is_virtual,
+            .sandbox_id = p.sandbox_id,
             .status = p.status};
 }
 
@@ -217,8 +218,11 @@ ores::refdata::messaging::book_write to_write(const ores::refdata::domain::book&
             .cost_center = b.cost_center,
             .book_status = b.book_status,
             .regulatory_book_type = b.regulatory_book_type,
+            .book_purpose_type = b.book_purpose_type,
+            .ledger_feed_type = b.ledger_feed_type,
             .is_sweepable = b.is_sweepable,
-            .rates_centre_code = b.rates_centre_code};
+            .rates_centre_code = b.rates_centre_code,
+            .sandbox_id = b.sandbox_id};
 }
 
 /**

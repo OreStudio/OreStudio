@@ -135,6 +135,17 @@ struct import_choices {
     std::optional<boost::uuids::uuid> existing_target_book_id;
 
     /**
+     * @brief Sandbox the import lands in.
+     *
+     * When set, every portfolio the import creates belongs to this sandbox and
+     * every book it creates is a virtual book of it, so nothing enters the
+     * official portfolio tree. The wrapping parent portfolio, if any, is a
+     * root of the sandbox; an existing parent portfolio must already belong
+     * to it. Left empty, the import lands in the official tree.
+     */
+    std::optional<boost::uuids::uuid> sandbox_id;
+
+    /**
      * @brief Party that owns the imported entities.
      *
      * Taken from ClientManager::currentPartyId() in the wizard.

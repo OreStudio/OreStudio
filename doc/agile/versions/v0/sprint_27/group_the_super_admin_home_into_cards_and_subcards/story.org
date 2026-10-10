@@ -44,7 +44,7 @@ A system administrator lands on Tenants, Accounts, Operations and Security cards
 * Decisions
 
 - The Operations card links to the existing operations hub. That hub already holds the services, grid, bus, telemetry logs and versions screens, so the story builds no new hub.
-- The upcoming run keeps its three cards.
+- The home keeps its Upcoming Modules run of three cards: the market data feeds, the yield curve process types and what the grid runs.
 
 * Out of scope
 

@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 3EA34111-5FBA-4F35-B711-B9511B131293
+:END:
+#+title: Task: Serve the counterparty routes from the BFF
+#+description: Add the BFF routes the counterparty onboarding screen calls, so the screen runs against the live fleet: the page, the children, the pick lists, the composite write, the business centres and the visibility.
+#+type: task
+#+level: s1
+#+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/serve-the-counterparty-routes-from-the-bff
+#+pr: 3024
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tenant administrator opens /counterparties/onboard against a running fleet and onboards a counterparty; no call the screen makes returns 404.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- GET /api/counterparties pages, searches and filters by status on the BFF.
+- GET /api/counterparties/children returns the identifiers, contacts and centres of the named counterparties.
+- GET /api/counterparties/pick-lists returns the six pick lists the form needs.
+- PUT /api/counterparties/composite, /business-centres and /visibility write through the refdata subjects and return the typed refusal.
+- GET /api/counterparties/:id/visibility lists the parties that see the counterparty.
+- Every route has a BFF test that checks the subject called and the shape returned.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3024][#3024]] | [web] Serve the counterparty routes from the BFF |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Search comment names a codename the code does not check | =counterparties.ts= | Accept | Comment now says short code, full name or id. |
+| 2 | Centre replacement is not atomic | =counterparties.ts= | Accept in part | Adds now run before deletes, so a failure never leaves none. The deletes keep precondition any, because a junction row has no version. A part-way failure still leaves a mix, as the task Result states. |
+| 3 | Visibility write cannot unlink | =counterparties.ts= | Decline | The screen sends one party id and asks only to link. An unlink is a new screen action and would be its own task. |
+| 4 | Assert the exact children request bodies | =counterparties.test.ts= | Accept | The test now checks the centre filter. |
+| 5 | Every refusal becomes a 400 | =counterparties.ts= | Accept | denied is 403, missing 404, unavailable and failed 502. A test covers 403 and 404. |
+| 6 | Whole-list read per page | =counterparties.ts= | Decline | Already recorded as a limit. A cache needs an invalidation rule on the counterparty change events, which is its own task. |
+| 7 | localeCompare depends on host locale | =counterparties.ts= | Accept | Fixed to the en locale. |
+| 8 | Pick lists read one by one | =counterparties.ts= | Decline | Sequential on purpose. The session's broker client answers concurrent requests far slower than sequential ones, as classifications.ts records. |
+| 9 | Repeated params cast | =counterparties.ts= | Accept | paramId helper. |
+| 10 | Say the composite body is passed through | =counterparties.ts= | Accept | Comment added above the schema. |
+
+* Result
+
+Added =packages/bff/src/counterparties.ts= and wired it in =server.ts=. It
+serves the eight endpoints =api/counterparties.ts= calls, from the generated
+refdata subjects.
+
+** Verification
+
+| Command | Result |
+|---------+--------|
+| =npm run typecheck= | exit 0 |
+| =npm run format:check= | exit 0 |
+| =npm test= | exit 0; bff 40 files, 326 tests; web 49 files, 510 tests; wire-protocol 16 files, 163 tests |
+
+The nine new tests answer from canned replies. *Nothing ran against the live
+fleet.* The routes are closed on that evidence, and =/counterparties/onboard=
+still needs one walk against a running fleet. That walk is the first thing to
+do when the C++ build finishes.
+
+** Decisions and limits
+
+- The server's counterparty list filters by id only. The BFF reads the tenant's
+  whole list and applies the search and the status before it cuts the page.
+  This is fine for a tenant's counterparties and wrong for a very large one.
+- The history route served only the record table's types, so the counterparty
+  History step would have returned 404. It now serves the counterparty and its
+  identifier and contact types.
+- A closed counterparty is any status other than =Active=.
+- The business centre write closes the dropped centres, then links the new
+  ones, one call each. A refusal part way leaves the earlier changes written.
+- The visibility write links one party and removes none. The client sends one
+  party id, so "replace" is not what it asks for.

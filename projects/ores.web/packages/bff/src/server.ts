@@ -29,6 +29,7 @@ import fastifyStatic from '@fastify/static';
 import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
 import { registerClassificationRoutes } from './classifications.js';
+import { registerCounterpartyRoutes } from './counterparties.js';
 import { registerAuditRoutes } from './audit.js';
 import { registerTimelineRoutes } from './timeline.js';
 import { registerInboxRoutes } from './inbox.js';
@@ -2378,6 +2379,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     registerClassificationRoutes(server, requireSession);
+    registerCounterpartyRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
     registerAuditRoutes(server, requireSession);

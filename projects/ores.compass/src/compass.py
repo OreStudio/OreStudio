@@ -6769,13 +6769,12 @@ def _systemctl_is_active(unit) -> bool:
     return _systemctl_state(unit) == "active"
 
 
-# Two build-lock slots so up to two environments on this host can build at
-# once without oversubscribing it: slot 'a' gets -j3, slot 'b' gets -j2 (5
-# cores in flight, max, on this 8-core host), leaving headroom for Emacs,
-# the interactive session, and any running fleet. Another slot could be
-# added the same way if the host ever has more headroom -- nothing else
-# assumes exactly two.
-BUILD_LOCK_SLOTS = (("a", 3), ("b", 2))
+# One build-lock slot, so one environment on this host builds at a time and
+# gets -j6 (6 cores in flight, max, on this 8-core host), leaving headroom for
+# Emacs, the interactive session, and any running fleet. Builds from other
+# environments queue behind it. Another slot could be added the same way if
+# the host ever has more headroom -- nothing else assumes exactly one.
+BUILD_LOCK_SLOTS = (("a", 6),)
 BUILD_LOCK_POLL_INTERVAL = 1.0
 
 # WS-7 change 2: dash-truncated template drop-in (same mechanism as
@@ -7059,9 +7058,9 @@ def cmd_build(argv):
     entirely. Only targets listed in EMACS_BUILD_SCRIPTS are supported in
     direct mode; this is the required path for light environments.
 
-    A non-direct build acquires one of two host-wide lock slots first
-    (see _acquire_build_lock/BUILD_LOCK_SLOTS) so at most two environments
-    on this machine build at once, each capped to that slot's job count --
+    A non-direct build acquires the host-wide lock slot first
+    (see _acquire_build_lock/BUILD_LOCK_SLOTS) so at most one environment
+    on this machine builds at once, capped to the slot's job count --
     concurrent cmake builds beyond that contend for the same CPUs and
     have been observed to corrupt shared library outputs. --jobs
     overrides whichever slot's job count would otherwise apply.

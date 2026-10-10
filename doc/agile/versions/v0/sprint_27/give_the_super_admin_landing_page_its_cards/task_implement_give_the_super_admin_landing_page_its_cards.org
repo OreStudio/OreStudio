@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :give_the_super_admin_landing_page_its_cards:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-give-the-super-admin-landing-page-its-cards
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5F88F874-7A41-4CAE-BEC5-5C4A35334A1B][Give the super administrator's landing page its cards]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A system administrator lands on cards for the screens they use, and sees which j
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:5F88F874-7A41-4CAE-BEC5-5C4A35334A1B][Give the super administrator's landing page its cards]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -85,3 +85,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The system administrator's home now shows an Active Modules run of nine cards: tenants, add tenant, people, services, grid, bus, logs, versions and security. An Upcoming Modules run marks the three journeys with no screen: the market data feeds, the yield curve process types and what the grid runs. The health figures and the attention list stay above the cards. The tenant table moves below them. The cards show before the overview has loaded. The package passes 513 tests and the format check. I did not open the page in a browser.

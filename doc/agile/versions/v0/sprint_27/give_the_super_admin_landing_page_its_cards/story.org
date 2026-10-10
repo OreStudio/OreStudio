@@ -39,7 +39,7 @@ A system administrator lands on cards for the screens they use, and sees which j
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D83549D8-5FBD-48C0-9E43-7F6C58E0AD52][Scaffold story: Give the super administrator's landing page its cards]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:0FDB8A7E-3A26-48F0-977B-6B9606C374DF][Offer the super administrator's places as cards]] | BACKLOG | | | Initial task for: Give the super administrator's landing page its cards |
+| [[id:0FDB8A7E-3A26-48F0-977B-6B9606C374DF][Offer the super administrator's places as cards]] | DONE | 2026-10-10 | 2026-10-10 | Initial task for: Give the super administrator's landing page its cards |
 | [[id:46D623F0-D2E0-447D-B6FD-4F2E0EAE1133][File the super administrator journeys that have no screen]] | BACKLOG | | | Three super administrator journeys have a design and a backend but no screen: the market data feeds, the yield curve process types, and the compute catalogue. File one capture for each, with what its backend offers and what is missing. |
 
 * Decisions

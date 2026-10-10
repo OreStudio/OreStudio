@@ -927,6 +927,15 @@ export const en: SourceCatalogue = {
             open: 'Open',
             tenants: 'Tenants',
             tenantsLead: 'The organisations this deployment serves, and the state each one is in.',
+            tenantsBody: 'The organisations this deployment serves, and the state each one is in.',
+            addTenantBody: 'Provision a tenant from a seed profile and hand it over.',
+            feeds: 'Market data feeds',
+            feedsBody: 'Which feeds run, when each last ticked, and start or stop one.',
+            processTypes: 'Yield curve process types',
+            processTypesBody:
+                'The short-rate models the curve editor offers, and their parameters.',
+            catalogue: 'What the grid runs',
+            catalogueBody: 'The apps, versions and packages the compute grid may run.',
             showing: {
                 one: 'Showing {shown} of {count} tenant',
                 other: 'Showing {shown} of {count} tenants',

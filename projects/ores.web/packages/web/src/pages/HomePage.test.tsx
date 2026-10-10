@@ -210,6 +210,48 @@ describe("the system administrator's home", () => {
     });
 });
 
+describe("the system administrator's cards", () => {
+    it('leads to every screen the system administrator works in', () => {
+        const html = home('system-administration', busy);
+
+        expect(html).toContain('Active Modules');
+        for (const href of [
+            '/tenants',
+            '/tenants/new',
+            '/people',
+            '/operations/services',
+            '/operations/grid',
+            '/operations/bus',
+            '/operations/logs',
+            '/operations/versions',
+            '/security',
+        ]) {
+            expect(html).toContain(`href="${href}"`);
+        }
+    });
+
+    it('marks the journeys with no screen as coming, without a link', () => {
+        const html = home('system-administration', busy);
+
+        expect(html).toContain('Upcoming Modules');
+        for (const title of [
+            'Market data feeds',
+            'Yield curve process types',
+            'What the grid runs',
+        ]) {
+            expect(html).toContain(title);
+        }
+        expect(html).toContain('Coming later');
+    });
+
+    it('offers the cards before the overview has been read', () => {
+        const html = home('system-administration');
+
+        expect(html).toContain('href="/operations/grid"');
+        expect(html).not.toContain('System health');
+    });
+});
+
 describe('the greeting', () => {
     it("shows the name the signed-in person's own account holds", () => {
         expect(home('system-administration', busy, signedInAccount)).toContain(

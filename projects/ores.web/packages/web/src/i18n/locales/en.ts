@@ -2995,8 +2995,37 @@ export const en: SourceCatalogue = {
         },
     },
 
+    permissionWords: {
+        accountsRead: 'see the accounts of your tenant',
+        accountsUpdate: 'change accounts',
+        accountsReset: 'reset passwords',
+        contactsRead: "read people's contact details",
+        contactsWrite: "change people's contact details",
+        organisationRead: 'see the people of your parties',
+        rolesRead: 'read roles and their grants',
+        rolesAssign: 'give roles to people',
+        sessionsRead: "read people's sign-ins",
+    },
+
+    unavailable: {
+        title: 'You cannot open {screen} yet',
+        need: 'To open it you need to be able to {need}.',
+        needMany: 'To open it you need to be able to do one of these: {need}.',
+        roleHas: 'The role {role} allows it.',
+        ask: 'Ask for {role}',
+        none: 'No role you can ask for allows it. Ask your tenant administrator.',
+        checking: 'Looking for a way to get access...',
+        failedTitle: 'That did not work, and it should have',
+        failed: 'You were allowed to open this, and the server refused part of it. We checked your access again. Nothing you did caused this.',
+        reference: 'Reference {id}',
+        retry: 'Try again',
+        home: 'Go to Home',
+        askReason: 'I need to open {screen}.',
+    },
+
     common: {
         loading: 'Loading...',
+        notAvailable: 'This is not available to you.',
         clear: 'Clear',
         refresh: 'Refresh',
         refreshStale: 'The data changed on the server. Refresh to see it.',

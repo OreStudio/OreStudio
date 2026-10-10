@@ -38,11 +38,20 @@ import { roleLabel } from '../access/words.js';
  * dialog shows: what counts as a duplicate is the queue's business, not the
  * screen's, and the server reads the queue.
  */
-export function AskForRoleDialog({ onClose }: { readonly onClose: () => void }): ReactNode {
+export function AskForRoleDialog({
+    onClose,
+    initialRoleId = '',
+    initialReason = '',
+}: {
+    readonly onClose: () => void;
+    /** A role chosen for the person, when a screen sent them here for it. */
+    readonly initialRoleId?: string;
+    readonly initialReason?: string;
+}): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
-    const [roleId, setRoleId] = useState('');
-    const [reason, setReason] = useState('');
+    const [roleId, setRoleId] = useState(initialRoleId);
+    const [reason, setReason] = useState(initialReason);
     const roles = useQuery({ queryKey: ['roles'], queryFn: api.roles });
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
 

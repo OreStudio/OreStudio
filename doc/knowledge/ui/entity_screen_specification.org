@@ -591,6 +591,47 @@ lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notific
   the claim just before it writes, which leaves a very small gap.
 - The notification bell still reads its count on a timer.
 
+** What a screen or a form needs, and what the log keeps
+
+A screen or a form that is drawn must work. So what it needs is known before it
+is entered, and a screen the reader cannot use is not drawn.
+
+- /Each screen and each form declares what it needs/, as typed permission
+  constants (=access/permissions.ts=, =access/screens.ts=). A wrong name does not
+  compile. The menu, the home tiles, the route guard and the button that opens a
+  form read that one declaration.
+- /A screen the reader cannot use is not offered./ A saved link to it does not show
+  "not available". It names the screen, says in words what the reader would need to
+  be able to do, and lists the roles they could ask for that allow it. Each has a
+  link that opens the request for that role, already filled in. When no role can
+  be asked for, it says to ask the tenant administrator and offers no link. The
+  words for each permission are typed, so a new permission without words does not
+  compile.
+- /A screen that was drawn and then refused a read is our fault, not the reader's./
+  It is replaced by a panel that says so, gives a reference that finds the request
+  in the log, and offers Try again and Home. The roles are read again first. If they
+  changed, the screen's own guard takes over and says what is missing.
+- /Nothing is decided until the roles are known./ =Requires= and =FirstAvailable=
+  draw nothing but "Loading" while the roles are read, so a screen never asks the
+  server for what the reader may not read.
+- /Two audiences are two screens./ The whole directory and the people of your own
+  parties are two screens, each with its own declaration. A screen does not
+  inspect permissions to decide which screen it is.
+- /A form saves through one hook/ (=useRecordEdit=): save, close the form, then read
+  the record again. The form never reloads under the person, and a change that
+  arrives during a save is the save's own.
+- /Every failed request names its operation/ (the method and the path, with no
+  query), its status, the server's code, and the request id. The banner shows the
+  operation and the first eight characters of the id. The BFF puts the same id on
+  its own lines for that request.
+- /The path a person took is in the log./ The browser sends a trail to the BFF:
+  =screen entered=, =screen left=, =form opened=, =form closed=, =save requested=,
+  =saved=, =save refused=, =save failed=, =request failed=. The BFF writes each in
+  the line form of the services, under =ores.web.client.<area>=, with the
+  session id: =time [LEVEL] [logger] message key=value=. A search on the session id
+  follows the person through the browser, the BFF and the services. The trail
+  holds no value a person typed and no secret.
+
 ** The shared components
 
 | Rule | Component | Status |

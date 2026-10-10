@@ -21,6 +21,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
@@ -42,7 +43,13 @@ import { AskForRoleDialog } from '../inbox/AskForRoleDialog.js';
  */
 export function MyAccessPage({ tenantName }: { readonly tenantName: string }): ReactNode {
     const { t, language } = useTranslation();
-    const [asking, setAsking] = useState(false);
+    const [search, setSearch] = useSearchParams();
+    const sentToAsk = search.get('ask');
+    const [asking, setAsking] = useState(sentToAsk !== null);
+    const closeAsking = (): void => {
+        setAsking(false);
+        if (sentToAsk !== null) setSearch({}, { replace: true });
+    };
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
     const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
     const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
@@ -126,7 +133,13 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
                 />
             </section>
 
-            {asking && <AskForRoleDialog onClose={() => setAsking(false)} />}
+            {asking && (
+                <AskForRoleDialog
+                    onClose={closeAsking}
+                    initialRoleId={sentToAsk ?? ''}
+                    initialReason={search.get('why') ?? ''}
+                />
+            )}
         </div>
     );
 }

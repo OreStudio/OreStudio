@@ -31,7 +31,6 @@ import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { useHolds } from './holds.js';
 import { partyLabel } from '../membership/organisation.js';
-import { StaffOfMyParties } from '../membership/StaffOfMyParties.js';
 
 /** The address of one person's page. */
 export function personPath(username: string): string {
@@ -96,10 +95,6 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
             return party === undefined ? [] : [partyLabel(party)];
         });
     };
-    // A member reads the people of their parties from the organisation, not the accounts.
-    if (!system && !holds('iam::accounts:read') && holds('iam::organisation:read')) {
-        return <StaffOfMyParties />;
-    }
     const lead = system
         ? t('accounts.description')
         : mayReadRoles

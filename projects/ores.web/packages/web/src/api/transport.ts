@@ -20,6 +20,7 @@
  */
 
 import { apiErrorSchema, type ApiError } from '@ores/wire-protocol/browser';
+import { trail } from '../log/clientLog.js';
 
 /**
  * The browser's transport.
@@ -36,13 +37,47 @@ import { apiErrorSchema, type ApiError } from '@ores/wire-protocol/browser';
 export class ApiFailure extends Error {
     readonly code: ApiError['code'];
     readonly status: number;
+    /** What was being done: the method and the path, without the query a person typed. */
+    readonly operation: string;
+    /** The id the BFF gave the request, which is on its log lines for it. */
+    readonly requestId: string;
 
-    constructor(status: number, body: ApiError) {
+    constructor(
+        status: number,
+        body: ApiError,
+        context?: { operation: string; requestId: string },
+    ) {
         super(body.message);
         this.name = 'ApiFailure';
         this.code = body.code;
         this.status = status;
+        this.operation = context?.operation ?? '';
+        this.requestId = context?.requestId ?? '';
     }
+}
+
+const requests = trail('request');
+
+/** The method and the path of a request, which names the operation without its values. */
+export function operationOf(path: string, init: RequestInit): string {
+    const bare = path.split('?')[0] ?? path;
+    return `${(init.method ?? 'GET').toUpperCase()} ${bare}`;
+}
+
+/** Writes a failed request to the trail, with everything needed to find it in the log. */
+function recordFailure(failure: ApiFailure): void {
+    const facts = {
+        operation: failure.operation,
+        status: failure.status,
+        code: failure.code,
+        request_id: failure.requestId,
+        route: window.location.pathname,
+        reason: failure.message,
+    };
+    // A 401 is how a signed-out browser learns it is signed out, and is not news.
+    if (failure.status === 401) requests.debug('request refused', facts);
+    else if (failure.status >= 500 || failure.status === 0) requests.error('request failed', facts);
+    else requests.warn('request refused', facts);
 }
 
 export function parseJson(text: string): unknown {
@@ -55,6 +90,7 @@ export function parseJson(text: string): unknown {
 
 /** Sends a request and returns the decoded body, or throws an {@link ApiFailure}. */
 export async function request(path: string, init: RequestInit): Promise<unknown> {
+    const operation = operationOf(path, init);
     let response: Response;
     try {
         response = await fetch(path, {
@@ -63,10 +99,13 @@ export async function request(path: string, init: RequestInit): Promise<unknown>
             ...init,
         });
     } catch {
-        throw new ApiFailure(0, {
-            code: 'upstream-unavailable',
-            message: 'Cannot reach the server.',
-        });
+        const failure = new ApiFailure(
+            0,
+            { code: 'upstream-unavailable', message: 'Cannot reach the server.' },
+            { operation, requestId: '' },
+        );
+        recordFailure(failure);
+        throw failure;
     }
 
     const text = await response.text();
@@ -74,12 +113,15 @@ export async function request(path: string, init: RequestInit): Promise<unknown>
 
     if (!response.ok) {
         const parsed = apiErrorSchema.safeParse(payload);
-        throw new ApiFailure(
+        const failure = new ApiFailure(
             response.status,
             parsed.success
                 ? parsed.data
                 : { code: 'internal', message: `Request failed with status ${response.status}` },
+            { operation, requestId: response.headers.get('x-request-id') ?? '' },
         );
+        recordFailure(failure);
+        throw failure;
     }
     return payload;
 }

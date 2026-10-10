@@ -20,7 +20,17 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import { current, dismiss, dismissAll, report, reportError, reportQueryError } from './errors.js';
+import {
+    clearRefusal,
+    current,
+    currentRefusal,
+    describeFailure,
+    dismiss,
+    dismissAll,
+    report,
+    reportError,
+    reportQueryError,
+} from './errors.js';
 import { ApiFailure } from './transport.js';
 
 /**
@@ -135,16 +145,42 @@ describe('a query that states its own failure', () => {
     });
 
     it('is reported when it does not say so', () => {
-        const refusal = new ApiFailure(403, {
-            code: 'forbidden',
-            message: 'You do not have access to this.',
-        });
+        const fault = new ApiFailure(500, { code: 'internal', message: 'The ledger is closed.' });
+
+        reportQueryError(fault, {});
+        reportQueryError(fault, { meta: { quiet: false } });
+
+        expect(current().map((entry) => entry.message)).toEqual(['The ledger is closed.']);
+    });
+
+    it('is kept for the screen to explain when the server refuses a read', () => {
+        clearRefusal();
+        const refusal = new ApiFailure(
+            403,
+            { code: 'forbidden', message: 'You do not have access to this.' },
+            { operation: 'GET /api/accounts', requestId: 'abcdef12-0000' },
+        );
 
         reportQueryError(refusal, {});
-        reportQueryError(refusal, { meta: { quiet: false } });
 
-        expect(current().map((entry) => entry.message)).toEqual([
-            'You do not have access to this.',
-        ]);
+        expect(current()).toEqual([]);
+        expect(currentRefusal()).toEqual({
+            operation: 'GET /api/accounts',
+            requestId: 'abcdef12-0000',
+        });
+        clearRefusal();
+        expect(currentRefusal()).toBeUndefined();
+    });
+
+    it('names the operation and the request in the sentence a banner shows', () => {
+        const failure = new ApiFailure(
+            500,
+            { code: 'internal', message: 'The ledger is closed.' },
+            { operation: 'GET /api/books', requestId: '1234567890ab' },
+        );
+
+        expect(describeFailure(failure)).toBe(
+            'The ledger is closed. (GET /api/books, request 12345678)',
+        );
     });
 });

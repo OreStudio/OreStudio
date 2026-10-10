@@ -166,7 +166,10 @@ import type { LoadedSiteConfiguration } from './site-config.js';
 import { resolveBroker } from './broker.js';
 import type { Config } from './config.js';
 import type { Account } from '@ores/wire-protocol';
+import { PERMISSION_CODE, waysToHold } from './access-help.js';
+import { clientLogSchema, writeClientEntry } from './client-log.js';
 import { createImageCache } from './image-cache.js';
+import { logStream } from './log-format.js';
 import { createRateLimiter, type RateLimiter } from './rate-limit.js';
 import { createSessionStore, type LiveSession, type SessionStore } from './sessions.js';
 import { sessionModeFor } from './session-mode.js';
@@ -365,6 +368,8 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             level: config.logLevel,
             // Never log a credential or a token.
             redact: ['req.headers.cookie', 'req.headers.authorization'],
+            // The services' own line form, so one search follows a request across all of them.
+            stream: logStream((line) => process.stdout.write(`${line}\n`)),
         },
         genReqId: () => randomUUID(),
     });
@@ -570,10 +575,23 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
     });
 
+    // The browser quotes this id when a request fails, and the same id is on the
+    // BFF's lines for that request, so a failure on screen leads to its log lines.
+    server.addHook('onSend', async (request, reply) => {
+        reply.header('x-request-id', request.id);
+    });
+
     server.setErrorHandler(async (error, request, reply) => {
         const failure = error instanceof HttpFailure ? error : toHttpFailure(error);
         if (failure.status >= 500) {
             request.log.error({ err: error }, 'request failed');
+        } else {
+            // A refusal is the answer working, but the reason it was given is what
+            // someone tracing a failed screen needs.
+            request.log.warn(
+                { status: failure.status, code: failure.body.code, reason: failure.body.message },
+                'request refused',
+            );
         }
         await reply.status(failure.status).send(failure.body);
     });
@@ -1096,6 +1114,31 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.get('/api/me/access', async (request) => {
         const session = requireSession(request);
         return accountAccessSchema.parse(await readMyAccess(session.client));
+    });
+
+    /**
+     * The roles the signed-in person could ask for that would give them a
+     * permission. A screen they may not use says what to ask for, and the roles
+     * are read here because a member may not read them one by one.
+     */
+    server.get('/api/me/ways-to-hold', async (request) => {
+        const session = requireSession(request);
+        const { permission } = request.query as { permission?: string };
+        if (permission === undefined || !PERMISSION_CODE.test(permission)) {
+            throw invalidRequest('The permission asked about is not one.');
+        }
+        try {
+            const [roles, access] = await Promise.all([
+                readRoles(session.client),
+                readMyAccess(session.client),
+            ]);
+            const held = new Set(access.roles.map((role) => role.roleId));
+            return { roles: waysToHold(permission, roles, held) };
+        } catch (error) {
+            // No way is known, and that is an answer the screen can state.
+            request.log.warn({ permission, reason: String(error) }, 'ways to hold unknown');
+            return { roles: [] };
+        }
     });
 
     /**
@@ -2819,6 +2862,26 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             })
             .parse(request.body);
         events.watch(session.id, session.tenantId, body.watches as readonly Watch[]);
+        return { ok: true };
+    });
+
+    /**
+     * Takes the trail the browser keeps of where a person went and what failed.
+     *
+     * The interface cannot write to the services' logs, so it sends the lines it
+     * would have written. Each is written here under its own logger name, with the
+     * session's id beside it, so the journal holds one story: what the person did,
+     * the request that followed, and the service that answered.
+     */
+    server.post('/api/client-log', { logLevel: 'warn' }, async (request) => {
+        const session = requireSession(request);
+        const body = clientLogSchema.parse(request.body);
+        for (const entry of body.entries) {
+            writeClientEntry(server.log, entry, {
+                session_id: session.sessionId,
+                account: session.username,
+            });
+        }
         return { ok: true };
     });
 

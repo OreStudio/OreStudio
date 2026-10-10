@@ -3038,8 +3038,37 @@ const fr: SourceCatalogue = {
         },
     },
 
+    permissionWords: {
+        accountsRead: 'voir les comptes de votre locataire',
+        accountsUpdate: 'modifier les comptes',
+        accountsReset: 'réinitialiser les mots de passe',
+        contactsRead: 'lire les coordonnées des personnes',
+        contactsWrite: 'modifier les coordonnées des personnes',
+        organisationRead: 'voir les personnes de vos parties',
+        rolesRead: 'lire les rôles et leurs droits',
+        rolesAssign: 'attribuer des rôles aux personnes',
+        sessionsRead: 'lire les connexions des personnes',
+    },
+
+    unavailable: {
+        title: 'Vous ne pouvez pas encore ouvrir {screen}',
+        need: 'Pour l’ouvrir, vous devez pouvoir {need}.',
+        needMany: 'Pour l’ouvrir, vous devez pouvoir faire l’une de ces choses : {need}.',
+        roleHas: 'Le rôle {role} le permet.',
+        ask: 'Demander {role}',
+        none: 'Aucun rôle que vous pouvez demander ne le permet. Contactez l’administrateur de votre locataire.',
+        checking: 'Recherche d’un moyen d’obtenir l’accès...',
+        failedTitle: 'Cela n’a pas fonctionné, et cela aurait dû',
+        failed: 'Vous aviez le droit d’ouvrir ceci, et le serveur a refusé une partie. Nous avons vérifié à nouveau votre accès. Rien de ce que vous avez fait n’en est la cause.',
+        reference: 'Référence {id}',
+        retry: 'Réessayer',
+        home: 'Aller à l’accueil',
+        askReason: 'J’ai besoin d’ouvrir {screen}.',
+    },
+
     common: {
         loading: 'Chargement...',
+        notAvailable: 'Cette page n’est pas disponible pour vous.',
         clear: 'Effacer',
         refresh: 'Actualiser',
         refreshStale: 'Les données ont changé sur le serveur. Actualisez pour les voir.',

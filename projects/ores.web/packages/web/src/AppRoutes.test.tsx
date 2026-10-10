@@ -392,12 +392,15 @@ describe('the route table once the flag is clear', () => {
     });
 
     it('opens the staff list and the hierarchy at their own routes', () => {
-        const staff = render('/staff', ready, authenticated, {}, [], (client) =>
+        const staff = render('/staff', ready, authenticated, {}, [], (client) => {
+            client.setQueryData(['my-access'], {
+                roles: [{ roleId: 'r', permissionCodes: ['iam::accounts:read'] }],
+            });
             client.setQueryData(['records', 'people', '', 'page', 0], {
                 accounts: [],
                 totalCount: 0,
-            }),
-        );
+            });
+        });
         expect(staff).toContain('>Staff<');
 
         const tree = render('/hierarchy', ready, authenticated, {}, [], (client) =>

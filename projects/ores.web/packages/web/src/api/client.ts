@@ -1172,6 +1172,25 @@ export const api = {
             .parse(await request('/api/roles', { method: 'GET' })).roles;
     },
 
+    /** The roles that could be asked for to hold a permission, less the ones already held. */
+    async waysToHold(
+        permission: string,
+    ): Promise<
+        readonly { readonly id: string; readonly name: string; readonly description: string }[]
+    > {
+        return z
+            .object({
+                roles: z.array(
+                    z.object({ id: z.string(), name: z.string(), description: z.string() }),
+                ),
+            })
+            .parse(
+                await request(`/api/me/ways-to-hold?permission=${encodeURIComponent(permission)}`, {
+                    method: 'GET',
+                }),
+            ).roles;
+    },
+
     /** Every permission the platform defines. */
     async permissions(): Promise<readonly PermissionEntry[]> {
         return z

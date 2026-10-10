@@ -125,7 +125,23 @@ export function reportError(error: unknown): void {
     if (isExpectedRefusal(error)) {
         return;
     }
-    report(errorMessage(error));
+    report(describeFailure(error));
+}
+
+/**
+ * A failure's sentence, and what was being done when it came.
+ *
+ * "You do not have access to this." says nothing about which of a dozen requests
+ * was refused. The operation and the request id name it, and the id is on the
+ * BFF's log lines for that request.
+ */
+export function describeFailure(error: unknown): string {
+    const message = errorMessage(error);
+    if (!(error instanceof ApiFailure) || error.operation === '') {
+        return message;
+    }
+    const id = error.requestId === '' ? '' : `, request ${error.requestId.slice(0, 8)}`;
+    return `${message} (${error.operation}${id})`;
 }
 
 /**
@@ -143,5 +159,45 @@ export function reportQueryError(
     if (query.meta?.['quiet'] === true) {
         return;
     }
+    // A screen that was drawn and then refused a read is inconsistent, and its
+    // own panel says so. A banner line would repeat it beside half a screen.
+    if (error instanceof ApiFailure && error.status === 403) {
+        refuse({ operation: error.operation, requestId: error.requestId });
+        return;
+    }
     reportError(error);
+}
+
+/** A read the server refused on a screen the person was allowed to open. */
+export interface Refusal {
+    readonly operation: string;
+    readonly requestId: string;
+}
+
+let refusal: Refusal | undefined;
+const refusalListeners = new Set<() => void>();
+
+function refuse(found: Refusal): void {
+    if (refusal !== undefined) return;
+    refusal = found;
+    for (const listener of refusalListeners) listener();
+}
+
+/** The refusal the screen on show is waiting to explain, if there is one. */
+export function currentRefusal(): Refusal | undefined {
+    return refusal;
+}
+
+export function subscribeRefusal(listener: () => void): () => void {
+    refusalListeners.add(listener);
+    return () => {
+        refusalListeners.delete(listener);
+    };
+}
+
+/** Forgets the refusal, which is what leaving the screen or trying again does. */
+export function clearRefusal(): void {
+    if (refusal === undefined) return;
+    refusal = undefined;
+    for (const listener of refusalListeners) listener();
 }

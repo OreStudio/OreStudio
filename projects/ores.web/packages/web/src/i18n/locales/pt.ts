@@ -3015,8 +3015,37 @@ const pt: SourceCatalogue = {
         },
     },
 
+    permissionWords: {
+        accountsRead: 'ver as contas do seu inquilino',
+        accountsUpdate: 'alterar contas',
+        accountsReset: 'repor palavras-passe',
+        contactsRead: 'ler os contactos das pessoas',
+        contactsWrite: 'alterar os contactos das pessoas',
+        organisationRead: 'ver as pessoas das suas partes',
+        rolesRead: 'ler os papéis e as suas permissões',
+        rolesAssign: 'atribuir papéis às pessoas',
+        sessionsRead: 'ler as sessões das pessoas',
+    },
+
+    unavailable: {
+        title: 'Ainda não pode abrir {screen}',
+        need: 'Para a abrir, precisa de poder {need}.',
+        needMany: 'Para a abrir, precisa de poder fazer uma destas coisas: {need}.',
+        roleHas: 'O papel {role} permite-o.',
+        ask: 'Pedir {role}',
+        none: 'Nenhum papel que possa pedir o permite. Fale com o administrador do seu inquilino.',
+        checking: 'A procurar uma forma de obter acesso...',
+        failedTitle: 'Isto não funcionou, e devia ter funcionado',
+        failed: 'Tinha permissão para abrir isto, e o servidor recusou uma parte. Verificámos novamente o seu acesso. Nada do que fez causou isto.',
+        reference: 'Referência {id}',
+        retry: 'Tentar novamente',
+        home: 'Ir para o início',
+        askReason: 'Preciso de abrir {screen}.',
+    },
+
     common: {
         loading: 'A carregar...',
+        notAvailable: 'Esta página não está disponível para si.',
         clear: 'Limpar',
         refresh: 'Atualizar',
         refreshStale: 'Os dados mudaram no servidor. Atualize para os ver.',

@@ -38,7 +38,7 @@ A person authors an FX price feed, authors an IR curve feed, runs a collection a
 |------+-------+-------+-----+-------------|
 | [[id:AF124B71-1F0B-4899-8707-F85B81FD51C3][Scaffold the synthetic implementation story]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. |
 | [[id:0091F10A-AC68-4C12-8536-F72E371E4E61][Close M06, the synthetic TypeScript twin]] | DONE | 2026-10-09 | 2026-10-09 | Synthetic had no committed TypeScript protocol, so ores.web could not speak it. The twins are generated, the four operation surfaces are modelled so both sides generate, and the twin gate covers the component. |
-| [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] | BACKLOG | | | The BFF has no route for any synthetic subject, and the web reaches the bus only through the BFF. |
+| [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] | STARTED | 2026-10-10 | | The BFF has no route for any synthetic subject, and the web reaches the bus only through the BFF. |
 | [[id:2DCC5A20-11C5-4EDA-B8AA-386710F9F804][Build the yield curve process type screen]] | BACKLOG | | | Journey 4: the process types and their parameter definitions, as a record screen over the two catalogues. |
 | [[id:6E54699C-427C-471A-AA70-FCCCD27ABC85][Build the FX price feed screen]] | BACKLOG | | | Journey 1: the pair, the process, the GMM mixture and the sample paths, on the record-screen framework. |
 | [[id:1E325838-917A-4F74-B880-15DEF844CD90][Build the IR curve feed screen]] | BACKLOG | | | Journey 2: the identity, the short-rate process and its parameter values, the template ladder, and the shape and path previews. |

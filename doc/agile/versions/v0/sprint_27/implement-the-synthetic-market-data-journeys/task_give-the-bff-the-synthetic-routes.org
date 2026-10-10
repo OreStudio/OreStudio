@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :implement-the-synthetic-market-data-journeys:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/give-the-bff-the-synthetic-routes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The screens can read and write every synthetic entity the four journeys name, th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,13 +35,66 @@ The screens can read and write every synthetic entity the four journeys name, th
 
 * Acceptance
 
--
+- Every synthetic entity the four journeys name is readable through the BFF:
+  all rows of a resource, and one row by its key.
+- The FX feed, its mixture, the IR curve feed, its parameter values, its
+  ladder rows and the process types are writable. A save of one or many rows
+  is one atomic call, and a stale version is refused with 409.
+- The parameter definitions, the folders and the collections are read only,
+  and the route says why.
+- The previews, the feed start and stop, the folder start and stop, the
+  running set and the vintage validity have routes.
+- The history of every synthetic entity is served by the existing history
+  route.
+- Unit tests cover each route against canned replies, and each route answers
+  correctly against the running services.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+The synthetic CRUD is uniform: nine generated resources, each with list,
+put_many and delete subjects, one key field and one one-of filter. So the BFF
+holds one table of synthetic resources and serves generic routes over it,
+like the refdata record routes, rather than one route set per screen.
+
+- =bff/src/synthetic.ts= holds =SYNTHETIC_RECORDS=. A row names the URL key,
+  the entity type, the key field, the one-of filter, the reply field and the
+  subjects. A row with a write schema is writable. A row without one is read
+  only.
+- =GET /api/synthetic= returns the catalogue with the read, write and delete
+  permission of each resource.
+- =GET /api/synthetic/:resource= returns every row.
+  =GET /api/synthetic/:resource/key/:key= reads one row through the one-of
+  filter, not through =get=: a definition's =get= takes =parameter_name=,
+  which several process types share.
+- =PUT /api/synthetic/:resource= takes one or many changes and sends
+  =put_many=. The server checks every row's version and writes the set in one
+  statement, so one path serves a single save and a mixture reorder.
+- =DELETE /api/synthetic/:resource= takes one or many removals. One removal
+  sends =delete= with its version. Many send =delete_many=, which the server
+  accepts only without versions, so the BFF refuses a versioned batch.
+- The definitions are read only. The server reads and writes a definition by
+  =parameter_name= alone, so a write would reach whichever type's row it found
+  first. The gaps task fixes the key. Folders and collections are read only
+  because no journey step writes them.
+- The write schemas check structure only and satisfy the generated write
+  types. The table checks enforce the domain rules, so the BFF does not copy
+  the enumerations.
+- Operation routes: =GET /api/synthetic/running=,
+  =POST /api/synthetic/feeds/:id/start= and =/stop=,
+  =POST /api/synthetic/folders/:id/start= and =/stop=,
+  =GET /api/synthetic/vintages=, =POST /api/synthetic/simulate/fx=,
+  =POST /api/synthetic/simulate/ir= and =POST /api/synthetic/preview/ir-shape=.
+- =HISTORY_TYPES= takes the synthetic entity types, so =/api/history=
+  serves them through =synthetic.v1.history.get=.
+
+Out of scope: the refdata pickers the IR screen needs (tenors, payment
+frequencies, index conventions, instrument codes) and the market series
+coverage read. They are not synthetic entities, and each screen task adds the
+picker it needs.
 
 * Measurements
 

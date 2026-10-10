@@ -343,6 +343,48 @@ describe('The people list', () => {
         expect(html).toContain('href="/"');
     });
 
+    it('has a Parties column naming the parties each person works in', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(pageKey({ key: 'people' }, FIRST_PAGE), {
+                    rows: [daniel],
+                    total: 1,
+                });
+                client.setQueryData(['reporting-tree'], {
+                    unrooted: 0,
+                    parties: [
+                        {
+                            partyId: 'north',
+                            name: 'Acme North plc',
+                            shortCode: 'NORTH',
+                            parentPartyId: null,
+                        },
+                    ],
+                    nodes: [
+                        {
+                            accountId: daniel.id,
+                            username: daniel.username,
+                            fullName: daniel.fullName,
+                            jobTitle: '',
+                            accountType: 'user',
+                            imageId: null,
+                            reportsToAccountId: null,
+                            reportsOutsideScope: false,
+                            partyIds: ['north'],
+                            depth: 0,
+                            directReports: 0,
+                        },
+                    ],
+                });
+            },
+            '/people',
+            <Route path="/people" element={<PeoplePage mode="tenant-administration" />} />,
+        );
+
+        expect(html).toContain('>Parties<');
+        expect(html).toContain('Acme North plc');
+    });
+
     it("names the same list as the deployment's own accounts for a system administrator", () => {
         const html = render(
             (client) => {

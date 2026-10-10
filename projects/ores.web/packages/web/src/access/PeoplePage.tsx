@@ -30,6 +30,7 @@ import { Tag } from '../ui/Primitives.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { useHolds } from './holds.js';
+import { partyLabel } from '../membership/organisation.js';
 import { StaffOfMyParties } from '../membership/StaffOfMyParties.js';
 
 /** The address of one person's page. */
@@ -79,6 +80,21 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
      * column.
      */
     const mayReadRoles = holds('iam::roles:read');
+    // The parties each person works in come with the organisation read.
+    const tree = useQuery({
+        queryKey: ['reporting-tree'],
+        queryFn: () => api.reportingTree(),
+        enabled: !system,
+        meta: { quiet: true },
+    });
+    const partiesOf = (accountId: string): readonly string[] => {
+        const node = tree.data?.nodes.find((candidate) => candidate.accountId === accountId);
+        const named = new Map((tree.data?.parties ?? []).map((party) => [party.partyId, party]));
+        return (node?.partyIds ?? []).flatMap((id) => {
+            const party = named.get(id);
+            return party === undefined ? [] : [partyLabel(party)];
+        });
+    };
     // A member reads the people of their parties from the organisation, not the accounts.
     if (!system && !holds('iam::accounts:read') && holds('iam::organisation:read')) {
         return <StaffOfMyParties />;
@@ -141,6 +157,21 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
                     header: t('access.people.jobTitle'),
                     cell: (account) => account.jobTitle,
                 },
+                ...(system
+                    ? []
+                    : [
+                          {
+                              id: 'parties',
+                              header: t('access.people.partiesColumn'),
+                              cell: (account: Account) => (
+                                  <span className="flex flex-wrap gap-1">
+                                      {partiesOf(account.id).map((name) => (
+                                          <Tag key={name}>{name}</Tag>
+                                      ))}
+                                  </span>
+                              ),
+                          },
+                      ]),
                 ...(mayReadRoles
                     ? [
                           {

@@ -12,12 +12,12 @@
     "job_title": "Group Chief Executive Officer",
     "reports_to_username": null,
     "business_unit_code": null,
-    "street": null,
-    "city": null,
+    "street": "25 Old Broad Street",
+    "city": "London",
     "state": null,
-    "country_code": null,
-    "postal_code": null,
-    "phone": null,
+    "country_code": "GB",
+    "postal_code": "EC2N 1HQ",
+    "phone": "+44 20 7946 0000",
     "photo_key": "acme_staff_photo:male_age20_european_01"
   },
   {

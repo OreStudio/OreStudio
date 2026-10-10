@@ -40,7 +40,7 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B27572F6-212D-49DB-90D5-1A36A6C2A9A4][Scaffold story: Bring the QA validation runner to ores.web]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D][Prototype the QA validation runner]] | BACKLOG | | | Show the Tests tab and the runner, and confirm how results are written. |
+| [[id:658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D][Prototype the QA validation runner]] | STARTED | 2026-10-10 | | Show the Tests tab and the runner, and confirm how results are written. |
 
 * The arc
 

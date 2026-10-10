@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A tester pastes or drops a screenshot on a step. It is saved beside the scenario
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,19 @@ A tester pastes or drops a screenshot on a step. It is saved beside the scenario
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The Qt tool saved a screenshot as =<scenario>_step<N>_<yyyyMMdd_HHmmss>.png= beside the scenario doc and appended =[[file:name.png]]= to the step's note. This task does the same from the browser.
+
+- The BFF route is =POST /api/qa/scenarios/:id/steps/:step/images= with a JSON body of a media type and the bytes in base64, as the existing =/api/images= route takes an image. It answers the name the server gave the file.
+- =detectImage= in =scenarios/image.ts= decides what the bytes are from their signature: PNG, JPEG, GIF or WebP. A media type that the browser claims is not trusted, and the file extension follows from the signature. An SVG is refused, because it can carry script.
+- =saveImage= on the scenario store keeps the file beside the scenario doc. It checks that the scenario exists, that the file is not empty, that it is at most 8 MiB, that it is an image, and that the step number is one of the scenario's steps. The name is built from the doc's file name, made safe, the step number and the UTC time. A file that exists is never overwritten: the name gets a numeric suffix.
+- The route answers 415 for a media type or bytes that are not an image, 413 for an image over the limit and for a body past the route limit, and 400 for a bad step or body. Fastify's own 413 was an internal fault before, and =toHttpFailure= now answers it as 413.
+- In the browser a paste or a drop anywhere on the step card hands the files to the page. Text pasted into the note stays in the note. The page refuses a file that is not an image, or is over the limit, with a message, uploads the others one by one, and appends =[[file:name]]= on a new line of the note of the step the file was dropped on. Saving writes the note, and with it the link, into the doc.
+
+Decisions:
+
+- A step is named in the route by its number from one among all the steps of the doc, as the Qt tool numbered it.
+- The link is added to the note of the draft, and reaches the doc when the tester saves. An image that the tester uploads and then abandons stays as a file beside the doc, as it did in the Qt tool.
+- An upload while a save is in flight, or on a closed scenario, is ignored.
 
 * Measurements
 
@@ -61,6 +71,10 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The runner does not show the images. The BFF has no route that serves a saved image, so the tester sees the file name in the note and not a thumbnail. Serving them is a follow-up.
+- An image is 8 MiB at most, a quarter of the body limit of 12 MiB once it is in base64.
+- A throwaway harness, not committed, drove the real page in headless Chrome with real paste and drop events against a fake upload endpoint: 19 checks passed with no script errors. They covered pasted text staying in the note, a pasted and a dropped file that is not an image being refused with a message and not uploaded, a pasted and a dropped image being uploaded to the right step with the bytes as base64, the link on a new line after the tester's own note, an image the server refuses leaving no link, the links reaching the save, and a closed scenario taking no image.
 
 * Test Scenarios
 

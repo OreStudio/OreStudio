@@ -29,6 +29,7 @@ import { Crumbs } from '../refdata/shared.js';
 import { Notice } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { DocPanel } from './DocPanel.js';
+import { MAX_IMAGE_MEGABYTES, imageProblem } from './images.js';
 import { openRunner, outcomeOf, reduce, saveRequest, type Action, type Outcome } from './runner.js';
 import { ScenarioRunner } from './ScenarioRunner.js';
 import { QA_SCENARIOS_KEY } from './TestsQueue.js';
@@ -112,10 +113,13 @@ function Context({
 
 /** Holds the working copy of one loaded scenario, and saves it. */
 function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenario }): ReactNode {
+    const { t } = useTranslation();
     const client = useQueryClient();
     const [runner, dispatch] = useReducer(reduce, scenario, openRunner);
     const [outcome, setOutcome] = useState<Outcome | null>(null);
     const [confirmingRetest, setConfirmingRetest] = useState(false);
+    const [imageBusy, setImageBusy] = useState(false);
+    const [imageError, setImageError] = useState<string | null>(null);
 
     const save = useMutation({
         mutationFn: () => qa.record(id, saveRequest(runner)),
@@ -136,6 +140,35 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
         dispatch(action);
     };
 
+    // Each image is kept on the server, then its link goes into the note of the
+    // step it was dropped on, which may not be the step on show when the upload
+    // ends. The link reaches the doc when the tester saves.
+    const onImages = async (files: File[]): Promise<void> => {
+        if (save.isPending || runner.closed) return;
+        const step = runner.index;
+        setImageBusy(true);
+        setImageError(null);
+        try {
+            for (const file of files) {
+                const problem = imageProblem(file);
+                if (problem !== null) {
+                    setImageError(
+                        problem === 'too-large'
+                            ? t('development.runner.imageTooLarge', { limit: MAX_IMAGE_MEGABYTES })
+                            : t('development.runner.imageNotImage'),
+                    );
+                    continue;
+                }
+                const name = await qa.uploadImage(id, step + 1, file);
+                act({ type: 'attach', index: step, name });
+            }
+        } catch (error) {
+            setImageError(error instanceof Error ? error.message : String(error));
+        } finally {
+            setImageBusy(false);
+        }
+    };
+
     return (
         <ScenarioRunner
             scenario={scenario}
@@ -144,6 +177,9 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
             onSave={() => save.mutate()}
             saving={save.isPending}
             outcome={outcome}
+            onImages={(files) => void onImages(files)}
+            imageBusy={imageBusy}
+            imageError={imageError}
             confirmingRetest={confirmingRetest}
             onAskRetest={() => setConfirmingRetest(true)}
             onConfirmRetest={() => {

@@ -6128,10 +6128,15 @@ def _trade_type_common_dates(
 
     names: list[dict[str, Any]] = []
     shared: dict[str, dict[str, str]] = {}
-    for r in _parse_org_table_rows(section):
+    rows = [r for r in _parse_org_table_rows(section)
+            if (r.get("name") or "").strip()]
+    listed = [(r.get("name") or "").strip() for r in rows]
+    repeated = sorted({n for n in listed if listed.count(n) > 1})
+    if repeated:
+        raise ValueError(
+            f"{path.name}: duplicate common date(s): {', '.join(repeated)}")
+    for r in rows:
         name = (r.get("name") or "").strip()
-        if not name:
-            continue
         entity = (r.get("shared_entity") or "").strip()
         column = (r.get("shared_column") or "").strip()
         names.append({"name": name,
@@ -6155,21 +6160,17 @@ def _trade_type_common_dates(
                 "which is not keyed by the trade alone.")
         shared[name] = {"table": table, "column": column}
     vocabulary = [entry["name"] for entry in names]
-    repeated = sorted({n for n in vocabulary if vocabulary.count(n) > 1})
-    if repeated:
-        raise ValueError(
-            f"{path.name}: duplicate common date(s): {', '.join(repeated)}")
 
     views: list[dict[str, Any]] = []
     for instrument in instruments:
-        header_table, header_info = next(
-            (table, info) for table, info in entities_by_table.items()
-            if info["entity_singular"] == instrument["name"])
+        header_table, header_info = by_entity[instrument["name"]]
         header_doc = parse_org(header_info["org"].read_text(encoding="utf-8"))
         cascade = _section(header_doc.root, "Delete cascade")
         members = [(header_table, header_info)]
         for child in (cascade.children if cascade else []):
             table = (child.properties.get("table") or "").strip()
+            # A cascade may name a table no entity model describes; such a
+            # table has no columns to declare a common date on.
             if table in entities_by_table:
                 members.append((table, entities_by_table[table]))
 

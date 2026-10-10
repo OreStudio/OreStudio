@@ -181,7 +181,8 @@ models and edits no view. A name that no family owns names the entity and
 column that hold it for every family instead.
 
 A mapped column must sit in a table keyed by the trade alone. A date a family
-does not state reads as null.
+does not state reads as null, and so does a shared date whose table has no row
+for the trade, as a trade with no booking has no trade date.
 
 | name          | description                                              | shared_entity | shared_column |
 |---------------+----------------------------------------------------------+---------------+---------------|

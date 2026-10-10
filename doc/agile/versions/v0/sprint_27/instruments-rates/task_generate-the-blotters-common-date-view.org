@@ -97,7 +97,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR text says 8 new tests, the file has 6 | test_common_dates.py | Accept | The text was wrong: 14 passed was 6 new and 8 existing. The PR body is corrected. |
+| 2 | Loader refusals have no tests | test_common_dates.py | Accept | Added tests on a temporary tree for each refusal and for a generated view. |
+| 3 | Duplicate-name check ran after the shared lookups | org_loader.py | Accept | Moved before the lookups. |
+| 4 | Bare next() raises StopIteration | org_loader.py | Accept | Replaced by a lookup the catalogue already validated. |
+| 5 | Cascade tables skip silently | org_loader.py | Accept | Added a comment. |
+| 6 | Trailing blank line in the generated SQL | template | Decline | Cosmetic, and the drift check holds it. |
+| 7 | Tests pin the current vocabulary | test_common_dates.py | Decline | The pin makes a new family edit the test on purpose. |
+| 8 | A missing booking reads as null | trade_type_catalogue.org | Accept | The Common dates text says so. |
 
 * Result
 

@@ -12,6 +12,8 @@ import re
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
@@ -92,3 +94,90 @@ def test_a_leg_table_is_not_keyed_by_the_trade_alone():
         TRADING / "ores.trading.swaption_instrument.org"))
     assert not _keyed_by_trade_id_alone(_entity_columns(
         TRADING / "ores.trading.swap_leg.org"))
+
+
+def _entity(singular, plural, table, columns, cascade=()):
+    cols = "".join(
+        f"** {name}\n:PROPERTIES:\n:type: date\n"
+        + (":primary_key: true\n" if key else "")
+        + (f":common_date: {mapped}\n" if mapped else "")
+        + ":END:\n\nA column.\n\n"
+        for name, key, mapped in columns)
+    casc = "".join(
+        f"** {t}\n:PROPERTIES:\n:table: {t}\n:column: trade_id\n:END:\n\n"
+        for t in cascade)
+    return (
+        f":PROPERTIES:\n:ID: 00000000-0000-0000-0000-{abs(hash(singular)) % 10**12:012d}\n"
+        f":END:\n#+title: ores.testcomp.{singular}\n#+type: ores.codegen.entity\n"
+        f"#+component: testcomp\n#+entity_singular: {singular}\n"
+        f"#+entity_plural: {plural}\n\nA row.\n\n* Columns\n\n{cols}"
+        + (f"* Delete cascade\n\n{casc}" if cascade else "")
+        + f"* SQL\n** Flags\n:PROPERTIES:\n:tablename: {table}\n:END:\n")
+
+
+def _tree(tmp_path, header_cols, fact_cols, vocabulary=None, shared="| "):
+    modeling = tmp_path / "projects" / "ores.testcomp" / "modeling"
+    modeling.mkdir(parents=True)
+    (modeling / "ores.testcomp.header.org").write_text(
+        _entity("header", "headers", "ores_testcomp_headers_tbl", header_cols,
+                cascade=["ores_testcomp_facts_tbl"]), encoding="utf-8")
+    (modeling / "ores.testcomp.fact.org").write_text(
+        _entity("fact", "facts", "ores_testcomp_facts_tbl", fact_cols),
+        encoding="utf-8")
+    vocabulary = vocabulary or ["start_date", "expiry_date"]
+    rows = "\n".join(f"| {n} | A date. | | |" for n in vocabulary)
+    (modeling / "ores.testcomp.trade_type_catalogue.org").write_text(
+        "#+title: ores.testcomp.trade_type_catalogue\n"
+        "#+type: ores.codegen.trade_type_catalogue\n#+component: testcomp\n\n"
+        "* Trade types\n\n"
+        "| code | description | product_type | has_options | has_extension | instrument |\n"
+        "|------+-------------+--------------+-------------+---------------+------------|\n"
+        "| Swap | x | swap | false | false | header |\n\n"
+        "* Common dates\n\n| name | description | shared_entity | shared_column |\n"
+        "|------+-------------+---------------+---------------|\n"
+        f"{rows}\n", encoding="utf-8")
+    return modeling / "ores.testcomp.trade_type_catalogue.org"
+
+
+KEY = ("trade_id", True, None)
+
+
+def test_a_family_that_declares_its_dates_gets_a_view(tmp_path):
+    path = _tree(tmp_path,
+                 [KEY, ("begins", False, "start_date")],
+                 [KEY, ("lapses", False, "expiry_date")])
+
+    dates = load_org_trade_type_catalogue_model(path)[
+        "trade_type_catalogue"]["common_dates"]
+
+    assert [v["view"] for v in dates["views"]] == [
+        "ores_testcomp_headers_common_dates_vw"]
+    columns = {c["name"]: c["expr"] for c in dates["views"][0]["columns"]}
+    assert columns == {"start_date": "h.begins", "expiry_date": "j1.lapses"}
+
+
+@pytest.mark.parametrize("header,fact,vocabulary,message", [
+    ([KEY, ("a", False, "birth_date")], [KEY], None, "does not list"),
+    ([KEY, ("a", False, "start_date")], [KEY, ("b", False, "start_date")],
+     None, "stated by both"),
+    ([KEY], [KEY, ("trade_no", True, None), ("b", False, "start_date")],
+     None, "not keyed by the trade alone"),
+    ([KEY], [KEY], ["start_date", "start_date"], "duplicate common date"),
+])
+def test_the_loader_refuses_a_mapping_it_cannot_honour(
+        tmp_path, header, fact, vocabulary, message):
+    path = _tree(tmp_path, header, fact, vocabulary)
+
+    with pytest.raises(ValueError, match=message):
+        load_org_trade_type_catalogue_model(path)
+
+
+def test_the_loader_refuses_a_shared_date_the_entity_does_not_declare(tmp_path):
+    path = _tree(tmp_path, [KEY], [KEY])
+    text = path.read_text(encoding="utf-8")
+    path.write_text(text.replace(
+        "| start_date | A date. | | |",
+        "| start_date | A date. | fact | missing_col |"), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="does not declare"):
+        load_org_trade_type_catalogue_model(path)

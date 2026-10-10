@@ -8,7 +8,7 @@
 #+filetags: :show-a-curve-evolving-in-ores-web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-watch-a-curve-evolve-screen
-#+pr:
+#+pr: 3095
 #+blocked_on: Give the BFF the curve read routes
 #+blocked_since:
 #+created: 2026-10-10
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3095][#3095]] | [web] Build the watch a curve or surface evolve screen |
 
 * Review
 

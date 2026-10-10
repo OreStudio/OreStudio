@@ -26,6 +26,7 @@ set(files
     "app/commands/marketdata/market_series_asset_class_commands.cpp"
     "app/commands/marketdata/market_series_commands.cpp"
     "app/commands/marketdata/observation_lineage_commands.cpp"
+    "app/commands/marketdata/oresmd_index_commands.cpp"
     "app/commands/marketdata/series_classification_rule_commands.cpp"
 )
 
@@ -37,5 +38,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/market_series_asset_class_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/market_series_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/observation_lineage_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/oresmd_index_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/series_classification_rule_commands.hpp"
 )

@@ -20,9 +20,12 @@
 #include "datum_catalogue.hpp"
 #include "ores.marketdata.core/datum/ore_index_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <map>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -308,4 +311,41 @@ TEST_CASE("the_fixing_uri_reader_refuses_a_uri_that_breaks_the_contract", tags) 
         INFO("uri: " << uri);
         CHECK_FALSE(oresmd_uri_codec::read_index(uri));
     }
+}
+
+TEST_CASE("every_committed_index_map_row_round_trips_through_the_codecs", tags) {
+    // tools/ore_conventions/oresmd_index_map.tsv is generated once from the
+    // codecs and committed, so the seed generator needs no C++ binding. That
+    // makes it data that can rot under a codec change: this is the guard. Every
+    // committed row must be a name the index codec reads and the URI it writes
+    // back from it, or the fixed table has drifted from the codec.
+    const auto path = ores::testing::project_root::resolve(
+        "tools/ore_conventions/oresmd_index_map.tsv");
+    const auto content = ores::platform::filesystem::file::read_content(path);
+    std::istringstream stream(content);
+    std::string line;
+    std::string previous;
+    std::size_t checked = 0;
+    while (std::getline(stream, line)) {
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
+        if (line.empty())
+            continue;
+        const auto tab = line.find('\t');
+        REQUIRE(tab != std::string::npos);
+        const auto name = line.substr(0, tab);
+        const auto uri = line.substr(tab + 1);
+        INFO("name: " << name << ", uri: " << uri);
+        // Sorted, one row per name: a hand edit that reordered or duplicated a
+        // row would still round-trip, so the file's shape is checked too.
+        CHECK(name > previous);
+        previous = name;
+        const auto index = ore_index_codec::read(name);
+        REQUIRE(index);
+        const auto written = oresmd_uri_codec::write_index(*index);
+        REQUIRE(written);
+        CHECK(*written == uri);
+        ++checked;
+    }
+    CHECK(checked > 0);
 }

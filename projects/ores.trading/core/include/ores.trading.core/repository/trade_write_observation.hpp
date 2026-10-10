@@ -55,6 +55,7 @@
 #include "ores.trading.core/repository/fx_variance_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_entity.hpp"
+#include "ores.trading.core/repository/rate_instrument_entity.hpp"
 #include "ores.trading.core/repository/scripted_instrument_entity.hpp"
 #include "ores.trading.core/repository/swaption_instrument_entity.hpp"
 #include "ores.trading.core/repository/vanilla_swap_instrument_entity.hpp"
@@ -420,6 +421,22 @@ struct entity_write_observer<ores::trading::repository::knock_out_swap_instrumen
     static constexpr bool observes = true;
     static void observe(context ctx,
                         const ores::trading::repository::knock_out_swap_instrument_entity& entity,
+                        ores::logging::logger_t& lg) {
+        ores::trading::service::refresh_trade_economic_digest(
+            ctx, entity.trade_id.value(), entity.change_reason_code, lg);
+    }
+};
+
+/*
+ * The rates family header holds the dates and the party of every rates trade,
+ * so a change to it is a change to the agreement even when no product fact
+ * table is written.
+ */
+template <>
+struct entity_write_observer<ores::trading::repository::rate_instrument_entity> {
+    static constexpr bool observes = true;
+    static void observe(context ctx,
+                        const ores::trading::repository::rate_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, entity.trade_id.value(), entity.change_reason_code, lg);

@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/give-every-point-a-provenance-annex
-#+pr:
+#+pr: 3054
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3054][#3054]] | [marketdata] Return a point's provenance with the snapshot |
 
 * Review
 

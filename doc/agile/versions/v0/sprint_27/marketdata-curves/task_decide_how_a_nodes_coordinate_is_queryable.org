@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/decide-how-a-nodes-coordinate-is-queryable
-#+pr:
+#+pr: 3083
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3083][#3083]] | [agile] Decide against coordinate columns and close the curve story |
 
 * Review
 

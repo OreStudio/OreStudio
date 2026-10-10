@@ -8,7 +8,7 @@
 #+filetags: :make_the_services_screen_tell_the_truth:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-the-installation-figures-on-the-system-home
-#+pr:
+#+pr: 3055
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3055][#3055]] | [web] Show the installation figures on the system home |
 
 * Review
 

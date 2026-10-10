@@ -33,10 +33,10 @@
  * than polling: the ages in the last column move when the person asks them to.
  */
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { ServiceRosterRow } from '@ores/wire-protocol/browser';
-import { api } from '../api/client.js';
+import { api, type LogsRange } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
 import { Button, Notice, PageHeader, Tag } from '../ui/Primitives.js';
@@ -51,10 +51,16 @@ import {
     sameVersion,
     type ScreenGap,
 } from './OperationsParts.js';
+import {
+    COMPUTE_RUNNER,
+    DEFAULT_HEALTH_RANGE,
+    InstallationFigures,
+    SERVICES_QUERY_KEY,
+} from './InstallationHealth.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 
-/** The compute service's runner, which the grid screen owns; the wire name is the registry's. */
-const COMPUTE_RUNNER = 'ores.compute.wrapper';
+/** The ranges the error and warning counts can be read over, as the logs screen offers them. */
+const HEALTH_RANGES: readonly LogsRange[] = ['15m', '1h', '6h', '24h'];
 
 /** The journeys that carry on from this one, in the order its page names them. */
 const JOURNEYS: readonly JourneyId[] = [
@@ -64,9 +70,6 @@ const JOURNEYS: readonly JourneyId[] = [
     'C3D59907-9D6A-448C-9A61-9E750755BBFB',
     '22AC8DD8-A440-4330-9992-47A5E9985473',
 ];
-
-/** Where the roster read's answer is cached, so a test can seed it. */
-export const SERVICES_QUERY_KEY = ['operations-services'] as const;
 
 /** The instant a read answered, as the wall clock a person reads, in UTC. */
 export function readTime(at: number): string {
@@ -170,6 +173,7 @@ function InstanceCount({
 
 export function ServicesPage(): ReactNode {
     const { t } = useTranslation();
+    const [range, setRange] = useState<LogsRange>(DEFAULT_HEALTH_RANGE);
     const roster = useQuery({ queryKey: SERVICES_QUERY_KEY, queryFn: api.services });
 
     if (roster.isPending) {
@@ -223,6 +227,27 @@ export function ServicesPage(): ReactNode {
                     </div>
                 }
             />
+
+            <section className="card space-y-4 p-6">
+                <header className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h2 className="text-lg font-medium">{t('operations.overview.title')}</h2>
+                    <label className="flex items-center gap-2 text-xs text-ink-faint">
+                        {t('operations.logs.range.label')}
+                        <select
+                            className="rounded border border-line bg-surface px-2 py-1 text-ink"
+                            value={range}
+                            onChange={(event) => setRange(event.target.value as LogsRange)}
+                        >
+                            {HEALTH_RANGES.map((option) => (
+                                <option key={option} value={option}>
+                                    {t(`operations.logs.range.${option}`)}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                </header>
+                <InstallationFigures range={range} />
+            </section>
 
             {skew !== undefined && (
                 <Notice tone="warn">

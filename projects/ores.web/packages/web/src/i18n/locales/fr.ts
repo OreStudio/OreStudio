@@ -1056,6 +1056,21 @@ const fr: SourceCatalogue = {
                 'L’installation telle qu’elle tourne : ce qui la compose, ce qu’elle stocke et ce qu’elle a fait.',
             notBuilt: 'Pas encore construit',
         },
+        overview: {
+            title: 'L’installation en un coup d’œil',
+            unreadable: 'Les services n’ont pas pu être lus.',
+            logsUnread: 'N’a pas pu être lu',
+            running: 'Services en marche',
+            lost: 'Perdus',
+            missing: 'Absents',
+            errors: 'Erreurs, {range}',
+            warnings: 'Avertissements, {range}',
+            release: 'Version la plus récente',
+            behind: {
+                one: '{count} service sur une version plus ancienne',
+                other: '{count} services sur une version plus ancienne',
+            },
+        },
         screens: {
             versions: 'Versions et base de données',
             versionsBody:

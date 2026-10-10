@@ -40,7 +40,7 @@ The Operations services screen shows the web service running, and an overview st
 |------+-------+-------+-----+-------------|
 | [[id:F1F0125D-4687-4028-95B7-1D2F5443EA80][Scaffold story: Make the services screen tell the truth about the installation]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:C3BB4669-F21F-4B46-B835-704D3F41147B][Report the web service's heartbeat]] | DONE | 2026-10-10 | 2026-10-10 | Initial task for: Make the services screen tell the truth about the installation |
-| [[id:4D5ECB2D-7156-49E6-805A-3BE52327DA33][Summarise the installation on the Operations services screen]] | BACKLOG | | | Open the services screen with an overview: services running of expected, lost, missing, errors and warnings in a range, and version skew. Built from the roster and the logs total, with no new backend. |
+| [[id:4D5ECB2D-7156-49E6-805A-3BE52327DA33][Summarise the installation on the Operations services screen]] | DONE | 2026-10-10 | 2026-10-10 | Open the services screen with an overview: services running of expected, lost, missing, errors and warnings in a range, and version skew. Built from the roster and the logs total, with no new backend. |
 | [[id:3A3358DE-0E21-4B28-82B7-999AA875EE1B][Show the installation figures on the system administrator's home]] | BACKLOG | | | Add the installation figures to the system home's health block, from the same code as the services overview, so a system administrator sees services and errors without opening Operations. |
 
 * Decisions

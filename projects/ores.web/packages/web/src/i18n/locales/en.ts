@@ -1045,6 +1045,21 @@ export const en: SourceCatalogue = {
                 'The installation as it is running: what it is made of, what it stores, and what it did.',
             notBuilt: 'Not built yet',
         },
+        overview: {
+            title: 'The installation at a glance',
+            unreadable: 'The services could not be read.',
+            logsUnread: 'Could not be read',
+            running: 'Services running',
+            lost: 'Lost',
+            missing: 'Missing',
+            errors: 'Errors, {range}',
+            warnings: 'Warnings, {range}',
+            release: 'Newest release',
+            behind: {
+                one: '{count} service on an older release',
+                other: '{count} services on an older release',
+            },
+        },
         screens: {
             versions: 'Versions and the database',
             versionsBody:

@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/serve-the-counterparty-routes-from-the-bff
-#+pr:
+#+pr: 3024
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3024][#3024]] | [web] Serve the counterparty routes from the BFF |
 
 * Review
 

@@ -8,12 +8,12 @@
 #+filetags: :publish_the_currency_groups_with_acme:sprint_27:v0:
 #+owner: marco
 #+branch: feature/publish-the-currency-group-members-from-dq
-#+pr:
+#+pr: 3037
 #+blocked_on: Publish the currency groups from DQ
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3BE72A38-774F-4DB9-A1BA-E026EAD27EF8][Publish the currency groups with Acme]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3BE72A38-774F-4DB9-A1BA-E026EAD27EF8][Publish the currency groups with Acme]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -74,12 +74,17 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3037][#3037]] | [refdata] Publish the currency group members from DQ |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Confirm the artefact create script has no drift | dq_currency_currency_groups_artefact_create.sql | No change | Codegen wrote the file from the junction model flag. |
+| 2 | Insert and update counts depend on version 1 for a new row | refdata_publish_from_dq_create.sql | No change | Same as the sibling publishers. |
+| 3 | replace_all closes rows not in the dataset | refdata_publish_from_dq_create.sql | No change | Same as the sibling publishers. |
+| 4 | Check that display order 72 is unique | dq_artefact_types_populate.sql | Checked | The highest earlier order was 70, and 71 belongs to the groups type. |
 
 * Result
+
+The group members now have a DQ dataset, refdata.currency_currency_groups, with an artefact table, an artefact type and a publish function. It holds 37 memberships across the six groups. The dataset depends on refdata.currency_groups and iso.currencies. A publish of both datasets into a tenant inserted 6 groups and 37 members, and the test transaction was rolled back.

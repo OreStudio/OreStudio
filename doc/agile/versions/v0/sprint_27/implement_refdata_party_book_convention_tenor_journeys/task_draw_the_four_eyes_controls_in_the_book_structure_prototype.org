@@ -84,7 +84,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A new book cannot be approved by Finance, Market Risk or Operations | =prototype.js= | Accept | The opening chain request now shows each of the four parts its slice, with a note that each approves its own part. |
+| 2 | One approval applies the whole request | =prototype.js= | Accept | Each part's answer is kept. The request applies only when every required part has approved, and the waiting screen shows who has answered. The controller answers first for a new book. |
+| 3 | The comment is never cleared | =prototype.js= | Accept | It clears after each answer, on raising and on withdrawing. |
+| 4 | applied is not reset | =prototype.js= | Accept | It resets when a request is raised and when an ungated write is made. |
+| 5 | The checks always pass | =prototype.js= | Accept | ?check=flat and ?check=ancestry make a check fail. A failing check blocks Approve and leaves Decline. |
+| 6 | The maker is fixed and decides nothing | =prototype.js= | Accept | ?maker= sets who raised the request. A maker who is also a decider still cannot decide their own request. |
+| 7 | Choosing another portfolio drops a pending portfolio | =prototype.js= | Accept | The pending portfolio is kept. |
+| 8 | The badge names the opening chain or the closing process | =prototype.js= | Accept | The badge reads needs the opening chain, or needs Finance (closing). The waiting table names the resolved parts. |
+| 9 | State that ?actor= works only on decide | =prototype.js, index.html= | Accept | The header comment and the legend say so. |
 
 * Result
 

@@ -34,7 +34,9 @@
     ?version=2                            the history version under review
     ?state=waiting|decide|declined        a raised request waiting, the checker's
                                           decision screen, and a declined request
-    ?actor=h.desk|c.control|f.ledger|m.risk|o.ops   who acts on the decision screen
+    ?actor=h.desk|c.control|f.ledger|m.risk|o.ops   who answers on the decision screen (decide only)
+    ?maker=h.desk|o.ops|...               who raised the request; the maker cannot decide it
+    ?check=flat|ancestry                  make a check on the decision screen fail
     ?moveto=RATES.USD                     move the open book under another portfolio
     ?newpf=Credit                         a new portfolio created in the same walk
 

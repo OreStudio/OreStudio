@@ -37,7 +37,10 @@
  * Four-eyes states, from the book controls note:
  *   ?state=waiting|decide|declined        a raised request waiting, the checker's
  *                                          decision screen, and a declined request
- *   ?actor=h.desk|c.control|f.ledger|m.risk|o.ops   who is acting on the decision screen
+ *   ?actor=h.desk|c.control|f.ledger|m.risk|o.ops   who answers on the decision screen (decide only)
+ *   ?maker=h.desk|o.ops|...               who raised the request. A maker who is also a
+ *                                          decider still cannot decide their own request
+ *   ?check=flat|ancestry                  make a check on the decision screen fail
  *   ?moveto=RATES.USD                     move the open book under another portfolio
  *   ?newpf=Credit                         a new portfolio created in the same walk
  * The bar mirrors the same states as buttons, plus the two refusals. */
@@ -314,6 +317,9 @@
         moveTo: null,
         newPf: null,
         actor: 'o.ops',
+        maker: 'h.desk',
+        check: '',
+        answers: {},
         applied: false,
         comment: ''
     };
@@ -385,6 +391,8 @@
         S.moveTo = null;
         S.newPf = null;
         S.applied = false;
+        S.answers = {};
+        S.comment = '';
         var b = storedBook();
         var p = pf(S.portfolio) || PORTFOLIOS[0];
         if (b) {
@@ -446,6 +454,9 @@
 
         var actorParam = p.get('actor');
         if (actorParam !== null && ACTORS.some(function (a) { return a.id === actorParam; })) S.actor = actorParam;
+        var makerParam = p.get('maker');
+        if (makerParam !== null && ACTORS.some(function (a) { return a.id === makerParam; })) S.maker = makerParam;
+        if (['flat', 'ancestry'].indexOf(p.get('check')) >= 0) S.check = p.get('check');
         var moveParam = p.get('moveto');
         if (moveParam !== null && pf(moveParam) && !S.isNew && S.book && book(S.book).portfolio !== moveParam) S.moveTo = moveParam;
         if (p.get('newpf') !== null) S.newPf = { name: p.get('newpf') || 'New portfolio', parent: S.portfolio };
@@ -974,6 +985,12 @@
         return Object.keys(seen);
     }
 
+    function deciderLabel(decider) {
+        if (decider === 'Opening chain') return 'needs the opening chain';
+        if (decider === 'Closing process') return 'needs Finance (closing)';
+        return 'needs ' + decider;
+    }
+
     function actorOf(id) {
         return ACTORS.filter(function (a) { return a.id === id; })[0];
     }
@@ -993,7 +1010,7 @@
                     '<span class="arrow">\u2192</span>' +
                     '<span class="now">' + (c.to === null ? '\u2014' : esc(c.to)) + '</span></div>';
                 var gate = c.decider ?
-                    badge('needs ' + c.decider, 'warn') : badge('no approval', 'ok');
+                    badge(deciderLabel(c.decider), 'warn') : badge('no approval', 'ok');
                 return '<li><div class="what">' + esc(c.what) + ' ' + gate + '</div><div class="who">' + esc(c.who) + '</div>' +
                     fromto + '<div class="sub">' + esc(c.sub) + '</div></li>';
             }).join('') + '</ul>';
@@ -1055,15 +1072,32 @@
         return parts;
     }
 
+    /* One answer per required part. A new book needs the controller first, and
+     * only then Finance, Market Risk and Operations, each for its own part. */
+    function answerOf(part) {
+        return S.answers[part] || null;
+    }
+
+    function canAnswerNow(part, parts) {
+        if (parts.indexOf('Controller') >= 0 && part !== 'Controller') return answerOf('Controller') === 'approved';
+        return true;
+    }
+
+    function allApproved(parts) {
+        return parts.length > 0 && parts.every(function (p) { return answerOf(p) === 'approved'; });
+    }
+
     function waitingScreen() {
         var changes = changesList();
         var parts = requiredParts(changes);
-        var maker = actorOf('h.desk');
+        var maker = actorOf(S.maker);
         var rows = parts.map(function (part) {
             var who = actorForPart(part);
             var holds = who && !who.acme ? ' ' + badge('no account in Acme yet', 'bad') : '';
-            return '<tr><td>' + esc(part) + '</td><td>' + esc(who ? who.name : '\u2014') + holds + '</td>' +
-                '<td>' + badge('waiting', 'warn') + '</td></tr>';
+            var ans = answerOf(part);
+            var state = ans === 'approved' ? badge('approved', 'ok') :
+                !canAnswerNow(part, parts) ? badge('after the controller', 'info') : badge('waiting', 'warn');
+            return '<tr><td>' + esc(part) + '</td><td>' + esc(who ? who.name : '\u2014') + holds + '</td><td>' + state + '</td></tr>';
         }).join('');
         return '<div class="outcome"><div class="mark ok">\u23f3</div>' +
             '<h2>The request is raised</h2>' +
@@ -1082,11 +1116,12 @@
         var changes = changesList();
         var parts = requiredParts(changes);
         var actor = actorOf(S.actor) || ACTORS[0];
-        var maker = actorOf('h.desk');
+        var maker = actorOf(S.maker);
         var isMaker = actor.id === maker.id;
+        var owns = parts.indexOf(actor.part) >= 0;
         var mine = changes.filter(function (c) {
             if (!c.decider) return false;
-            if (c.decider === 'Opening chain') return actor.part === 'Controller';
+            if (c.decider === 'Opening chain') return owns;
             if (c.decider === 'Closing process') return actor.part === 'Finance';
             return c.decider === actor.part;
         });
@@ -1096,22 +1131,34 @@
         }).join('');
         var delta = mine.length === 0 ?
             '<div class="notice info">Nothing in this request is for ' + esc(actor.part) + '. ' +
-            (parts.indexOf(actor.part) < 0 ? 'This part decides none of its changes.' : 'It waits for an earlier part.') + '</div>' :
+            (owns ? '' : 'This part decides none of its changes.') + '</div>' :
             '<ul class="changes">' + mine.map(function (c) {
                 var fromto = c.from === null && c.to === null ? '' :
                     '<div class="fromto"><span class="was">' + (c.from === null ? '\u2014' : esc(c.from)) + '</span>' +
                     '<span class="arrow">\u2192</span><span class="now">' + (c.to === null ? '\u2014' : esc(c.to)) + '</span></div>';
-                return '<li><div class="what">' + esc(c.what) + '</div><div class="who">' + esc(c.who) + '</div>' + fromto + '</li>';
+                var note = c.decider === 'Opening chain' ? '<div class="sub">' + esc(actor.part) + ' approves its own part of the new book.</div>' : '';
+                return '<li><div class="what">' + esc(c.what) + '</div><div class="who">' + esc(c.who) + '</div>' + fromto + note + '</li>';
             }).join('') + '</ul>';
+        var closing = changes.some(function (c) { return c.decider === 'Closing process'; });
+        var flatFails = closing && S.check === 'flat';
+        var ancestryFails = S.check === 'ancestry';
         var checks = '<ul class="changes">' +
             '<li><div class="what">' + badge(isMaker ? 'fail' : 'pass', isMaker ? 'bad' : 'ok') + ' The maker is not the decider</div><div class="who">' +
             esc(maker.name) + ' asked; ' + esc(actor.name) + ' is answering.</div></li>' +
-            (changes.some(function (c) { return c.decider === 'Closing process'; }) ?
-                '<li><div class="what">' + badge('pass', 'ok') + ' The book is flat</div><div class="who">0 open trades against ' + esc(S.book) + '.</div></li>' : '') +
-            (S.fields.owner_unit_id ? '<li><div class="what">' + badge('pass', 'ok') + ' The owner unit is in the portfolio ancestry chain</div><div class="who">' + esc(S.fields.owner_unit_id) + '</div></li>' : '') +
+            (closing ? '<li><div class="what">' + badge(flatFails ? 'fail' : 'pass', flatFails ? 'bad' : 'ok') + ' The book is flat</div><div class="who">' +
+                (flatFails ? '3 open trades against ' : '0 open trades against ') + esc(S.book) + '.</div></li>' : '') +
+            (S.fields.owner_unit_id ? '<li><div class="what">' + badge(ancestryFails ? 'fail' : 'pass', ancestryFails ? 'bad' : 'ok') +
+                ' The owner unit is in the portfolio ancestry chain</div><div class="who">' + esc(S.fields.owner_unit_id) + '</div></li>' : '') +
             '</ul>';
-        var blocked = isMaker || mine.length === 0 || S.comment.trim() === '';
-        var why = isMaker ? '<div class="notice error"><span class="title">You asked for this</span>A different person must decide it.</div>' : '';
+        var already = answerOf(actor.part);
+        var early = owns && !canAnswerNow(actor.part, parts);
+        var checkFails = flatFails || ancestryFails;
+        var declineBlocked = isMaker || mine.length === 0 || S.comment.trim() === '' || already !== null || early;
+        var blocked = declineBlocked || checkFails;
+        var why = isMaker ? '<div class="notice error"><span class="title">You asked for this</span>A different person must decide it.</div>' :
+            already ? '<div class="notice info">' + esc(actor.part) + ' has already ' + esc(already) + ' this request.</div>' :
+            early ? '<div class="notice info">The controller answers first. ' + esc(actor.part) + ' answers after.</div>' :
+            checkFails ? '<div class="notice error"><span class="title">A check failed</span>This request cannot be approved while a check fails. Decline it, or have the maker fix the cause.</div>' : '';
         return '<div class="panel-soft"><label class="field" style="margin-bottom:0"><span class="lbl">Acting as</span>' +
             '<select data-actor="1">' + options + '</select></label></div>' +
             '<div class="panel"><h2>Request ' + REQUEST_ID + ' \u00b7 raised by ' + esc(maker.name) + '</h2>' +
@@ -1119,17 +1166,17 @@
             '<div class="panel"><h2>Checks</h2>' + checks + '</div>' + why +
             '<div class="panel-soft"><label class="field"><span class="lbl">Comment \u00b7 required</span>' +
             '<input data-comment="1" placeholder="Why you approve or decline" value="' + esc(S.comment) + '"></label>' +
-            '<div class="stepfoot"><button type="button" class="btn ghost" data-act="decline"' + (blocked ? ' disabled' : '') + '>Decline</button>' +
+            '<div class="stepfoot"><button type="button" class="btn ghost" data-act="decline"' + (declineBlocked ? ' disabled' : '') + '>Decline</button>' +
             '<button type="button" class="btn primary ml-auto" data-act="approve"' + (blocked ? ' disabled' : '') + '>Approve</button></div></div>';
     }
 
     function declinedScreen() {
         var actor = actorOf(S.actor) || ACTORS[0];
         var b = storedBook();
+        var note = S.declinedComment ? ': \u201c' + esc(S.declinedComment) + '\u201d' : '';
         return '<div class="outcome"><div class="mark bad">\u2715</div>' +
             '<h2>The request was declined</h2>' +
-            '<p>' + esc(actor.name) + ' (' + esc(actor.part) + ') declined <span class="mono">' + REQUEST_ID + '</span>' +
-            (S.comment.trim() ? ': \u201c' + esc(S.comment) + '\u201d' : '') + '.</p>' +
+            '<p>' + esc(actor.name) + ' (' + esc(actor.part) + ') declined <span class="mono">' + REQUEST_ID + '</span>' + note + '.</p>' +
             '<table class="difftable"><tbody>' +
             '<tr><td>What changed</td><td>Nothing. ' + (b ? esc(b.name) + ' stays at version ' + historyFor(b).length + '.' : 'No book is created.') + '</td></tr>' +
             '<tr><td>What the maker can do</td><td>Change the request and raise it again, or leave it. The declined request stays on record.</td></tr>' +
@@ -1459,7 +1506,9 @@
         } else if (!S.isNew && b) {
             S.moveTo = null;
         } else if (S.isNew) {
+            var keepPf = S.newPf;
             resetWorking();
+            S.newPf = keepPf;
         }
     }
 
@@ -1517,12 +1566,21 @@
             if (el.checked && i < 0) S.rights.push({ account: account, portfolio: S.portfolio, right: right });
             else if (!el.checked && i >= 0) S.rights.splice(i, 1);
         } else if (act === 'approve') {
-            if (!el.disabled) { S.applied = true; go('outcome'); }
+            if (!el.disabled) {
+                var parts = requiredParts(changesList());
+                var part = (actorOf(S.actor) || ACTORS[0]).part;
+                S.answers[part] = 'approved';
+                S.comment = '';
+                if (allApproved(parts)) { S.applied = true; go('outcome'); }
+                else { go('waiting'); }
+            }
         } else if (act === 'decline') {
-            if (!el.disabled) go('declined');
+            if (!el.disabled) { S.declinedComment = S.comment; S.comment = ''; go('declined'); }
         } else if (act === 'opendecide') {
             go('decide');
         } else if (act === 'withdraw') {
+            S.answers = {};
+            S.comment = '';
             go('review');
         } else if (act === 'version') {
             S.version = parseInt(el.getAttribute('data-v'), 10);
@@ -1547,8 +1605,8 @@
                 if (n.to === 'write') {
                     var r = refusalOf();
                     if (r) { S.fail = r.kind; go('refused'); }
-                    else if (gatedChanges(changesList()).length > 0) { S.fail = null; S.actor = actorForPart(requiredParts(changesList())[0]).id; go('waiting'); }
-                    else { S.fail = null; go('outcome'); }
+                    else if (gatedChanges(changesList()).length > 0) { S.fail = null; S.applied = false; S.answers = {}; S.comment = ''; S.actor = actorForPart(requiredParts(changesList())[0]).id; go('waiting'); }
+                    else { S.fail = null; S.applied = false; go('outcome'); }
                 } else {
                     go(n.to);
                 }

@@ -219,6 +219,12 @@ public:
     std::vector<domain::observation_lineage> read_latest_for_points(
         context ctx, const boost::uuids::uuid& series_id, const std::vector<point_key>& points);
 
+    /**
+     * @brief The current annex rows of the series that name a manual point.
+     */
+    std::vector<domain::observation_lineage>
+    read_manual_for_series(context ctx, const boost::uuids::uuid& series_id);
+
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or

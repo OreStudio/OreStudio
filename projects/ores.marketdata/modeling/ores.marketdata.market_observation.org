@@ -725,7 +725,11 @@ void market_observation_repository::write_manual_point(
     obs.oresmd_uri = oresmd_uri;
     obs.value = value;
     obs.source = "manual.operator";
-    insert(txn_ctx, obs);
+    // A manual point is written past the insert's guard, which drops an automatic
+    // write to a coordinate an operator owns, and this write is the operator's.
+    series_shape_check::check(txn_ctx, std::vector<domain::market_observation>{obs});
+    execute_write_query(
+        txn_ctx, market_observation_mapper::map(obs), lg(), "Inserting manual market observation.");
 
     domain::observation_lineage lineage;
     // An annex row already at this natural key -- a derivation's or an earlier
@@ -809,16 +813,34 @@ in the writer rather than market data. The check runs before the row is
 written, in both the single and the batch insert, so a refused observation
 never reaches the store.
 
+The same two slots apply the manual-point precedence rule. An insert whose point
+lands on a coordinate an operator owns at the same instant is dropped, because
+replacing the manual row would leave the annex naming a value the row no longer
+holds. =manual_point_guard= states the rule. The feed, the import and the
+republish all write through these inserts, and only =write_manual_point= writes
+a manual point, by a path of its own.
+
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.marketdata.core/repository/manual_point_guard.hpp"
 #include "ores.marketdata.core/repository/series_shape_check.hpp"
 #+end_src
 
 #+begin_src cpp :name check_shape :implements A1F0C7D2-4E63-4B18-9A57-2D8E6F3B1C04
     series_shape_check::check(ctx, std::vector<domain::market_observation>{v});
+    if (manual_point_guard::unshadowed(ctx, std::vector<domain::market_observation>{v}).empty())
+        return;
 #+end_src
 
 #+begin_src cpp :name check_shapes :implements B2E1D8C3-5F74-4C29-8B68-3E9F7A4C2D15
     series_shape_check::check(ctx, v);
+    if (const auto kept = manual_point_guard::unshadowed(ctx, v); kept.size() != v.size()) {
+        if (!kept.empty())
+            execute_write_query(ctx,
+                                market_observation_mapper::map(kept),
+                                lg(),
+                                "Inserting market observations into database.");
+        return;
+    }
 #+end_src
 
 ** Domain includes

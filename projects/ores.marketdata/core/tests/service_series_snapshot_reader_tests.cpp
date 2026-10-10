@@ -308,3 +308,160 @@ TEST_CASE("a_snapshot_not_asked_for_provenance_carries_none", tags) {
     CHECK(resp.values == std::vector<std::string>{"0.080"});
     CHECK(resp.provenance.empty());
 }
+
+TEST_CASE("a_later_import_does_not_undo_a_manual_point", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    import(h,
+           "20171001 FX_OPTION/RATE_LNVOL/NZD/HUF/1Y/ATM 0.080\n"
+           "20171001 FX_OPTION/RATE_LNVOL/NZD/HUF/2Y/ATM 0.085\n");
+
+    const auto identity = fx_option_identity("NZD", "HUF");
+    const auto series =
+        ores::marketdata::repository::market_series_identity_reader{}.read(h.context(), identity);
+    REQUIRE(series.size() == 1);
+    ores::marketdata::repository::market_observation_repository obs_repo;
+    std::string uri;
+    for (const auto& obs : obs_repo.read_latest_for_series(h.context(), series.front().id)) {
+        const auto parsed = ores::marketdata::datum::oresmd_uri_codec::read(obs.oresmd_uri);
+        REQUIRE(parsed);
+        if (ores::marketdata::service::coordinate_of(
+                *parsed, *ores::marketdata::datum::field_named("expiry")) == "1Y")
+            uri = obs.oresmd_uri;
+    }
+    REQUIRE_FALSE(uri.empty());
+
+    obs_repo.write_manual_point(
+        h.context().with_party(
+            h.tenant_id(), series.front().party_id, {series.front().party_id}, h.db_user()),
+        series.front().id,
+        uri,
+        instant("2017-10-01T00:00:00Z"),
+        "0.090",
+        "system.test",
+        "operator over-key");
+
+    // The same coordinate at the same instant, then a later instant.
+    import(h, "20171001 FX_OPTION/RATE_LNVOL/NZD/HUF/1Y/ATM 0.081\n");
+    import(h, "20171002 FX_OPTION/RATE_LNVOL/NZD/HUF/1Y/ATM 0.082\n");
+
+    auto req = snapshot_request(identity);
+    req.include_provenance = true;
+    const auto resp =
+        series_snapshot_reader::read(h.context(), req, instant("2017-10-03T00:00:00Z"));
+
+    REQUIRE(resp.success);
+    REQUIRE(resp.values.size() == 2);
+    CHECK(resp.values[0] == "0.090");
+    REQUIRE(resp.provenance.size() == 2);
+    CHECK(resp.provenance[0].source_kind == "manual");
+}
+
+TEST_CASE("a_manual_point_can_be_rekeyed_and_an_import_lands_once_it_is_cleared", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    import(h, "20171101 FX_OPTION/RATE_LNVOL/NZD/RON/1Y/ATM 0.080\n");
+
+    const auto identity = fx_option_identity("NZD", "RON");
+    const auto series =
+        ores::marketdata::repository::market_series_identity_reader{}.read(h.context(), identity);
+    REQUIRE(series.size() == 1);
+    ores::marketdata::repository::market_observation_repository obs_repo;
+    const auto observations = obs_repo.read_latest_for_series(h.context(), series.front().id);
+    REQUIRE(observations.size() == 1);
+    const auto uri = observations.front().oresmd_uri;
+    const auto operator_ctx = h.context().with_party(
+        h.tenant_id(), series.front().party_id, {series.front().party_id}, h.db_user());
+    const auto at = instant("2017-11-01T00:00:00Z");
+    const auto read_now = [&] {
+        return series_snapshot_reader::read(
+            h.context(), snapshot_request(identity), instant("2017-11-02T00:00:00Z"));
+    };
+
+    obs_repo.write_manual_point(
+        operator_ctx, series.front().id, uri, at, "0.090", "system.test", "first over-key");
+    obs_repo.write_manual_point(
+        operator_ctx, series.front().id, uri, at, "0.095", "system.test", "second over-key");
+    CHECK(read_now().values == std::vector<std::string>{"0.095"});
+
+    obs_repo.clear_manual_point(operator_ctx, series.front().id, uri, at);
+    import(h, "20171101 FX_OPTION/RATE_LNVOL/NZD/RON/1Y/ATM 0.081\n");
+    CHECK(read_now().values == std::vector<std::string>{"0.081"});
+}
+
+TEST_CASE("a_batch_insert_drops_only_the_shadowed_points_and_the_single_insert_drops_its_own",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    import(h,
+           "20171201 FX_OPTION/RATE_LNVOL/NZD/BGN/1Y/ATM 0.080\n"
+           "20171201 FX_OPTION/RATE_LNVOL/NZD/BGN/2Y/ATM 0.085\n"
+           "20171201 FX_OPTION/RATE_LNVOL/NZD/HRK/1Y/ATM 0.070\n");
+
+    ores::marketdata::repository::market_observation_repository obs_repo;
+    const auto bgn = fx_option_identity("NZD", "BGN");
+    const auto hrk = fx_option_identity("NZD", "HRK");
+    const ores::marketdata::repository::market_series_identity_reader resolver;
+    const auto bgn_series = resolver.read(h.context(), bgn);
+    const auto hrk_series = resolver.read(h.context(), hrk);
+    REQUIRE(bgn_series.size() == 1);
+    REQUIRE(hrk_series.size() == 1);
+
+    const auto find = [&](const std::vector<ores::marketdata::domain::market_observation>& rows,
+                          const std::string& expiry) {
+        for (const auto& obs : rows) {
+            const auto parsed = ores::marketdata::datum::oresmd_uri_codec::read(obs.oresmd_uri);
+            REQUIRE(parsed);
+            if (ores::marketdata::service::coordinate_of(
+                    *parsed, *ores::marketdata::datum::field_named("expiry")) == expiry)
+                return obs;
+        }
+        FAIL("no observation at expiry " << expiry);
+        return rows.front();
+    };
+    const auto bgn_rows = obs_repo.read_latest_for_series(h.context(), bgn_series.front().id);
+    const auto hrk_rows = obs_repo.read_latest_for_series(h.context(), hrk_series.front().id);
+    const auto bgn_1y = find(bgn_rows, "1Y");
+    const auto bgn_2y = find(bgn_rows, "2Y");
+    const auto hrk_1y = find(hrk_rows, "1Y");
+
+    const auto at = instant("2017-12-01T00:00:00Z");
+    obs_repo.write_manual_point(
+        h.context().with_party(
+            h.tenant_id(), bgn_series.front().party_id, {bgn_series.front().party_id}, h.db_user()),
+        bgn_series.front().id,
+        bgn_1y.oresmd_uri,
+        at,
+        "0.090",
+        "system.test",
+        "operator over-key");
+
+    // A batch over two series: the shadowed point is dropped and the others land.
+    auto shadowed = bgn_1y;
+    shadowed.id = boost::uuids::random_generator()();
+    shadowed.value = "0.500";
+    auto free_point = bgn_2y;
+    free_point.id = boost::uuids::random_generator()();
+    free_point.value = "0.600";
+    auto other_series = hrk_1y;
+    other_series.id = boost::uuids::random_generator()();
+    other_series.value = "0.700";
+    obs_repo.insert(h.context(), {shadowed, free_point, other_series});
+
+    const auto read = [&](const resolve_series_identity_request& identity) {
+        return series_snapshot_reader::read(
+            h.context(), snapshot_request(identity), instant("2017-12-02T00:00:00Z"));
+    };
+    CHECK(read(bgn).values == std::vector<std::string>{"0.090", "0.600"});
+    CHECK(read(hrk).values == std::vector<std::string>{"0.700"});
+
+    // The single-row insert has its own branch.
+    auto single = bgn_1y;
+    single.id = boost::uuids::random_generator()();
+    single.value = "0.800";
+    obs_repo.insert(h.context(), single);
+    CHECK(read(bgn).values == std::vector<std::string>{"0.090", "0.600"});
+}

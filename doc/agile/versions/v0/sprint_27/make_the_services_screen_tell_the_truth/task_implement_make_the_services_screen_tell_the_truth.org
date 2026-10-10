@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The Operations services screen shows the web service running, and an overview states how healthy the installation is at a glance.
+The web service publishes the same heartbeat as the other services, so the Operations services screen shows it running.
 
 * Status
 
@@ -35,9 +35,10 @@ The Operations services screen shows the web service running, and an overview st
 
 * Acceptance
 
-- The web service publishes the same heartbeat as the other services, and the services screen shows it running.
-- The Operations services screen opens with an overview: services running of expected, lost, missing, errors and warnings in a range, and version skew.
-- The system administrator's home shows the same installation figures, from the same code.
+- The web service's NATS identity may publish on =telemetry.v1.ops.service_heartbeat=, shown by a publish that reaches the telemetry store.
+- The web service publishes one heartbeat at start and one every fifteen seconds, with its service name =ores.web.service=, a per-process instance id, its host and its version.
+- The services screen shows =ores.web.service= running within the reporting window.
+- A failed publish logs a warning and does not stop the service.
 
 * Plan
 

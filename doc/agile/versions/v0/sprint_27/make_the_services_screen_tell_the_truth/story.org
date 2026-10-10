@@ -23,9 +23,9 @@ The Operations services screen shows the web service running, and an overview st
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | The scaffold PR is in review.          |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Report the web service's heartbeat.    |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance

@@ -3039,6 +3039,11 @@ const fr: SourceCatalogue = {
     },
 
     permissionWords: {
+        loginInfoRead: 'voir la dernière connexion des personnes',
+        partiesRead: 'voir les parties du locataire',
+        partiesWrite: 'modifier les parties du locataire',
+        counterpartiesWrite: 'modifier les contreparties',
+        accountsLock: 'verrouiller et déverrouiller les comptes',
         accountsRead: 'voir les comptes de votre locataire',
         accountsUpdate: 'modifier les comptes',
         accountsReset: 'réinitialiser les mots de passe',

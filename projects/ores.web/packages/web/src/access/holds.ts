@@ -24,7 +24,7 @@ import { api } from '../api/client.js';
 import { meets, type Needs, type Permission } from './permissions.js';
 
 /** Whether a set of permission codes holds one, counting everything and an area's wildcard. */
-export function holdsFrom(codes: ReadonlySet<string>): (code: Permission) => boolean {
+export function holdsFrom(codes: ReadonlySet<string>): (code: string) => boolean {
     return (code) =>
         codes.has('*') || codes.has(`${code.split('::')[0] ?? ''}::*`) || codes.has(code);
 }
@@ -52,6 +52,14 @@ export function usePermissions(): {
  * call again. Prefer {@link usePermissions} with a declared {@link Needs}.
  */
 export function useHolds(): (code: Permission) => boolean {
+    return useHeld();
+}
+
+/**
+ * Like {@link useHolds}, for a caller that holds codes written as data, such as a
+ * menu entry, and so cannot name them from {@link Permission}.
+ */
+export function useHeld(): (code: string) => boolean {
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
     return holdsFrom(new Set((access.data?.roles ?? []).flatMap((role) => role.permissionCodes)));
 }

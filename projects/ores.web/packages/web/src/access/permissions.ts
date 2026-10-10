@@ -30,7 +30,12 @@
 export const PERMISSION = {
     accountsRead: 'iam::accounts:read',
     accountsUpdate: 'iam::accounts:update',
+    accountsLock: 'iam::accounts:lock',
     accountsReset: 'iam::accounts:reset',
+    loginInfoRead: 'iam::login_info:read',
+    partiesRead: 'refdata::parties:read',
+    partiesWrite: 'refdata::parties:write',
+    counterpartiesWrite: 'refdata::counterparties:write',
     contactsRead: 'iam::account_contact_informations:read',
     contactsWrite: 'iam::account_contact_informations:write',
     organisationRead: 'iam::organisation:read',

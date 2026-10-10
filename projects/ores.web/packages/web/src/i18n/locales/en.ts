@@ -2996,6 +2996,11 @@ export const en: SourceCatalogue = {
     },
 
     permissionWords: {
+        loginInfoRead: 'see when people last signed in',
+        partiesRead: 'see the parties of the tenant',
+        partiesWrite: 'change the parties of the tenant',
+        counterpartiesWrite: 'change counterparties',
+        accountsLock: 'lock and unlock accounts',
         accountsRead: 'see the accounts of your tenant',
         accountsUpdate: 'change accounts',
         accountsReset: 'reset passwords',

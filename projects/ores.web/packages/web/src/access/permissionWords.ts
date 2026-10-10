@@ -31,7 +31,12 @@ import { PERMISSION, type Permission } from './permissions.js';
 const WORDS = {
     [PERMISSION.accountsRead]: 'permissionWords.accountsRead',
     [PERMISSION.accountsUpdate]: 'permissionWords.accountsUpdate',
+    [PERMISSION.accountsLock]: 'permissionWords.accountsLock',
     [PERMISSION.accountsReset]: 'permissionWords.accountsReset',
+    [PERMISSION.loginInfoRead]: 'permissionWords.loginInfoRead',
+    [PERMISSION.partiesRead]: 'permissionWords.partiesRead',
+    [PERMISSION.partiesWrite]: 'permissionWords.partiesWrite',
+    [PERMISSION.counterpartiesWrite]: 'permissionWords.counterpartiesWrite',
     [PERMISSION.contactsRead]: 'permissionWords.contactsRead',
     [PERMISSION.contactsWrite]: 'permissionWords.contactsWrite',
     [PERMISSION.organisationRead]: 'permissionWords.organisationRead',

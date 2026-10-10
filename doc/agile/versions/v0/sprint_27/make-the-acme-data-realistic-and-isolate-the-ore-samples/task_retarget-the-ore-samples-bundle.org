@@ -131,7 +131,7 @@ via its "Verifies task" field.
 | 3 | Missing party code | refdata_publish_from_dq_create.sql | Accepted | A missing code returns =skipped_no_party=. |
 | 4 | Anchor fallback | refdata_publish_from_dq_create.sql | Declined | =anchor_portfolio_name= is a preference, as documented. Every ACME party has Global Portfolio. |
 | 5 | Test coverage | refdata_publish_sandbox_portfolios_test.sql | Partly accepted | Added a check that a repeat publish opens no second sandbox. The admin fallback is shown by the clean provision, not by a fixture. |
-| 6 | Process: run a full provision | PR body | Done | Clean provision run; see Proof. |
+| 6 | Process: run a full provision | PR body | Done | Clean provision run on the final scripts; see Proof. |
 
 * Result
 
@@ -163,12 +163,10 @@ descriptions say sample data.
   opt-in, because counterparties are tenant-level.
 
 *Proof.* A clean provision through the bundle path, from a database recreated
-from the final scripts, gave every party one open, shared sample sandbox owned
-by =tenant_admin=, with PF1 and PF2 as its roots. The first provision, before
-the owner fallback, showed the publish ran with no actor and wrote nothing.
-The publish function was changed once more after that provision (the sandbox is
-created only when a name is to be added, and a missing party code is guarded);
-the new version passes pgTAP but was not provisioned.
+from the final committed scripts and services built from the same tree, gave
+every party one open, shared sample sandbox owned by =tenant_admin=, with PF1
+and PF2 as its roots. An earlier provision, before the owner fallback, showed
+the publish ran with no actor and wrote nothing.
 
 *Known gap.* The publish handler logs only inserted, updated and skipped
 counts. A =skipped_no_owner= or =skipped_no_anchor= result is silent.

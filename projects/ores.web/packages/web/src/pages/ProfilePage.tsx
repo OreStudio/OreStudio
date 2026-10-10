@@ -28,6 +28,7 @@ import { api } from '../api/client.js';
 import { ContactTab, IdentityTab } from '../access/PersonForms.js';
 import { useHolds } from '../access/holds.js';
 import { actorPathFor } from '../access/PeoplePage.js';
+import { useActorPictures } from '../access/PersonRef.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
@@ -74,6 +75,7 @@ export function ProfilePage({ session }: { readonly session: SessionView }): Rea
 /** The signed-in person's own story, the same stream as on their page in the staff list. */
 function MyHistory({ username }: { readonly username: string }): ReactNode {
     const { t } = useTranslation();
+    const actorPicture = useActorPictures();
     const story = useQuery({
         queryKey: ['timeline', 'person', username],
         queryFn: () => api.timeline('person', username),
@@ -84,7 +86,13 @@ function MyHistory({ username }: { readonly username: string }): ReactNode {
     if (story.isError) {
         return <Notice tone="error">{story.error.message}</Notice>;
     }
-    return <Timeline timeline={story.data} actorPath={actorPathFor(true)} />;
+    return (
+        <Timeline
+            timeline={story.data}
+            actorPath={actorPathFor(true)}
+            actorPicture={actorPicture}
+        />
+    );
 }
 
 /**

@@ -245,6 +245,29 @@ describe('ProfilePage', () => {
         expect(html).toContain('href="/access"');
     });
 
+    it('links a web page in the contact record and leaves other text as text', () => {
+        const linked = render((client) => {
+            member(client);
+            client.setQueryData(['contact-information', 'me'], {
+                ...contact,
+                webPage: 'https://acme.example/desk',
+            });
+        }, '/profile?tab=contact');
+        const text = render((client) => {
+            member(client);
+            client.setQueryData(['contact-information', 'me'], {
+                ...contact,
+                webPage: 'see our site',
+            });
+        }, '/profile?tab=contact');
+
+        expect(linked).toContain('href="https://acme.example/desk"');
+        expect(linked).toContain('target="_blank"');
+        expect(linked).toContain('rel="noopener noreferrer"');
+        expect(text).toContain('see our site');
+        expect(text).not.toContain('href="see our site"');
+    });
+
     it('draws the contact record on its tab, telling the two addresses apart', () => {
         const html = render(member, '/profile?tab=contact');
 

@@ -37,6 +37,7 @@ import { ACCOUNT_ENTITY, PersonRevertDialog, isRevertable, latestVersion } from 
 import { Timeline } from '../timeline/Timeline.js';
 import { useHolds } from './holds.js';
 import { actorPathFor } from './PeoplePage.js';
+import { useActorPictures } from './PersonRef.js';
 import { RecordHeader } from '../refdata/records.js';
 import { useTabs } from '../ui/Tabs.js';
 import { AccountDoors } from '../pages/AccountDoors.js';
@@ -85,6 +86,7 @@ function Person({
     const [taking, setTaking] = useState<HeldRole | null>(null);
     const [reverting, setReverting] = useState<TimelineEvent | null>(null);
     const writes = useAccountWrites();
+    const actorPicture = useActorPictures();
     /*
      * Each tab reads something of its own, and each of those reads is its own
      * permission. A member may open a colleague's page to see who they are,
@@ -182,6 +184,7 @@ function Person({
                         <Timeline
                             timeline={story.data}
                             actorPath={actorPathFor(holds('iam::accounts:read'))}
+                            actorPicture={actorPicture}
                             /*
                              * Two entries can be acted on. A grant is taken
                              * away, which closes it and is the write the roles
@@ -216,13 +219,8 @@ function Person({
                                     story.data?.events ?? [],
                                     event.entityType,
                                 );
-                                if (event.version >= latest) {
-                                    return (
-                                        <p className="text-[0.78rem] text-ink-faint">
-                                            {t('access.person.currentVersion')}
-                                        </p>
-                                    );
-                                }
+                                // The newest version is marked beside its time, and has nothing to revert to.
+                                if (event.version >= latest) return undefined;
                                 return (
                                     <div className="mt-2 flex justify-end">
                                         <Button

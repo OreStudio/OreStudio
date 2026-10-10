@@ -31,6 +31,8 @@ import {
 import { useTranslation } from '../i18n/Provider.js';
 import { formatDateTime, parseTimestamp } from '../ui/Time.js';
 import { DiffLines } from '../ui/Diff.js';
+import { Icon } from '../ui/Icon.js';
+import { Avatar } from '../ui/Images.js';
 import { Tag } from '../ui/Primitives.js';
 
 /**
@@ -61,6 +63,7 @@ export function Timeline({
     renderActions,
     renderHead,
     actorPath,
+    actorPicture,
     hideUnchanged = false,
 }: {
     readonly timeline: Stream;
@@ -72,6 +75,12 @@ export function Timeline({
      * may not read accounts cannot open one, so the caller states which.
      */
     readonly actorPath?: (actor: string) => string | undefined;
+    /**
+     * The picture of the person who wrote an entry, drawn beside the time: the
+     * address of the picture, or null for their initials. A stream with no such
+     * function draws no picture.
+     */
+    readonly actorPicture?: (actor: string) => string | null;
     /**
      * Leaves out the versions that changed none of the fields the stream
      * carries. A stream narrowed to one field, such as a reporting line, keeps
@@ -85,6 +94,7 @@ export function Timeline({
         return <p className="text-sm text-ink-muted">{t('timeline.empty')}</p>;
     }
     const previous = previousVersions(timeline.events);
+    const newest = newestVersions(timeline.events);
     const events = hideUnchanged
         ? timeline.events.filter((event) => {
               const before = previous.get(earlier(event));
@@ -106,6 +116,8 @@ export function Timeline({
                         actions={renderActions?.(event)}
                         head={renderHead?.(event)}
                         actorPath={actorPath}
+                        actorPicture={actorPicture}
+                        current={newest.has(`${entryKeyOf(event)}#${String(event.version)}`)}
                     />
                 </Fragment>
             ))}
@@ -116,6 +128,36 @@ export function Timeline({
 /** What names one entry in the stream: no two entries come from one version twice. */
 function entryKey(event: TimelineEvent, index: number): string {
     return `${event.entityType}#${event.entityId}#${String(event.version)}#${String(index)}`;
+}
+
+/** What names the record an entry is a version of. */
+function entryKeyOf(event: TimelineEvent): string {
+    return `${event.entityType}#${event.entityId}`;
+}
+
+/**
+ * The newest version of each record in the stream, as =record#version=: for each
+ * record that has versions, the one with the highest number is the current
+ * version. An act that is not a version is never current.
+ */
+function newestVersions(events: readonly TimelineEvent[]): ReadonlySet<string> {
+    const highest = new Map<string, number>();
+    for (const event of events) {
+        if (!isAChange(event.kind) && event.kind !== 'raised') continue;
+        highest.set(
+            entryKeyOf(event),
+            Math.max(highest.get(entryKeyOf(event)) ?? 0, event.version),
+        );
+    }
+    return new Set(
+        events
+            .filter(
+                (event) =>
+                    (isAChange(event.kind) || event.kind === 'raised') &&
+                    highest.get(entryKeyOf(event)) === event.version,
+            )
+            .map((event) => `${entryKeyOf(event)}#${String(event.version)}`),
+    );
 }
 
 /** The key of the version one before this one, which is what an entry is read against. */
@@ -147,7 +189,7 @@ function startsADay(event: TimelineEvent, before: TimelineEvent | undefined): bo
 }
 
 /** The column the rail sits in, which every row of the stream shares. */
-const ROW = 'grid grid-cols-[5.6rem_1.6rem_1fr]';
+const ROW = 'grid grid-cols-[8rem_1.6rem_1fr]';
 
 function DayDivider({ at }: { readonly at: string }): ReactNode {
     const { language } = useTranslation();
@@ -235,20 +277,40 @@ function Entry({
     actions,
     head,
     actorPath,
+    actorPicture,
+    current,
 }: {
     readonly event: TimelineEvent;
     readonly before: TimelineEvent | undefined;
     readonly actions: ReactNode;
     readonly head: ReactNode;
     readonly actorPath: ((actor: string) => string | undefined) | undefined;
+    readonly actorPicture: ((actor: string) => string | null) | undefined;
+    /** Whether this entry is the newest version of its record. */
+    readonly current: boolean;
 }): ReactNode {
     const { t, language } = useTranslation();
     const changed = changedFields(event, before);
     const quiet = isAnAct(event.kind);
     return (
         <li className={ROW}>
-            <div className="pr-2.5 pt-[9px] text-right font-mono text-[0.72rem] text-ink-faint">
-                {timeOf(event.at, language)}
+            <div className="flex items-start justify-end gap-1.5 pr-2.5 pt-[6px]">
+                {actorPicture !== undefined && event.actor !== '' && (
+                    <Avatar name={event.actor} size="sm" src={actorPicture(event.actor)} />
+                )}
+                <span className="pt-[3px] font-mono text-[0.72rem] text-ink-faint">
+                    {timeOf(event.at, language)}
+                </span>
+                {current && (
+                    <span
+                        className="pt-[3px] text-up"
+                        title={t('timeline.current')}
+                        aria-label={t('timeline.current')}
+                        role="img"
+                    >
+                        <Icon name="current" size={16} />
+                    </span>
+                )}
             </div>
             <div className="relative flex justify-center">
                 <span className="absolute inset-y-0 w-px bg-line" aria-hidden />
@@ -288,14 +350,6 @@ function Entry({
                     </Details>
                 ) : null}
                 {actions}
-                {actions === undefined && isAnAct(event.kind) && (
-                    <p className="text-[0.78rem] text-ink-faint">{t('timeline.notRevertible')}</p>
-                )}
-                {actions === undefined && isAChange(event.kind) && (
-                    <p className="text-[0.78rem] text-ink-faint">
-                        {t('timeline.changeNotOffered')}
-                    </p>
-                )}
             </div>
         </li>
     );

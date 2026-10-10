@@ -32,6 +32,7 @@ import { api } from '../api/client.js';
 import { ReportingLineDialog } from '../access/PersonForms.js';
 import { useHolds } from '../access/holds.js';
 import { actorPathFor } from '../access/PeoplePage.js';
+import { useActorPictures } from '../access/PersonRef.js';
 import { Crumbs } from '../refdata/shared.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
@@ -101,6 +102,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     const queries = useQueryClient();
     const holds = useHolds();
     const mayReadAccounts = holds('iam::accounts:read');
+    const actorPicture = useActorPictures();
     const mayChange = holds('iam::accounts:update');
     const mayReadRoles = holds('iam::roles:read');
     const [selectedId, setSelectedId] = useState('');
@@ -371,6 +373,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                         {story.data !== undefined && (
                             <Timeline
                                 actorPath={actorPathFor(mayReadAccounts)}
+                                actorPicture={actorPicture}
                                 hideUnchanged
                                 timeline={lineTimeline(
                                     story.data,

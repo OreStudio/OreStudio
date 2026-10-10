@@ -159,7 +159,6 @@ const fr: SourceCatalogue = {
             why: 'Pourquoi',
             noRole: 'Aucun rôle. La personne peut se connecter mais ne peut encore rien faire.',
             takeAway: 'Retirer',
-            currentVersion: 'C’est la version actuelle.',
             notYourself: 'Vous ne pouvez pas vous retirer un rôle.',
             whatTheyAllow: 'Ce que ces rôles permettent',
             giveTitle: 'Accorder un rôle à {name}',
@@ -1567,9 +1566,8 @@ const fr: SourceCatalogue = {
     timeline: {
         empty: 'Rien ne lui est encore arrivé.',
         details: 'Détails',
+        current: 'Version actuelle',
         field: 'Champ',
-        notRevertible: 'Cette entrée relate un fait, il n’y a donc rien à rétablir.',
-        changeNotOffered: 'Rétablir un champ modifié n’est pas proposé ici.',
         noChanges: 'Aucune modification',
         kind: {
             raised: 'Créé',

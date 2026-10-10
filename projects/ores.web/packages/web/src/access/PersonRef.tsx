@@ -24,6 +24,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { imageUrl } from '../ui/Images.js';
 import { useHolds } from './holds.js';
 import { actorPathFor } from './PeoplePage.js';
 
@@ -32,6 +33,8 @@ export interface KnownPerson {
     readonly id: string;
     readonly username: string;
     readonly fullName: string;
+    /** The identifier of the person's picture, or null when they have none. */
+    readonly imageId: string | null;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -68,6 +71,7 @@ export function usePeopleDirectory(): {
               id: node.accountId,
               username: node.username,
               fullName: node.fullName,
+              imageId: node.imageId,
           }));
     return {
         find: (who) => people.find((person) => person.username === who || person.id === who),
@@ -107,4 +111,17 @@ export function PersonRef({ who }: { readonly who: string }): ReactNode {
             {label}
         </Link>
     );
+}
+
+/**
+ * The picture a person who wrote something is drawn with: the address of their
+ * picture, or null for their initials. A name the directory cannot resolve, such
+ * as a service, has no picture and is drawn as initials too.
+ */
+export function useActorPictures(): (actor: string) => string | null {
+    const directory = usePeopleDirectory();
+    return (actor) => {
+        const imageId = directory.find(actor)?.imageId ?? null;
+        return imageId === null ? null : imageUrl(imageId);
+    };
 }

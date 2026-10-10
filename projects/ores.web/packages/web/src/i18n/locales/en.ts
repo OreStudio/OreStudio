@@ -163,7 +163,6 @@ export const en: SourceCatalogue = {
             why: 'Why',
             noRole: 'No role. They can sign in but do nothing yet.',
             takeAway: 'Take away',
-            currentVersion: 'This is the current version.',
             notYourself: 'You cannot take a role away from yourself.',
             whatTheyAllow: 'What these roles let them do',
             giveTitle: 'Give {name} a role',
@@ -1547,9 +1546,8 @@ export const en: SourceCatalogue = {
     timeline: {
         empty: 'Nothing has happened to this yet.',
         details: 'Details',
+        current: 'Current version',
         field: 'Field',
-        notRevertible: 'This entry records something that happened, so there is nothing to revert.',
-        changeNotOffered: 'Putting a changed field back is not offered here.',
         noChanges: 'No changes',
         kind: {
             raised: 'Created',

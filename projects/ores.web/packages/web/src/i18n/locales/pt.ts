@@ -163,7 +163,6 @@ const pt: SourceCatalogue = {
             why: 'Porquê',
             noRole: 'Sem papel. Pode iniciar sessão mas ainda não pode fazer nada.',
             takeAway: 'Retirar',
-            currentVersion: 'Esta é a versão atual.',
             notYourself: 'Não pode retirar um papel a si próprio.',
             whatTheyAllow: 'O que estes papéis permitem',
             giveTitle: 'Dar um papel a {name}',
@@ -1560,9 +1559,8 @@ const pt: SourceCatalogue = {
     timeline: {
         empty: 'Ainda nada lhe aconteceu.',
         details: 'Detalhes',
+        current: 'Versão atual',
         field: 'Campo',
-        notRevertible: 'Esta entrada regista um facto, por isso não há nada a reverter.',
-        changeNotOffered: 'Repor um campo alterado não é oferecido aqui.',
         noChanges: 'Sem alterações',
         kind: {
             raised: 'Criado',

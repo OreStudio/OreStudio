@@ -25,7 +25,7 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | The prototype is accepted: layout B. |
 | Waiting on    | Nothing.                               |
-| Next          | Plan the build tasks, starting with the compass scenario verb. |
+| Next          | Record and read scenarios through compass. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -41,6 +41,13 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 |------+-------+-------+-----+-------------|
 | [[id:B27572F6-212D-49DB-90D5-1A36A6C2A9A4][Scaffold story: Bring the QA validation runner to ores.web]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D][Prototype the QA validation runner]] | DONE | 2026-10-10 | 2026-10-10 | Show the Tests tab and the runner, and confirm how results are written. |
+| [[id:21382786-E000-4410-9863-94BB6E409570][Record and read scenarios through compass]] | BACKLOG | | | Add a compass scenario verb to list scenarios, show one with its steps and results, and record a run into the scenario doc and the journal. Port the results writer the Qt tool had. |
+| [[id:59E83768-A749-44BC-AFDA-7548B44C5A4D][Serve scenarios from the BFF]] | BACKLOG | | | Add BFF routes that list, read and save scenarios by calling compass. Any signed-in user may call them for now. |
+| [[id:FD623109-FFE6-4722-BA63-25B9B2BD38B2][Render org text in the web package]] | BACKLOG | | | Port the org parser and renderer from ores.org-js into the web package, so scenario steps and linked docs show as formatted text. This is the first step of retiring ores.org-js. |
+| [[id:3B1DDD28-FD85-4ED3-9F94-7EDEA52EB397][Build the Tests queue]] | BACKLOG | | | Add the Development area and its Tests tab to ores.web: the scenarios waiting and the scenarios done, each opening in the runner. Draw the accepted prototype, without a heading of its own. |
+| [[id:4E45A124-F1E7-4371-BFAC-4E63A84F8F8B][Build the scenario runner]] | BACKLOG | | | Build the accepted layout B: one step at a time with a progress bar. A Pass moves on and a Fail stays so the tester can write the note. Save closes a decided scenario, a done scenario reopens read-only, and Retest asks first. |
+| [[id:45004307-1EBD-4503-A2F4-E1CDEFA3CA38][Show the story and the task beside the steps]] | BACKLOG | | | Add the Story and Task tabs to the runner. They show the docs that drive the scenario, rendered from org, and their links open the doc they point to. |
+| [[id:D4D50543-F5EC-454B-A119-E50276507A65][Take pasted images for a step]] | BACKLOG | | | A browser cannot capture the screen, so a step takes a pasted or dropped image. Add a BFF route that saves it beside the scenario doc and a compass step that names it in the step's note. |
 
 * The arc
 
@@ -54,6 +61,18 @@ story 2. This story is the first step.
 | 1. Test scenarios (this story) | A regular module in ores.web. A Tests tab lists scenarios waiting and scenarios done. The runner opens one: its steps, its story and its task, a PASS or FAIL and a note on each step, and a save that writes the org file. |
 | 2. Browse the agile tree | Kanban for the sprint, stories, tasks, the backlog buckets and any doc by link. It reaches parity with =ores.dsh_kanban= and =ores.org-js=, then both go. |
 | 3. The test queue as notifications | A scenario waiting for a tester raises an inbox notification. The bell shows it. A tester role and an assignment arrive here. |
+
+** Build order
+
+| Step | Task | Needs |
+|------+------+-------|
+| 1 | Record and read scenarios through compass | nothing |
+| 2 | Serve scenarios from the BFF | 1 |
+| 3 | Render org text in the web package | nothing, and it can run beside 1 and 2 |
+| 4 | Build the Tests queue | 2 |
+| 5 | Build the scenario runner | 2 |
+| 6 | Show the story and the task beside the steps | 3 and 5 |
+| 7 | Take pasted images for a step | 1 and 5 |
 
 * Decisions
 

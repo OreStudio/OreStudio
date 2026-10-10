@@ -8,7 +8,7 @@
 #+filetags: :show_the_release_with_its_v:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-the-release-with-its-v
-#+pr:
+#+pr: 3057
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -72,7 +72,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3057][#3057]] | [web] Show the release with its v |
 
 * Review
 

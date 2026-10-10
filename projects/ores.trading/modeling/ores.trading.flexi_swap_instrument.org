@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: FFE4182F-0FA0-4F7C-B7F9-8DFD59141493
+:ores.cpp.eventing-integration-test.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.flexi_swap_instrument

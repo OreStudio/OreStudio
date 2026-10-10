@@ -2,7 +2,7 @@
 :ID: 1EFA46D4-8562-4C63-A1D3-4CF33551BEB2
 :END:
 #+title: Task: Prove the rates round trip over the corpus
-#+description: Run the ORE round trip over the family's corpus at the new shape, write the migration script that moves the rows of the legacy tables into the header and the facts, and add the repository, service and eventing coverage the family has none of. (Staging unit 8; findings R9, R14.)
+#+description: Run the ORE round trip over the family's corpus at the new shape, and add the repository, service and eventing coverage the family has none of. (Staging unit 8; findings R9, R14.)
 #+type: task
 #+level: s1
 #+filetags: :instruments-rates:sprint_27:v0:
@@ -20,13 +20,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The family is proved at its new shape: the corpus round-trips, a database holding rates rows migrates to the header and the facts, and the coverage the family lacked exists.
+The family is proved at its new shape: the corpus round-trips with equal family rows, and the coverage the family lacked exists. No migration is written: the project recreates the database (see Decisions on the story).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -36,23 +36,20 @@ The family is proved at its new shape: the corpus round-trips, a database holdin
 * Acceptance
 
 - The ORE round trip runs over the family's corpus at the new shape and every document comes back equivalent.
-- A migration script moves the rows of the legacy rates tables into the header and the fact tables, and a database holding rates rows survives the move.
+- No migration script exists, by the project rule that a schema change recreates the database.
 - The eventing integration test for the rates instruments is generated, and the family's repository and service coverage exists where it had none.
-- The migration's row counts and the round trip's documents are recorded as measurements with their commands.
+- The round trip's documents and trades are recorded as measurements with their commands.
 
 * Plan
 
-1. *The migration script.* One hand-written artefact: read each legacy table
-   and write the header row and the fact row, keyed by the trade, with the
-   header written first because the facts and children join it by that key.
-   The legacy tables are the nine the design's mapping table lists.
-2. *The corpus round trip.* Run the family's corpus at the new shape and
-   record the document count with the command that produced it.
-3. *The eventing test.* Generate the rates instruments' eventing integration
+1. *The corpus round trip.* Import every rates trade of the corpus, export it
+   on its own, import it again and compare the family rows the two imports
+   produce. Record the document and trade counts with the command.
+2. *The eventing test.* Generate the rates instruments' eventing integration
    test as the other entities' are generated.
-4. *The coverage gap.* Add the repository and service cases the family has
-   none of, guided by what the round trip and the migration exercise.
-5. *Measurements.* The migration's row counts and the corpus size go in this
+3. *The coverage gap.* Add the repository and service cases the family has
+   none of, guided by what the round trip exercises.
+4. *Measurements.* The corpus counts go in this
    page's Measurements table with their commands, as the header task's did.
 
 * Measurements
@@ -71,10 +68,10 @@ task and name that file in the Command column.
 
 * Notes
 
-- This unit closes story acceptance clause 4 and carries the artefact a
-  database holding rates rows needs; unit 3 shipped the new shape without it,
-  because a fresh database is created at the new shape and the environments
-  are recreated rather than migrated.
+- The migration the plan first named is dropped. The project memory
+  "no migrations, trash and recreate" says a schema change edits the create
+  scripts and the database is recreated; the operator confirmed that for this
+  unit.
 - It is last because it proves a shape the other units settle; running it
   earlier would prove a tree that is about to change.
 

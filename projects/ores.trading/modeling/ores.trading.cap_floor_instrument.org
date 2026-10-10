@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2446DB5D-CDEF-46C8-A8F8-0829CBB733E2
+:ores.cpp.eventing-integration-test.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.cap_floor_instrument

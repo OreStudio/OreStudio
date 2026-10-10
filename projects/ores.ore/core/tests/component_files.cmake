@@ -87,6 +87,7 @@ set(files
     "xml_portfolio_roundtrip_tests.cpp"
     "xml_pricing_engine_mapper_roundtrip_tests.cpp"
     "xml_pricingengines_roundtrip_tests.cpp"
+    "xml_rates_corpus_roundtrip_tests.cpp"
     "xml_remaining_phases_mapper_roundtrip_tests.cpp"
     "xml_roundtrip_conventions_tests.cpp"
     "xml_roundtrip_harness_tests.cpp"

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 15329B09-2CA2-47C8-A20E-70CC757970B3
+:ores.cpp.eventing-integration-test.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.balance_guaranteed_swap_instrument

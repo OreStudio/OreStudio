@@ -507,6 +507,7 @@ Enum parse_code(const std::string& text, int count, Enum fallback) {
 
 constexpr int bool__count = 13;
 constexpr int business_day_convention_count = 27;
+constexpr int day_counter_count = 71;
 constexpr int date_rule_count = 16;
 constexpr int option_pay_relative_to_count = 2;
 constexpr int settlement_method_count = 4;
@@ -1466,6 +1467,12 @@ legData swap_instrument_mapper::reverse_leg(
     ld.Payer = tm.payer.value_or(false);
     ld.Currency = tm.currency;
 
+    if (!tm.day_count_fraction_code.empty())
+        ld.DayCounter = parse_code(tm.day_count_fraction_code, day_counter_count, dayCounter::A360);
+    if (!tm.business_day_convention_code.empty())
+        ld.PaymentConvention = parse_code(
+            tm.business_day_convention_code, business_day_convention_count, businessDayConvention::MF);
+
     if (!amounts.empty()) {
         legData_Notionals_t n;
         for (const auto& a : amounts) {
@@ -1686,7 +1693,13 @@ trade swap_instrument_mapper::reverse_capfloor(
 
         cf.LegData.Currency = parse_currency_code(tm.currency);
 
-        cf.LegData.DayCounter = dayCounter::ACT_365;
+        cf.LegData.DayCounter = tm.day_count_fraction_code.empty() ?
+            dayCounter::ACT_365 :
+            parse_code(tm.day_count_fraction_code, day_counter_count, dayCounter::ACT_365);
+        if (!tm.business_day_convention_code.empty())
+            cf.LegData.PaymentConvention = parse_code(tm.business_day_convention_code,
+                                                      business_day_convention_count,
+                                                      businessDayConvention::MF);
         // The stored schedule is the document's own; a row written before
         // the schedule children existed falls back to the header's dates.
         if (const auto stored = schedule_for(schedules, schedule_dates, "swap", 1, "schedule"))

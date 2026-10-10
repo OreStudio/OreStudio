@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 0303FDE5-5929-4126-A5F8-2519BFF027DD
+:ores.cpp.eventing-integration-test.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.knock_out_swap_instrument

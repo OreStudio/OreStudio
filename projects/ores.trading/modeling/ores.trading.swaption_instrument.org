@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BF079887-725E-4BB5-94C1-7462AB8BB198
+:ores.cpp.eventing-integration-test.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.swaption_instrument

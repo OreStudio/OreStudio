@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3c359729-0dd2-43d3-9b8c-a1ecd270ec36
+:ores.cpp.eventing-integration-test.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.rate_instruments

@@ -389,6 +389,13 @@ RLS_001 ores_iam_seed_profile_steps_tbl
 # RLS_002 ignores — tables with party_id that intentionally skip party isolation
 # =============================================================================
 
+# DQ artefact tables — system-tenant staging rows of a dataset. A convention
+# artefact mirrors its live table, so it carries party_id, but the publish
+# function never copies that column: it stamps the target party instead. No
+# party reads these rows, so a party isolation policy would only hide the
+# template from the function that publishes it.
+RLS_002 ores_dq_*_artefact_tbl
+
 # IAM auth events — auth log; party_id records the session context for
 # debugging, not for data isolation. The whole log is tenant-scoped.
 RLS_002 ores_iam_auth_events_tbl

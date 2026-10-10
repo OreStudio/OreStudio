@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :implement-the-synthetic-market-data-journeys:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-fx-price-feed-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A quant composes an FX feed and sees the paths it implies before saving it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,13 +35,43 @@ A quant composes an FX feed and sees the paths it implies before saving it.
 
 * Acceptance
 
--
+- A whole number in a double field decodes on the server, so a weight of 1
+  saves and a mean of 0 previews.
+- *Market data* is an area of the menu, drawn for a person who reads the
+  feeds, with an *FX price feeds* card.
+- The feed list reads one page at a time, searched and ordered on the server.
+- A feed page shows its details, its mixture and its history. A writer adds,
+  edits, reverts and deletes a feed; a reader sees no change offered.
+- The mixture tab edits the Gaussians as one set, shows the weight sum, the
+  return distribution and a batch of sample paths drawn from the values on
+  the screen, and saves the set in one call.
+- The mixture of one feed is read by its parent, never by reading every
+  component.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The user chose to do the whole of it in this task, the codec and the gaps the
+screen needs included. Each step ends in a check.
+
+1. *Codec.* A reflect-cpp overlay port whose msgpack reader reads either
+   integer kind into a floating-point field. Checked by a wire codec test that
+   decodes =1= and =-2= into doubles, and live by a save with a weight of 1.
+2. *Model.* =fx_spot_config_id= on the GMM component is =:filterable:=, which
+   gives the list an equals and a one-of filter on the feed. The feed's pair,
+   source name and ORE key are =:searchable:= and =:sortable:=, and its tick
+   rate =:sortable:=. Regenerated at every address.
+3. *BFF.* The synthetic table declares =search=, =sortable= and =parentField=.
+   =GET /api/synthetic/:resource= reads one page with the total when it is
+   given a limit, and =GET /api/synthetic/:resource/by/:parent= reads one
+   parent's rows. The page query schema moves to the shared helpers.
+4. *Shared parts.* A record store (=refdata/store.tsx=) gives the shared parts
+   their routes through a context, refdata by default. =RecordDialog= gains
+   =complete= and =check=; a record field shows its label.
+5. *Screens.* The Market data area, the feed list, the feed page and the
+   mixture tab, with the mixture rules in a pure module and an SVG line chart.
+6. *Words.* English, French and Portuguese.
+7. *Documents.* The journey, the record screen standard and the menu
+   structure; the codec capture resolved; the gaps task told what landed.
 
 * Measurements
 

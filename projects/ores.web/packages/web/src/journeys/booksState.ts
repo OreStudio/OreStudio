@@ -38,6 +38,9 @@ import type { BookIntent } from './booksServer.js';
 /** The reason a correction is filed under until the person states another. */
 export const BOOK_REASON = 'common.non_material_update';
 
+/** The reason a new record is filed under, which the reasons list for corrections does not offer. */
+export const NEW_BOOK_REASON = 'system.new_record';
+
 export const BOOK_ENTITY_TYPE = 'ores.refdata.book';
 
 /** The book fields the person edits. The name is the natural key and does not change. */
@@ -156,6 +159,7 @@ export type BookAction =
     | { readonly kind: 'select-portfolio'; readonly portfolioId: string }
     | { readonly kind: 'start-portfolio'; readonly parentPortfolioId: string }
     | { readonly kind: 'cancel-portfolio' }
+    | { readonly kind: 'portfolio-written'; readonly portfolioId: string }
     | {
           readonly kind: 'set-portfolio-field';
           readonly field: PortfolioField;
@@ -192,6 +196,9 @@ export function reduceBook(draft: BookDraft, action: BookAction): BookDraft {
                     isVirtual: false,
                 },
             };
+        case 'portfolio-written':
+            // The portfolio now exists, so a retry must not write it as new again.
+            return { ...draft, portfolioId: action.portfolioId, newPortfolio: undefined };
         case 'cancel-portfolio':
             return { ...draft, newPortfolio: undefined };
         case 'set-portfolio-field':
@@ -210,6 +217,7 @@ export function reduceBook(draft: BookDraft, action: BookAction): BookDraft {
                 ...draft,
                 shaping: true,
                 opened: undefined,
+                reasonCode: NEW_BOOK_REASON,
                 bookId: crypto.randomUUID(),
                 fields: blankFields(),
                 written: undefined,
@@ -297,6 +305,20 @@ export function changesOf(draft: BookDraft): readonly Change[] {
             operation: 'refdata.v1.portfolios.put',
         });
     }
+    const target = draft.newPortfolio?.id ?? draft.portfolioId;
+    if (
+        draft.opened !== undefined &&
+        target !== '' &&
+        target !== draft.opened.parent_portfolio_id
+    ) {
+        changes.push({
+            id: 'book:portfolio',
+            what: 'Portfolio',
+            before: draft.opened.parent_portfolio_id,
+            after: target,
+            operation: 'refdata.v1.books.put',
+        });
+    }
     const before = draft.opened === undefined ? blankFields() : fieldsOf(draft.opened);
     for (const [field, label] of BOOK_LABELS) {
         if (draft.fields[field] !== before[field]) {
@@ -344,6 +366,7 @@ export function ancestryUnits(
     return units;
 }
 
+/** The audit fields a write carries empty: the service sets tenancy, provenance and the validity window. */
 function stamp(): Pick<
     Book,
     | 'version'
@@ -469,6 +492,7 @@ export interface BookStructure extends BookDraft {
     readonly selectPortfolio: (portfolioId: string) => void;
     readonly startPortfolio: (parentPortfolioId: string) => void;
     readonly cancelPortfolio: () => void;
+    readonly portfolioWritten: (portfolioId: string) => void;
     readonly setPortfolioField: (field: PortfolioField, value: string) => void;
     readonly setPortfolioVirtual: (value: boolean) => void;
     readonly startBook: () => void;
@@ -492,6 +516,7 @@ export function useBookStructure(): BookStructure {
         startPortfolio: (parentPortfolioId) =>
             dispatch({ kind: 'start-portfolio', parentPortfolioId }),
         cancelPortfolio: () => dispatch({ kind: 'cancel-portfolio' }),
+        portfolioWritten: (portfolioId) => dispatch({ kind: 'portfolio-written', portfolioId }),
         setPortfolioField: (field, value) =>
             dispatch({ kind: 'set-portfolio-field', field, value }),
         setPortfolioVirtual: (value) => dispatch({ kind: 'set-portfolio-virtual', value }),

@@ -147,6 +147,36 @@ describe('book structure draft', () => {
     });
 });
 
+describe('a book moved or retried', () => {
+    it('lists a move to another portfolio on the review', () => {
+        const draft = walk({ kind: 'select-portfolio', portfolioId: 'credit' });
+        expect(changesOf(draft)).toEqual([
+            expect.objectContaining({ what: 'Portfolio', before: 'rates', after: 'credit' }),
+        ]);
+        expect(writePlan(draft, 'party-1')?.book.parent_portfolio_id).toBe('credit');
+    });
+
+    it('turns a portfolio that was written into an existing one, so a retry does not write it again', () => {
+        const started = [
+            { kind: 'start-portfolio', parentPortfolioId: '' },
+            { kind: 'set-portfolio-field', field: 'name', value: 'Credit' },
+            { kind: 'start-book' },
+        ].reduce(reduceBook, blankDraft());
+        const id = started.newPortfolio?.id ?? '';
+        const retried = reduceBook(started, { kind: 'portfolio-written', portfolioId: id });
+        expect(retried.newPortfolio).toBeUndefined();
+        const plan = writePlan(retried, 'party-1');
+        expect(plan?.portfolio).toBeUndefined();
+        expect(plan?.book.parent_portfolio_id).toBe(id);
+    });
+
+    it('files a new book under the new-record reason', () => {
+        expect(reduceBook(blankDraft(), { kind: 'start-book' }).reasonCode).toBe(
+            'system.new_record',
+        );
+    });
+});
+
 describe('the owner unit ancestry', () => {
     const portfolios = [
         portfolio('root', null, 'unit-root'),

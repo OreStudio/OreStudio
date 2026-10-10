@@ -85,7 +85,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A move to another portfolio is not on the review | =booksState.ts= | Accept | The review lists a Portfolio change when an opened book is placed elsewhere. A test covers it. |
+| 2 | A retry after a partial write writes the portfolio again | =booksSteps.tsx= | Accept | Once the portfolio is written the draft selects it as an existing portfolio and the tree is read again. A test covers it. |
+| 3a | The BFF forwards party_id as sent | =books.ts= | Decline | The service sets tenancy from the session and row-level security scopes the write. The screen takes the party from the session, as the counterparty screen does. |
+| 3b | The reply row is taken from either key | =books.ts= | Accept | Each route reads the key of its own row. |
+| 4 | Pick lists read one after another; the tree reads everything | =books.ts= | Decline | Sequential on purpose, as classifications.ts records. The tree read is a recorded limit. |
+| 5a | A correction reason is the default for a new book | =booksState.ts= | Accept | A new book starts under system.new_record, and the reason select shows the value the draft holds. |
+| 5b | Comment that stamp() leaves audit fields empty | =booksState.ts= | Accept | Comment added. |
+| 5c | Shared constant for the Active status | =booksState.ts= | Decline | No shared constant exists, and adding one is outside this task. |
 
 * Result
 

@@ -730,7 +730,7 @@ function ReviewStep({
                         value={state.reasonCode}
                         onChange={(event) => state.setReason(event.target.value)}
                     >
-                        {reasons.length === 0 && (
+                        {!reasons.some((reason) => reason.code === state.reasonCode) && (
                             <option value={state.reasonCode}>{state.reasonCode}</option>
                         )}
                         {reasons.map((reason) => (
@@ -867,6 +867,8 @@ export function bookSteps(input: BookStepsInput): readonly JourneyStep<ReactNode
                 fail('refdata.v1.portfolios.put', 'portfolio', made);
             }
             wrote.push('refdata.v1.portfolios.put');
+            state.portfolioWritten(plan.portfolio.id);
+            input.onWritten();
         }
         const book = await server.writeBook(plan.book, plan.version, plan.intent);
         if (!book.success || book.row === undefined) {

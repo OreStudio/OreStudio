@@ -87,6 +87,7 @@ const PICK_LISTS = [
 async function putRow(
     session: LiveSession,
     subject: string,
+    field: 'book' | 'portfolio',
     body: z.infer<typeof writeBodySchema>,
 ): Promise<{ readonly result: z.infer<typeof resultSchema>; readonly row: unknown }> {
     const reply = await session.client.callAuthenticated(
@@ -103,7 +104,7 @@ async function putRow(
         },
         z.looseObject({ result: resultSchema }),
     );
-    return { result: reply.result, row: reply['book'] ?? reply['portfolio'] ?? null };
+    return { result: reply.result, row: reply[field] ?? null };
 }
 
 /**
@@ -183,7 +184,12 @@ export function registerBookRoutes(
     server.put('/api/books/books', async (request) => {
         const session = requireSession(request);
         const body = input(writeBodySchema, request.body);
-        const { result, row: written } = await putRow(session, bookSubjects.put_book_request, body);
+        const { result, row: written } = await putRow(
+            session,
+            bookSubjects.put_book_request,
+            'book',
+            body,
+        );
         return { result, book: written };
     });
 
@@ -193,6 +199,7 @@ export function registerBookRoutes(
         const { result, row: written } = await putRow(
             session,
             portfolioSubjects.put_portfolio_request,
+            'portfolio',
             body,
         );
         return { result, portfolio: written };

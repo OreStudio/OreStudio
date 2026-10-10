@@ -109,6 +109,7 @@ function asStructure(draft: BookDraft): BookStructure {
         selectPortfolio: never,
         startPortfolio: never,
         cancelPortfolio: never,
+        portfolioWritten: vi.fn(),
         setPortfolioField: never,
         setPortfolioVirtual: never,
         startBook: never,
@@ -185,6 +186,7 @@ describe('the book structure steps', () => {
         expect(log).toEqual(['portfolio', 'book']);
         expect(state.recordWritten).toHaveBeenCalled();
         expect(onWritten).toHaveBeenCalled();
+        expect(state.portfolioWritten).toHaveBeenCalledWith(expect.any(String));
     });
 
     it('stops at a refused portfolio and writes no book', async () => {

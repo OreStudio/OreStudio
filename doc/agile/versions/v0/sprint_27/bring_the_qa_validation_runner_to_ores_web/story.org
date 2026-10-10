@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 79DA69BB-0711-40E6-8400-1B2DAC2FA40D
+:END:
+#+title: Story: Bring the QA validation runner to ores.web
+#+description: ores.qt had a QA Validation Runner, a test scenario manager. It opened a test_scenario doc, listed its steps, let the tester mark each step PASS or FAIL with a note and a screenshot, and wrote the results back. ores.web has no equivalent.
+#+type: story
+#+level: s2
+#+filetags: :web:qa:testing:journeys:v0:sprint_27:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A tester works through a test scenario in ores.web: open a scenario, read its steps beside its story and task, mark each step PASS or FAIL with a note, and save the result. The browser cannot write repo files, so the story first decides where scenarios live and where results go.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- A prototype of the runner is accepted before any code is built.
+- The story records where scenario docs are read from and where results are written.
+- A tester can open a scenario, mark every step and save, and the result is stored.
+- The scenario's story and task show beside its steps.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B27572F6-212D-49DB-90D5-1A36A6C2A9A4][Scaffold story: Bring the QA validation runner to ores.web]] | STARTED | 2026-10-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D][Prototype the QA validation runner]] | BACKLOG | | | Initial task for: Bring the QA validation runner to ores.web |
+
+* Decisions
+
+* Out of scope
+
+-

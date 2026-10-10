@@ -170,6 +170,26 @@ absent: it is a placeholder, not a product.
 | EuropeanOptionBarrier               | European Option with Barrier                 | scripted     | false       | false         |                                    |
 | PerformanceOption_01                | Performance Option (variant 01)              | scripted     | false       | false         | scripted_instrument                |
 
+* Common dates
+
+The dates a deal grid reads across families. Each product used to state them
+under its own name, so the blotter could not read one date column across a
+family (finding R9). A family maps its own columns onto these names by
+declaring =:common_date: <name>= on them; the view for the family is
+generated from those declarations, so a later family adds its mapping on its
+models and edits no view. A name that no family owns names the entity and
+column that hold it for every family instead.
+
+A mapped column must sit in a table keyed by the trade alone. A date a family
+does not state reads as null.
+
+| name          | description                                              | shared_entity | shared_column |
+|---------------+----------------------------------------------------------+---------------+---------------|
+| trade_date    | The date the trade was agreed.                           | trade_booking | trade_date    |
+| start_date    | The date the instrument starts, or its underlying starts. |               |               |
+| expiry_date   | The date an option expires.                              |               |               |
+| maturity_date | The date the instrument ends, an end date included.      |               |               |
+
 * Batch
 
 The export carries every trade's instrument as a typed array per entity, so a

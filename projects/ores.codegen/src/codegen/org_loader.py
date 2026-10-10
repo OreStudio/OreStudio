@@ -6064,9 +6064,175 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
     catalogue["rows"] = rows
     catalogue["instruments"] = instruments
     catalogue["batch"] = batch
+    catalogue["common_dates"] = _trade_type_common_dates(
+        path, doc, catalogue.get("component", ""), instruments,
+        entities_by_table)
     catalogue["routes"] = [
         {"code": row["code"], "instrument": row["instrument"]} for row in routes]
     return {"trade_type_catalogue": catalogue}
+
+
+def _entity_columns(org: Path) -> dict[str, dict[str, str]]:
+    """The declared columns of an entity model, keyed by name, each with its
+    drawer properties lower-cased."""
+    doc = parse_org(org.read_text(encoding="utf-8"))
+    section = _section(doc.root, "Columns")
+    if not section:
+        return {}
+    return {
+        child.title: {k.lower(): v for k, v in child.properties.items()}
+        for child in section.children
+    }
+
+
+def _keyed_by_trade_id_alone(columns: dict[str, dict[str, str]]) -> bool:
+    """True when the entity's only primary-key column is ``trade_id``, so it
+    holds at most one row per trade."""
+    keys = [name for name, props in columns.items()
+            if str(props.get("primary_key", "")).lower() == "true"]
+    return keys == ["trade_id"]
+
+
+def _trade_type_common_dates(
+    path: Path,
+    doc: Any,
+    component: str,
+    instruments: list[dict[str, Any]],
+    entities_by_table: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """The common-date views: one per routed header that maps a date.
+
+    The ``* Common dates`` table is the vocabulary: each name every family
+    states its dates under, and, for a date that no family owns, the entity
+    and column that hold it for all of them. The mapping itself is declared on
+    the models. A column that carries ``:common_date: <name>`` states that
+    date for its trade, and the family it belongs to is the one whose header
+    routes the trade: the header itself and the tables its ``* Delete
+    cascade`` names.
+
+    A mapped column must sit in a table keyed by the trade alone, because the
+    view joins on the trade and a many-row table would multiply the trade. A
+    name outside the vocabulary, a date stated twice in one family and a
+    column the entity does not declare each fail codegen, so the view can
+    never name a column that is not there.
+
+    A catalogue with no ``* Common dates`` section declares no view.
+    """
+    section = _section(doc.root, "Common dates")
+    if not section:
+        return {"names": [], "views": []}
+
+    by_entity = {info["entity_singular"]: (table, info)
+                 for table, info in entities_by_table.items()}
+    prefix = f"ores_{component}_"
+
+    names: list[dict[str, Any]] = []
+    shared: dict[str, dict[str, str]] = {}
+    for r in _parse_org_table_rows(section):
+        name = (r.get("name") or "").strip()
+        if not name:
+            continue
+        entity = (r.get("shared_entity") or "").strip()
+        column = (r.get("shared_column") or "").strip()
+        names.append({"name": name,
+                      "description": " ".join(
+                          (r.get("description") or "").split())})
+        if not entity and not column:
+            continue
+        if entity not in by_entity:
+            raise ValueError(
+                f"{path.name}: common date {name} is shared from {entity!r}, "
+                "which no entity model declares.")
+        table, info = by_entity[entity]
+        columns = _entity_columns(info["org"])
+        if column not in columns:
+            raise ValueError(
+                f"{path.name}: common date {name} is shared from "
+                f"{entity}.{column}, which the entity does not declare.")
+        if not _keyed_by_trade_id_alone(columns):
+            raise ValueError(
+                f"{path.name}: common date {name} is shared from {entity}, "
+                "which is not keyed by the trade alone.")
+        shared[name] = {"table": table, "column": column}
+    vocabulary = [entry["name"] for entry in names]
+    repeated = sorted({n for n in vocabulary if vocabulary.count(n) > 1})
+    if repeated:
+        raise ValueError(
+            f"{path.name}: duplicate common date(s): {', '.join(repeated)}")
+
+    views: list[dict[str, Any]] = []
+    for instrument in instruments:
+        header_table, header_info = next(
+            (table, info) for table, info in entities_by_table.items()
+            if info["entity_singular"] == instrument["name"])
+        header_doc = parse_org(header_info["org"].read_text(encoding="utf-8"))
+        cascade = _section(header_doc.root, "Delete cascade")
+        members = [(header_table, header_info)]
+        for child in (cascade.children if cascade else []):
+            table = (child.properties.get("table") or "").strip()
+            if table in entities_by_table:
+                members.append((table, entities_by_table[table]))
+
+        mapped: dict[str, dict[str, str]] = {}
+        for table, info in members:
+            columns = _entity_columns(info["org"])
+            for column, props in columns.items():
+                declared = (props.get("common_date") or "").strip()
+                if not declared:
+                    continue
+                where = f"{info['entity_singular']}.{column}"
+                if declared not in vocabulary:
+                    raise ValueError(
+                        f"{where} declares :common_date: {declared}, which "
+                        f"{path.name} does not list under * Common dates.")
+                if declared in shared:
+                    raise ValueError(
+                        f"{where} declares :common_date: {declared}, a date "
+                        f"{path.name} holds in {shared[declared]['table']}.")
+                if not _keyed_by_trade_id_alone(columns):
+                    raise ValueError(
+                        f"{where} declares :common_date: {declared}, but "
+                        f"{info['entity_singular']} is not keyed by the "
+                        "trade alone.")
+                if declared in mapped:
+                    raise ValueError(
+                        f"{instrument['name']}: {declared} is stated by both "
+                        f"{mapped[declared]['where']} and {where}.")
+                mapped[declared] = {"table": table, "column": column,
+                                    "where": where}
+        if not mapped:
+            continue
+
+        joins: list[dict[str, str]] = []
+        aliases: dict[str, str] = {header_table: "h"}
+        for source in [*mapped.values(), *shared.values()]:
+            if source["table"] not in aliases:
+                aliases[source["table"]] = f"j{len(joins) + 1}"
+                joins.append({"table": source["table"],
+                              "alias": aliases[source["table"]]})
+        columns_out = []
+        for name in vocabulary:
+            source = mapped.get(name) or shared.get(name)
+            columns_out.append({
+                "name": name,
+                "expr": (f"{aliases[source['table']]}.{source['column']}"
+                         if source else "null::date"),
+            })
+        for index, entry in enumerate(columns_out):
+            entry["comma"] = "" if index == len(columns_out) - 1 else ","
+        views.append({
+            "view": f"{prefix}{header_info['entity_plural']}_common_dates_vw",
+            "header_table": header_table,
+            "entity": instrument["name"],
+            "joins": joins,
+            "columns": columns_out,
+            "mapped": [{"name": n, "entity_column": m["where"]}
+                       for n, m in mapped.items()],
+        })
+
+    for entry in names:
+        entry["shared"] = entry["name"] in shared
+    return {"names": names, "views": views}
 
 
 def trade_type_catalogue_codes(catalogue_path: Path, entity: str) -> list[str]:

@@ -23,6 +23,9 @@
 -- =============================================================================
 -- Drop all trade tables in reverse dependency order.
 
+-- Views read the family tables, so they go first
+\ir ./trading_common_dates_vw_drop.sql
+
 -- Trade identifiers, party roles and additional fields (depend on the anchor)
 \ir ./trading_trade_additional_fields_notify_trigger_drop.sql
 \ir ./trading_trade_additional_fields_drop.sql

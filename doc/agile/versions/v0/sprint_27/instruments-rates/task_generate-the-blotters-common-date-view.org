@@ -26,7 +26,7 @@ The blotter reads one set of date columns across the rates family, from a view g
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

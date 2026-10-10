@@ -62,6 +62,7 @@ The activity that wrote this version.
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:common_date: expiry_date
 :END:
 
 Option expiry date.

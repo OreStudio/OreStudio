@@ -1,0 +1,40 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.trade_type.common_dates_create.org. Edit the org source. }}
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_trade_type_common_dates_create.mustache
+ *
+ * Common-date views
+ *
+ * Generated from ores.trading.trade_type_catalogue and the :common_date:
+ * declarations on the family models.
+ */
+
+{{#trade_type_catalogue}}
+{{#common_dates}}
+{{#views}}
+-- The dates {{entity}} maps:
+{{#mapped}}
+--   {{name}} <- {{entity_column}}
+{{/mapped}}
+create or replace view {{view}}
+with (security_invoker = true) as
+select
+    h.tenant_id,
+    h.trade_id,
+{{#columns}}
+    {{{expr}}} as {{name}}{{comma}}
+{{/columns}}
+from {{header_table}} h
+{{#joins}}
+left join {{table}} {{alias}}
+  on {{alias}}.tenant_id = h.tenant_id
+ and {{alias}}.trade_id = h.trade_id
+ and {{alias}}.valid_to = ores_utility_infinity_timestamp_fn()
+{{/joins}}
+where h.valid_to = ores_utility_infinity_timestamp_fn();
+
+{{/views}}
+{{/common_dates}}
+{{/trade_type_catalogue}}

@@ -2,18 +2,18 @@
 :ID: 7FAE1F96-1EA6-4AD8-B204-A7B928C78305
 :END:
 #+title: Task: Expose the book raise and preview
-#+description: Offer the book preview and raise as NATS operations with a typed message, a handler that checks the caller may write books, and the matching BFF routes and wire types.
+#+description: Offer the book preview and raise as NATS operations with a typed message and a handler that checks the caller may write or delete books, with the TypeScript wire types generated beside them.
 #+type: task
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/expose-the-book-raise-and-preview
+#+pr: 3080
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,18 +26,19 @@ A caller outside the process previews and raises book changes through typed oper
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
 
 - A preview operation returns every line outcome and the parts, and writes nothing.
 - A raise operation returns the request or the refusals.
-- The handler refuses a caller who may not write books.
+- The handler refuses a caller who may not write books, and a delete line needs the permission to delete them.
+- The operations are registered in the refdata service, beside the entity handlers.
 - The operations are modelled in an operations model and generated, as the approval operations are.
 
 * Plan
@@ -45,6 +46,12 @@ A caller outside the process previews and raises book changes through typed oper
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Model the two operations in =ores.refdata.book_proposal_operations=. The generator writes the C++ protocol and the TypeScript wire types.
+- The response names the raised request by its id. The TypeScript generator imports a type from the same component only, and the inbox operations already read the request.
+- Write the handler in =ores.refdata.service=, beside the proposal service, and register it from the service application. =ores.refdata.core= cannot link the inbox.
+- Keep the permission rule and the wire mapping in plain functions so they have tests. The handler only proves the request, checks the permission and calls the service.
+- The BFF routes belong to the review panel work, which is the first caller.
 
 * Measurements
 
@@ -62,6 +69,9 @@ task and name that file in the Command column.
 
 * Notes
 
+- The handler is not exercised over NATS in a test, as no other operations handler is. The permission rule and the mapping have unit tests, and the proposal service has database tests.
+- A raise that creates nothing answers =invalid= with a code a screen can switch on: =line_refused=, =needs_no_request= or =bad_request=.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -77,12 +87,30 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3080][#3080]] | [refdata] Expose the book preview and raise as operations |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unknown operation counts as a write | book_proposal_mapping.cpp | Accept | An unknown operation is refused with bad_request before the permission check, and only a put needs the write permission. |
+| 2 | Empty lines pass the permission check | book_proposal_handler.hpp | Accept | Empty lines get the bad_request reply, as a malformed request does. |
+| 3 | Preview needs write or delete permission | book_proposal_handler.hpp | Decline | Deliberate. The preview shows the effect of a write, so it needs the permission the write needs. The handler comment states it. |
+| 4 | Two passes over the lines | book_proposal_mapping.cpp | Decline | The sizes are small. |
+| 5 | Error text reaches the caller | book_proposal_handler.hpp | Accept | The reply carries a generic message. The detail stays in the log. |
+| 6 | Duplicated decode and permission steps | book_proposal_handler.hpp | Accept | The permission and line check is one private function. The decode stays in each operation. |
+| 7 | Handler forbidden path untested | tests | Accept | The new cases pin the empty, unknown-operation and mixed cases. The forbidden reply itself needs NATS and stays untested. |
 
 * Result
+
+A caller outside the process can preview and raise changes to books.
+
+- =ores.refdata.book_proposal_operations= models =preview_book_changes= and =raise_book_changes=. The generated C++ protocol and TypeScript wire types carry the lines, each line's outcome and the parts.
+- =book_proposal_handler= proves the request, checks =refdata::books:write= for a put line and =refdata::books:delete= for a delete line, and calls the proposal service. It is registered by =book_proposal_registrar= from the refdata service application.
+- The preview answers each line's refusal and the parts. The raise answers the request id, or an invalid result with a code.
+
+Evidence: five new mapping cases and the thirteen proposal cases pass (48 assertions). The refdata service and test targets build. The wire-protocol package typechecks. The cmake source, handler permission, test case reachability, pasted block symbol, populate reference and derived-model checks pass.
+
+The component-drift check failed on main for =book_change_eventing_integration_tests.cpp=. The generator changed in PR #3073 after the file was generated, so the file is regenerated here. The regenerated test passes.
+
+Not done here: the BFF routes and the screens, an end-to-end NATS test of the handler, and the apply.

@@ -62,6 +62,9 @@ task and name that file in the Command column.
 
 * Notes
 
+- Map the store errors to statuses: =InvalidDocIdError= to 400, =ScenarioNotFoundError= to 404, =UnknownStepError=, =AmbiguousStepError= and =DuplicateOutcomeError= to 400, =ScenarioFormatError= to 422, =PathEscapeError= to 500 and a log line.
+- A scan can throw, for example on an unreadable folder. The route must answer 503 and not crash.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

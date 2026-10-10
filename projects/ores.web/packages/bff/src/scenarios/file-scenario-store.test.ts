@@ -215,6 +215,49 @@ describe('reading', () => {
     });
 });
 
+describe('scanning', () => {
+    it('lets calls that arrive during the first scan see the whole store', async () => {
+        const s = new FileScenarioStore(root);
+        const [list, doc, scenario] = await Promise.all([
+            s.list(),
+            s.readDoc(STORY),
+            s.read(SINGLE),
+        ]);
+        expect(list).toHaveLength(2);
+        expect(doc?.type).toBe('story');
+        expect(scenario?.steps).toHaveLength(5);
+    });
+
+    it('tries again at once after a scan that failed', async () => {
+        const s = new FileScenarioStore(root, { rescanAfterMs: 600_000 });
+        const locked = join(root, 'sprint_23/locked');
+        mkdirSync(locked);
+        chmodSync(locked, 0o000);
+        try {
+            await expect(s.list()).rejects.toThrow();
+        } finally {
+            chmodSync(locked, 0o755);
+        }
+        expect(await s.list()).toHaveLength(2);
+    });
+
+    it('lists a scenario whose #+type: sits past the first chunk of the file', async () => {
+        const id = 'A1111111-1111-4111-8111-111111111111';
+        const long = fixture('single_client_scenario.org')
+            .replace(SINGLE, id)
+            .replace('#+description: ', `#+description: ${'long '.repeat(1500)}`);
+        expect(long.indexOf('#+type:')).toBeGreaterThan(5000);
+        put('sprint_24/scenario_long.org', long);
+        expect((await store().list()).map((x) => x.id)).toContain(id);
+    });
+
+    it('skips a file that vanishes during the walk', async () => {
+        const s = store();
+        rmSync(join(root, 'sprint_23/story/notes.txt'));
+        expect(await s.list()).toHaveLength(2);
+    });
+});
+
 describe('recording a run', () => {
     const file = () => join(root, 'sprint_23/story/scenario_multi.org');
 

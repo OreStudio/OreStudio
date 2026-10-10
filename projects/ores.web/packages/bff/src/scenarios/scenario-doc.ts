@@ -86,7 +86,10 @@ export interface Scenario {
     readonly run: ScenarioRunRecord;
 }
 
-/** What a tester's save carries. It names every step it writes. */
+/**
+ * What a tester's save carries. It names every step it writes. A note lives
+ * in one table cell, so a line end comes back as "; " and a pipe as "/".
+ */
 export interface StepOutcome extends StepRef {
     readonly status: StepStatus;
     readonly notes: string;
@@ -126,6 +129,17 @@ export class AmbiguousStepError extends Error {
     constructor(step: StepRef) {
         super(`The scenario has more than one step "${step.title}"${clientSuffix(step)}.`);
         this.name = 'AmbiguousStepError';
+        this.step = step;
+    }
+}
+
+/** A save names one step twice. */
+export class DuplicateOutcomeError extends Error {
+    readonly step: StepRef;
+
+    constructor(step: StepRef) {
+        super(`The save names the step "${step.title}"${clientSuffix(step)} more than once.`);
+        this.name = 'DuplicateOutcomeError';
         this.step = step;
     }
 }
@@ -361,7 +375,8 @@ export function recordRun(text: string, input: RunInput): RecordedRun {
         if (matches.length === 0) throw new UnknownStepError(outcome);
         if (matches.length > 1) throw new AmbiguousStepError(outcome);
         const [step] = matches;
-        if (step === undefined || written.has(step)) continue;
+        if (step === undefined) continue;
+        if (written.has(step)) throw new DuplicateOutcomeError(outcome);
         written.add(step);
 
         const table = step.result?.tables[0];
@@ -423,6 +438,7 @@ export function recordRun(text: string, input: RunInput): RecordedRun {
                 '| Field         | Value |',
                 '|---------------+-------|',
                 ...run.map(([field, value]) => `| ${field.padEnd(13)} | ${cell(value)} |`),
+                '',
             ],
         });
     }

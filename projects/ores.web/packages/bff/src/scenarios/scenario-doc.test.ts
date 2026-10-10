@@ -24,6 +24,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
     AmbiguousStepError,
+    DuplicateOutcomeError,
     parseScenario,
     recordRun,
     ScenarioFormatError,
@@ -322,6 +323,20 @@ describe('writing a run into a scenario', () => {
         expect(() => recordRun(twice, run([outcome(null, title, 'PASS')]))).toThrow(
             AmbiguousStepError,
         );
+    });
+
+    it('refuses a save that names one step twice', () => {
+        const title = parseScenario(single).steps[0]?.title ?? '';
+        const twice = run([outcome(null, title, 'PASS'), outcome(null, title, 'FAIL')]);
+        expect(() => recordRun(single, twice)).toThrow(DuplicateOutcomeError);
+    });
+
+    it('ends a Results table it creates with a blank line before the next heading', () => {
+        const noTable = single.replace(/\* Results\n\n\| Field[\s\S]*?\n\n/, '* Results\n\n');
+        expect(noTable).not.toBe(single);
+        const title = parseScenario(noTable).steps[0]?.title ?? '';
+        const done = recordRun(noTable, run([outcome(null, title, 'PASS')]));
+        expect(done.text).toMatch(/\| Worktree\s+\| eager_maxwell \|\n\n/);
     });
 
     it('refuses text that is not a scenario', () => {

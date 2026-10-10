@@ -112,6 +112,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A concurrent first request can see an empty store | file-scenario-store.ts | Fix | A scan in progress is shared, and a caller waits for it. A test with three concurrent first calls passes. Without the fix it fails. |
+| 2 | A failed scan blocks retries for the interval | file-scenario-store.ts | Fix | The scan time is set only after a scan succeeds. A file or folder that vanishes during the walk is skipped. A test with an unreadable folder passes, and fails without the fix. |
+| 3 | A file is dropped when its keywords sit past 4096 bytes | file-scenario-store.ts | Fix | The head read goes on in chunks to the first heading, up to 64 KB. The :ID: drawer comes first in a compass doc, so the field at risk was #+type:. A test with a 7 KB description passes, and fails without the fix. |
+| 4 | Index entries are stale for an edit made outside the BFF | file-scenario-store.ts | Document | The class comment says so. The text is always read fresh, and a save updates its own entry. |
+| 5 | A lost update when an editor saves between the read and the rename | file-scenario-store.ts | Decline | The window is a few system calls, and a conflict check needs a seam to test and a way for the runner to show it. Last write wins is a stated decision. Task 5 may add a conflict check if a tester meets it. |
+| 6 | A step named twice in one save is dropped without a word | scenario-doc.ts | Fix | A new DuplicateOutcomeError refuses the save. A test covers it. |
+| 7 | A pipe and a line end in a note come back changed | scenario-doc.ts | Document | The comment on StepOutcome says so, for the UI. |
+| 8 | A created Results table has no blank line after it | scenario-doc.ts | Fix | A trailing blank line is added, with a test. |
+| 9 | A doc with no Results section lists and reads, but a save fails | scenario-doc.ts | Note | Task 3 maps the errors to HTTP statuses. The note is in its task. |
+| 10 | Nits: queue key, same-tick edits, negative cache | file-scenario-store.ts | Comment, decline | The queue key has a comment. The other two are not worth the code. |
 
 * Result

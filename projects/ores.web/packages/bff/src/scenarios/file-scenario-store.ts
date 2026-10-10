@@ -58,6 +58,7 @@ interface IndexEntry {
 }
 
 const HEAD_BYTES = 4096;
+const MAX_HEAD_BYTES = 65_536;
 const SCAN_BATCH = 64;
 const DOC_ID = /^[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}$/;
 
@@ -66,12 +67,23 @@ function skipDirectory(name: string): boolean {
     return name === 'node_modules' || name.startsWith('.');
 }
 
+/**
+ * The text before the first heading, which holds the :ID: drawer and the
+ * #+keyword lines. It reads on past a chunk while no heading has come, up to
+ * a limit, because a long #+description: can push the :ID: past the first
+ * chunk.
+ */
 async function readHead(file: string): Promise<string> {
     const handle = await open(file, 'r');
     try {
-        const buffer = Buffer.alloc(HEAD_BYTES);
-        const { bytesRead } = await handle.read(buffer, 0, HEAD_BYTES, 0);
-        return buffer.toString('utf8', 0, bytesRead);
+        let text = '';
+        for (let at = 0; at < MAX_HEAD_BYTES; at += HEAD_BYTES) {
+            const buffer = Buffer.alloc(HEAD_BYTES);
+            const { bytesRead } = await handle.read(buffer, 0, HEAD_BYTES, at);
+            text += buffer.toString('utf8', 0, bytesRead);
+            if (bytesRead < HEAD_BYTES || /^\* /m.test(text)) break;
+        }
+        return text;
     } finally {
         await handle.close();
     }
@@ -84,6 +96,12 @@ async function readHead(file: string): Promise<string> {
  * a file the scan found, so no id can name a file outside the root. A scan
  * reads only regular files and real directories, so it never follows a
  * symbolic link.
+ *
+ * The index and the summaries are as old as the last scan. A doc edited
+ * outside the BFF, for example in an editor, shows its old title, type and
+ * summary until the next scan, which is at most the rescan interval away.
+ * Its text is always read fresh. A save through the store updates its own
+ * entry at once.
  */
 export class FileScenarioStore implements ScenarioStore {
     private readonly root: string;
@@ -91,6 +109,7 @@ export class FileScenarioStore implements ScenarioStore {
     private realRoot: string | undefined;
     private index = new Map<string, IndexEntry>();
     private lastScan = Number.NEGATIVE_INFINITY;
+    private scanning: Promise<boolean> | undefined;
     private readonly queues = new Map<string, Promise<unknown>>();
     private readonly summaries = new Map<
         string,
@@ -151,6 +170,8 @@ export class FileScenarioStore implements ScenarioStore {
     async record(id: string, input: RunInput): Promise<RecordResult> {
         const key = normalise(id);
         const entry = this.index.get(key);
+        // Saves to one doc share a queue. A cold index has no path yet, so the
+        // id stands in until the first save has filled the index.
         const queueKey = entry?.path ?? key;
         const previous = this.queues.get(queueKey) ?? Promise.resolve();
         const next = previous.catch(() => undefined).then(() => this.write(key, input));
@@ -218,14 +239,36 @@ export class FileScenarioStore implements ScenarioStore {
         return null;
     }
 
-    /** Scan the tree for .org files. Returns false when the last scan is too recent. */
-    private async scan(): Promise<boolean> {
-        if (Date.now() - this.lastScan < this.rescanAfterMs) return false;
-        this.lastScan = Date.now();
+    /**
+     * Scan the tree for .org files. A caller that arrives during a scan waits
+     * for it. Returns false when the last scan is too recent. A scan that
+     * fails does not count, so the next call tries again.
+     */
+    private scan(): Promise<boolean> {
+        if (this.scanning !== undefined) return this.scanning;
+        if (Date.now() - this.lastScan < this.rescanAfterMs) return Promise.resolve(false);
+        const running = this.walkTree()
+            .then(() => {
+                this.lastScan = Date.now();
+                return true;
+            })
+            .finally(() => {
+                this.scanning = undefined;
+            });
+        this.scanning = running;
+        return running;
+    }
+
+    private async walkTree(): Promise<void> {
         const root = await this.rootPath();
         const files: string[] = [];
         const walk = async (relative: string): Promise<void> => {
-            const entries = await readdir(join(root, relative), { withFileTypes: true });
+            const entries = await readdir(join(root, relative), { withFileTypes: true }).catch(
+                (error: NodeJS.ErrnoException) => {
+                    if (relative !== '' && error.code === 'ENOENT') return [];
+                    throw error;
+                },
+            );
             for (const entry of entries) {
                 const path = relative === '' ? entry.name : `${relative}/${entry.name}`;
                 if (entry.isDirectory()) {
@@ -247,7 +290,12 @@ export class FileScenarioStore implements ScenarioStore {
             const found = await Promise.all(
                 batch.map(async (path): Promise<[string, IndexEntry] | null> => {
                     const file = join(root, path);
-                    const { mtimeMs, size } = await stat(file);
+                    const seen = await stat(file).catch((error: NodeJS.ErrnoException) => {
+                        if (error.code === 'ENOENT') return null;
+                        throw error;
+                    });
+                    if (seen === null) return null;
+                    const { mtimeMs, size } = seen;
                     const before = known.get(path);
                     if (before?.[1].mtimeMs === mtimeMs && before[1].size === size) return before;
                     const doc = parseOrg(await readHead(file).catch(() => ''));
@@ -269,7 +317,6 @@ export class FileScenarioStore implements ScenarioStore {
             }
         }
         this.index = next;
-        return true;
     }
 }
 

@@ -71,9 +71,13 @@ What the web does differently:
 - The web has a record page, which Qt has as a modal dialog. A record page that is being edited shows a line above the form with the newer version, and the person chooses Load newer or Keep my edit.
 - Dependent screens (a book showing a country name) stay out of scope, as the Change notification page states.
 
+Decided by the product owner:
+
+- A record page waits for Refresh, as a list does. It never reloads its cards by itself.
+- The history waits for Refresh too. A new entry makes the Refresh button stale, and the entry is marked once the history is read again.
+
 Open decisions for the product owner:
 
-- Whether a record page with no edit open may reload its cards by itself, or also waits for Refresh. The proposal is to wait, as lists do.
 - The stale colour. The proposal is the existing =warn= amber, which the timeline also uses for "Answered". A separate token would keep "changed" meaning one thing.
 
 * Out of scope

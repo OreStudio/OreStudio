@@ -35,7 +35,7 @@ The person page and the other record pages get the same Refresh button, which re
 
 * Acceptance
 
-- One Refresh reloads the cards and the timeline.
+- The record page and the history never reload by themselves. A change makes the Refresh button stale, and one Refresh reloads the cards and the history.
 - A new timeline entry is marked until the reader has seen it.
 
 * Plan

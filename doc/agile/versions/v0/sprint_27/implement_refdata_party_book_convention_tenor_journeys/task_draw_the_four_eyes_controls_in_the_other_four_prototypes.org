@@ -83,7 +83,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The comment box loses focus on every keystroke | =four-eyes.js, books prototype.js= | Accept | The comment input carries data-focus, in all four copies and in the book prototype, which had the same fault. A headless Chrome run types five characters into each of the five and keeps focus and value. |
+| 2 | Four identical copies drift | =four-eyes.js= | Decline | Deliberate, as the PR says: a prototype is self-contained. A CI check that the copies match is a separate change. The four copies were identical by md5 after the fix. |
+| 3 | raise leaves a stale decline comment | =four-eyes.js= | Accept | raise clears the declined comment. |
+| 4 | The wording when the actor already answered | =four-eyes.js= | Decline | The sentence is only appended when the part decides none of the changes. When the part has answered, the already-answered notice states it. |
+| 5 | Direct-link fixture in the other three | =prototype.js= | Accept, already true | The party opens NWCAP with its demo correction, the convention opens a new swap convention, and the tenor opens 3M, so each shows a request. |
+| 6 | Is Visible to gated on Operations | =journey doc= | Confirm | It follows the working rule in the controls note, for the product owner to confirm. |
+| 7 | Finance has no Acme account | =journey docs= | Accept, already stated | Each journey document states it and links the task that adds the account. |
 
 * Result
 

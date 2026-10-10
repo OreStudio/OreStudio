@@ -133,6 +133,7 @@
         fe.raise = function (changes) {
             S.answers = {};
             S.comment = '';
+            S.declinedComment = '';
             S.applied = false;
             var parts = fe.parts(changes);
             var first = parts.length ? actorForPart(parts[0]) : null;
@@ -207,7 +208,7 @@
                 '<div class="fe-panel"><h3>Request ' + esc(requestId) + ' · raised by ' + esc(maker.name) + '</h3>' + delta + '</div>' +
                 '<div class="fe-panel"><h3>Checks</h3>' + checks + '</div>' + why +
                 '<div class="fe-panel"><label class="fe-field"><span>Comment · required</span>' +
-                '<input data-fe-comment="1" placeholder="Why you approve or decline" value="' + esc(S.comment) + '"></label>' +
+                '<input data-fe-comment="1" data-focus="fe-comment" placeholder="Why you approve or decline" value="' + esc(S.comment) + '"></label>' +
                 '<div class="fe-actions"><button type="button" class="fe-btn" data-fe="decline"' + (declineBlocked ? ' disabled' : '') + '>Decline</button>' +
                 '<button type="button" class="fe-btn primary fe-grow" data-fe="approve"' + (approveBlocked ? ' disabled' : '') + '>Approve</button></div></div>';
         };

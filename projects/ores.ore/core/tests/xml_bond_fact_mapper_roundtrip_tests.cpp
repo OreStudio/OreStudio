@@ -838,7 +838,10 @@ TEST_CASE("bond_repo_leg_keeps_the_tenor_the_issue_does_not_take", tags) {
 
     REQUIRE(r.repo);
     CHECK(r.repo->repo_type == "Fixed");
-    CHECK(r.repo->repo_rate == Approx(0.0178).epsilon(0.0001));
+    // Exact: the document states 0.0178 and the boundary keeps its digits,
+    // so the assertion is against the spelling rather than an epsilon.
+    REQUIRE(r.repo->repo_rate);
+    CHECK(*r.repo->repo_rate == ores::utility::decimal::decimal::from_string("0.0178").value());
 
     REQUIRE(r.repo_leg.payer);
     CHECK(*r.repo_leg.payer);
@@ -903,7 +906,7 @@ TEST_CASE("bond_trs_carries_the_price_type_and_the_funding_schedule", tags) {
     // document.
     CHECK(r.trs->return_type == "Total");
     CHECK(r.trs->funding_leg_type == "Fixed");
-    CHECK(r.trs->funding_rate == Approx(-0.0055).epsilon(0.0001));
+    CHECK(r.trs->funding_rate->to_double() == Approx(-0.0055).epsilon(0.0001));
 
     CHECK(r.trs_price_type == "Dirty");
     REQUIRE(r.trs_funding_leg.payer);
@@ -997,7 +1000,7 @@ TEST_CASE("bond_trs_price_type_and_payer_come_from_the_document", tags) {
     CHECK(r.trs_funding_leg.schedule.rules.front().tenor == "6M");
     REQUIRE(r.trs);
     CHECK(r.trs->funding_leg_type == "Fixed");
-    CHECK(r.trs->funding_rate == Approx(0.0125).epsilon(0.0001));
+    CHECK(r.trs->funding_rate->to_double() == Approx(0.0125).epsilon(0.0001));
 
     // The total return block carries three members of its own. The payer
     // is a required string the corpus spells as text, the initial price
@@ -1005,7 +1008,7 @@ TEST_CASE("bond_trs_price_type_and_payer_come_from_the_document", tags) {
     REQUIRE(r.trs_payer);
     CHECK(*r.trs_payer == "false");
     REQUIRE(r.trs_initial_price);
-    CHECK(*r.trs_initial_price == Approx(109.712));
+    CHECK(r.trs_initial_price->to_double() == Approx(109.712));
     REQUIRE(r.trs_schedule.dates.size() == 1);
     REQUIRE(r.trs_schedule.dates.front().calendar);
     CHECK(*r.trs_schedule.dates.front().calendar == "GBP");
@@ -1300,7 +1303,7 @@ TEST_CASE("the_option_block_survives_the_round_trip", tags) {
     CHECK(o.premium_currency == "USD");
     CHECK(o.premium_pay_date == "2025-03-01");
     REQUIRE(o.premiums.size() == 1);
-    CHECK(o.premiums.front().amount == Approx(12500.0));
+    CHECK(o.premiums.front().amount.to_double() == Approx(12500.0));
     CHECK(o.premiums.front().currency == "USD");
     CHECK(o.premiums.front().pay_date == "2025-03-01");
     REQUIRE(o.premiums.front().settlement);
@@ -1309,7 +1312,7 @@ TEST_CASE("the_option_block_survives_the_round_trip", tags) {
     CHECK(o.premiums.front().settlement->fixing_date == "2025-02-27");
     CHECK(o.exercise_prices == "100;105");
     REQUIRE(o.exercise_fees.size() == 1);
-    CHECK(o.exercise_fees.front().amount == Approx(0.25));
+    CHECK(o.exercise_fees.front().amount.to_double() == Approx(0.25));
     CHECK(o.exercise_fees.front().type == "Percentage");
     CHECK(o.exercise_fees.front().start_date == "2026-01-01");
     CHECK(o.exercise_fees.front().currency == "USD");
@@ -1321,7 +1324,7 @@ TEST_CASE("the_option_block_survives_the_round_trip", tags) {
     REQUIRE(o.exercise_data);
     CHECK(o.exercise_data->date == "2026-06-15");
     REQUIRE(o.exercise_data->price);
-    CHECK(*o.exercise_data->price == Approx(101.25));
+    CHECK(o.exercise_data->price->to_double() == Approx(101.25));
     REQUIRE(o.payment_data);
     CHECK(o.payment_data->dates.empty());
     REQUIRE(o.payment_data->rules);
@@ -1456,7 +1459,7 @@ TEST_CASE("the_three_strike_spellings_survive_the_round_trip", tags) {
     REQUIRE(y.strike_data);
     CHECK_FALSE(y.strike_data->price_value);
     REQUIRE(y.strike_data->yield_value);
-    CHECK(*y.strike_data->yield_value == Approx(0.055).epsilon(1e-6));
+    CHECK(y.strike_data->yield_value->to_double() == Approx(0.055).epsilon(1e-6));
     CHECK(y.strike_data->yield_compounding == "SimpleThenCompounded");
 
     const auto y_rt = bond_instrument_mapper::reverse_bond_option(y);
@@ -1561,7 +1564,7 @@ TEST_CASE("an_ascot_carries_the_option_block", tags) {
     CHECK(r.option_data->style == "American");
     CHECK(r.option_data->settlement == "Physical");
     REQUIRE(r.option_data->premiums.size() == 1);
-    CHECK(r.option_data->premiums.front().amount == Approx(166000.0));
+    CHECK(r.option_data->premiums.front().amount.to_double() == Approx(166000.0));
     CHECK(r.option_data->premiums.front().currency == "EUR");
     CHECK(r.option_data->premiums.front().pay_date == "2021-10-10");
     CHECK(r.option_exercise_dates == std::vector<std::string>{"2030-10-08"});
@@ -1935,9 +1938,9 @@ TEST_CASE("a_forward_bonds_settlement_premium_and_flag_survive_the_round_trip", 
     REQUIRE(r.forward_settlement->settlement);
     CHECK(*r.forward_settlement->settlement == "Cash");
     REQUIRE(r.forward_settlement->amount);
-    CHECK(*r.forward_settlement->amount == Approx(1000000.0));
+    CHECK(r.forward_settlement->amount->to_double() == Approx(1000000.0));
     REQUIRE(r.forward_settlement->lock_rate);
-    CHECK(*r.forward_settlement->lock_rate == Approx(0.025));
+    CHECK(r.forward_settlement->lock_rate->to_double() == Approx(0.025));
     REQUIRE(r.forward_settlement->dv01);
     CHECK(*r.forward_settlement->dv01 == Approx(123.45));
     REQUIRE(r.forward_settlement->lock_rate_day_counter);

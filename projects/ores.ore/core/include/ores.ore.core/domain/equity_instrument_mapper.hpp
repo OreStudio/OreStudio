@@ -35,6 +35,7 @@
 #include "ores.trading.api/domain/equity_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 
 namespace ores::ore::domain {
 
@@ -74,10 +75,24 @@ private:
     static std::string extract_option_type(const optionData& od);
     static std::string extract_exercise_style(const optionData& od);
     static std::chrono::year_month_day first_exercise_date(const optionData& od);
-    static double extract_strike(const strikeGroup_group_t& sg);
+    /**
+     * @brief The strike's exact decimal, from the document's own text.
+     *
+     * ORE states the strike either as a text leaf, which carries the digits, or
+     * as a float leaf, which does not. Parsing the text with from_string keeps
+     * the digits the document wrote.
+     */
+    static ores::utility::decimal::decimal extract_strike(const strikeGroup_group_t& sg);
     static std::string barrier_type_str(const barrierData& bd);
-    static double first_barrier_level(const barrierData& bd);
-    static double second_barrier_level(const barrierData& bd);
+    /**
+     * @brief The lower barrier as a decimal.
+     *
+     * ORE states the level as a plain float, so this is only as exact as that
+     * float; the decimal return keeps the money column in one shape.
+     */
+    static ores::utility::decimal::decimal first_barrier_level(const barrierData& bd);
+    /** @brief The second barrier, read like first_barrier_level. */
+    static ores::utility::decimal::decimal second_barrier_level(const barrierData& bd);
     static std::string underlyings_to_json(const underlyings& us);
 
 public:

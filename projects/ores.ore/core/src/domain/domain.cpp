@@ -4445,6 +4445,7 @@ void _set_stFreeStyleNumber(domain::stFreeStyleNumber* obj,
                             std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_date(domain::date* obj, const xsdcpp::Position& pos, std::string&& val) {
     xsdcpp::set_string(obj, pos, std::move(val));
@@ -7136,6 +7137,7 @@ void _set_legData_capfloor_Notionals_t_Notional_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_fxreset_FXIndex_t(domain::fxreset_FXIndex_t* obj,
                             const xsdcpp::Position& pos,
@@ -9128,6 +9130,7 @@ void _set_zeroInflationIndexType_RebasingEvents_t_Event_t(
     std::string&& val) {
     double& base = *obj;
     xsdcpp::set_double(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_nettingSetDetails_AgreementType_t(domain::nettingSetDetails_AgreementType_t* obj,
                                             const xsdcpp::Position& pos,
@@ -9219,6 +9222,7 @@ void _set_shiftSizeEntry(domain::shiftSizeEntry* obj,
                          std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_discountcurve_Shifts_t(domain::discountcurve_Shifts_t* obj,
                                  const xsdcpp::Position& pos,
@@ -9544,6 +9548,7 @@ void _set_optionData_ExerciseFees_t_ExerciseFee_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 std::string to_string(optionPayRelativeTo val) {
     return xsdcpp::to_string((size_t)val, 2, _optionPayRelativeTo_Values, "optionPayRelativeTo");
@@ -9579,12 +9584,14 @@ void _set__CashflowData_t_Cashflow_t_Amount_t(domain::_CashflowData_t_Cashflow_t
                                               std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set__FixedLegData_t_Rates_t_Rate_t(domain::_FixedLegData_t_Rates_t_Rate_t* obj,
                                          const xsdcpp::Position& pos,
                                          std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set__FloatingLegData_t_LastRecentPeriod_t(domain::_FloatingLegData_t_LastRecentPeriod_t* obj,
                                                 const xsdcpp::Position& pos,
@@ -9667,12 +9674,14 @@ void _set__EquityMarginLegData_t_Rates_t_Rate_t(domain::_EquityMarginLegData_t_R
                                                 std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_pricesType_Price_t(domain::pricesType_Price_t* obj,
                              const xsdcpp::Position& pos,
                              std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set__CommodityFixedLegData_t_Tag_t(domain::_CommodityFixedLegData_t_Tag_t* obj,
                                          const xsdcpp::Position& pos,
@@ -9685,6 +9694,7 @@ void _set_quantitiesType_Quantity_t(domain::quantitiesType_Quantity_t* obj,
                                     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set__CommodityFloatingLegData_t_Tag_t(domain::_CommodityFloatingLegData_t_Tag_t* obj,
                                             const xsdcpp::Position& pos,
@@ -9730,12 +9740,14 @@ void _set_capFloorData_Caps_t_Cap_t(domain::capFloorData_Caps_t_Cap_t* obj,
                                     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_capFloorData_Floors_t_Floor_t(domain::capFloorData_Floors_t_Floor_t* obj,
                                         const xsdcpp::Position& pos,
                                         std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_eqForwardSettlementData_FXIndex_t(domain::eqForwardSettlementData_FXIndex_t* obj,
                                             const xsdcpp::Position& pos,
@@ -9758,6 +9770,7 @@ void _set_legData_Notionals_t_Notional_t(domain::legData_Notionals_t_Notional_t*
                                          std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_legData_SettlementData_t_FixingDate_t(domain::legData_SettlementData_t_FixingDate_t* obj,
                                                 const xsdcpp::Position& pos,
@@ -9799,6 +9812,7 @@ void _set_cbCallData_Prices_t_Price_t(domain::cbCallData_Prices_t_Price_t* obj,
                                       std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_cbCallData_PriceTypes_t_PriceType_t(domain::cbCallData_PriceTypes_t_PriceType_t* obj,
                                               const xsdcpp::Position& pos,
@@ -9859,6 +9873,7 @@ void _set_cbDividendProtectionData_Thresholds_t_Threshold_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_callableBondCallData_Styles_t_Style_t(domain::callableBondCallData_Styles_t_Style_t* obj,
                                                 const xsdcpp::Position& pos,
@@ -9871,6 +9886,7 @@ void _set_callableBondCallData_Prices_t_Price_t(domain::callableBondCallData_Pri
                                                 std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_callableBondCallData_PriceTypes_t_PriceType_t(
     domain::callableBondCallData_PriceTypes_t_PriceType_t* obj,
@@ -9911,6 +9927,7 @@ void _set_flexiSwapData_LowerNotionalBounds_t_Notional_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_tranche_Description_t(domain::tranche_Description_t* obj,
                                 const xsdcpp::Position& pos,
@@ -9923,12 +9940,14 @@ void _set_tranche_Notionals_t_Notional_t(domain::tranche_Notionals_t_Notional_t*
                                          std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_tarfData2_Strikes_t_Strike_t(domain::tarfData2_Strikes_t_Strike_t* obj,
                                        const xsdcpp::Position& pos,
                                        std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_scriptedTradeData_Data_t_Number_t_Value_t(
     domain::scriptedTradeData_Data_t_Number_t_Value_t* obj,
@@ -10684,12 +10703,14 @@ void _set_swaptionvolatility_Shifts_t_Shift_t(domain::swaptionvolatility_Shifts_
                                               std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_yieldvolatility_Shifts_t_Shift_t(domain::yieldvolatility_Shifts_t_Shift_t* obj,
                                            const xsdcpp::Position& pos,
                                            std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_stressdiscountcurve_Shifts_t(domain::stressdiscountcurve_Shifts_t* obj,
                                        const xsdcpp::Position& pos,
@@ -10793,12 +10814,14 @@ void _set_floatWithAttribute(domain::floatWithAttribute* obj,
                              std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_tradeLevelFixings_Fixing_t(domain::tradeLevelFixings_Fixing_t* obj,
                                      const xsdcpp::Position& pos,
                                      std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set__RangeAccrualLegData_t_Coupons_t_Coupon_t(
     domain::_RangeAccrualLegData_t_Coupons_t_Coupon_t* obj,
@@ -10806,6 +10829,7 @@ void _set__RangeAccrualLegData_t_Coupons_t_Coupon_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set__RangeAccrualLegData_t_UpperBounds_t_UpperBound_t(
     domain::_RangeAccrualLegData_t_UpperBounds_t_UpperBound_t* obj,
@@ -10813,6 +10837,7 @@ void _set__RangeAccrualLegData_t_UpperBounds_t_UpperBound_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set__RangeAccrualLegData_t_LowerBounds_t_LowerBound_t(
     domain::_RangeAccrualLegData_t_LowerBounds_t_LowerBound_t* obj,
@@ -10820,12 +10845,14 @@ void _set__RangeAccrualLegData_t_LowerBounds_t_LowerBound_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set__CPILegData_t_Rates_t_Rate_t(domain::_CPILegData_t_Rates_t_Rate_t* obj,
                                        const xsdcpp::Position& pos,
                                        std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set__EquityLegData_t_FXTerms_t_FXIndex_t(domain::_EquityLegData_t_FXTerms_t_FXIndex_t* obj,
                                                const xsdcpp::Position& pos,
@@ -10846,6 +10873,7 @@ void _set__ZeroCouponFixedLegData_t_Rates_t_Rate_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t(
     domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t* obj,
@@ -10915,6 +10943,7 @@ void _set_cbCallData_TriggerRatios_t_TriggerRatio_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_cbCallData_NOfMTriggers_t_NOfMTrigger_t(
     domain::cbCallData_NOfMTriggers_t_NOfMTrigger_t* obj,
@@ -10942,6 +10971,7 @@ void _set_cbConversionData_ConversionRatios_t_ConversionRatio_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_cbConversionData_FixedAmountConversion_t_Amounts_t_Amount_t(
     domain::cbConversionData_FixedAmountConversion_t_Amounts_t_Amount_t* obj,
@@ -10949,6 +10979,7 @@ void _set_cbConversionData_FixedAmountConversion_t_Amounts_t_Amount_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_cbConversionResetData_References_t_Reference_t(
     domain::cbConversionResetData_References_t_Reference_t* obj,
@@ -10963,6 +10994,7 @@ void _set_cbConversionResetData_Thresholds_t_Threshold_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_cbConversionResetData_Gearings_t_Gearing_t(
     domain::cbConversionResetData_Gearings_t_Gearing_t* obj,
@@ -10970,6 +11002,7 @@ void _set_cbConversionResetData_Gearings_t_Gearing_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_cbExchangeableData_EquityCreditCurve_t(
     domain::cbExchangeableData_EquityCreditCurve_t* obj,
@@ -11182,6 +11215,7 @@ void _set_loadFactorType(domain::loadFactorType* obj,
                          std::string&& val) {
     double& base = *obj;
     xsdcpp::set_double(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_parconversion_Conventions_t_Convention_t(
     domain::parconversion_Conventions_t_Convention_t* obj,
@@ -11224,6 +11258,7 @@ void _set_cbContingentConversionData_Barriers_t_Barrier_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_cbConversionResetData_Floors_t_Floor_t(
     domain::cbConversionResetData_Floors_t_Floor_t* obj,
@@ -11231,6 +11266,7 @@ void _set_cbConversionResetData_Floors_t_Floor_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_cbConversionResetData_GlobalFloors_t_GloobalFloor_t(
     domain::cbConversionResetData_GlobalFloors_t_GloobalFloor_t* obj,
@@ -11238,6 +11274,7 @@ void _set_cbConversionResetData_GlobalFloors_t_GloobalFloor_t(
     std::string&& val) {
     float& base = *obj;
     xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_ore_script_PricingEngineConfigOverwrite_t_ModelParameters_t_Parameter_t(
     domain::ore_script_PricingEngineConfigOverwrite_t_ModelParameters_t_Parameter_t* obj,

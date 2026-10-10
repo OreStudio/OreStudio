@@ -20,6 +20,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -94,13 +95,14 @@ static double leg_notional(const ores::trading::domain::swap_instrument_data& da
     return 0.0;
 }
 
-static double leg_rate(const ores::trading::domain::swap_instrument_data& data,
-                       int leg_number,
-                       const std::string& rate_role) {
+static ores::utility::decimal::decimal
+leg_rate(const ores::trading::domain::swap_instrument_data& data,
+         int leg_number,
+         const std::string& rate_role) {
     for (const auto& r : data.leg_rates)
         if (r.leg_number == leg_number && r.rate_role == rate_role)
             return r.value;
-    return 0.0;
+    return ores::utility::decimal::decimal{};
 }
 
 TEST_CASE("mapper_roundtrip_swap_vanilla_forward", tags) {
@@ -117,7 +119,8 @@ TEST_CASE("mapper_roundtrip_swap_vanilla_forward", tags) {
     CHECK(legs[0].leg_type_code == "Fixed");
     CHECK(legs[0].currency == "EUR");
     CHECK(leg_notional(result, 1) == Approx(10000000.0).epsilon(0.001));
-    CHECK(leg_rate(result, 1, "fixed") == Approx(0.021).epsilon(0.0001));
+    CHECK(leg_rate(result, 1, "fixed") ==
+          ores::utility::decimal::decimal::from_string("0.021").value());
 
     CHECK(legs[1].leg_type_code == "Floating");
     CHECK(legs[1].currency == "EUR");
@@ -169,7 +172,10 @@ TEST_CASE("mapper_roundtrip_fra_forward", tags) {
 
     REQUIRE(legs.size() == 1);
     CHECK(legs[0].floating_index_code == "EUR-EURIBOR-6M");
-    CHECK(leg_rate(result, 1, "fixed") == Approx(0.005).epsilon(0.00001));
+    // The FRA's Strike is a bare float leaf in the binding, not an xsd::base
+    // binding, so it states no text and the float's own decimal is the value.
+    CHECK(leg_rate(result, 1, "fixed") ==
+          ores::utility::decimal::decimal::from_double(static_cast<double>(0.005f)).value());
     CHECK(legs[0].currency == "EUR");
     BOOST_LOG_SEV(lg, info) << "FRA forward-mapper test passed";
 }
@@ -322,7 +328,7 @@ TEST_CASE("mapper_roundtrip_knock_out_swap_forward", tags) {
 
     CHECK(result.header.identity.trade_type_code == "KnockOutSwap");
     CHECK(instr.barrier_type == "UpAndOut");
-    CHECK(instr.barrier_level == Approx(0.05).epsilon(0.0001));
+    CHECK(instr.barrier_level.to_double() == Approx(0.05).epsilon(0.0001));
     CHECK(ore_iso(result.header.start_date) == "2024-05-02");
     CHECK(ore_iso(result.header.maturity_date) == "2029-05-02");
     CHECK(ores::platform::time::datetime::to_iso8601_date(instr.barrier_start_date) ==
@@ -333,7 +339,8 @@ TEST_CASE("mapper_roundtrip_knock_out_swap_forward", tags) {
     CHECK(result.legs[0].floating_index_code == "USD-SOFR");
     CHECK(leg_notional(result, 1) == Approx(100000000.0).epsilon(0.001));
     CHECK(result.legs[1].leg_type_code == "Fixed");
-    CHECK(leg_rate(result, 2, "fixed") == Approx(0.05).epsilon(0.0001));
+    CHECK(leg_rate(result, 2, "fixed") ==
+          ores::utility::decimal::decimal::from_string("0.05").value());
     BOOST_LOG_SEV(lg, info) << "KnockOutSwap forward-mapper test passed";
 }
 

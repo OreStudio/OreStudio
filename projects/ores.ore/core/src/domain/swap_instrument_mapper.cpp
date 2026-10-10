@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
+#include "ores.ore.core/domain/ore_boundary_decimal.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
@@ -418,8 +419,10 @@ trading::domain::swap_leg_amount make_leg_amount(int leg_number,
 /**
  * One rate or spread child of a leg, with the same provenance.
  */
-trading::domain::swap_leg_rate
-make_leg_rate(int leg_number, const std::string& rate_role, int sequence_number, double value) {
+trading::domain::swap_leg_rate make_leg_rate(int leg_number,
+                                             const std::string& rate_role,
+                                             int sequence_number,
+                                             const ores::utility::decimal::decimal& value) {
     trading::domain::swap_leg_rate r;
     r.leg_number = leg_number;
     r.rate_role = rate_role;
@@ -1143,10 +1146,9 @@ std::vector<ores::trading::domain::swap_leg_amount>
 swap_instrument_mapper::map_leg_amounts(const legData& ld, int leg_number) {
     std::vector<ores::trading::domain::swap_leg_amount> amounts;
 
-    const auto append = [&](double value, const std::string& start_date) {
-        auto a = make_leg_amount(leg_number,
-                                 static_cast<int>(amounts.size()) + 1,
-                                 ores::utility::decimal::decimal::from_double(value).value());
+    const auto append = [&](const ores::utility::decimal::decimal& value,
+                            const std::string& start_date) {
+        auto a = make_leg_amount(leg_number, static_cast<int>(amounts.size()) + 1, value);
         if (!start_date.empty())
             a.start_date = to_domain_date(start_date);
         amounts.push_back(std::move(a));
@@ -1160,12 +1162,12 @@ swap_instrument_mapper::map_leg_amounts(const legData& ld, int leg_number) {
     if (ld.Notionals) {
         for (const auto& n : ld.Notionals->Notional) {
             const std::string from = n.startDate ? std::string(*n.startDate) : std::string{};
-            append(static_cast<double>(static_cast<float>(n)), from);
+            append(exact_decimal(n), from);
         }
     } else if (ld.Amortizations) {
         for (const auto& a : ld.Amortizations->AmortizationData) {
             const std::string from = a.StartDate ? std::string(*a.StartDate) : std::string{};
-            append(a.Value ? static_cast<double>(*a.Value) : 0.0, from);
+            append(a.Value ? exact_decimal(*a.Value) : ores::utility::decimal::decimal{}, from);
         }
     }
 
@@ -1176,7 +1178,7 @@ std::vector<ores::trading::domain::swap_leg_rate>
 swap_instrument_mapper::map_leg_rates(const legData& ld, int leg_number) {
     std::vector<ores::trading::domain::swap_leg_rate> rates;
 
-    const auto append = [&](const std::string& role, double value) {
+    const auto append = [&](const std::string& role, const ores::utility::decimal::decimal& value) {
         rates.push_back(make_leg_rate(leg_number, role, static_cast<int>(rates.size()) + 1, value));
     };
 
@@ -1184,11 +1186,11 @@ swap_instrument_mapper::map_leg_rates(const legData& ld, int leg_number) {
         const auto& ldt = *ld.legDataType;
         if (ldt.FixedLegData) {
             for (const auto& rate : ldt.FixedLegData->Rates.Rate)
-                append("fixed", static_cast<double>(rate));
+                append("fixed", exact_decimal(rate));
         }
         if (ldt.FloatingLegData && ldt.FloatingLegData->Spreads) {
             for (const auto& spread : ldt.FloatingLegData->Spreads->Spread)
-                append("spread", static_cast<double>(spread));
+                append("spread", exact_decimal(spread));
         }
     }
 
@@ -1270,7 +1272,7 @@ swap_instrument_mapper::forward_knock_out_swap(const trade& t) {
     ki.barrier_type = to_string(sd.BarrierData.Type);
     ki.barrier_start_date = to_domain_date(std::string(sd.BarrierStartDate));
     if (!sd.BarrierData.Levels.Level.empty())
-        ki.barrier_level = static_cast<double>(sd.BarrierData.Levels.Level.front());
+        ki.barrier_level = exact_decimal(sd.BarrierData.Levels.Level.front());
 
     if (!sd.LegData.empty()) {
         result.header.start_date = start_date_from_schedule(sd.LegData.front().ScheduleData);
@@ -1346,10 +1348,9 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     result.header.start_date = to_domain_date(std::string(fra.StartDate));
     result.header.maturity_date = to_domain_date(std::string(fra.EndDate));
     fi.currency = to_string(fra.Currency);
-    fi.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(fra.Notional)).value();
+    fi.notional = exact_decimal(fra.Notional);
     fi.rate_index = std::string(fra.Index);
-    fi.strike = static_cast<double>(fra.Strike);
+    fi.strike = exact_decimal(fra.Strike);
     fi.long_short = "Long";
 
     swap_leg sl;
@@ -1364,12 +1365,9 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     const int fra_leg_number = sl.identity.leg_number;
     result.legs.push_back(std::move(sl));
 
-    result.leg_amounts.push_back(make_leg_amount(
-        fra_leg_number,
-        1,
-        ores::utility::decimal::decimal::from_double(static_cast<double>(fra.Notional)).value()));
+    result.leg_amounts.push_back(make_leg_amount(fra_leg_number, 1, exact_decimal(fra.Notional)));
     result.leg_rates.push_back(
-        make_leg_rate(fra_leg_number, "fixed", 1, static_cast<double>(fra.Strike)));
+        make_leg_rate(fra_leg_number, "fixed", 1, exact_decimal(fra.Strike)));
 
     return result;
 }
@@ -1421,22 +1419,20 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
     int cap_floor_amount_number = 0;
     for (const auto& notional : cf.LegData.Notionals.Notional) {
         result.leg_amounts.push_back(make_leg_amount(
-            cap_floor_leg_number,
-            ++cap_floor_amount_number,
-            ores::utility::decimal::decimal::from_double(static_cast<double>(notional)).value()));
+            cap_floor_leg_number, ++cap_floor_amount_number, exact_decimal(notional)));
     }
     if (cf.LegData.legDataType.FixedLegData) {
         int rate_number = 0;
         for (const auto& rate : cf.LegData.legDataType.FixedLegData->Rates.Rate) {
-            result.leg_rates.push_back(make_leg_rate(
-                cap_floor_leg_number, "fixed", ++rate_number, static_cast<double>(rate)));
+            result.leg_rates.push_back(
+                make_leg_rate(cap_floor_leg_number, "fixed", ++rate_number, exact_decimal(rate)));
         }
     }
     if (cf.LegData.legDataType.FloatingLegData && cf.LegData.legDataType.FloatingLegData->Spreads) {
         int spread_number = 0;
         for (const auto& spread : cf.LegData.legDataType.FloatingLegData->Spreads->Spread) {
             result.leg_rates.push_back(make_leg_rate(
-                cap_floor_leg_number, "spread", ++spread_number, static_cast<double>(spread)));
+                cap_floor_leg_number, "spread", ++spread_number, exact_decimal(spread)));
         }
     }
 
@@ -1497,7 +1493,7 @@ legData swap_instrument_mapper::reverse_leg(
             if (r.rate_role != "fixed")
                 continue;
             _FixedLegData_t_Rates_t_Rate_t rate;
-            static_cast<float&>(rate) = static_cast<float>(r.value);
+            static_cast<float&>(rate) = static_cast<float>(r.value.to_double());
             fld.Rates.Rate.push_back(rate);
         }
         ldt.FixedLegData = std::move(fld);
@@ -1509,7 +1505,7 @@ legData swap_instrument_mapper::reverse_leg(
             if (r.rate_role != "spread")
                 continue;
             floatWithAttribute sv;
-            static_cast<float&>(sv) = static_cast<float>(r.value);
+            static_cast<float&>(sv) = static_cast<float>(r.value.to_double());
             sp.Spread.push_back(sv);
         }
         if (!sp.Spread.empty())
@@ -1609,7 +1605,7 @@ trade swap_instrument_mapper::reverse_knock_out_swap(
     knockOutSwapData d;
     d.BarrierData.Type = barrier_type_from_string(instr.barrier_type);
     static_cast<std::string&>(d.BarrierStartDate) = to_ore_date(instr.barrier_start_date);
-    d.BarrierData.Levels.Level.push_back(static_cast<float>(instr.barrier_level));
+    d.BarrierData.Levels.Level.push_back(static_cast<float>(instr.barrier_level.to_double()));
     for (const auto& sl : legs)
         d.LegData.push_back(reverse_leg(header.start_date,
                                         header.maturity_date,
@@ -1648,7 +1644,7 @@ trade swap_instrument_mapper::reverse_fra(
         const auto fixed = std::find_if(
             rates.begin(), rates.end(), [](const auto& r) { return r.rate_role == "fixed"; });
         if (fixed != rates.end())
-            fra.Strike = static_cast<float>(fixed->value);
+            fra.Strike = static_cast<float>(fixed->value.to_double());
         fra.LongShort = longShort::Long;
     }
     // The leg's own notional is the one the document stated on the leg; the
@@ -1715,7 +1711,7 @@ trade swap_instrument_mapper::reverse_capfloor(
                 if (rate.rate_role != "spread")
                     continue;
                 floatWithAttribute sv;
-                static_cast<float&>(sv) = static_cast<float>(rate.value);
+                static_cast<float&>(sv) = static_cast<float>(rate.value.to_double());
                 sp.Spread.push_back(sv);
             }
             if (!sp.Spread.empty())

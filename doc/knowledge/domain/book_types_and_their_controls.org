@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: C5846977-529F-4E36-A9DB-EA48A7476E6F
+:END:
+#+title: Book types and the controls on each
+#+description: Which kinds of book the system holds, which process opens, changes, moves and closes each, and who must approve each act.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:trading:book:controls:four-eyes:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+* Summary
+
+The system holds two kinds of book, and the controls on a book follow from
+which kind it is. An *official book* maps to a book in the general ledger,
+is created by Finance, and goes through the heavyweight multi-party process
+the lifecycle note describes. A *virtual book* is the one exception: the
+trading system creates it inside a [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandbox]], it is never mapped to the
+ledger, and it holds no position of the firm. Within the official books the
+classification axes (regulatory type, ledger feed, purpose) say what a book
+is for, and they do not change which process opens it. The existing notes
+state the controls for opening and closing an official book and for opening a
+sandbox. They are silent on changing a book, on moving a book under another
+portfolio, and on granting rights, and this note lists those gaps as open
+decisions rather than filling them in.
+
+* Detail
+
+** The two kinds of book
+
+| Kind | Maps to the ledger | Created by | Lives in |
+|------+--------------------+------------+----------|
+| Official book | Yes. Its ledger feed is automatic or manual | Finance, after the multi-party process | The firm's portfolio tree |
+| Virtual book | Never. Its ledger feed is none | The trading system, for the user or process that needs it | Exactly one sandbox's own portfolio tree |
+
+The sandbox note states the split in one sentence: every book the firm trades
+in maps to a book in the ledger and is created by Finance, and the trading
+system holds a view of them and cannot create one. A virtual book is the one
+exception ([[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]], /Virtual books/). A *dynamic book* is neither: it is a saved
+filter that behaves like a book without being one, and it has no lifecycle
+of its own ([[id:44C9D99B-979B-43AB-90BC-AF7E7D8BDE7C][Dynamic books]]).
+
+** What a book is for: the classification, not the kind
+
+An official book carries three independent classification fields and one
+flag ([[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]]). They say what the book is for. None of them selects
+a different opening process.
+
+| Field | Values | What it decides |
+|-------+--------+-----------------|
+| Regulatory book type | Trading, Banking | The capital treatment ([[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB boundary]]) |
+| Ledger feed type | None, Automatic, Manual | How the ledger balance is fed. A manual ledger book is updated by hand. A virtual book has none |
+| Book purpose type | Trading, Reserve, Funding, Wash, Write-off, Test, Sales, Sweep target, Remittance target | The one risk role the book plays |
+| Sweepable | yes or no | Whether the spot sweep centralises its cash |
+
+A wash book has an extra property the system enforces: every client trade
+booked into it is offset by a generated back-to-back trade that routes the risk
+into a designated risk book ([[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]]). A test book is an
+official book "isolated from the main book population, ideally owned by test
+entities restricted to IT users". It is not a virtual book, because it is not
+created by the system inside a sandbox.
+
+** The controls the existing notes state
+
+*** Opening an official book
+
+The process is controlled and multi-party ([[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]):
+
+1. The desk initiates the request. The desk cannot create or enrich a book.
+2. A controller reviews and approves it. This step exists so that a desk
+   cannot authorise its own new book.
+3. Finance, Market Risk and Operations enrich the book in parallel, and each
+   approves its own contribution. No one function's sign-off implies the others.
+4. The access review begins. Operations sets the book up on the booking
+   systems and the ledger counterpart is set up.
+
+The system must track where a book sits in this process and who still needs to
+authorise or enrich it.
+
+*** Closing an official book
+
+A book closes only when it is flat, meaning every balance held against it is
+zero. Closure runs as a clean-down: all live deals move to a different book and
+the closed book is retired, not deleted. Finance executes the closure
+([[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]).
+
+*** Opening and ending a virtual book
+
+A virtual book has no approval chain. A user opens a sandbox at a node of the
+official tree only where they hold the right to open sandboxes there, and the
+system creates the sandbox's virtual books for them. The owner confirms the
+sandbox is still needed by its review date, or archives it, and an archived
+sandbox is read only. Nothing in it is deleted ([[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]).
+
+*** Access to a book
+
+Access to an official book is permissioned at a fine grain and lapses unless
+renewed, and Operations administers the recurring review ([[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and
+permissions]]). A right at a portfolio node covers every node below it. A
+sandbox's visibility follows its anchor.
+
+** What the notes do not state
+
+These acts have no stated control. Each is an open decision for the product
+owner, and the book prototypes and screens must not invent an answer.
+
+| # | Act | What the notes establish | What is open |
+|---+-----+--------------------------+--------------|
+| 1 | Change an official book after it is live | Finance owns the accounting fields, Market Risk the classification and rates centre, Operations the allowed currencies and products. The notes do not say a later change repeats the opening approvals | Which edits need a second person, and who decides each: the enriching function that owns the field, or a controller |
+| 2 | Move a book under another portfolio | Portfolios are the logical hierarchy and are never reflected into the ledger ([[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]]). Rights at a node cover everything below it | A move changes who can see the book, so it may need the same check as a rights grant. Whether it does, and who decides |
+| 3 | Grant or remove a right at a portfolio node | The deferred HBAC capture proposes a maker and a checker | Whether this is adopted, and whether a sandbox right follows the same rule or is lighter |
+| 4 | Change a book's classification | Regulatory type sets the capital treatment | Whether a change of regulatory type or ledger feed needs Market Risk or Finance approval |
+| 5 | Open a test, wash, reserve, funding or write-off book | They are official books, so the opening process applies | Whether any purpose adds an approver, for example Market Risk for the wash book's risk book |
+| 6 | Create a portfolio | A portfolio is a trading concept and the desk shapes it | Whether a new portfolio needs approval, and whether a sandbox's portfolio differs |
+| 7 | The book structure screen's "new book" | The notes say the trading system cannot create an official book | Which lifecycle step that screen is: the desk's request, or Operations' final set-up |
+
+** How the controls map onto approval requests
+
+Every second-person control above is one case of the approval request: a record
+for anything that waits on a person's decision, with a rule that the person who
+decides is not the person who asked ([[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]). Each gated act
+becomes a request kind. The multi-party opening is a request that several
+deciders must each answer. The deferred [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][four-eyes authorisation framework]]
+is what would hold the pending change and apply it when the decision lands, and
+it is not built.
+
+* See also
+
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — the hub note.
+- [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] — opening, moving deals, closing.
+- [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] — the independent axes.
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — virtual books and the sandbox right.
+- [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] — rights and the periodic review.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record a second-person control uses.
+- [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][Implement four-eyes authorisation framework]] — the deferred item.
+- [[id:AA65B657-A731-41CE-9891-24B380944F36][Add HBAC support for books and portfolios]] — the maker and checker for rights.

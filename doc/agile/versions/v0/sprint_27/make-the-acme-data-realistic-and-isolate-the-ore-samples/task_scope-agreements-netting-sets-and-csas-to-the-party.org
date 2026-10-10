@@ -48,12 +48,14 @@ two bundle tasks, because both depend on it.
 - Agreement number is unique per tenant and party. Netting set code is unique
   per tenant and party.
 - The CSA has a =party_id=. It is fixed for life, and it equals the party of
-  its netting set. A CSA cannot attach to a netting set that has no party.
+  its netting set. What happens for a netting set that has no party is the
+  blocking open question below. Settle it before implementation.
 - Every lookup of an agreement or netting set by number or code names the
   party. The DQ publish functions, the alias resolution and the ORE import are
   covered.
 - pgTAP covers: the same code under two parties, a CSA whose party differs
-  from its set's, and a lookup without a party.
+  from its set's, and a lookup that names no party. That lookup raises an
+  error. It never returns a row chosen from another party.
 - A fresh ACME provision passes.
 
 * Plan
@@ -64,17 +66,24 @@ two bundle tasks, because both depend on it.
    =ores.refdata.netting_set= and =ores.refdata.csa=, and the DQ staging models
    =ores.dq.netting_agreement=, =ores.dq.netting_set= and =ores.dq.csa=, then
    regenerate the SQL and the C++. Do not edit generated files by hand.
-3. Decide the rule for a netting set with no party. The column is nullable
-   today. The CSA rule above needs a party.
+3. Settle the rule for a netting set with no party (see Notes). This blocks
+   steps 2 and 4.
 4. Update the publish functions, the alias resolution and the ORE import to
    name the party in every lookup.
 5. Update pgTAP. Provision ACME.
 
 * Measurements
 
-None yet.
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Lookups of an agreement by number or a netting set by code that name no party | not yet measured | the search in Plan step 1 | |
 
 * Notes
+
+*Blocking open question.* The netting set =party_id= is nullable today. A
+party-scoped CSA needs a party. Choose one: make the netting set =party_id=
+required, or allow a set with no party and refuse a CSA on it. Settle this
+before implementation.
 
 * Test Scenarios
 

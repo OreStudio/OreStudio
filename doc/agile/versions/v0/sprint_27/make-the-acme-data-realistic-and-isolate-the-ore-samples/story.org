@@ -48,7 +48,7 @@ ORE reference results. The ACME data does not copy ORE's terms.
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | The story is written. The three work tasks have not started. |
 | Waiting on    | Nothing.                               |
-| Next          | Search the lookups by number and code, then scope the keys to the party. |
+| Next          | Start the task "Scope agreements, netting sets and CSAs to the party". |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -94,9 +94,8 @@ Taken with the product owner on 2026-10-10:
   party's report definitions.
 - All sample imports go to a sandbox portfolio. Their books go into the
   sandbox tree.
-
-- Agreements, netting sets and CSAs are party-scoped. The agreement number and
-  the netting set code are unique per party, and the CSA gets its own party.
+- Agreements, netting sets and CSAs are party-scoped, decided on 2026-10-10.
+  The agreement number and the netting set code are unique per party, and the CSA gets its own party.
   This is a bilateral contract between one ACME legal entity and one
   counterparty. It also lets the samples bundle install the same codes on every
   party. It is the first task, ahead of the two bundle tasks.

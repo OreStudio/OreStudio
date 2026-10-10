@@ -1054,7 +1054,6 @@ export function ConnectedApp(): ReactNode {
                     conventionJourney={
                         <ConventionJourney
                             server={conventionsServer}
-                            partyId={partyId}
                             onFinished={() => navigate('/')}
                         />
                     }

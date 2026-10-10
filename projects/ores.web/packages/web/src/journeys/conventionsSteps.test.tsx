@@ -106,7 +106,6 @@ function stepsFor(state: ConventionTerms, server: ConventionsServer) {
         t,
         server,
         state,
-        partyId: 'party-1',
         pickLists: undefined,
         pickFailure: undefined,
         reasons: [],

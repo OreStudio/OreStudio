@@ -1849,6 +1849,8 @@ const pt: SourceCatalogue = {
                     'Os termos desta família ainda não estão desenhados. Pode ler aqui as suas convenções, mas não as alterar.',
                 empty: 'Esta família não tem convenções.',
                 total: '{shown} de {total} mostradas',
+                truncated:
+                    'Só {shown} de {total} convenções estão carregadas, e a pesquisa filtra essas.',
                 readFailed: 'As convenções não puderam ser lidas. {message}',
                 columns: {
                     id: 'Identificador',

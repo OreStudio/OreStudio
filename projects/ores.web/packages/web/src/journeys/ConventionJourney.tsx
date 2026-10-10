@@ -37,19 +37,13 @@ import type { ConventionPickLists, ConventionsServer } from './conventionsServer
 
 export interface ConventionJourneyProps {
     readonly server: ConventionsServer;
-    /** The tenant's own party, which a written convention names. */
-    readonly partyId: string;
     /** The journey is over, so the screen behind it takes the browser back. */
     readonly onFinished: () => void;
 }
 
 type Reasons = Awaited<ReturnType<ConventionsServer['amendReasons']>>;
 
-export function ConventionJourney({
-    server,
-    partyId,
-    onFinished,
-}: ConventionJourneyProps): ReactNode {
+export function ConventionJourney({ server, onFinished }: ConventionJourneyProps): ReactNode {
     const { t } = useTranslation();
     const convention = useConvention();
     const [at, setAt] = useState(0);
@@ -90,7 +84,6 @@ export function ConventionJourney({
         t,
         server,
         state: convention,
-        partyId,
         pickLists,
         pickFailure,
         reasons,

@@ -74,8 +74,6 @@ export interface ConventionStepsInput {
     readonly t: Translator['t'];
     readonly server: ConventionsServer;
     readonly state: ConventionTerms;
-    /** The tenant's own party, which a written convention names. */
-    readonly partyId: string;
     readonly pickLists: ConventionPickLists | undefined;
     readonly pickFailure: string | undefined;
     readonly reasons: readonly {
@@ -730,7 +728,7 @@ function HistoryStep({
 /* -------------------------------------------------------------- the step list */
 
 export function conventionSteps(input: ConventionStepsInput): readonly JourneyStep<ReactNode>[] {
-    const { t, server, state, partyId, pickLists, pickFailure, reasons } = input;
+    const { t, server, state, pickLists, pickFailure, reasons } = input;
     const problems = termProblems(state);
     const chosen = reasons.find((reason) => reason.code === state.reasonCode);
     const commentaryMissing = chosen?.requiresCommentary === true && state.commentary.trim() === '';
@@ -741,7 +739,7 @@ export function conventionSteps(input: ConventionStepsInput): readonly JourneySt
         state.family === '' ? undefined : `${state.family.replaceAll('-', '_')}_convention`;
 
     const confirm = async (): Promise<void> => {
-        const plan = writePlan(state, partyId);
+        const plan = writePlan(state);
         if (plan === undefined) {
             return;
         }

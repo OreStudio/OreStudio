@@ -57,7 +57,7 @@ describe('the convention page', () => {
         const html = render(
             <ConventionJourney
                 server={fakeServer()}
-                partyId="party-1"
+
                 onFinished={() => undefined}
             />,
         );

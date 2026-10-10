@@ -1855,6 +1855,8 @@ const fr: SourceCatalogue = {
                     'Les termes de cette famille ne sont pas encore dessinés. Vous pouvez lire ses conventions ici, sans les modifier.',
                 empty: 'Cette famille ne contient aucune convention.',
                 total: '{shown} sur {total} affichées',
+                truncated:
+                    'Seules {shown} conventions sur {total} sont chargées, et la recherche porte sur celles-ci.',
                 readFailed: "Les conventions n'ont pas pu être lues. {message}",
                 columns: {
                     id: 'Identifiant',

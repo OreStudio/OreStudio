@@ -1831,6 +1831,8 @@ export const en: SourceCatalogue = {
                     'The terms of this family are not drawn yet. You can read its conventions here, and not change them.',
                 empty: 'This family holds no convention.',
                 total: '{shown} of {total} shown',
+                truncated:
+                    'Only {shown} of {total} conventions are loaded, and the search filters those.',
                 readFailed: 'The conventions could not be read. {message}',
                 columns: {
                     id: 'Id',

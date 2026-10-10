@@ -129,6 +129,7 @@ describe('convention routes', () => {
         for (const family of CONVENTION_FAMILIES) {
             replies[`refdata.v1.${family.prefix}.list`] = { result: ok, total: 2 };
         }
+        delete replies['refdata.v1.future_conventions.list'];
         replies['refdata.v1.fra_conventions.list'] = {
             result: { outcome: 'denied', code: '', message: 'No.' },
             total: 0,
@@ -139,6 +140,8 @@ describe('convention routes', () => {
         expect(families).toHaveLength(CONVENTION_FAMILIES.length);
         expect(families.find((f: { key: string }) => f.key === 'swap').count).toBe(2);
         expect(families.find((f: { key: string }) => f.key === 'fra').count).toBeNull();
+        // A call that throws leaves its own count null and the others intact.
+        expect(families.find((f: { key: string }) => f.key === 'future').count).toBeNull();
         expect(
             families
                 .filter((f: { writable: boolean }) => f.writable)

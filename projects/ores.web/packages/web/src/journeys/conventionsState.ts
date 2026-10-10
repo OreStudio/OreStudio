@@ -171,7 +171,7 @@ export function termText(kind: TermKind, value: unknown): string {
     if (value === null || value === undefined) {
         return kind === 'flag' ? 'false' : '';
     }
-    return typeof value === 'boolean' || typeof value === 'number' ? String(value) : String(value);
+    return String(value);
 }
 
 /** The column value a term's text stands for. */
@@ -244,7 +244,7 @@ export function termsOf(family: string, row: ConventionRow | undefined): Terms {
 
 export type ConventionAction =
     | { readonly kind: 'choose-family'; readonly family: string }
-    | { readonly kind: 'start-convention' }
+    | { readonly kind: 'start-convention'; readonly id: string }
     | { readonly kind: 'open-convention'; readonly row: ConventionRow }
     | { readonly kind: 'set-term'; readonly column: string; readonly value: string }
     | { readonly kind: 'set-reason'; readonly reasonCode: string }
@@ -265,7 +265,7 @@ export function reduceConvention(
                 ...draft,
                 authoring: true,
                 opened: undefined,
-                conventionId: crypto.randomUUID(),
+                conventionId: action.id,
                 terms: termsOf(draft.family, undefined),
                 reasonCode: NEW_CONVENTION_REASON,
                 written: undefined,
@@ -366,7 +366,7 @@ export interface WritePlan {
 }
 
 /** The plan the confirm runs, or undefined before a convention is being authored. */
-export function writePlan(draft: ConventionDraft, partyId: string): WritePlan | undefined {
+export function writePlan(draft: ConventionDraft): WritePlan | undefined {
     if (!draft.authoring || draft.family === '') {
         return undefined;
     }
@@ -379,7 +379,8 @@ export function writePlan(draft: ConventionDraft, partyId: string): WritePlan | 
     return {
         family: draft.family,
         intent: { reason_code: draft.reasonCode, commentary: draft.commentary },
-        write: { ...(draft.opened ?? {}), id: draft.conventionId, party_id: partyId, ...columns },
+        // Only the id and the terms: the service owns the audit columns and the version.
+        write: { id: draft.conventionId, ...columns },
         version: draft.opened === undefined ? null : draft.opened.version,
     };
 }
@@ -403,7 +404,8 @@ export function useConvention(): ConventionTerms {
         ...draft,
         changes: changesOf(draft),
         chooseFamily: (family) => dispatch({ kind: 'choose-family', family }),
-        startConvention: () => dispatch({ kind: 'start-convention' }),
+        // The id is made here, not in the reducer, so the reducer stays pure.
+        startConvention: () => dispatch({ kind: 'start-convention', id: crypto.randomUUID() }),
         openConvention: (row) => dispatch({ kind: 'open-convention', row }),
         setTerm: (column, value) => dispatch({ kind: 'set-term', column, value }),
         setReason: (reasonCode) => dispatch({ kind: 'set-reason', reasonCode }),

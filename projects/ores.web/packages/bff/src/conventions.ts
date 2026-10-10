@@ -48,7 +48,7 @@ export interface ConventionFamily {
     readonly writable: boolean;
 }
 
-export const CONVENTION_FAMILIES: readonly ConventionFamily[] = [
+const FAMILY_TABLE: readonly (readonly [string, string, boolean])[] = [
     ['deposit', 'deposit_convention', true],
     ['fra', 'fra_convention', false],
     ['future', 'future_convention', false],
@@ -74,12 +74,11 @@ export const CONVENTION_FAMILIES: readonly ConventionFamily[] = [
     ['swap-index', 'swap_index_convention', false],
     ['tenor', 'tenor_convention', false],
     ['currency-pair', 'currency_pair_convention', false],
-].map(([key, entity, writable]) => ({
-    key: String(key),
-    entity: String(entity),
-    prefix: `${String(entity)}s`,
-    writable: writable === true,
-}));
+];
+
+export const CONVENTION_FAMILIES: readonly ConventionFamily[] = FAMILY_TABLE.map(
+    ([key, entity, writable]) => ({ key, entity, prefix: `${entity}s`, writable }),
+);
 
 const MAX_ROWS = 500;
 
@@ -151,17 +150,32 @@ export function registerConventionRoutes(
         const session = requireSession(request);
         const families = [];
         for (const family of CONVENTION_FAMILIES) {
-            const reply = await session.client.callAuthenticated(
-                `refdata.v1.${family.prefix}.list`,
-                { offset: 0, limit: 1, order: NO_ORDER, filter: { id_one_of: null }, as_of: null },
-                z.looseObject({ result: resultSchema, total: z.int().nonnegative().default(0) }),
-            );
             // A count that cannot be read is null rather than a failed page: the family is still there to open.
+            let count: number | null = null;
+            try {
+                const reply = await session.client.callAuthenticated(
+                    `refdata.v1.${family.prefix}.list`,
+                    {
+                        offset: 0,
+                        limit: 1,
+                        order: NO_ORDER,
+                        filter: { id_one_of: null },
+                        as_of: null,
+                    },
+                    z.looseObject({
+                        result: resultSchema,
+                        total: z.int().nonnegative().default(0),
+                    }),
+                );
+                count = reply.result.outcome === 'ok' ? reply.total : null;
+            } catch {
+                count = null;
+            }
             families.push({
                 key: family.key,
                 entity: family.entity,
                 writable: family.writable,
-                count: reply.result.outcome === 'ok' ? reply.total : null,
+                count,
             });
         }
         return { families };

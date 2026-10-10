@@ -85,7 +85,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | One failing count call fails the whole families route | =conventions.ts= | Accept | Each count is read in its own try, and a failure leaves that count null. A test covers it. |
+| 2 | The 25 calls run one after another | =conventions.ts= | Decline | Sequential on purpose. The session's broker client answers concurrent requests far slower than sequential ones, as classifications.ts records. |
+| 3 | crypto.randomUUID inside the reducer | =conventionsState.ts= | Accept in part | The id is made in the handler and passed in the action, so this reducer is pure. The same pattern is in the book and party reducers, the counterparty draft and records.tsx, and a secure context is already assumed there. That is a wider follow-up. |
+| 4 | writePlan sends the whole opened row | =conventionsState.ts= | Accept | The write is the id and the spec columns only, and the unused party id is dropped from the journey. A test asserts no version or audit column is sent. |
+| 5 | Redundant branch in termText | =conventionsState.ts= | Accept | Reduced to String(value). |
+| 6 | Explain why a flag is not checked | =conventionsState.ts= | Accept | Comment added. |
+| 7 | Check terms against the pick lists | =conventions.ts= | Decline | The server's term check is task ABEC57F4. The screen offers only codes it has read. |
+| 8 | Allowlist the written columns per family | =conventions.ts= | Decline | The term specs live in the web package, so the BFF would need shared code. The BFF already refuses a family whose terms are not drawn. |
+| 9 | Typed tuple for the family table | =conventions.ts= | Accept | The table is typed and the casts are gone. |
+| 10 | Say when the search covers loaded rows only | =conventionsSteps.tsx= | Accept | A warning shows when the total is larger than the rows loaded. |
 
 * Result
 

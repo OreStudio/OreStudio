@@ -54,7 +54,9 @@ function walk(
 ): ConventionDraft {
     const start: ConventionAction[] = [
         { kind: 'choose-family', family },
-        row === undefined ? { kind: 'start-convention' } : { kind: 'open-convention', row },
+        row === undefined
+            ? { kind: 'start-convention', id: 'new-1' }
+            : { kind: 'open-convention', row },
     ];
     return [...start, ...actions].reduce(reduceConvention, blankDraft());
 }
@@ -96,7 +98,6 @@ describe('convention terms', () => {
     it('writes a changed convention against the version read, keeping the row it read', () => {
         const plan = writePlan(
             walk('swap', swap, { kind: 'set-term', column: 'index', value: 'EUR-EURIBOR-3M' }),
-            'party-1',
         );
         expect(plan?.version).toBe(3);
         expect(plan?.write).toMatchObject({
@@ -113,10 +114,10 @@ describe('convention terms', () => {
             column: 'fixed_frequency',
             value: 'Annual',
         });
-        const plan = writePlan(draft, 'party-1');
+        const plan = writePlan(draft);
         expect(plan?.version).toBeNull();
         expect(plan?.intent.reason_code).toBe('system.new_record');
-        expect(plan?.write['party_id']).toBe('party-1');
+        expect(plan?.write['id']).toBe('new-1');
     });
 
     it('has no plan before a convention is being authored', () => {

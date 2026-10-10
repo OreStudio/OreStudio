@@ -157,3 +157,97 @@ def test_the_tenant_administrator_signs_in_to_the_acme_tenant():
 
 def test_the_system_administrator_signs_in_without_a_tenant():
     assert open_as.principal(open_as.ADMINS["super_admin"]) == "super_admin"
+
+
+class FakeSource:
+    def __init__(self, data):
+        self.data = data
+
+    def recv(self, count):
+        chunk, self.data = self.data[:count], self.data[count:]
+        return chunk
+
+
+def frame(opcode, payload, fin=True):
+    return bytes([(0x80 if fin else 0) | opcode, len(payload)]) + payload
+
+
+def test_fragments_are_joined_into_one_message():
+    source = FakeSource(frame(0x1, b"he", fin=False) + frame(0x0, b"llo"))
+    assert open_as.read_message(source) == b"hello"
+
+
+def test_a_ping_is_answered_and_skipped():
+    pongs = []
+    source = FakeSource(frame(0x9, b"x") + frame(0x1, b"ok"))
+    assert open_as.read_message(source, pongs.append) == b"ok"
+    assert pongs == [b"x"]
+
+
+def test_a_close_frame_ends_the_read():
+    with pytest.raises(ConnectionError):
+        open_as.read_message(FakeSource(frame(0x8, b"")))
+
+
+def test_the_handshake_key_matches_the_rfc_example():
+    assert open_as.accept_key("dGhlIHNhbXBsZSBub25jZQ==") == "s3pPLMBiTxaQ9kYGzzhZRbK+xOo="
+
+
+def test_a_peer_that_closes_during_the_handshake_does_not_hang():
+    import socket
+    import threading
+
+    server = socket.socket()
+    server.bind(("127.0.0.1", 0))
+    server.listen(1)
+    port = server.getsockname()[1]
+    threading.Thread(target=lambda: server.accept()[0].close(), daemon=True).start()
+    with pytest.raises(ConnectionError):
+        open_as.DevTools(f"ws://127.0.0.1:{port}/devtools/page/x")
+    server.close()
+
+
+def test_an_empty_port_file_is_not_a_port(tmp_path):
+    (tmp_path / "DevToolsActivePort").write_text("")
+    assert open_as.devtools_port(tmp_path) is None
+    (tmp_path / "DevToolsActivePort").write_text("4321\n/devtools/browser/x\n")
+    assert open_as.devtools_port(tmp_path) == 4321
+
+
+def test_the_fill_script_refuses_any_other_origin():
+    script = open_as.FILL_SCRIPT % ('"http://localhost:20402"', '"u"', '"p"')
+    assert 'location.origin !== "http://localhost:20402"' in script
+    assert open_as.origin_of("http://localhost:20402/") == "http://localhost:20402"
+
+
+def test_a_corrupt_preferences_file_is_started_again(tmp_path):
+    path = tmp_path / "Preferences"
+    path.write_text('{"half": ')
+    open_as.merge_json(path, {"a": {"b": 1}})
+    assert open_as.json.loads(path.read_text()) == {"a": {"b": 1}}
+    assert not (tmp_path / "Preferences.tmp").exists()
+
+
+def test_a_lock_held_by_a_live_process_counts_as_in_use(tmp_path):
+    import os
+    (tmp_path / "SingletonLock").symlink_to(f"host-{os.getpid()}")
+    assert open_as.lock_holder_alive(tmp_path)
+
+
+def test_a_lock_left_by_a_dead_process_does_not(tmp_path):
+    (tmp_path / "SingletonLock").symlink_to("host-999999999")
+    assert not open_as.lock_holder_alive(tmp_path)
+
+
+def test_fresh_refuses_to_delete_outside_the_persona_directory(tmp_path, monkeypatch):
+    monkeypatch.setattr(open_as, "PERSONAS_ROOT", tmp_path / "root")
+    outside = tmp_path / "elsewhere"
+    outside.mkdir()
+    with pytest.raises(SystemExit):
+        open_as.prepare_profile(outside, True)
+    assert outside.exists()
+
+
+def test_a_workspace_below_one_is_refused():
+    with pytest.raises(SystemExit):
+        open_as.run(["name", "adrian", "--workspace", "0"], ROOT)

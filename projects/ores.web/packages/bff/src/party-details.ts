@@ -128,6 +128,12 @@ const compositeBodySchema = z.looseObject({
     contacts: z.array(row).default([]),
 });
 
+const retireBodySchema = z.object({
+    intent: intentSchema,
+    idValue: z.string().trim().min(1).max(200),
+    version: z.int().nonnegative(),
+});
+
 const asOfQuerySchema = z.object({ version: z.coerce.number().int().positive() });
 
 const PICK_LISTS = [
@@ -253,6 +259,29 @@ export function registerPartyDetailsRoutes(
                 filter: null,
             }),
         };
+    });
+
+    /*
+     * An identifier's value is part of its key, so a value that changed is a
+     * retire of the old row and a write of the new one. The composite writes
+     * the new row; this retires the old.
+     */
+    server.delete('/api/party-details/:id/identifiers', async (request) => {
+        const session = requireSession(request);
+        paramId(request);
+        const body = input(retireBodySchema, request.body);
+        const result = await write(
+            session,
+            partyIdentifierSubjects.delete_party_identifier_request,
+            {
+                removal: {
+                    key: { id_value: body.idValue },
+                    precondition: { kind: 'must_match_version', version: body.version },
+                },
+                intent: body.intent,
+            },
+        );
+        return { result };
     });
 
     server.put('/api/party-details/:id/business-units', async (request) => {

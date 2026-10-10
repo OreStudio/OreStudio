@@ -283,4 +283,24 @@ describe('party details routes', () => {
         );
         expect(response.statusCode).toBe(200);
     });
+
+    it('retires an identifier by its value against the version it read', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.party_identifiers.delete': { result: ok },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'DELETE',
+            `/api/party-details/${ID}/identifiers`,
+            { intent: INTENT, idValue: 'LEI-OLD', version: 2 },
+        );
+        expect(response.json().result.outcome).toBe('ok');
+        expect(calls[0]?.body).toMatchObject({
+            removal: {
+                key: { id_value: 'LEI-OLD' },
+                precondition: { kind: 'must_match_version', version: 2 },
+            },
+        });
+    });
 });

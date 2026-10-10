@@ -8,7 +8,7 @@
 #+filetags: :give_the_super_admin_landing_page_its_cards:sprint_27:v0:
 #+owner: marco
 #+branch: feature/give-the-super-admin-landing-page-its-cards
-#+pr:
+#+pr: 3027
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3027][#3027]] | [agile] Scaffold the super administrator landing page story |
 
 * Review
 

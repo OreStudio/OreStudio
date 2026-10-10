@@ -630,20 +630,22 @@ export function writePlan(draft: PartyDraft): WritePlan | undefined {
         return undefined;
     }
     const intent: PartyIntent = { reason_code: draft.reasonCode, commentary: draft.commentary };
-    const identifiers: PartyIdentifier[] = draft.identifiers
-        .filter(identifierWrites)
-        .map((row) => ({
+    const identifiers: PartyIdentifier[] = draft.identifiers.filter(identifierWrites).map((row) => {
+        // A changed value is a new row: it carries no version, so the server writes it as new.
+        const kept =
+            row.original !== undefined && row.value.trim() === row.original.id_value
+                ? row.original
+                : undefined;
+        return {
             ...stamp(),
-            ...(row.original ?? {}),
-            id:
-                row.original !== undefined && row.value.trim() === row.original.id_value
-                    ? row.original.id
-                    : crypto.randomUUID(),
+            ...(kept ?? {}),
+            id: kept?.id ?? crypto.randomUUID(),
             party_id: opened.id,
             id_scheme: row.scheme,
             id_value: row.value.trim(),
             description: row.description,
-        }));
+        };
+    });
     const contacts: PartyContactInformation[] = draft.contacts
         .filter(contactChanged)
         .map((row) => ({

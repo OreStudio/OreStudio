@@ -143,6 +143,7 @@ describe('party details draft', () => {
         expect(plan?.composite.identifiers).toHaveLength(1);
         expect(plan?.composite.identifiers[0]?.id_value).toBe('LEI-NEW');
         expect(plan?.composite.identifiers[0]?.id).not.toBe('id-1');
+        expect(plan?.composite.identifiers[0]?.version).toBe(0);
         expect(changesOf(draft).map((c) => c.operation)).toEqual([
             'refdata.v1.party_identifiers.delete',
             'refdata.v1.ops.put_party_composite',

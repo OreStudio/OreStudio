@@ -240,6 +240,15 @@ const calendarDaySchema = z.object({
 
 export type CalendarDay = z.infer<typeof calendarDaySchema>;
 
+/** The amend reasons that can apply to a person's record, in the order they are offered. */
+const PEOPLE_REASON_CODES = [
+    'system.update',
+    'common.rectification',
+    'common.non_material_update',
+    'common.regulatory',
+    'common.other',
+] as const;
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -451,7 +460,7 @@ export const api = {
     },
 
     /**
-     * The reasons a record may be amended for: the common category, in display
+     * The reasons a person's record may be amended for: the common category, in display
      * order.
      *
      * A profile write changes a record rather than creating or deleting one,
@@ -480,14 +489,26 @@ export const api = {
                 ),
             })
             .parse(await request('/api/change-reasons', { method: 'GET' }));
-        return answer.reasons
-            .filter((reason) => reason.categoryCode === 'common' && reason.appliesToAmend)
-            .sort((a, b) => a.displayOrder - b.displayOrder)
-            .map(({ code, description, requiresCommentary }) => ({
-                code,
-                description,
-                requiresCommentary,
-            }));
+        /*
+         * The catalogue's amend reasons cover market data and trades: a stale
+         * feed, a mapping error, a vendor outage. A person's record is changed
+         * for none of those, so only the reasons that can apply to one are
+         * offered, in the order a person reaches for them.
+         */
+        return PEOPLE_REASON_CODES.flatMap((code) => {
+            const reason = answer.reasons.find(
+                (candidate) => candidate.code === code && candidate.appliesToAmend,
+            );
+            return reason === undefined
+                ? []
+                : [
+                      {
+                          code,
+                          description: reason.description,
+                          requiresCommentary: reason.requiresCommentary,
+                      },
+                  ];
+        });
     },
 
     /** One account of the session's own tenant and a page of its sign-ins. */

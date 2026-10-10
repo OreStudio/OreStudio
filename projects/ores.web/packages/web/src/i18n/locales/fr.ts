@@ -86,6 +86,16 @@ const fr: SourceCatalogue = {
     },
 
     access: {
+        allAreas: 'Tous les domaines',
+        areaFilter: 'Domaine',
+        hub: {
+            title: 'Personnes',
+            lead: 'Les personnes de ce locataire, et à qui elles rendent compte.',
+            staff: 'Personnel',
+            staffBody: 'Toutes les personnes qui peuvent se connecter : leurs détails, leurs rôles et leurs connexions.',
+            hierarchy: 'Hiérarchie',
+            hierarchyBody: 'Qui rend compte à qui, sous forme d’arbre, et comment chaque lien a changé.',
+        },
         nothingMatches: 'Rien ne correspond.',
         allOfIt: 'Tout',
         allCount: 'Tous les {count}',
@@ -119,7 +129,7 @@ const fr: SourceCatalogue = {
         people: {
             username: "Nom d'utilisateur",
             jobTitle: 'Fonction',
-            title: 'Personnes',
+            title: 'Personnel',
             lead: 'Qui peut se connecter à ce locataire, et les rôles de chacun.',
             leadNoRoles: 'Qui peut se connecter à ce locataire.',
             person: 'Personne',
@@ -153,6 +163,11 @@ const fr: SourceCatalogue = {
                 'L’attribution est close, pas supprimée : qui avait le rôle et quand reste consigné.',
         },
         roles: {
+            search: 'Chercher un rôle',
+            showing: {
+                one: '{first}–{last} sur {count} rôle',
+                other: '{first}–{last} sur {count} rôles',
+            },
             title: 'Rôles',
             lead: 'Ce que chaque rôle permet. Accordez un rôle depuis Personnes.',
             new: 'Nouveau rôle',
@@ -667,6 +682,13 @@ const fr: SourceCatalogue = {
      * chaque panneau enregistre seul et rend compte seul.
      */
     profile: {
+        reason: {
+            system_update: 'Modification courante',
+            common_rectification: 'Corriger une erreur',
+            common_non_material_update: 'Aucun changement de fond',
+            common_regulatory: 'Exigé par la réglementation',
+            common_other: 'Autre raison',
+        },
         tabs: {
             details: 'Détails',
             contact: 'Contact',
@@ -1969,12 +1991,13 @@ const fr: SourceCatalogue = {
     },
 
     version: {
-        client: 'client {version}',
-        server: 'serveur {version}',
-        serverUnknown: 'version du serveur inconnue',
-        environment: 'environnement {name}',
-        environmentUnknown: 'environnement inconnu',
-        nonProduction: 'non-production',
+        client: 'Client : {version}',
+        server: 'Serveur : {version}',
+        serverUnknown: 'Serveur : inconnu',
+        environment: 'Environnement : {name}',
+        environmentUnknown: 'Environnement : inconnu',
+        kindDev: 'dev',
+        kindProduction: 'production',
     },
 
     server: {
@@ -2429,8 +2452,11 @@ const fr: SourceCatalogue = {
                 'Le basculement émet un nouveau jeton de connexion : tous les écrans lisent la partie choisie. Le défaut est ce que la connexion rapide choisit la prochaine fois.',
         },
         reporting: {
+            you: 'Vous',
+            history: 'Historique',
+            noHistory: 'Cette ligne n’a pas changé.',
             title: 'Lignes hiérarchiques',
-            lead: 'Qui rend compte à qui, et la seule ligne que cet écran modifie.',
+            lead: 'Qui rend compte à qui, et comment chaque lien a changé.',
             tree: 'Arborescence hiérarchique',
             people: '{count} personnes',
             reports: '{count} rattachés',
@@ -2444,26 +2470,16 @@ const fr: SourceCatalogue = {
             directReports: 'Rattachements directs',
             depth: 'Profondeur',
             reachesNoRoot: 'N’atteint aucune racine',
-            manager: 'Responsable',
-            reason: 'Motif',
-            commentary: 'Note',
-            save: 'Enregistrer la ligne',
-            clear: 'Effacer la ligne',
-            noVersion: 'Le compte n’a pas pu être lu : l’écriture n’indique donc aucune version.',
             unrooted:
                 '{count} personnes n’atteignent aucune racine : leur responsable a disparu, ou la ligne qui les porte est rompue. Elles sont laissées hors de l’arborescence plutôt que dessinées comme racines.',
-            gaps: 'Ce que cet écran ne peut pas faire',
-            gapOffice:
-                'Le bureau de chaque personne n’est pas lisible ici : la lecture des parties de compte porte un identifiant et aucun nom.',
-            gapApproval:
-                'Une demande de changement de ligne est une proposition que valide le supérieur ou l’administrateur du locataire, et rien dans la plateforme ne porte une telle approbation : la ligne ne bouge pas.',
-            gapHistory:
-                'La ligne n’a pas d’historique sur cet écran. Le compte est versionné, donc une ligne passée est récupérable, et cet écran n’en montre rien.',
         },
     },
 
     common: {
         loading: 'Chargement...',
+        clear: 'Effacer',
+        refresh: 'Actualiser',
+        refreshStale: 'Les données ont changé sur le serveur. Actualisez pour les voir.',
         all: 'Tous',
         close: 'Fermer',
         open: 'Ouvrir',

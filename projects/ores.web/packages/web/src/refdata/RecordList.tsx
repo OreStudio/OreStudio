@@ -32,6 +32,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { FlagOf, type FlagSource } from '../images/flags.js';
+import { RefreshButton } from '../ui/RefreshButton.js';
 import { Icon } from '../ui/Icon.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { Button, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
@@ -330,9 +331,7 @@ export function RecordList<Row>({
                     description={lead}
                     actions={
                         <div className="flex gap-2">
-                            <Button icon="refresh" onClick={refresh} pending={fetching}>
-                                {t('refdata.records.refresh')}
-                            </Button>
+                            <RefreshButton onClick={refresh} pending={fetching} />
                             {actions}
                             {add !== undefined && (
                                 <Button variant="primary" icon="add" onClick={add.onAdd}>

@@ -507,8 +507,8 @@ describe('the route to the versions screen', () => {
         // come from it too.
         expect(html).toContain('ORE Studio');
         expect(html).toContain('Your account');
-        expect(html).toContain(`client ${__BUILD_VERSION__}`);
-        expect(html).toContain(`server ${SESSION_VERSION}`);
+        expect(html).toContain(`Client: ${__BUILD_VERSION__}`);
+        expect(html).toContain(`Server: ${SESSION_VERSION}`);
     });
 });
 
@@ -694,8 +694,8 @@ describe('the route to the services screen', () => {
         expect(html).toContain('Operations: services');
         expect(html).toContain('ORE Studio');
         expect(html).toContain('Your account');
-        expect(html).toContain(`client ${__BUILD_VERSION__}`);
-        expect(html).toContain(`server ${SESSION_VERSION}`);
+        expect(html).toContain(`Client: ${__BUILD_VERSION__}`);
+        expect(html).toContain(`Server: ${SESSION_VERSION}`);
     });
 
     it('is offered to system administration through the operations hub', () => {
@@ -939,8 +939,8 @@ describe('the route to the compute grid', () => {
         expect(html).toContain('Operations: compute grid');
         expect(html).toContain('ORE Studio');
         expect(html).toContain('Your account');
-        expect(html).toContain(`client ${__BUILD_VERSION__}`);
-        expect(html).toContain(`server ${SESSION_VERSION}`);
+        expect(html).toContain(`Client: ${__BUILD_VERSION__}`);
+        expect(html).toContain(`Server: ${SESSION_VERSION}`);
     });
 
     it('is offered to system administration through the operations hub', () => {
@@ -1079,8 +1079,8 @@ describe('the route to the message bus', () => {
         expect(html).toContain('Operations: message bus');
         expect(html).toContain('ORE Studio');
         expect(html).toContain('Your account');
-        expect(html).toContain(`client ${__BUILD_VERSION__}`);
-        expect(html).toContain(`server ${SESSION_VERSION}`);
+        expect(html).toContain(`Client: ${__BUILD_VERSION__}`);
+        expect(html).toContain(`Server: ${SESSION_VERSION}`);
     });
 
     it('is offered to system administration through the operations hub', () => {
@@ -1232,8 +1232,8 @@ describe('the route to the telemetry logs', () => {
         expect(html).toContain('Operations: telemetry logs');
         expect(html).toContain('ORE Studio');
         expect(html).toContain('Your account');
-        expect(html).toContain(`client ${__BUILD_VERSION__}`);
-        expect(html).toContain(`server ${SESSION_VERSION}`);
+        expect(html).toContain(`Client: ${__BUILD_VERSION__}`);
+        expect(html).toContain(`Server: ${SESSION_VERSION}`);
     });
 
     it('is offered to system administration through the operations hub', () => {

@@ -23,9 +23,11 @@ import { describe, expect, it } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { ReportingTreeNode } from '@ores/wire-protocol/browser';
+import { MemoryRouter } from 'react-router';
+import type { ReportingTreeNode, TimelineEvent } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { managerCandidates, ReportingLinesPage } from './ReportingLinesPage.js';
+import { managerCandidates } from './managers.js';
+import { reportingHistory, ReportingLinesPage } from './ReportingLinesPage.js';
 
 /**
  * The Reporting lines screen, rendered from a seeded query cache.
@@ -67,7 +69,7 @@ const TREE = [
     person(ALAN, 'Alan Turing', GRACE, 2, 0),
 ];
 
-function render(nodes: readonly ReportingTreeNode[], unrooted = 0): string {
+function render(nodes: readonly ReportingTreeNode[], unrooted = 0, me = ''): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['reporting-tree'], { unrooted, nodes });
     client.setQueryData(
@@ -77,7 +79,9 @@ function render(nodes: readonly ReportingTreeNode[], unrooted = 0): string {
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <ReportingLinesPage />
+                <MemoryRouter>
+                    <ReportingLinesPage me={me} />
+                </MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,
     );
@@ -96,21 +100,39 @@ describe('Reporting lines', () => {
         expect(html).toContain('Pick a person in the tree to read their line.');
     });
 
+    it('draws each person with their picture', () => {
+        const html = render(TREE);
+
+        expect(html).toContain('/api/accounts/ada.lovelace/picture');
+        expect(html).toContain('/api/accounts/alan.turing/picture');
+    });
+
+    it('opens on the signed-in person and marks them as the reader', () => {
+        const html = render(TREE, 0, 'grace.hopper');
+
+        // The card names the person the reader is, and the tree marks the row.
+        expect(html).toContain('>You<');
+        expect(html).not.toContain('Pick a person in the tree to read their line.');
+        expect(html).toContain('Grace Hopper title');
+        // Grace reports to Ada, drawn with her picture.
+        expect(html).toContain('Reports to');
+    });
+
+    it('offers one Refresh, and no longer lists what it cannot do', () => {
+        const html = render(TREE);
+
+        expect(html).toContain('>Refresh<');
+        expect(html).not.toContain('What this screen cannot do');
+        expect(html).not.toContain('Save line');
+        expect(html).not.toContain('Clear line');
+    });
+
     it('states the people who reach no root rather than drawing them as roots', () => {
         const stranded = person(ALAN, 'Alan Turing', EDSGER, -1, 0);
         const html = render([...TREE.filter((node) => node.accountId !== ALAN), stranded], 1);
 
         expect(html).toContain('reach no root');
         expect(html).toContain('1 people reach no root');
-    });
-
-    it('states the gaps the journey still records', () => {
-        const html = render(TREE);
-
-        expect(html).toContain('What this screen cannot do');
-        expect(html).toContain('office each person works in is not readable');
-        expect(html).toContain('approves, and nothing in the platform holds');
-        expect(html).toContain('has no history on this screen');
     });
 });
 
@@ -127,5 +149,62 @@ describe('the manager picker', () => {
         const forGrace = managerCandidates(TREE, grace).map((node) => node.fullName);
         // Grace may report to Ada, and to Edsger, who is not in her branch.
         expect(forGrace).toEqual(['Ada Lovelace', 'Edsger Dijkstra']);
+    });
+});
+
+function version(
+    version: number,
+    manager: string,
+    over: Partial<TimelineEvent> = {},
+): TimelineEvent {
+    return {
+        entityType: 'ores.iam.account',
+        entityId: 'a',
+        kind: version === 1 ? 'raised' : 'changed',
+        at: `2026-10-0${String(version)} 10:00:00Z`,
+        actor: 'tenant_admin',
+        version,
+        reasonCode: 'system.update',
+        commentary: '',
+        fields: [{ name: 'Reports To Account ID', value: manager }],
+        ...over,
+    };
+}
+
+describe('the history of a line', () => {
+    it('lists only the versions where the manager changed, newest first', () => {
+        const changes = reportingHistory([
+            version(1, ''),
+            version(2, GRACE),
+            // A version that left the manager alone is not a change of the line.
+            version(3, GRACE, { fields: [{ name: 'Reports To Account ID', value: GRACE }] }),
+            version(4, ADA),
+            version(5, ''),
+        ]);
+
+        expect(changes.map((change) => [change.version, change.from, change.to])).toEqual([
+            [5, ADA, null],
+            [4, GRACE, ADA],
+            [2, null, GRACE],
+        ]);
+    });
+
+    it('keeps the reason and the note a change was made with', () => {
+        const [change] = reportingHistory([
+            version(1, ''),
+            version(2, ADA, { reasonCode: 'common.rectification', commentary: 'Wrong manager' }),
+        ]);
+
+        expect(change?.reasonCode).toBe('common.rectification');
+        expect(change?.commentary).toBe('Wrong manager');
+    });
+
+    it('ignores the entries that are not versions of the account', () => {
+        const changes = reportingHistory([
+            version(1, ADA),
+            version(2, GRACE, { entityType: 'ores.iam.account_contact_information' }),
+        ]);
+
+        expect(changes).toHaveLength(1);
     });
 });

@@ -92,6 +92,16 @@ export const en: SourceCatalogue = {
     },
 
     access: {
+        allAreas: 'All areas',
+        areaFilter: 'Area',
+        hub: {
+            title: 'People',
+            lead: 'The people of this tenant, and who they report to.',
+            staff: 'Staff',
+            staffBody: 'Everyone who can sign in: their details, their roles and their sign-ins.',
+            hierarchy: 'Hierarchy',
+            hierarchyBody: 'Who reports to whom, as a tree, and how each line changed.',
+        },
         nothingMatches: 'Nothing matches.',
         allOfIt: 'All of it',
         allCount: 'All {count}',
@@ -125,7 +135,7 @@ export const en: SourceCatalogue = {
         people: {
             username: 'Username',
             jobTitle: 'Job title',
-            title: 'People',
+            title: 'Staff',
             lead: 'Who can sign in to this tenant, and the roles each one holds.',
             leadNoRoles: 'Who can sign in to this tenant.',
             person: 'Person',
@@ -159,6 +169,11 @@ export const en: SourceCatalogue = {
                 'The grant is closed, not deleted, so who held the role and when stays on record.',
         },
         roles: {
+            search: 'Find a role',
+            showing: {
+                one: '{first}–{last} of {count} role',
+                other: '{first}–{last} of {count} roles',
+            },
             title: 'Roles',
             lead: 'What each role lets people do. Give a role to someone from People.',
             new: 'New role',
@@ -663,6 +678,13 @@ export const en: SourceCatalogue = {
      * saves on its own and reports on its own.
      */
     profile: {
+        reason: {
+            system_update: 'Ordinary change',
+            common_rectification: 'Correct a mistake',
+            common_non_material_update: 'No change in substance',
+            common_regulatory: 'Required by regulation',
+            common_other: 'Another reason',
+        },
         tabs: {
             details: 'Details',
             contact: 'Contact',
@@ -1944,12 +1966,13 @@ export const en: SourceCatalogue = {
     },
 
     version: {
-        client: 'client {version}',
-        server: 'server {version}',
-        serverUnknown: 'server version unknown',
-        environment: 'environment {name}',
-        environmentUnknown: 'environment unknown',
-        nonProduction: 'non-production',
+        client: 'Client: {version}',
+        server: 'Server: {version}',
+        serverUnknown: 'Server: unknown',
+        environment: 'Environment: {name}',
+        environmentUnknown: 'Environment: unknown',
+        kindDev: 'dev',
+        kindProduction: 'production',
     },
 
     server: {
@@ -2392,8 +2415,11 @@ export const en: SourceCatalogue = {
                 'Switching issues a fresh sign-in token, so every screen reads the party you chose. The default is what quick sign-in picks next time.',
         },
         reporting: {
+            you: 'You',
+            history: 'History',
+            noHistory: 'This line has not changed.',
             title: 'Reporting lines',
-            lead: 'Who reports to whom, and the one line this screen changes.',
+            lead: 'Who reports to whom, and how each line has changed.',
             tree: 'Reporting tree',
             people: '{count} people',
             reports: '{count} reporting',
@@ -2407,26 +2433,16 @@ export const en: SourceCatalogue = {
             directReports: 'Direct reports',
             depth: 'Depth',
             reachesNoRoot: 'Reaches no root',
-            manager: 'Manager',
-            reason: 'Reason',
-            commentary: 'Note',
-            save: 'Save line',
-            clear: 'Clear line',
-            noVersion: 'The account could not be read, so the write states no version.',
             unrooted:
                 '{count} people reach no root: their manager is gone, or the line that holds them is broken. They are left out of the tree rather than drawn as roots.',
-            gaps: 'What this screen cannot do',
-            gapOffice:
-                'The office each person works in is not readable here: the account-party read carries an identifier and no name.',
-            gapApproval:
-                'A reporting-line change a person asks for is a proposal that their senior or the tenant administrator approves, and nothing in the platform holds such an approval, so the line does not move.',
-            gapHistory:
-                'The line has no history on this screen. The account is versioned, so a past line is recoverable, and this screen states none of it.',
         },
     },
 
     common: {
         loading: 'Loading...',
+        clear: 'Clear',
+        refresh: 'Refresh',
+        refreshStale: 'The data changed on the server. Refresh to see it.',
         all: 'All',
         close: 'Close',
         open: 'Open',

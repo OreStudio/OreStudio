@@ -19,37 +19,97 @@
  *
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
-import type { ReportingTreeNode } from '@ores/wire-protocol/browser';
+import { Link } from 'react-router';
+import {
+    fieldValue,
+    type ReportingTreeNode,
+    type TimelineEvent,
+} from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
-import { Button, Detail, Field, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
+import { personPath } from '../access/PeoplePage.js';
+import { ReportingLineDialog } from '../access/PersonForms.js';
+import { useHolds } from '../access/holds.js';
+import { roleLabel } from '../access/words.js';
+import { Crumbs } from '../refdata/shared.js';
+import { AccountPicture } from '../ui/Images.js';
+import { Button, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { RefreshButton } from '../ui/RefreshButton.js';
+import { formatDateTime } from '../ui/Time.js';
+
+/** The role that makes a person their tenant's administrator. */
+const TENANT_ADMIN = 'TenantAdmin';
+
+/** The entity whose versions carry a person's reporting line. */
+const ACCOUNT_ENTITY = 'ores.iam.account';
+
+/** One change of who a person reports to, as the account's versions state it. */
+export interface LineChange {
+    readonly version: number;
+    readonly at: string;
+    readonly actor: string;
+    /** The manager's account id before the change, or null for none. */
+    readonly from: string | null;
+    /** The manager's account id after the change, or null for none. */
+    readonly to: string | null;
+    readonly reasonCode: string;
+    readonly commentary: string;
+}
 
 /**
- * Reporting lines: who reports to whom, drawn as a tree.
+ * The changes of a person's reporting line, newest first.
  *
- * The indented tree is the shape, and the panel beside it is the selected
- * person and the one field this screen changes. The manager picker cannot
- * offer anybody who reports to the selected person, so the screen cannot ask
- * for a ring even if the server would take one; the change states a reason,
- * and the write is the narrow one, so a field changed elsewhere is not
- * overwritten.
- *
- * The journey's remaining gaps are stated rather than hidden: the office each
- * person works in is not readable from here, a change is a proposal that a
- * senior or the tenant administrator approves and nothing holds that approval,
- * and the line's history is not shown.
+ * The line is a field of the account, so its history is read from the
+ * account's versions: a version where the manager differs from the version
+ * before it is a change, and a first version that names one is the line being
+ * set. The manager is an identifier here; the screen names the person.
  */
-export function ReportingLinesPage(): ReactNode {
+export function reportingHistory(events: readonly TimelineEvent[]): readonly LineChange[] {
+    const versions = events
+        .filter((event) => event.entityType === ACCOUNT_ENTITY)
+        .sort((a, b) => a.version - b.version);
+    const changes: LineChange[] = [];
+    let previous: string | null = null;
+    for (const event of versions) {
+        const raw = fieldValue(event.fields, 'Reports To Account ID');
+        const current = raw === '' ? null : raw;
+        if (current !== previous) {
+            changes.push({
+                version: event.version,
+                at: event.at,
+                actor: event.actor,
+                from: previous,
+                to: current,
+                reasonCode: event.reasonCode,
+                commentary: event.commentary,
+            });
+        }
+        previous = current;
+    }
+    return changes.reverse();
+}
+
+/**
+ * Hierarchy: who reports to whom, drawn as a tree.
+ *
+ * The tree is the shape, and the card beside it is the selected person: who
+ * they are, who they report to, and how that line has changed. It opens on the
+ * signed-in person, because that is the place a reader starts from. The line
+ * is changed in a dialog with the reason it states, like any other record, and
+ * the manager picker cannot offer anybody who reports to the person, so the
+ * screen cannot ask for a ring.
+ */
+export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     const { t } = useTranslation();
-    const queryClient = useQueryClient();
+    const queries = useQueryClient();
+    const holds = useHolds();
+    const mayChange = holds('iam::accounts:update');
+    const mayReadRoles = holds('iam::roles:read');
     const [selectedId, setSelectedId] = useState('');
     const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
-    const [manager, setManager] = useState<string | undefined>(undefined);
-    const [reason, setReason] = useState('');
-    const [commentary, setCommentary] = useState('');
-    const [failure, setFailure] = useState('');
+    const [editing, setEditing] = useState(false);
 
     const tree = useQuery({ queryKey: ['reporting-tree'], queryFn: () => api.reportingTree() });
     const reasons = useQuery({ queryKey: ['amend-reasons'], queryFn: api.amendReasons });
@@ -69,12 +129,42 @@ export function ReportingLinesPage(): ReactNode {
         return byManager;
     }, [nodes]);
 
-    const selected = nodes.find((node) => node.accountId === selectedId);
+    const mine = nodes.find((node) => node.username === me);
+    const selected = nodes.find((node) => node.accountId === selectedId) ?? mine;
+
+    /*
+     * The tenant administrator is a role, and a role is read one account at a
+     * time. The tree is read for everyone, so the roles are read for the places
+     * an administrator is looked for: the roots, the person selected and the
+     * signed-in person. Anyone who may not read roles sees no mark rather than
+     * a refusal.
+     */
+    const lookedAt = useMemo(() => {
+        const ids = new Set<string>(
+            nodes.filter((node) => node.reportsToAccountId === null).map((node) => node.accountId),
+        );
+        if (selected !== undefined) ids.add(selected.accountId);
+        if (mine !== undefined) ids.add(mine.accountId);
+        return [...ids];
+    }, [nodes, selected, mine]);
+    const access = useQueries({
+        queries: lookedAt.map((accountId) => ({
+            queryKey: ['account-access', accountId],
+            queryFn: () => api.accountAccess(accountId),
+            enabled: mayReadRoles,
+            retry: false,
+        })),
+    });
+    const admins = new Set<string>(
+        lookedAt.filter((_id, index) =>
+            access[index]?.data?.roles.some((role) => role.name === TENANT_ADMIN),
+        ),
+    );
+
     /*
      * The tree states the shape and the manager, and the account read states
-     * the version the write must state back. Reading it on selection is what
-     * keeps the two apart: the write is refused as a conflict when somebody
-     * else has changed the row since this panel read it.
+     * the version the write must state back, so the write is refused as a
+     * conflict when somebody else has changed the row since this card read it.
      */
     const account = useQuery({
         queryKey: ['account', selected?.username ?? ''],
@@ -82,23 +172,19 @@ export function ReportingLinesPage(): ReactNode {
         enabled: selected !== undefined,
         retry: false,
     });
-
-    const save = useMutation({
-        mutationFn: (input: { readonly accountId: string; readonly to: string }) =>
-            api.setReportingLine(input.accountId, {
-                reportsToAccountId: input.to,
-                expectedVersion: account.data == null ? '' : String(account.data.version),
-                reasonCode: reason,
-                commentary,
-            }),
-        onSuccess: async () => {
-            setFailure('');
-            setManager(undefined);
-            await queryClient.invalidateQueries({ queryKey: ['reporting-tree'] });
-            await queryClient.invalidateQueries({ queryKey: ['account'] });
-        },
-        onError: (error: Error) => setFailure(error.message),
+    const story = useQuery({
+        queryKey: ['timeline', 'person', selected?.username ?? ''],
+        queryFn: () => api.timeline('person', selected?.username ?? ''),
+        enabled: selected !== undefined,
+        retry: false,
     });
+
+    const refresh = (): void => {
+        void queries.invalidateQueries({ queryKey: ['reporting-tree'] });
+        void queries.invalidateQueries({ queryKey: ['account'] });
+        void queries.invalidateQueries({ queryKey: ['account-access'] });
+        void queries.invalidateQueries({ queryKey: ['timeline', 'person'] });
+    };
 
     if (tree.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
@@ -109,26 +195,35 @@ export function ReportingLinesPage(): ReactNode {
 
     const roots = nodes.filter((node) => node.reportsToAccountId === null);
     const unrooted = nodes.filter((node) => node.depth < 0);
-    const chosenReason = reason === '' ? (reasons.data?.[0]?.code ?? '') : reason;
-
-    const saveTo = (to: string) => {
-        if (selected === undefined) {
-            return;
-        }
-        save.mutate({ accountId: selected.accountId, to });
+    const manager =
+        selected?.reportsToAccountId == null
+            ? undefined
+            : nodes.find((node) => node.accountId === selected.reportsToAccountId);
+    const nameOf = (accountId: string | null): string => {
+        if (accountId === null) return t('membership.reporting.noManager');
+        const node = nodes.find((candidate) => candidate.accountId === accountId);
+        return node === undefined || node.fullName === '' ? accountId : node.fullName;
     };
 
     return (
         <div className="space-y-6">
-            <PageHeader
-                title={t('membership.reporting.title')}
-                description={t('membership.reporting.lead')}
-            />
-
-            {failure !== '' && <Notice tone="error">{failure}</Notice>}
+            <div>
+                <Crumbs
+                    parts={[
+                        { label: t('shell.menu.home'), to: '/' },
+                        { label: t('access.hub.title'), to: '/people' },
+                        { label: t('access.hub.hierarchy') },
+                    ]}
+                />
+                <PageHeader
+                    title={t('access.hub.hierarchy')}
+                    description={t('membership.reporting.lead')}
+                    actions={<RefreshButton onClick={refresh} pending={tree.isFetching} />}
+                />
+            </div>
 
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,1fr)]">
-                <section className="rounded-md border border-line bg-surface-raised">
+                <section className="card">
                     <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
                         <h2 className="text-sm font-semibold">{t('membership.reporting.tree')}</h2>
                         <div className="flex items-center gap-2">
@@ -158,12 +253,10 @@ export function ReportingLinesPage(): ReactNode {
                                 node={node}
                                 children={children}
                                 collapsed={collapsed}
-                                selectedId={selectedId}
-                                onSelect={(id) => {
-                                    setSelectedId(id);
-                                    setManager(undefined);
-                                    setFailure('');
-                                }}
+                                selectedId={selected?.accountId ?? ''}
+                                meId={mine?.accountId ?? ''}
+                                admins={admins}
+                                onSelect={setSelectedId}
                                 onToggle={(id) =>
                                     setCollapsed((previous) => {
                                         const next = new Set(previous);
@@ -180,30 +273,74 @@ export function ReportingLinesPage(): ReactNode {
                     </ul>
                 </section>
 
-                <section className="space-y-4 rounded-md border border-line bg-surface-raised p-4">
+                <section className="card space-y-4 p-5">
                     {selected === undefined ? (
                         <p className="text-sm text-ink-muted">
                             {t('membership.reporting.pickSomeone')}
                         </p>
                     ) : (
                         <>
-                            <div>
-                                <h2 className="text-base font-semibold">{selected.fullName}</h2>
-                                <p className="text-sm text-ink-muted">{selected.jobTitle}</p>
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-center gap-4">
+                                    <AccountPicture
+                                        username={selected.username}
+                                        name={selected.fullName}
+                                        size="lg"
+                                    />
+                                    <div className="min-w-0">
+                                        <h2 className="text-base font-semibold">
+                                            <Link
+                                                to={personPath(selected.username)}
+                                                className="underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+                                            >
+                                                {selected.fullName}
+                                            </Link>
+                                        </h2>
+                                        <p className="text-sm text-ink-muted">
+                                            {selected.jobTitle}
+                                        </p>
+                                        <Badges
+                                            isMe={selected.accountId === mine?.accountId}
+                                            isAdmin={admins.has(selected.accountId)}
+                                        />
+                                    </div>
+                                </div>
+                                {mayChange && selected.accountId !== mine?.accountId && (
+                                    <Button
+                                        icon="edit"
+                                        disabled={account.data == null}
+                                        onClick={() => setEditing(true)}
+                                    >
+                                        {t('refdata.records.edit')}
+                                    </Button>
+                                )}
                             </div>
+
                             <dl className="grid grid-cols-2 gap-4">
-                                <Detail
-                                    label={t('membership.reporting.reportsTo')}
-                                    value={
-                                        selected.reportsToAccountId === null
-                                            ? t('membership.reporting.noManager')
-                                            : (nodes.find(
-                                                  (node) =>
-                                                      node.accountId ===
-                                                      selected.reportsToAccountId,
-                                              )?.fullName ?? selected.reportsToAccountId)
-                                    }
-                                />
+                                <div className="min-w-0">
+                                    <dt className="text-[11px] tracking-wide text-ink-faint uppercase">
+                                        {t('membership.reporting.reportsTo')}
+                                    </dt>
+                                    <dd className="mt-1 text-sm">
+                                        {manager === undefined ? (
+                                            t('membership.reporting.noManager')
+                                        ) : (
+                                            <Link
+                                                to={personPath(manager.username)}
+                                                className="flex items-center gap-2"
+                                            >
+                                                <AccountPicture
+                                                    username={manager.username}
+                                                    name={manager.fullName}
+                                                    size="sm"
+                                                />
+                                                <span className="underline decoration-line-strong underline-offset-2 hover:decoration-accent">
+                                                    {manager.fullName}
+                                                </span>
+                                            </Link>
+                                        )}
+                                    </dd>
+                                </div>
                                 <Detail
                                     label={t('membership.reporting.directReports')}
                                     value={String(selected.directReports)}
@@ -218,69 +355,11 @@ export function ReportingLinesPage(): ReactNode {
                                 />
                             </dl>
 
-                            <Field label={t('membership.reporting.manager')}>
-                                <Select
-                                    key={selected.accountId}
-                                    defaultValue={selected.reportsToAccountId ?? ''}
-                                    onChange={(event) => setManager(event.target.value)}
-                                >
-                                    <option value="">{t('membership.reporting.noManager')}</option>
-                                    {managerCandidates(nodes, selected).map((node) => (
-                                        <option key={node.accountId} value={node.accountId}>
-                                            {node.fullName} — {node.jobTitle}
-                                        </option>
-                                    ))}
-                                </Select>
-                            </Field>
-
-                            <Field label={t('membership.reporting.reason')}>
-                                <Select
-                                    value={chosenReason}
-                                    onChange={(event) => setReason(event.target.value)}
-                                >
-                                    {(reasons.data ?? []).map((entry) => (
-                                        <option key={entry.code} value={entry.code}>
-                                            {entry.description}
-                                        </option>
-                                    ))}
-                                </Select>
-                            </Field>
-
-                            <Field label={t('membership.reporting.commentary')}>
-                                <Input
-                                    value={commentary}
-                                    onChange={(event) => setCommentary(event.target.value)}
-                                />
-                            </Field>
-
-                            <div className="flex flex-wrap items-center gap-2">
-                                <Button
-                                    variant="primary"
-                                    size="sm"
-                                    disabled={save.isPending || account.isPending}
-                                    onClick={() =>
-                                        saveTo(manager ?? selected.reportsToAccountId ?? '')
-                                    }
-                                >
-                                    {t('membership.reporting.save')}
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    disabled={save.isPending}
-                                    onClick={() => {
-                                        setManager('');
-                                        saveTo('');
-                                    }}
-                                >
-                                    {t('membership.reporting.clear')}
-                                </Button>
-                            </div>
-                            {account.isError && (
-                                <p className="text-xs text-ink-faint">
-                                    {t('membership.reporting.noVersion')}
-                                </p>
-                            )}
+                            <History
+                                changes={story.data === undefined ? [] : reportingHistory(story.data.events)}
+                                pending={story.isPending}
+                                nameOf={nameOf}
+                            />
                         </>
                     )}
                 </section>
@@ -292,36 +371,82 @@ export function ReportingLinesPage(): ReactNode {
                 </Notice>
             )}
 
-            <section className="rounded-md border border-dashed border-line-strong p-4">
-                <h2 className="text-sm font-semibold">{t('membership.reporting.gaps')}</h2>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-muted">
-                    <li>{t('membership.reporting.gapOffice')}</li>
-                    <li>{t('membership.reporting.gapApproval')}</li>
-                    <li>{t('membership.reporting.gapHistory')}</li>
-                </ul>
-            </section>
+            {editing && account.data != null && (
+                <ReportingLineDialog
+                    account={account.data}
+                    reasons={reasons.data ?? []}
+                    onClose={() => setEditing(false)}
+                    onSaved={async () => {
+                        refresh();
+                    }}
+                />
+            )}
         </div>
     );
 }
 
-/** The people who may be this person's manager: everyone but their own branch. */
-export function managerCandidates(
-    nodes: readonly ReportingTreeNode[],
-    selected: ReportingTreeNode,
-): readonly ReportingTreeNode[] {
-    const forbidden = new Set<string>([selected.accountId]);
-    const childrenOf = (id: string): readonly ReportingTreeNode[] =>
-        nodes.filter((node) => node.reportsToAccountId === id);
-    const walk = (id: string): void => {
-        for (const child of childrenOf(id)) {
-            if (!forbidden.has(child.accountId)) {
-                forbidden.add(child.accountId);
-                walk(child.accountId);
-            }
-        }
-    };
-    walk(selected.accountId);
-    return nodes.filter((node) => !forbidden.has(node.accountId));
+/** What marks a person out: that they are the signed-in person, or their tenant's administrator. */
+function Badges({
+    isMe,
+    isAdmin,
+}: {
+    readonly isMe: boolean;
+    readonly isAdmin: boolean;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (!isMe && !isAdmin) return null;
+    return (
+        <span className="mt-1 flex flex-wrap gap-1">
+            {isMe && <Tag tone="accent">{t('membership.reporting.you')}</Tag>}
+            {isAdmin && <Tag tone="warn">{roleLabel(t, TENANT_ADMIN)}</Tag>}
+        </span>
+    );
+}
+
+/** How the selected person's line has changed, newest first. */
+function History({
+    changes,
+    pending,
+    nameOf,
+}: {
+    readonly changes: readonly LineChange[];
+    readonly pending: boolean;
+    readonly nameOf: (accountId: string | null) => string;
+}): ReactNode {
+    const { t, language } = useTranslation();
+    return (
+        <section className="space-y-2 border-t border-line pt-4">
+            <h3 className="text-sm font-semibold">{t('membership.reporting.history')}</h3>
+            {pending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
+            {!pending && changes.length === 0 && (
+                <p className="text-sm text-ink-muted">{t('membership.reporting.noHistory')}</p>
+            )}
+            <ol className="space-y-3">
+                {changes.map((change) => (
+                    <li key={change.version} className="text-sm">
+                        <p>
+                            <span className="text-ink-muted">{nameOf(change.from)}</span>
+                            {' → '}
+                            <span className="font-medium">{nameOf(change.to)}</span>
+                        </p>
+                        <p className="text-xs text-ink-faint">
+                            {formatDateTime(change.at, language)} · {change.actor} · v
+                            {String(change.version)}
+                            {change.reasonCode !== '' && (
+                                <>
+                                    {' · '}
+                                    {t(`profile.reason.${change.reasonCode.replace('.', '_')}`)}
+                                </>
+                            )}
+                        </p>
+                        {change.commentary !== '' && (
+                            <p className="text-xs text-ink-muted italic">{change.commentary}</p>
+                        )}
+                    </li>
+                ))}
+            </ol>
+        </section>
+    );
 }
 
 /** One person and the branch under them. */
@@ -330,6 +455,8 @@ function TreeNode({
     children,
     collapsed,
     selectedId,
+    meId,
+    admins,
     onSelect,
     onToggle,
 }: {
@@ -337,18 +464,21 @@ function TreeNode({
     readonly children: ReadonlyMap<string, ReportingTreeNode[]>;
     readonly collapsed: ReadonlySet<string>;
     readonly selectedId: string;
+    readonly meId: string;
+    readonly admins: ReadonlySet<string>;
     readonly onSelect: (id: string) => void;
     readonly onToggle: (id: string) => void;
 }): ReactNode {
     const { t } = useTranslation();
     const kids = children.get(node.accountId) ?? [];
     const open = !collapsed.has(node.accountId);
+    const isMe = node.accountId === meId;
     return (
         <li>
             <div
                 className={`flex items-center gap-1 rounded px-1 py-0.5 ${
                     selectedId === node.accountId ? 'bg-accent/10' : ''
-                }`}
+                } ${isMe ? 'border-l-2 border-accent' : 'border-l-2 border-transparent'}`}
             >
                 {kids.length > 0 ? (
                     <button
@@ -368,14 +498,20 @@ function TreeNode({
                 )}
                 <button
                     type="button"
-                    className="min-w-0 flex-1 rounded px-1 text-left hover:bg-surface-overlay"
+                    className="flex min-w-0 flex-1 items-center gap-2 rounded px-1 py-0.5 text-left hover:bg-surface-overlay"
                     onClick={() => onSelect(node.accountId)}
                 >
-                    <span className="text-sm font-medium">{node.fullName}</span>{' '}
-                    <span className="text-xs text-ink-muted">{node.jobTitle}</span>
-                    <span className="ml-2 text-[11px] text-ink-faint">
-                        {t('membership.reporting.reports', { count: node.directReports })}
+                    <AccountPicture username={node.username} name={node.fullName} size="sm" />
+                    <span className="min-w-0">
+                        <span className={`text-sm ${isMe ? 'font-semibold' : 'font-medium'}`}>
+                            {node.fullName}
+                        </span>{' '}
+                        <span className="text-xs text-ink-muted">{node.jobTitle}</span>
+                        <span className="ml-2 text-[11px] text-ink-faint">
+                            {t('membership.reporting.reports', { count: node.directReports })}
+                        </span>
                     </span>
+                    <Badges isMe={isMe} isAdmin={admins.has(node.accountId)} />
                 </button>
             </div>
             {open && kids.length > 0 && (
@@ -387,6 +523,8 @@ function TreeNode({
                             children={children}
                             collapsed={collapsed}
                             selectedId={selectedId}
+                            meId={meId}
+                            admins={admins}
                             onSelect={onSelect}
                             onToggle={onToggle}
                         />

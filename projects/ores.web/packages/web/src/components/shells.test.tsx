@@ -83,8 +83,8 @@ describe('the public shell', () => {
 
         // The client's own build is stamped into the bundle, so the test knows
         // only that a version is stated, not which one this checkout produced.
-        expect(html).toContain('client v');
-        expect(html).toContain('server v0.0.25 [x64-linux] (local abc1234-dirty)');
+        expect(html).toContain('Client: v');
+        expect(html).toContain('Server: v0.0.25 [x64-linux] (local abc1234-dirty)');
     });
 
     it('says the deployment has not said which build it runs', () => {
@@ -100,7 +100,7 @@ describe('the public shell', () => {
             </QueryClientProvider>,
         );
 
-        expect(html).toContain('server version unknown');
+        expect(html).toContain('Server: unknown');
     });
 
     it('states the environment it serves, and marks a non-production one', () => {
@@ -116,7 +116,9 @@ describe('the public shell', () => {
             </QueryClientProvider>,
         );
 
-        expect(html).toContain('environment Bright Faraday (non-production)');
+        expect(html).toContain('Environment: Bright Faraday');
+        // The kind is a label of its own, not a parenthesis on the name.
+        expect(html).toContain('>dev<');
     });
 
     it('names a production environment without the marker', () => {
@@ -132,8 +134,9 @@ describe('the public shell', () => {
             </QueryClientProvider>,
         );
 
-        expect(html).toContain('environment Production');
-        expect(html).not.toContain('non-production');
+        expect(html).toContain('Environment: Production');
+        expect(html).toContain('>production<');
+        expect(html).not.toContain('>dev<');
     });
 
     it('says it does not know the environment when the site has not answered', () => {
@@ -149,7 +152,7 @@ describe('the public shell', () => {
             </QueryClientProvider>,
         );
 
-        expect(html).toContain('environment unknown');
+        expect(html).toContain('Environment: unknown');
     });
 
     it('offers what the screen asks beside the mark, and nothing when it asks for nothing', () => {
@@ -326,7 +329,7 @@ describe('the application shell', () => {
             brightFaraday,
         );
 
-        expect(html).toContain('environment Bright Faraday (non-production)');
+        expect(html).toContain('Environment: Bright Faraday');
     });
 
     /*

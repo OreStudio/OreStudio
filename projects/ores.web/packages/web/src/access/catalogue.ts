@@ -138,3 +138,14 @@ export function search(
         })
         .slice(0, limit);
 }
+
+/**
+ * Whether a set of codes grants anything in one area.
+ *
+ * The wildcard grants every area, and a code of the area, wildcard or not,
+ * grants some of it. This is the question "which roles reach reference data",
+ * asked of a role's codes.
+ */
+export function grantsInArea(codes: readonly string[], component: string): boolean {
+    return codes.some((code) => code === '*' || code.startsWith(`${component}::`));
+}

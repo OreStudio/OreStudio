@@ -20,11 +20,14 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
+import { areasOf, grantsInArea } from './catalogue.js';
+import { AreaFilter } from './PermissionAreas.js';
 import { roleLabel } from './words.js';
 
 /**
@@ -35,11 +38,17 @@ import { roleLabel } from './words.js';
  * given to people and are not changed here.
  */
 export function RolesPage(): ReactNode {
-    const { t } = useTranslation();
+    const { t, plural } = useTranslation();
     const navigate = useNavigate();
     const [showService, setShowService] = useState(false);
     const [creating, setCreating] = useState(false);
+    const [search, setSearch] = useState('');
+    const [area, setArea] = useState('');
+    const [offset, setOffset] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const roles = useQuery({ queryKey: ['roles'], queryFn: api.roles });
+    const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
+    const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
 
     if (roles.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
@@ -48,9 +57,26 @@ export function RolesPage(): ReactNode {
         return <Notice tone="error">{roles.error.message}</Notice>;
     }
     const hidden = roles.data.filter((role) => role.service).length;
-    const shown = roles.data
+    const needle = search.trim().toLowerCase();
+    const matching = roles.data
         .filter((role) => showService || !role.service)
+        .filter((role) => area === '' || grantsInArea(role.permissionCodes, area))
+        .filter(
+            (role) =>
+                needle === '' ||
+                roleLabel(t, role.name).toLowerCase().includes(needle) ||
+                role.name.toLowerCase().includes(needle) ||
+                role.description.toLowerCase().includes(needle),
+        )
         .sort((a, b) => Number(a.service) - Number(b.service) || a.name.localeCompare(b.name));
+    // A filter can leave the page that was open past the last row.
+    const start = offset >= matching.length ? 0 : offset;
+    const shown = matching.slice(start, start + pageSize);
+    const { first, last } = pageBounds(start, shown.length);
+    const narrow = (apply: () => void): void => {
+        apply();
+        setOffset(0);
+    };
 
     return (
         <div>
@@ -63,19 +89,36 @@ export function RolesPage(): ReactNode {
                     </Button>
                 }
             />
-            <label className="mb-3 flex items-center gap-2 text-sm text-ink-muted">
-                <input
-                    type="checkbox"
-                    checked={showService}
-                    onChange={(event) => setShowService(event.target.checked)}
+            <div className="mb-3 flex flex-wrap items-center gap-3">
+                <Input
+                    type="search"
+                    className="max-w-md"
+                    value={search}
+                    onChange={(event) => narrow(() => setSearch(event.target.value))}
+                    placeholder={t('access.roles.search')}
+                    aria-label={t('access.roles.search')}
                 />
-                {t('access.roles.showService')}
-                {!showService && (
-                    <span className="text-ink-faint">
-                        · {t('access.roles.serviceHidden', { count: String(hidden) })}
-                    </span>
+                {areas.length > 0 && (
+                    <AreaFilter
+                        areas={areas}
+                        value={area}
+                        onChange={(component) => narrow(() => setArea(component))}
+                    />
                 )}
-            </label>
+                <label className="flex items-center gap-2 text-sm text-ink-muted">
+                    <input
+                        type="checkbox"
+                        checked={showService}
+                        onChange={(event) => narrow(() => setShowService(event.target.checked))}
+                    />
+                    {t('access.roles.showService')}
+                    {!showService && (
+                        <span className="text-ink-faint">
+                            · {t('access.roles.serviceHidden', { count: String(hidden) })}
+                        </span>
+                    )}
+                </label>
+            </div>
             <div className="overflow-x-auto rounded-md border border-line">
                 <table className="w-full text-left text-sm">
                     <thead>
@@ -87,6 +130,13 @@ export function RolesPage(): ReactNode {
                         </tr>
                     </thead>
                     <tbody>
+                        {shown.length === 0 && (
+                            <tr>
+                                <td colSpan={2} className="px-4 py-3 text-ink-muted">
+                                    {t('access.nothingMatches')}
+                                </td>
+                            </tr>
+                        )}
                         {shown.map((role) => (
                             <tr
                                 key={role.id}
@@ -120,6 +170,18 @@ export function RolesPage(): ReactNode {
                     </tbody>
                 </table>
             </div>
+            <Pager
+                offset={start}
+                shown={shown.length}
+                total={matching.length}
+                pageSize={pageSize}
+                showing={plural('access.roles.showing', matching.length, { first, last })}
+                onMove={setOffset}
+                onPageSize={(size) => {
+                    setPageSize(size);
+                    setOffset(0);
+                }}
+            />
             {creating && <NewRoleDialog onClose={() => setCreating(false)} />}
         </div>
     );

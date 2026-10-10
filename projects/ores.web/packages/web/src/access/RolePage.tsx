@@ -28,7 +28,7 @@ import { api } from '../api/client.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader } from '../ui/Primitives.js';
 import { areasOf, parseCode } from './catalogue.js';
-import { PermissionAreas } from './PermissionAreas.js';
+import { AreaFilter, PermissionAreas } from './PermissionAreas.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { useHolds } from './holds.js';
@@ -105,6 +105,7 @@ function Role({
     const holders = useHolders(role.id);
     const [draft, setDraft] = useState<ReadonlySet<string>>(() => new Set(role.permissionCodes));
     const [filter, setFilter] = useState('');
+    const [area, setArea] = useState('');
     const [onlyAllowed, setOnlyAllowed] = useState(false);
     const [saving, setSaving] = useState(false);
     const [renaming, setRenaming] = useState(false);
@@ -225,6 +226,7 @@ function Role({
                             placeholder={t('access.roles.find')}
                             aria-label={t('access.roles.find')}
                         />
+                        <AreaFilter areas={areas} value={area} onChange={setArea} />
                         <label className="flex items-center gap-2 text-sm text-ink-muted">
                             <input
                                 type="checkbox"
@@ -235,7 +237,7 @@ function Role({
                         </label>
                     </div>
                     <PermissionAreas
-                        areas={areas}
+                        areas={area === '' ? areas : areas.filter((a) => a.component === area)}
                         granted={draft}
                         filter={filter}
                         onlyGranted={onlyAllowed}

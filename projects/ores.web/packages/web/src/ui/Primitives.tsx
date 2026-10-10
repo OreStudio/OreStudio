@@ -201,9 +201,12 @@ export function Select({
 export function Tag({
     children,
     tone = 'neutral',
+    small = false,
 }: {
     readonly children: ReactNode;
     readonly tone?: 'neutral' | 'accent' | 'warn' | 'muted' | 'up' | 'down';
+    /** A smaller marker, for a footer or a line of fine print. */
+    readonly small?: boolean;
 }): ReactNode {
     const tones = {
         neutral: 'border-line text-ink-muted',
@@ -216,7 +219,8 @@ export function Tag({
     return (
         <span
             className={cx(
-                'inline-block rounded-full border px-2 py-0.5 text-[11px] leading-tight',
+                'inline-block rounded-full border leading-tight',
+                small ? 'px-1.5 py-px text-[10px]' : 'px-2 py-0.5 text-[11px]',
                 tones[tone],
             )}
         >

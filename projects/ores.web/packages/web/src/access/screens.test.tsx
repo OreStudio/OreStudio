@@ -174,6 +174,35 @@ describe('Roles', () => {
         expect(html).toContain('1 service roles hidden');
     });
 
+    it('pages the list, and offers search and an area combo box', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(
+                    ['roles'],
+                    [
+                        role(TRADING, 'Trading', ['refdata::currencies:read']),
+                        role(ADMIN, 'TenantAdmin', ['*']),
+                    ],
+                );
+                client.setQueryData(
+                    ['permissions'],
+                    [
+                        { code: 'refdata::currencies:read', description: 'Read currencies' },
+                        { code: 'iam::accounts:read', description: 'Read accounts' },
+                    ],
+                );
+            },
+            '/roles',
+            <Route path="/roles" element={<RolesPage />} />,
+        );
+
+        expect(html).toContain('type="search"');
+        expect(html).toContain('>All areas<');
+        expect(html).toContain('>Reference data<');
+        expect(html).toContain('1–2 of 2 roles');
+        expect(html).toContain('>Next<');
+    });
+
     it('does not edit a role that grants everything', () => {
         const html = render(
             (client) => {

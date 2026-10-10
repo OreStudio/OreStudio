@@ -146,7 +146,8 @@ function Person({
             <RecordHeader
                 crumbs={[
                     { label: t('shell.menu.home'), to: '/' },
-                    { label: t('access.people.title'), to: '/people' },
+                    { label: t('access.hub.title'), to: '/people' },
+                    { label: t('access.people.title'), to: '/staff' },
                     { label: name },
                 ]}
                 title={name}

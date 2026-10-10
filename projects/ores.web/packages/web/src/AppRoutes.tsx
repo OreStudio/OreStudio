@@ -54,6 +54,7 @@ import { SecurityPage } from './pages/SecurityPage.js';
 import { MyAccessPage } from './access/MyAccessPage.js';
 import { WhereIWorkPage } from './membership/WhereIWorkPage.js';
 import { ReportingLinesPage } from './membership/ReportingLinesPage.js';
+import { PeopleHubPage } from './access/PeopleHubPage.js';
 import { PeoplePage } from './access/PeoplePage.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
@@ -547,14 +548,15 @@ export function AppRoutes({
                     />
                 ))}
             />
+            <Route path="/reporting-lines" element={<Navigate to="/hierarchy" replace />} />
             <Route
-                path="/reporting-lines"
-                element={signedIn(gate.version, session, shell, () => (
-                    <ReportingLinesPage />
+                path="/hierarchy"
+                element={signedIn(gate.version, session, shell, (view) => (
+                    <ReportingLinesPage me={view.username} />
                 ))}
             />
             <Route
-                path="/people"
+                path="/staff"
                 element={signedIn(
                     gate.version,
                     session,
@@ -562,6 +564,21 @@ export function AppRoutes({
                     (view) => (
                         <PeoplePage mode={view.mode} />
                     ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/people"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    (view) =>
+                        view.mode === 'system-administration' ? (
+                            <PeoplePage mode={view.mode} />
+                        ) : (
+                            <PeopleHubPage />
+                        ),
                     'workspace',
                 )}
             />

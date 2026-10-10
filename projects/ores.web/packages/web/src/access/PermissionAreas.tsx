@@ -21,6 +21,7 @@
 
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
+import { Select } from '../ui/Primitives.js';
 import { MAIN_ACTIONS, areaWildcard, covers, type Area } from './catalogue.js';
 
 /**
@@ -235,4 +236,41 @@ export function areaLabel(t: (key: string) => string, component: string): string
     const key = `access.area.${component}`;
     const label = t(key);
     return label === key ? component : label;
+}
+
+/**
+ * The combo box that narrows a list to one area, such as reference data.
+ *
+ * The areas are named in the person's language and sorted by that name, so the
+ * list reads as words and not as the catalogue's size order. An empty value
+ * means every area.
+ */
+export function AreaFilter({
+    areas,
+    value,
+    onChange,
+}: {
+    readonly areas: readonly Area[];
+    readonly value: string;
+    readonly onChange: (component: string) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const named = areas
+        .map((area) => ({ component: area.component, name: areaLabel(t, area.component) }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    return (
+        <Select
+            className="w-56"
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+            aria-label={t('access.areaFilter')}
+        >
+            <option value="">{t('access.allAreas')}</option>
+            {named.map(({ component, name }) => (
+                <option key={component} value={component}>
+                    {name}
+                </option>
+            ))}
+        </Select>
+    );
 }

@@ -34,7 +34,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { FlagOf, FlaggedCode } from '../images/flags.js';
-import { managerCandidates } from '../membership/ReportingLinesPage.js';
+import { managerCandidates } from '../membership/managers.js';
 import { Button, Detail, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
 import { displayName } from './names.js';
 import { personPath } from './PeoplePage.js';
@@ -61,6 +61,37 @@ export interface AmendReason {
     readonly code: string;
     readonly description: string;
     readonly requiresCommentary: boolean;
+}
+
+/** The reason that records a touch: the save changed nothing in the record. */
+const TOUCH_REASON = 'common.non_material_update';
+
+/** The reason a change carries unless the person says otherwise. */
+const DEFAULT_CHANGE_REASON = 'system.update';
+
+/**
+ * The reason a save carries, and the choice the person may make.
+ *
+ * A save that changed a field cannot be recorded as a touch, and one that
+ * changed nothing can only be a touch. The reason defaults to an ordinary
+ * change, so a person who has no reason to say otherwise chooses nothing.
+ */
+export function useReasonChoice(
+    reasons: readonly AmendReason[],
+    changed: boolean,
+): {
+    readonly list: readonly AmendReason[];
+    readonly code: string;
+    readonly setCode: (code: string) => void;
+} {
+    const [chosen, setCode] = useState('');
+    const list = reasons.filter((reason) => (reason.code === TOUCH_REASON) === !changed);
+    const code = list.some((reason) => reason.code === chosen)
+        ? chosen
+        : (list.find((reason) => reason.code === DEFAULT_CHANGE_REASON)?.code ??
+          list[0]?.code ??
+          '');
+    return { list, code, setCode };
 }
 
 /** What a panel's last save decided, as the panel draws it. */
@@ -357,7 +388,6 @@ function IdentityDialog({
     const [edits, setEdits] = useState<
         Partial<{ fullName: string; jobTitle: string; imageId: string }>
     >({});
-    const [reasonCode, setReasonCode] = useState('');
     const [commentary, setCommentary] = useState('');
     const [busy, setBusy] = useState(false);
     const [outcome, setOutcome] = useState<PanelOutcome | undefined>(undefined);
@@ -367,7 +397,13 @@ function IdentityDialog({
         jobTitle: edits.jobTitle ?? account.jobTitle,
         imageId: edits.imageId ?? account.imageId ?? '',
     };
-    const chosen = reasons.find((reason) => reason.code === reasonCode);
+    const changed =
+        draft.fullName !== account.fullName ||
+        draft.jobTitle !== account.jobTitle ||
+        draft.imageId !== (account.imageId ?? '');
+    const choice = useReasonChoice(reasons, changed);
+    const reasonCode = choice.code;
+    const chosen = choice.list.find((reason) => reason.code === reasonCode);
     const maySave =
         reasonCode !== '' && !(chosen?.requiresCommentary === true && commentary.trim() === '');
     const name = displayName({ fullName: draft.fullName }, account.username);
@@ -465,11 +501,11 @@ function IdentityDialog({
                     </div>
                 </div>
                 <ReasonRow
-                    reasons={reasons}
+                    reasons={choice.list}
                     reasonCode={reasonCode}
                     commentary={commentary}
                     issue={fieldIssue(outcome, 'changeReasonCode')}
-                    onReason={setReasonCode}
+                    onReason={choice.setCode}
                     onCommentary={setCommentary}
                 />
                 <OutcomeNotice outcome={outcome} />
@@ -486,7 +522,7 @@ function IdentityDialog({
  * offered exclude the person and everyone under them, because a line to one of
  * them would be a loop.
  */
-function ReportingLineDialog({
+export function ReportingLineDialog({
     account,
     reasons,
     onClose,
@@ -501,7 +537,6 @@ function ReportingLineDialog({
     const queries = useQueryClient();
     const tree = useQuery({ queryKey: ['reporting-tree'], queryFn: () => api.reportingTree() });
     const [managerId, setManagerId] = useState<string | undefined>(undefined);
-    const [reasonCode, setReasonCode] = useState('');
     const [commentary, setCommentary] = useState('');
     const [busy, setBusy] = useState(false);
     const [outcome, setOutcome] = useState<PanelOutcome | undefined>(undefined);
@@ -510,18 +545,23 @@ function ReportingLineDialog({
     const self = nodes.find((node) => node.accountId === account.id);
     const candidates = self === undefined ? [] : managerCandidates(nodes, self);
     const chosenManager = managerId ?? account.reportsToAccountId ?? '';
-    const chosen = reasons.find((reason) => reason.code === reasonCode);
+    const changed = chosenManager !== (account.reportsToAccountId ?? '');
+    const choice = useReasonChoice(reasons, changed);
+    const reasonCode = choice.code;
+    const chosen = choice.list.find((reason) => reason.code === reasonCode);
+    const mayClear =
+        reasonCode !== '' && !(chosen?.requiresCommentary === true && commentary.trim() === '');
     const maySave =
-        chosenManager !== (account.reportsToAccountId ?? '') &&
+        changed &&
         reasonCode !== '' &&
         !(chosen?.requiresCommentary === true && commentary.trim() === '');
 
-    const save = async (): Promise<void> => {
+    const save = async (to: string): Promise<void> => {
         setBusy(true);
         setOutcome(undefined);
         try {
             await api.setReportingLine(account.id, {
-                reportsToAccountId: chosenManager,
+                reportsToAccountId: to,
                 expectedVersion: String(account.version),
                 reasonCode,
                 commentary,
@@ -551,12 +591,22 @@ function ReportingLineDialog({
                     <Button variant="ghost" icon="cancel" onClick={onClose}>
                         {t('refdata.records.cancel')}
                     </Button>
+                    {account.reportsToAccountId !== null && (
+                        <Button
+                            variant="danger"
+                            icon="remove"
+                            disabled={busy || !mayClear}
+                            onClick={() => void save('')}
+                        >
+                            {t('common.clear')}
+                        </Button>
+                    )}
                     <Button
                         variant="primary"
                         icon="save"
                         disabled={!maySave}
                         pending={busy}
-                        onClick={() => void save()}
+                        onClick={() => void save(chosenManager)}
                     >
                         {t('refdata.records.save')}
                     </Button>
@@ -581,11 +631,11 @@ function ReportingLineDialog({
                     </Select>
                 </Field>
                 <ReasonRow
-                    reasons={reasons}
+                    reasons={choice.list}
                     reasonCode={reasonCode}
                     commentary={commentary}
                     issue={fieldIssue(outcome, 'changeReasonCode')}
-                    onReason={setReasonCode}
+                    onReason={choice.setCode}
                     onCommentary={setCommentary}
                 />
                 <OutcomeNotice outcome={outcome} />
@@ -928,7 +978,6 @@ function ContactDialog({
 }): ReactNode {
     const { t } = useTranslation();
     const [edits, setEdits] = useState<Partial<ContactDraft>>({});
-    const [reasonCode, setReasonCode] = useState('');
     const [commentary, setCommentary] = useState('');
     const [busy, setBusy] = useState(false);
     const [outcome, setOutcome] = useState<PanelOutcome | undefined>(undefined);
@@ -945,7 +994,12 @@ function ContactDialog({
         webPage: contact?.webPage ?? '',
     };
     const draft: ContactDraft = { ...base, ...edits };
-    const chosen = reasons.find((reason) => reason.code === reasonCode);
+    const changed = (Object.keys(base) as (keyof ContactDraft)[]).some(
+        (field) => draft[field] !== base[field],
+    );
+    const choice = useReasonChoice(reasons, changed);
+    const reasonCode = choice.code;
+    const chosen = choice.list.find((reason) => reason.code === reasonCode);
     const maySave =
         reasonCode !== '' && !(chosen?.requiresCommentary === true && commentary.trim() === '');
     const set =
@@ -1064,11 +1118,11 @@ function ContactDialog({
                     </Field>
                 </div>
                 <ReasonRow
-                    reasons={reasons}
+                    reasons={choice.list}
                     reasonCode={reasonCode}
                     commentary={commentary}
                     issue={fieldIssue(outcome, 'changeReasonCode')}
-                    onReason={setReasonCode}
+                    onReason={choice.setCode}
                     onCommentary={setCommentary}
                 />
                 <OutcomeNotice outcome={outcome} />
@@ -1111,10 +1165,9 @@ function ReasonRow({
         <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t('profile.save.why')} {...issue}>
                 <Select value={reasonCode} onChange={(event) => onReason(event.target.value)}>
-                    <option value="">{t('profile.save.chooseReason')}</option>
                     {reasons.map((reason) => (
                         <option key={reason.code} value={reason.code}>
-                            {reason.description}
+                            {t(`profile.reason.${reason.code.replace('.', '_')}`)}
                         </option>
                     ))}
                 </Select>

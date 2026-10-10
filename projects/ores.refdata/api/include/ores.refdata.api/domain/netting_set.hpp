@@ -46,8 +46,9 @@ namespace ores::refdata::domain {
  * A set opened under a [[id:6AADB1A7-1229-4D10-8951-58446788957F][netting agreement]] copies the
  * agreement's counterparty and legal entity, and a pinned key holds the copy to the agreement, so a
  * set cannot be filed under another counterparty's agreement. A set with no agreement holds trades
- * that do not net; its counterparty and legal entity may be unknown, as they are for a set read
- * from an ORE document, which names neither.
+ * that do not net; its counterparty may be unknown, as it is for a set read from an ORE document,
+ * which names none. Every set belongs to a legal entity of the firm, and the
+ * entity that imports the document is the one it belongs to.
  *
  * The code is the netting set id ORE uses. The call type and initial margin
  * type are the remaining parts of ORE's netting set details, and the risk
@@ -74,9 +75,19 @@ struct netting_set final {
     /**
      * @brief The netting set id, as ORE names it.
      *
-     * Unique within the tenant. A trade's envelope names its set by this code.
+     * Unique within the legal entity the set belongs to. A trade's envelope names its set by this
+     * code.
      */
     std::string code;
+
+    /**
+     * @brief The legal entity of the firm the set belongs to.
+     *
+     * References the parties table. Fixed for the set's life, so the CSAs and the identifiers that
+     * take their party from the set can never be left on another party. When the set has an
+     * agreement it equals the agreement's.
+     */
+    boost::uuids::uuid party_id;
 
     /**
      * @brief The agreement the set is opened under.
@@ -91,13 +102,6 @@ struct netting_set final {
      * Required when the set has an agreement, and then equal to the agreement's.
      */
     std::optional<boost::uuids::uuid> counterparty_id;
-
-    /**
-     * @brief The legal entity of the firm the set belongs to.
-     *
-     * Required when the set has an agreement, and then equal to the agreement's.
-     */
-    std::optional<boost::uuids::uuid> party_id;
 
     /**
      * @brief ORE's call type for the set.

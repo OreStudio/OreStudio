@@ -102,6 +102,7 @@ domain::netting_set to_domain(const messaging::netting_set_write& write) {
     domain::netting_set v;
     v.id = write.id;
     v.code = write.code;
+    v.party_id = write.party_id;
     v.netting_agreement_id = write.netting_agreement_id;
     v.counterparty_id = write.counterparty_id;
     v.call_type = write.call_type;

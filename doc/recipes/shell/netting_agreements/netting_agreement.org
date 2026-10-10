@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-netting_agreements add <agreement_number> <counterparty_id> <agreement_type> <governing_law> <description> <reason> <commentary>
+netting_agreements add <agreement_number> <party_id> <counterparty_id> <agreement_type> <governing_law> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.netting_agreements.put=.
 
 #+name: netting_agreements-add
 #+begin_src ores-shell :tangle netting_agreements-add.ores :exports none
-netting_agreements add __none__ 00000000-0000-0000-0000-000000000000 __none__ - - system.new_record generated_script
+netting_agreements add __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-netting_agreements set <id> <agreement_number> <counterparty_id> <agreement_type> <governing_law> <description> <reason> <commentary> [--version <n>]
+netting_agreements set <id> <agreement_number> <party_id> <counterparty_id> <agreement_type> <governing_law> <description> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.netting_agreements.put=.
 
 #+name: netting_agreements-set
 #+begin_src ores-shell :tangle netting_agreements-set.ores :exports none
-netting_agreements set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ - - system.new_record generated_script
+netting_agreements set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-netting_agreements put-many --count <n> <id> <agreement_number> <counterparty_id> <agreement_type> <governing_law> <description> <reason> <commentary>
+netting_agreements put-many --count <n> <id> <agreement_number> <party_id> <counterparty_id> <agreement_type> <governing_law> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.netting_agreements.put_many=.
 
 #+name: netting_agreements-put-many
 #+begin_src ores-shell :tangle netting_agreements-put-many.ores :exports none
-netting_agreements put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ - - system.new_record generated_script
+netting_agreements put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=

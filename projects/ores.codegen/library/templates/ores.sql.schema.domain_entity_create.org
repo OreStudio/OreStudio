@@ -467,6 +467,21 @@ begin
       and valid_to = ores_utility_infinity_timestamp_fn();
 
 {{/domain_entity.sql.party_id_from_book_id}}
+{{#domain_entity.sql.party_id_from_parent}}
+    -- The {{parent_column}} row states the owning party, so the party is not
+    -- the caller's to supply: derive it and ignore what was sent. A copy
+    -- the caller made could only drift from the row it belongs to.
+    select party_id into NEW.party_id
+    from {{parent_table}}
+    where tenant_id = NEW.tenant_id
+      and id = NEW.{{parent_column}}
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    if not found then
+        raise exception '{{parent_error_message}}', NEW.{{parent_column}}
+            using errcode = '23503';
+    end if;
+
+{{/domain_entity.sql.party_id_from_parent}}
 {{#domain_entity.foreign_keys}}
 {{^skip_check}}
 {{^nullable}}

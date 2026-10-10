@@ -4162,6 +4162,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     'party_id_from_book_id') or {}).get('book_table')
                 fk['parent_supplies_party'] = bool(
                     _book and fk.get('table') == _book)
+                # :seed_parent_party_id: true says the entity takes its party from
+                # this parent, so the seeded parent carries the party seeded for
+                # the entity rather than a fresh one.
+                fk['seed_parent_party_id'] = bool(fk.get('seed_parent_party_id'))
                 # A party-isolated parent shows its rows only to the parties
                 # a session may see, so the seeded parent carries the session
                 # party; any other party would make it invisible to the

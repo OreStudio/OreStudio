@@ -42,6 +42,7 @@ struct netting_set_key {
 struct netting_set_write {
     boost::uuids::uuid id;
     std::string code;
+    boost::uuids::uuid party_id;
     std::optional<boost::uuids::uuid> netting_agreement_id;
     std::optional<boost::uuids::uuid> counterparty_id;
     std::optional<std::string> call_type;

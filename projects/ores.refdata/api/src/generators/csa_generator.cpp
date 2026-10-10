@@ -45,6 +45,7 @@ domain::csa generate_synthetic_csa(utility::generation::generation_context& ctx)
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.netting_set_id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.is_active = true;
     r.bilateral = std::optional<std::string>("Bilateral");
     r.csa_currency = std::optional<std::string>("EUR");

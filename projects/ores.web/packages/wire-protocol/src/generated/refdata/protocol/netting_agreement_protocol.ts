@@ -36,6 +36,7 @@ export interface NettingAgreementKey {
 export interface NettingAgreementWrite {
     id: string;
     agreement_number: string;
+    party_id: string;
     counterparty_id: string;
     agreement_type: string;
     governing_law: string | null;

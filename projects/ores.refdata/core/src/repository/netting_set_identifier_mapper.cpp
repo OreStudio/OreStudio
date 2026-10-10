@@ -56,6 +56,7 @@ netting_set_identifier_mapper::map(const netting_set_identifier_entity& v) {
 
     r.id_value = v.id_value;
 
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.description = v.description.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -83,6 +84,7 @@ netting_set_identifier_mapper::map(const domain::netting_set_identifier& v) {
 
     r.id_value = v.id_value;
 
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

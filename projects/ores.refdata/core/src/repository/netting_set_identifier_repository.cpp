@@ -321,6 +321,7 @@ std::optional<domain::netting_set_identifier> netting_set_identifier_repository:
     return entities.front();
 }
 
+
 std::vector<domain::netting_set_identifier>
 netting_set_identifier_repository::read_latest_by_netting_set_id(
     context ctx,

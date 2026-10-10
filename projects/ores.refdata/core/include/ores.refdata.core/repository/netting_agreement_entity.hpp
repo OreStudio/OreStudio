@@ -49,6 +49,7 @@ struct netting_agreement_entity {
     std::string agreement_number;
 
     std::string party_id;
+
     std::string counterparty_id;
     std::string agreement_type;
     std::optional<std::string> governing_law;

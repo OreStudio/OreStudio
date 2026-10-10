@@ -110,10 +110,12 @@ void put(xsd::optional<T>& target, const std::optional<T>& v) {
 
 refdata::domain::csa map_csa(const nettingsetdefinitions_NettingSet_t_CSADetails_t& d,
                              const boost::uuids::uuid& set_id,
+                             const boost::uuids::uuid& party_id,
                              bool active) {
     refdata::domain::csa r;
     r.id = new_uuid();
     r.netting_set_id = set_id;
+    r.party_id = party_id;
     r.is_active = active;
     r.bilateral = csa_type_text(d.Bilateral);
     if (d.CSACurrency)
@@ -194,13 +196,15 @@ reverse_csa(const refdata::domain::csa& c,
 
 }
 
-mapped_netting_sets netting_set_mapper::map(const nettingsetdefinitions& v) {
+mapped_netting_sets netting_set_mapper::map(const nettingsetdefinitions& v,
+                                            const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Mapping " << v.NettingSet.size() << " ORE netting sets.";
 
     mapped_netting_sets r;
     for (const auto& n : v.NettingSet) {
         refdata::domain::netting_set s;
         s.id = new_uuid();
+        s.party_id = party_id;
         const auto& group = n.nettingSetGroup;
         if (group.NettingSetDetails) {
             const auto& details = *group.NettingSetDetails;
@@ -222,7 +226,7 @@ mapped_netting_sets netting_set_mapper::map(const nettingsetdefinitions& v) {
 
         if (n.CSADetails) {
             const bool active = n.ActiveCSAFlag && static_cast<bool>(*n.ActiveCSAFlag);
-            auto c = map_csa(*n.CSADetails, s.id, active);
+            auto c = map_csa(*n.CSADetails, s.id, party_id, active);
             if (n.CSADetails->EligibleCollaterals) {
                 int position = 0;
                 for (const auto& code : n.CSADetails->EligibleCollaterals->Currencies.Currency) {

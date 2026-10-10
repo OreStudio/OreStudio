@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T09:42:55.095349Z
+' Generated: 2026-10-10T17:28:10.176948Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1749,6 +1749,7 @@ package "refdata" #FFF3E0 {
         --
         * version : integer
         * netting_set_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
         * is_active : boolean
           bilateral : text
           csa_currency : text
@@ -3843,6 +3844,7 @@ package "refdata" #FFF3E0 {
         * netting_set_id : uuid <<FK>>
         * id_scheme : text
         * id_value : text
+        * party_id : uuid <<FK>>
           description : text
         * modified_by : text
         * performed_by : text
@@ -3870,9 +3872,9 @@ package "refdata" #FFF3E0 {
         --
         * version : integer
         * code : text
+        * party_id : uuid <<FK>>
           netting_agreement_id : uuid <<FK>>
           counterparty_id : uuid <<FK>>
-          party_id : uuid <<FK>>
           call_type : text
           initial_margin_type : text
           risk_weight : double
@@ -3898,8 +3900,9 @@ package "refdata" #FFF3E0 {
     counterparty and legal entity, and a pinned key holds the copy to the
     agreement, so a set cannot be filed under another counterparty's
     agreement. A set with no agreement holds trades that do not net; its
-    counterparty and legal entity may be unknown, as they are for a set read
-    from an ORE document, which names neither.
+    counterparty may be unknown, as it is for a set read from an ORE document,
+    which names none. Every set belongs to a legal entity of the firm, and the
+    entity that imports the document is the one it belongs to.
     The code is the netting set id ORE uses. The call type and initial margin
     type are the remaining parts of ORE's netting set details, and the risk
     weight is ORE's.
@@ -5410,6 +5413,7 @@ ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_identifiers_tbl
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_driver_pairs_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_enabled_derived_pairs_tbl : "has"
 ores_refdata_csas_tbl ||--o{ ores_refdata_csa_eligible_currencies_tbl : "has"
+ores_refdata_parties_tbl ||--o{ ores_refdata_csas_tbl : "has"
 ores_refdata_netting_sets_tbl ||--o{ ores_refdata_csas_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_curve_bootstrap_configs_tbl : "has"
 ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_curve_bootstrap_configs_tbl : "has"
@@ -5451,6 +5455,7 @@ ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_intraday_power_curve_conf
 ores_refdata_ir_curve_bootstrap_configs_tbl ||--o{ ores_refdata_ir_curve_bootstrap_pillars_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_netting_agreements_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_netting_agreements_tbl : "has"
+ores_refdata_parties_tbl ||--o{ ores_refdata_netting_set_identifiers_tbl : "has"
 ores_refdata_netting_sets_tbl ||--o{ ores_refdata_netting_set_identifiers_tbl : "has"
 ores_refdata_netting_agreements_tbl ||--o{ ores_refdata_netting_sets_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_netting_sets_tbl : "has"

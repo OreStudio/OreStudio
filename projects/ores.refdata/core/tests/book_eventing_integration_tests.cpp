@@ -173,22 +173,12 @@ TEST_CASE("write_book_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto parent_portfolio_id_parent = ores::refdata::generators::generate_synthetic_portfolio(ctx);
     parent_portfolio_id_parent.change_reason_code = "system.test";
-    // portfolio's own mandatory party_id FK (session-set in
-    // production) needs an active party too: seed one, attached under the
-    // tenant's root party like the direct-party branch below.
-    auto parent_portfolio_id_party = ores::refdata::generators::generate_synthetic_party(ctx);
-    parent_portfolio_id_party.change_reason_code = "system.test";
-    auto parent_portfolio_id_party_existing =
-        ores::refdata::repository::party_repository().read_latest(party_ctx);
-    for (const auto& e : parent_portfolio_id_party_existing) {
-        if (e.tenant_id == parent_portfolio_id_party.tenant_id) {
-            parent_portfolio_id_party.parent_party_id = e.id;
-            break;
-        }
-    }
-    ores::refdata::repository::party_repository parent_portfolio_id_party_repo;
-    parent_portfolio_id_party_repo.write(party_ctx, parent_portfolio_id_party);
-    parent_portfolio_id_parent.party_id = parent_portfolio_id_party.id;
+    // The book and this portfolio belong to the same
+    // party, so the portfolio carries the party already seeded for
+    // the book: under any other party the stored row would belong to a
+    // party the book's own reads do not name. The party foreign key
+    // is declared first in the model, so that party is written by now.
+    parent_portfolio_id_parent.party_id = v.party_id;
     // The parent portfolio's insert trigger validates aggregation_ccy
     // against the currencies table for the write tenant, and the
     // synthetic portfolio generator always emits the X-0 sentinel --

@@ -703,9 +703,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
--- Party isolation: a set read from an ORE document has no legal entity
--- yet and stays visible across the tenant until one is assigned. FOR SELECT
--- only, as for books.
+-- Party isolation: a set belongs to the legal entity that holds it and is
+-- visible to the parties that can see that entity. FOR SELECT only, as for
+-- books.
 drop policy if exists netting_sets_party_isolation_policy
     on ores_refdata_netting_sets_tbl;
 
@@ -713,5 +713,37 @@ create policy netting_sets_party_isolation_policy
 on ores_refdata_netting_sets_tbl
 as restrictive
 for select using (
-    party_id is null or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- CSAs
+-- -----------------------------------------------------------------------------
+-- The tenant policy is generated with the table. Party isolation: a CSA is
+-- visible to the parties that can see the legal entity it belongs to. FOR
+-- SELECT only, as for netting sets.
+drop policy if exists csas_party_isolation_policy
+    on ores_refdata_csas_tbl;
+
+create policy csas_party_isolation_policy
+on ores_refdata_csas_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Netting set identifiers
+-- -----------------------------------------------------------------------------
+-- The tenant policy is generated with the table. Party isolation: an
+-- identifier is visible to the parties that can see the legal entity it
+-- belongs to. FOR SELECT only, as for netting sets.
+drop policy if exists netting_set_identifiers_party_isolation_policy
+    on ores_refdata_netting_set_identifiers_tbl;
+
+create policy netting_set_identifiers_party_isolation_policy
+on ores_refdata_netting_set_identifiers_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );

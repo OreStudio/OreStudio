@@ -30,13 +30,17 @@
  * - A publish with no party, and a set whose agreement is unknown, are skipped
  * - A publish naming a party the tenant lacks is refused
  * - An agreement whose LEI names no counterparty is skipped
+ * - A second party holds the same netting set codes and ORE ids as the first
+ * - A CSA takes the party of its netting set, whichever party it names
+ * - A CSA on a netting set that does not exist is refused
+ * - A netting set cannot move to another party
  *
  * Run with: pg_prove -d <database> test/refdata_ore_sample_netting_test.sql
  */
 
 begin;
 
-select plan(12);
+select plan(20);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -282,6 +286,126 @@ select is(
        and valid_to = ores_utility_infinity_timestamp_fn()),
     null,
     'a set staged with no agreement is written with none');
+
+-- A second legal entity of the firm takes the same data. The codes, the
+-- agreement numbers and the ORE ids are unique within a party, so both parties
+-- hold them.
+insert into ores_refdata_parties_tbl (
+    id, tenant_id, full_name, short_code, party_category, party_type,
+    business_center_code, parent_party_id, status,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    '00000000-0000-0000-0000-0000000cf002'::uuid, ores_utility_system_tenant_id_fn(),
+    'Acme Holdings', 'ACMHLD', 'Operational', 'Corporate',
+    'WRLD', '00000000-0000-0000-0000-0000000cf001'::uuid, 'Active', current_user, current_user,
+    'system.test', 'ORE sample second party fixture');
+
+select set_config('app.visible_party_ids',
+    (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
+
+select count(*) from ores_refdata_publish_netting_agreements_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.sample_netting_agreements'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(), 'upsert',
+    '{"party_id": "00000000-0000-0000-0000-0000000cf002"}'::jsonb);
+
+select count(*) from ores_refdata_publish_netting_sets_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.sample_netting_sets'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(), 'upsert',
+    '{"party_id": "00000000-0000-0000-0000-0000000cf002"}'::jsonb);
+
+select count(*) from ores_refdata_publish_netting_set_aliases_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.netting_set_aliases'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(), 'upsert',
+    '{"party_id": "00000000-0000-0000-0000-0000000cf002"}'::jsonb);
+
+select count(*) from ores_refdata_publish_csas_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.sample_csas'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(), 'upsert',
+    '{"party_id": "00000000-0000-0000-0000-0000000cf002"}'::jsonb);
+
+select is(
+    (select count(*) from ores_refdata_netting_sets_tbl
+     where tenant_id = ores_utility_system_tenant_id_fn()
+       and party_id = '00000000-0000-0000-0000-0000000cf002'::uuid
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    19::bigint,
+    'a second party holds all 19 netting sets');
+
+select is(
+    (select count(*) from (
+        select code from ores_refdata_netting_sets_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code like 'NS-%'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+        group by code having count(distinct party_id) = 2) held_by_both),
+    19::bigint,
+    'both parties hold every netting set code');
+
+select results_eq(
+    $$select count(*), count(distinct party_id) from ores_refdata_netting_set_identifiers_tbl
+      where tenant_id = ores_utility_system_tenant_id_fn()
+        and id_scheme = 'ORE' and id_value = 'CPTY_A'
+        and valid_to = ores_utility_infinity_timestamp_fn()$$,
+    $$values (2::bigint, 2::bigint)$$,
+    'the ORE id CPTY_A names one netting set in each party');
+
+select is(
+    (select count(*) from ores_refdata_csas_tbl c
+     join ores_refdata_netting_sets_tbl ns
+       on ns.id = c.netting_set_id
+      and ns.valid_to = ores_utility_infinity_timestamp_fn()
+     where c.tenant_id = ores_utility_system_tenant_id_fn()
+       and c.valid_to = ores_utility_infinity_timestamp_fn()
+       and c.party_id is distinct from ns.party_id),
+    0::bigint,
+    'every CSA has the party of its netting set');
+
+select lives_ok(
+    $$insert into ores_refdata_csas_tbl (tenant_id, id, version, netting_set_id, party_id,
+          is_active, modified_by, performed_by, change_reason_code, change_commentary)
+      select ores_utility_system_tenant_id_fn(), '00000000-0000-0000-0000-0000000cf0c1'::uuid,
+          0, ns.id, '00000000-0000-0000-0000-0000000cf001'::uuid, false,
+          current_user, current_user, 'system.new_record', 'test'
+      from ores_refdata_netting_sets_tbl ns
+      where ns.tenant_id = ores_utility_system_tenant_id_fn()
+        and ns.party_id = '00000000-0000-0000-0000-0000000cf002'::uuid
+        and ns.code = 'NS-BARC-PRICING-01'
+        and ns.valid_to = ores_utility_infinity_timestamp_fn()$$,
+    'a CSA that names another party is written');
+
+select is(
+    (select party_id::text from ores_refdata_csas_tbl
+     where id = '00000000-0000-0000-0000-0000000cf0c1'::uuid
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    '00000000-0000-0000-0000-0000000cf002',
+    'a CSA takes the party of its netting set, not the party it names');
+
+select throws_like(
+    $$insert into ores_refdata_csas_tbl (tenant_id, id, version, netting_set_id, party_id,
+          is_active, modified_by, performed_by, change_reason_code, change_commentary)
+      values (ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0,
+          '00000000-0000-0000-0000-0000000cf0fe'::uuid,
+          '00000000-0000-0000-0000-0000000cf001'::uuid, false,
+          current_user, current_user, 'system.new_record', 'test')$$,
+    '%No active netting set found%',
+    'a CSA cannot be written for a netting set that does not exist');
+
+select throws_like(
+    $$insert into ores_refdata_netting_sets_tbl (tenant_id, id, version, code, party_id,
+          modified_by, performed_by, change_reason_code, change_commentary)
+      select tenant_id, id, version, code, '00000000-0000-0000-0000-0000000cf001'::uuid,
+          current_user, current_user, 'system.new_record', 'test'
+      from ores_refdata_netting_sets_tbl
+      where tenant_id = ores_utility_system_tenant_id_fn()
+        and party_id = '00000000-0000-0000-0000-0000000cf002'::uuid
+        and code = 'NS-BARC-PRICING-01'
+        and valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%party_id cannot change%',
+    'a netting set cannot move to another party');
 
 select * from finish();
 

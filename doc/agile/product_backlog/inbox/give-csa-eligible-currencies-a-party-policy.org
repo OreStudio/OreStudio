@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F7A3B0C3-A952-40A8-A4CE-E10DA0D8B103
+:END:
+#+title: Give csa_eligible_currencies a party policy
+#+description: ores_refdata_csa_eligible_currencies_tbl has no party_id and no party policy, so a direct listing is not filtered by party even though its CSAs are. Derive the party from the CSA or add a policy by join to the CSA.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

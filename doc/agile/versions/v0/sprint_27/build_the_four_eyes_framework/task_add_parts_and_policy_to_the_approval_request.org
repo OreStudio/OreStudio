@@ -8,7 +8,7 @@
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
 #+branch: feature/add-parts-and-policy-to-the-approval-request
-#+pr:
+#+pr: 3065
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3065][#3065]] | [inbox] Add parts and a policy to the approval request |
 
 * Review
 

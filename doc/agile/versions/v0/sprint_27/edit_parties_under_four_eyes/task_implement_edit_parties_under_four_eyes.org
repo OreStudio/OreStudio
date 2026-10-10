@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :edit_parties_under_four_eyes:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-edit-parties-under-four-eyes
 #+pr:
 #+blocked_on:
 #+blocked_since:

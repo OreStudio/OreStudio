@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/carry-the-flexi-and-balance-guaranteed-swap-fields
-#+pr:
+#+pr: 3067
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3067][#3067]] | [trading,ore] Carry the FlexiSwap and BalanceGuaranteedSwap fields |
 
 * Review
 

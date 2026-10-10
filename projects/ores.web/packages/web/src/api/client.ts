@@ -247,6 +247,22 @@ const recordResourceViewSchema = z.object({
 
 export type RecordResourceView = z.infer<typeof recordResourceViewSchema>;
 
+/** A synthetic resource as the BFF describes it to this session. */
+const syntheticResourceViewSchema = z.object({
+    key: z.string(),
+    entityType: z.string(),
+    keyField: z.string(),
+    writable: z.boolean(),
+    readOnlyBecause: z.string().nullable(),
+    search: z.boolean(),
+    sortable: z.array(z.string()),
+    readPermission: z.string(),
+    writePermission: z.string(),
+    deletePermission: z.string(),
+});
+
+export type SyntheticResourceView = z.infer<typeof syntheticResourceViewSchema>;
+
 /** A reference data row, in the server's own field names, with its version. */
 const recordRowSchema = z.looseObject({ version: z.int().nonnegative() });
 
@@ -1008,6 +1024,131 @@ export const api = {
             method: 'DELETE',
             headers: JSON_HEADERS,
             body: JSON.stringify(input),
+        });
+    },
+
+    /** The synthetic resources, with what each searches and sorts and the permissions each needs. */
+    async syntheticRegistry(): Promise<readonly SyntheticResourceView[]> {
+        return z
+            .object({ resources: z.array(syntheticResourceViewSchema) })
+            .parse(await request('/api/synthetic', { method: 'GET' })).resources;
+    },
+
+    /** Every row of a synthetic resource, or the rows of one parent, such as one feed's mixture. */
+    async syntheticRecords(resource: string, parent?: string): Promise<readonly RecordRow[]> {
+        const path =
+            parent === undefined
+                ? `/api/synthetic/${encodeURIComponent(resource)}`
+                : `/api/synthetic/${encodeURIComponent(resource)}/by/${encodeURIComponent(parent)}`;
+        return z
+            .object({ rows: z.array(recordRowSchema) })
+            .parse(await request(path, { method: 'GET' })).rows;
+    },
+
+    /** One page of a synthetic resource and the server's total, searched and ordered on the server. */
+    async syntheticPage(
+        resource: string,
+        page: {
+            readonly offset: number;
+            readonly limit: number;
+            readonly search: string;
+            readonly sort: string;
+            readonly descending: boolean;
+        },
+    ): Promise<{ readonly rows: readonly RecordRow[]; readonly total: number }> {
+        const query = new URLSearchParams({
+            offset: String(page.offset),
+            limit: String(page.limit),
+            search: page.search,
+            sort: page.sort,
+            descending: String(page.descending),
+        });
+        return z.object({ rows: z.array(recordRowSchema), total: z.int().nonnegative() }).parse(
+            await request(`/api/synthetic/${encodeURIComponent(resource)}?${query.toString()}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** One synthetic row, named by its key. */
+    async syntheticRecord(resource: string, key: string): Promise<RecordRow> {
+        return z
+            .object({ row: recordRowSchema })
+            .parse(
+                await request(
+                    `/api/synthetic/${encodeURIComponent(resource)}/key/${encodeURIComponent(key)}`,
+                    { method: 'GET' },
+                ),
+            ).row;
+    },
+
+    /**
+     * Writes one or many synthetic rows in one call: each with the version it
+     * was read at, or none for a new row. The server writes all of them or none.
+     */
+    async saveSynthetic(
+        resource: string,
+        changes: readonly {
+            readonly write: Readonly<Record<string, unknown>>;
+            readonly version: number | null;
+        }[],
+        intent: { readonly reasonCode: string; readonly commentary: string },
+    ): Promise<void> {
+        await request(`/api/synthetic/${encodeURIComponent(resource)}`, {
+            method: 'PUT',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({
+                changes,
+                intent: { reason_code: intent.reasonCode, commentary: intent.commentary },
+            }),
+        });
+    },
+
+    /**
+     * Removes synthetic rows by key. One removal may name the version it read;
+     * a removal of many rows is unconditional and names none.
+     */
+    async removeSynthetic(
+        resource: string,
+        removals: readonly { readonly key: string; readonly version: number | null }[],
+        intent: { readonly reasonCode: string; readonly commentary: string },
+    ): Promise<void> {
+        await request(`/api/synthetic/${encodeURIComponent(resource)}`, {
+            method: 'DELETE',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({
+                removals,
+                intent: { reason_code: intent.reasonCode, commentary: intent.commentary },
+            }),
+        });
+    },
+
+    /** Sample FX spot paths from the values on a screen; nothing is saved. */
+    async simulateFx(input: {
+        readonly gmm_means: readonly number[];
+        readonly gmm_stdevs: readonly number[];
+        readonly gmm_weights: readonly number[];
+        readonly process_type: string;
+        readonly initial_price: number;
+        readonly num_ticks: number;
+        readonly num_paths: number;
+        readonly seed: number;
+    }): Promise<readonly (readonly number[])[]> {
+        return z.object({ paths: z.array(z.array(z.number())) }).parse(
+            await request('/api/synthetic/simulate/fx', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(input),
+            }),
+        ).paths;
+    },
+
+    /** Stops one feed. A feed that is not running stops nothing. */
+    async stopFeed(id: string): Promise<void> {
+        await request(`/api/synthetic/feeds/${encodeURIComponent(id)}/stop`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: '{}',
         });
     },
 

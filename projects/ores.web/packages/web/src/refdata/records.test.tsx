@@ -76,7 +76,7 @@ const euro: RecordRow = {
 
 function render(path: string, seed: (client: QueryClient) => void): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['refdata-registry'], REGISTRY);
+    client.setQueryData(['registry', 'refdata'], REGISTRY);
     client.setQueryData(['labels'], { labels: [], domains: {} });
     seed(client);
     return renderToStaticMarkup(

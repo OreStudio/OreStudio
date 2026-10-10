@@ -53,6 +53,7 @@ import {
     type ScreenGap,
 } from './OperationsParts.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
 
 /** The journeys that carry on from this one, in the order its page names them. */
 const JOURNEYS: readonly JourneyId[] = [
@@ -407,21 +408,24 @@ export function GridPage(): ReactNode {
 
     return (
         <div className="space-y-6">
-            <PageHeader
-                title={t('operations.grid.title')}
-                description={t('operations.grid.description')}
-                actions={
-                    <div className="flex items-center gap-3">
-                        <span className="text-xs text-ink-faint">
-                            {t('operations.grid.updated', { at: readTime(grid.dataUpdatedAt) })}
-                        </span>
-                        <Button variant="secondary" onClick={() => void grid.refetch()}>
-                            {t('operations.grid.refresh')}
-                        </Button>
-                        <OperationsBack />
-                    </div>
-                }
-            />
+            <div>
+                <AreaTrail area="operations" screen={t('operations.screens.grid')} />
+                <PageHeader
+                    title={t('operations.grid.title')}
+                    description={t('operations.grid.description')}
+                    actions={
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs text-ink-faint">
+                                {t('operations.grid.updated', { at: readTime(grid.dataUpdatedAt) })}
+                            </span>
+                            <Button variant="secondary" onClick={() => void grid.refetch()}>
+                                {t('operations.grid.refresh')}
+                            </Button>
+                            <OperationsBack />
+                        </div>
+                    }
+                />
+            </div>
 
             {hasSample ? (
                 <SummaryPanel view={view} />

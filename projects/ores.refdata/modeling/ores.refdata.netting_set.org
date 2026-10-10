@@ -22,8 +22,9 @@ A set opened under a [[id:6AADB1A7-1229-4D10-8951-58446788957F][netting agreemen
 counterparty and legal entity, and a pinned key holds the copy to the
 agreement, so a set cannot be filed under another counterparty's
 agreement. A set with no agreement holds trades that do not net; its
-counterparty and legal entity may be unknown, as they are for a set read
-from an ORE document, which names neither.
+counterparty may be unknown, as it is for a set read from an ORE document,
+which names none. Every set belongs to a legal entity of the firm, and the
+entity that imports the document is the one it belongs to.
 
 The code is the netting set id ORE uses. The call type and initial margin
 type are the remaining parts of ORE's netting set details, and the risk
@@ -59,7 +60,8 @@ Surrogate key for the netting set record.
 
 The netting set id, as ORE names it.
 
-Unique within the tenant. A trade's envelope names its set by this code.
+Unique within the legal entity the set belongs to. A trade's envelope names
+its set by this code.
 
 #+begin_src cpp :name generator
 std::string("NS-") + std::string(faker::string::alphanumeric(10))
@@ -97,17 +99,20 @@ std::nullopt
 
 ** party_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: std::optional<boost::uuids::uuid>
-:nullable: true
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:fixed:       true
 :END:
 
 The legal entity of the firm the set belongs to.
 
-Required when the set has an agreement, and then equal to the agreement's.
+References the parties table. Fixed for the set's life, so the CSAs and the
+identifiers that take their party from the set can never be left on another
+party. When the set has an agreement it equals the agreement's.
 
 #+begin_src cpp :name generator
-std::nullopt
+ctx.generate_uuid()
 #+end_src
 
 ** call_type
@@ -181,7 +186,7 @@ std::optional<std::string>("Test netting set")
 
 | expression                                                                                     |
 |------------------------------------------------------------------------------------------------|
-| "netting_agreement_id" is null or ("counterparty_id" is not null and "party_id" is not null)   |
+| "netting_agreement_id" is null or "counterparty_id" is not null                                |
 | "risk_weight" is null or "risk_weight" >= 0                                                    |
 
 ** Pinned keys
@@ -212,10 +217,11 @@ std::optional<std::string>("Test netting set")
 
 ** party_id
 :PROPERTIES:
-:table:         ores_refdata_parties_tbl
-:parent_entity: party
-:nullable:      true
-:error_message: Invalid party_id: %. No active party found with this id.
+:table:          ores_refdata_parties_tbl
+:parent_entity:  party
+:reuse_existing: true
+:nullable:       false
+:error_message:  Invalid party_id: %. No active party found with this id.
 :END:
 
 * C++

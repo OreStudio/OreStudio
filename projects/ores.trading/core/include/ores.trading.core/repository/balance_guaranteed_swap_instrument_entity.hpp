@@ -46,6 +46,7 @@ struct balance_guaranteed_swap_instrument_entity {
     std::string tenant_id;
     int version = 0;
     std::string trade_activity_id;
+    std::string reference_security;
     std::optional<int> lockout_days;
     std::string modified_by;
     std::string performed_by;

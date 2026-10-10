@@ -53,6 +53,7 @@ struct netting_set_identifier_entity {
 
     std::string id_value;
 
+    std::string party_id;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

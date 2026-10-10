@@ -122,6 +122,7 @@ public:
     std::optional<domain::csa>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest CSAs filtered by netting_set_id, with pagination.
      * @param ctx Repository context with database connection

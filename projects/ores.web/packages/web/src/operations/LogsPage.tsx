@@ -50,6 +50,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { Button, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
 
 /** The range presets the screen offers, in the order it shows them. */
 const RANGES: readonly LogsRange[] = ['15m', '1h', '6h', '24h'];
@@ -399,20 +400,23 @@ export function LogsPage(): ReactNode {
 
     return (
         <div className="space-y-6">
-            <PageHeader
-                title={t('operations.logs.title')}
-                description={t('operations.logs.description')}
-                actions={
-                    <div className="flex items-center gap-3">
-                        {readAt !== undefined && (
-                            <span className="text-xs text-ink-faint">
-                                {t('operations.logs.readAt', { at: readAt })}
-                            </span>
-                        )}
-                        <OperationsBack />
-                    </div>
-                }
-            />
+            <div>
+                <AreaTrail area="operations" screen={t('operations.screens.logs')} />
+                <PageHeader
+                    title={t('operations.logs.title')}
+                    description={t('operations.logs.description')}
+                    actions={
+                        <div className="flex items-center gap-3">
+                            {readAt !== undefined && (
+                                <span className="text-xs text-ink-faint">
+                                    {t('operations.logs.readAt', { at: readAt })}
+                                </span>
+                            )}
+                            <OperationsBack />
+                        </div>
+                    }
+                />
+            </div>
 
             <FilterBar draft={draft} onChange={setDraft} onSearch={search} />
 

@@ -35,6 +35,7 @@ export interface Csa {
     tenant_id: string;
     id: string;
     netting_set_id: string;
+    party_id: string;
     is_active: boolean;
     bilateral: string | null;
     csa_currency: string | null;

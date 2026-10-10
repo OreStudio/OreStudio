@@ -142,21 +142,24 @@ void balance_guaranteed_swap_instrument_commands::register_commands(cli::Menu& r
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_activity_id> <lockout_days> <reason> <commentary>");
+        "add <trade_id> <trade_activity_id> <reference_security> <lockout_days> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_activity_id> <lockout_days> <reason> <commentary> [--version <n>]");
+        "set <trade_id> <trade_activity_id> <reference_security> <lockout_days> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <trade_activity_id> <lockout_days> <reason> <commentary>");
+        "put-many --count <n> <trade_id> <trade_activity_id> <reference_security> <lockout_days> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -347,14 +350,16 @@ void balance_guaranteed_swap_instrument_commands::process_add(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
+        read_token(
+            req.change.write.reference_security, parsed->positionals[next++], "reference_security");
         read_token(req.change.write.lockout_days, parsed->positionals[next++], "lockout_days");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -397,14 +402,16 @@ void balance_guaranteed_swap_instrument_commands::process_set(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
+        read_token(
+            req.change.write.reference_security, parsed->positionals[next++], "reference_security");
         read_token(req.change.write.lockout_days, parsed->positionals[next++], "lockout_days");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -459,8 +466,8 @@ void balance_guaranteed_swap_instrument_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 3 + 2) {
-            fail(out) << "Expected " << (change_count * 3 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 4 + 2) {
+            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -469,6 +476,8 @@ void balance_guaranteed_swap_instrument_commands::process_put_many(
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
+            read_token(
+                change.write.reference_security, parsed->positionals[next++], "reference_security");
             read_token(change.write.lockout_days, parsed->positionals[next++], "lockout_days");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));

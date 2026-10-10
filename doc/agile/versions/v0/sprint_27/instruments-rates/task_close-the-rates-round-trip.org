@@ -119,9 +119,9 @@ fields, and the carrier question was already answered by earlier units.
   =Short=. A balance-guaranteed swap needs its reference security and at
   least one tranche; with none, the corpus walk could not re-read
   =IR_BalanceGuaranteedSwap.xml=, a document that exported as a bare trade
-  before. The two products stay unexported, as they were. The capture
-  =Carry the FlexiSwap and BalanceGuaranteedSwap product fields= holds the
-  missing model work.
+  before. The two products stay unexported, as they were. The task
+  =Carry the FlexiSwap and BalanceGuaranteedSwap fields= adds the missing
+  model fields and exports both.
 - *The carrier and the codec* needed no change here. The hand-written rates
   variant and the hand-written payload codec are gone: unit 3 removed the
   variant, and the export carries typed batches generated from the trade-type
@@ -132,4 +132,4 @@ fields, and the carrier question was already answered by earlier units.
   struct as it is.
 
 The acceptance holds for InflationSwap, for the carrier and for the removal.
-It does not hold for the other two products, and the capture records why.
+It did not hold for the other two products when this task closed; the follow-up task closes them.

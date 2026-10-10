@@ -28,6 +28,7 @@ import { Button, Dialog, Field, Input, Notice, PageHeader, Tag } from '../ui/Pri
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { AreaFilter } from './PermissionAreas.js';
 import { roleLabel } from './words.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
 
 /** How long typing pauses before a search is sent to the server. */
 const SEARCH_PAUSE_MS = 300;
@@ -94,15 +95,18 @@ export function RolesPage(): ReactNode {
 
     return (
         <div>
-            <PageHeader
-                title={t('access.roles.title')}
-                description={t('access.roles.lead')}
-                actions={
-                    <Button variant="primary" onClick={() => setCreating(true)}>
-                        {t('access.roles.new')}
-                    </Button>
-                }
-            />
+            <div>
+                <AreaTrail area="organisation" screen={t('access.roles.title')} />
+                <PageHeader
+                    title={t('access.roles.title')}
+                    description={t('access.roles.lead')}
+                    actions={
+                        <Button variant="primary" onClick={() => setCreating(true)}>
+                            {t('access.roles.new')}
+                        </Button>
+                    }
+                />
+            </div>
             <div className="mb-3 flex flex-wrap items-center gap-3">
                 <Input
                     type="search"

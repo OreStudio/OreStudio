@@ -74,7 +74,7 @@ struct netting_agreement final {
     /**
      * @brief The reference the two parties give the agreement.
      *
-     * Unique within the tenant.
+     * Unique within the legal entity that signed it.
      */
     std::string agreement_number;
 

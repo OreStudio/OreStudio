@@ -2259,7 +2259,7 @@ $$ language plpgsql stable security definer set search_path = public, pg_temp;
  *
  * Each staged agreement is written between the target party and the
  * counterparty that holds the staged LEI in the target tenant. An agreement
- * whose number the tenant already holds, and one whose LEI names no
+ * whose number the target party already holds, and one whose LEI names no
  * counterparty, are skipped. A publish only inserts.
  */
 create or replace function ores_refdata_publish_netting_agreements_from_dq_fn(
@@ -2314,6 +2314,7 @@ begin
       and not exists (
         select 1 from ores_refdata_netting_agreements_tbl o
         where o.tenant_id = p_target_tenant_id
+          and o.party_id = v_party_id
           and o.agreement_number = a.agreement_number
           and o.valid_to = ores_utility_infinity_timestamp_fn())
     order by a.agreement_number, ci.counterparty_id;
@@ -2335,11 +2336,11 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * agreement takes the agreement's counterparty; the agreement is found by
  * number among the party's agreements. A set with no agreement takes the
  * counterparty holding its staged LEI, if it names one. A set whose code the
- * tenant already holds, and one whose agreement or LEI does not resolve, are
- * skipped. A publish only inserts.
+ * target party already holds, and one whose agreement or LEI does not resolve,
+ * are skipped. A publish only inserts.
  *
- * An agreement number is unique within the tenant, but a set looks its
- * agreement up among the target party's only: a set must share its
+ * Agreement numbers and set codes are unique within a party, so a set looks
+ * its agreement up among the target party's only. A set must share its
  * agreement's party, so an agreement of another party leaves the set
  * unresolved rather than refused.
  */
@@ -2403,6 +2404,7 @@ begin
       and not exists (
         select 1 from ores_refdata_netting_sets_tbl o
         where o.tenant_id = p_target_tenant_id
+          and o.party_id = v_party_id
           and o.code = s.code
           and o.valid_to = ores_utility_infinity_timestamp_fn())
     order by s.code, ci.counterparty_id;
@@ -2418,12 +2420,12 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 /**
- * Publishes CSAs from a DQ dataset into a tenant.
+ * Publishes CSAs from a DQ dataset to a party.
  *
  * Each staged CSA is written for the netting set holding its code in the
- * target tenant, with its eligible currencies in the staged order. A set that
- * already holds a CSA, and a code that names no set, are skipped. A publish
- * only inserts.
+ * target party, with its eligible currencies in the staged order. A set that
+ * already holds a CSA, and a code that names no set of the party, are
+ * skipped. A publish only inserts.
  */
 create or replace function ores_refdata_publish_csas_from_dq_fn(
     p_dataset_id uuid,
@@ -2436,6 +2438,7 @@ declare
     v_dataset_name text;
     v_modified_by text := coalesce(ores_iam_current_service_fn(), current_user);
     v_commentary text;
+    v_party_id uuid;
     v_staged bigint;
     v_inserted bigint;
 begin
@@ -2449,6 +2452,12 @@ begin
     end if;
     v_commentary := 'Imported from DQ dataset: ' || v_dataset_name;
 
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
     select count(*) into v_staged
     from ores_dq_csas_artefact_tbl
     where dataset_id = p_dataset_id;
@@ -2458,6 +2467,7 @@ begin
         from ores_dq_csas_artefact_tbl c
         join ores_refdata_netting_sets_tbl ns
           on ns.tenant_id = p_target_tenant_id
+         and ns.party_id = v_party_id
          and ns.code = c.netting_set_code
          and ns.valid_to = ores_utility_infinity_timestamp_fn()
         where c.dataset_id = p_dataset_id
@@ -2469,7 +2479,7 @@ begin
     ),
     csas as (
         insert into ores_refdata_csas_tbl (
-            tenant_id, id, version, netting_set_id, is_active, bilateral, csa_currency,
+            tenant_id, id, version, netting_set_id, party_id, is_active, bilateral, csa_currency,
             index_name, threshold_pay, threshold_receive, minimum_transfer_amount_pay,
             minimum_transfer_amount_receive, independent_amount_held,
             independent_amount_type, call_frequency, post_frequency, margin_period_of_risk,
@@ -2478,7 +2488,7 @@ begin
             calculate_vm_amount, non_exempt_im_regulations,
             modified_by, performed_by, change_reason_code, change_commentary
         )
-        select p_target_tenant_id, s.csa_id, 0, s.netting_set_id, s.is_active, s.bilateral,
+        select p_target_tenant_id, s.csa_id, 0, s.netting_set_id, v_party_id, s.is_active, s.bilateral,
             s.csa_currency, s.index_name, s.threshold_pay, s.threshold_receive,
             s.minimum_transfer_amount_pay, s.minimum_transfer_amount_receive,
             s.independent_amount_held, s.independent_amount_type, s.call_frequency,
@@ -2516,11 +2526,12 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 /**
- * Publishes netting set aliases from a DQ dataset into a tenant.
+ * Publishes netting set aliases from a DQ dataset to a party.
  *
  * Each alias is written, under its scheme, as an identifier of the netting set
- * holding the staged code in the target tenant. A name already held, and a
- * code that names no set, are skipped. A publish only inserts.
+ * holding the staged code in the target party. A name the party already holds,
+ * and a code that names no set of the party, are skipped. A publish only
+ * inserts.
  */
 create or replace function ores_refdata_publish_netting_set_aliases_from_dq_fn(
     p_dataset_id uuid,
@@ -2531,6 +2542,7 @@ create or replace function ores_refdata_publish_netting_set_aliases_from_dq_fn(
 returns table (action text, record_count bigint) as $$
 declare
     v_dataset_name text;
+    v_party_id uuid;
     v_staged bigint;
     v_inserted bigint;
 begin
@@ -2543,28 +2555,36 @@ begin
         raise exception 'Dataset not found: %', p_dataset_id;
     end if;
 
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
     select count(*) into v_staged
     from ores_dq_netting_set_aliases_artefact_tbl
     where dataset_id = p_dataset_id;
 
     insert into ores_refdata_netting_set_identifiers_tbl (
-        tenant_id, id, version, netting_set_id, id_scheme, id_value, description,
+        tenant_id, id, version, netting_set_id, party_id, id_scheme, id_value, description,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select distinct on (a.id_scheme, a.id_value)
-        p_target_tenant_id, gen_random_uuid(), 0, ns.id, a.id_scheme, a.id_value,
-        a.description,
+        p_target_tenant_id, gen_random_uuid(), 0, ns.id, v_party_id, a.id_scheme,
+        a.id_value, a.description,
         coalesce(ores_iam_current_service_fn(), current_user), current_user,
         'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
     from ores_dq_netting_set_aliases_artefact_tbl a
     join ores_refdata_netting_sets_tbl ns
       on ns.tenant_id = p_target_tenant_id
+     and ns.party_id = v_party_id
      and ns.code = a.netting_set_code
      and ns.valid_to = ores_utility_infinity_timestamp_fn()
     where a.dataset_id = p_dataset_id
       and not exists (
         select 1 from ores_refdata_netting_set_identifiers_tbl o
         where o.tenant_id = p_target_tenant_id
+          and o.party_id = v_party_id
           and o.id_scheme = a.id_scheme
           and o.id_value = a.id_value
           and o.valid_to = ores_utility_infinity_timestamp_fn())

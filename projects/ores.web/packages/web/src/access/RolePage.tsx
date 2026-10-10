@@ -27,6 +27,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { DEFAULT_PAGE_SIZE, Pager } from '../ui/Pager.js';
+import { Crumbs } from '../refdata/shared.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader } from '../ui/Primitives.js';
 import { areaWildcard, type Area } from './catalogue.js';
 import { AreaFilter, PermissionAreas } from './PermissionAreas.js';
@@ -119,12 +120,14 @@ function Role({ role }: { readonly role: RolePageRow }): ReactNode {
 
     return (
         <div className="space-y-6">
-            <p className="text-xs text-ink-faint">
-                <Link to="/roles" className="text-accent-bright hover:underline">
-                    {t('access.roles.title')}
-                </Link>{' '}
-                / {roleLabel(t, role.name)}
-            </p>
+            <Crumbs
+                parts={[
+                    { label: t('shell.menu.home'), to: '/' },
+                    { label: t('shell.menu.organisation'), to: '/organisation' },
+                    { label: t('access.roles.title'), to: '/roles' },
+                    { label: roleLabel(t, role.name) },
+                ]}
+            />
             <PageHeader
                 title={roleLabel(t, role.name)}
                 description={role.description}

@@ -37,6 +37,8 @@
 #include "ores.trading.api/domain/bond_document_ops.hpp"
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_notional_protocol.hpp"
+#include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_protocol.hpp"
 #include "ores.trading.api/messaging/bond_forward_protocol.hpp"
 #include "ores.trading.api/messaging/bond_future_protocol.hpp"
 #include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
@@ -73,6 +75,8 @@
 #include "ores.trading.api/messaging/equity_position_option_underlying_protocol.hpp"
 #include "ores.trading.api/messaging/equity_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_variance_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/flexi_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/flexi_swap_lower_notional_protocol.hpp"
 #include "ores.trading.api/messaging/fra_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_asian_forward_instrument_protocol.hpp"
@@ -2144,7 +2148,16 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 put_balance_guaranteed_swap_instrument_request req;
                                 req.change.write.trade_id = instr.trade_id;
                                 req.change.write.trade_activity_id = instr.trade_activity_id;
+                                req.change.write.reference_security = instr.reference_security;
                                 req.change.write.lockout_days = instr.lockout_days;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp &&
+                                       resp->result.outcome == ores::utility::domain::outcome::ok;
+                            } else if constexpr (std::is_same_v<InstrT, flexi_swap_instrument>) {
+                                put_flexi_swap_instrument_request req;
+                                req.change.write.trade_id = instr.trade_id;
+                                req.change.write.trade_activity_id = instr.trade_activity_id;
+                                req.change.write.option_long_short = instr.option_long_short;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
                                        resp->result.outcome == ores::utility::domain::outcome::ok;
@@ -2294,6 +2307,52 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         auto schedule_resp = nats_call(delegated_nats, schedule_req, instr_error);
                         if (!schedule_resp ||
                             schedule_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+
+                    for (const auto& lower : r.lower_notionals) {
+                        put_flexi_swap_lower_notional_request lower_req;
+                        auto& w = lower_req.change.write;
+                        w.trade_id = lower.trade_id;
+                        w.trade_activity_id = lower.trade_activity_id;
+                        w.sequence_number = lower.sequence_number;
+                        w.bound_number = lower.bound_number;
+                        w.currency = lower.currency;
+                        w.start_date = lower.start_date;
+                        w.notional = lower.notional;
+                        auto lower_resp = nats_call(delegated_nats, lower_req, instr_error);
+                        if (!lower_resp ||
+                            lower_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+
+                    for (const auto& tranche : r.tranches) {
+                        put_balance_guaranteed_swap_tranche_request tranche_req;
+                        auto& w = tranche_req.change.write;
+                        w.trade_id = tranche.trade_id;
+                        w.trade_activity_id = tranche.trade_activity_id;
+                        w.sequence_number = tranche.sequence_number;
+                        w.description = tranche.description;
+                        w.security_id = tranche.security_id;
+                        w.seniority = tranche.seniority;
+                        auto tranche_resp = nats_call(delegated_nats, tranche_req, instr_error);
+                        if (!tranche_resp ||
+                            tranche_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+
+                    for (const auto& notional : r.tranche_notionals) {
+                        put_balance_guaranteed_swap_tranche_notional_request notional_req;
+                        auto& w = notional_req.change.write;
+                        w.trade_id = notional.trade_id;
+                        w.trade_activity_id = notional.trade_activity_id;
+                        w.tranche_number = notional.tranche_number;
+                        w.sequence_number = notional.sequence_number;
+                        w.start_date = notional.start_date;
+                        w.notional = notional.notional;
+                        auto notional_resp = nats_call(delegated_nats, notional_req, instr_error);
+                        if (!notional_resp ||
+                            notional_resp->result.outcome != ores::utility::domain::outcome::ok)
                             return false;
                     }
 

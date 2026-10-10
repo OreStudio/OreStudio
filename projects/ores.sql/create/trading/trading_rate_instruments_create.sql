@@ -277,6 +277,18 @@ begin
     delete from "ores_trading_balance_guaranteed_swap_instruments_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;
+    delete from "ores_trading_balance_guaranteed_swap_tranches_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_bg_swap_tranche_notionals_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_flexi_swap_instruments_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_flexi_swap_lower_notionals_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
     delete from "ores_trading_callable_swap_instruments_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;

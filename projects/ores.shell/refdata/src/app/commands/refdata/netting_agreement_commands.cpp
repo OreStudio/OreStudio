@@ -141,15 +141,15 @@ void netting_agreement_commands::register_commands(cli::Menu& root_menu, nats_cl
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <agreement_number> <counterparty_id> <agreement_type> <governing_law> <description> "
-        "<reason> <commentary>");
+        "add <agreement_number> <party_id> <counterparty_id> <agreement_type> <governing_law> "
+        "<description> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <agreement_number> <counterparty_id> <agreement_type> <governing_law> "
+        "set <id> <agreement_number> <party_id> <counterparty_id> <agreement_type> <governing_law> "
         "<description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -157,8 +157,8 @@ void netting_agreement_commands::register_commands(cli::Menu& root_menu, nats_cl
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <agreement_number> <counterparty_id> <agreement_type> "
-        "<governing_law> <description> <reason> <commentary>");
+        "put-many --count <n> <id> <agreement_number> <party_id> <counterparty_id> "
+        "<agreement_type> <governing_law> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -361,14 +361,15 @@ void netting_agreement_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
         read_token(
             req.change.write.agreement_number, parsed->positionals[next++], "agreement_number");
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(
             req.change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
         read_token(req.change.write.agreement_type, parsed->positionals[next++], "agreement_type");
@@ -416,14 +417,15 @@ void netting_agreement_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(
             req.change.write.agreement_number, parsed->positionals[next++], "agreement_number");
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(
             req.change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
         read_token(req.change.write.agreement_type, parsed->positionals[next++], "agreement_type");
@@ -483,8 +485,8 @@ void netting_agreement_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 6 + 2) {
-            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 7 + 2) {
+            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -493,6 +495,7 @@ void netting_agreement_commands::process_put_many(std::ostream& out,
             read_token(change.write.id, parsed->positionals[next++], "id");
             read_token(
                 change.write.agreement_number, parsed->positionals[next++], "agreement_number");
+            read_token(change.write.party_id, parsed->positionals[next++], "party_id");
             read_token(
                 change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
             read_token(change.write.agreement_type, parsed->positionals[next++], "agreement_type");

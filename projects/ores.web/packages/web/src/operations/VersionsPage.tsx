@@ -35,6 +35,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { Detail, PageHeader } from '../ui/Primitives.js';
 import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
 
 /** The journeys that carry on from this one, in the order its page names them. */
 const JOURNEYS: readonly JourneyId[] = [
@@ -79,11 +80,14 @@ export function VersionsPage({
 
     return (
         <div className="space-y-6">
-            <PageHeader
-                title={t('operations.versions.title')}
-                description={t('operations.versions.description')}
-                actions={<OperationsBack />}
-            />
+            <div>
+                <AreaTrail area="operations" screen={t('operations.screens.versions')} />
+                <PageHeader
+                    title={t('operations.versions.title')}
+                    description={t('operations.versions.description')}
+                    actions={<OperationsBack />}
+                />
+            </div>
 
             <section className="card space-y-4 p-6">
                 <header className="flex flex-wrap items-baseline justify-between gap-2">

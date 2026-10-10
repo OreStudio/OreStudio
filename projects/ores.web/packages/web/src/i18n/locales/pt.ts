@@ -1037,6 +1037,41 @@ const pt: SourceCatalogue = {
                 },
             },
         },
+        tenantDashboard: {
+            read: 'Lido',
+            people: {
+                title: 'Pessoas',
+                accounts: 'Contas',
+                locked: 'Bloqueadas',
+                resets: 'Palavra-passe a mudar',
+                needAttention: {
+                    one: '{count} conta bloqueada precisa de atenção',
+                    other: '{count} contas bloqueadas precisam de atenção',
+                },
+            },
+            signIns: {
+                title: 'Entradas',
+                signedIn: 'Com sessão agora',
+                failed: 'Contas com entradas falhadas',
+                needAttention: {
+                    one: '{count} conta com entradas falhadas precisa de atenção',
+                    other: '{count} contas com entradas falhadas precisam de atenção',
+                },
+            },
+            requests: {
+                title: 'Pedidos de acesso',
+                waiting: 'Em espera',
+                answered: 'Respondidos',
+                needAttention: {
+                    one: '{count} pedido precisa de atenção',
+                    other: '{count} pedidos precisam de atenção',
+                },
+            },
+            parties: {
+                count: 'Entidades',
+                none: 'Ainda sem entidades',
+            },
+        },
         tenant: {
             organisation: 'Organização',
             organisationBody: 'O pessoal, e a hierarquia em que reporta.',

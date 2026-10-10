@@ -1,0 +1,255 @@
+:PROPERTIES:
+:ID: 3DE90726-CC38-4410-8A41-B262FA59F577
+:END:
+#+title: ores.trading.balance_guaranteed_swap_tranche
+#+description: Codegen entity model for the trading =balance_guaranteed_swap_tranche= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One tranche of a balance guaranteed swap's reference security, keyed to the trade and the tranche's ordinal.
+#+entity_singular: balance_guaranteed_swap_tranche
+#+entity_plural: balance_guaranteed_swap_tranches
+#+entity_title: Balance Guaranteed Swap Tranche
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+One row per tranche a balance guaranteed swap states, keyed to the
+instrument and the tranche's ordinal.
+
+The ORE schema states the tranches as a list under the swap's =Tranches= block.
+A tranche names its security, its seniority and an optional description, and it
+holds a list of dated notionals that live in
+=balance_guaranteed_swap_tranche_notional=. The block's schedule is not here: it
+is a schedule of the shared kind, so it lands in =instrument_schedule= under the
+owner role =tranches=.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+The trade whose balance guaranteed swap states this tranche.
+
+** trade_activity_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The activity that wrote this version.
+
+** sequence_number
+:PROPERTIES:
+:primary_key: true
+:type:        integer
+:cpp_type:    int
+:END:
+
+Ordinal of this tranche within the swap's tranche list, counting from one.
+
+The schema declares the list unbounded and a document's order is the order it
+stated, so the ordinal identifies a row and preserves that order.
+** description
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Free-text description of the tranche, such as its class.
+** security_id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+The identifier of the security the tranche refers to.
+
+The document may state a placeholder such as =NA= for a tranche that has no
+security of its own.
+
+#+begin_src cpp :name generator
+std::string("ISIN:XS0983610930")
+#+end_src
+** seniority
+:PROPERTIES:
+:type:        bigint
+:cpp_type:    std::int64_t
+:nullable:    false
+:END:
+
+Rank of the tranche in the payment waterfall; a lower number is more senior.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 3)
+#+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_balance_guaranteed_swap_tranches_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "sequence_number" > 0 |
+| "security_id" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: balance_guaranteed_swap_tranche
+:entity_plural_short:   balance_guaranteed_swap_tranches
+:entity_singular_words: balance guaranteed swap tranche
+:entity_plural_words:   balance guaranteed swap tranches
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tranche
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| trade_id        | Instrument  |
+| sequence_number | Tranche     |
+| description     | Description |
+| security_id     | Security    |
+| seniority       | Seniority   |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+The trade read path fetches the tranches of many instruments at once
+when it assembles the export payload, and no generated read covers that.
+The batch read below is one statement over the instrument set.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: ba78d3e3-a76d-4f7b-aceb-98bed959816e
+:END:
+
+Reads every current balance guaranteed swap tranche of the given instruments, ordered by
+instrument and ordinal, in one statement. An empty input reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::balance_guaranteed_swap_tranche>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::balance_guaranteed_swap_tranche>
+balance_guaranteed_swap_tranche_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<balance_guaranteed_swap_tranche_entity>> |
+                       where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "sequence_number"_c);
+    return execute_read_query<balance_guaranteed_swap_tranche_entity, domain::balance_guaranteed_swap_tranche>(
+        ctx,
+        query,
+        [](const auto& entities) { return balance_guaranteed_swap_tranche_mapper::map(entities); },
+        lg(),
+        "Reading balance guaranteed swap tranches for multiple instruments.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:15329B09-2CA2-47C8-A20E-70CC757970B3][ores.trading.balance_guaranteed_swap_instrument]] — the instrument whose tranches these are.

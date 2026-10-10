@@ -50,6 +50,7 @@ domain::netting_agreement netting_agreement_mapper::map(const netting_agreement_
     r.agreement_number = v.agreement_number;
 
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+
     r.counterparty_id = boost::lexical_cast<boost::uuids::uuid>(v.counterparty_id);
     r.agreement_type = v.agreement_type;
     r.governing_law = v.governing_law;
@@ -75,6 +76,7 @@ netting_agreement_entity netting_agreement_mapper::map(const domain::netting_agr
     r.agreement_number = v.agreement_number;
 
     r.party_id = boost::uuids::to_string(v.party_id);
+
     r.counterparty_id = boost::uuids::to_string(v.counterparty_id);
     r.agreement_type = v.agreement_type;
     r.governing_law = v.governing_law;

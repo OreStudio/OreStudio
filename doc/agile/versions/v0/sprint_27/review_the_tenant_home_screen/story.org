@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 6AFA1723-1C43-4B95-BBEE-14281A950154
+:END:
+#+title: Story: Review the tenant administrator's home screen
+#+description: Give the tenant administrator's home the same shape as the system administrator's: a header with one status, three tabs, and a dashboard of panels that state their status the same way. The panels are People, Sign-ins, Access requests and Parties. Every change from this review goes into this story and its one PR.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A tenant administrator lands on a dashboard of panels that say what needs them, with the active and upcoming modules on their own tabs.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- The tenant home has the tabs Dashboard, Active modules and Upcoming modules, held in the address.
+- The Dashboard has a People, a Sign-ins, an Access requests and a Parties panel, with the same marks, tiles and footers as the system home, and the Access requests panel only for a person who may assign roles.
+- One status next to the title counts the panels that need the person.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4DF68339-7E93-49CE-A81C-1C9D4B17BB98][Scaffold story: Review the tenant administrator's home screen]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:926CBA1E-D7C9-4324-AFC3-6B96A35DEED9][Rework the tenant home into three tabs with a dashboard]] | DONE | | 2026-10-10 | Initial task for: Review the tenant administrator's home screen |
+
+* Decisions
+
+* Out of scope
+
+- Plots on the tenant dashboard. The tenant side keeps no history on the server.
+- A permission only the operator holds. Tenants and the installation cards stay drawn by session mode until the server has one.
+- Translated strings for the Rescue access screen.
+
+* Result
+
+The tenant administrator's home has the system home's shape: a header with one status, three tabs, and a dashboard of panels that say what needs the person in the same words. The dashboard refreshes every 15 seconds and colours its figures.
+
+Every person gets the same menu. An area is drawn when the person holds a read one of its screens needs, and a card is drawn when the person holds the read of its screen. The knowledge page menu_structure defines the rule, and the UX structure note ux_hub lists the UX pages. Operations is drawn for everyone, with Sign-ins, Roles and Rescue access under their areas and a breadcrumb on each screen.

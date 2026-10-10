@@ -188,6 +188,8 @@ describe('the one request the confirm sends', () => {
         expect(request.agreements[0]?.party_id).toBe('p-ores');
         expect(request.netting_sets[0]?.netting_agreement_id).toBe(agreement.id);
         expect(request.csas[0]?.netting_set_id).toBe(set.id);
+        expect(request.netting_sets[0]?.party_id).toBe('p-ores');
+        expect(request.csas[0]?.party_id).toBe('p-ores');
     });
 
     it('parses the collateral numbers and leaves an empty one null', () => {

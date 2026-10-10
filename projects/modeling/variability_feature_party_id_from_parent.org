@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: FF21CD38-A58F-471F-BD82-CD3D6693E11F
+:END:
+#+title: Feature: party_id_from_parent
+#+description: Derive party_id from the parent row an entity belongs to in the insert trigger.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:party_id_from_parent:= |
+| Bundle | =ores.sql.schema= |
+| Type | struct |
+| Default | absent |
+
+* Effect
+
+Derive =party_id= from the parent row inside the insert trigger. The struct
+names the parent table (=parent_table=), the column of the entity that
+references it (=parent_column=) and the message the existence check raises
+(=parent_error_message=). The trigger reads =party_id= from the parent row that
+is current in the entity's tenant and ignores whatever the caller sent. A
+parent that does not exist raises the message with SQLSTATE 23503.
+
+It is the general form of =party_id_from_book_id=, which derives the party and
+the portfolio from a book. Use it when an entity belongs to a row that already
+states the owning legal entity, such as a CSA that belongs to a netting set.
+The party then cannot differ from the parent's, because the caller never
+supplies it.
+
+A model that uses this feature also sets =:seed_parent_party_id: true= on the
+foreign key that names the parent, and lists its own =party_id= foreign key
+first. The generated eventing integration test then seeds the parent under the
+entity's own party. Without the property the test seeds the parent under a fresh
+party, the trigger stores that party, and the test cannot read back the row it
+wrote.
+
+* Structural consequence
+
+None for the column set. It assumes a =party_id= column already exists. The
+column is not in the entity's write message, because the caller does not
+supply it.
+
+* Used by
+
+- =ores.refdata.csa=
+- =ores.refdata.netting_set_identifier=
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

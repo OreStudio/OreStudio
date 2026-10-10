@@ -20,47 +20,65 @@
  */
 
 /**
- * The operations area: the screens that answer what the installation is doing.
+ * The operations area: the screens that say how the installation, and the
+ * tenant in it, are running.
  *
- * The area is entered from the system administration menu. Every screen the
- * area names exists, so each one carries its link; the last, the telemetry
- * logs, was added by the fifth unit.
- *
- * The versions screen belongs to every session rather than to this area alone,
- * so it is also offered from Home.
+ * A card is drawn for a person who holds the read of its screen. Versions needs
+ * no read, because every person must be able to say which build they use when
+ * they report a problem, so the area is drawn for everybody. The screens that
+ * read the whole installation are drawn only where the session acts on the
+ * deployment, as the menu's installation scope says.
  */
 
 import type { ReactNode } from 'react';
+import type { SessionMode } from '@ores/wire-protocol/browser';
+import { useHolds } from '../access/holds.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { offered, type MenuItem } from '../shell/areas.js';
 import { PageHeader } from '../ui/Primitives.js';
 import { Tiles, type Tile } from '../ui/Tiles.js';
+import { Crumbs } from '../refdata/shared.js';
 
-export function OperationsArea(): ReactNode {
+type Screen = Tile & Pick<MenuItem, 'permission' | 'scope'>;
+
+export function OperationsArea({ mode }: { readonly mode: SessionMode }): ReactNode {
     const { t } = useTranslation();
-    const screens: readonly Tile[] = [
+    const holds = useHolds();
+    const screens: readonly Screen[] = [
         {
             title: t('operations.screens.services'),
             body: t('operations.screens.servicesBody'),
             to: '/operations/services',
             icon: 'server',
+            scope: 'installation',
         },
         {
             title: t('operations.screens.grid'),
             body: t('operations.screens.gridBody'),
             to: '/operations/grid',
             icon: 'apps',
+            scope: 'installation',
         },
         {
             title: t('operations.screens.bus'),
             body: t('operations.screens.busBody'),
             to: '/operations/bus',
             icon: 'bus',
+            scope: 'installation',
         },
         {
             title: t('operations.screens.logs'),
             body: t('operations.screens.logsBody'),
             to: '/operations/logs',
             icon: 'log',
+            scope: 'installation',
+        },
+        {
+            title: t('home.tenant.audit'),
+            body: t('home.tenant.auditBody'),
+            to: '/audit',
+            icon: 'record',
+            permission: ['iam::sessions:read', 'iam::login_info:read'],
         },
         {
             title: t('operations.screens.versions'),
@@ -69,14 +87,23 @@ export function OperationsArea(): ReactNode {
             icon: 'history',
         },
     ];
+    const drawn = screens.filter((screen) => offered(screen, holds, mode));
 
     return (
         <div className="space-y-6">
-            <PageHeader
-                title={t('operations.hub.title')}
-                description={t('operations.hub.description')}
-            />
-            <Tiles tiles={screens} later={t('operations.hub.notBuilt')} />
+            <div>
+                <Crumbs
+                    parts={[
+                        { label: t('shell.menu.home'), to: '/' },
+                        { label: t('operations.hub.title') },
+                    ]}
+                />
+                <PageHeader
+                    title={t('operations.hub.title')}
+                    description={t('operations.hub.description')}
+                />
+            </div>
+            <Tiles tiles={drawn} later={t('operations.hub.notBuilt')} />
         </div>
     );
 }

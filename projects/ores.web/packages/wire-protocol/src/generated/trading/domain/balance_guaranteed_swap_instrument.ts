@@ -35,6 +35,7 @@ export interface BalanceGuaranteedSwapInstrument {
     tenant_id: string;
     trade_id: string;
     trade_activity_id: string;
+    reference_security: string;
     lockout_days: number | null;
     modified_by: string;
     performed_by: string;

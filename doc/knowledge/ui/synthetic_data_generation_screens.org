@@ -191,6 +191,8 @@ to the market data journeys, at
 * See also
 
 
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note for this cluster; this page sits alongside its sequence rather than in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]], the operations the two editors call.
 - [[id:7557BCCA-54B5-43C0-8B12-F0AD373813F4][The shell operation surface]], the same start and stop paths without the window.

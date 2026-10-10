@@ -390,6 +390,44 @@ observation_lineage_repository::read_latest_for_points(context ctx,
 }
 #+end_src
 
+*** read_manual_for_series
+:PROPERTIES:
+:ID: A7E9C6B7-1AF4-4190-9D18-BC08A092DC35
+:END:
+
+Reads the current annex rows of one series that name a manual point. The annex
+is cold and holds only the derived and manual points, and the manual ones are
+the few an operator keyed by hand, so the read is small. A write path asks it
+which coordinates an operator owns before it writes an automatic value.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+/**
+ * @brief The current annex rows of the series that name a manual point.
+ */
+std::vector<domain::observation_lineage> read_manual_for_series(context ctx,
+    const boost::uuids::uuid& series_id);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::observation_lineage>
+observation_lineage_repository::read_manual_for_series(context ctx,
+    const boost::uuids::uuid& series_id) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+
+    const auto query = sqlgen::read<std::vector<observation_lineage_entity>> |
+                       where("tenant_id"_c == tid && "series_id"_c == sid &&
+                             "point_source_kind"_c == std::string("manual") &&
+                             "valid_to"_c == max.value()) |
+                       order_by("id"_c);
+    return execute_read_query<observation_lineage_entity, domain::observation_lineage>(
+        ctx, query,
+        [](const auto& entities) { return observation_lineage_mapper::map(entities); },
+        lg(), "Reading the manual annex rows of a series");
+}
+#+end_src
+
 ** Domain includes
 
 #+begin_src cpp :name includes

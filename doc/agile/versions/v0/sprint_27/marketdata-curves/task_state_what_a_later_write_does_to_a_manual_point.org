@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/state-what-a-later-write-does-to-a-manual-point
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The precedence between a manual point and a later automatic write is a stated po
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -43,9 +43,21 @@ The precedence between a manual point and a later automatic write is a stated po
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The read side already prefers a manual point to a later automatic value. So the
+first step is to try the write side, through the import, and see what happens.
+
+1. Write a test that over-keys a point, then imports the same coordinate at the
+   same instant and at a later one. It failed: the same-instant import replaced
+   the manual row, so the point read as manual with the feed's value.
+2. Drop an automatic write to a coordinate an operator owns, in the insert the
+   feed, the import and the republish share. =manual_point_guard= holds the rule.
+   It is wired through the two hook slots of the generated insert, from the
+   market observation model, so the codegen drift check stays clean.
+3. Let =write_manual_point= write past the guard, because that write is the
+   operator's.
+4. Add =read_manual_for_series= to the lineage model, which the guard reads.
+
+Decision: see the story's "A manual point owns its coordinate until it is cleared".
 
 * Measurements
 
@@ -59,7 +71,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| marketdata core suite | 163 test cases, 6663 assertions, all pass | =ores.marketdata.core.tests= on a recreated database | =a5b0a76452= plus the working tree |
+| marketdata codegen drift | none | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component marketdata --dry-run= | =a5b0a76452= plus the working tree |
 
 * Notes
 
@@ -87,3 +100,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A manual point now owns its coordinate until it is cleared, on the write side as
+well as the read side.
+
+The read side already held. An automatic write at a later instant leaves the
+manual row alone, and the as-of read prefers the manual point. The test through the
+import found the write side did not. An import at the same instant replaced the
+manual row, and the annex still named the point manual, so a reader saw the feed's
+number labelled as an operator's. That was a real defect, and it is fixed.
+
+- =manual_point_guard= drops an automatic write to a coordinate an operator owns.
+  The generated insert calls it through its two hook slots, in the market
+  observation model, so the codegen drift check stays clean.
+- The feed, the import and the republish all write through that insert, so one rule
+  covers all three. =write_manual_point= writes past the guard, because that write
+  is the operator's. Clearing the point releases the coordinate.
+- =read_manual_for_series= is in the lineage model and reads the cold manual annex.
+- The policy is in the story: "A manual point owns its coordinate until it is
+  cleared".
+
+Three tests cover it. An import at the same instant and at a later one leaves the
+manual value and its provenance. A manual point re-keyed twice shows the second
+value. An import lands again once the point is cleared.
+
+Cost. The guard adds one narrow read of the manual annex per series in an insert
+batch. That includes the feed's per-tick insert. I did not measure it. A series
+nobody over-keyed returns no rows.
+
+Not done here. The generic write and put paths are explicit operator writes and do
+not pass through the guard. The evolution read states the rows each instant holds,
+so a later instant still shows the fed value there.

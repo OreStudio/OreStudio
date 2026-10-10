@@ -443,4 +443,24 @@ std::vector<domain::observation_lineage> observation_lineage_repository::read_la
     return result;
 }
 
+std::vector<domain::observation_lineage>
+observation_lineage_repository::read_manual_for_series(context ctx,
+                                                       const boost::uuids::uuid& series_id) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+
+    const auto query =
+        sqlgen::read<std::vector<observation_lineage_entity>> |
+        where("tenant_id"_c == tid && "series_id"_c == sid &&
+              "point_source_kind"_c == std::string("manual") && "valid_to"_c == max.value()) |
+        order_by("id"_c);
+    return execute_read_query<observation_lineage_entity, domain::observation_lineage>(
+        ctx,
+        query,
+        [](const auto& entities) { return observation_lineage_mapper::map(entities); },
+        lg(),
+        "Reading the manual annex rows of a series");
+}
+
 }

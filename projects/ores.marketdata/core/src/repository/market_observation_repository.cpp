@@ -34,6 +34,7 @@
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.core/repository/as_of_rows.hpp"
+#include "ores.marketdata.core/repository/manual_point_guard.hpp"
 #include "ores.marketdata.core/repository/market_observation_entity.hpp"
 #include "ores.marketdata.core/repository/market_observation_mapper.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
@@ -161,6 +162,8 @@ void market_observation_repository::write(context ctx, const domain::market_obse
 void market_observation_repository::insert(context ctx, const domain::market_observation& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market observation. " << "id: " << v.id;
     series_shape_check::check(ctx, std::vector<domain::market_observation>{v});
+    if (manual_point_guard::unshadowed(ctx, std::vector<domain::market_observation>{v}).empty())
+        return;
     execute_write_query(ctx,
                         market_observation_mapper::map(v),
                         lg(),
@@ -171,6 +174,14 @@ void market_observation_repository::insert(context ctx,
                                            const std::vector<domain::market_observation>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market observations. Count: " << v.size();
     series_shape_check::check(ctx, v);
+    if (const auto kept = manual_point_guard::unshadowed(ctx, v); kept.size() != v.size()) {
+        if (!kept.empty())
+            execute_write_query(ctx,
+                                market_observation_mapper::map(kept),
+                                lg(),
+                                "Inserting market observations into database.");
+        return;
+    }
     execute_write_query(ctx,
                         market_observation_mapper::map(v),
                         lg(),
@@ -743,7 +754,11 @@ void market_observation_repository::write_manual_point(
     obs.oresmd_uri = oresmd_uri;
     obs.value = value;
     obs.source = "manual.operator";
-    insert(txn_ctx, obs);
+    // A manual point is written past the insert's guard, which drops an automatic
+    // write to a coordinate an operator owns, and this write is the operator's.
+    series_shape_check::check(txn_ctx, std::vector<domain::market_observation>{obs});
+    execute_write_query(
+        txn_ctx, market_observation_mapper::map(obs), lg(), "Inserting manual market observation.");
 
     domain::observation_lineage lineage;
     // An annex row already at this natural key -- a derivation's or an earlier

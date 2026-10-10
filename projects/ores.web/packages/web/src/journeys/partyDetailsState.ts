@@ -257,6 +257,7 @@ export type PartyAction =
           readonly unitId: string;
           readonly unitTypeId: string | null;
       }
+    | { readonly kind: 'revert-fields'; readonly party: Party }
     | { readonly kind: 'set-reason'; readonly reasonCode: string }
     | { readonly kind: 'set-commentary'; readonly commentary: string }
     | { readonly kind: 'record-written'; readonly party: Party | undefined }
@@ -364,6 +365,8 @@ export function reduceParty(draft: PartyDraft, action: PartyAction): PartyDraft 
                     row.unit.id === action.unitId ? { ...row, unitTypeId: action.unitTypeId } : row,
                 ),
             };
+        case 'revert-fields':
+            return { ...draft, fields: fieldsOf(action.party) };
         case 'set-reason':
             return { ...draft, reasonCode: action.reasonCode };
         case 'set-commentary':
@@ -721,6 +724,7 @@ export interface PartyDetails extends PartyDraft {
         code: string,
     ) => void;
     readonly setUnitType: (unitId: string, unitTypeId: string | null) => void;
+    readonly revertFields: (party: Party) => void;
     readonly setReason: (reasonCode: string) => void;
     readonly setCommentary: (commentary: string) => void;
     readonly recordWritten: (party: Party | undefined) => void;
@@ -749,6 +753,7 @@ export function useParty(): PartyDetails {
         toggleMembership: (set, code) => dispatch({ kind: 'toggle-membership', set, code }),
         setUnitType: (unitId, unitTypeId) =>
             dispatch({ kind: 'set-unit-type', unitId, unitTypeId }),
+        revertFields: (party) => dispatch({ kind: 'revert-fields', party }),
         setReason: (reasonCode) => dispatch({ kind: 'set-reason', reasonCode }),
         setCommentary: (commentary) => dispatch({ kind: 'set-commentary', commentary }),
         recordWritten: (party) => dispatch({ kind: 'record-written', party }),

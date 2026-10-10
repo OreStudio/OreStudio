@@ -29,6 +29,7 @@
  */
 
 import { useMemo } from 'react';
+import { api } from '../api/client.js';
 import { partyDetails } from '../api/partyDetails.js';
 import type {
     PartyComposite,
@@ -89,6 +90,14 @@ export interface PartyDetailsServer {
         far: string,
         intent: PartyIntent,
     ) => Promise<PartyWriteOutcome>;
+    /** The reasons a record may be amended for. */
+    readonly amendReasons: () => Promise<
+        readonly {
+            readonly code: string;
+            readonly description: string;
+            readonly requiresCommentary: boolean;
+        }[]
+    >;
     /** Reclassifies a business unit against the version the person read. */
     readonly reclassifyUnit: (
         unit: BusinessUnit,
@@ -109,6 +118,7 @@ export function usePartyDetailsServer(): PartyDetailsServer {
             retireIdentifier: partyDetails.retireIdentifier,
             linkMembership: partyDetails.linkMembership,
             closeMembership: partyDetails.closeMembership,
+            amendReasons: api.amendReasons,
             reclassifyUnit: partyDetails.reclassifyUnit,
         }),
         [],

@@ -504,6 +504,12 @@ function TenantHome({
             icon: 'people',
         },
         {
+            title: t('home.tenant.bookStructure'),
+            body: t('home.tenant.bookStructureBody'),
+            to: '/books/structure',
+            icon: 'database',
+        },
+        {
             title: t('home.tenant.rescue'),
             body: t('home.tenant.rescueBody'),
             to: '/rescue',

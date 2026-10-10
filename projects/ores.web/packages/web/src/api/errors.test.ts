@@ -124,7 +124,10 @@ describe('a query that states its own failure', () => {
     });
 
     it('is not reported to the banner when it says it is quiet', () => {
-        const refusal = new ApiFailure(403, { code: 'forbidden', message: 'You do not have access to this.' });
+        const refusal = new ApiFailure(403, {
+            code: 'forbidden',
+            message: 'You do not have access to this.',
+        });
 
         reportQueryError(refusal, { meta: { quiet: true } });
 
@@ -132,11 +135,16 @@ describe('a query that states its own failure', () => {
     });
 
     it('is reported when it does not say so', () => {
-        const refusal = new ApiFailure(403, { code: 'forbidden', message: 'You do not have access to this.' });
+        const refusal = new ApiFailure(403, {
+            code: 'forbidden',
+            message: 'You do not have access to this.',
+        });
 
         reportQueryError(refusal, {});
         reportQueryError(refusal, { meta: { quiet: false } });
 
-        expect(current().map((entry) => entry.message)).toEqual(['You do not have access to this.']);
+        expect(current().map((entry) => entry.message)).toEqual([
+            'You do not have access to this.',
+        ]);
     });
 });

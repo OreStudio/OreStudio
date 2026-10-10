@@ -59,7 +59,10 @@ export function VersionFooter({
                 <Tag small tone="accent">
                     {t('version.client', { version: __BUILD_VERSION__ })}
                 </Tag>
-                <Tag small tone={serverVersion === undefined || serverVersion === '' ? 'muted' : 'up'}>
+                <Tag
+                    small
+                    tone={serverVersion === undefined || serverVersion === '' ? 'muted' : 'up'}
+                >
                     {serverVersion === undefined || serverVersion === ''
                         ? t('version.serverUnknown')
                         : t('version.server', { version: serverVersion })}

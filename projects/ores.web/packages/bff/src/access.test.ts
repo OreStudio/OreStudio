@@ -202,6 +202,8 @@ describe('access routes', () => {
         });
         expect(response.json()).toEqual({
             area: 'refdata',
+            areaWhole: false,
+            everything: false,
             totalCount: 40,
             areas: [{ component: 'refdata', resources: 40 }],
             rows: [
@@ -255,6 +257,140 @@ describe('access routes', () => {
 
         expect(tooBig.statusCode).toBe(400);
         expect(notAnAccount.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
+    const ok = { outcome: 'ok', code: '', message: '' };
+
+    it('asks the server for one page of roles, with the filters and the paging sent', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.list_roles_page': {
+                result: ok,
+                roles: [
+                    {
+                        id: TRADING,
+                        version: 2,
+                        name: 'Trading',
+                        description: 'Trading role',
+                        service: false,
+                        registration_default: false,
+                        requestable: true,
+                        permission_count: 12,
+                        everything: false,
+                    },
+                ],
+                total_count: 31,
+                service_hidden: 19,
+                areas: [{ component: 'refdata', resources: 4 }],
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/roles/page?search=trad&area=refdata&includeService=true&offset=15&limit=25',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]).toEqual({
+            subject: 'iam.v1.ops.list_roles_page',
+            body: {
+                role_id: '',
+                search: 'trad',
+                area: 'refdata',
+                include_service: true,
+                offset: 15,
+                limit: 25,
+            },
+        });
+        expect(response.json()).toMatchObject({
+            totalCount: 31,
+            serviceHidden: 19,
+            roles: [{ name: 'Trading', permissionCount: 12 }],
+        });
+    });
+
+    it('asks for a page of the catalogue against a role, with the unheld rows when the editor wants them', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.list_role_permissions': {
+                result: ok,
+                area: 'refdata',
+                rows: [],
+                total_count: 0,
+                areas: [],
+                area_whole: true,
+                everything: false,
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/roles/${TRADING}/permissions?area=refdata&includeUnheld=true&limit=50`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({
+            role_id: TRADING,
+            area: 'refdata',
+            search: '',
+            include_unheld: true,
+            offset: 0,
+            limit: 50,
+        });
+        expect(response.json()).toMatchObject({ area: 'refdata', areaWhole: true });
+    });
+
+    it('applies the changes the editor sends to what the role grants, and saves the result', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.get_role_permissions': {
+                result: ok,
+                permission_codes: ['refdata::currencies:read', 'refdata::parties:read'],
+            },
+            'iam.v1.roles_permissions.put': {
+                result: ok,
+                permission_codes: ['refdata::currencies:read', 'iam::accounts:read'],
+            },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: `/api/roles/${TRADING}/permissions/changes`,
+            cookies,
+            payload: {
+                add: ['iam::accounts:read'],
+                remove: ['refdata::parties:read'],
+                note: 'Desk change',
+            },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const put = calls.find((call) => call.subject === 'iam.v1.roles_permissions.put');
+        expect(put?.body).toMatchObject({
+            role_id: TRADING,
+            change_commentary: 'Desk change',
+        });
+        expect([...(put?.body as { permission_codes: string[] }).permission_codes].sort()).toEqual([
+            'iam::accounts:read',
+            'refdata::currencies:read',
+        ]);
+    });
+
+    it('refuses a change with no reason', async () => {
+        const { server, cookies, calls } = buildTestServer({});
+
+        const response = await server.inject({
+            method: 'POST',
+            url: `/api/roles/${TRADING}/permissions/changes`,
+            cookies,
+            payload: { add: ['iam::accounts:read'], remove: [] },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(400);
         expect(calls).toEqual([]);
     });
 

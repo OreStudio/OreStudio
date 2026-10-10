@@ -150,6 +150,7 @@ is not in this table checks its read permission.
 | =iam.v1.ops.get_my_login_info= | The caller's own sign-in state: locked or not, last sign-in, failed attempts | Self read; Security reads it, and =iam.v1.login_info.get= needs =iam::login_info:read= |
 | =iam.v1.ops.get_my_sessions= | The places the caller's own account is signed in | Self read; Security reads it, and =iam.v1.ops.get_active_sessions= needs =iam::sessions:read= |
 | =iam.v1.ops.list_my_permissions= | One page of what the caller's own roles let them do, by resource | Self read; My access reads it a page at a time, and =iam.v1.ops.list_account_permissions= needs =iam::roles:read= |
+| =iam.v1.ops.list_roles_page= and =iam.v1.ops.list_role_permissions= | The roles list, and the catalogue against one role for the editor | Guarded: both need =iam::roles:read=; no self version, because a role is not the caller's own |
 | =iam.v1.ops.get_password_policy= | The rules a password must meet | Read before a session exists |
 | =iam.v1.ops.registration_policy= | Whether and where a person may sign up | Read before a session exists |
 | =iam.v1.ops.public_key= | The key that verifies tokens | Read before a session exists |

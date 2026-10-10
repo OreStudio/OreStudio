@@ -119,6 +119,22 @@ public:
                                             const std::vector<std::string>& args);
 
     /**
+     * @brief list-role-permissions <role_id> <area> <search> [--include_unheld <v>] [--offset <v>]
+     * [--limit <v>]
+     */
+    static void process_list_role_permissions(std::ostream& out,
+                                              ores::nats::service::nats_client& session,
+                                              const std::vector<std::string>& args);
+
+    /**
+     * @brief list-roles-page <role_id> <search> <area> [--include_service <v>] [--offset <v>]
+     * [--limit <v>]
+     */
+    static void process_list_roles_page(std::ostream& out,
+                                        ores::nats::service::nats_client& session,
+                                        const std::vector<std::string>& args);
+
+    /**
      * @brief get-role-permissions <role_id>
      */
     static void process_get_role_permissions(std::ostream& out,

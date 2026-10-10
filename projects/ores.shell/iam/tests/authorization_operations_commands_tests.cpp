@@ -69,13 +69,15 @@ TEST_CASE("authorization_operations_registers_every_declared_command", tags) {
              std::string{"authorization get-my-roles"},
              std::string{"authorization list-account-permissions"},
              std::string{"authorization list-my-permissions"},
+             std::string{"authorization list-role-permissions"},
+             std::string{"authorization list-roles-page"},
              std::string{"authorization get-role-permissions"},
              std::string{"authorization put-role-permissions"},
              std::string{"authorization suggest-role-commands"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 11 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 13 command(s).";
 }
 
 TEST_CASE("authorization_operations_process_assign_role_requires_a_session", tags) {
@@ -545,6 +547,135 @@ TEST_CASE("authorization_operations_process_list_my_permissions_reaches_the_tran
                                                                        "sample",
                                                                        "sample",
                                                                    });
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("authorization_operations_process_list_role_permissions_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    authorization_operations_commands::process_list_role_permissions(out,
+                                                                     session,
+                                                                     std::vector<std::string>{
+                                                                         "sample",
+                                                                         "sample",
+                                                                         "sample",
+                                                                     });
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("authorization_operations_process_list_role_permissions_reports_the_expected_count",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    authorization_operations_commands::process_list_role_permissions(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 3 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("authorization_operations_process_list_role_permissions_reaches_the_transport", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    authorization_operations_commands::process_list_role_permissions(out,
+                                                                     session,
+                                                                     std::vector<std::string>{
+                                                                         "sample",
+                                                                         "sample",
+                                                                         "sample",
+                                                                     });
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("authorization_operations_process_list_roles_page_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    authorization_operations_commands::process_list_roles_page(out,
+                                                               session,
+                                                               std::vector<std::string>{
+                                                                   "sample",
+                                                                   "sample",
+                                                                   "sample",
+                                                               });
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("authorization_operations_process_list_roles_page_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    authorization_operations_commands::process_list_roles_page(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 3 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("authorization_operations_process_list_roles_page_reaches_the_transport", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    authorization_operations_commands::process_list_roles_page(out,
+                                                               session,
+                                                               std::vector<std::string>{
+                                                                   "sample",
+                                                                   "sample",
+                                                                   "sample",
+                                                               });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

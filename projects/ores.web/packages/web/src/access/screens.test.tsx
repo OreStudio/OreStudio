@@ -172,16 +172,41 @@ describe('My access', () => {
     });
 });
 
+/** A role as the roles list's server page states it. */
+function roleRow(id: string, name: string, permissionCount: number, options = {}) {
+    return {
+        id,
+        version: 1,
+        name,
+        description: `${name} role`,
+        service: false,
+        registrationDefault: false,
+        requestable: true,
+        permissionCount,
+        everything: false,
+        ...options,
+    };
+}
+
+function rolesPage(roles: ReturnType<typeof roleRow>[], total = roles.length, hidden = 0) {
+    return {
+        roles,
+        totalCount: total,
+        serviceHidden: hidden,
+        areas: [
+            { component: 'refdata', resources: 1 },
+            { component: 'iam', resources: 1 },
+        ],
+    };
+}
+
 describe('Roles', () => {
-    it('keeps the service roles out of the list and says how many it hid', () => {
+    it('says how many service roles the server left out of the page', () => {
         const html = render(
             (client) =>
                 client.setQueryData(
-                    ['roles'],
-                    [
-                        role(TRADING, 'Trading', ['refdata::currencies:read']),
-                        role(ADMIN, 'IamService', [], true),
-                    ],
+                    ['roles-page', '', '', false, 0, 15],
+                    rolesPage([roleRow(TRADING, 'Trading', 3)], 1, 1),
                 ),
             '/roles',
             <Route path="/roles" element={<RolesPage />} />,
@@ -192,39 +217,38 @@ describe('Roles', () => {
         expect(html).toContain('1 service roles hidden');
     });
 
-    it('pages the list, and offers search and an area combo box', () => {
+    it('draws the page the server answered, with search, an area combo box of held areas and a pager', () => {
         const html = render(
-            (client) => {
+            (client) =>
                 client.setQueryData(
-                    ['roles'],
-                    [
-                        role(TRADING, 'Trading', ['refdata::currencies:read']),
-                        role(ADMIN, 'TenantAdmin', ['*']),
-                    ],
-                );
-                client.setQueryData(
-                    ['permissions'],
-                    [
-                        { code: 'refdata::currencies:read', description: 'Read currencies' },
-                        { code: 'iam::accounts:read', description: 'Read accounts' },
-                    ],
-                );
-            },
+                    ['roles-page', '', '', false, 0, 15],
+                    rolesPage(
+                        [
+                            roleRow(TRADING, 'Trading', 3),
+                            roleRow(ADMIN, 'TenantAdmin', 0, { everything: true }),
+                        ],
+                        31,
+                    ),
+                ),
             '/roles',
             <Route path="/roles" element={<RolesPage />} />,
         );
 
         expect(html).toContain('type="search"');
-        expect(html).toContain('>All areas<');
         expect(html).toContain('>Reference data<');
-        expect(html).toContain('1–2 of 2 roles');
+        expect(html).toContain('>Identity and access<');
+        expect(html).toContain('1–2 of 31 roles');
         expect(html).toContain('>Next<');
+        expect(html).toContain('value="25"');
     });
 
     it('does not edit a role that grants everything', () => {
         const html = render(
             (client) => {
-                client.setQueryData(['roles'], [role(ADMIN, 'TenantAdmin', ['*'])]);
+                client.setQueryData(
+                    ['roles-page', 'one', ADMIN],
+                    rolesPage([roleRow(ADMIN, 'TenantAdmin', 0, { everything: true })]),
+                );
                 client.setQueryData(['accounts'], { accounts: [], totalCount: 0 });
             },
             `/roles/${ADMIN}`,
@@ -233,6 +257,46 @@ describe('Roles', () => {
 
         expect(html).toContain('This role grants every permission');
         expect(html).not.toContain('type="checkbox"');
+    });
+
+    it('edits a role a page of the catalogue at a time, with no all areas', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(
+                    ['roles-page', 'one', TRADING],
+                    rolesPage([roleRow(TRADING, 'Trading', 3)]),
+                );
+                client.setQueryData(['accounts'], { accounts: [], totalCount: 0 });
+                client.setQueryData(['role-permission-page', TRADING, '', '', false, 0, 15], {
+                    area: 'refdata',
+                    totalCount: 40,
+                    areaWhole: false,
+                    everything: false,
+                    areas: [
+                        { component: 'refdata', resources: 40 },
+                        { component: 'iam', resources: 12 },
+                    ],
+                    rows: [
+                        {
+                            component: 'refdata',
+                            resource: 'currencies',
+                            actions: ['read', 'write', 'delete'],
+                            held: ['read'],
+                            roles: [],
+                        },
+                    ],
+                });
+            },
+            `/roles/${TRADING}`,
+            <Route path="/roles/:roleId" element={<RolePage />} />,
+        );
+
+        expect(html).toContain('type="checkbox"');
+        expect(html).toContain('Showing 1–1 of 40 permissions');
+        expect(html).toContain('>Reference data<');
+        expect(html).not.toContain('All areas');
+        // One area, the chosen one, is drawn.
+        expect(html.match(/<details/g)).toHaveLength(1);
     });
 });
 

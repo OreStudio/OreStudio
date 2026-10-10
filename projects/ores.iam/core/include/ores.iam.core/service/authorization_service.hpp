@@ -96,6 +96,21 @@ struct permission_query {
     std::string search;
     int offset = 0;
     int limit = 15;
+    /// Also the resources the roles do not grant, for the role editor to tick.
+    bool include_unheld = false;
+};
+
+/**
+ * @brief Which page of the tenant's roles is asked for.
+ */
+struct roles_query {
+    /// One role, by id; the other fields are then ignored.
+    std::string role_id;
+    std::string search;
+    std::string area;
+    bool include_service = false;
+    int offset = 0;
+    int limit = 15;
 };
 
 /**
@@ -316,6 +331,23 @@ public:
     read_account_permissions(const boost::uuids::uuid& caller_id,
                              const boost::uuids::uuid& account_id,
                              const permission_query& query);
+
+    /**
+     * @brief Reads one page of the catalogue against what one role grants.
+     *
+     * Serves the role editor. Needs roles:read and answers @c denied with that
+     * code otherwise.
+     */
+    messaging::permission_page_response read_role_permissions(const boost::uuids::uuid& caller_id,
+                                                              const boost::uuids::uuid& role_id,
+                                                              const permission_query& query);
+
+    /**
+     * @brief Reads one page of the tenant's roles, with each role's permissions
+     * counted and not listed. Needs roles:read.
+     */
+    messaging::role_page_response read_roles_page(const boost::uuids::uuid& caller_id,
+                                                  const roles_query& query);
 
     // ========================================================================
     // Permission Checking

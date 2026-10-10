@@ -19,60 +19,74 @@
  *
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState, type ReactNode } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
-import { areasOf, grantsInArea } from './catalogue.js';
 import { AreaFilter } from './PermissionAreas.js';
 import { roleLabel } from './words.js';
+
+/** How long typing pauses before a search is sent to the server. */
+const SEARCH_PAUSE_MS = 300;
 
 /**
  * The tenant's roles and what each one lets people do.
  *
- * The platform's own services sign in with roles of their own, nineteen of
- * them in the seed. They are hidden unless asked for, because they are not
- * given to people and are not changed here.
+ * Each page is a request for that page: the pager, the page size, the search,
+ * the area and the choice to include the platform's own roles are the
+ * request's, and the server answers the rows, the total and the areas some
+ * role grants something in. The platform's own services sign in with roles of
+ * their own, nineteen of them in the seed. They are left out unless asked for,
+ * because they are not given to people and are not changed here.
+ *
+ * The area filter narrows the roles to those that grant something in an area,
+ * and offers only areas some role does. Leaving it on its first choice shows
+ * every role.
  */
 export function RolesPage(): ReactNode {
     const { t, plural } = useTranslation();
     const navigate = useNavigate();
     const [showService, setShowService] = useState(false);
     const [creating, setCreating] = useState(false);
+    const [typed, setTyped] = useState('');
     const [search, setSearch] = useState('');
     const [area, setArea] = useState('');
     const [offset, setOffset] = useState(0);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-    const roles = useQuery({ queryKey: ['roles'], queryFn: api.roles });
-    const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
-    const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
 
-    if (roles.isPending) {
+    // The search is sent when the typing pauses, so a request is not made per key.
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearch(typed);
+            setOffset(0);
+        }, SEARCH_PAUSE_MS);
+        return () => clearTimeout(timer);
+    }, [typed]);
+
+    const page = useQuery({
+        queryKey: ['roles-page', search, area, showService, offset, pageSize],
+        queryFn: () =>
+            api.rolesPage({
+                search,
+                area,
+                includeService: showService,
+                offset,
+                limit: pageSize,
+            }),
+        placeholderData: keepPreviousData,
+    });
+
+    if (page.isError) {
+        return <Notice tone="error">{page.error.message}</Notice>;
+    }
+    if (page.data === undefined) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
-    if (roles.isError) {
-        return <Notice tone="error">{roles.error.message}</Notice>;
-    }
-    const hidden = roles.data.filter((role) => role.service).length;
-    const needle = search.trim().toLowerCase();
-    const matching = roles.data
-        .filter((role) => showService || !role.service)
-        .filter((role) => area === '' || grantsInArea(role.permissionCodes, area))
-        .filter(
-            (role) =>
-                needle === '' ||
-                roleLabel(t, role.name).toLowerCase().includes(needle) ||
-                role.name.toLowerCase().includes(needle) ||
-                role.description.toLowerCase().includes(needle),
-        )
-        .sort((a, b) => Number(a.service) - Number(b.service) || a.name.localeCompare(b.name));
-    // A filter can leave the page that was open past the last row.
-    const start = offset >= matching.length ? 0 : offset;
-    const shown = matching.slice(start, start + pageSize);
-    const { first, last } = pageBounds(start, shown.length);
+    const { roles, totalCount, serviceHidden, areas } = page.data;
+    const { first, last } = pageBounds(offset, roles.length);
     const narrow = (apply: () => void): void => {
         apply();
         setOffset(0);
@@ -93,8 +107,8 @@ export function RolesPage(): ReactNode {
                 <Input
                     type="search"
                     className="max-w-md"
-                    value={search}
-                    onChange={(event) => narrow(() => setSearch(event.target.value))}
+                    value={typed}
+                    onChange={(event) => setTyped(event.target.value)}
                     placeholder={t('access.roles.search')}
                     aria-label={t('access.roles.search')}
                 />
@@ -114,7 +128,7 @@ export function RolesPage(): ReactNode {
                     {t('access.roles.showService')}
                     {!showService && (
                         <span className="text-ink-faint">
-                            · {t('access.roles.serviceHidden', { count: String(hidden) })}
+                            · {t('access.roles.serviceHidden', { count: String(serviceHidden) })}
                         </span>
                     )}
                 </label>
@@ -130,14 +144,14 @@ export function RolesPage(): ReactNode {
                         </tr>
                     </thead>
                     <tbody>
-                        {shown.length === 0 && (
+                        {roles.length === 0 && (
                             <tr>
                                 <td colSpan={2} className="px-4 py-3 text-ink-muted">
                                     {t('access.nothingMatches')}
                                 </td>
                             </tr>
                         )}
-                        {shown.map((role) => (
+                        {roles.map((role) => (
                             <tr
                                 key={role.id}
                                 className="cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover"
@@ -159,10 +173,10 @@ export function RolesPage(): ReactNode {
                                 <td className="px-4 py-2 text-ink-muted">
                                     {role.service
                                         ? '—'
-                                        : role.permissionCodes.includes('*')
+                                        : role.everything
                                           ? t('access.lets.everything')
                                           : t('access.lets.count', {
-                                                count: String(role.permissionCodes.length),
+                                                count: String(role.permissionCount),
                                             })}
                                 </td>
                             </tr>
@@ -171,11 +185,11 @@ export function RolesPage(): ReactNode {
                 </table>
             </div>
             <Pager
-                offset={start}
-                shown={shown.length}
-                total={matching.length}
+                offset={offset}
+                shown={roles.length}
+                total={totalCount}
                 pageSize={pageSize}
-                showing={plural('access.roles.showing', matching.length, { first, last })}
+                showing={plural('access.roles.showing', totalCount, { first, last })}
                 onMove={setOffset}
                 onPageSize={(size) => {
                     setPageSize(size);
@@ -197,6 +211,7 @@ function NewRoleDialog({ onClose }: { readonly onClose: () => void }): ReactNode
         mutationFn: () => api.createRole({ name: name.trim(), description }),
         onSuccess: async (id) => {
             await queries.invalidateQueries({ queryKey: ['roles'] });
+            await queries.invalidateQueries({ queryKey: ['roles-page'] });
             void navigate(`/roles/${encodeURIComponent(id)}`);
         },
     });

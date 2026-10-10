@@ -25,6 +25,7 @@ import {
     uuidSchema,
     type AccountAccess,
     type PermissionPage,
+    type RolePage,
     type PermissionEntry,
     type RoleSummary,
 } from './domain.js';
@@ -36,6 +37,8 @@ import {
     type GetMyRolesRequest,
     type ListAccountPermissionsRequest,
     type ListMyPermissionsRequest,
+    type ListRolePermissionsRequest,
+    type ListRolesPageRequest,
     type GetRolePermissionsRequest,
     type PutRolePermissionsRequest,
     type RevokeRoleRequest,
@@ -56,6 +59,8 @@ export const ACCESS_SUBJECTS = {
     mine: authorizationSubjects.get_my_roles_request,
     byAccount: authorizationSubjects.get_account_roles_request,
     myPermissions: authorizationSubjects.list_my_permissions_request,
+    rolePermissionsPage: authorizationSubjects.list_role_permissions_request,
+    rolesPage: authorizationSubjects.list_roles_page_request,
     accountPermissions: authorizationSubjects.list_account_permissions_request,
     rolePermissions: authorizationSubjects.get_role_permissions_request,
     putRolePermissions: authorizationSubjects.put_role_permissions_request,
@@ -176,7 +181,10 @@ export async function readAccountAccess(
     return toAccess(reply);
 }
 
-async function readRolePermissions(caller: AuthenticatedCaller, roleId: string): Promise<string[]> {
+export async function readRolePermissions(
+    caller: AuthenticatedCaller,
+    roleId: string,
+): Promise<string[]> {
     const request: GetRolePermissionsRequest = { role_id: roleId };
     const reply = await caller.callAuthenticated(
         ACCESS_SUBJECTS.rolePermissions,
@@ -377,6 +385,8 @@ const permissionPageReplySchema = z
         areas: z
             .array(z.object({ component: z.string(), resources: z.int().default(0) }))
             .default([]),
+        area_whole: z.boolean().default(false),
+        everything: z.boolean().default(false),
     })
     .transform((row) => ({
         result: row.result,
@@ -385,6 +395,8 @@ const permissionPageReplySchema = z
             rows: row.rows,
             totalCount: row.total_count,
             areas: row.areas,
+            areaWhole: row.area_whole,
+            everything: row.everything,
         } satisfies PermissionPage,
     }));
 
@@ -436,4 +448,130 @@ export async function readAccountPermissions(
     );
     ok(ACCESS_SUBJECTS.accountPermissions, reply.result);
     return reply.page;
+}
+
+/** Which page of a role's permissions is asked for; unheld rows are the editor's. */
+export interface RolePermissionQuery extends PermissionQuery {
+    readonly includeUnheld: boolean;
+}
+
+/**
+ * One page of the permission catalogue against what one role grants.
+ *
+ * The server allows it to a holder of `iam::roles:read`. With `includeUnheld`
+ * the page carries the rows the role does not grant too, for the editor to tick.
+ */
+export async function readRolePermissionsPage(
+    caller: AuthenticatedCaller,
+    roleId: string,
+    query: RolePermissionQuery,
+): Promise<PermissionPage> {
+    const request: ListRolePermissionsRequest = {
+        role_id: roleId,
+        area: query.area,
+        search: query.search,
+        include_unheld: query.includeUnheld,
+        offset: query.offset,
+        limit: query.limit,
+    };
+    const reply = await caller.callAuthenticated(
+        ACCESS_SUBJECTS.rolePermissionsPage,
+        request,
+        permissionPageReplySchema,
+    );
+    ok(ACCESS_SUBJECTS.rolePermissionsPage, reply.result);
+    return reply.page;
+}
+
+const rolePageReplySchema = z
+    .object({
+        result: resultEnvelopeSchema,
+        roles: z
+            .array(
+                z.object({
+                    id: uuidSchema,
+                    version: z.int().default(0),
+                    name: z.string(),
+                    description: z.string().default(''),
+                    service: z.boolean().default(false),
+                    registration_default: z.boolean().default(false),
+                    requestable: z.boolean().default(false),
+                    permission_count: z.int().default(0),
+                    everything: z.boolean().default(false),
+                }),
+            )
+            .default([]),
+        total_count: z.int().default(0),
+        service_hidden: z.int().default(0),
+        areas: z
+            .array(z.object({ component: z.string(), resources: z.int().default(0) }))
+            .default([]),
+    })
+    .transform((row) => ({
+        result: row.result,
+        page: {
+            roles: row.roles.map((role) => ({
+                id: role.id,
+                version: role.version,
+                name: role.name,
+                description: role.description,
+                service: role.service,
+                registrationDefault: role.registration_default,
+                requestable: role.requestable,
+                permissionCount: role.permission_count,
+                everything: role.everything,
+            })),
+            totalCount: row.total_count,
+            serviceHidden: row.service_hidden,
+            areas: row.areas,
+        } satisfies RolePage,
+    }));
+
+/** Which page of the roles is asked for. */
+export interface RolesQuery {
+    readonly roleId: string;
+    readonly search: string;
+    readonly area: string;
+    readonly includeService: boolean;
+    readonly offset: number;
+    readonly limit: number;
+}
+
+/** One page of the tenant's roles. The server allows it to a holder of `iam::roles:read`. */
+export async function readRolesPage(
+    caller: AuthenticatedCaller,
+    query: RolesQuery,
+): Promise<RolePage> {
+    const request: ListRolesPageRequest = {
+        role_id: query.roleId,
+        search: query.search,
+        area: query.area,
+        include_service: query.includeService,
+        offset: query.offset,
+        limit: query.limit,
+    };
+    const reply = await caller.callAuthenticated(
+        ACCESS_SUBJECTS.rolesPage,
+        request,
+        rolePageReplySchema,
+    );
+    ok(ACCESS_SUBJECTS.rolesPage, reply.result);
+    return reply.page;
+}
+
+/**
+ * Adds and removes permissions from a role without the caller holding the whole
+ * set: the role's grants are read, the change applied, and the result saved.
+ * The screen pages the catalogue and cannot send what it does not have.
+ */
+export async function changeRolePermissions(
+    caller: AuthenticatedCaller,
+    roleId: string,
+    change: { readonly add: readonly string[]; readonly remove: readonly string[] },
+    note: string,
+): Promise<string[]> {
+    const held = new Set(await readRolePermissions(caller, roleId));
+    for (const code of change.remove) held.delete(code);
+    for (const code of change.add) held.add(code);
+    return saveRolePermissions(caller, roleId, [...held], note);
 }

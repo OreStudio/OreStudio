@@ -72,6 +72,21 @@ std::vector<std::string> split_list_token(const std::string& value) {
     return parts;
 }
 
+/**
+ * @brief Read a boolean token, which the shell spells out as a word.
+ */
+bool parse_flag(const std::string& value, bool& out) {
+    if (value.empty() || value == "false") {
+        out = false;
+        return true;
+    }
+    if (value == "true") {
+        out = true;
+        return true;
+    }
+    return false;
+}
+
 }
 
 void authorization_operations_commands::register_commands(cli::Menu& root_menu,
@@ -133,6 +148,22 @@ void authorization_operations_commands::register_commands(cli::Menu& root_menu,
             process_list_my_permissions(std::ref(out), std::ref(session), std::move(args));
         },
         "list-my-permissions <area> <search> [--offset <v>] [--limit <v>]");
+
+    menu->Insert(
+        "list-role-permissions",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_list_role_permissions(std::ref(out), std::ref(session), std::move(args));
+        },
+        "list-role-permissions <role_id> <area> <search> [--include_unheld <v>] [--offset <v>] "
+        "[--limit <v>]");
+
+    menu->Insert(
+        "list-roles-page",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_list_roles_page(std::ref(out), std::ref(session), std::move(args));
+        },
+        "list-roles-page <role_id> <search> <area> [--include_service <v>] [--offset <v>] [--limit "
+        "<v>]");
 
     menu->Insert(
         "get-role-permissions",
@@ -595,6 +626,148 @@ void authorization_operations_commands::process_list_my_permissions(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::iam::messaging::permission_page_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void authorization_operations_commands::process_list_role_permissions(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list-role-permissions request.";
+
+    using request_type = ores::iam::messaging::list_role_permissions_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list-role-permissions." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "include_unheld", .requires_value = true, .default_value = ""},
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 3;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.role_id = parsed->positionals[next++];
+        req.area = parsed->positionals[next++];
+        req.search = parsed->positionals[next++];
+        if (const auto& raw_include_unheld = parsed->flag("include_unheld");
+            !raw_include_unheld.empty()) {
+            if (!parse_flag(raw_include_unheld, req.include_unheld)) {
+                fail(out) << "include_unheld must be 'true' or 'false'." << std::endl;
+                return;
+            }
+        }
+        if (const auto& raw_offset = parsed->flag("offset"); !raw_offset.empty()) {
+            req.offset = ores::shell::app::from_token<int>(raw_offset, "offset");
+        }
+        if (const auto& raw_limit = parsed->flag("limit"); !raw_limit.empty()) {
+            req.limit = ores::shell::app::from_token<int>(raw_limit, "limit");
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::permission_page_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::permission_page_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::permission_page_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void authorization_operations_commands::process_list_roles_page(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list-roles-page request.";
+
+    using request_type = ores::iam::messaging::list_roles_page_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list-roles-page." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "include_service", .requires_value = true, .default_value = ""},
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 3;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.role_id = parsed->positionals[next++];
+        req.search = parsed->positionals[next++];
+        req.area = parsed->positionals[next++];
+        if (const auto& raw_include_service = parsed->flag("include_service");
+            !raw_include_service.empty()) {
+            if (!parse_flag(raw_include_service, req.include_service)) {
+                fail(out) << "include_service must be 'true' or 'false'." << std::endl;
+                return;
+            }
+        }
+        if (const auto& raw_offset = parsed->flag("offset"); !raw_offset.empty()) {
+            req.offset = ores::shell::app::from_token<int>(raw_offset, "offset");
+        }
+        if (const auto& raw_limit = parsed->flag("limit"); !raw_limit.empty()) {
+            req.limit = ores::shell::app::from_token<int>(raw_limit, "limit");
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::role_page_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::role_page_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::role_page_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

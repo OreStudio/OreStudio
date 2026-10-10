@@ -147,6 +147,85 @@ export interface PermissionPageResponse {
      */
     total_count: number;
     areas: PermissionAreaCount[];
+    /**
+     * @brief Whether the chosen area is granted whole, by =component::*= or by
+     * everything, so a screen can say so and not tick every row.
+     */
+    area_whole: boolean;
+    /**
+     * @brief Whether the roles grant everything (=*=).
+     */
+    everything: boolean;
+}
+
+/**
+ * @brief One page of the permission catalogue against what one role grants.
+ *
+ * It serves the role editor, which must offer every permission to tick, not
+ * only the ones the role holds, so =include_unheld= asks for the rows the role
+ * does not grant too. The paging fields are those of
+ * iam.v1.ops.list_account_permissions. The caller needs iam::roles:read.
+ */
+export interface ListRolePermissionsRequest {
+    role_id: string;
+    area: string;
+    search: string;
+    include_unheld: boolean;
+    offset: number;
+    limit: number;
+}
+
+/**
+ * @brief One role as the roles list draws it.
+ *
+ * The permissions are counted, not listed: the list says how much a role lets
+ * people do, and the role's own page pages what it lets them do. A service
+ * role's count is zero, because it is not given to people and is not changed
+ * from a screen.
+ */
+export interface RolePageRow {
+    id: string;
+    version: number;
+    name: string;
+    description: string;
+    service: boolean;
+    registration_default: boolean;
+    requestable: boolean;
+    permission_count: number;
+    everything: boolean;
+}
+
+/**
+ * @brief One page of the tenant's roles.
+ *
+ * =search= matches a role's name or description, =area= keeps the roles that
+ * grant something in that area, and =include_service= brings in the platform's
+ * own service roles, which are left out otherwise. A =role_id= names one role
+ * and ignores the rest, so the role's own page reads its header the same way.
+ * The caller needs iam::roles:read.
+ */
+export interface ListRolesPageRequest {
+    role_id: string;
+    search: string;
+    area: string;
+    include_service: boolean;
+    offset: number;
+    limit: number;
+}
+
+export interface RolePageResponse {
+    result: Result;
+    roles: RolePageRow[];
+    total_count: number;
+    /**
+     * @brief How many service roles were left out, so the list can say so.
+     */
+    service_hidden: number;
+    /**
+     * @brief The areas some listed role grants something in, with how many roles do.
+     * An area no role grants is not offered, so choosing one never shows an empty list.
+     */
+    areas: PermissionAreaCount[];
 }
 
 /**
@@ -218,6 +297,8 @@ export const subjects = {
     get_my_roles_request: 'iam.v1.ops.get_my_roles',
     list_account_permissions_request: 'iam.v1.ops.list_account_permissions',
     list_my_permissions_request: 'iam.v1.ops.list_my_permissions',
+    list_role_permissions_request: 'iam.v1.ops.list_role_permissions',
+    list_roles_page_request: 'iam.v1.ops.list_roles_page',
     get_role_permissions_request: 'iam.v1.ops.get_role_permissions',
     put_role_permissions_request: 'iam.v1.roles_permissions.put',
     suggest_role_commands_request: 'iam.v1.ops.suggest_role_commands',
@@ -236,6 +317,8 @@ export const requiresSession = {
     get_my_roles_request: true,
     list_account_permissions_request: true,
     list_my_permissions_request: true,
+    list_role_permissions_request: true,
+    list_roles_page_request: true,
     get_role_permissions_request: true,
     put_role_permissions_request: true,
     suggest_role_commands_request: true,

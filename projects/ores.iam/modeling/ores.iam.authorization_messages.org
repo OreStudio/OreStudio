@@ -369,6 +369,238 @@ A note the administrator adds to the reason. It is stored on the grant.
 :cpp_type: std::vector<permission_area_count>
 :END:
 
+*** area_whole
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the chosen area is granted whole, by =component::*= or by
+ * everything, so a screen can say so and not tick every row.
+ */
+#+end_src
+
+*** everything
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the roles grant everything (=*=).
+ */
+#+end_src
+
+** list_role_permissions_request
+:PROPERTIES:
+:subject: iam.v1.ops.list_role_permissions
+:response: permission_page_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One page of the permission catalogue against what one role grants.
+ *
+ * It serves the role editor, which must offer every permission to tick, not
+ * only the ones the role holds, so =include_unheld= asks for the rows the role
+ * does not grant too. The paging fields are those of
+ * iam.v1.ops.list_account_permissions. The caller needs iam::roles:read.
+ */
+#+end_src
+
+*** role_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** area
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** search
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** include_unheld
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 15
+:END:
+
+** role_page_row
+
+#+begin_src cpp :name comment
+/**
+ * @brief One role as the roles list draws it.
+ *
+ * The permissions are counted, not listed: the list says how much a role lets
+ * people do, and the role's own page pages what it lets them do. A service
+ * role's count is zero, because it is not given to people and is not changed
+ * from a screen.
+ */
+#+end_src
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** service
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** registration_default
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** requestable
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** permission_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** everything
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+** list_roles_page_request
+:PROPERTIES:
+:subject: iam.v1.ops.list_roles_page
+:response: role_page_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One page of the tenant's roles.
+ *
+ * =search= matches a role's name or description, =area= keeps the roles that
+ * grant something in that area, and =include_service= brings in the platform's
+ * own service roles, which are left out otherwise. A =role_id= names one role
+ * and ignores the rest, so the role's own page reads its header the same way.
+ * The caller needs iam::roles:read.
+ */
+#+end_src
+
+*** role_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** search
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** area
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** include_service
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 15
+:END:
+
+** role_page_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** roles
+:PROPERTIES:
+:cpp_type: std::vector<role_page_row>
+:END:
+
+*** total_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** service_hidden
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many service roles were left out, so the list can say so.
+ */
+#+end_src
+
+*** areas
+:PROPERTIES:
+:cpp_type: std::vector<permission_area_count>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The areas some listed role grants something in, with how many roles do.
+ * An area no role grants is not offered, so choosing one never shows an empty list.
+ */
+#+end_src
+
 ** account_role_access
 
 #+begin_src cpp :name comment

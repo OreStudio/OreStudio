@@ -180,6 +180,48 @@ It is addressed at =iam.v1.ops.list_my_permissions=.
 authorization list-my-permissions __none__ __none__
 #+end_src
 
+** =list-role-permissions=
+:PROPERTIES:
+:ID: AD292C2C-731B-5BBE-94AF-A7B26B74E335
+:END:
+
+Sends =list_role_permissions_request= and prints =permission_page_response=, so the shape is the protocol's and the meaning is the service's. It reads =role_id=, =area=, =search=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization list-role-permissions <role_id> <area> <search> [--include_unheld <v>] [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =iam.v1.ops.list_role_permissions=.
+
+#+name: authorization-list-role-permissions
+#+begin_src ores-shell :tangle authorization-list-role-permissions.ores :exports none
+authorization list-role-permissions __none__ __none__ __none__
+#+end_src
+
+** =list-roles-page=
+:PROPERTIES:
+:ID: C8284BDD-3B82-51D6-93D1-F43FB76264EC
+:END:
+
+Sends =list_roles_page_request= and prints =role_page_response=, so the shape is the protocol's and the meaning is the service's. It reads =role_id=, =search=, =area=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization list-roles-page <role_id> <search> <area> [--include_service <v>] [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =iam.v1.ops.list_roles_page=.
+
+#+name: authorization-list-roles-page
+#+begin_src ores-shell :tangle authorization-list-roles-page.ores :exports none
+authorization list-roles-page __none__ __none__ __none__
+#+end_src
+
 ** =get-role-permissions=
 :PROPERTIES:
 :ID: D657A55F-ED53-5C39-92DC-F532C984173E

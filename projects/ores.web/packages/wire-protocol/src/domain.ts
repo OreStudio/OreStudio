@@ -559,8 +559,39 @@ export const permissionPageSchema = z.object({
     rows: z.array(permissionRowSchema),
     totalCount: z.int().nonnegative(),
     areas: z.array(permissionAreaSchema),
+    /** Whether the chosen area is granted whole, so no row needs a tick. */
+    areaWhole: z.boolean(),
+    /** Whether the roles grant everything. */
+    everything: z.boolean(),
 });
 export type PermissionPage = z.infer<typeof permissionPageSchema>;
+
+/** One role as the roles list draws it. The permissions are counted, not listed. */
+export const rolePageRowSchema = z.object({
+    id: uuidSchema,
+    version: z.int().nonnegative(),
+    name: z.string(),
+    description: z.string(),
+    service: z.boolean(),
+    registrationDefault: z.boolean(),
+    requestable: z.boolean(),
+    permissionCount: z.int().nonnegative(),
+    everything: z.boolean(),
+});
+export type RolePageRow = z.infer<typeof rolePageRowSchema>;
+
+/**
+ * One page of the tenant's roles. `areas` are those some listed role grants
+ * something in, with how many roles do; `serviceHidden` is how many of the
+ * platform's own roles were left out.
+ */
+export const rolePageSchema = z.object({
+    roles: z.array(rolePageRowSchema),
+    totalCount: z.int().nonnegative(),
+    serviceHidden: z.int().nonnegative(),
+    areas: z.array(permissionAreaSchema),
+});
+export type RolePage = z.infer<typeof rolePageSchema>;
 
 /**
  * One role of the tenant's catalogue.

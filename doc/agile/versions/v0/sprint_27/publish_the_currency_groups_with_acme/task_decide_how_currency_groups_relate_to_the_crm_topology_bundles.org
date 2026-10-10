@@ -8,7 +8,7 @@
 #+filetags: :publish_the_currency_groups_with_acme:sprint_27:v0:
 #+owner: marco
 #+branch: feature/decide-how-currency-groups-relate-to-the-crm-topology-bundles
-#+pr:
+#+pr: 3033
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3033][#3033]] | [knowledge] Record that currency groups and CRM topologies are separate |
 
 * Review
 

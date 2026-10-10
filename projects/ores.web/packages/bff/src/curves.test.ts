@@ -22,7 +22,7 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import type { OresClient } from '@ores/wire-protocol';
+import { ServerError, type OresClient } from '@ores/wire-protocol';
 import type { Config } from './config.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
@@ -74,7 +74,11 @@ function buildTestServer(
             if (!(subject in replies)) {
                 throw new Error(`No canned reply for ${subject}`);
             }
-            return schema.parse(replies[subject]);
+            const canned = replies[subject];
+            if (canned instanceof Error) {
+                throw canned;
+            }
+            return schema.parse(canned);
         },
         async close(): Promise<void> {
             return undefined;
@@ -298,6 +302,57 @@ describe('the curve read routes', () => {
         expect(response.json().message).toBe(
             'the object declares no axis, so it is not a composite object',
         );
+    });
+
+    it('drops the range when instants are stated', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.get_series_evolution': EVOLUTION,
+        });
+        await send(server, sessionId, 'POST', '/api/curves/evolution', {
+            identity: IDENTITY,
+            from_instant: '2026-10-01 00:00:00Z',
+            to_instant: '2026-10-09 00:00:00Z',
+            instants: ['2026-09-30 00:00:00Z'],
+        });
+        expect(calls[0]?.body).toEqual({
+            identity: IDENTITY,
+            from_instant: '1970-01-01 00:00:00Z',
+            to_instant: '1970-01-01 00:00:00Z',
+            instants: ['2026-09-30 00:00:00Z'],
+        });
+    });
+
+    it('refuses a range that ends before it starts, without asking the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const evolution = await send(server, sessionId, 'POST', '/api/curves/evolution', {
+            identity: IDENTITY,
+            from_instant: '2026-10-09 00:00:00Z',
+            to_instant: '2026-10-01 00:00:00Z',
+        });
+        const slice = await send(server, sessionId, 'POST', '/api/curves/slice', {
+            identity: IDENTITY,
+            component_field: 'strike_label',
+            component_value: 'ATM',
+            from_instant: '2026-10-09 00:00:00Z',
+            to_instant: '2026-10-01 00:00:00Z',
+        });
+        expect(evolution.statusCode).toBe(400);
+        expect(slice.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('reports a missing permission as forbidden and not as a refused read', async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.curve_snapshot.get': new ServerError(
+                'forbidden',
+                'marketdata.v1.curve_snapshot.get',
+            ),
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/snapshot', {
+            identity: IDENTITY,
+        });
+        expect(response.statusCode).toBe(403);
+        expect(response.json().code).toBe('forbidden');
     });
 
     it('needs a session', async () => {

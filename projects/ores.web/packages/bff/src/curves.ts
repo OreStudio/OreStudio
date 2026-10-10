@@ -40,7 +40,13 @@ import type { LiveSession } from './sessions.js';
  * them writes.
  */
 
-/** The wire spelling the server reads for an instant it was not given. */
+/**
+ * The wire spelling for an end of a range the caller did not give.
+ *
+ * The server reads the range only when no instants are stated, and a stated set
+ * replaces the range. So this value reaches the server only where the server
+ * ignores it. The evolution tests pin that.
+ */
 const NO_INSTANT = '1970-01-01 00:00:00Z';
 
 /** The most instants a caller may state, so a request cannot ask for an unbounded matrix. */
@@ -69,12 +75,19 @@ const snapshotBody = identityBody.extend({
     include_provenance: z.boolean().default(false),
 });
 
-const sliceBody = identityBody.extend({
-    component_field: word,
-    component_value: word,
-    from_instant: instant,
-    to_instant: instant,
-});
+/** Wire timestamps are fixed width, so the text order is the time order. */
+const rangeOrder = {
+    message: 'The range ends before it starts.',
+};
+
+const sliceBody = identityBody
+    .extend({
+        component_field: word,
+        component_value: word,
+        from_instant: instant,
+        to_instant: instant,
+    })
+    .refine((body) => body.from_instant <= body.to_instant, rangeOrder);
 
 const evolutionBody = identityBody
     .extend({
@@ -87,6 +100,12 @@ const evolutionBody = identityBody
             body.instants.length > 0 ||
             (body.from_instant !== undefined && body.to_instant !== undefined),
         { message: 'State the instants, or state both ends of the range.' },
+    )
+    .refine(
+        (body) =>
+            body.instants.length > 0 ||
+            (body.from_instant as string) <= (body.to_instant as string),
+        rangeOrder,
     );
 
 const replySchema = z.looseObject({
@@ -112,8 +131,9 @@ async function call(
     if (!reply.success) {
         throw refused(reply.message);
     }
-    const { success: _success, message: _message, ...rest } = reply;
-    return rest;
+    return Object.fromEntries(
+        Object.entries(reply).filter(([key]) => key !== 'success' && key !== 'message'),
+    );
 }
 
 export function registerCurveRoutes(
@@ -141,10 +161,12 @@ export function registerCurveRoutes(
     server.post('/api/curves/evolution', async (request) => {
         const session = requireSession(request);
         const body = input(evolutionBody, request.body);
+        // A stated set replaces the range, so the range is not sent with it.
+        const stated = body.instants.length > 0;
         return call(session, subjects.get_series_evolution_request, {
             identity: body.identity,
-            from_instant: body.from_instant ?? NO_INSTANT,
-            to_instant: body.to_instant ?? NO_INSTANT,
+            from_instant: stated ? NO_INSTANT : (body.from_instant ?? NO_INSTANT),
+            to_instant: stated ? NO_INSTANT : (body.to_instant ?? NO_INSTANT),
             instants: body.instants,
         });
     });

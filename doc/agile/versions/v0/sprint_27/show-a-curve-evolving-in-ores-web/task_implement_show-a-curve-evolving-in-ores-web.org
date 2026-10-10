@@ -60,8 +60,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Curve route tests | 11 pass | =npx vitest run src/curves.test.ts= in =packages/bff= | 785e1bda50 plus the uncommitted change |
-| Whole BFF suite | 52 files, 492 tests, pass | =npx vitest run= in =packages/bff= | 785e1bda50 plus the uncommitted change |
+| Curve route tests | 14 pass | =npx vitest run src/curves.test.ts= in =packages/bff= | 785e1bda50 plus the uncommitted change |
+| Whole BFF suite | 52 files, 495 tests, pass | =npx vitest run= in =packages/bff= | 785e1bda50 plus the uncommitted change |
 | BFF type check | clean | =npx tsc --build= in =packages/bff= | 785e1bda50 plus the uncommitted change |
 
 * Notes
@@ -87,7 +87,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The NO_INSTANT sentinel could become a real query | curves.ts | Accept | The constant now says the server reads the range only when no instants are stated. Two evolution tests pin the body. |
+| 2 | No check that the range starts before it ends | curves.ts | Accept | The slice and evolution schemas refuse a reversed range. A test shows no call reaches the server. |
+| 3 | Instants and a range together drop the range silently | curves.ts | Accept | The route now sends no range with a stated set, and a test shows it. |
+| 4 | A permission denial might arrive as a refused read | curves.ts | Accept | Checked: the client throws a forbidden error, which the BFF maps to 403. A test pins it. |
+| 5 | Unused underscore names may trip a lint rule | curves.ts | Accept | The reply is now filtered by key. The project has no eslint; prettier and tsc pass. |
+| 6 | Only a canned client was used | curves.test.ts | Decline | An integration run needs a running server and NATS. The limitation is in the PR body. |
 
 * Result
 

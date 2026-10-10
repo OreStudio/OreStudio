@@ -137,12 +137,12 @@ function home(
     path = '/',
 ): string {
     const client = new QueryClient();
-    seed?.(client);
     if (overview !== undefined) {
         client.setQueryData(['overview'], overview);
         client.setQueryData(['tenant-types'], []);
         client.setQueryData(['tenant-statuses'], []);
     }
+    seed?.(client);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -296,6 +296,22 @@ describe("the system administrator's home", () => {
         expect(html).toContain('1 node needs attention');
         expect(html).toContain('2 slow consumers need attention');
         expect(html).not.toContain(ALL_CLEAR);
+    });
+
+    it('does not say Everything is running over data a failed refresh left behind', () => {
+        const html = home('system-administration', quiet, undefined, (client) => {
+            seedHealthy(client);
+            const query = client.getQueryCache().build(client, { queryKey: ['overview'] });
+            query.setState({
+                ...query.state,
+                status: 'error',
+                error: new Error('the overview could not be read'),
+                fetchStatus: 'idle',
+            });
+        });
+
+        expect(occurrences(html, ALL_CLEAR)).toBe(3);
+        expect(html).toContain('Could not be read');
     });
 
     it('says so plainly when a panel has nothing to report yet', () => {

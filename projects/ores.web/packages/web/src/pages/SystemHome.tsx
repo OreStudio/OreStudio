@@ -120,7 +120,7 @@ function Panel({
                     {t('home.system.panels.open')}
                 </LinkButton>
             </header>
-            <div className="flex items-center gap-3" role="status">
+            <div className="flex items-center gap-3">
                 <span
                     aria-hidden="true"
                     className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border font-bold ${mark.classes}`}
@@ -169,7 +169,7 @@ function TenantsPanel(): ReactNode {
     const data = overview.data;
 
     const status: PanelStatus =
-        data === undefined
+        data === undefined || overview.isError
             ? { tone: 'none', text: t('home.system.panels.unread') }
             : data.attention.length === 0
               ? { tone: 'ok', text: t('home.system.allClear') }

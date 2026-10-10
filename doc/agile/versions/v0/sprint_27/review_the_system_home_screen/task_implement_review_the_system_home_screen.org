@@ -82,7 +82,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale data hides a failed refresh | SystemHome.tsx | Accepted | The tenants panel reads unread when the read failed; test added |
+| 2 | Services status ignores errors | SystemHome.tsx | Declined | The status says whether services run; the errors figure is painted red beside it |
+| 3 | Idle nodes count as online | SystemHome.tsx | Declined | Online against total is the grid screen's own measure |
+| 4 | Newest sample first | SystemHome.tsx | Declined | The bus view documents the samples newest first, and the bus screen reads them the same way |
+| 5 | role=status on every panel | SystemHome.tsx | Accepted | Role removed so refreshes are not announced |
+| 6 | Inline query keys | SystemHome.tsx | Declined | Pre-existing across the home and its tests; a separate change |
+| 7 | French and Portuguese plural forms | locales | Declined | The plural helper picks the form by the locale's own rules |
+| 8 | Layout unchecked | SystemHome.tsx | Declined | The reviewing person builds and checks the screen |
 
 * Result
 

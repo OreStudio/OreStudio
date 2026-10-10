@@ -39,7 +39,7 @@ CMake — or generate PlantUML diagrams as part of a build.
    configures the build directory automatically on first use, so a
    separate =cmake --preset= configure step is never needed. Multiple
    worktrees on this host build concurrently; =compass build= takes a
-   host-wide lock first (two slots, capped =-j2=/=-j3=) so builds
+   host-wide lock first (one slot, capped =-j6=) so builds
    don't corrupt each other's shared library outputs — raw =cmake
    --preset=/=cmake --build= invocations bypass that lock entirely
    and are never the right call, even "just to configure" or "just

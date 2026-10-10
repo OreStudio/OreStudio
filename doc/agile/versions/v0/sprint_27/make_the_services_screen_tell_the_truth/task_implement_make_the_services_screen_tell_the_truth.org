@@ -8,7 +8,7 @@
 #+filetags: :make_the_services_screen_tell_the_truth:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-make-the-services-screen-tell-the-truth
-#+pr:
+#+pr: 3052
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3052][#3052]] | [web] Report the web service's heartbeat |
 
 * Review
 

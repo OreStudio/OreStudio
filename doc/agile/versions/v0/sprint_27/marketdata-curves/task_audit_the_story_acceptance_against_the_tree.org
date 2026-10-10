@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/audit-the-story-acceptance-against-the-tree
+#+pr: 3078
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every acceptance bullet of the curve support story is met or named as open, with
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -40,9 +40,9 @@ Every acceptance bullet of the curve support story is met or named as open, with
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Walk the story's seventeen acceptance bullets one at a time. For each, name the
+file, test or record that shows it, or say what is missing. A bullet that is
+missing becomes a task. The story closes only when none is missing.
 
 * Measurements
 
@@ -56,7 +56,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Acceptance bullets in the story | 17 | =sed -n '/^\*\* Acceptance/,/^\*\* Tasks/p' story.org= | 73b0f844c3 |
+| Snapshot provenance fields | =source_kind=, =modified_by=, =change_reason_code=, =change_commentary=, =recorded_at= | =grep -n "^\*\*\* " ores.marketdata.operations.org= under =point_provenance= | 73b0f844c3 |
+| Recipe fields on that provenance | 0 | same read: no =derivation_config_id=, =derivation_config_version= or =source_as_of= | 73b0f844c3 |
+| Node status values on the evolution read | never_quoted, persistent, added, dropped, intermittent | =grep -n "never_quoted" ores.marketdata.operations.org= | 73b0f844c3 |
+| Coordinate columns on =market_observation= | 0 | =grep -n "^\*\* " ores.marketdata.market_observation.org=: identity is =oresmd_uri= | 73b0f844c3 |
 
 * Notes
 
@@ -75,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3078][#3078]] | [agile] Audit the curve support acceptance against the tree |
 
 * Review
 
@@ -84,3 +88,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+*The story cannot close. Fifteen of seventeen bullets are met. Two are open, and each is now a task.*
+
+| # | Bullet | Verdict | Evidence |
+|---+--------+---------+----------|
+| 1 | A composite object is first-class | Met | =series_axis= and =series_axis_value= models; =read_series_shape= |
+| 2 | Its shape is declared | Met | The grid test, with a hole that has no record time |
+| 3 | Its nodes are typed coordinates | *Open* | A coordinate is a field of the =oresmd_uri= text. The service parses it to typed fields. SQL cannot query or join it. |
+| 4 | Its axis values are typed codes | Met | Task "Type the axis values a surface varies over", DONE |
+| 5 | A component is a term structure | Met | The slice read, task DONE |
+| 6 | Evolution is one bounded read | Met | The aligned evolution read, task DONE |
+| 7 | Shape change is explicit | Met | Node status never_quoted, persistent, added, dropped, intermittent |
+| 8 | A node's provenance is readable per instant | *Open* | The snapshot returns source kind, actor, reason and time. It does not return the recipe, its version or the source as-of. The evolution read returns no provenance. |
+| 9 | Staleness is visible | Met | Task "Show how stale each point of a term structure is", DONE |
+| 10 | A point can be keyed by hand | Met | Task "Let an operator key and clear a curve point by hand", DONE |
+| 11 | A manual point is attributable | Met | The provenance annex, task DONE |
+| 12 | A manual point is respected | Met | =manual_point_guard= and its tests, PR #3068 |
+| 13 | The reads agree | Met | =series_grid= is shared by the snapshot, slice and evolution reads |
+| 14 | A production consumer, or the reason none exists | Met | The story says none exists and why |
+| 15 | The role vocabularies | Met | Cross-referenced in the bootstrap config model and described in the story |
+| 16 | No new name collision | Met | No curve entity or enum was added; the decision is recorded |
+| 17 | Prototype inventory is green | Met | The =prototypes= check passes |
+
+*Bullet 3.* The story's earlier decision made the URI the point's only identity. That
+is a choice, and the bullet asks for more: a coordinate that is queryable and
+joinable. The new task decides it from a consumer. It does not assume a column set.
+
+*Bullet 8.* "What it was built from, by which recipe" is the derivation config, its
+version and the source as-of. The lineage annex holds all three. The wire struct
+leaves them out. The new task adds them and decides the evolution read.
+
+*What this audit did not do.* It did not rerun the tests of the met bullets. It relies
+on each task's own record. Bullets 15 and 16 are read from the models and the story,
+not from a test.

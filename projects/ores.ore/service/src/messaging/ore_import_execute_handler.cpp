@@ -477,24 +477,88 @@ std::string book_imported_trade(Nats& nats,
 }
 
 /**
- * @brief Reads the identifier of every stored bond issue, keyed by its security id.
+ * @brief The terms one security is held with, and the legs first seen for it.
  *
- * One issue row serves every trade of an ISIN and its security_id is
- * unique among the current rows, so an import that meets an ISIN already
- * stored adopts that row instead of minting a second one. The read is
- * paged, and one pass covers the whole run.
+ * One issue row serves every trade of an ISIN, so the first statement of a
+ * security's terms decides that row and every later statement has to agree
+ * with it. An entry seeded from the database carries the stored row and no
+ * legs: the import did not state them, so it cannot compare against them.
+ * The entry the import fills in also carries the legs, so the rest of the
+ * run's trades of the same security are checked against those.
+ */
+struct bond_security_terms {
+    ores::trading::domain::bond_issue issue;
+    std::vector<ores::trading::domain::bond_leg_data> legs;
+    bool legs_known = false;
+};
+
+/**
+ * @brief Names the first term two statements of one security disagree on.
+ *
+ * Only the terms a document states take part: the identity the write
+ * assigns and the audit the caller stamps are not the document's to state,
+ * so two trades of one security differ on those and on nothing else.
+ *
+ * @return The field's name, or an empty string when the terms agree.
+ */
+std::string issue_terms_difference(const ores::trading::domain::bond_issue& left,
+                                   const ores::trading::domain::bond_issue& right) {
+    if (left.issuer != right.issuer)
+        return "issuer";
+    if (left.face_value != right.face_value)
+        return "face_value";
+    if (left.issue_date != right.issue_date)
+        return "issue_date";
+    if (left.settlement_days != right.settlement_days)
+        return "settlement_days";
+    if (left.calendar != right.calendar)
+        return "calendar";
+    if (left.credit_curve_id != right.credit_curve_id)
+        return "credit_curve_id";
+    if (left.reference_curve_id != right.reference_curve_id)
+        return "reference_curve_id";
+    if (left.income_curve_id != right.income_curve_id)
+        return "income_curve_id";
+    if (left.credit_group != right.credit_group)
+        return "credit_group";
+    if (left.volatility_curve_id != right.volatility_curve_id)
+        return "volatility_curve_id";
+    if (left.price_quote_method != right.price_quote_method)
+        return "price_quote_method";
+    if (left.price_quote_base_value != right.price_quote_base_value)
+        return "price_quote_base_value";
+    if (left.sub_type != right.sub_type)
+        return "sub_type";
+    if (left.price_type != right.price_type)
+        return "price_type";
+    if (left.payer != right.payer)
+        return "payer";
+    if (left.credit_risk != right.credit_risk)
+        return "credit_risk";
+    return {};
+}
+
+/**
+ * @brief Reads every stored bond issue, keyed by its security id.
+ *
+ * One issue serves every trade that agrees with its terms, and a security
+ * id may carry several: ORE's own example corpus states one security id
+ * for trades whose terms differ, and an import has to hold each shape it
+ * meets rather than refuse the document or overwrite the first. The row is
+ * read whole, because agreeing on the terms is what decides which issue a
+ * trade joins. The read is paged, and one pass covers the whole run.
  *
  * @return The map, empty when the read fails, with out_error set.
  */
 template <typename Nats>
-std::unordered_map<std::string, std::string>
-read_bond_issue_ids_by_security(Nats& nats, std::string& out_error) {
+std::unordered_map<std::string, std::vector<bond_security_terms>>
+read_bond_issues_by_security(Nats& nats, std::string& out_error) {
     using ores::trading::messaging::list_bond_issues_request;
 
     constexpr std::uint32_t page_size = 200;
     constexpr int max_pages = 500;
 
-    std::unordered_map<std::string, std::string> result;
+    std::unordered_map<std::string, std::vector<bond_security_terms>> result;
     std::uint32_t offset = 0;
     for (int page = 0; page < max_pages; ++page) {
         list_bond_issues_request req;
@@ -503,8 +567,11 @@ read_bond_issue_ids_by_security(Nats& nats, std::string& out_error) {
         auto resp = nats_call(nats, req, out_error);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return {};
-        for (const auto& issue : resp->issues)
-            result[issue.security_id] = boost::uuids::to_string(issue.issue_id);
+        for (const auto& issue : resp->issues) {
+            bond_security_terms terms;
+            terms.issue = issue;
+            result[issue.security_id].push_back(std::move(terms));
+        }
         if (resp->issues.size() < page_size)
             break;
         offset += page_size;
@@ -1439,16 +1506,19 @@ std::string save_forward(Nats& nats,
  * targets writes none of either, and a trade type with no product row
  * writes none.
  *
- * @param issue_ids_by_security The stored issue identifiers, keyed by
- * security id. A miss mints a row and records it here for the trades that
- * follow.
+ * @param security_terms The issues each security is held under, keyed by
+ * security id, seeded from the database. A trade joins the one it agrees
+ * with, mints an issue when it agrees with none, and warns when it had to.
+ * @param warnings Collects what the run should report without failing.
  * @return An empty string on success, or the first failure.
  */
 template <typename Nats>
 std::string
 save_bond_instrument(Nats& nats,
                      const ores::trading::domain::bond_instrument_data& data,
-                     std::unordered_map<std::string, std::string>& issue_ids_by_security) {
+                     std::unordered_map<std::string, std::vector<bond_security_terms>>&
+                         security_terms,
+                     std::vector<std::string>& warnings) {
     using ores::trading::messaging::put_ascot_request;
     using ores::trading::messaging::put_bond_future_request;
     using ores::trading::messaging::put_bond_instrument_request;
@@ -1463,11 +1533,35 @@ save_bond_instrument(Nats& nats,
     auto instrument = data.instrument;
     auto issue = data.issue;
 
-    const auto found = issue_ids_by_security.find(issue.security_id);
-    const bool issue_is_new = found == issue_ids_by_security.end();
+    const auto found = security_terms.find(issue.security_id);
+    bond_security_terms* adopted = nullptr;
+    if (found != security_terms.end()) {
+        for (auto& candidate : found->second) {
+            if (!issue_terms_difference(issue, candidate.issue).empty())
+                continue;
+            // An issue seeded from the database carries its terms and not its
+            // legs, so this trade's shape cannot be confirmed against it.
+            // Minting is the safe answer: adopting would store the trade
+            // against an issue whose legs it may not share, and the round
+            // trip would hand it back the other trade's coupon.
+            if (!candidate.legs_known || candidate.legs != data.bond_legs)
+                continue;
+            adopted = &candidate;
+            break;
+        }
+    }
+    const bool issue_is_new = adopted == nullptr;
     if (!issue_is_new) {
-        issue.issue_id = boost::lexical_cast<boost::uuids::uuid>(found->second);
+        issue.issue_id = adopted->issue.issue_id;
         instrument.issue_id = issue.issue_id;
+    } else if (found != security_terms.end() && !found->second.empty()) {
+        // The security id names a shape the tenant holds no issue for, so the
+        // trade gets an issue of its own. The document is still imported, and
+        // the warning says what to do about it.
+        warnings.push_back("Bond security " + issue.security_id +
+                           " is reused: this trade's shape matches no issue held for it, so it "
+                           "was given its own. Give the trades distinct security ids to share "
+                           "one.");
     }
 
     // A failed save leaves the security id out of the map, so the next
@@ -1496,7 +1590,6 @@ save_bond_instrument(Nats& nats,
         auto resp = nats_call(nats, issue_req, error);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_issue failed" : error;
-        issue_ids_by_security[issue.security_id] = boost::uuids::to_string(issue.issue_id);
     }
 
     put_bond_instrument_request instrument_req;
@@ -1543,7 +1636,10 @@ save_bond_instrument(Nats& nats,
     // issue row is minted: a second trade on the same ISIN would collide
     // with the first trade's rows, because a leg's parent is the issue.
     // The three product legs below are the trade's own and are always
-    // written.
+    // written. Recording the terms once the write has landed is what lets
+    // the run's later trades of this security be checked against them, and
+    // a security seeded from the database starts out stating none, so the
+    // first trade to state its legs completes it.
     if (issue_is_new) {
         int leg_number = 0;
         for (const auto& leg : data.bond_legs) {
@@ -1551,6 +1647,14 @@ save_bond_instrument(Nats& nats,
                 !failure.empty())
                 return failure;
         }
+        bond_security_terms terms;
+        terms.issue = issue;
+        terms.legs = data.bond_legs;
+        terms.legs_known = true;
+        security_terms[issue.security_id].push_back(std::move(terms));
+    } else if (!adopted->legs_known) {
+        adopted->legs = data.bond_legs;
+        adopted->legs_known = true;
     }
     if (auto failure =
             save_leg(nats, trade_id, trade_activity_id, "trs_funding", 1, data.trs_funding_leg);
@@ -2053,7 +2157,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // Step 8: save instruments (non-fatal — collect errors, continue)
     // -------------------------------------------------------------------------
     int instruments_saved = 0;
-    std::unordered_map<std::string, std::string> issue_ids_by_security;
+    std::unordered_map<std::string, std::vector<bond_security_terms>> security_terms;
+    std::vector<std::string> import_warnings;
     bool bond_issues_loaded = false;
     const std::unordered_set<std::string> saved_trades(result.saved_trade_ids.begin(),
                                                        result.saved_trade_ids.end());
@@ -2570,12 +2675,13 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
                     if (!bond_issues_loaded) {
                         bond_issues_loaded = true;
-                        issue_ids_by_security =
-                            read_bond_issue_ids_by_security(delegated_nats, instr_error);
+                        security_terms =
+                            read_bond_issues_by_security(delegated_nats, instr_error);
                         if (!instr_error.empty())
                             return false;
                     }
-                    instr_error = save_bond_instrument(delegated_nats, r, issue_ids_by_security);
+                    instr_error =
+                        save_bond_instrument(delegated_nats, r, security_terms, import_warnings);
                     return instr_error.empty();
                 } else if constexpr (std::is_same_v<T, credit_instrument>) {
                     put_credit_instrument_request req;
@@ -2931,13 +3037,18 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     using wf_log_entry = ores::workflow::messaging::step_log_entry;
 
     wf_outcome outcome;
-    if (result.item_errors.empty()) {
-        outcome = wf_outcome::completed;
-    } else if (all_trades_failed) {
+    if (all_trades_failed) {
         outcome = wf_outcome::failed;
-    } else {
+    } else if (!result.item_errors.empty() || !import_warnings.empty()) {
         outcome = wf_outcome::completed_with_warnings;
+    } else {
+        outcome = wf_outcome::completed;
     }
+
+    for (const auto& warning : import_warnings)
+        BOOST_LOG_SEV(lg(), warn)
+            << "ore.import.execute warning | corr=" << req.correlation_id
+            << " warning=" << warning;
 
     std::vector<wf_log_entry> step_log;
     if (!result.saved_trade_ids.empty()) {
@@ -2952,6 +3063,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
              .message = ie.message,
              .context = ie.item_id.empty() ? ie.source_file : ie.item_id});
     }
+    for (const auto& warning : import_warnings)
+        step_log.push_back({.level = wf_log_level::warn, .message = warning, .context = {}});
 
     result.success = outcome != wf_outcome::failed;
     result.message =

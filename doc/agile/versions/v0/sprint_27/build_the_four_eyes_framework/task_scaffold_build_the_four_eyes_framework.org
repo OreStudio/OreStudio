@@ -80,7 +80,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | How a line holds the write, and the checks that read it | =four_eyes_framework.org= | Accept, and the design changed | The product owner ruled the data design allows no untyped data, so a line is a typed row in a generated pending table, as the role request's detail is. There is no document column. The checks run against the live row and the typed pending row, at raise and again at apply. |
+| 2 | apply_failed is a dead end | =four_eyes_framework.org= | Accept | It is final. A new request needs every part to approve again, because an approval decides one proposed row. The request page offers raise again, which carries the lines forward re-based. |
+| 3 | Reconciliation retries a stale request forever | =four_eyes_framework.org= | Accept | A refusal is permanent, rolls the request back, moves it to apply_failed and stops the reconciler. An infrastructure failure is retried until the kind's window ends, then moves to apply_failed. |
+| 4 | Ordered parts and refusals | =four_eyes_framework.org= | Accept | A later part cannot be answered, so it cannot refuse, until the earlier parts approve. Notifications go only to the deciders of the parts that can be answered now. |
+| 5 | How the gate knows the applier | =four_eyes_framework.org= | Accept | The gate ties the write to an approved request: the applier passes the request id and the handler checks, in the same transaction, for an unapplied line for this entity, key, operation and version. Nothing the caller sets opens it. |
+| 6 | A policy that varies per tenant | =four_eyes_framework.org= | Accept | A tenant may add a part to an act and never remove one. A tenant without a function grants the part's permission to whichever role does that work. |
+| 7 | Dry run side effects | =four_eyes_framework.org= | Accept | The dry run covers database rows only. It calls the repository and validation layer, publishes no event and sends no notification. A sequence value it used stays used. |
+| 8 | List the six states | =four_eyes_framework.org= | Accept | A table lists them. |
+| 9 | Source for about 35 gated entities | =four_eyes_framework.org= | Accept | The note now says about twenty today, from the controls note, and about forty-five with every convention family. |
 
 * Result
 
@@ -93,11 +101,12 @@ held pending change, a gate in the write path, and one set of screens for every
 kind. The note adds parts, a policy, lines, raise and preview, an apply as one
 transaction with an =apply_failed= state, a gate, and a kind descriptor on the web.
 
-Filed nine tasks: parts and policy; lines, raise, preview and apply; the gate; the
+Filed the tasks: parts and policy; generate the pending change; raise, preview and apply; the gate; the
 common screens; and one to move each of the five screens onto the review panel
 (book structure, counterparty, party, convention, tenor).
 
-*One decision is open and blocks the second task.* How a line holds its proposed
-write: a typed shadow table per gated entity, or one lines table with the canonical
-serialisation of the generated write record. The note recommends the lines table and
-flags that it reverses the earlier decision that a kind keeps a typed table.
+*The one open decision is taken.* A line holds its proposed write as a typed row of
+its entity, in a generated pending table, because the data design allows no untyped
+or weakly typed data and the role request already keeps a typed table keyed by the
+request. The first recommendation, one lines table with a serialised write, is
+withdrawn. A codegen task is added for the pending table, so ten tasks are filed.

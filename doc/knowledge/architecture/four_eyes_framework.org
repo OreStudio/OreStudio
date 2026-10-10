@@ -14,12 +14,12 @@
 The approval request already holds who asked, who decided, why, and where the
 request stands, for any kind of request. What it lacks for a gated refdata write
 is four things: a request that needs several different functions to approve it,
-a place to hold the change the request proposes, a gate in the write path so a
+a typed place to hold the change the request proposes, a gate in the write path so a
 gated write cannot skip the request, and one screen set that every kind of
 request shares. This note says how to add each without a new queue. The request
 stays the one record and the inbox stays the one queue. A *part* is one function's
-share of a decision. A *pending change* is one proposed write held until the
-request is approved. A *policy* says which acts are gated and which part decides
+share of a decision. A *pending change* is one proposed write, held as a typed row of its entity until
+the request is approved. A *policy* says which acts are gated and which part decides
 each. A *kind descriptor* tells the web how to draw a kind. A new kind of request
 is then one policy row, one descriptor, and the operation that applies it.
 
@@ -77,62 +77,123 @@ part, such as the role request, which names a single part with its permission.
 *** The policy
 
 The policy is data: a row says that an act on an entity, optionally narrowed to a
-set of fields, needs a named part. Changing who decides is a data change, and the
-system tenant holds the rows so a tenant cannot loosen its own controls. The rows
-are the tables in [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]]: the description of a book needs no
-part, the cost center needs finance, and so on. An act with no row is written
-directly.
+set of fields, needs a named part. Changing who decides is a data change. The
+system tenant holds the rows, and a tenant may add a part to an act but never remove
+one the system names, so a tenant cannot loosen its own controls. A tenant without
+a Market Risk function does not edit the policy: it grants the part's permission to
+whichever role does that work, since a part is decided by a permission and not by a
+named job. The rows are the tables in [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]]: the
+description of a book needs no part, the cost center needs finance, and so on. An
+act with no row is written directly.
 
 *** The pending change
 
-A request holds a list of *lines*. A line is one proposed write: the entity, the
-operation (put or delete), the key, the version the maker read, the part that
-decides it, and the proposed row. A request of one kind may hold lines for several
-entities.
+A request holds a list of *lines*. A line is one proposed write, held as a typed
+row of the entity it changes, in a table of its own. This is what the role request
+already does: its detail is a typed table keyed by the request, in the component
+that owns the kind, and nothing in the inbox is stored as a document. The pending
+table of a gated entity has the entity's own columns, with the same foreign keys,
+checks and lookup validation, plus the request, a line number, the operation (put
+or delete), the version the maker read and the part that decides the line. It is
+generated from the entity's model, as the entity's other tables are, so a model
+change reaches the pending table in the same regeneration and the same migration.
+A request may hold lines for several entities, one typed table each.
+
+The queue and the request page need three further typed facts that no entity
+table can give: the parts a request needs and their order. They live in one small
+table keyed by the request and the part, written at raise.
 
 *** Raising
 
-One operation raises a request for a list of proposed writes and a reason. It does
-four things in one transaction:
+One generated operation raises a request. Its message is typed: a reason, and for
+each gated entity a typed list of proposed writes, in the shape the entity's put
+already takes. It does four things in one transaction:
 
-1. It runs each write against the real service inside a savepoint and rolls it back,
-   so every refusal the service would give, such as a level violation or a stale
-   version, comes back to the maker at once, before anyone waits.
+1. It runs each write through the real service's database layer inside a savepoint
+   and rolls the savepoint back, so every refusal the service would give, such as a
+   level violation or a stale version, comes back to the maker at once, before
+   anyone waits. The dry run covers database rows. A sequence value it used stays
+   used. It publishes no event and sends no notification, because it calls the
+   repository and validation layer and never the layer that publishes.
 2. It reads the policy and gives each line its part. A write with no part is
    refused here as "needs no request", so a caller writes it directly.
-3. It writes the request, its lines and its parts.
-4. It tells the deciders of the first open parts.
+3. It writes the request, its parts and its lines.
+4. It tells the deciders of the parts that can be answered now: the first part in
+   the order, or every part when the policy gives no order.
 
 A *preview* operation does steps 1 and 2 and writes nothing. The web calls it from
 the review, so the review can show every change with its decider before the person
 confirms.
 
+The checks a decider reads, such as that the book is flat, that the owner unit is in
+the ancestry chain, and that the row is still at the version the maker read, run
+against the live row and the typed pending row. They run at raise, so the maker
+sees a failure early, and again at apply, because the live row may have moved.
+
+*** Ordered parts and refusals
+
+A part later in the order cannot be answered, and so cannot refuse, until the parts
+before it have approved. A refusal from a part that can be answered ends the request.
+The notification goes only to the deciders of the parts that can be answered now.
+
 *** Applying
 
 When the last part approves, the owning component applies every line in one
 transaction, through the same service code the direct write uses, as the approver
-with the request as the reason, as IAM already does for roles. A line whose version
-has moved on fails, and the whole request is rolled back. A new state, =apply_failed=,
-records that, names the line and the reason, and tells the person who asked. The
-request does not return to waiting: the maker raises a new request from the
-current row. Apply is by reconciliation, as IAM's is, so a missed event or a service
-that was down converges on the next run.
+with the request as the reason, as IAM already does for roles. Each line is marked
+applied in the same transaction, so a line applies once.
+
+Apply is by reconciliation, as IAM's is, so a missed event or a service that was
+down converges on the next run. A failure is one of two kinds, and the difference
+decides the stop condition:
+
+- A *refusal* from the service, such as a stale version or a validation rule, is
+  permanent. The whole request is rolled back, the request moves to =apply_failed=
+  with the line and the reason, the person who asked is told, and the reconciler
+  stops. A refusal is never retried, because the answer cannot change.
+- An *infrastructure failure*, such as a service that is down or a timeout, is
+  transient. The request stays approved and the next run tries it again, up to the
+  kind's window. When the window ends the request moves to =apply_failed= with the
+  reason "could not apply", so a request never retries forever.
+
+=apply_failed= is terminal, like =refused=, =withdrawn= and =expired=. The maker
+raises a new request from the current row, and the new request needs every part to
+approve again, because an approval is a decision on one proposed row and the new
+request proposes a different one. The request page offers "raise again", which
+carries the lines forward re-based on the current row so the maker does not retype
+them.
 
 *** The gate
 
 The generated put and delete handlers of a gated entity check the policy. When the
-caller is not the applier and the act has a part, the handler refuses with the
-typed result =approval_required= and writes nothing. The refusal is a rule of the
-service, not of a screen, so a script or another client cannot skip the request.
-The applier is the one caller the gate lets through. A hand-written handler, such
-as a composite write, calls the same check.
+act has a part and the write does not come from an approved request, the handler
+refuses with the typed result =approval_required= and writes nothing. The refusal is
+a rule of the service, not of a screen, so a script or another client cannot skip the
+request.
+
+The apply is tied to a request, not to a caller. The applier passes the request's id
+with each line, and the handler checks, in the same transaction, that an approved
+request holds an unapplied line for exactly this entity, key, operation and version.
+Nothing the caller can set, such as a role or a flag, opens the gate: only a row in
+the database does. A hand-written handler, such as a composite write, calls the same
+check.
 
 *** States
 
-The six states stay. =apply_failed= is added. The decision types stay: approve,
-refuse, hold, resume, withdraw. A part's answer is a decision carrying its part,
-so the history shows who answered which part and when, with no new table of
-answers.
+Six states exist today:
+
+| State | Meaning |
+|-------+---------|
+| =waiting= | Asked, not yet decided |
+| =held= | Parked pending a question |
+| =approved= | Decided yes |
+| =refused= | Decided no; final |
+| =withdrawn= | The person who asked took it back; final |
+| =expired= | Nobody decided before the window closed; final |
+
+=apply_failed= is added, and it is final. The decision types stay: approve, refuse,
+hold, resume, withdraw. A part's answer is a decision carrying its part, so the
+history shows who answered which part and when, with no new table of answers.
 
 ** The common experience
 
@@ -162,49 +223,44 @@ the proposed writes to the review panel, and navigates to the request page after
 raise. The decision screen, the waiting state and the declined state in the five
 prototypes are the request page in three states.
 
-** Holding the pending change: two ways
+** Holding the pending change
 
-The one real design choice is how a line holds the proposed row.
+The pending change is typed, and there is no document column. The data design allows
+no untyped or weakly typed data, and the role request already shows the way: a typed
+detail table keyed by the request, in the component that owns the kind. A pending
+table per gated entity follows that pattern. A document that held the serialised
+write would give up the checked shape the schema exists to give, and it would break
+when a release changed the protocol under a pending request. A typed pending table
+changes with the entity's model, in the same migration, so a request held across a
+release stays readable.
 
-*Typed shadow tables.* Each gated entity gets a generated pending table with the
-entity's own columns, plus the request, the operation and the version read. It
-matches the earlier decision that each kind keeps a typed table, and it keeps a
-checked shape in the schema. It adds one table per gated entity, about 35 of them,
-and every model change touches two tables.
-
-*One line table with the proposed write.* One lines table keeps the typed facts the
-queue needs (entity, operation, key, part, version) and the proposed row as the
-canonical serialisation of the generated write record. The shape is checked when the
-record is decoded, at raise and again at apply, by the protocol type the generator
-already makes. It adds one table, applies through one registered handler per entity,
-and a model change touches one place. The cost is a document column, which the data
-design otherwise avoids: the column is written once, never updated, never queried by
-field, and read only to draw a delta or to apply.
-
-*Recommendation:* the one line table. The shadow tables multiply the schema for no
-check the protocol does not already give, and the line table keeps the apply path and
-every service rule in one place. This reverses the earlier decision that a kind keeps
-a typed detail table, for refdata changes only. The role request keeps its typed
-table, because its detail is small and unique.
+The cost is one generated table per gated entity: about twenty today, from the acts
+in the controls note, and up to about forty-five when every convention family is
+drawn. The entity's model already declares every column, key and lookup the pending
+table needs, so generation carries the cost and no table is written by hand.
 
 ** Delivery
 
 The work splits so each piece is usable and reviewable alone:
 
-1. *Parts and policy.* The parts lookup, the policy table, parts on decisions, the
-   decide function counting per part and in order, and a deciders-per-part
-   notification. No refdata yet. Tested in SQL and on the handler.
-2. *Lines, raise, preview and apply.* The lines table, the raise and preview
-   operations, the savepoint dry run, the one-transaction apply, =apply_failed=, and
-   the reconciler. First entity: the book.
-3. *The gate.* The policy check in the generated handlers and the composite handler,
-   the =approval_required= result, and the applier's pass.
-4. *The common experience.* The BFF routes for preview, raise and the request page,
+1. *Parts and policy.* The parts lookup, the request's parts table, the policy table,
+   parts on decisions, the decide function counting per part and in order, and a
+   deciders-per-part notification. No refdata yet. Tested in SQL and on the handler.
+2. *Generate the pending change.* A codegen facet that makes, for an entity marked
+   gated in its model, the typed pending table, the typed raise and preview messages,
+   the dry run, the apply, and the typed read of a pending change. First entity: the
+   book.
+3. *Raise, preview and apply.* The operations that combine the generated pieces:
+   one raise for lines of several entities, the one-transaction apply, =apply_failed=,
+   and the reconciler with its transient and permanent failures.
+4. *The gate.* The policy check in the generated handlers and the composite handler,
+   the =approval_required= result, and the request-tied pass for the applier.
+5. *The common experience.* The BFF routes for preview, raise and the request page,
    the kind descriptor registry, the review panel, and the request page replacing the
    role-only detail.
-5. *The screens.* One task each to move the book structure, counterparty, party,
+6. *The screens.* One task each to move the book structure, counterparty, party,
    convention and tenor screens onto the review panel.
-6. *The people.* The Acme accounts and the roles for each part, which exists as a task.
+7. *The people.* The Acme accounts and the roles for each part, which exists as a task.
 
 * See also
 

@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 2E2081E7-9E54-4F91-A1B3-B205E318EE90
+:ID: 4F8399A7-7512-4229-AA69-3364C82BB387
 :END:
-#+title: Task: Raise, preview and apply a request
-#+description: Combine the generated pending changes: one typed raise for lines of several entities, a preview that writes nothing, an apply as one transaction on the last approval, an apply_failed state, and a reconciler that separates transient from permanent failures.
+#+title: Task: Generate the pending change for a gated entity
+#+description: Add a codegen facet that makes, for an entity its model marks gated, the typed pending table, the typed raise and preview messages, the dry run, the apply and the typed read of a pending change, starting with the book.
 #+type: task
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A request holds typed lines for several entities, is previewed and raised with every refusal returned early, and applies as one transaction when the last part approves.
+A gated entity gets a typed pending table with its own columns, and the operations to propose, check, read and apply a change to it, from its model alone.
 
 * Status
 
@@ -35,11 +35,10 @@ A request holds typed lines for several entities, is previewed and raised with e
 
 * Acceptance
 
-- Preview returns every proposed write with its part and any refusal, and writes nothing.
-- Raise runs each write in a rolled-back savepoint, writes the request, its parts and its lines, and tells the deciders of the parts that can be answered now.
-- The last approval applies every line in one transaction and marks each applied once.
-- A refusal at apply moves the request to apply_failed with the line and reason and stops the reconciler. An infrastructure failure is retried until the kind's window ends, then moves to apply_failed.
-- apply_failed is final, and a new request needs every part to approve again.
+- The pending table has the entity columns with the same foreign keys, checks and lookup validation, plus the request, line number, operation, version read and part.
+- A model change reaches the pending table in the same regeneration and migration.
+- The dry run runs the real service database layer in a savepoint, returns its refusals, publishes no event and sends no notification.
+- The book is generated first and its pending table, propose, check, read and apply are tested.
 
 * Plan
 

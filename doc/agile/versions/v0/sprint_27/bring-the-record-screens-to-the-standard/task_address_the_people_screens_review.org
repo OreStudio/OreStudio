@@ -57,7 +57,7 @@ Tick a box when its change has landed. Add =declined= or =deferred= with the
 reason beside any box that does not. The groups are the order of work.
 
 ** Questions to settle first
-- [ ] P8 Sign out when the window closes: beacon, or a shorter idle lifetime?
+- [x] P8 Sign out when the window closes: settled as its own story, End a session when its window closes, not when it is unattended (presence heartbeat; idle sign-out optional and off by default)
 - [x] P9 My access in two places: settled by proposal. My access keeps the roles and what they allow; the profile's Access tab points to it.
 - [x] P14 Requests: settled by proposal. It is the one place for every request type; every member sees their own there, and deciders see the queue.
 
@@ -75,7 +75,7 @@ reason beside any box that does not. The groups are the order of work.
 ** Profile
 - [x] P5 History on My profile
 - [x] P9 My access in one place
-- [ ] P8 Sign out on close (waiting for the answer to the question above)
+- [ ] P8 Sign out on close: build in the story End a session when its window closes (five tasks)
 
 ** Requests
 - [x] P12 Answered by: name, with username, as a link

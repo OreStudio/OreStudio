@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 5C33D3AD-3C52-4168-B089-246CB8827DBE
+:END:
+#+title: Story: End a session when its window closes, not when it is unattended
+#+description: A session ends when the browser window that held it is gone, and never because a screen sat unattended for a while, so traders can leave their screens open. Presence, not activity, decides.
+#+type: story
+#+level: s2
+#+filetags: :web:iam:sessions:security:sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Closing the window does not sign anybody out today: the browser session lasts eight hours and slides forward on every request, and the screen polls, so an abandoned tab never expires. The session in IAM stays open. Make a closed window end its session, and keep a window that is open but unattended signed in, because a trader away from the desk wants the screens as they left them.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Settle the grace period and the role exemption with the product owner, then build the tasks in order. |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- A session whose window has been gone longer than a grace period ends: the browser session is dropped and IAM records the end time, as a sign-out does.
+- A reload, a short network loss and a brief sleep do not end the session; the grace period covers them.
+- A window that is open but has seen no input for hours stays signed in by default, so a trader's screens are never logged off for being unattended.
+- An optional idle sign-out exists as a policy, off by default, that a tenant can turn on and a role can be exempted from, with a warning before it acts.
+- The policy is stated in one place, in words, and the screen says when a session ended and why.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3046C2CE-B36C-457E-A54F-D83FE8F09402][Send a presence heartbeat from the open window]] | BACKLOG | | | An open window tells the server it is there, separately from the reads it makes, so presence can be told from activity. |
+| [[id:0B59FC81-3A7C-4449-BB43-34537F825D8D][End a session whose window is gone]] | BACKLOG | | | The web server tracks the last heartbeat of each session. A session silent longer than the grace period is signed out as if the person had pressed Sign out, including the end time in IAM. |
+| [[id:CBE21499-997A-4B1C-8DF6-7071EB2E7DC7][State the session policy in settings, with a role exemption]] | BACKLOG | | | The grace period and the optional idle sign-out are settings with defaults, and a role can be exempted from idle sign-out. |
+| [[id:238EABFB-8A2E-4516-8F59-1F52D7736018][Sign out an idle session, with a warning, where the policy asks]] | BACKLOG | | | When a tenant turns idle sign-out on, a person with no input for the timeout is warned and then signed out, unless their role is exempt. |
+| [[id:42FB021B-F8CA-4972-92C1-6E519293B766][Check the trader, reload, sleep and close scenarios]] | BACKLOG | | | The end-to-end check that the story keeps its promise to traders and still ends a closed window. |
+
+* Context
+
+This story comes from item P8 of the product owner's review of the people
+screens (task =Address the review of the people screens=). The comment:
+
+#+begin_quote
+when we close the window there is no logout.
+#+end_quote
+
+and the constraint that goes with it:
+
+#+begin_quote
+we need to take into account the fact that traders may be away from their
+machines for a while and do not want the screens to log off.
+#+end_quote
+
+So two things must both hold. A window that is gone must end its session. A
+window that is open must stay signed in, however long nobody touches it.
+
+** How it works today
+
+- The web server holds a browser session for eight hours
+  (=ORES_WEB_SESSION_TTL_SECONDS=). The expiry slides forward on every request,
+  so an active browser keeps its session.
+- The shell polls (the notification bell reads every thirty seconds), so a tab
+  that nobody touches still counts as active. An abandoned tab never expires.
+- The cookie carries an expiry, so closing the window does not drop it: open
+  the site again within the day and the person is back in.
+- The *Sign out* button ends the session, including the end time in IAM, so the
+  person shows as offline. Closing the window does none of that, and the session
+  stays open in IAM until the browser session finally lapses.
+
+** Options considered
+
+| Option | What it does | Why it does or does not fit |
+|--------+--------------+-----------------------------|
+| Close beacon | The page tells the server to sign out when it is hidden or unloaded (=pagehide=). | The browser cannot tell a closed tab from a reload or a navigation, so a reload would sign the person out. A crash or a killed tab sends nothing. Alone it is wrong. |
+| Idle timeout | Sign out after a period with no input. | It is the usual answer, and it is exactly what the traders do not want: a screen left for the afternoon would be logged off. |
+| Presence heartbeat | The open window sends a heartbeat on a timer. The server ends a session whose heartbeat has stopped for longer than a grace period. | A closed window stops sending, a reload resumes inside the grace period, and an open but unattended window keeps sending, so it is never signed out. It separates /being there/ from /being active/. |
+
+The story takes the presence heartbeat as the rule and offers the idle timeout
+as an optional policy that is off by default.
+
+* Design
+
+** The rule
+
+- *Presence decides.* A session lives while its window sends heartbeats. It
+  ends when they have stopped for the grace period, by the same path as *Sign
+  out*, so IAM records the end time and the person shows as offline.
+- *Activity does not decide.* Keyboard and pointer input, and the polling the
+  shell does, are not presence and do not extend anything beyond what they do
+  today.
+- *Idle sign-out is a policy.* Off by default. When a tenant turns it on, a
+  person with no input for the timeout is warned and then signed out, unless
+  their role is exempt. The trader roles are exempt in the Acme seed.
+
+** The parts
+
+| Part | Change |
+|------+--------|
+| Web | A heartbeat on a timer while signed in, its own route, stopped at sign-out. With the policy on, an input listener resets an idle timer and a warning dialog offers to stay. |
+| Web server | Records the last heartbeat per session and ends a session silent longer than the grace period, through the sign-out path. Reads the policy settings. |
+| Settings | The presence grace period, the idle timeout (off by default) and the roles exempt from idle sign-out, read through the settings service. |
+| IAM | The end time is already recorded on sign-out. The reason is added: window closed, or idle. |
+| Screen | The sign-in page says why the last session ended. The session screen states the rules in words. |
+
+** Edge cases the build must answer
+
+- *Background tabs.* Browsers slow timers in a hidden tab (to about one a minute
+  after a few minutes hidden). The grace period must exceed several slow
+  heartbeats; five minutes is the proposal.
+- *Sleep.* A laptop that sleeps stops sending. If it sleeps longer than the
+  grace period the session ends, which is the right answer for an ordinary
+  member and a surprise for a trader whose screens were left open. Whether
+  sleep may end the session is a decision below.
+- *Several windows.* Two windows of one session each send heartbeats; the
+  session lives while either does. A closed window of two does not end it.
+- *Network loss.* A short loss is inside the grace period. A long one ends the
+  session, and the person signs in again.
+- *The server restarts.* Heartbeat times are in the web server's memory, as the
+  sessions are, so a restart ends them all, as it does today.
+- *Clocks.* The server times the silence, not the browser, so a wrong clock in
+  the browser changes nothing.
+
+* Plan
+
+The rule first, because the policy and the idle sign-out sit on it.
+
+| # | Task | Leaves behind |
+|---+------+---------------|
+| 1 | Send a presence heartbeat from the open window | The timer, the route and the stop at sign-out. |
+| 2 | End a session whose window is gone | The server tracking and the sign-out after the grace period, with the reason. |
+| 3 | State the session policy in settings, with a role exemption | The settings, the role flag and the words on the session screen. |
+| 4 | Sign out an idle session, with a warning, where the policy asks | The input timer, the warning and the exemption. |
+| 5 | Check the trader, reload, sleep and close scenarios | The recorded results of each scenario in a real browser. |
+
+* Decisions
+
+- Presence, not activity, decides when a window is gone. Source: the product
+  owner's constraint on traders, 2026-10-10.
+- Idle sign-out is optional and off by default.
+- Open: the grace period. Proposed: five minutes, to survive background-tab
+  timers and brief sleeps. To settle with the product owner before task 2.
+- Open: how a role is exempt from idle sign-out. Proposed: a flag on the role,
+  set for the trader roles in the Acme seed. To settle before task 3.
+- Open: whether sleep may end a session. Proposed: yes for an ordinary member;
+  a longer grace period for an exempt role. To settle before task 3.
+- Open: lock instead of sign out. A locked screen that asks for the password
+  again keeps the screen as it was, which may suit traders better than a sign-out
+  even when idle sign-out is on. Not in this story unless the product owner asks.
+
+* Out of scope
+
+- Single sign-on and remote sign-out of every session of a person.
+- A limit on how many sessions a person may hold at once.
+- Changing the access token lifetime or how the token is refreshed.
+- The tenant-wide session list and ending another person's session, which
+  exist already.

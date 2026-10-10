@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: AC6937E4-E5FA-40BF-A041-8F7FE9182B5A
+:END:
+#+title: Task: Scaffold story: Hotfix: a codegen test remaps the trade target for every later test
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :stop_a_codegen_test_remapping_the_trade_target_for_the_whole_run:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/stop-a-codegen-test-remapping-the-trade-target-for-the-whole-run
+#+pr: 3069
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C84F2CE-C314-4699-A3ED-4C782D5CC775][Hotfix: a codegen test remaps the trade target for every later test]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8C84F2CE-C314-4699-A3ED-4C782D5CC775][Hotfix: a codegen test remaps the trade target for every later test]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3069][#3069]] | [codegen] Stop a soft FK test from remapping the trade table for the whole run |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A deeper mutation of the cached map could break a test again | test_soft_fk_target.py | Decline | The test only adds a key, and the value it adds is already a copy. A copy of the map is enough for this defect. |
+| 2 | Add a guard that the cached map is unchanged after the suite | codegen tests | Decline | A guard for one cache is more code than the fix. The full-suite run in the gate already catches a polluted map. |
+| 3 | Raise the component-drift limit or speed the check up | local_checks.py | Follow-up | Out of scope for a one-line test fix. The check needed about 12 minutes under load against a limit of 900 seconds. |
+
+* Result
+
+The story, its task and the sprint wiring exist. They ride the same pull request as the fix, because the fix is one line.

@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 7A32D18C-E2D1-4372-B279-B074924ACCA1
+:END:
+#+title: Task: Implement Hotfix: a codegen test remaps the trade target for every later test
+#+description: Initial task for: Hotfix: a codegen test remaps the trade target for every later test
+#+type: task
+#+level: s1
+#+filetags: :stop_a_codegen_test_remapping_the_trade_target_for_the_whole_run:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C84F2CE-C314-4699-A3ED-4C782D5CC775][Hotfix: a codegen test remaps the trade target for every later test]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A full codegen test run passes on main, whatever order the tests run in.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8C84F2CE-C314-4699-A3ED-4C782D5CC775][Hotfix: a codegen test remaps the trade target for every later test]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The full codegen suite passes.
+- The test that remaps the target works on a copy of the map and leaves the shared map as it found it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+test_soft_fk_target.py remapped ores_trading_trades_tbl on the dictionary that _entity_org_by_table returns. That function is cached for the whole process, so the edit outlived the test, and every later test read the trade table as the inbox delivery outcome model. test_a_routed_table_checks_exactly_the_codes_routed_to_it then failed in a full run and passed alone. The test now edits a copy. The failing pair passes, and the full codegen suite passes with 1315 tests. The same failure reproduced on a clean checkout of main, so no feature branch caused it.

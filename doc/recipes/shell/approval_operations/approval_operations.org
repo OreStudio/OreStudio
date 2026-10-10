@@ -17,20 +17,20 @@ This file documents declared operations at the shell, one section per command. E
 :ID: 66C5D75D-EE57-5709-B02C-CDD59CF92AB5
 :END:
 
-Sends =raise_approval_request_request= and prints =raise_approval_request_response=, so the shape is the protocol's and the meaning is the service's. It reads =kind_code=, =reason=, in that order. The caller must have established a session first.
+Sends =raise_approval_request_request= and prints =raise_approval_request_response=, so the shape is the protocol's and the meaning is the service's. It reads =kind_code=, =reason=, =part_codes=, in that order. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-approval_operations raise-approval <kind_code> <reason>
+approval_operations raise-approval <kind_code> <reason> <part_codes>
 #+end_example
 
 It is addressed at =inbox.v1.ops.raise_approval=.
 
 #+name: approval_operations-raise-approval
 #+begin_src ores-shell :tangle approval_operations-raise-approval.ores :exports none
-approval_operations raise-approval __none__ __none__
+approval_operations raise-approval __none__ __none__ __none__
 #+end_src
 
 ** =withdraw-approval=
@@ -59,20 +59,20 @@ approval_operations withdraw-approval __none__ __none__
 :ID: A78775F8-F1EB-5205-9698-006588776ACF
 :END:
 
-Sends =decide_approval_request_request= and prints =decide_approval_request_response=, so the shape is the protocol's and the meaning is the service's. It reads =request_id=, =decision_code=, =comment=, in that order. The caller must have established a session first.
+Sends =decide_approval_request_request= and prints =decide_approval_request_response=, so the shape is the protocol's and the meaning is the service's. It reads =request_id=, =decision_code=, =comment=, =part_code=, in that order. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-approval_operations decide-approval <request_id> <decision_code> <comment> [--version <v>]
+approval_operations decide-approval <request_id> <decision_code> <comment> <part_code> [--version <v>]
 #+end_example
 
 It is addressed at =inbox.v1.ops.decide_approval=.
 
 #+name: approval_operations-decide-approval
 #+begin_src ores-shell :tangle approval_operations-decide-approval.ores :exports none
-approval_operations decide-approval __none__ __none__ __none__
+approval_operations decide-approval __none__ __none__ __none__ __none__
 #+end_src
 
 ** =list-approval-queue=

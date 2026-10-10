@@ -41,7 +41,7 @@ A gated write cannot take effect until every function the policy names has appro
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:95117DE1-F187-43BE-B5A4-601137A8D2E7][Scaffold story: Build the four-eyes framework]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:AD2F574A-4C0F-4278-A8AF-74CCAAF683EE][Add parts and a policy to the approval request]] | STARTED | 2026-10-10 | | Let a request name several deciding parts, each answered by a person who holds the part's permission, in the order the policy gives. |
+| [[id:AD2F574A-4C0F-4278-A8AF-74CCAAF683EE][Add parts and a policy to the approval request]] | DONE | 2026-10-10 | 2026-10-10 | Let a request name several deciding parts, each answered by a person who holds the part's permission, in the order the policy gives. |
 | [[id:2E2081E7-9E54-4F91-A1B3-B205E318EE90][Raise, preview and apply a request]] | BACKLOG | | | Let a request hold its proposed writes, check them with a dry run, and apply them as one transaction when the last part approves, starting with the book. |
 | [[id:5A29D64E-B073-4596-8A2C-30396FE2E798][Gate the refdata writes behind the policy]] | BACKLOG | | | Make the generated and hand-written refdata writers refuse a gated act with approval_required, so only an approved request can make it. |
 | [[id:BAA9EA78-C57E-4539-875D-59D0FE65B6F2][Draw every request with one set of screens]] | BACKLOG | | | Replace the role-only request pages with a review panel, a request page, a queue and a story that draw any kind through a kind descriptor. |

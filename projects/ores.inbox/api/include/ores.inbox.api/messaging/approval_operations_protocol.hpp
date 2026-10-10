@@ -61,9 +61,9 @@ struct raise_approval_request_request {
     /**
      * @brief The parts whose approval the request needs.
      *
-     * Empty for a kind that names one decider permission and a count. When
-     * parts are named, the request is approved once every part has approved,
-     * in the answer order the parts give.
+     * Empty for a kind that names one decider permission and a count. When parts
+     * are named, the request is approved once every part has approved, in the
+     * answer order the parts give.
      */
     std::vector<std::string> part_codes;
 };
@@ -135,8 +135,8 @@ struct decide_approval_request_request {
     /**
      * @brief The part the decider answers for.
      *
-     * Required to approve or refuse a request that names parts. The decider
-     * needs the permission that part names.
+     * Required to approve or refuse a request that names parts. The decider needs
+     * the permission that part names.
      */
     std::string part_code;
 };

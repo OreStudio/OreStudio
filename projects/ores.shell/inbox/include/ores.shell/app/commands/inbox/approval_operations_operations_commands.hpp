@@ -63,7 +63,7 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief raise-approval <kind_code> <reason>
+     * @brief raise-approval <kind_code> <reason> <part_codes>
      */
     static void process_raise_approval(std::ostream& out,
                                        ores::nats::service::nats_client& session,
@@ -77,7 +77,7 @@ public:
                                           const std::vector<std::string>& args);
 
     /**
-     * @brief decide-approval <request_id> <decision_code> <comment> [--version <v>]
+     * @brief decide-approval <request_id> <decision_code> <comment> <part_code> [--version <v>]
      */
     static void process_decide_approval(std::ostream& out,
                                         ores::nats::service::nats_client& session,

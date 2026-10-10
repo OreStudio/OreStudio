@@ -196,6 +196,13 @@ describe('a screenshot for a step', () => {
         expect(html).not.toContain('Paste or drop a screenshot here');
     });
 
+    it('holds Save while an image is uploading, so the link is in the note when it goes', () => {
+        const busy = screen(fresh(), { imageBusy: true });
+        expect(busy).toMatch(/<button[^>]*disabled=""[^>]*>Save</);
+        const idle = screen(fresh());
+        expect(idle).not.toMatch(/<button[^>]*disabled=""[^>]*>Save</);
+    });
+
     it('shows why an image was refused, as an alert', () => {
         const html = screen(fresh(), {
             imageError: 'The file is not a PNG, JPEG, GIF or WebP image.',

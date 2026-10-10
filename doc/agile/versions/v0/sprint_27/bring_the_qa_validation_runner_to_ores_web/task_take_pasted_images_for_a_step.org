@@ -97,6 +97,20 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Overlapping uploads clear the busy state and an error too early | ScenarioPage.tsx | Fix | One batch at a time: a drop while one is in flight is ignored. A browser run with three quick pastes made one upload. |
+| 2 | A save during an upload can drop the link | ScenarioRunner.tsx | Fix | Save is held while an image uploads. A markup test fails without it, and a browser run showed Save disabled during the upload and both links reaching the save. |
+| 3 | An empty data string returns the wrong status | qa.ts | Confirm | The schema already needs at least one character, so an empty upload answers 400. A route test now says so. |
+| 4 | The body limit is applied before the session check | qa.ts | Fix | An onRequest hook checks the session before Fastify reads the body, so a caller with none cannot make the server buffer a large upload. A test sends a body past the limit with no session and expects 401. It fails without the hook. |
+| 5 | The client check trusts any image type, so an SVG goes to the server | images.ts | Fix | Only the four kinds the server keeps pass, and the message names them. Tests cover SVG, BMP and TIFF, and the four kinds in any case. |
+| 6 | Memory use of base64 and JSON for an 8 MiB file | api/qa.ts | Accept | A few tens of MiB for a moment is fine for a tester tool. The limit is the thing to watch. |
+| 7 | Orphaned files | store | Note | The pull request lists it. A save during an upload was the second way to make one, and it is closed. |
 
 * Result
+
+A tester pastes or drops an image on a step, and the step's note links it, as the Qt tool did. The BFF route POST /api/qa/scenarios/:id/steps/:step/images takes a media type and the bytes in base64. The server decides what the bytes are from their signature, accepts a PNG, JPEG, GIF or WebP image of at most 8 MiB, refuses an SVG and anything else, checks the step number, and writes the file beside the scenario doc under a name built from the doc, the step and the UTC time, without overwriting a file. It answers 415 for bytes that are not an image, 413 for too large, and 400 for a bad step or body. The session is checked before the body is read. Fastify's own 413 for a body past the route limit used to come out as a 500, and now it is a 413.
+
+In the browser a paste or a drop of files anywhere on the step card hands them to the page. Text pasted into the note stays in the note. The page refuses a file that is not one of the four kinds, or is too large, with a message, uploads one batch at a time, and puts [[file:name]] on a new line of the note of the step the file was dropped on. Save is held while an image uploads, and a closed scenario takes no image. The next save writes the note, and with it the link, into the doc.
+
+The BFF suite passes with 512 tests, the web suite with 821 and contracts with 10. Removing each guard of the route and the card fails its own test. A throwaway harness drove the real page in headless Chrome with real paste and drop events: 19 checks for the flows and 9 for the review fixes passed with no script errors. The review found four real faults, and all four are fixed. The most serious was a save during an upload that could drop a link.
+
+The runner shows the file name in the note and no thumbnail, because the BFF has no route that serves a saved image. That is a follow-up. An upload that a tester abandons stays as a file beside the doc, as in the Qt tool. The French and Portuguese text is my translation and needs a read by a speaker.

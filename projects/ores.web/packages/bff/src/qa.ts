@@ -191,7 +191,14 @@ export function registerQaRoutes(
 
     server.post(
         '/api/qa/scenarios/:id/steps/:step/images',
-        { bodyLimit: IMAGE_BODY_BYTES },
+        {
+            bodyLimit: IMAGE_BODY_BYTES,
+            // The session is checked before Fastify reads the body, so a caller
+            // with none cannot make the server buffer a large upload.
+            onRequest: async (request) => {
+                requireSession(request);
+            },
+        },
         async (request) => {
             const scenarios = open(request);
             const parsed = imageUploadRequestSchema.safeParse(request.body);

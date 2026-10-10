@@ -20,7 +20,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useReducer, useState, type ReactNode } from 'react';
+import { useReducer, useRef, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
 import type { Scenario } from '@ores/contracts';
 import { qa } from '../api/qa.js';
@@ -119,6 +119,7 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
     const [outcome, setOutcome] = useState<Outcome | null>(null);
     const [confirmingRetest, setConfirmingRetest] = useState(false);
     const [imageBusy, setImageBusy] = useState(false);
+    const uploading = useRef(false);
     const [imageError, setImageError] = useState<string | null>(null);
 
     const save = useMutation({
@@ -144,7 +145,10 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
     // step it was dropped on, which may not be the step on show when the upload
     // ends. The link reaches the doc when the tester saves.
     const onImages = async (files: File[]): Promise<void> => {
-        if (save.isPending || runner.closed) return;
+        // One batch at a time: a second drop while one is in flight is ignored, so
+        // the hint and an error are never cleared by the wrong batch.
+        if (uploading.current || save.isPending || runner.closed) return;
+        uploading.current = true;
         const step = runner.index;
         setImageBusy(true);
         setImageError(null);
@@ -165,6 +169,7 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
         } catch (error) {
             setImageError(error instanceof Error ? error.message : String(error));
         } finally {
+            uploading.current = false;
             setImageBusy(false);
         }
     };

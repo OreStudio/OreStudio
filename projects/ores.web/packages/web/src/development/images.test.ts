@@ -75,6 +75,18 @@ describe('a file that should not be sent', () => {
         expect(imageProblem({ type: '', size: 10 })).toBe('not-image');
     });
 
+    it('is an SVG, a BMP or a TIFF, which the server does not keep', () => {
+        for (const type of ['image/svg+xml', 'image/bmp', 'image/tiff']) {
+            expect(imageProblem({ type, size: 10 })).toBe('not-image');
+        }
+    });
+
+    it('is no problem for any of the four kinds, in any case', () => {
+        for (const type of ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'IMAGE/PNG']) {
+            expect(imageProblem({ type, size: 10 })).toBeNull();
+        }
+    });
+
     it('is an image over the limit, and an image at the limit is sent', () => {
         expect(imageProblem({ type: 'image/png', size: MAX_IMAGE_BYTES + 1 })).toBe('too-large');
         expect(imageProblem({ type: 'image/png', size: MAX_IMAGE_BYTES })).toBeNull();

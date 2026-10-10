@@ -19,7 +19,7 @@
  *
  */
 
-import { MAX_IMAGE_BYTES } from '@ores/contracts';
+import { IMAGE_MEDIA_TYPES, MAX_IMAGE_BYTES } from '@ores/contracts';
 
 /**
  * What the runner does with a pasted or dropped file before the server sees
@@ -61,12 +61,18 @@ export function carriesFiles(transfer: Transfer | null | undefined): boolean {
     return Array.from(transfer?.types ?? []).includes('Files');
 }
 
-/** Why a file should not be sent, or null when it should be. */
+/**
+ * Why a file should not be sent, or null when it should be. Only the four kinds
+ * the server keeps pass, so an SVG or a BMP is refused here with the same words
+ * the server would use.
+ */
 export function imageProblem(file: {
     readonly type: string;
     readonly size: number;
 }): 'not-image' | 'too-large' | null {
-    if (!file.type.startsWith('image/')) return 'not-image';
+    if (!(IMAGE_MEDIA_TYPES as readonly string[]).includes(file.type.toLowerCase())) {
+        return 'not-image';
+    }
     return file.size > MAX_IMAGE_BYTES ? 'too-large' : null;
 }
 

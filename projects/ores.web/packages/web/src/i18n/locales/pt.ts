@@ -1196,7 +1196,7 @@ const pt: SourceCatalogue = {
             notePlaceholder: 'O que você viu?',
             imageHint: 'Cole ou solte uma captura de tela aqui para anexá-la a este passo.',
             imageSaving: 'Gravando a imagem...',
-            imageNotImage: 'Esse arquivo não é uma imagem.',
+            imageNotImage: 'Só imagens PNG, JPEG, GIF e WebP podem ser anexadas.',
             imageTooLarge: 'Essa imagem passa de {limit} MB.',
             savedClosed: 'Gravado e fechado como {state}.',
             savedOpen:

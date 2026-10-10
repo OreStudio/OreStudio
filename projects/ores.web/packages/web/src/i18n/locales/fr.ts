@@ -1204,7 +1204,7 @@ const fr: SourceCatalogue = {
             notePlaceholder: "Qu'avez-vous observé ?",
             imageHint: "Collez ou déposez une capture d'écran ici pour la joindre à cette étape.",
             imageSaving: "Enregistrement de l'image...",
-            imageNotImage: "Ce fichier n'est pas une image.",
+            imageNotImage: 'Seules les images PNG, JPEG, GIF et WebP peuvent être jointes.',
             imageTooLarge: 'Cette image dépasse {limit} Mo.',
             savedClosed: 'Enregistré et clos comme {state}.',
             savedOpen: 'Enregistré. {pending} étapes restent à marquer. Le scénario reste ouvert.',

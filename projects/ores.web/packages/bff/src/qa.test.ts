@@ -528,6 +528,26 @@ describe('uploading a screenshot of a step', () => {
         expect(response.statusCode).toBe(404);
     });
 
+    it('refuses a caller with no session before it reads a large body', async () => {
+        const store = new MemoryStore();
+        const { server } = buildTestServer({ store });
+        const response = await send(server, null, 'POST', url(MULTI, 1), {
+            mediaType: 'image/png',
+            data: 'A'.repeat(Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 100_000),
+        });
+        expect(response.statusCode).toBe(401);
+        expect(store.images).toHaveLength(0);
+    });
+
+    it('refuses an upload with no data', async () => {
+        const { server, sessionId } = buildTestServer({ store: new MemoryStore() });
+        const response = await send(server, sessionId, 'POST', url(MULTI, 1), {
+            mediaType: 'image/png',
+            data: '',
+        });
+        expect(response.statusCode).toBe(400);
+    });
+
     it('answers 413, and not 500, for a body past the limit', async () => {
         const { server, sessionId } = buildTestServer({ store: new MemoryStore() });
         const response = await send(server, sessionId, 'POST', url(MULTI, 1), {

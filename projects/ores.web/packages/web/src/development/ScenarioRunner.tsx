@@ -143,6 +143,9 @@ export function ScenarioRunner(props: ScenarioRunnerProps): ReactNode {
                             type="button"
                             variant="primary"
                             pending={props.saving}
+                            // A save while a file is uploading would replace the working
+                            // copy before the link for that file is in it.
+                            disabled={props.imageBusy}
                             onClick={props.onSave}
                         >
                             {t('development.runner.save')}

@@ -1192,7 +1192,7 @@ export const en: SourceCatalogue = {
             notePlaceholder: 'What did you see?',
             imageHint: 'Paste or drop a screenshot here to attach it to this step.',
             imageSaving: 'Saving the image...',
-            imageNotImage: 'That file is not an image.',
+            imageNotImage: 'Only PNG, JPEG, GIF and WebP images can be attached.',
             imageTooLarge: 'That image is over {limit} MB.',
             savedClosed: 'Saved and closed as {state}.',
             savedOpen: 'Saved. {pending} steps are still to mark. The scenario stays open.',

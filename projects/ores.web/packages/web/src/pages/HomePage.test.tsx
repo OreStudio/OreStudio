@@ -26,10 +26,16 @@ import { MemoryRouter } from 'react-router';
 import type {
     Account,
     DeploymentOverview,
+    ServiceRosterRow,
     SessionMode,
     TenantSummary,
 } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
+import {
+    DEFAULT_HEALTH_RANGE,
+    SERVICES_QUERY_KEY,
+    logCountKey,
+} from '../operations/InstallationHealth.js';
 import { HomePage } from './HomePage.js';
 
 /**
@@ -118,8 +124,14 @@ const signedInAccount: Account = {
     recordedAt: '2026-10-05 09:30:00Z',
 };
 
-function home(mode: SessionMode, overview?: DeploymentOverview, self?: Account | null): string {
+function home(
+    mode: SessionMode,
+    overview?: DeploymentOverview,
+    self?: Account | null,
+    seed?: (client: QueryClient) => void,
+): string {
     const client = new QueryClient();
+    seed?.(client);
     if (overview !== undefined) {
         client.setQueryData(['overview'], overview);
         client.setQueryData(['tenant-types'], []);
@@ -263,6 +275,45 @@ describe("the system administrator's cards", () => {
 
         expect(html).toContain('href="/operations"');
         expect(html).not.toContain('System health');
+    });
+});
+
+describe("the system administrator's installation figures", () => {
+    const running = (name: string, state: 'running' | 'lost' | 'missing'): ServiceRosterRow => ({
+        service_name: name,
+        display_name: name,
+        description: '',
+        service_account: null,
+        slot: 1,
+        state,
+        instance_id: state === 'missing' ? null : 'instance',
+        host_id: null,
+        version: state === 'missing' ? null : '0.0.27',
+        sampled_at: null,
+        age_seconds: null,
+    });
+
+    it('states how many services run and how many errors the logs hold, beside the tenants', () => {
+        const html = home('system-administration', busy, undefined, (client) => {
+            client.setQueryData(SERVICES_QUERY_KEY, [
+                running('ores.iam.service', 'running'),
+                running('ores.web.service', 'running'),
+                running('ores.dq.service', 'lost'),
+            ]);
+            client.setQueryData(logCountKey('error', DEFAULT_HEALTH_RANGE), 7);
+            client.setQueryData(logCountKey('warn', DEFAULT_HEALTH_RANGE), 31);
+        });
+
+        expect(html).toContain('>Installation<');
+        expect(html).toContain('>2 of 3<');
+        expect(html).toContain('>7<');
+        expect(html).toContain('>31<');
+        expect(html).toContain('System health');
+    });
+
+    it('is not shown to a tenant administrator or a member', () => {
+        expect(home('tenant-administration')).not.toContain('Services running');
+        expect(home('application')).not.toContain('Services running');
     });
 });
 

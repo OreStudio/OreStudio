@@ -2,12 +2,12 @@
 :ID: F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42
 :END:
 #+title: Change notification
-#+description: Change notification for the ORE Studio web UI: the NATS events, the channel to the browser, the payload shape, the shared routed subscriptions, and the visual language for a consumer that is not built yet.
+#+description: Change notification for the ORE Studio web UI: the NATS events, the channel to the browser, the payload shape, the shared routed subscriptions, the stale rule, and the visual language of Refresh, changed rows and an edit in progress.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:ores.web:
 #+created: 2026-09-19
-#+updated: 2026-09-23
+#+updated: 2026-10-10
 
 What the interface does when the data underneath it moves.
 
@@ -22,10 +22,14 @@ routed subscriptions. The registry listens on each collection's canonical
 subject, =<component>.v1.<resource>_events.>=, and hands on the time of the change.
 A published event names no tenant, so the registry keeps its subscriptions per
 tenant but cannot yet drop another tenant's change; a change elsewhere can mark a
-screen stale, and a refresh then reads only the reader's own data. The consumer
-does not exist. There are no screens and no
-routes, so nothing subscribes, nothing marks a row, and nothing pulses. §5 and §6
-specify the consumer that is still to be built.
+screen stale, and a refresh then reads only the reader's own data. Who may listen
+to which tenant and party is open, and has its own analysis task.
+
+The consumer is built for lists, the staff list, the hierarchy and the person
+page: one stream for the session, =useEntityChanges=, a gold Refresh button that
+pulses, marked rows and history entries, and a warning on an edit in progress.
+The sections below state what each does. Dependent screens and a role grant are
+not heard yet, and §7 lists what is open.
 
 * 1. What the Qt client does
 
@@ -121,13 +125,19 @@ from becoming a denial of service on the interface.
 
 /A change notification says "this collection changed at time T". It does not say which records./ A person cannot act on a list of a thousand identifiers, and the interface cannot do anything with them that it cannot do better itself. What it actually needs to know is one thing: /is what I am showing older than what exists?/ A time answers that. A list does not.
 
-So the payload carries a watermark, and the client compares it against the time its
-data was loaded:
+So the payload carries the time of the change. The server's clock and the
+browser's differ, so the client does not compare that time with its own. It
+compares the moment the news /arrived/ with the moment the load that produced its
+data /began/, both on the browser's clock. The server's time is kept for the
+tooltip only.
 
 #+begin_src text
-changed at 12:00:03  >  loaded at 11:59:58   →  stale
-changed at 11:59:41  >  loaded at 11:59:58   →  not stale, and nothing to do
+news arrived 12:00:03  >  load began 11:59:58   →  stale
+news arrived 11:59:41  >  load began 11:59:58   →  not stale, and nothing to do
 #+end_src
+
+News that arrives while a load is in flight counts, because that load may have
+read before the change. The cost is one refresh that finds nothing new.
 
 /Coalescing falls out of that for free./ A thousand events from one import all
 carry a time after the client's load, so the first makes the screen stale and the
@@ -135,11 +145,13 @@ remaining nine hundred and ninety-nine change nothing. They are not deduplicated
 by a special case; they are idempotent by construction. There is no ceiling to
 choose and no set to bound, because no set exists.
 
-/The rows that changed are worked out after the reload, not before it./ The
-client remembers when it last loaded, fetches, and marks the rows whose
-=recorded_at= is newer than that. This is what the Qt client does, and it is the
-only way to mark rows accurately: the events name a collection, so the records
-must be identified from the data rather than from the notification.
+/The rows that changed are worked out after the reload, not before it./ The Qt
+client marks the rows whose =recorded_at= is newer than its last reload, which
+compares the server's clock with its own. The web compares each row with the same
+page read before: a row that was not there, or whose content is not what it was,
+is marked. It uses no clock, and the first read of a page marks nothing. The
+events name a collection, so the records are identified from the data rather than
+from the notification.
 
 ** Subscriptions are shared, and routed
 
@@ -189,59 +201,62 @@ reasons nobody can see.
 
 ** Subscribing per entity, in the interface
 
-The interface hook is not built. Its shape is fixed here so the consumer does not
-invent a second one.
-
 #+begin_src ts
-// The list and the detail screen both use this, so both learn the same way.
-const { stale, markChanged, reload } = useEntityChanges('refdata', 'country');
+// The browser holds one stream. A screen names what it shows, and the hook says
+// whether that is older than a change that has been heard.
+const load = useLoadState([['account', username], ['timeline', 'person', username]]);
+const { stale, changedAt } = useEntityChanges(
+    [{ component: 'iam', entity: 'accounts' }],
+    load,
+);
 #+end_src
 
-=stale= is true once a watermark after the load has been seen, and stays true
-until the screen reloads. =markChanged(rows)= records which rows were newer than
-the previous load, so the table can mark them.
+The entity is the events collection as the services name it, such as =accounts=.
+=stale= is true once news has arrived after the load began, and stays true until
+the screen loads again. =changedAt= is the server's time of the newest change, for
+the tooltip. A screen outside the provider hears nothing. The names a refdata list
+watches come from the registry (=events= on each resource).
 
 ** What the screen does with it
 
-The consumer is not built. These are the two things it must do, and the shape of
-each.
-
 #+begin_src text
 The reload affordance carries the news.
-  A button that pulses while stale, whose tooltip says what happened, and
-  whose click reloads.
+  RefreshButton: gold and pulsing while stale, a tooltip that says what happened
+  and when, and a click that reads again.
 
 The rows that moved are marked, worked out from the reload, not from the event.
-  The table takes a set of changed row keys. A whole table flashing says
-  nothing; the four rows that changed say everything — and they are the four
-  the data says changed, which is the only account of it that can be trusted.
+  useChangedRows compares each row with the same page read before. A whole table
+  flashing says nothing; the rows that changed say everything.
+
+An edit in progress learns of a newer version and is never reloaded.
+  useNewerVersion keeps the version the edit started from. A warning lists the
+  fields that moved and offers Keep my edit or Take the new values. A save claims
+  the version the edit started from and is refused when the record has moved.
 #+end_src
 
 * 5. The visual language
 
-Not built: nothing renders these treatments yet. They are fixed here so the
-consumer does not invent a second language.
+Built. These are the treatments, so no screen invents a second language.
 
 Small, and the same everywhere, because a notification language that varies by
 screen is not a language.
 
 | Element | Treatment | Why |
 |---+---+---|
-| Reload affordance, stale | A slow pulse of its colour, repeating while stale | It is always in the same place, so a person learns one location |
+| Reload affordance, stale | Gold, with a slow pulse of four cycles, then gold until used | It is always in the same place, so a person learns one location |
 | Reload tooltip, stale | The words change to say what happened | A pulse says "look here"; the tooltip says why |
-| A changed row | Its background tinted for a few seconds, then faded | A permanent highlight becomes decoration; a fading one stays news |
-| A changed row, still stale | A left border in the same colour | The fade is for the moment; the border is for as long as it is true |
-| A detail screen whose record moved | A line above the form saying a newer version exists, with Load | The form cannot tint itself without hiding the fields |
+| A changed row | A gold left edge and three pulses, gone after four seconds | A permanent highlight becomes decoration; a fading one stays news |
+| A detail screen whose record moved | A warning above the form that names the fields and offers Keep my edit or Take the new values | The form cannot tint itself without hiding the fields |
 
-/Colour./ One accent for "changed", used only for this. It is not the colour
+/Colour./ One gold (=--color-stale=, as in ores.qt) for "changed", used only for this. It is not the colour
 used for errors, not the colour used for warnings, and not the accent used for
 primary actions, because a thing that means one thing must not mean four.
 
-/Motion./ A pulse is slow — around two seconds a cycle — and stops. A fast pulse
+/Motion./ A pulse is slow — 1.8 seconds a cycle — and stops after four cycles. A fast pulse
 reads as an error, and a pulse that never stops becomes wallpaper within a day.
 
 /Reduced motion./ A person who has asked their system for less motion gets the
-colour and the border and no pulse. The information is the same; only the
+gold and a still ring and no pulse. The information is the same; only the
 movement is dropped.
 
 * 6. What the interface must not do
@@ -269,9 +284,17 @@ and it teaches people to ignore the mark.
 
 Named rather than assumed, because they change the shape.
 
-/Does the BFF subscribe per session, or once per deployment?/ One subscription
-per session is simpler and costs a fan-out; one per deployment needs a registry of
-who is watching what. The first is right until the number of sessions is large.
+/Does the BFF subscribe per session, or once per deployment?/ Decided: one
+subscription for each tenant and entity, shared by the sessions that watch it, and
+closed with the last watcher.
+
+/Who may listen to which tenant and party?/ Open. A published event names no
+tenant or party, and ores.qt does not filter either. The task "Analyse who may
+listen to which tenant and party events" compares the options and recommends one.
+
+/How does a screen hear that a role was granted?/ It cannot: the grant and the
+revocation are published inside the service only. A reporting line has no event of
+its own either.
 
 /How are changes to something a screen is not showing handled?/ A country
 referenced by a book, changed while somebody is editing the book. The event names

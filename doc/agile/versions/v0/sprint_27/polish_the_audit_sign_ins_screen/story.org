@@ -2,7 +2,7 @@
 :ID: D7A13BC8-2B73-4D60-B05A-E017E9E81B52
 :END:
 #+title: Story: Polish the audit sign-ins screen
-#+description: Group the audit and versions cards under an Operations card, link the username to the profile, use the standard badge for an unlocked account, and let the failed attempts tab hide accounts that never signed in.
+#+description: Link the username to the profile, use the standard badge for the lock state, and let the failed attempts tab hide accounts that never signed in.
 #+type: story
 #+level: s2
 #+filetags: :web:iam:sprint_27:v0:
@@ -15,7 +15,11 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+The Sign-ins screen reads as the rest of the application does. A username
+opens that person's profile. The lock state is a badge painted from the badge
+catalogue, in the catalogue's colours. The failed attempts tab has a knob that
+hides accounts that never signed in, so the tab shows the accounts that an
+attacker or a forgotten password could be locking out.
 
 * Status
 
@@ -23,24 +27,41 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | The screen changes are done and tested. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Review the screens, then open the PR.  |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
 
--
+- A username on Sign-ins and Rescue access opens =/people/<username>=.
+- The lock state on Sign-ins and Rescue access is a badge from the catalogue
+  (=account_locked= red, =account_unlocked= green), with no hand-picked tone.
+- The failed attempts tab has a checkbox that hides accounts that never signed
+  in. It is off by default.
+- The web tests, the type check and Prettier pass. The en, fr and pt catalogues
+  keep the same keys.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:1242EF75-BC1F-4761-83CF-73AC7A5E59BC][Scaffold story: Polish the audit sign-ins screen]] | STARTED | 2026-10-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1242EF75-BC1F-4761-83CF-73AC7A5E59BC][Scaffold story: Polish the audit sign-ins screen]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:A16F0C21-42E8-4BAA-884C-813A90293997][Implement Polish the audit sign-ins screen]] | BACKLOG | | | Initial task for: Polish the audit sign-ins screen |
 
 * Decisions
 
+- The Operations area, its menu entry and its cards come from main's menu
+  structure (=doc/knowledge/ui/menu_structure.org=). Sign-ins is a card in
+  Operations. This story no longer moves it.
+- The badge is a small component, =AccountLockBadge=, that reads the catalogue.
+  The shared component for every badge is the story
+  [[id:A75A9B98-46BD-46CE-8ED1-BA15A1881385][Paint every web badge from the catalogue]].
+
 * Out of scope
 
--
+- The real client address of a sign-in. The login handler records the loopback
+  address, so a NAT lookup and a country flag need a backend change first.
+  This stays in the backlog capture "Retrieve NAT'ed IP address from local IP".
+- The shared badge component for the whole codebase.
+- Recording the size of NATS messages per server.

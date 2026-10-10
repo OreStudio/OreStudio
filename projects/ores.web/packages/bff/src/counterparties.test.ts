@@ -333,4 +333,17 @@ describe('counterparty routes', () => {
         expect(response.json().result.code).toBe('unknown_centre');
         expect(calls).toHaveLength(2);
     });
+
+    it('serves the history of a counterparty', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.history.get': { success: true, message: '', versions: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/history?entityType=ores.refdata.counterparty&entityId=${ID}`,
+        );
+        expect(response.statusCode).toBe(200);
+    });
 });

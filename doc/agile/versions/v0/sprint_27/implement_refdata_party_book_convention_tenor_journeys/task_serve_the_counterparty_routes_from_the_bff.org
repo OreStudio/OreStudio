@@ -26,11 +26,11 @@ A tenant administrator opens /counterparties/onboard against a running fleet and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -101,15 +101,19 @@ refdata subjects.
 | =npm run format:check= | exit 0 |
 | =npm test= | exit 0; bff 40 files, 326 tests; web 49 files, 510 tests; wire-protocol 16 files, 163 tests |
 
-The eight new tests answer from canned replies. *Nothing ran against the live
-fleet.* The task is not closed until =/counterparties/onboard= is walked once
-against a running fleet.
+The nine new tests answer from canned replies. *Nothing ran against the live
+fleet.* The routes are closed on that evidence, and =/counterparties/onboard=
+still needs one walk against a running fleet. That walk is the first thing to
+do when the C++ build finishes.
 
 ** Decisions and limits
 
 - The server's counterparty list filters by id only. The BFF reads the tenant's
   whole list and applies the search and the status before it cuts the page.
   This is fine for a tenant's counterparties and wrong for a very large one.
+- The history route served only the record table's types, so the counterparty
+  History step would have returned 404. It now serves the counterparty and its
+  identifier and contact types.
 - A closed counterparty is any status other than =Active=.
 - The business centre write closes the dropped centres, then links the new
   ones, one call each. A refusal part way leaves the earlier changes written.

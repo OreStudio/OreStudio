@@ -42,7 +42,7 @@ A new tenant, Acme included, holds the desk currency groups and their members af
 | [[id:7ACFC11C-C28F-4302-9035-838653F0194E][Scaffold story: Publish the currency groups with Acme]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:EEA1A082-DC41-440E-9FF7-29AD624F9062][Decide how currency groups relate to the CRM topology bundles]] | DONE | 2026-10-10 | 2026-10-10 | Record why currency groups and CRM topologies are separate concepts, with no foreign key between them. |
 | [[id:81A847AF-6814-4B5E-8B43-ED220FD01CC1][Publish the currency groups from DQ]] | DONE | 2026-10-10 | 2026-10-10 | Add the currency groups artefact table, artefact type, publish function and the curated dataset: G11, Scandies, Antipodeans, Asians, Latams and commodity currencies. |
-| [[id:4C1856B4-99D3-4BCD-B31D-32CA5872149D][Publish the currency group members from DQ]] | BACKLOG | | | Add the membership junction artefact, publish function and dataset, following the currency countries dataset. Each member resolves to a published group and a published currency. |
+| [[id:4C1856B4-99D3-4BCD-B31D-32CA5872149D][Publish the currency group members from DQ]] | DONE | 2026-10-10 | 2026-10-10 | Add the membership junction artefact, publish function and dataset, following the currency countries dataset. Each member resolves to a published group and a published currency. |
 | [[id:5C57D605-6DFF-4A25-98F1-CC909F4D47F0][Provision the currency groups with Acme]] | BACKLOG | | | Add both datasets to the base bundle and prove with a test that a provisioned tenant holds the groups and members. Check that an Acme user sees them in the web UI. |
 
 * Decisions

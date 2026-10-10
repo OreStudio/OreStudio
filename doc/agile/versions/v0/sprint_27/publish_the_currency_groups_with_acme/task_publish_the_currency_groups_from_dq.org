@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3BE72A38-774F-4DB9-A1BA-E026EAD27EF8][Publish the currency groups with Acme]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3BE72A38-774F-4DB9-A1BA-E026EAD27EF8][Publish the currency groups with Acme]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -83,3 +83,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The currency groups now have a DQ dataset, refdata.currency_groups, with an artefact table, an artefact type and a publish function. The dataset holds G11, Scandies, Antipodeans, commodity currencies, Asians and Latams. A publish into a tenant inserted all six rows, and the test transaction was rolled back. The dataset joins the base bundle in the provisioning task.

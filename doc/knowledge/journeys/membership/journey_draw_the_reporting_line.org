@@ -173,6 +173,18 @@ unchanged, as =projects/ores.http/core/src/routes/iam_routes.cpp= does today.
    [[id:4A98E343-6EAE-4969-8E83-01F507D92490][Change someone's details]]
    has nowhere to land. (Product owner, 2026-09-30.)
 
+8. *Closed: who may see the tree.* The screen is *Hierarchy*, under
+   *Organisation*, with a tab for the tree, one for an org chart that zooms, and
+   one for the history. A tenant administrator reads the tenant. Anybody else
+   who holds =iam::organisation:read=, which Member does, reads the people who
+   work in any party their account works in and everyone who reports to them,
+   with no email or contact detail. The parties are drawn as labels, as a filter
+   when the reader sees several, and as a second lens that groups the people by
+   party, nested by the party's own parent. The reporting line stays a tree of
+   people, because a person belongs to many parties but has one manager.
+   (2026-10-10; see
+   [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].)
+
 * Related journeys
 
 - [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] — the roster is where a person is picked, and it shows the roles and status the card does not.

@@ -57,6 +57,7 @@ import {
     readReportingTree,
     reportingLineRequestSchema,
     reportingTreeSchema,
+    readMyAccount,
     setReportingLine,
     deleteRole,
     giveRole,
@@ -148,6 +149,7 @@ import type { ListChangeReasonsRequest } from '@ores/wire-protocol/generated/dq/
 import type { LoadedSiteConfiguration } from './site-config.js';
 import { resolveBroker } from './broker.js';
 import type { Config } from './config.js';
+import type { Account } from '@ores/wire-protocol';
 import { createImageCache } from './image-cache.js';
 import { createRateLimiter, type RateLimiter } from './rate-limit.js';
 import { createSessionStore, type LiveSession, type SessionStore } from './sessions.js';
@@ -1028,7 +1030,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.get('/api/accounts/:username/picture', async (request, reply) => {
         const session = requireSession(request);
         const { username } = request.params as { username: string };
-        const account = await readAccount(session.client, username);
+        const account = await readAccountOrOwn(session, username);
         const [image] =
             account === null || account.imageId === null
                 ? []
@@ -1281,7 +1283,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (username.length === 0) {
             throw invalidRequest('A username is required.');
         }
-        return { account: await readAccount(session.client, username) };
+        return { account: await readAccountOrOwn(session, username) };
     });
 
     /**
@@ -2695,4 +2697,20 @@ export function browserBundleDirectory(): string {
 function isApiPath(url: string): boolean {
     const path = url.split('?')[0] ?? '';
     return path === '/api' || path.startsWith('/api/');
+}
+
+/**
+ * One account by username, reading the caller's own through the self read.
+ *
+ * A request that names the signed-in person's own username is answered by the
+ * operation that takes no account id, so a member who holds no account
+ * permission still reads their own name, picture and job title. The service
+ * enforces that the self read can answer only the caller; this only chooses
+ * the operation. Any other username is the ordinary read, which needs
+ * iam::accounts:read.
+ */
+function readAccountOrOwn(session: LiveSession, username: string): Promise<Account | null> {
+    return username === session.username
+        ? readMyAccount(session.client)
+        : readAccount(session.client, username);
 }

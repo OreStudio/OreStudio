@@ -23,9 +23,15 @@ import { describe, expect, it } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { ReportingTreeNode } from '@ores/wire-protocol/browser';
+import { MemoryRouter } from 'react-router';
+import type {
+    ReportingTreeNode,
+    ReportingTreeParty,
+    TimelineEvent,
+} from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { managerCandidates, ReportingLinesPage } from './ReportingLinesPage.js';
+import { managerCandidates } from './managers.js';
+import { lineTimeline, ReportingLinesPage } from './ReportingLinesPage.js';
 
 /**
  * The Reporting lines screen, rendered from a seeded query cache.
@@ -47,15 +53,20 @@ function person(
     reportsToAccountId: string | null,
     depth: number,
     directReports: number,
+    over: Partial<ReportingTreeNode> = {},
 ): ReportingTreeNode {
     return {
         accountId,
         username: fullName.toLowerCase().replace(/ /g, '.'),
         fullName,
         jobTitle: `${fullName} title`,
+        imageId: `img-${fullName.toLowerCase().replace(/ /g, '.')}`,
         reportsToAccountId,
+        reportsOutsideScope: false,
         depth,
         directReports,
+        partyIds: [],
+        ...over,
     };
 }
 
@@ -67,9 +78,20 @@ const TREE = [
     person(ALAN, 'Alan Turing', GRACE, 2, 0),
 ];
 
-function render(nodes: readonly ReportingTreeNode[], unrooted = 0): string {
+/** The permissions of an administrator, who reads accounts and changes them. */
+const ADMIN = ['iam::accounts:read', 'iam::accounts:update'];
+
+function render(
+    nodes: readonly ReportingTreeNode[],
+    unrooted = 0,
+    me = '',
+    entry = '/hierarchy',
+    parties: readonly ReportingTreeParty[] = [],
+    holds: readonly string[] = ADMIN,
+): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['reporting-tree'], { unrooted, nodes });
+    client.setQueryData(['reporting-tree'], { unrooted, nodes, parties });
+    client.setQueryData(['my-access'], { roles: [{ roleId: 'r', permissionCodes: [...holds] }] });
     client.setQueryData(
         ['amend-reasons'],
         [{ code: 'common.non_material_update', description: 'Non material update' }],
@@ -77,7 +99,9 @@ function render(nodes: readonly ReportingTreeNode[], unrooted = 0): string {
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <ReportingLinesPage />
+                <MemoryRouter initialEntries={[entry]}>
+                    <ReportingLinesPage me={me} />
+                </MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,
     );
@@ -96,6 +120,103 @@ describe('Reporting lines', () => {
         expect(html).toContain('Pick a person in the tree to read their line.');
     });
 
+    it('draws each person with their picture', () => {
+        const html = render(TREE);
+
+        expect(html).toContain('/api/images/img-ada.lovelace');
+        expect(html).toContain('/api/images/img-alan.turing');
+    });
+
+    it('opens on the signed-in person and marks them as the reader', () => {
+        const html = render(TREE, 0, 'grace.hopper');
+
+        // The card names the person the reader is, and the tree marks the row.
+        expect(html).toContain('>You<');
+        expect(html).not.toContain('Pick a person in the tree to read their line.');
+        expect(html).toContain('Grace Hopper title');
+        // Grace reports to Ada, drawn with her picture.
+        expect(html).toContain('Reports to');
+    });
+
+    it('offers the tree, the org chart and the history as tabs', () => {
+        const html = render(TREE);
+
+        expect(html).toContain('>Tree<');
+        expect(html).toContain('>Org chart<');
+        expect(html).toContain('>History<');
+        // The tree is the page's own address, so it is the tab that is open.
+        expect(html).toContain('Reporting tree');
+        expect(html).not.toContain('class="orgchart');
+    });
+
+    it('draws the org chart with a card for each person, joined as a tree', () => {
+        const html = render(TREE, 0, 'grace.hopper', '/hierarchy?tab=chart');
+
+        expect(html).toContain('class="orgchart');
+        expect(html).toContain('Ada Lovelace');
+        expect(html).toContain('Alan Turing');
+        expect(html).toContain('/api/images/img-edsger.dijkstra');
+        expect(html).toContain('>You<');
+        expect(html).not.toContain('Reporting tree');
+        // Each card opens the person, and the chart stands alone: no card beside it.
+        expect(html).toContain('href="/people/alan.turing"');
+        expect(html).toContain('href="/people/ada.lovelace"');
+        expect(html).not.toContain('Direct reports');
+    });
+
+    it('offers to zoom the org chart in and out, and to fit it to the window', () => {
+        const html = render(TREE, 0, 'grace.hopper', '/hierarchy?tab=chart');
+
+        expect(html).toContain('aria-label="Zoom in"');
+        expect(html).toContain('aria-label="Zoom out"');
+        expect(html).toContain('>Fit<');
+        // It opens at full size.
+        expect(html).toContain('100%');
+        expect(html).toContain('zoom:1');
+    });
+
+    it('lists the direct reports of the selected person, each opening that person', () => {
+        const html = render(TREE, 0, 'ada.lovelace');
+
+        // Ada is the signed-in person, so the card opens on her: Grace and Edsger report to her.
+        expect(html).toContain('Direct reports');
+        expect(html).toContain('(2)');
+        expect(html).toContain('href="/people/grace.hopper"');
+        expect(html).toContain('href="/people/edsger.dijkstra"');
+        // Alan reports to Grace, not to Ada, so he is not a direct report here.
+        const card = html.slice(html.indexOf('Direct reports'));
+        expect(card).not.toContain('href="/people/alan.turing"');
+    });
+
+    it('says when nobody reports to the selected person', () => {
+        const html = render(TREE, 0, 'alan.turing');
+
+        expect(html).toContain('(0)');
+        expect(html).toContain('No one reports to this person.');
+    });
+
+    it('opens the history on the standard timeline for one person at a time', () => {
+        const html = render(TREE, 0, 'grace.hopper', '/hierarchy?tab=history');
+
+        // A person is chosen by typing their name, and the timeline is the one the people pages draw.
+        expect(html).toContain('role="combobox"');
+        expect(html).toContain('placeholder="Grace Hopper"');
+        expect(html).toContain('value="Grace Hopper"');
+        // The person's card stands beside the timeline.
+        expect(html).toContain('Direct reports');
+        expect(html).toContain('/api/images/img-grace.hopper');
+        expect(html).not.toContain('Reporting tree');
+    });
+
+    it('offers one Refresh, and no longer lists what it cannot do', () => {
+        const html = render(TREE);
+
+        expect(html).toContain('>Refresh<');
+        expect(html).not.toContain('What this screen cannot do');
+        expect(html).not.toContain('Save line');
+        expect(html).not.toContain('Clear line');
+    });
+
     it('states the people who reach no root rather than drawing them as roots', () => {
         const stranded = person(ALAN, 'Alan Turing', EDSGER, -1, 0);
         const html = render([...TREE.filter((node) => node.accountId !== ALAN), stranded], 1);
@@ -103,14 +224,124 @@ describe('Reporting lines', () => {
         expect(html).toContain('reach no root');
         expect(html).toContain('1 people reach no root');
     });
+});
 
-    it('states the gaps the journey still records', () => {
-        const html = render(TREE);
+const NORTH: ReportingTreeParty = {
+    partyId: 'north',
+    name: 'Acme North plc',
+    shortCode: 'NORTH',
+    parentPartyId: null,
+};
+const SOUTH: ReportingTreeParty = {
+    partyId: 'south',
+    name: 'Acme South Inc',
+    shortCode: 'SOUTH',
+    parentPartyId: 'north',
+};
 
-        expect(html).toContain('What this screen cannot do');
-        expect(html).toContain('office each person works in is not readable');
-        expect(html).toContain('approves, and nothing in the platform holds');
-        expect(html).toContain('has no history on this screen');
+/** Ada in both parties, Grace in the north, Alan and Edsger in the south. */
+const IN_PARTIES = [
+    person(ADA, 'Ada Lovelace', null, 0, 2, { partyIds: ['north', 'south'] }),
+    person(GRACE, 'Grace Hopper', ADA, 1, 1, { partyIds: ['north'] }),
+    person(EDSGER, 'Edsger Dijkstra', ADA, 1, 0, { partyIds: ['south'] }),
+    person(ALAN, 'Alan Turing', GRACE, 2, 0, { partyIds: ['south'] }),
+];
+
+describe('parties in the hierarchy', () => {
+    it('offers a party filter only when the reader sees several parties', () => {
+        const several = render(IN_PARTIES, 0, 'ada.lovelace', '/hierarchy', [NORTH, SOUTH]);
+        const one = render(IN_PARTIES, 0, 'ada.lovelace', '/hierarchy', [NORTH]);
+
+        expect(several).toContain('aria-label="Party"');
+        expect(several).toContain('>All parties<');
+        expect(several).toContain('>Acme North plc<');
+        expect(one).not.toContain('aria-label="Party"');
+    });
+
+    it('names each person’s parties, not their codes, under the title when the reader sees several', () => {
+        const html = render(IN_PARTIES, 0, 'ada.lovelace', '/hierarchy', [NORTH, SOUTH]);
+
+        expect(html).toContain('Acme North plc, Acme South Inc');
+        expect(html).not.toContain('>NORTH<');
+        expect(html).not.toContain('>SOUTH<');
+        expect(html).not.toContain('>By party<');
+    });
+
+    it('groups the people by party in the tree, the parties nested by their parent', () => {
+        const html = render(IN_PARTIES, 0, 'ada.lovelace', '/hierarchy', [NORTH, SOUTH], ADMIN);
+
+        expect(html).toContain('Reporting tree');
+        // The south is below the north, and Ada, who works in both, is listed under each.
+        expect(html.indexOf('Acme North plc')).toBeLessThan(html.indexOf('Acme South Inc'));
+        expect(html.split('Ada Lovelace').length - 1).toBeGreaterThanOrEqual(2);
+    });
+
+    it('draws each party as a box with its people in the org chart', () => {
+        const html = render(
+            IN_PARTIES,
+            0,
+            'ada.lovelace',
+            '/hierarchy?tab=chart',
+            [NORTH, SOUTH],
+            ADMIN,
+        );
+
+        expect(html).toContain('class="orgchart');
+        expect(html).toContain('Acme North plc');
+        expect(html).toContain('Acme South Inc');
+        expect(html).toContain('Edsger Dijkstra');
+    });
+
+    it('lists the people who work in no party apart', () => {
+        const alone = person(ALAN, 'Alan Turing', null, 0, 0);
+        const html = render(
+            [...IN_PARTIES.slice(0, 2), alone],
+            0,
+            '',
+            '/hierarchy',
+            [NORTH, SOUTH],
+            ADMIN,
+        );
+
+        expect(html).toContain('Works in no party');
+    });
+});
+
+describe('a member who reads the organisation and not the accounts', () => {
+    const MEMBER = ['iam::organisation:read'];
+
+    it('sees the tree and the chart but not the history, which is an account read', () => {
+        const html = render(IN_PARTIES, 0, 'grace.hopper', '/hierarchy', [NORTH, SOUTH], MEMBER);
+
+        expect(html).toContain('>Tree<');
+        expect(html).toContain('>Org chart<');
+        expect(html).not.toContain('>History<');
+    });
+
+    it('is not sent to account pages that would refuse it', () => {
+        const html = render(IN_PARTIES, 0, 'grace.hopper', '/hierarchy', [NORTH, SOUTH], MEMBER);
+
+        expect(html).toContain('Ada Lovelace');
+        expect(html).not.toContain('href="/people/');
+    });
+
+    it('is told when a manager is out of view, and is not shown a person as having none', () => {
+        const stranded = person(GRACE, 'Grace Hopper', null, 0, 0, {
+            reportsOutsideScope: true,
+            partyIds: ['north'],
+        });
+        const html = render([stranded], 0, 'grace.hopper', '/hierarchy', [NORTH], MEMBER);
+
+        expect(html).toContain('Reports to someone you cannot see');
+        expect(html).toContain('Someone outside your view');
+        expect(html).not.toContain('No one<');
+    });
+
+    it('draws people from their picture id, with no account read', () => {
+        const html = render(IN_PARTIES, 0, 'grace.hopper', '/hierarchy', [NORTH, SOUTH], MEMBER);
+
+        expect(html).toContain('/api/images/img-ada.lovelace');
+        expect(html).not.toContain('/api/accounts/');
     });
 });
 
@@ -127,5 +358,76 @@ describe('the manager picker', () => {
         const forGrace = managerCandidates(TREE, grace).map((node) => node.fullName);
         // Grace may report to Ada, and to Edsger, who is not in her branch.
         expect(forGrace).toEqual(['Ada Lovelace', 'Edsger Dijkstra']);
+    });
+});
+
+function version(
+    version: number,
+    manager: string,
+    over: Partial<TimelineEvent> = {},
+): TimelineEvent {
+    return {
+        entityType: 'ores.iam.account',
+        entityId: 'a',
+        kind: version === 1 ? 'raised' : 'changed',
+        at: `2026-10-0${String(version)} 10:00:00Z`,
+        actor: 'tenant_admin',
+        version,
+        reasonCode: 'system.update',
+        commentary: '',
+        fields: [{ name: 'Reports To Account ID', value: manager }],
+        ...over,
+    };
+}
+
+describe('the history of a line', () => {
+    const nameOf = (id: string | null): string =>
+        id === null ? 'No one' : (TREE.find((node) => node.accountId === id)?.fullName ?? id);
+
+    function stream(...events: TimelineEvent[]) {
+        return { subject: 'person' as const, id: 'ana', events, gaps: [] };
+    }
+
+    it('keeps the account versions, each with only the line, the manager named', () => {
+        const narrowed = lineTimeline(
+            stream(version(1, ''), version(2, GRACE)),
+            'Reports to',
+            nameOf,
+        );
+
+        expect(narrowed.events.map((event) => event.version)).toEqual([1, 2]);
+        expect(narrowed.events[1]?.fields).toEqual([{ name: 'Reports to', value: 'Grace Hopper' }]);
+        expect(narrowed.events[0]?.fields).toEqual([{ name: 'Reports to', value: 'No one' }]);
+    });
+
+    it('keeps the reason, the note and the author a change was made with', () => {
+        const [, change] = lineTimeline(
+            stream(
+                version(1, ''),
+                version(2, ADA, {
+                    reasonCode: 'common.rectification',
+                    commentary: 'Wrong manager',
+                }),
+            ),
+            'Reports to',
+            nameOf,
+        ).events;
+
+        expect(change?.reasonCode).toBe('common.rectification');
+        expect(change?.commentary).toBe('Wrong manager');
+        expect(change?.actor).toBe('tenant_admin');
+    });
+
+    it('leaves out the entries that are not versions of the account', () => {
+        const narrowed = lineTimeline(
+            stream(
+                version(1, ADA),
+                version(2, GRACE, { entityType: 'ores.iam.account_contact_information' }),
+            ),
+            'Reports to',
+            nameOf,
+        );
+
+        expect(narrowed.events).toHaveLength(1);
     });
 });

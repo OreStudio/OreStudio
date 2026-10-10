@@ -22,7 +22,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
-import type { Account, HeldRole } from '@ores/wire-protocol/browser';
+import type { Account, HeldRole, TimelineEvent } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
@@ -33,11 +33,13 @@ import { PermissionAreas } from './PermissionAreas.js';
 import { SignInsPanel } from './SignIns.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
-import { ContactTab, IdentityTab } from './PersonForms.js';
+import { ContactTab, IdentityTab, useAccountWrites } from './PersonForms.js';
+import { ACCOUNT_ENTITY, PersonRevertDialog, isRevertable, latestVersion } from './PersonRevert.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { useHolds } from './holds.js';
 import { RecordHeader } from '../refdata/records.js';
 import { useTabs } from '../ui/Tabs.js';
+import { AccountDoors } from '../pages/AccountDoors.js';
 
 /**
  * One person's access: the roles they hold, who gave each one and why, and
@@ -54,6 +56,8 @@ export function PersonPage({ me }: { readonly me: string }): ReactNode {
     const account = useQuery({
         queryKey: ['account', username],
         queryFn: () => api.account(username),
+        // The page states a refused read itself, so the banner stays quiet.
+        meta: { quiet: true },
     });
 
     if (account.isPending) {
@@ -79,6 +83,8 @@ function Person({
     const queries = useQueryClient();
     const [giving, setGiving] = useState(false);
     const [taking, setTaking] = useState<HeldRole | null>(null);
+    const [reverting, setReverting] = useState<TimelineEvent | null>(null);
+    const writes = useAccountWrites();
     /*
      * Each tab reads something of its own, and each of those reads is its own
      * permission. A member may open a colleague's page to see who they are,
@@ -138,12 +144,14 @@ function Person({
             <RecordHeader
                 crumbs={[
                     { label: t('shell.menu.home'), to: '/' },
-                    { label: t('access.people.title'), to: '/people' },
+                    { label: t('access.hub.title'), to: '/organisation' },
+                    { label: t('access.people.title'), to: '/staff' },
                     { label: name },
                 ]}
                 title={name}
-                recordKey={account.username}
-                version={account.version}
+                recordKey={account.id}
+                version={null}
+                subdued
                 access={null}
                 mark={
                     <Avatar
@@ -176,21 +184,54 @@ function Person({
                         <Timeline
                             timeline={story.data}
                             /*
-                             * A grant is the one entry on this stream a screen
-                             * can act on: taking a role away closes the grant,
-                             * which is the write the roles tab already makes.
-                             * A field change has no revert offered here, and
-                             * the stream says so rather than showing a dead
-                             * control.
+                             * Two entries can be acted on. A grant is taken
+                             * away, which closes it and is the write the roles
+                             * tab already makes. A version of the account or of
+                             * its contact record is written back as a new
+                             * version, through the same writes as an edit. The
+                             * newest version is the record as it stands, so it
+                             * says so rather than offering to revert to itself.
                              */
                             renderActions={(event) => {
-                                if (event.kind !== 'granted') return undefined;
-                                const held = roles.find((role) => role.roleId === event.entityId);
-                                if (held === undefined) return undefined;
+                                if (event.kind === 'granted') {
+                                    const held = roles.find(
+                                        (role) => role.roleId === event.entityId,
+                                    );
+                                    if (held === undefined) return undefined;
+                                    return (
+                                        <div className="mt-2 flex justify-end">
+                                            <Button size="sm" onClick={() => setTaking(held)}>
+                                                {t('access.person.takeAway')}
+                                            </Button>
+                                        </div>
+                                    );
+                                }
+                                if (!isRevertable(event)) return undefined;
+                                const mayWrite =
+                                    self ||
+                                    (event.entityType === ACCOUNT_ENTITY
+                                        ? writes.accounts
+                                        : writes.contacts);
+                                if (!mayWrite) return undefined;
+                                const latest = latestVersion(
+                                    story.data?.events ?? [],
+                                    event.entityType,
+                                );
+                                if (event.version >= latest) {
+                                    return (
+                                        <p className="text-[0.78rem] text-ink-faint">
+                                            {t('access.person.currentVersion')}
+                                        </p>
+                                    );
+                                }
                                 return (
                                     <div className="mt-2 flex justify-end">
-                                        <Button size="sm" onClick={() => setTaking(held)}>
-                                            {t('access.person.takeAway')}
+                                        <Button
+                                            size="sm"
+                                            icon="revert"
+                                            onClick={() => setReverting(event)}
+                                        >
+                                            {t('history.revert')}
                                         </Button>
                                     </div>
                                 );
@@ -288,8 +329,6 @@ function Person({
                             </tbody>
                         </table>
                     </section>
-                    <Notice tone="info">{t('access.person.whenItApplies', { name })}</Notice>
-
                     <section className="space-y-3">
                         <h2 className="text-sm font-semibold">
                             {t('access.person.whatTheyAllow')}
@@ -314,6 +353,8 @@ function Person({
                 </div>
             )}
 
+            {self && <AccountDoors />}
+
             {giving && (
                 <GiveRoleDialog
                     account={account}
@@ -324,6 +365,16 @@ function Person({
                         setGiving(false);
                         void refresh();
                     }}
+                />
+            )}
+            {reverting !== null && (
+                <PersonRevertDialog
+                    event={reverting}
+                    current={latestVersion(story.data?.events ?? [], reverting.entityType)}
+                    username={account.username}
+                    accountId={account.id}
+                    me={self}
+                    onClose={() => setReverting(null)}
                 />
             )}
             {taking !== null && (

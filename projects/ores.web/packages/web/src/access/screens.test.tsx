@@ -174,6 +174,35 @@ describe('Roles', () => {
         expect(html).toContain('1 service roles hidden');
     });
 
+    it('pages the list, and offers search and an area combo box', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(
+                    ['roles'],
+                    [
+                        role(TRADING, 'Trading', ['refdata::currencies:read']),
+                        role(ADMIN, 'TenantAdmin', ['*']),
+                    ],
+                );
+                client.setQueryData(
+                    ['permissions'],
+                    [
+                        { code: 'refdata::currencies:read', description: 'Read currencies' },
+                        { code: 'iam::accounts:read', description: 'Read accounts' },
+                    ],
+                );
+            },
+            '/roles',
+            <Route path="/roles" element={<RolesPage />} />,
+        );
+
+        expect(html).toContain('type="search"');
+        expect(html).toContain('>All areas<');
+        expect(html).toContain('>Reference data<');
+        expect(html).toContain('1–2 of 2 roles');
+        expect(html).toContain('>Next<');
+    });
+
     it('does not edit a role that grants everything', () => {
         const html = render(
             (client) => {
@@ -260,8 +289,20 @@ describe('A person', () => {
         expect(html).toContain('>Contact<');
         expect(html).toContain('>Roles<');
         expect(html).toContain('>Sign-ins<');
-        expect(html).toContain('href="/people"');
+        // The trail back is Organisation, then Staff.
+        expect(html).toContain('href="/organisation"');
+        expect(html).toContain('href="/staff"');
         expect(html).not.toMatch(/Take away/);
+    });
+
+    it('offers a person the doors to their own password and access, and nobody else’s', () => {
+        const own = person('daniel', '/people/daniel');
+        const colleague = person('priya', '/people/daniel');
+
+        expect(own).toContain('Protect my account');
+        expect(own).toContain('href="/security"');
+        expect(own).toContain('href="/access"');
+        expect(colleague).not.toContain('Protect my account');
     });
 
     it('shows the person picture and the roles they hold, with a way to take one away', () => {

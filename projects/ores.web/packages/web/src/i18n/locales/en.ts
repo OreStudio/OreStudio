@@ -82,7 +82,7 @@ export const en: SourceCatalogue = {
             rescue: 'Rescue access',
             audit: 'Sign-ins',
             requests: 'Requests',
-            people: 'People',
+            organisation: 'Organisation',
             roles: 'Roles',
             refdata: 'Reference data',
             access: 'My access',
@@ -92,6 +92,16 @@ export const en: SourceCatalogue = {
     },
 
     access: {
+        allAreas: 'All areas',
+        areaFilter: 'Area',
+        hub: {
+            title: 'Organisation',
+            lead: 'The people of this tenant, and who they report to.',
+            staff: 'Staff',
+            staffBody: 'Everyone who can sign in: their details, their roles and their sign-ins.',
+            hierarchy: 'Hierarchy',
+            hierarchyBody: 'Who reports to whom, as a tree, and how each line changed.',
+        },
         nothingMatches: 'Nothing matches.',
         allOfIt: 'All of it',
         allCount: 'All {count}',
@@ -125,9 +135,13 @@ export const en: SourceCatalogue = {
         people: {
             username: 'Username',
             jobTitle: 'Job title',
-            title: 'People',
+            title: 'Staff',
             lead: 'Who can sign in to this tenant, and the roles each one holds.',
             leadNoRoles: 'Who can sign in to this tenant.',
+            leadParties:
+                'The people who work in the parties you work in, and everyone who reports to you.',
+            findStaff: 'Search by name, username or job title',
+            partiesColumn: 'Parties',
             person: 'Person',
             roles: 'Roles',
             noRole: 'No role',
@@ -147,9 +161,8 @@ export const en: SourceCatalogue = {
             why: 'Why',
             noRole: 'No role. They can sign in but do nothing yet.',
             takeAway: 'Take away',
+            currentVersion: 'This is the current version.',
             notYourself: 'You cannot take a role away from yourself.',
-            whenItApplies:
-                'A change reaches {name} within 30 minutes, when their sign-in next renews. Signing in again applies it at once.',
             whatTheyAllow: 'What these roles let them do',
             giveTitle: 'Give {name} a role',
             alreadyHeld: 'already held',
@@ -160,6 +173,11 @@ export const en: SourceCatalogue = {
                 'The grant is closed, not deleted, so who held the role and when stays on record.',
         },
         roles: {
+            search: 'Find a role',
+            showing: {
+                one: '{first}–{last} of {count} role',
+                other: '{first}–{last} of {count} roles',
+            },
             title: 'Roles',
             lead: 'What each role lets people do. Give a role to someone from People.',
             new: 'New role',
@@ -346,7 +364,6 @@ export const en: SourceCatalogue = {
         locked: 'Locked',
         notLocked: 'Not locked',
         passwordDue: 'Password change due',
-        noEnds: 'No session records its end yet: signing out writes no end time, so an old session reads as open.',
         noSessions: 'No sessions are recorded for this account.',
         started: 'Started',
         ended: 'Ended',
@@ -665,6 +682,13 @@ export const en: SourceCatalogue = {
      * saves on its own and reports on its own.
      */
     profile: {
+        reason: {
+            system_update: 'Ordinary change',
+            common_rectification: 'Correct a mistake',
+            common_non_material_update: 'No change in substance',
+            common_regulatory: 'Required by regulation',
+            common_other: 'Another reason',
+        },
         tabs: {
             details: 'Details',
             contact: 'Contact',
@@ -678,7 +702,7 @@ export const en: SourceCatalogue = {
             mine: 'Your photo, your name, your job title and how colleagues reach you. A panel you cannot change says why.',
             other: "Correct a colleague's profile and contact details. You are signed in as {signedIn} and editing {person}.",
         },
-        version: 'Record version {version}.',
+        version: 'v{version}',
         search: {
             title: 'Find the person',
             lead: 'Every account of this tenant, filtered as you type. Pick the person whose record the panels show.',
@@ -690,6 +714,7 @@ export const en: SourceCatalogue = {
         },
         identity: {
             title: 'Photo and identity',
+            editTitle: 'Edit identity',
             fullName: 'Full name',
             jobTitle: 'Job title',
             username: 'Username',
@@ -706,6 +731,7 @@ export const en: SourceCatalogue = {
             reportsToUnknown:
                 'This screen cannot name the person here, so the recorded identifier is shown.',
             noLine: 'No reporting line is recorded.',
+            changeLine: 'Change the reporting line',
             propose: 'Propose a change',
             proposeWhy: 'This screen cannot send a proposal yet.',
             proposeApprovers: "The person's manager or a tenant administrator approves a change.",
@@ -727,6 +753,7 @@ export const en: SourceCatalogue = {
         },
         contact: {
             title: 'Contact details',
+            editTitle: 'Edit contact details',
             noRecord: 'This account has no contact record yet. The first save creates it.',
             noRecordShort: 'No record yet',
             streetLine1: 'Street',
@@ -755,8 +782,6 @@ export const en: SourceCatalogue = {
             failed: 'Your access could not be read, so the administrator panels are not offered. {reason}',
         },
         save: {
-            identity: 'Save identity',
-            contact: 'Save contact details',
             why: 'Why is the record changing?',
             chooseReason: 'Choose a reason',
             commentary: 'Commentary',
@@ -954,8 +979,8 @@ export const en: SourceCatalogue = {
             },
         },
         tenant: {
-            people: 'People',
-            peopleBody: 'Who can sign in, and the roles each one holds.',
+            organisation: 'Organisation',
+            organisationBody: 'Staff, and the hierarchy they report in.',
             roles: 'Roles',
             rolesBody: 'What each role lets people do.',
             access: 'My access',
@@ -1510,6 +1535,7 @@ export const en: SourceCatalogue = {
         field: 'Field',
         notRevertible: 'This entry records something that happened, so there is nothing to revert.',
         changeNotOffered: 'Putting a changed field back is not offered here.',
+        noChanges: 'No changes',
         kind: {
             raised: 'Created',
             changed: 'Changed',
@@ -1952,12 +1978,13 @@ export const en: SourceCatalogue = {
     },
 
     version: {
-        client: 'client {version}',
-        server: 'server {version}',
-        serverUnknown: 'server version unknown',
-        environment: 'environment {name}',
-        environmentUnknown: 'environment unknown',
-        nonProduction: 'non-production',
+        client: 'Client: {version}',
+        server: 'Server: {version}',
+        serverUnknown: 'Server: unknown',
+        environment: 'Environment: {name}',
+        environmentUnknown: 'Environment: unknown',
+        kindDev: 'dev',
+        kindProduction: 'production',
     },
 
     server: {
@@ -2135,8 +2162,7 @@ export const en: SourceCatalogue = {
             linkChoose: 'Choose one to add…',
             link: 'Add',
             revertTitle: 'Revert to version {version}?',
-            revertBody:
-                'This writes the values of version {to} back as a new version after version {from}. Nothing in the history is lost.',
+            revertBody: 'Restores v{to} as a new version.',
             refresh: 'Refresh',
             search: 'Search…',
             columns: 'Columns',
@@ -2401,8 +2427,22 @@ export const en: SourceCatalogue = {
                 'Switching issues a fresh sign-in token, so every screen reads the party you chose. The default is what quick sign-in picks next time.',
         },
         reporting: {
+            party: 'Party',
+            allParties: 'All parties',
+            noParty: 'Works in no party',
+            outside: 'Reports to someone you cannot see',
+            outsideManager: 'Someone outside your view',
+            zoomIn: 'Zoom in',
+            zoomOut: 'Zoom out',
+            zoomFit: 'Fit',
+            zoomReset: 'Reset',
+            noReports: 'No one reports to this person.',
+            findPerson: 'Find a person',
+            person: 'Person',
+            tabs: { tree: 'Tree', chart: 'Org chart', history: 'History' },
+            you: 'You',
             title: 'Reporting lines',
-            lead: 'Who reports to whom, and the one line this screen changes.',
+            lead: 'Who reports to whom, and how each line has changed.',
             tree: 'Reporting tree',
             people: '{count} people',
             reports: '{count} reporting',
@@ -2412,30 +2452,20 @@ export const en: SourceCatalogue = {
             collapse: 'Collapse',
             pickSomeone: 'Pick a person in the tree to read their line.',
             reportsTo: 'Reports to',
-            noManager: 'No manager (a root)',
+            noManager: 'No one',
             directReports: 'Direct reports',
             depth: 'Depth',
             reachesNoRoot: 'Reaches no root',
-            manager: 'Manager',
-            reason: 'Reason',
-            commentary: 'Note',
-            save: 'Save line',
-            clear: 'Clear line',
-            noVersion: 'The account could not be read, so the write states no version.',
             unrooted:
                 '{count} people reach no root: their manager is gone, or the line that holds them is broken. They are left out of the tree rather than drawn as roots.',
-            gaps: 'What this screen cannot do',
-            gapOffice:
-                'The office each person works in is not readable here: the account-party read carries an identifier and no name.',
-            gapApproval:
-                'A reporting-line change a person asks for is a proposal that their senior or the tenant administrator approves, and nothing in the platform holds such an approval, so the line does not move.',
-            gapHistory:
-                'The line has no history on this screen. The account is versioned, so a past line is recoverable, and this screen states none of it.',
         },
     },
 
     common: {
         loading: 'Loading...',
+        clear: 'Clear',
+        refresh: 'Refresh',
+        refreshStale: 'The data changed on the server. Refresh to see it.',
         all: 'All',
         close: 'Close',
         open: 'Open',

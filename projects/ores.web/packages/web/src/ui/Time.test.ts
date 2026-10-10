@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { formatDateTime } from './Time.js';
+import { formatDateTime, isZeroTimestamp } from './Time.js';
 
 /**
  * A moment a server states is drawn with its time, and not only its date.
@@ -56,5 +56,16 @@ describe('formatDateTime', () => {
         // Showing the raw value is better than showing a wrong one.
         expect(formatDateTime('', 'en')).toBe('');
         expect(formatDateTime('not a moment', 'en')).toBe('not a moment');
+    });
+});
+
+describe('isZeroTimestamp', () => {
+    it('states the epoch and an empty value as no moment at all', () => {
+        expect(isZeroTimestamp('1970-01-01 00:00:00Z')).toBe(true);
+        expect(isZeroTimestamp('')).toBe(true);
+    });
+
+    it('states a real moment as a moment', () => {
+        expect(isZeroTimestamp('2026-09-29 21:03:00Z')).toBe(false);
     });
 });

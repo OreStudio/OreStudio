@@ -136,12 +136,15 @@ describe('listRecords', () => {
         expect(calls[0]?.body).toMatchObject({ as_of: null });
     });
 
-    it('states no point in time to a resource that has none', async () => {
+    it('states a point in time to every entity list, because the decoder requires the key', async () => {
         const { caller, calls } = fakeCaller({
             'refdata.v1.currency_pairs.list': { result: ok, pairs: [] },
+            'refdata.v1.calendars.list': { result: ok, calendars: [] },
         });
         await listRecords(caller, resource('currency-pairs'));
-        expect(calls[0]?.body).not.toHaveProperty('as_of');
+        await listRecords(caller, resource('calendars'));
+        expect(calls[0]?.body).toMatchObject({ as_of: null });
+        expect(calls[1]?.body).toMatchObject({ as_of: null });
     });
 
     it('reads one parent of a junction through its list-by subject', async () => {

@@ -57,6 +57,7 @@ A read is classified before it is granted:
 |-------+----------+------------|
 | Vocabulary | Currencies, countries, calendars, day counts, tenors, the status and type lookups | Member |
 | Screen furniture | Badge definitions, change reasons, feature flags, pictures | Member |
+| Organisation | Names, job titles, pictures and who reports to whom, for the people in your parties and under you | Member, through =iam::organisation:read= |
 | Business fact | Parties, counterparties, books, business units, trades | The job roles that need it |
 | Personal data | Contact information, sign-ins, sessions | The person, through a self read; administrators |
 

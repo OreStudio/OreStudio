@@ -37,7 +37,7 @@ import {
     type ReactNode,
 } from 'react';
 import { api } from '../api/client.js';
-import { reportError } from '../api/errors.js';
+import { reportError, reportQueryError } from '../api/errors.js';
 import { ApiFailure } from '../api/transport.js';
 import type { PartySummary, SessionView } from '@ores/wire-protocol/browser';
 
@@ -130,7 +130,7 @@ export function createQueryClient(): QueryClient {
          * a failure it did not expect and still be heard: the banner above the
          * route table says what happened whatever screen is on.
          */
-        queryCache: new QueryCache({ onError: reportError }),
+        queryCache: new QueryCache({ onError: reportQueryError }),
         mutationCache: new MutationCache({ onError: reportError }),
         defaultOptions: {
             queries: {

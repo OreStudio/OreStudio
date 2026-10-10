@@ -33,6 +33,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
+import { isZeroTimestamp } from '../ui/Time.js';
 
 /**
  * Audit: sign-ins, the tenant administrator's screen.
@@ -132,23 +133,6 @@ export function formatReadAt(at: number): string | undefined {
         return undefined;
     }
     return `${new Date(at).toISOString().slice(11, 19)} UTC`;
-}
-
-/**
- * Whether a wire timestamp names no moment.
- *
- * An account that has never signed in carries the wire's zero instant,
- * `1970-01-01 00:00:00Z`, which is the epoch rather than a sign-in. An empty
- * value names no moment either.
- */
-export function isZeroTimestamp(value: string): boolean {
-    if (value === '') {
-        return true;
-    }
-    if (!isWireTimestamp(value)) {
-        return false;
-    }
-    return Date.parse(value.replace(' ', 'T')) === 0;
 }
 
 /**

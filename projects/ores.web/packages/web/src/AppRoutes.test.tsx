@@ -240,13 +240,13 @@ describe('the route table once the flag is clear', () => {
     it('states the environment the deployment serves in the public shell', () => {
         const html = render('/login', readyAnonymous, anonymous, { environment });
 
-        expect(html).toContain('environment Bright Faraday (non-production)');
+        expect(html).toContain('Environment: Bright Faraday');
     });
 
     it('states the environment the deployment serves in the signed-in shell', () => {
         const html = render('/', ready, authenticated, { environment });
 
-        expect(html).toContain('environment Bright Faraday (non-production)');
+        expect(html).toContain('Environment: Bright Faraday');
     });
 
     it('carries the banner on the sign-in dialog, above the work', () => {
@@ -336,16 +336,29 @@ describe('the route table once the flag is clear', () => {
         expect(html).toContain('href="/where-i-work"');
     });
 
-    it('offers the reporting tree from the people list, and opens it', () => {
-        const html = render('/people', ready, authenticated, {}, [], (client) =>
+    it('offers the staff list and the hierarchy as two cards on the Organisation page', () => {
+        const html = render('/organisation', ready, authenticated, {}, [], (client) =>
+            client.setQueryData(['my-access'], {
+                roles: [{ roleId: 'r', permissionCodes: ['iam::accounts:read'] }],
+            }),
+        );
+
+        expect(html).toContain('href="/staff"');
+        expect(html).toContain('href="/hierarchy"');
+        expect(html).toContain('>Staff<');
+        expect(html).toContain('>Hierarchy<');
+    });
+
+    it('opens the staff list and the hierarchy at their own routes', () => {
+        const staff = render('/staff', ready, authenticated, {}, [], (client) =>
             client.setQueryData(['records', 'people', '', 'page', 0], {
                 accounts: [],
                 totalCount: 0,
             }),
         );
-        expect(html).toContain('href="/reporting-lines"');
+        expect(staff).toContain('>Staff<');
 
-        const tree = render('/reporting-lines', ready, authenticated, {}, [], (client) =>
+        const tree = render('/hierarchy', ready, authenticated, {}, [], (client) =>
             client.setQueryData(['reporting-tree'], {
                 unrooted: 0,
                 nodes: [
@@ -354,14 +367,18 @@ describe('the route table once the flag is clear', () => {
                         username: 'ada.lovelace',
                         fullName: 'Ada Lovelace',
                         jobTitle: 'Head of Desk',
+                        imageId: null,
                         reportsToAccountId: null,
+                        reportsOutsideScope: false,
                         depth: 0,
                         directReports: 0,
+                        partyIds: [],
                     },
                 ],
+                parties: [],
             }),
         );
-        expect(tree).toContain('Reporting lines');
+        expect(tree).toContain('>Hierarchy<');
         expect(tree).toContain('Ada Lovelace');
     });
 

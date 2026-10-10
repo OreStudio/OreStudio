@@ -21,24 +21,41 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.iam.api/eventing/tenant_type_event.hpp"
-#include "ores.refdata.api/eventing/currency_changed_event.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <string>
+#include <string_view>
 
 namespace {
 
 const std::string tags("[event_traits]");
 
+/**
+ * An in-process domain event that is not an entity change, such as a role
+ * being assigned. It has no NATS subject; the traits name it on the bus.
+ */
+struct probe_event final {
+    std::chrono::system_clock::time_point timestamp;
+};
+
+}
+
+namespace ores::eventing::domain {
+
+template <>
+struct event_traits<probe_event> {
+    static constexpr std::string_view name = "ores.test.probe";
+};
+
 }
 
 using namespace ores::eventing::domain;
-using ores::refdata::eventing::currency_changed_event;
 
-TEST_CASE("event_traits_currency_changed_event", tags) {
-    REQUIRE(event_traits<currency_changed_event>::name == "ores.refdata.currency_changed");
+TEST_CASE("event_traits_name_an_in_process_event", tags) {
+    REQUIRE(event_traits<probe_event>::name == "ores.test.probe");
 
     // Verify the concept works
-    STATIC_REQUIRE(has_event_traits<currency_changed_event>);
+    STATIC_REQUIRE(has_event_traits<probe_event>);
 }
 
 TEST_CASE("entity_event_traits_state_the_events_subject_prefix", tags) {
@@ -54,12 +71,12 @@ TEST_CASE("entity_event_traits_state_the_events_subject_prefix", tags) {
 TEST_CASE("event_bus_with_domain_events", "[event_traits][event_bus]") {
     ores::eventing::service::event_bus bus;
 
-    bool currency_received = false;
+    bool probe_received = false;
     bool other_received = false;
     std::chrono::system_clock::time_point received_timestamp;
 
-    auto sub1 = bus.subscribe<currency_changed_event>([&](const currency_changed_event& e) {
-        currency_received = true;
+    auto sub1 = bus.subscribe<probe_event>([&](const probe_event& e) {
+        probe_received = true;
         received_timestamp = e.timestamp;
     });
 
@@ -67,9 +84,9 @@ TEST_CASE("event_bus_with_domain_events", "[event_traits][event_bus]") {
         [&](const ores::iam::messaging::tenant_type_event&) { other_received = true; });
 
     auto now = std::chrono::system_clock::now();
-    bus.publish(currency_changed_event{now});
+    bus.publish(probe_event{now});
 
-    REQUIRE(currency_received);
+    REQUIRE(probe_received);
     REQUIRE_FALSE(other_received);
     REQUIRE(received_timestamp == now);
 }

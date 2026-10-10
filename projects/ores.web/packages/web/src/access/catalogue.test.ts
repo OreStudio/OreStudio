@@ -21,7 +21,15 @@
 
 import { describe, expect, it } from 'vitest';
 import type { HeldRole } from '@ores/wire-protocol/browser';
-import { areasOf, countCovered, covers, parseCode, rolesGranting, search } from './catalogue.js';
+import {
+    areasOf,
+    countCovered,
+    covers,
+    grantsInArea,
+    parseCode,
+    rolesGranting,
+    search,
+} from './catalogue.js';
 
 const CATALOGUE = [
     { code: '*', description: 'Full access to all operations' },
@@ -95,5 +103,18 @@ describe('the permission catalogue', () => {
             'iam::accounts:reset_password',
         ]);
         expect(search(CATALOGUE, '  ', 5)).toEqual([]);
+    });
+});
+
+describe('grantsInArea', () => {
+    it('is true for the wildcard and for any code of the area', () => {
+        expect(grantsInArea(['*'], 'refdata')).toBe(true);
+        expect(grantsInArea(['refdata::*'], 'refdata')).toBe(true);
+        expect(grantsInArea(['refdata::currencies:read'], 'refdata')).toBe(true);
+    });
+
+    it('is false for a role that reaches other areas only', () => {
+        expect(grantsInArea(['iam::accounts:read'], 'refdata')).toBe(false);
+        expect(grantsInArea([], 'refdata')).toBe(false);
     });
 });

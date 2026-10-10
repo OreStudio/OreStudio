@@ -129,28 +129,6 @@ namespace ores #F2F2F2 {
                 +recorded_at : chrono::system_clock::time_point
             }
         }
-        namespace eventing #F2F2F2 {
-            class concurrency_policy_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +codes : vector<string>
-                +tenant_id : string
-            }
-            class report_definition_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +ids : vector<string>
-                +tenant_id : string
-            }
-            class report_instance_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +ids : vector<string>
-                +tenant_id : string
-            }
-            class report_type_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +codes : vector<string>
-                +tenant_id : string
-            }
-        }
         namespace messaging #F2F2F2 {
             class get_concurrency_policies_request <<struct>> {
                 +offset : int

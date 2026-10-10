@@ -70,16 +70,16 @@ workunit_dispatcher::workunit_dispatcher(ores::nats::service::client& nats,
     , ctx_(std::move(ctx))
     , minter_(ores::iam::client::make_storage_capability_minter(service_nats)) {}
 
-void workunit_dispatcher::dispatch(const ores::compute::eventing::workunit_changed_event& evt) {
-    if (evt.workunit_ids.empty())
+void workunit_dispatcher::dispatch(const ores::eventing::domain::entity_change_event& evt) {
+    if (evt.entity_ids.empty())
         return;
 
     try {
         const auto tenant_ctx =
             ores::database::service::tenant_context::with_tenant(ctx_, evt.tenant_id);
-        BOOST_LOG_SEV(lg(), debug) << "Dispatching " << evt.workunit_ids.size()
+        BOOST_LOG_SEV(lg(), debug) << "Dispatching " << evt.entity_ids.size()
                                    << " workunit(s) for tenant " << evt.tenant_id;
-        for (const auto& workunit_id : evt.workunit_ids) {
+        for (const auto& workunit_id : evt.entity_ids) {
             try {
                 dispatch_one(tenant_ctx, workunit_id);
             } catch (const std::exception& e) {

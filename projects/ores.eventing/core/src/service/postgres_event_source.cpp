@@ -30,15 +30,10 @@ using namespace ores::logging;
 postgres_event_source::postgres_event_source(database::context ctx, event_bus& bus)
     : bus_(bus)
     , listener_(std::move(ctx), [this](const std::string& channel, const std::string& payload) {
-        // Every channel carries the same payload: the trigger's
-        // canonical notification. A channel with a canonical
-        // mapping turns it into the typed event its traits name. A
-        // channel with an older mapping hands the change to an
-        // in-process subscriber that needs the tenant and the
-        // changed ids, so the notification is converted rather than
-        // parsed as an entity_change_event -- parsing it as one
-        // fails on every notification, because the trigger stopped
-        // emitting that shape. One channel may have both.
+        // Every channel carries the same payload: the trigger's canonical
+        // notification. The channel's mapping turns it into the typed event
+        // its traits name, and the notification is also published as an
+        // entity_change_event for a subscriber that needs the tenant.
         try {
             const auto notification = rfl::json::read<domain::entity_event_notification>(payload);
             if (!notification) {
@@ -48,29 +43,22 @@ postgres_event_source::postgres_event_source(database::context ctx, event_bus& b
                 return;
             }
             const auto canonical = entity_event_mappings_.find(channel);
-            if (canonical != entity_event_mappings_.end())
-                canonical->second.publisher(*notification);
-
-            const auto legacy = channel_entities_.find(channel);
-            if (legacy != channel_entities_.end()) {
-                const auto mapping = entity_mappings_.find(legacy->second);
-                if (mapping != entity_mappings_.end()) {
-                    domain::entity_change_event change;
-                    change.entity = notification->entity;
-                    change.timestamp = notification->occurred_at;
-                    change.tenant_id = notification->tenant_id;
-                    if (const auto keys =
-                            rfl::json::read<std::map<std::string, std::string>>(notification->key))
-                        for (const auto& entry : *keys)
-                            change.entity_ids.push_back(entry.second);
-                    mapping->second.publisher(
-                        change.timestamp, change.entity_ids, change.tenant_id);
-                }
-            }
-
-            if (canonical == entity_event_mappings_.end() && legacy == channel_entities_.end())
+            if (canonical == entity_event_mappings_.end()) {
                 BOOST_LOG_SEV(lg(), warn) << "No mapping registered for channel: '" << channel
                                           << "' - notification ignored";
+                return;
+            }
+            canonical->second.publisher(*notification);
+
+            domain::entity_change_event change;
+            change.entity = notification->entity;
+            change.timestamp = notification->occurred_at;
+            change.tenant_id = notification->tenant_id;
+            if (const auto keys =
+                    rfl::json::read<std::map<std::string, std::string>>(notification->key))
+                for (const auto& entry : *keys)
+                    change.entity_ids.push_back(entry.second);
+            bus_.publish(change);
         } catch (const std::exception& e) {
             const auto n = ++parse_failure_count_;
             BOOST_LOG_SEV(lg(), error)
@@ -88,7 +76,7 @@ postgres_event_source::~postgres_event_source() {
 
 void postgres_event_source::start() {
     registered_entities_.clear();
-    for (const auto& kv : entity_mappings_) {
+    for (const auto& kv : entity_event_mappings_) {
         if (!registered_entities_.empty())
             registered_entities_ += ", ";
         registered_entities_ += kv.first;
@@ -105,27 +93,6 @@ void postgres_event_source::stop() {
 
 bool postgres_event_source::wait_until_ready(std::chrono::milliseconds timeout) {
     return listener_.wait_until_ready(timeout);
-}
-
-void postgres_event_source::on_entity_event(const std::string& channel,
-                                            const domain::entity_event_notification& e) {
-    BOOST_LOG_SEV(lg(), info) << "Received event notification for entity: " << e.entity
-                              << " action: " << e.action << " version: " << e.version;
-
-    const auto it = entity_event_mappings_.find(channel);
-    if (it == entity_event_mappings_.end()) {
-        BOOST_LOG_SEV(lg(), warn) << "No event mapping registered for channel: '" << channel
-                                  << "' - notification ignored";
-        return;
-    }
-
-    try {
-        it->second.publisher(e);
-        BOOST_LOG_SEV(lg(), debug) << "Successfully published event for entity: " << e.entity;
-    } catch (const std::exception& ex) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Exception while publishing event for entity '" << e.entity << "': " << ex.what();
-    }
 }
 
 }

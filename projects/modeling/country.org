@@ -63,7 +63,7 @@ documented here for future maintainers:
 | [[proj:projects/ores.refdata/api/include/ores.refdata.api/domain/country_json_io.hpp][country_json_io.hpp]] | hand-crafted | pending codegen |
 | [[proj:projects/ores.refdata/api/src/domain/country_json_io.cpp][country_json_io.cpp]] | hand-crafted | pending codegen |
 | [[proj:projects/ores.refdata/api/include/ores.refdata.api/messaging/country_protocol.hpp][country_protocol.hpp]] | hand-crafted | messaging task |
-| [[proj:projects/ores.refdata/api/include/ores.refdata.api/eventing/country_changed_event.hpp][country_changed_event.hpp]] | hand-crafted | messaging task |
+| [[proj:projects/ores.refdata/api/include/ores.refdata.api/eventing/country_event.hpp][country_event.hpp]] | [[proj:projects/ores.codegen/library/templates/cpp_nats_changed_event.hpp.mustache][cpp_nats_changed_event.hpp.mustache]] | codegen |
 | [[proj:projects/ores.refdata.api/include/ores.refdata.api/generators/country_generator.hpp][country_generator.hpp (generated)]] | [[proj:projects/ores.codegen/library/templates/cpp_generator_hpp.org][cpp_generator_hpp]] | intentional deviation — bespoke fictional generator retained |
 
 * C++ Repository (refdata.core)

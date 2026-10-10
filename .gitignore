@@ -151,3 +151,8 @@ tools/.fed_h10_cache/
 
 # Scratch output from a web build or test run, never source.
 projects/ores.web/tmp/
+
+.agents/
+build/cdp-timeline.mjs
+build/proto-shots/
+skills-lock.json

@@ -20,6 +20,7 @@
  */
 
 import type { ReactNode } from 'react';
+import { isWireTimestamp } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 
 const STEPS: readonly (readonly [Intl.RelativeTimeFormatUnit, number])[] = [
@@ -34,6 +35,24 @@ const STEPS: readonly (readonly [Intl.RelativeTimeFormatUnit, number])[] = [
 /** A server timestamp, such as "2026-10-04 22:48:27Z", as a date; invalid when it is not one. */
 export function parseTimestamp(at: string): Date {
     return new Date(at.includes('T') ? at : at.replace(' ', 'T'));
+}
+
+/**
+ * Whether a wire timestamp names no moment.
+ *
+ * An account that has never signed in carries the wire's zero instant,
+ * `1970-01-01 00:00:00Z`, which is the epoch rather than a sign-in. An empty
+ * value names no moment either. Every screen that draws a moment asks this
+ * first, so the epoch is never drawn as a date.
+ */
+export function isZeroTimestamp(value: string): boolean {
+    if (value === '') {
+        return true;
+    }
+    if (!isWireTimestamp(value)) {
+        return false;
+    }
+    return Date.parse(value.replace(' ', 'T')) === 0;
 }
 
 /** How long ago a moment was, in the person's language, such as "2 hours ago". */

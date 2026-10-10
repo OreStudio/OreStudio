@@ -158,6 +158,11 @@ BEGIN
     -- put it in reach of every person, and that same code gates reading
     -- another account's roles, so a member could read any account's access.
     -- Account data is not screen furniture, so Member holds neither code.
+    -- What a person may see of the people they work with is the organisation of
+    -- the party they are acting for: names, job titles, pictures and who reports
+    -- to whom, never an email or a contact detail. That read has a code of its
+    -- own so Member can hold it without holding any account data.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'iam::organisation:read');
 
     -- Assign permissions to Trading role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::currencies:read');

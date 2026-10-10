@@ -93,6 +93,51 @@ describe('the timeline', () => {
         expect(html).toContain('system.update');
     });
 
+    it('says a version that changed no field changed nothing, and does not draw the record', () => {
+        const same = [
+            { name: 'Job Title', value: 'Head of Rates' },
+            { name: 'Username', value: 'ana' },
+        ];
+        const html = render({
+            subject: 'person',
+            id: 'ana',
+            events: [
+                event({ version: 2, fields: same }),
+                event({ version: 1, kind: 'raised', fields: same }),
+            ],
+            gaps: EMPTY_GAPS,
+        });
+
+        expect(html).toContain('No changes');
+        expect(html).toContain('Head of Rates');
+    });
+
+    it('can leave out the versions that changed nothing in the fields it carries', () => {
+        const same = [{ name: 'Reports to', value: 'Ada' }];
+        const moved = [{ name: 'Reports to', value: 'Grace' }];
+        const timeline = {
+            subject: 'person' as const,
+            id: 'ana',
+            events: [
+                event({ version: 3, fields: moved }),
+                event({ version: 2, fields: same }),
+                event({ version: 1, kind: 'raised', fields: same }),
+            ],
+            gaps: EMPTY_GAPS,
+        };
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                <Timeline timeline={timeline} hideUnchanged />
+            </TranslationProvider>,
+        );
+
+        // Version 3 moved the line and version 1 is the first; version 2 did neither.
+        expect(html).toContain('v3');
+        expect(html).toContain('v1');
+        expect(html).not.toContain('v2');
+        expect(html).not.toContain('No changes');
+    });
+
     it('draws an act that changed no field quietly, as the facts it carries', () => {
         const html = render({
             subject: 'person',

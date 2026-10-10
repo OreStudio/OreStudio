@@ -127,3 +127,21 @@ export function reportError(error: unknown): void {
     }
     report(errorMessage(error));
 }
+
+/**
+ * Reports a failed query, unless the query says it states the failure itself.
+ *
+ * A read that the person may not hold, such as the shell's read of their own
+ * account, is answered with a fallback the screen already draws. A banner
+ * repeating the refusal would report a door doing its job to someone who never
+ * tried it. The query says so with `meta: { quiet: true }`.
+ */
+export function reportQueryError(
+    error: unknown,
+    query: { readonly meta?: Readonly<Record<string, unknown>> | undefined },
+): void {
+    if (query.meta?.['quiet'] === true) {
+        return;
+    }
+    reportError(error);
+}

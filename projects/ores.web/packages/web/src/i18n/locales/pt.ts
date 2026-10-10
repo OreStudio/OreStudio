@@ -81,7 +81,7 @@ const pt: SourceCatalogue = {
             rescue: 'Recuperar acesso',
             audit: 'Entradas',
             requests: 'Pedidos',
-            people: 'Pessoas',
+            organisation: 'Organização',
             roles: 'Papéis',
             refdata: 'Dados de referência',
             access: 'O meu acesso',
@@ -91,6 +91,17 @@ const pt: SourceCatalogue = {
     },
 
     access: {
+        allAreas: 'Todas as áreas',
+        areaFilter: 'Área',
+        hub: {
+            title: 'Organização',
+            lead: 'As pessoas deste inquilino, e a quem reportam.',
+            staff: 'Pessoal',
+            staffBody:
+                'Todos os que podem iniciar sessão: os seus detalhes, funções e inícios de sessão.',
+            hierarchy: 'Hierarquia',
+            hierarchyBody: 'Quem reporta a quem, em árvore, e como cada ligação mudou.',
+        },
         nothingMatches: 'Nada corresponde.',
         allOfIt: 'Tudo',
         allCount: 'Todas as {count}',
@@ -124,9 +135,13 @@ const pt: SourceCatalogue = {
         people: {
             username: 'Nome de utilizador',
             jobTitle: 'Cargo',
-            title: 'Pessoas',
+            title: 'Pessoal',
             lead: 'Quem pode iniciar sessão neste inquilino, e os papéis de cada um.',
             leadNoRoles: 'Quem pode iniciar sessão neste inquilino.',
+            leadParties:
+                'As pessoas que trabalham nas partes em que trabalha e todas as que reportam a si.',
+            findStaff: 'Pesquisar por nome, utilizador ou cargo',
+            partiesColumn: 'Partes',
             person: 'Pessoa',
             roles: 'Papéis',
             noRole: 'Sem papel',
@@ -146,9 +161,8 @@ const pt: SourceCatalogue = {
             why: 'Porquê',
             noRole: 'Sem papel. Pode iniciar sessão mas ainda não pode fazer nada.',
             takeAway: 'Retirar',
+            currentVersion: 'Esta é a versão atual.',
             notYourself: 'Não pode retirar um papel a si próprio.',
-            whenItApplies:
-                'A alteração chega a {name} dentro de 30 minutos, quando a sessão se renovar. Iniciar sessão de novo aplica-a de imediato.',
             whatTheyAllow: 'O que estes papéis permitem',
             giveTitle: 'Dar um papel a {name}',
             alreadyHeld: 'já atribuído',
@@ -159,6 +173,11 @@ const pt: SourceCatalogue = {
                 'A atribuição é fechada, não apagada, por isso fica registado quem teve o papel e quando.',
         },
         roles: {
+            search: 'Procurar uma função',
+            showing: {
+                one: '{first}–{last} de {count} função',
+                other: '{first}–{last} de {count} funções',
+            },
             title: 'Papéis',
             lead: 'O que cada papel permite. Dê um papel a alguém a partir de Pessoas.',
             new: 'Novo papel',
@@ -341,7 +360,6 @@ const pt: SourceCatalogue = {
         locked: 'Bloqueada',
         notLocked: 'Não bloqueada',
         passwordDue: 'Mudança de palavra-passe pendente',
-        noEnds: 'Nenhuma sessão regista ainda o seu fim: terminar a sessão não escreve hora de fim, por isso uma sessão antiga parece aberta.',
         noSessions: 'Não há sessões registadas para esta conta.',
         started: 'Início',
         ended: 'Fim',
@@ -667,6 +685,13 @@ const pt: SourceCatalogue = {
      * painel guarde sozinho e responda sozinho.
      */
     profile: {
+        reason: {
+            system_update: 'Alteração normal',
+            common_rectification: 'Corrigir um erro',
+            common_non_material_update: 'Sem alteração de substância',
+            common_regulatory: 'Exigido por regulamentação',
+            common_other: 'Outra razão',
+        },
         tabs: {
             details: 'Detalhes',
             contact: 'Contacto',
@@ -680,7 +705,7 @@ const pt: SourceCatalogue = {
             mine: 'A sua fotografia, o seu nome, o seu cargo e a forma como os colegas o contactam. Um painel que não pode alterar diz porquê.',
             other: 'Corrija o perfil e os contactos de um colega. Tem a sessão iniciada como {signedIn} e está a editar {person}.',
         },
-        version: 'Versão do registo {version}.',
+        version: 'v{version}',
         search: {
             title: 'Encontrar a pessoa',
             lead: 'Todas as contas deste inquilino, filtradas à medida que escreve. Escolha a pessoa cujos painéis mostram o registo.',
@@ -692,6 +717,7 @@ const pt: SourceCatalogue = {
         },
         identity: {
             title: 'Fotografia e identidade',
+            editTitle: 'Editar identidade',
             fullName: 'Nome completo',
             jobTitle: 'Cargo',
             username: 'Nome de utilizador',
@@ -708,6 +734,7 @@ const pt: SourceCatalogue = {
             reportsToUnknown:
                 'Este ecrã não consegue nomear a pessoa aqui; o identificador registado é mostrado.',
             noLine: 'Não está registada nenhuma linha hierárquica.',
+            changeLine: 'Alterar a linha hierárquica',
             propose: 'Propor uma alteração',
             proposeWhy: 'Este ecrã ainda não consegue enviar uma proposta.',
             proposeApprovers:
@@ -730,6 +757,7 @@ const pt: SourceCatalogue = {
         },
         contact: {
             title: 'Contactos',
+            editTitle: 'Editar contactos',
             noRecord: 'Esta conta ainda não tem registo de contactos. A primeira gravação cria-o.',
             noRecordShort: 'Ainda sem registo',
             streetLine1: 'Rua',
@@ -758,8 +786,6 @@ const pt: SourceCatalogue = {
             failed: 'Não foi possível ler os seus acessos, por isso os painéis de administração não são oferecidos. {reason}',
         },
         save: {
-            identity: 'Guardar identidade',
-            contact: 'Guardar contactos',
             why: 'Porque está o registo a mudar?',
             chooseReason: 'Escolher um motivo',
             commentary: 'Comentário',
@@ -961,8 +987,8 @@ const pt: SourceCatalogue = {
             },
         },
         tenant: {
-            people: 'Pessoas',
-            peopleBody: 'Quem pode iniciar sessão, e os papéis de cada um.',
+            organisation: 'Organização',
+            organisationBody: 'O pessoal, e a hierarquia em que reporta.',
             roles: 'Papéis',
             rolesBody: 'O que cada papel permite.',
             access: 'O meu acesso',
@@ -1522,6 +1548,7 @@ const pt: SourceCatalogue = {
         field: 'Campo',
         notRevertible: 'Esta entrada regista um facto, por isso não há nada a reverter.',
         changeNotOffered: 'Repor um campo alterado não é oferecido aqui.',
+        noChanges: 'Sem alterações',
         kind: {
             raised: 'Criado',
             changed: 'Alterado',
@@ -1969,12 +1996,13 @@ const pt: SourceCatalogue = {
     },
 
     version: {
-        client: 'cliente {version}',
-        server: 'servidor {version}',
-        serverUnknown: 'versão do servidor desconhecida',
-        environment: 'ambiente {name}',
-        environmentUnknown: 'ambiente desconhecido',
-        nonProduction: 'não produção',
+        client: 'Cliente: {version}',
+        server: 'Servidor: {version}',
+        serverUnknown: 'Servidor: desconhecido',
+        environment: 'Ambiente: {name}',
+        environmentUnknown: 'Ambiente: desconhecido',
+        kindDev: 'dev',
+        kindProduction: 'produção',
     },
 
     server: {
@@ -2153,8 +2181,7 @@ const pt: SourceCatalogue = {
             linkChoose: 'Escolha um para adicionar…',
             link: 'Adicionar',
             revertTitle: 'Reverter para a versão {version}?',
-            revertBody:
-                'Os valores da versão {to} são escritos como nova versão depois da versão {from}. Nada se perde no histórico.',
+            revertBody: 'Repõe a v{to} como nova versão.',
             refresh: 'Atualizar',
             search: 'Pesquisar…',
             columns: 'Colunas',
@@ -2420,8 +2447,22 @@ const pt: SourceCatalogue = {
                 'A mudança emite um novo token de sessão, por isso todos os ecrãs leem a parte que escolheu. A predefinição é o que o início de sessão rápido escolhe da próxima vez.',
         },
         reporting: {
+            party: 'Parte',
+            allParties: 'Todas as partes',
+            noParty: 'Não trabalha em nenhuma parte',
+            outside: 'Reporta a alguém que não pode ver',
+            outsideManager: 'Alguém fora da sua vista',
+            zoomIn: 'Ampliar',
+            zoomOut: 'Reduzir',
+            zoomFit: 'Ajustar',
+            zoomReset: 'Repor',
+            noReports: 'Ninguém reporta a esta pessoa.',
+            findPerson: 'Procurar uma pessoa',
+            person: 'Pessoa',
+            tabs: { tree: 'Árvore', chart: 'Organigrama', history: 'Histórico' },
+            you: 'Você',
             title: 'Linhas de reporte',
-            lead: 'Quem reporta a quem, e a única linha que este ecrã altera.',
+            lead: 'Quem reporta a quem, e como cada ligação mudou.',
             tree: 'Árvore de reporte',
             people: '{count} pessoas',
             reports: '{count} a reportar',
@@ -2431,30 +2472,20 @@ const pt: SourceCatalogue = {
             collapse: 'Fechar',
             pickSomeone: 'Escolha uma pessoa na árvore para ler a sua linha.',
             reportsTo: 'Reporta a',
-            noManager: 'Sem gestor (raiz)',
+            noManager: 'Ninguém',
             directReports: 'Reportes diretos',
             depth: 'Profundidade',
             reachesNoRoot: 'Não alcança nenhuma raiz',
-            manager: 'Gestor',
-            reason: 'Motivo',
-            commentary: 'Nota',
-            save: 'Guardar a linha',
-            clear: 'Limpar a linha',
-            noVersion: 'A conta não pôde ser lida, por isso a escrita não indica versão.',
             unrooted:
                 '{count} pessoas não alcançam nenhuma raiz: o gestor desapareceu, ou a linha que as sustenta está quebrada. Ficam fora da árvore em vez de serem desenhadas como raízes.',
-            gaps: 'O que este ecrã não pode fazer',
-            gapOffice:
-                'O escritório de cada pessoa não é legível aqui: a leitura das partes da conta traz um identificador e nenhum nome.',
-            gapApproval:
-                'Um pedido de alteração da linha é uma proposta que o superior ou o administrador do locatário aprova, e nada na plataforma guarda essa aprovação, por isso a linha não muda.',
-            gapHistory:
-                'A linha não tem histórico neste ecrã. A conta é versionada, por isso uma linha passada é recuperável, e este ecrã não mostra nada disso.',
         },
     },
 
     common: {
         loading: 'A carregar...',
+        clear: 'Limpar',
+        refresh: 'Atualizar',
+        refreshStale: 'Os dados mudaram no servidor. Atualize para os ver.',
         all: 'Todos',
         close: 'Fechar',
         open: 'Abrir',

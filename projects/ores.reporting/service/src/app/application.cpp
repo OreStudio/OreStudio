@@ -21,14 +21,10 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.reporting.api/eventing/concurrency_policy_changed_event.hpp"
-#include "ores.reporting.api/eventing/report_definition_changed_event.hpp"
-#include "ores.reporting.api/eventing/report_instance_changed_event.hpp"
-#include "ores.reporting.api/eventing/report_type_changed_event.hpp"
+#include "ores.reporting.api/eventing/report_definition_event.hpp"
 #include "ores.reporting.core/messaging/registrar.hpp"
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include "ores.reporting.service/messaging/concurrency_policy_event_registrar.hpp"
@@ -46,7 +42,7 @@ namespace ores::reporting::service::app {
 
 using namespace ores::logging;
 namespace ev = ores::eventing;
-namespace rdev = ores::reporting::eventing;
+namespace rm = ores::reporting::messaging;
 
 namespace {
 constexpr std::string_view service_name = "ores.reporting.service";
@@ -87,11 +83,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // activated after service startup are scheduled without a service restart.
     ev::service::event_bus event_bus;
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
-    ev::service::registrar::register_mapping<rdev::report_definition_changed_event>(
-        event_source, "ores.reporting.report_definition", "ores_reporting_report_definitions");
-
-    auto def_changed_sub = event_bus.subscribe<rdev::report_definition_changed_event>(
-        [&io_ctx, db_ctx, &svc_nats](const rdev::report_definition_changed_event&) {
+    // The generated registrar below maps this table's channel to the canonical
+    // event, so the scheduler is a second subscriber on it.
+    auto def_changed_sub = event_bus.subscribe<rm::report_definition_event>(
+        [&io_ctx, db_ctx, &svc_nats](const rm::report_definition_event&) {
             // Post a reconcile task to the io_context so it runs in the
             // coroutine executor rather than the postgres listener thread.
             auto reconciler = std::make_shared<report_scheduling_service>(db_ctx, svc_nats);

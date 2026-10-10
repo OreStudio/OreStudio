@@ -130,7 +130,7 @@ Test data generator.
 
 | Artefact | Archetype |
 |----------+-----------|
-| [[proj:projects/ores.refdata/api/include/ores.refdata.api/eventing/currency_changed_event.hpp][currency_changed_event.hpp]] | [[proj:projects/ores.codegen/library/templates/cpp_nats_changed_event.hpp.mustache][cpp_nats_changed_event.hpp.mustache]] |
+| [[proj:projects/ores.refdata/api/include/ores.refdata.api/eventing/currency_event.hpp][currency_event.hpp]] | [[proj:projects/ores.codegen/library/templates/cpp_nats_changed_event.hpp.mustache][cpp_nats_changed_event.hpp.mustache]] |
 
 ** Handler (NATS message handlers)
 

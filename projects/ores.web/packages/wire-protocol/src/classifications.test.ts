@@ -154,7 +154,7 @@ describe('listClassificationRows', () => {
         expect(calls[0]?.body).toMatchObject({ order: { field: '' } });
     });
 
-    it('states no point in time to a list whose request carries one', async () => {
+    it('states a point in time to every list, because the decoder requires the key', async () => {
         const { caller, calls } = fakeCaller({
             'refdata.v1.book_statuses.list': { result: ok, statuses: [] },
             'refdata.v1.rounding_types.list': { result: ok, types: [] },
@@ -162,7 +162,7 @@ describe('listClassificationRows', () => {
         await listClassificationRows(caller, list('book-status'));
         await listClassificationRows(caller, list('rounding-type'));
         expect(calls[0]?.body).toMatchObject({ as_of: null });
-        expect(calls[1]?.body).not.toHaveProperty('as_of');
+        expect(calls[1]?.body).toMatchObject({ as_of: null });
     });
 
     it('answers the rows in display order, whatever order they were read in', async () => {

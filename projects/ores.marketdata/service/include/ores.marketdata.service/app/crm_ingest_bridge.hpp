@@ -107,7 +107,7 @@ public:
 
     /// Rebuilds every (tenant, party, CRM name) engine from the current
     /// crm_topology_config/crm_driver_pair rows. Call on startup and on
-    /// crm_topology_config_changed_event/crm_driver_pair_changed_event.
+    /// crm_topology_config_event/crm_driver_pair_event/crm_enabled_derived_pair_event.
     void refresh();
 
     /// Feeds one driver tick into every named engine, for every party,

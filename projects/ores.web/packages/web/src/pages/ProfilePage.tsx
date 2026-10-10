@@ -21,8 +21,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { Link } from 'react-router';
 import type { HeldRole, SessionView } from '@ores/wire-protocol/browser';
+import { AccountDoors } from './AccountDoors.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ContactTab, IdentityTab } from '../access/PersonForms.js';
@@ -83,20 +83,7 @@ function AccessPanel({ roles }: { readonly roles: readonly HeldRole[] }): ReactN
                         : roles.map((role) => roleLabel(t, role.name)).join(', ')
                 }
             />
-            <p className="text-sm text-ink-muted">
-                {t('profile.access.protectWhy')}{' '}
-                <Link to="/security" className="text-accent-bright hover:underline">
-                    {t('profile.access.protect')}
-                </Link>
-                .
-            </p>
-            <p className="text-sm text-ink-muted">
-                {t('profile.access.knowWhy')}{' '}
-                <Link to="/access" className="text-accent-bright hover:underline">
-                    {t('profile.access.know')}
-                </Link>
-                .
-            </p>
+            <AccountDoors />
         </section>
     );
 }

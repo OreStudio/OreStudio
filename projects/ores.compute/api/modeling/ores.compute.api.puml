@@ -131,33 +131,6 @@ namespace ores #F2F2F2 {
                 +recorded_at : chrono::system_clock::time_point
             }
         }
-        namespace eventing #F2F2F2 {
-            class app_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +ids : vector<string>
-                +tenant_id : string
-            }
-            class app_version_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +ids : vector<string>
-                +tenant_id : string
-            }
-            class batch_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +ids : vector<string>
-                +tenant_id : string
-            }
-            class result_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +ids : vector<string>
-                +tenant_id : string
-            }
-            class workunit_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +ids : vector<string>
-                +tenant_id : string
-            }
-        }
         namespace messaging #F2F2F2 {
             class list_apps_request <<struct>> {
                 +offset : int

@@ -35,7 +35,7 @@ Bearer token when the producer checks authorisation; pass an
 - Domain types from =ores.refdata.api=: =currency_pair_convention=.
 - NATS protocol messages from =ores.refdata.api=: the
   =read_currency_pair_conventions_for_cache= request/response pair and
-  the =currency_pair_convention_changed_event=.
+  the =currency_pair_convention_event=.
 
 * Outputs
 

@@ -810,6 +810,42 @@ from here is what the registrar subscribes with.
  */
 #+end_src
 
+** get_my_account_request
+:PROPERTIES:
+:subject: iam.v1.ops.get_my_account
+:response: get_my_account_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A member's read of their own account.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's. The read needs no permission: it is a self
+ * read on the allow-list of Authorised reads, so a member sees their own name,
+ * picture and job title without holding iam::accounts:read. Reading a
+ * colleague's account is iam.v1.accounts.get, which needs that permission.
+ */
+#+end_src
+
+** get_my_account_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** account
+:PROPERTIES:
+:cpp_type: std::optional<ores::iam::domain::account>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The caller's account, or nothing when the session names none.
+ */
+#+end_src
+
 ** my_party
 
 #+begin_src cpp :name comment
@@ -979,6 +1015,50 @@ from here is what the registrar subscribes with.
  */
 #+end_src
 
+** reporting_tree_party
+
+#+begin_src cpp :name comment
+/**
+ * @brief One party the reporting shape is drawn under.
+ *
+ * A person works in a party, and a viewer may work in several, so the shape is
+ * grouped by party. The service states which parties are in scope by id; the
+ * handler names them from IAM's party cache, which mirrors refdata's parties,
+ * so the name and the parent are empty for a party the cache has not seen
+ * rather than a half-read row.
+ *
+ * Declared before the node and the response that carry it, because the
+ * generators emit the messages in the order this file states them.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** short_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** parent_party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The parent party's id, or empty when the party has none or its parent
+ * is not in the scope the caller may read.
+ */
+#+end_src
+
 ** reporting_tree_node
 
 #+begin_src cpp :name comment
@@ -1016,6 +1096,31 @@ from here is what the registrar subscribes with.
 :cpp_type: std::string
 :END:
 
+*** account_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account's kind: =user= for a person, otherwise the kind of service
+ * account. A reader tells a person from a service by it.
+ */
+#+end_src
+
+*** image_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The id of the account's picture, or empty when it has none. The
+ * picture is drawn from this identifier, so a reader who may see the tree needs
+ * no read of the account to draw the person.
+ */
+#+end_src
+
 *** reports_to_account_id
 :PROPERTIES:
 :cpp_type: std::string
@@ -1023,13 +1128,17 @@ from here is what the registrar subscribes with.
 
 #+begin_src cpp :name comment
 /**
- * @brief The manager's account id, or empty when the account is a root.
+ * @brief The manager's account id, or empty when the account is a root or its
+ * manager is outside what the caller may see. The second case is stated by
+ * =reports_outside_scope=, so a person who has a manager is never drawn as one
+ * who has none.
  */
 #+end_src
 
 *** depth
 :PROPERTIES:
 :cpp_type: int
+:default: 0
 :END:
 
 #+begin_src cpp :name comment
@@ -1042,7 +1151,34 @@ from here is what the registrar subscribes with.
 *** direct_reports
 :PROPERTIES:
 :cpp_type: int
+:default: 0
 :END:
+
+*** reports_outside_scope
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the account has a manager the caller may not see. The manager
+ * is not named, and the account is drawn as the top of what the caller can see
+ * with this marker, not as a person with no manager.
+ */
+#+end_src
+
+*** party_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The ids of the parties in scope that this account works in. Empty when
+ * the account is linked to none of them.
+ */
+#+end_src
 
 ** get_reporting_tree_request
 :PROPERTIES:
@@ -1052,11 +1188,15 @@ from here is what the registrar subscribes with.
 
 #+begin_src cpp :name comment
 /**
- * @brief The tenant's reporting shape in one read.
+ * @brief A reporting shape in one read: the tenant's, or what the caller may see.
  *
- * The read answers the tenant's own accounts, which row-level security bounds,
- * and needs =iam::accounts:read=. An empty =root_account_id= asks for the whole
- * tenant, ordered by depth; a stated root asks for that account's branch, so a
+ * The scope follows what the caller holds. A caller with =iam::accounts:read=
+ * reads the tenant's own accounts, which row-level security bounds. A caller
+ * with =iam::organisation:read= and not that code reads the people they may
+ * see: those who work in any party their own account works in, and everyone
+ * who reports to them directly or indirectly. A node never carries an email or
+ * a contact detail. A caller with neither is refused. An empty =root_account_id= asks for the whole
+ * scope, ordered by depth; a stated root asks for that account's branch, so a
  * screen can open one part of a large organisation without carrying the rest.
  */
 #+end_src
@@ -1078,9 +1218,23 @@ from here is what the registrar subscribes with.
 :cpp_type: std::vector<reporting_tree_node>
 :END:
 
+*** parties
+:PROPERTIES:
+:cpp_type: std::vector<reporting_tree_party>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The parties in scope, each with the party above it when that party is
+ * in scope too. A holding group's parties nest, so a viewer who works in all of
+ * them sees the group drawn as the group.
+ */
+#+end_src
+
 *** unrooted
 :PROPERTIES:
 :cpp_type: int
+:default: 0
 :END:
 
 #+begin_src cpp :name comment

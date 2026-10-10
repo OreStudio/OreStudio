@@ -30,7 +30,7 @@ import { Button } from '../ui/Primitives.js';
 import { useHolds } from '../access/holds.js';
 import { displayName } from '../access/names.js';
 import { NotificationBell } from '../inbox/NotificationBell.js';
-import { menuFor, modeKey } from '../shell/areas.js';
+import { menuFor, modeKey, offered } from '../shell/areas.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
 import { VersionFooter } from './VersionFooter.js';
 
@@ -97,7 +97,7 @@ export function AppShell({
     const { t } = useTranslation();
     const holds = useHolds();
     const menu = menuFor(mode).filter(
-        (item) => item.permission === undefined || holds(item.permission),
+        (item) => offered(item, holds),
     );
 
     return (

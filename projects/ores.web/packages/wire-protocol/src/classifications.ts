@@ -113,6 +113,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: monetaryNatureSubjects.list_monetary_natures_request,
             put: monetaryNatureSubjects.put_monetary_nature_request,
@@ -127,6 +128,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: roundingTypeSubjects.list_rounding_types_request,
             put: roundingTypeSubjects.put_rounding_type_request,
@@ -141,6 +143,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: currencyMarketTierSubjects.list_currency_market_tiers_request,
             put: currencyMarketTierSubjects.put_currency_market_tier_request,
@@ -155,6 +158,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'classifications',
+        asOf: true,
         subjects: {
             list: currencyPairClassificationSubjects.list_currency_pair_classifications_request,
             put: currencyPairClassificationSubjects.put_currency_pair_classification_request,
@@ -170,6 +174,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: calendarTypeSubjects.list_calendar_types_request,
             put: calendarTypeSubjects.put_calendar_type_request,
@@ -184,6 +189,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'entry_types',
+        asOf: true,
         subjects: {
             list: diaryEntryTypeSubjects.list_diary_entry_types_request,
             put: diaryEntryTypeSubjects.put_diary_entry_type_request,
@@ -198,6 +204,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'plain',
         editable: false,
         rows: 'calendar_names',
+        asOf: true,
         subjects: {
             list: calendarNameSubjects.list_calendar_names_request,
             put: calendarNameSubjects.put_calendar_name_request,
@@ -212,6 +219,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: false,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: businessDayConventionTypeSubjects.list_business_day_convention_types_request,
             put: businessDayConventionTypeSubjects.put_business_day_convention_type_request,
@@ -227,6 +235,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: partyTypeSubjects.list_party_types_request,
             put: partyTypeSubjects.put_party_type_request,
@@ -241,6 +250,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'statuses',
+        asOf: true,
         subjects: {
             list: partyStatusSubjects.list_party_statuses_request,
             put: partyStatusSubjects.put_party_status_request,
@@ -255,6 +265,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: contactTypeSubjects.list_contact_types_request,
             put: contactTypeSubjects.put_contact_type_request,
@@ -284,6 +295,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: bookPurposeTypeSubjects.list_book_purpose_types_request,
             put: bookPurposeTypeSubjects.put_book_purpose_type_request,
@@ -298,6 +310,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: ledgerFeedTypeSubjects.list_ledger_feed_types_request,
             put: ledgerFeedTypeSubjects.put_ledger_feed_type_request,
@@ -327,6 +340,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: purposeTypeSubjects.list_purpose_types_request,
             put: purposeTypeSubjects.put_purpose_type_request,
@@ -341,6 +355,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'asset_classes',
+        asOf: true,
         subjects: {
             list: assetClassCodeSubjects.list_asset_class_codes_request,
             put: assetClassCodeSubjects.put_asset_class_code_request,
@@ -355,6 +370,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'plain',
         editable: false,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: legTypeSubjects.list_leg_types_request,
             put: legTypeSubjects.put_leg_type_request,
@@ -369,6 +385,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'plain',
         editable: false,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: floatingIndexTypeSubjects.list_floating_index_types_request,
             put: floatingIndexTypeSubjects.put_floating_index_type_request,
@@ -383,6 +400,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'plain',
         editable: false,
         rows: 'day_counters',
+        asOf: true,
         subjects: {
             list: dayCounterSubjects.list_day_counters_request,
             put: dayCounterSubjects.put_day_counter_request,
@@ -397,6 +415,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: dayCountFractionTypeSubjects.list_day_count_fraction_types_request,
             put: dayCountFractionTypeSubjects.put_day_count_fraction_type_request,
@@ -411,6 +430,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'roles',
+        asOf: true,
         subjects: {
             list: curveRoleSubjects.list_curve_roles_request,
             put: curveRoleSubjects.put_curve_role_request,
@@ -425,6 +445,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'kinds',
+        asOf: true,
         subjects: {
             list: tenorKindSubjects.list_tenor_kinds_request,
             put: tenorKindSubjects.put_tenor_kind_request,
@@ -439,6 +460,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'units',
+        asOf: true,
         subjects: {
             list: tenorUnitSubjects.list_tenor_units_request,
             put: tenorUnitSubjects.put_tenor_unit_request,
@@ -453,6 +475,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'ordered',
         editable: true,
         rows: 'anchors',
+        asOf: true,
         subjects: {
             list: tenorAnchorSubjects.list_tenor_anchors_request,
             put: tenorAnchorSubjects.put_tenor_anchor_request,
@@ -467,6 +490,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'algorithms',
+        asOf: true,
         subjects: {
             list: tenorResolutionAlgorithmSubjects.list_tenor_resolution_algorithms_request,
             put: tenorResolutionAlgorithmSubjects.put_tenor_resolution_algorithm_request,
@@ -481,6 +505,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'kinds',
+        asOf: true,
         subjects: {
             list: derivationKindSubjects.list_derivation_kinds_request,
             put: derivationKindSubjects.put_derivation_kind_request,
@@ -495,6 +520,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'series_subclasses',
+        asOf: true,
         subjects: {
             list: seriesSubclassCodeSubjects.list_series_subclass_codes_request,
             put: seriesSubclassCodeSubjects.put_series_subclass_code_request,

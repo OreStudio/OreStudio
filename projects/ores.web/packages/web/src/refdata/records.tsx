@@ -1149,11 +1149,13 @@ export function RecordHeader({
     flag,
     mark,
     access,
+    subdued,
 }: {
     readonly crumbs: readonly { readonly label: string; readonly to?: string }[];
     readonly title: string;
     readonly recordKey: string;
-    readonly version: number;
+    /** The record's version, or null for a page that states it in each tab. */
+    readonly version: number | null;
     readonly own?: ReactNode;
     readonly onEdit?: (() => void) | undefined;
     readonly onDelete?: (() => void) | undefined;
@@ -1167,6 +1169,8 @@ export function RecordHeader({
      * a page whose parts carry their own.
      */
     readonly access?: boolean | null;
+    /** Draws the key and version line small, for a key that is an identifier. */
+    readonly subdued?: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -1174,15 +1178,20 @@ export function RecordHeader({
             <Crumbs parts={crumbs} />
             <PageHeader
                 title={title}
+                {...(subdued === true ? { subdued } : {})}
                 {...(flag !== undefined
                     ? { mark: <FlagOf source={flag} code={recordKey} size="lg" /> }
                     : mark !== undefined
                       ? { mark }
                       : {})}
-                description={t('refdata.records.lead', {
-                    code: recordKey,
-                    version: String(version),
-                })}
+                description={
+                    version === null
+                        ? recordKey
+                        : t('refdata.records.lead', {
+                              code: recordKey,
+                              version: String(version),
+                          })
+                }
                 actions={
                     <div className="flex items-center gap-2">
                         {access !== null && (

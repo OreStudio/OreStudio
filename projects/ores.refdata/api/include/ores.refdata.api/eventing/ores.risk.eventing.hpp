@@ -20,10 +20,10 @@
 #define ORES_REFDATA_API_EVENTING_HPP
 
 /**
- * @brief Event types for the risk module.
+ * @brief Event types for the refdata component.
  *
- * Contains risk-related events such as currency_changed_event for
- * notifying subscribers of data changes.
+ * Each entity's change event, such as country_event, states its NATS subject
+ * prefix in its entity_event_traits.
  */
 namespace ores::refdata::eventing {}
 

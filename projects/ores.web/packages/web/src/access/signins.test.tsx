@@ -109,7 +109,29 @@ describe('an account of a tenant', () => {
         expect(html).toContain('2026-10-04 17:01:30Z');
         expect(html).toContain('ores.service.binary');
         expect(html).toContain('Not recorded');
-        expect(html).toContain('No session records its end yet');
+        expect(html).not.toContain('No session records its end yet');
+    });
+
+    it('says an account whose last sign-in is the epoch never signed in', () => {
+        const html = render({
+            account: service,
+            loginInfo: {
+                tenantId: service.tenantId,
+                accountId: service.id,
+                lastIp: '0.0.0.0',
+                lastAttemptIp: '0.0.0.0',
+                failedLogins: 0,
+                locked: false,
+                lastLogin: '1970-01-01 00:00:00Z',
+                online: false,
+                passwordResetRequired: false,
+            },
+            sessions: [],
+            totalCount: 0,
+        });
+
+        expect(html).toContain('Never');
+        expect(html).not.toContain('1970');
     });
 
     it('says an account that never signed in never did', () => {

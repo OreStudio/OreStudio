@@ -76,7 +76,7 @@ const fr: SourceCatalogue = {
             rescue: 'Rétablir un accès',
             audit: 'Connexions',
             requests: 'Demandes',
-            people: 'Personnes',
+            organisation: 'Organisation',
             roles: 'Rôles',
             refdata: 'Données de référence',
             access: 'Mes accès',
@@ -86,6 +86,18 @@ const fr: SourceCatalogue = {
     },
 
     access: {
+        allAreas: 'Tous les domaines',
+        areaFilter: 'Domaine',
+        hub: {
+            title: 'Organisation',
+            lead: 'Les personnes de ce locataire, et à qui elles rendent compte.',
+            staff: 'Personnel',
+            staffBody:
+                'Toutes les personnes qui peuvent se connecter : leurs détails, leurs rôles et leurs connexions.',
+            hierarchy: 'Hiérarchie',
+            hierarchyBody:
+                'Qui rend compte à qui, sous forme d’arbre, et comment chaque lien a changé.',
+        },
         nothingMatches: 'Rien ne correspond.',
         allOfIt: 'Tout',
         allCount: 'Tous les {count}',
@@ -119,9 +131,13 @@ const fr: SourceCatalogue = {
         people: {
             username: "Nom d'utilisateur",
             jobTitle: 'Fonction',
-            title: 'Personnes',
+            title: 'Personnel',
             lead: 'Qui peut se connecter à ce locataire, et les rôles de chacun.',
             leadNoRoles: 'Qui peut se connecter à ce locataire.',
+            leadParties:
+                'Les personnes qui travaillent dans les parties où vous travaillez, et toutes celles qui relèvent de vous.',
+            findStaff: 'Chercher par nom, identifiant ou intitulé de poste',
+            partiesColumn: 'Parties',
             person: 'Personne',
             roles: 'Rôles',
             noRole: 'Aucun rôle',
@@ -141,9 +157,8 @@ const fr: SourceCatalogue = {
             why: 'Pourquoi',
             noRole: 'Aucun rôle. La personne peut se connecter mais ne peut encore rien faire.',
             takeAway: 'Retirer',
+            currentVersion: 'C’est la version actuelle.',
             notYourself: 'Vous ne pouvez pas vous retirer un rôle.',
-            whenItApplies:
-                'Le changement atteint {name} sous 30 minutes, au prochain renouvellement de sa connexion. Se reconnecter l’applique aussitôt.',
             whatTheyAllow: 'Ce que ces rôles permettent',
             giveTitle: 'Accorder un rôle à {name}',
             alreadyHeld: 'déjà détenu',
@@ -154,6 +169,11 @@ const fr: SourceCatalogue = {
                 'L’attribution est close, pas supprimée : qui avait le rôle et quand reste consigné.',
         },
         roles: {
+            search: 'Chercher un rôle',
+            showing: {
+                one: '{first}–{last} sur {count} rôle',
+                other: '{first}–{last} sur {count} rôles',
+            },
             title: 'Rôles',
             lead: 'Ce que chaque rôle permet. Accordez un rôle depuis Personnes.',
             new: 'Nouveau rôle',
@@ -341,7 +361,6 @@ const fr: SourceCatalogue = {
         locked: 'Verrouillé',
         notLocked: 'Non verrouillé',
         passwordDue: 'Changement de mot de passe requis',
-        noEnds: 'Aucune session n’enregistre encore sa fin : la déconnexion n’écrit aucune heure de fin, donc une ancienne session paraît ouverte.',
         noSessions: 'Aucune session n’est enregistrée pour ce compte.',
         started: 'Début',
         ended: 'Fin',
@@ -669,6 +688,13 @@ const fr: SourceCatalogue = {
      * chaque panneau enregistre seul et rend compte seul.
      */
     profile: {
+        reason: {
+            system_update: 'Modification courante',
+            common_rectification: 'Corriger une erreur',
+            common_non_material_update: 'Aucun changement de fond',
+            common_regulatory: 'Exigé par la réglementation',
+            common_other: 'Autre raison',
+        },
         tabs: {
             details: 'Détails',
             contact: 'Contact',
@@ -682,7 +708,7 @@ const fr: SourceCatalogue = {
             mine: 'Votre photo, votre nom, votre intitulé de poste et la façon dont vos collègues vous joignent. Un panneau que vous ne pouvez pas modifier dit pourquoi.',
             other: "Corrigez le profil et les coordonnées d'un collègue. Vous êtes connecté en tant que {signedIn} et vous modifiez {person}.",
         },
-        version: "Version de l'enregistrement {version}.",
+        version: 'v{version}',
         search: {
             title: 'Trouver la personne',
             lead: "Tous les comptes de ce locataire, filtrés au fil de la saisie. Choisissez la personne dont les panneaux affichent l'enregistrement.",
@@ -694,6 +720,7 @@ const fr: SourceCatalogue = {
         },
         identity: {
             title: 'Photo et identité',
+            editTitle: 'Modifier l’identité',
             fullName: 'Nom complet',
             jobTitle: 'Intitulé du poste',
             username: "Nom d'utilisateur",
@@ -712,6 +739,7 @@ const fr: SourceCatalogue = {
             reportsToUnknown:
                 "Cet écran ne peut pas nommer la personne ici ; l'identifiant enregistré est affiché.",
             noLine: "Aucune ligne hiérarchique n'est enregistrée.",
+            changeLine: 'Changer la ligne hiérarchique',
             propose: 'Proposer une modification',
             proposeWhy: 'Cet écran ne peut pas encore envoyer de proposition.',
             proposeApprovers:
@@ -734,6 +762,7 @@ const fr: SourceCatalogue = {
         },
         contact: {
             title: 'Coordonnées',
+            editTitle: 'Modifier les coordonnées',
             noRecord:
                 "Ce compte n'a pas encore de fiche de coordonnées. Le premier enregistrement la crée.",
             noRecordShort: 'Pas encore de fiche',
@@ -764,8 +793,6 @@ const fr: SourceCatalogue = {
             failed: "Vos accès n'ont pas pu être lus, donc les panneaux d'administration ne sont pas proposés. {reason}",
         },
         save: {
-            identity: "Enregistrer l'identité",
-            contact: 'Enregistrer les coordonnées',
             why: "Pourquoi l'enregistrement change-t-il ?",
             chooseReason: 'Choisir un motif',
             commentary: 'Commentaire',
@@ -967,8 +994,8 @@ const fr: SourceCatalogue = {
             },
         },
         tenant: {
-            people: 'Personnes',
-            peopleBody: 'Qui peut se connecter, et les rôles de chacun.',
+            organisation: 'Organisation',
+            organisationBody: 'Le personnel, et la hiérarchie dans laquelle il rend compte.',
             roles: 'Rôles',
             rolesBody: 'Ce que chaque rôle permet.',
             access: 'Mes accès',
@@ -1528,6 +1555,7 @@ const fr: SourceCatalogue = {
         field: 'Champ',
         notRevertible: 'Cette entrée relate un fait, il n’y a donc rien à rétablir.',
         changeNotOffered: 'Rétablir un champ modifié n’est pas proposé ici.',
+        noChanges: 'Aucune modification',
         kind: {
             raised: 'Créé',
             changed: 'Modifié',
@@ -1978,12 +2006,13 @@ const fr: SourceCatalogue = {
     },
 
     version: {
-        client: 'client {version}',
-        server: 'serveur {version}',
-        serverUnknown: 'version du serveur inconnue',
-        environment: 'environnement {name}',
-        environmentUnknown: 'environnement inconnu',
-        nonProduction: 'non-production',
+        client: 'Client : {version}',
+        server: 'Serveur : {version}',
+        serverUnknown: 'Serveur : inconnu',
+        environment: 'Environnement : {name}',
+        environmentUnknown: 'Environnement : inconnu',
+        kindDev: 'dev',
+        kindProduction: 'production',
     },
 
     server: {
@@ -2169,8 +2198,7 @@ const fr: SourceCatalogue = {
             linkChoose: 'Choisir un élément à ajouter…',
             link: 'Ajouter',
             revertTitle: 'Rétablir la version {version} ?',
-            revertBody:
-                "Les valeurs de la version {to} sont réécrites comme nouvelle version après la version {from}. Rien n'est perdu dans l'historique.",
+            revertBody: 'Rétablit la v{to} comme nouvelle version.',
             refresh: 'Actualiser',
             search: 'Rechercher…',
             columns: 'Colonnes',
@@ -2439,8 +2467,22 @@ const fr: SourceCatalogue = {
                 'Le basculement émet un nouveau jeton de connexion : tous les écrans lisent la partie choisie. Le défaut est ce que la connexion rapide choisit la prochaine fois.',
         },
         reporting: {
+            party: 'Partie',
+            allParties: 'Toutes les parties',
+            noParty: 'Ne travaille dans aucune partie',
+            outside: 'Rend compte à quelqu’un que vous ne pouvez pas voir',
+            outsideManager: 'Quelqu’un hors de votre vue',
+            zoomIn: 'Zoom avant',
+            zoomOut: 'Zoom arrière',
+            zoomFit: 'Ajuster',
+            zoomReset: 'Réinitialiser',
+            noReports: 'Personne ne rend compte à cette personne.',
+            findPerson: 'Chercher une personne',
+            person: 'Personne',
+            tabs: { tree: 'Arbre', chart: 'Organigramme', history: 'Historique' },
+            you: 'Vous',
             title: 'Lignes hiérarchiques',
-            lead: 'Qui rend compte à qui, et la seule ligne que cet écran modifie.',
+            lead: 'Qui rend compte à qui, et comment chaque lien a changé.',
             tree: 'Arborescence hiérarchique',
             people: '{count} personnes',
             reports: '{count} rattachés',
@@ -2450,30 +2492,20 @@ const fr: SourceCatalogue = {
             collapse: 'Replier',
             pickSomeone: 'Choisissez une personne dans l’arborescence pour lire sa ligne.',
             reportsTo: 'Rend compte à',
-            noManager: 'Aucun responsable (racine)',
+            noManager: 'Personne',
             directReports: 'Rattachements directs',
             depth: 'Profondeur',
             reachesNoRoot: 'N’atteint aucune racine',
-            manager: 'Responsable',
-            reason: 'Motif',
-            commentary: 'Note',
-            save: 'Enregistrer la ligne',
-            clear: 'Effacer la ligne',
-            noVersion: 'Le compte n’a pas pu être lu : l’écriture n’indique donc aucune version.',
             unrooted:
                 '{count} personnes n’atteignent aucune racine : leur responsable a disparu, ou la ligne qui les porte est rompue. Elles sont laissées hors de l’arborescence plutôt que dessinées comme racines.',
-            gaps: 'Ce que cet écran ne peut pas faire',
-            gapOffice:
-                'Le bureau de chaque personne n’est pas lisible ici : la lecture des parties de compte porte un identifiant et aucun nom.',
-            gapApproval:
-                'Une demande de changement de ligne est une proposition que valide le supérieur ou l’administrateur du locataire, et rien dans la plateforme ne porte une telle approbation : la ligne ne bouge pas.',
-            gapHistory:
-                'La ligne n’a pas d’historique sur cet écran. Le compte est versionné, donc une ligne passée est récupérable, et cet écran n’en montre rien.',
         },
     },
 
     common: {
         loading: 'Chargement...',
+        clear: 'Effacer',
+        refresh: 'Actualiser',
+        refreshStale: 'Les données ont changé sur le serveur. Actualisez pour les voir.',
         all: 'Tous',
         close: 'Fermer',
         open: 'Ouvrir',

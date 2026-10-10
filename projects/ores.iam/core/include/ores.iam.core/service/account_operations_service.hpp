@@ -407,19 +407,28 @@ public:
     set_reporting_line(const messaging::set_reporting_line_request& request);
 
     /**
-     * @brief Reads the tenant's reporting shape in one call.
+     * @brief Reads a reporting shape in one call: the tenant's, or what a viewer
+     * may see.
      *
      * The accounts come from the tenant's own roster, which row-level security
-     * bounds. An unstated root answers the whole tenant, ordered by depth; a
-     * stated root answers that account's branch. An account that reaches no
-     * root is answered with depth -1 and counted in the response.
+     * bounds. With a @p viewer the roster is cut to the people who work in any
+     * party the viewer's account works in and everyone who reports to the
+     * viewer, directly or indirectly. A manager outside that set is not in the
+     * tree and the account carries a marker saying so, so a person who has a
+     * manager is never drawn as one who has none. The parties are those of the
+     * people in the answer. An unstated root answers the whole scope, ordered
+     * by depth; a stated root answers that account's branch. An account that
+     * reaches no root is answered with depth -1 and counted in the response.
      *
-     * @param request The root to answer from, or empty for the whole tenant
-     * @return The shared result plus the nodes, and how many accounts reach no
-     * root
+     * @param request The root to answer from, or empty for the whole scope
+     * @param viewer The caller's account when the read is scoped to what it may
+     * see, or nothing for the whole tenant
+     * @return The shared result plus the nodes, the parties, and how many
+     * accounts reach no root
      */
     messaging::get_reporting_tree_response
-    get_reporting_tree(const messaging::get_reporting_tree_request& request);
+    get_reporting_tree(const messaging::get_reporting_tree_request& request,
+                       const std::optional<boost::uuids::uuid>& viewer = std::nullopt);
 
     /**
      * @brief Writes the fields a member owns on their own account.
@@ -468,6 +477,19 @@ public:
      */
     messaging::get_my_account_contact_information_response
     get_my_account_contact_information(const boost::uuids::uuid& account_id);
+
+    /**
+     * @brief Reads the caller's own account.
+     *
+     * The account is found from the id the session states, so a caller cannot
+     * name another account. Nothing here checks a permission: the read is a
+     * self read on the allow-list of Authorised reads.
+     *
+     * @param account_id The account of the caller's session
+     * @return The shared result plus the account, or no account when the
+     * session names none
+     */
+    messaging::get_my_account_response get_my_account(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Authenticates a service account by the machine password it holds.

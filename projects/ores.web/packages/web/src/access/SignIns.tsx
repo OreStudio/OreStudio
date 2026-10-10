@@ -25,6 +25,7 @@ import type { AccountSignIns } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
 import { Notice, Tag } from '../ui/Primitives.js';
+import { isZeroTimestamp } from '../ui/Time.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 
 /**
@@ -107,7 +108,7 @@ function SignInsView({
                 <div>
                     <dt className="text-xs text-ink-faint">{t('signIns.lastSignIn')}</dt>
                     <dd className="mt-0.5">
-                        {loginInfo === null || loginInfo.lastLogin === ''
+                        {loginInfo === null || isZeroTimestamp(loginInfo.lastLogin)
                             ? t('signIns.never')
                             : loginInfo.lastLogin}
                     </dd>
@@ -130,8 +131,6 @@ function SignInsView({
                     </dd>
                 </div>
             </dl>
-
-            <Notice tone="info">{t('signIns.noEnds')}</Notice>
 
             {totalCount === 0 ? (
                 <p className="text-sm text-ink-muted">{t('signIns.noSessions')}</p>
@@ -164,10 +163,12 @@ function SignInsView({
                                         className="border-b border-line-subtle last:border-b-0"
                                     >
                                         <td className="whitespace-nowrap px-4 py-2">
-                                            {row.startTime}
+                                            {isZeroTimestamp(row.startTime) ? '—' : row.startTime}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-2 text-ink-muted">
-                                            {row.endTime === '' ? t('signIns.noEnd') : row.endTime}
+                                            {isZeroTimestamp(row.endTime)
+                                                ? t('signIns.noEnd')
+                                                : row.endTime}
                                         </td>
                                         <td className="px-4 py-2 font-mono text-xs">
                                             {row.clientIdentifier === ''

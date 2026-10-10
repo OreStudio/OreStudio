@@ -43,6 +43,7 @@
 import type { ReactNode } from 'react';
 import type { EnvironmentView } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
+import { Tag } from '../ui/Primitives.js';
 
 export function VersionFooter({
     serverVersion,
@@ -53,22 +54,33 @@ export function VersionFooter({
 }): ReactNode {
     const { t } = useTranslation();
     return (
-        <footer className="border-t border-line px-5 py-2 text-xs text-ink-faint">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                <span>{t('version.client', { version: __BUILD_VERSION__ })}</span>
-                <span>
+        <footer className="border-t border-line px-5 py-2">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <Tag small tone="accent">
+                    {t('version.client', { version: __BUILD_VERSION__ })}
+                </Tag>
+                <Tag small tone={serverVersion === undefined || serverVersion === '' ? 'muted' : 'up'}>
                     {serverVersion === undefined || serverVersion === ''
                         ? t('version.serverUnknown')
                         : t('version.server', { version: serverVersion })}
-                </span>
-                <span>
-                    {environment === undefined
-                        ? t('version.environmentUnknown')
-                        : t('version.environment', { name: environment.displayName })}
-                    {environment !== undefined &&
-                        environment.nonProduction &&
-                        ` (${t('version.nonProduction')})`}
-                </span>
+                </Tag>
+                {environment === undefined ? (
+                    <Tag small tone="muted">
+                        {t('version.environmentUnknown')}
+                    </Tag>
+                ) : (
+                    <>
+                        <Tag small tone="neutral">
+                            {t('version.environment', { name: environment.displayName })}
+                        </Tag>
+                        {/* Production is the environment where a mistake costs the most. */}
+                        <Tag small tone={environment.nonProduction ? 'warn' : 'down'}>
+                            {environment.nonProduction
+                                ? t('version.kindDev')
+                                : t('version.kindProduction')}
+                        </Tag>
+                    </>
+                )}
             </div>
         </footer>
     );

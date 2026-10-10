@@ -2,215 +2,206 @@
 :ID: 4A7B2C8E-F391-4D5A-B6E0-1C9D3F7A5B2E
 :END:
 #+title: Eventing Pipeline
-#+description: End-to-end walkthrough of how a database change becomes a NATS event and how clients consume it.
+#+description: End-to-end walkthrough of how a database change becomes a NATS event on the canonical subjects, and how a service or a client consumes it.
 #+type: knowledge
 #+level: cross
 #+filetags: :eventing:design:pipeline:knowledge:
 #+created: 2026-05-26
-#+updated: 2026-05-26
+#+updated: 2026-10-10
 
 * Overview
 
 Every entity change in ORE Studio flows through a four-stage pipeline:
 
 1. PostgreSQL fires a =pg_notify= on a named channel.
-2. The service's =postgres_event_source= deserialises the payload and
-   publishes a typed in-process event to the =event_bus=.
-3. A subscriber in the service translates the in-process event to a NATS
-   message and publishes it on a well-known subject.
-4. A UI client (or any NATS subscriber) receives the NATS message and
-   reacts.
+2. The service's =postgres_event_source= deserialises the notification and
+   publishes the entity's typed event, and an =entity_change_event= that
+   carries the tenant, to the in-process =event_bus=.
+3. A subscriber in the service publishes the typed event to NATS on the
+   subject its =entity_event_traits= state.
+4. A client (or any NATS subscriber) receives the NATS message and reacts.
 
-The diagram below shows these four stages for a workunit change:
+The diagram below shows these stages for a workunit change:
 
 #+begin_example
   ┌─────────────────────────────────────────────────────────────────────┐
   │ PostgreSQL                                                          │
-  │  ores_compute_workunits_tbl → ores_compute_workunits_notify_trg            │
-  │  → pg_notify('ores_compute_workunits', {entity, timestamp, ids, tenant})│
+  │  ores_compute_workunits_tbl → ores_compute_workunits_notify_trg     │
+  │  → pg_notify('ores_compute_workunits', {event_id, entity, key,      │
+  │      action, version, occurred_at, correlation_id, tenant_id})      │
   └───────────────────────────┬─────────────────────────────────────────┘
                               │  LISTEN/NOTIFY (libpq)
   ┌───────────────────────────▼─────────────────────────────────────────┐
   │ ores.compute.service (server process)                               │
   │  postgres_event_source → event_bus                                  │
-  │  → subscriber → nats.publish("ores.compute.workunit_changed")          │
+  │    workunit_event, entity_change_event                              │
+  │  → subscriber → nats.publish("compute.v1.workunits_events.updated") │
   └───────────────────────────┬─────────────────────────────────────────┘
                               │  NATS publish/subscribe
   ┌───────────────────────────▼─────────────────────────────────────────┐
-  │ NATS subscriber (ores.shell, or a future UI client)                 │
-  │  subscribe("ores.compute.workunit_changed")                            │
-  │  → onNotificationReceived                                           │
-  │  → markAsStale()                                                   │
+  │ NATS subscriber (another service, or the web server's event stream) │
+  │  subscribe("compute.v1.workunits_events.>")                         │
   └─────────────────────────────────────────────────────────────────────┘
 #+end_example
 
 * Stage 1 — PostgreSQL =pg_notify=
 
 Every table that participates in eventing has a dedicated AFTER trigger
-that calls =pg_notify=.  The trigger lives in
+that calls =pg_notify=. The trigger is generated into
 [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]; the workunit example is in
 =projects/ores.sql/create/compute/compute_workunits_notify_trigger_create.sql=.
 
-The notification payload is a JSON object with four fixed fields:
+The notification payload is a JSON object, the specification's event fields
+plus the tenant:
 
-| Field        | Type                | Meaning                                       |
-|--------------+---------------------+-----------------------------------------------|
-| =entity=     | =text=              | Fully-qualified entity name (see §Naming)     |
-| =timestamp=  | =text=              | UTC timestamp in =YYYY-MM-DD HH24:MI:SS= form |
-| =entity_ids= | =jsonb array=       | Identifiers of the changed rows               |
-| =tenant_id=  | =text=              | Tenant UUID for the changed rows              |
+| Field            | Type   | Meaning                                                        |
+|------------------+--------+----------------------------------------------------------------|
+| =event_id=       | =text= | Identifies this publication; a redelivery carries the same id  |
+| =entity=         | =text= | The entity's fully-qualified name, such as =ores.compute.workunit= |
+| =key=            | =text= | The changed row's key, as a JSON object such as ={"id": "..."}=  |
+| =action=         | =text= | =created=, =updated= or =deleted=                              |
+| =version=        | =int=  | The version the change produced                                |
+| =occurred_at=    | =text= | UTC time of the change                                         |
+| =correlation_id= | =text= | The request that caused the change, when one is known          |
+| =tenant_id=      | =text= | The tenant that owns the row; consumed in process, not published |
 
 The channel name (first argument to =pg_notify=) follows the convention
 =ores_<table_base_name>=, e.g. =ores_compute_workunits= for
-=ores_compute_workunits_tbl=.  Entities with a text primary key (e.g. ISO
-codes) put the text key in =entity_ids=; UUID-keyed entities put the
-UUID string.
+=ores_compute_workunits_tbl=. A versioned table's update closes the current
+row and the insert that follows carries the change, so the close announces
+nothing.
 
 ** Naming conventions
 
-Event names follow a three-part dotted scheme:
+An entity's change event is addressed by three subjects, one per action:
 
 #+begin_example
-  ores.<domain>.<entity>_changed
+  {component}.v1.{resource}_events.{action}
 #+end_example
 
 Examples:
-- =ores.refdata.currency_changed=
-- =ores.compute.workunit_changed=
-- =ores.iam.account_changed=
+- =refdata.v1.currencies_events.updated=
+- =compute.v1.workunits_events.created=
+- =iam.v1.accounts_events.deleted=
 
-The entity name embedded in the payload (=entity= field) uses the same
-prefix without the =_changed= suffix:
-
-#+begin_example
-  ores.<domain>.<entity>
-#+end_example
+The prefix, =refdata.v1.currencies_events=, is stated once in the event's
+=entity_event_traits=. A subscriber that wants one action subscribes to one
+subject. A subscriber that wants all three asks =event_subject_wildcard<T>()=
+for =<prefix>.>=; the bare prefix matches none of them.
 
 * Stage 2 — Server-side pickup (=postgres_event_source= → =event_bus=)
 
 =postgres_event_source= (in [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]]) maintains a persistent
-PostgreSQL LISTEN connection.  On each incoming notification it:
+PostgreSQL LISTEN connection. On each incoming notification it:
 
-1. Deserialises the JSON payload into an =entity_change_event= struct.
-2. Looks up the registered mapping for the channel name to find the
-   typed event type.
-3. Populates a typed event (e.g. =workunit_changed_event=) and
-   publishes it on the in-process =event_bus=.
+1. Deserialises the JSON payload into an =entity_event_notification=.
+2. Finds the mapping registered for the channel and converts the
+   notification into the entity's typed event, through the event's own
+   =entity_event_traits::from_notification=, which knows the entity's key.
+3. Publishes the typed event on the in-process =event_bus=.
+4. Publishes an =entity_change_event= -- the entity's name, the changed ids
+   and the tenant -- on the same bus.
 
-Mappings are registered during application startup via the
-=eventing::service::registrar= helper:
+Mappings are registered during application startup. The generated
+per-entity registrar does it:
 
 #+begin_src cpp
-  ev::service::registrar::register_mapping<cev::workunit_changed_event>(
-      event_source, "ores.compute.workunit", "ores_compute_workunits");
+  event_source.register_entity_event_mapping<compute::messaging::workunit_event>(
+      "ores_compute_workunits");
 #+end_src
 
-The third argument is the PostgreSQL channel name (must match
-=pg_notify=); the second is the entity name for logging.
+The argument is the PostgreSQL channel name; it must match =pg_notify=.
 
-Each event type must have an =event_traits= specialisation that provides
-its NATS subject name as a constexpr =string_view=:
+** When a subscriber needs the tenant
 
-#+begin_src cpp
-  template<>
-  struct event_traits<ores::compute::eventing::workunit_changed_event> {
-      static constexpr std::string_view name = "ores.compute.workunit_changed";
-  };
-#+end_src
-
-This specialisation lives in the API package alongside the event struct,
-e.g.
-=ores.compute.api/include/ores.compute.api/eventing/workunit_changed_event.hpp=.
-
-* Stage 3 — NATS publish
-
-A subscriber registered on the =event_bus= converts the typed in-process
-event to JSON and publishes it to NATS on the subject given by
-=event_traits<T>::name=:
+The typed event states the row, the action and the version. It does not state
+the tenant. A subscriber that has to open a tenant context, such as the
+compute dispatcher, subscribes to =entity_change_event= and keeps the entity it
+serves:
 
 #+begin_src cpp
-  auto sub = event_bus.subscribe<cev::workunit_changed_event>(
-      [&nats](const cev::workunit_changed_event& e) {
-          publish_entity_event(nats, "ores.compute.workunit_changed",
-              ev::domain::entity_change_event{
-                  .entity     = "ores.compute.workunit",
-                  .timestamp  = e.timestamp,
-                  .entity_ids = e.ids,
-                  .tenant_id  = e.tenant_id
-              });
+  event_bus.subscribe<ores::eventing::domain::entity_change_event>(
+      [&dispatcher](const ores::eventing::domain::entity_change_event& e) {
+          if (e.entity == "ores.compute.workunit")
+              dispatcher.dispatch(e);
       });
 #+end_src
 
-The =entity_change_event= JSON sent on NATS has the same four fields as
-the PostgreSQL payload; it is the wire format shared by all downstream
-consumers including UI clients.
+A service that listens on another component's table maps the channel to that
+component's event, as the marketdata service does for the CRM tables, and
+publishes nothing: the owning service publishes.
+
+* Stage 3 — NATS publish
+
+The generated registrar also subscribes to the typed event and publishes it
+to NATS on the subject the action names:
+
+#+begin_src cpp
+  return event_bus.subscribe<compute::messaging::workunit_event>(
+      [&nats](const compute::messaging::workunit_event& e) {
+          ev::service::publish_entity_event(
+              nats, ev::domain::event_subject<compute::messaging::workunit_event>(e.action), e);
+      });
+#+end_src
+
+** Events that are not entity changes
+
+A domain event that is not a change to an entity, such as a role being
+assigned, is a hand-written type with an =event_traits= specialisation. Its
+name identifies it on the in-process bus, and it is not published to NATS.
+=ores.iam= declares =role_assigned_event=, =role_revoked_event= and
+=account_permissions_changed_event= this way.
 
 * Stage 4 — Client pickup
 
-The client-side half of this stage went with the desktop client, which
-registered interest with =subscribeToEvent(subject)= on its
-=ClientManager=. On arrival the client library deserialised the payload
-and emitted a =notificationReceived= signal carrying the event type, the
-change timestamp, the changed identifiers, and the tenant id. Controllers
-connected to that signal, filtered by event type, and marked the affected
-windows stale. Subscription was renewed on login and reconnect, and torn
-down in the controller destructor.
+A NATS subscriber registers interest in a prefix's wildcard and receives the
+typed event as the payload. The web server holds one subscription per tenant
+and entity for all the sessions watching it and relays the events to each
+browser on =GET /api/events=; see
+[[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]]. Its registry still names the retired
+=ores.<component>.<entity>_changed= subjects, so it needs to move to the
+prefixes above before a screen can use it.
 
-Nothing in the server half changed. A rebuilt UI client reimplements that
-contract against the same subjects.
+* Verifying eventing
 
-* Verifying eventing with =ores.shell=
+The =events= commands of =ores.shell= print "Event subscriptions are not
+available in NATS mode", so they cannot show an event. To watch one, subscribe
+to the wildcard with the NATS command line client, under the environment's
+subject prefix (the services log it at startup), and write to the entity by
+any path:
 
-The =events= commands in [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Shell recipes]] let you inspect and exercise the
-pipeline from the command line without building a UI client.
-
-** List registered channels
-
-#+begin_src ores-shell
-events channels
-exit
+#+begin_src sh
+  nats sub 'ores.dev.<environment>.compute.v1.workunits_events.>'
 #+end_src
 
-Shows every channel registered with the =event_channel_registry= at
-startup.  If =ores.compute.workunit_changed= is absent, the service
-did not call =register_mapping=.
-
-** Subscribe and watch for events
-
-#+begin_src ores-shell
-events listen ores.compute.workunit_changed
-#+end_src
-
-Then perform a workunit create/edit by any write path; the shell
-should print a JSON notification within a second.  If nothing appears, check:
+If nothing arrives within a second, check:
 
 1. The SQL trigger exists: =\df ores_compute_workunits_notify_fn= in =psql=.
-2. The service log shows "Entity change event pipeline started."
-3. The NATS subject matches exactly (case-sensitive).
-
-See recipes [[id:23DF494F-F41E-42F4-8F49-2341C9F7ABFE][Listen]] and [[id:54371D4E-6B27-4EBB-9368-158A63FAEC9A][Channels]] for executable examples.
+2. The service started its event source, and the log names the channel.
+3. The subject matches exactly; subjects are case-sensitive.
 
 * Adding eventing to a new entity
 
-To wire eventing for a new entity, four artefacts are needed:
+Eventing is generated. The =nats-eventing= and =nats-event-registrar= facets
+of the entity's model produce:
 
-1. *SQL trigger* — =projects/ores.sql/create/<domain>/<entity>_notify_trigger.sql=
-   calling =pg_notify('<channel>', payload)= after insert/update/delete.
+1. *SQL trigger* — =<table>_notify_trigger_create.sql=, calling =pg_notify=
+   after insert, update and delete.
 
-2. *Event type* — =<domain>.api/include/<domain>.api/eventing/<entity>_changed_event.hpp=
-   with the struct and =event_traits= specialisation.
+2. *Event traits* — =<domain>.api/include/<domain>.api/eventing/<entity>_event.hpp=
+   with the =entity_event_traits= specialisation that states the subject
+   prefix. The event struct sits beside the entity's key in its protocol
+   header.
 
-3. *Service registration* — in the service =application.cpp=, call
-   =registrar::register_mapping<T>= and subscribe on the =event_bus=.
-   Also add =ores.eventing.lib= to the service CMakeLists.
+3. *Registrar* — =register_<entity>_event_mapping()=, which maps the channel
+   to the event and publishes it to NATS.
 
-4. *Client subscription* — a UI client subscribes on construction and
-   login, unsubscribes on destruction, and marks the affected windows
-   stale when the event arrives. The removed desktop client's version of
-   this is in §Stage 4.
+The service's =application.cpp= calls the registrar before
+=event_source.start()=, and a registrar that is not called publishes nothing.
+Add =ores.eventing.core= to the service CMakeLists.
 
 * See also
 
 - [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] — component overview
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — database schema and triggers
-- [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Shell recipes]] — =events listen=, =events channels=
+- [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]] — how the web interface consumes these events

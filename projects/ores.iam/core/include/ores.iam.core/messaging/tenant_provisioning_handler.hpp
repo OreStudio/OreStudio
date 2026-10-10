@@ -858,7 +858,8 @@ private:
     /// where the installation is read from: a coding-scheme validator resolves
     /// its scheme there, a template image is read from there across the
     /// tenant-isolation policy, and several reference reads treat its rows as a
-    /// shared overlay on the tenant's own.
+    /// shared overlay on the tenant's own. It then records that the system setup
+    /// finished.
     ///
     /// The step runs before the tenant's own steps, so the tenant is built on a
     /// system that already makes sense. It acts as a system administrator rather
@@ -885,6 +886,7 @@ private:
                                                  super_actor.username);
             publish_bundle_or_throw(
                 admin_client, bundle_code, super_actor.username, params_json, command.kind);
+            complete_system_onboarding(admin_client);
             wf.complete(rfl::json::write(
                 provision_step_result{.kind = command.kind, .bundles = {bundle_code}}));
             return;
@@ -1949,6 +1951,17 @@ private:
         if (resp.result.outcome != ores::utility::domain::outcome::ok)
             throw std::runtime_error("The LEI of '" + party.full_name +
                                      "' was not recorded: " + resp.result.message);
+    }
+
+    /// Records that the system setup finished, which is what stops a screen
+    /// from showing the system administrator the setup wizard again. The run
+    /// records it, so every client that starts a run gets the same result.
+    static void complete_system_onboarding(internal_request_client& client) {
+        ores::variability::messaging::complete_system_onboarding_request req;
+        const auto resp = client.request(req);
+        if (resp.result.outcome != ores::utility::domain::outcome::ok)
+            throw std::runtime_error("The system onboarding was not completed: " +
+                                     resp.result.message);
     }
 
     /// Marks the party's onboarding wizard complete, which is what makes the

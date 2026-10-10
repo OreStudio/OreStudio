@@ -25,12 +25,12 @@ import type { Account, SessionMode } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { RecordList, type ListSource } from '../refdata/RecordList.js';
-import { LinkButton } from '../ui/Primitives.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { Tag } from '../ui/Primitives.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { useHolds } from './holds.js';
+import { StaffOfMyParties } from '../membership/StaffOfMyParties.js';
 
 /** The address of one person's page. */
 export function personPath(username: string): string {
@@ -68,6 +68,10 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
      * column.
      */
     const mayReadRoles = holds('iam::roles:read');
+    // A member reads the people of their parties from the organisation, not the accounts.
+    if (!system && !holds('iam::accounts:read') && holds('iam::organisation:read')) {
+        return <StaffOfMyParties />;
+    }
     const lead = system
         ? t('accounts.description')
         : mayReadRoles
@@ -78,11 +82,14 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
             source={PEOPLE}
             title={title}
             lead={lead}
-            crumbs={[{ label: t('shell.menu.home'), to: '/' }, { label: title }]}
-            actions={
-                <LinkButton to="/reporting-lines" variant="ghost" size="sm">
-                    {t('membership.reporting.title')}
-                </LinkButton>
+            crumbs={
+                system
+                    ? [{ label: t('shell.menu.home'), to: '/' }, { label: title }]
+                    : [
+                          { label: t('shell.menu.home'), to: '/' },
+                          { label: t('access.hub.title'), to: '/organisation' },
+                          { label: title },
+                      ]
             }
             pathOf={(account) => personPath(account.username)}
             columns={[

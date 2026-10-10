@@ -28,14 +28,18 @@ import type { OresClient } from '@ores/wire-protocol';
  * another user's token, so its lifecycle rules are asserted directly.
  */
 
-function fakeClient(): OresClient & { closed: boolean } {
+function fakeClient(): OresClient & { closed: boolean; loggedOut: boolean } {
     const client = {
         closed: false,
+        loggedOut: false,
+        async logout(): Promise<void> {
+            client.loggedOut = true;
+        },
         async close(): Promise<void> {
             client.closed = true;
         },
     };
-    return client as unknown as OresClient & { closed: boolean };
+    return client as unknown as OresClient & { closed: boolean; loggedOut: boolean };
 }
 
 const baseInput = {
@@ -87,6 +91,44 @@ describe('createSessionStore', () => {
         await store.destroy(created.id);
         expect(store.size).toBe(0);
         expect(client.closed).toBe(true);
+    });
+
+    it('tells the service when a person signs out, before the connection closes', async () => {
+        const store = createSessionStore({ ttlSeconds: 60 });
+        const client = fakeClient();
+        const created = store.create({ client, session: null, ...baseInput });
+
+        await store.destroy(created.id);
+
+        expect(client.loggedOut).toBe(true);
+        expect(client.closed).toBe(true);
+    });
+
+    it('still removes the session when the service cannot be told', async () => {
+        const store = createSessionStore({ ttlSeconds: 60 });
+        const client = fakeClient();
+        client.logout = async () => {
+            throw new Error('service down');
+        };
+        const created = store.create({ client, session: null, ...baseInput });
+
+        await store.destroy(created.id);
+
+        expect(store.get(created.id)).toBeUndefined();
+        expect(client.closed).toBe(true);
+    });
+
+    it('does not tell the service when a session merely expires', async () => {
+        let clock = 0;
+        const store = createSessionStore({ ttlSeconds: 60, now: () => clock });
+        const client = fakeClient();
+        const created = store.create({ client, session: null, ...baseInput });
+
+        clock = 61_000;
+        store.get(created.id);
+        await Promise.resolve();
+
+        expect(client.loggedOut).toBe(false);
     });
 
     it('closes every connection on shutdown', async () => {

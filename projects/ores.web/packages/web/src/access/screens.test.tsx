@@ -123,10 +123,26 @@ function render(seed: (client: QueryClient) => void, path: string, routes: React
 describe('My access', () => {
     it('names the roles held, who gave them and why, and draws only what they allow', () => {
         const html = render(
-            (client) =>
+            (client) => {
                 client.setQueryData(['my-access'], {
                     roles: [held(TRADING, 'Trading', ['refdata::currencies:read'])],
-                }),
+                });
+                // The page of permissions is the server's, read with the screen's paging.
+                client.setQueryData(['permission-page', 'me', '', '', 0, 15], {
+                    area: 'refdata',
+                    totalCount: 1,
+                    areas: [{ component: 'refdata', resources: 1 }],
+                    rows: [
+                        {
+                            component: 'refdata',
+                            resource: 'currencies',
+                            actions: ['read', 'write', 'delete'],
+                            held: ['read'],
+                            roles: ['Trading'],
+                        },
+                    ],
+                });
+            },
             '/access',
             <Route path="/access" element={<MyAccessPage tenantName="Acme" />} />,
         );
@@ -136,9 +152,9 @@ describe('My access', () => {
         expect(html).toContain('src="/api/accounts/priya/picture"');
         expect(html).toContain('1 of 3 permissions');
         expect(html).toContain('Reference data');
-        // Only the area the role grants is drawn as a section; the others stay
-        // choices in the area filter.
+        // One area is drawn, the chosen one, and the combo box has no all areas.
         expect(html.match(/<details/g)).toHaveLength(1);
+        expect(html).not.toContain('All areas');
     });
 
     it('says everything rather than ticking every permission', () => {

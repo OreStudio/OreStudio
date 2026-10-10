@@ -66,6 +66,9 @@ import {
     giveRole,
     permissionEntrySchema,
     readAccountAccess,
+    readAccountPermissions,
+    readMyPermissions,
+    permissionPageSchema,
     readMyAccess,
     readPermissionCatalogue,
     readRoles,
@@ -1116,6 +1119,37 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw notFound('No account has this identifier.');
         }
         return accountAccessSchema.parse(await readAccountAccess(session.client, accountId));
+    });
+
+    /** The paging a permissions page is asked for, as the browser sends it on the query. */
+    const permissionQuerySchema = z.object({
+        area: z.string().max(100).default(''),
+        search: z.string().max(200).default(''),
+        offset: z.coerce.number().int().nonnegative().default(0),
+        limit: z.coerce.number().int().positive().max(500).default(15),
+    });
+
+    /** One page of what the signed-in person's own roles let them do. A self read. */
+    server.get('/api/me/permissions', async (request) => {
+        const session = requireSession(request);
+        const query = permissionQuerySchema.safeParse(request.query);
+        if (!query.success) {
+            throw invalidRequest('The page asked for is not one.');
+        }
+        return permissionPageSchema.parse(await readMyPermissions(session.client, query.data));
+    });
+
+    /** One page of what one account's roles let it do. The server allows it to a holder of iam::roles:read. */
+    server.get('/api/accounts/:accountId/permissions', async (request) => {
+        const session = requireSession(request);
+        const { accountId } = request.params as { accountId: string };
+        const query = permissionQuerySchema.safeParse(request.query);
+        if (!isUuid(accountId) || !query.success) {
+            throw invalidRequest('The page asked for is not one.');
+        }
+        return permissionPageSchema.parse(
+            await readAccountPermissions(session.client, accountId, query.data),
+        );
     });
 
     /** What the browser sends to give a role: the role, the reason and a note. */

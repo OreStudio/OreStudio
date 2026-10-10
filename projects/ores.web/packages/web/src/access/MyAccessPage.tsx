@@ -119,9 +119,11 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
                               })}
                     </p>
                 </div>
-                {everything === undefined && (
-                    <RolesAllow roles={roles} catalogue={catalogue.data} />
-                )}
+                <RolesAllow
+                    queryKey={['me']}
+                    read={(query) => api.myPermissions(query)}
+                    everythingBy={everything?.name}
+                />
             </section>
 
             {asking && <AskForRoleDialog onClose={() => setAsking(false)} />}

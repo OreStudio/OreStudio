@@ -67,7 +67,7 @@ reason beside any box that does not. The groups are the order of work.
 - [x] P7 Can I... on the staff person page
 
 ** Access and roles
-- [x] P3 Page the permissions a role grants (reopened once: the first fix paged areas, the second pages the permission rows with the standard pager)
+- [x] P3 Page the permissions a role grants (reopened twice: areas paged in the browser, then rows paged in the browser; now the server pages the rows and the pager is the request)
 - [x] P4 Select the permission area (Reference data, Data quality, ...)
 - [x] P10 Requests visible to every member
 - [x] P6 Protect my account: the Security page now reads sign-in state and sessions through two self reads (get_my_login_info, get_my_sessions)

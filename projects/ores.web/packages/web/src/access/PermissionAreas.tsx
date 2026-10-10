@@ -37,7 +37,7 @@ export function PermissionAreas({
     granted,
     onlyGranted = false,
     filter = '',
-    window,
+    summary,
     onToggle,
     explain,
 }: {
@@ -47,11 +47,10 @@ export function PermissionAreas({
     readonly onlyGranted?: boolean;
     readonly filter?: string;
     /**
-     * The resources to draw, as =component::resource=, when the caller pages
-     * them. The area's counts still cover the whole area, so a page of rows does
-     * not change what an area says it holds.
+     * What to say about an area's size, when the rows given are one page of it
+     * and the counts the rows would give are the page's, not the area's.
      */
-    readonly window?: ReadonlySet<string>;
+    readonly summary?: string;
     /** Present when the person may change the set. */
     readonly onToggle?: (code: string, on: boolean) => void;
     /** Names the roles behind a granted code, shown as its hover text. */
@@ -71,8 +70,6 @@ export function PermissionAreas({
                     !area.component.includes(needle) &&
                     !areaName.toLowerCase().includes(needle)
                 )
-                    return false;
-                if (window !== undefined && !window.has(`${area.component}::${resource.name}`))
                     return false;
                 if (onlyGranted)
                     return resource.actions.some((action) =>
@@ -132,12 +129,14 @@ export function PermissionAreas({
                                 </label>
                             )}
                             <span className="text-xs tabular-nums text-ink-muted">
-                                {whole
-                                    ? t('access.allCount', { count: String(area.size) })
-                                    : t('access.someCount', {
-                                          held: String(held),
-                                          count: String(area.size),
-                                      })}
+                                {summary !== undefined
+                                    ? summary
+                                    : whole
+                                      ? t('access.allCount', { count: String(area.size) })
+                                      : t('access.someCount', {
+                                            held: String(held),
+                                            count: String(area.size),
+                                        })}
                             </span>
                         </summary>
                         <div className="overflow-x-auto border-t border-line">
@@ -240,41 +239,6 @@ export function PermissionAreas({
     );
 }
 
-/**
- * The resources a filter would draw, in the order they are drawn, as
- * =component::resource=. A caller that pages the rows pages this list and hands
- * the page back as the window.
- */
-export function permissionRows(
-    areas: readonly Area[],
-    granted: ReadonlySet<string>,
-    options: {
-        readonly onlyGranted: boolean;
-        readonly filter: string;
-        readonly areaName: (component: string) => string;
-    },
-): readonly string[] {
-    const needle = options.filter.trim().toLowerCase();
-    return areas.flatMap((area) =>
-        area.resources
-            .filter((resource) => {
-                if (
-                    needle !== '' &&
-                    !resource.name.replace(/_/g, ' ').includes(needle) &&
-                    !area.component.includes(needle) &&
-                    !options.areaName(area.component).toLowerCase().includes(needle)
-                )
-                    return false;
-                if (options.onlyGranted)
-                    return resource.actions.some((action) =>
-                        covers(granted, `${area.component}::${resource.name}:${action}`),
-                    );
-                return true;
-            })
-            .map((resource) => `${area.component}::${resource.name}`),
-    );
-}
-
 /** An area's name in the person's language, or its code when it has none. */
 export function areaLabel(t: (key: string) => string, component: string): string {
     const key = `access.area.${component}`;
@@ -293,10 +257,16 @@ export function AreaFilter({
     areas,
     value,
     onChange,
+    includeAll = true,
 }: {
-    readonly areas: readonly Area[];
+    readonly areas: readonly { readonly component: string }[];
     readonly value: string;
     readonly onChange: (component: string) => void;
+    /**
+     * Whether the first choice is every area. A list paged by the server shows
+     * one area at a time, so it offers none.
+     */
+    readonly includeAll?: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     const named = areas
@@ -309,7 +279,7 @@ export function AreaFilter({
             onChange={(event) => onChange(event.target.value)}
             aria-label={t('access.areaFilter')}
         >
-            <option value="">{t('access.allAreas')}</option>
+            {includeAll && <option value="">{t('access.allAreas')}</option>}
             {named.map(({ component, name }) => (
                 <option key={component} value={component}>
                     {name}

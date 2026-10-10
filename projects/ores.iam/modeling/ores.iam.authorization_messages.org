@@ -182,6 +182,193 @@ A note the administrator adds to the reason. It is stored on the grant.
 :response: get_account_roles_response
 :END:
 
+** permission_resource_row
+
+#+begin_src cpp :name comment
+/**
+ * @brief One resource of the permission catalogue and what an account holds of it.
+ *
+ * The unit of a page. A screen draws a resource as a row with its actions as
+ * columns, so a page holds whole rows and never half of one. =actions= are the
+ * actions the catalogue defines for the resource, =held= the ones the account's
+ * roles grant, and =roles= the roles that grant any of them, so a screen can
+ * say why without reading the roles again.
+ */
+#+end_src
+
+*** component
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** resource
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** actions
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** held
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** roles
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** permission_area_count
+
+#+begin_src cpp :name comment
+/**
+ * @brief One area (a component) in which an account holds something, and how
+ * many of its resources they hold.
+ *
+ * The areas a screen offers to choose from. An area the account holds nothing
+ * in is not listed, so there is nothing to choose that would show an empty page.
+ */
+#+end_src
+
+*** component
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** resources
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+** list_account_permissions_request
+:PROPERTIES:
+:subject: iam.v1.ops.list_account_permissions
+:response: permission_page_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One page of what an account's roles let it do, by resource.
+ *
+ * The caller needs iam::roles:read, as reading the account's roles does. The
+ * page is the server's: =offset= and =limit= bound the rows, =area= narrows
+ * them to one component, and =search= to a resource or component name. An empty
+ * =area= means the first area the account holds something in, so a page is
+ * always of one area.
+ */
+#+end_src
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** area
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** search
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 15
+:END:
+
+** list_my_permissions_request
+:PROPERTIES:
+:subject: iam.v1.ops.list_my_permissions
+:response: permission_page_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One page of what the caller's own roles let them do, by resource.
+ *
+ * The session names the account, so the request names none and the read needs
+ * no permission: it is a self read on the allow-list of Authorised reads. The
+ * paging fields are those of iam.v1.ops.list_account_permissions.
+ */
+#+end_src
+
+*** area
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** search
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 15
+:END:
+
+** permission_page_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** area
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The area the rows belong to: the one asked for, or the first the
+ * account holds something in when none was.
+ */
+#+end_src
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::vector<permission_resource_row>
+:END:
+
+*** total_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows match the area and the search, not how many this page
+ * holds.
+ */
+#+end_src
+
+*** areas
+:PROPERTIES:
+:cpp_type: std::vector<permission_area_count>
+:END:
+
 ** account_role_access
 
 #+begin_src cpp :name comment

@@ -24,6 +24,7 @@ import type { AuthenticatedCaller } from './account-operations.js';
 import {
     uuidSchema,
     type AccountAccess,
+    type PermissionPage,
     type PermissionEntry,
     type RoleSummary,
 } from './domain.js';
@@ -33,6 +34,8 @@ import {
     type AssignRoleRequest,
     type GetAccountRolesRequest,
     type GetMyRolesRequest,
+    type ListAccountPermissionsRequest,
+    type ListMyPermissionsRequest,
     type GetRolePermissionsRequest,
     type PutRolePermissionsRequest,
     type RevokeRoleRequest,
@@ -52,6 +55,8 @@ import { resultEnvelopeSchema } from './operations.js';
 export const ACCESS_SUBJECTS = {
     mine: authorizationSubjects.get_my_roles_request,
     byAccount: authorizationSubjects.get_account_roles_request,
+    myPermissions: authorizationSubjects.list_my_permissions_request,
+    accountPermissions: authorizationSubjects.list_account_permissions_request,
     rolePermissions: authorizationSubjects.get_role_permissions_request,
     putRolePermissions: authorizationSubjects.put_role_permissions_request,
     assign: authorizationSubjects.assign_role_request,
@@ -351,4 +356,84 @@ export async function deleteRole(caller: AuthenticatedCaller, name: string): Pro
     return reply.result.outcome === 'ok'
         ? { done: true }
         : { done: false, message: reply.result.message };
+}
+
+const permissionPageReplySchema = z
+    .object({
+        result: resultEnvelopeSchema,
+        area: z.string().default(''),
+        rows: z
+            .array(
+                z.object({
+                    component: z.string(),
+                    resource: z.string(),
+                    actions: z.array(z.string()).default([]),
+                    held: z.array(z.string()).default([]),
+                    roles: z.array(z.string()).default([]),
+                }),
+            )
+            .default([]),
+        total_count: z.int().default(0),
+        areas: z
+            .array(z.object({ component: z.string(), resources: z.int().default(0) }))
+            .default([]),
+    })
+    .transform((row) => ({
+        result: row.result,
+        page: {
+            area: row.area,
+            rows: row.rows,
+            totalCount: row.total_count,
+            areas: row.areas,
+        } satisfies PermissionPage,
+    }));
+
+/** Which page of the permissions is asked for. An empty area is the first the account holds. */
+export interface PermissionQuery {
+    readonly area: string;
+    readonly search: string;
+    readonly offset: number;
+    readonly limit: number;
+}
+
+/** One page of what the caller's own roles let them do. A self read: no permission is needed. */
+export async function readMyPermissions(
+    caller: AuthenticatedCaller,
+    query: PermissionQuery,
+): Promise<PermissionPage> {
+    const request: ListMyPermissionsRequest = {
+        area: query.area,
+        search: query.search,
+        offset: query.offset,
+        limit: query.limit,
+    };
+    const reply = await caller.callAuthenticated(
+        ACCESS_SUBJECTS.myPermissions,
+        request,
+        permissionPageReplySchema,
+    );
+    ok(ACCESS_SUBJECTS.myPermissions, reply.result);
+    return reply.page;
+}
+
+/** One page of what one account's roles let it do. The server allows it to a holder of `iam::roles:read`. */
+export async function readAccountPermissions(
+    caller: AuthenticatedCaller,
+    accountId: string,
+    query: PermissionQuery,
+): Promise<PermissionPage> {
+    const request: ListAccountPermissionsRequest = {
+        account_id: accountId,
+        area: query.area,
+        search: query.search,
+        offset: query.offset,
+        limit: query.limit,
+    };
+    const reply = await caller.callAuthenticated(
+        ACCESS_SUBJECTS.accountPermissions,
+        request,
+        permissionPageReplySchema,
+    );
+    ok(ACCESS_SUBJECTS.accountPermissions, reply.result);
+    return reply.page;
 }

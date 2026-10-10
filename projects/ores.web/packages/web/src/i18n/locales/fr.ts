@@ -89,6 +89,7 @@ const fr: SourceCatalogue = {
         allAreas: 'Tous les domaines',
         areaFilter: 'Domaine',
         permissionsShowing: 'Affichage de {from} à {to} sur {total} autorisations',
+        resourcesHeld: '{count} ressources',
         hub: {
             title: 'Organisation',
             lead: 'Les personnes de ce locataire, et à qui elles rendent compte.',

@@ -74,6 +74,82 @@ export interface GetAccountRolesRequest {
 export interface GetMyRolesRequest {}
 
 /**
+ * @brief One resource of the permission catalogue and what an account holds of it.
+ *
+ * The unit of a page. A screen draws a resource as a row with its actions as
+ * columns, so a page holds whole rows and never half of one. =actions= are the
+ * actions the catalogue defines for the resource, =held= the ones the account's
+ * roles grant, and =roles= the roles that grant any of them, so a screen can
+ * say why without reading the roles again.
+ */
+export interface PermissionResourceRow {
+    component: string;
+    resource: string;
+    actions: string[];
+    held: string[];
+    roles: string[];
+}
+
+/**
+ * @brief One area (a component) in which an account holds something, and how
+ * many of its resources they hold.
+ *
+ * The areas a screen offers to choose from. An area the account holds nothing
+ * in is not listed, so there is nothing to choose that would show an empty page.
+ */
+export interface PermissionAreaCount {
+    component: string;
+    resources: number;
+}
+
+/**
+ * @brief One page of what an account's roles let it do, by resource.
+ *
+ * The caller needs iam::roles:read, as reading the account's roles does. The
+ * page is the server's: =offset= and =limit= bound the rows, =area= narrows
+ * them to one component, and =search= to a resource or component name. An empty
+ * =area= means the first area the account holds something in, so a page is
+ * always of one area.
+ */
+export interface ListAccountPermissionsRequest {
+    account_id: string;
+    area: string;
+    search: string;
+    offset: number;
+    limit: number;
+}
+
+/**
+ * @brief One page of what the caller's own roles let them do, by resource.
+ *
+ * The session names the account, so the request names none and the read needs
+ * no permission: it is a self read on the allow-list of Authorised reads. The
+ * paging fields are those of iam.v1.ops.list_account_permissions.
+ */
+export interface ListMyPermissionsRequest {
+    area: string;
+    search: string;
+    offset: number;
+    limit: number;
+}
+
+export interface PermissionPageResponse {
+    result: Result;
+    /**
+     * @brief The area the rows belong to: the one asked for, or the first the
+     * account holds something in when none was.
+     */
+    area: string;
+    rows: PermissionResourceRow[];
+    /**
+     * @brief How many rows match the area and the search, not how many this page
+     * holds.
+     */
+    total_count: number;
+    areas: PermissionAreaCount[];
+}
+
+/**
  * @brief One role an account holds, with the permissions it grants and the
  * record of its assignment.
  *
@@ -140,6 +216,8 @@ export const subjects = {
     revoke_role_by_name_request: 'iam.v1.ops.revoke_role_by_name',
     get_account_roles_request: 'iam.v1.ops.get_account_roles',
     get_my_roles_request: 'iam.v1.ops.get_my_roles',
+    list_account_permissions_request: 'iam.v1.ops.list_account_permissions',
+    list_my_permissions_request: 'iam.v1.ops.list_my_permissions',
     get_role_permissions_request: 'iam.v1.ops.get_role_permissions',
     put_role_permissions_request: 'iam.v1.roles_permissions.put',
     suggest_role_commands_request: 'iam.v1.ops.suggest_role_commands',
@@ -156,6 +234,8 @@ export const requiresSession = {
     revoke_role_by_name_request: true,
     get_account_roles_request: true,
     get_my_roles_request: true,
+    list_account_permissions_request: true,
+    list_my_permissions_request: true,
     get_role_permissions_request: true,
     put_role_permissions_request: true,
     suggest_role_commands_request: true,

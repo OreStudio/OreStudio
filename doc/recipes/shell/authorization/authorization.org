@@ -138,6 +138,48 @@ It is addressed at =iam.v1.ops.get_my_roles=.
 authorization get-my-roles
 #+end_src
 
+** =list-account-permissions=
+:PROPERTIES:
+:ID: A1BC6441-AFAA-5242-ABB4-D553D609CA2E
+:END:
+
+Sends =list_account_permissions_request= and prints =permission_page_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, =area=, =search=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization list-account-permissions <account_id> <area> <search> [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =iam.v1.ops.list_account_permissions=.
+
+#+name: authorization-list-account-permissions
+#+begin_src ores-shell :tangle authorization-list-account-permissions.ores :exports none
+authorization list-account-permissions __none__ __none__ __none__
+#+end_src
+
+** =list-my-permissions=
+:PROPERTIES:
+:ID: 6C9FA199-A4D4-507A-B3A9-D3B5347FD979
+:END:
+
+Sends =list_my_permissions_request= and prints =permission_page_response=, so the shape is the protocol's and the meaning is the service's. It reads =area=, =search=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization list-my-permissions <area> <search> [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =iam.v1.ops.list_my_permissions=.
+
+#+name: authorization-list-my-permissions
+#+begin_src ores-shell :tangle authorization-list-my-permissions.ores :exports none
+authorization list-my-permissions __none__ __none__
+#+end_src
+
 ** =get-role-permissions=
 :PROPERTIES:
 :ID: D657A55F-ED53-5C39-92DC-F532C984173E

@@ -94,6 +94,7 @@ const pt: SourceCatalogue = {
         allAreas: 'Todas as áreas',
         areaFilter: 'Área',
         permissionsShowing: 'A mostrar {from}–{to} de {total} permissões',
+        resourcesHeld: '{count} recursos',
         hub: {
             title: 'Organização',
             lead: 'As pessoas deste inquilino, e a quem reportam.',

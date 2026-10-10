@@ -95,6 +95,7 @@ export const en: SourceCatalogue = {
         allAreas: 'All areas',
         areaFilter: 'Area',
         permissionsShowing: 'Showing {from}–{to} of {total} permissions',
+        resourcesHeld: '{count} resources',
         hub: {
             title: 'Organisation',
             lead: 'The people of this tenant, and who they report to.',

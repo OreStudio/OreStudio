@@ -333,7 +333,13 @@ function Person({
                         <h2 className="text-sm font-semibold">
                             {t('access.person.whatTheyAllow')}
                         </h2>
-                        <RolesAllow roles={roles} catalogue={catalogue.data ?? []} />
+                        <RolesAllow
+                            queryKey={['account', account.id]}
+                            read={(query) => api.accountPermissions(account.id, query)}
+                            everythingBy={
+                                roles.find((role) => role.permissionCodes.includes('*'))?.name
+                            }
+                        />
                     </section>
                 </div>
             )}

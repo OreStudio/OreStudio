@@ -167,6 +167,97 @@ describe('access routes', () => {
         });
     });
 
+    const permissionAnswer = {
+        result: { outcome: 'ok', code: '', message: '' },
+        area: 'refdata',
+        rows: [
+            {
+                component: 'refdata',
+                resource: 'currencies',
+                actions: ['read', 'write', 'delete'],
+                held: ['read'],
+                roles: ['Trading'],
+            },
+        ],
+        total_count: 40,
+        areas: [{ component: 'refdata', resources: 40 }],
+    };
+
+    it('asks the server for one page of the signed-in person permissions, with the paging sent', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.list_my_permissions': permissionAnswer,
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/me/permissions?area=refdata&search=cur&offset=15&limit=15',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]).toEqual({
+            subject: 'iam.v1.ops.list_my_permissions',
+            body: { area: 'refdata', search: 'cur', offset: 15, limit: 15 },
+        });
+        expect(response.json()).toEqual({
+            area: 'refdata',
+            totalCount: 40,
+            areas: [{ component: 'refdata', resources: 40 }],
+            rows: [
+                {
+                    component: 'refdata',
+                    resource: 'currencies',
+                    actions: ['read', 'write', 'delete'],
+                    held: ['read'],
+                    roles: ['Trading'],
+                },
+            ],
+        });
+    });
+
+    it('asks for one account page of permissions by its identifier', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.list_account_permissions': permissionAnswer,
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/accounts/${DANIEL}/permissions`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({
+            account_id: DANIEL,
+            area: '',
+            search: '',
+            offset: 0,
+            limit: 15,
+        });
+    });
+
+    it('refuses a page size beyond the limit and an account that is not an identifier', async () => {
+        const { server, cookies, calls } = buildTestServer({});
+
+        const tooBig = await server.inject({
+            method: 'GET',
+            url: '/api/me/permissions?limit=5000',
+            cookies,
+        });
+        const notAnAccount = await server.inject({
+            method: 'GET',
+            url: '/api/accounts/not-an-id/permissions',
+            cookies,
+        });
+        await server.close();
+
+        expect(tooBig.statusCode).toBe(400);
+        expect(notAnAccount.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     it('gives a role for the reason the person chose', async () => {
         const { server, cookies, calls } = buildTestServer({
             'iam.v1.ops.assign_role': { success: true, error_message: '' },

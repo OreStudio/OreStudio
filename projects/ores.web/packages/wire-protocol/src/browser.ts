@@ -44,6 +44,7 @@ export type { Uuid, WireTimestamp } from './primitives.js';
 export {
     ACCOUNT_TYPES,
     accountAccessSchema,
+    permissionPageSchema,
     accountContactInformationSchema,
     accountPageSchema,
     accountSignInsSchema,
@@ -72,6 +73,9 @@ export {
 export type {
     Account,
     AccountAccess,
+    PermissionArea,
+    PermissionPage,
+    PermissionRow,
     AccountContactInformation,
     AccountPage,
     AccountSignIns,

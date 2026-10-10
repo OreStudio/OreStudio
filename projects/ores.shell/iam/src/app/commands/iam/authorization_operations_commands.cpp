@@ -121,6 +121,20 @@ void authorization_operations_commands::register_commands(cli::Menu& root_menu,
         "get-my-roles");
 
     menu->Insert(
+        "list-account-permissions",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_list_account_permissions(std::ref(out), std::ref(session), std::move(args));
+        },
+        "list-account-permissions <account_id> <area> <search> [--offset <v>] [--limit <v>]");
+
+    menu->Insert(
+        "list-my-permissions",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_list_my_permissions(std::ref(out), std::ref(session), std::move(args));
+        },
+        "list-my-permissions <area> <search> [--offset <v>] [--limit <v>]");
+
+    menu->Insert(
         "get-role-permissions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_role_permissions(std::ref(out), std::ref(session), std::move(args));
@@ -456,6 +470,131 @@ void authorization_operations_commands::process_get_my_roles(std::ostream& out,
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::iam::messaging::get_account_roles_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void authorization_operations_commands::process_list_account_permissions(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list-account-permissions request.";
+
+    using request_type = ores::iam::messaging::list_account_permissions_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list-account-permissions." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 3;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.account_id = parsed->positionals[next++];
+        req.area = parsed->positionals[next++];
+        req.search = parsed->positionals[next++];
+        if (const auto& raw_offset = parsed->flag("offset"); !raw_offset.empty()) {
+            req.offset = ores::shell::app::from_token<int>(raw_offset, "offset");
+        }
+        if (const auto& raw_limit = parsed->flag("limit"); !raw_limit.empty()) {
+            req.limit = ores::shell::app::from_token<int>(raw_limit, "limit");
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::permission_page_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::permission_page_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::permission_page_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void authorization_operations_commands::process_list_my_permissions(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list-my-permissions request.";
+
+    using request_type = ores::iam::messaging::list_my_permissions_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list-my-permissions." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 2;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.area = parsed->positionals[next++];
+        req.search = parsed->positionals[next++];
+        if (const auto& raw_offset = parsed->flag("offset"); !raw_offset.empty()) {
+            req.offset = ores::shell::app::from_token<int>(raw_offset, "offset");
+        }
+        if (const auto& raw_limit = parsed->flag("limit"); !raw_limit.empty()) {
+            req.limit = ores::shell::app::from_token<int>(raw_limit, "limit");
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::permission_page_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::permission_page_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::permission_page_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04
-#+updated: 2026-07-04
+#+updated: 2026-10-10
 
 * Summary
 
@@ -62,6 +62,33 @@ group memberships, not by storing a derived flag that could drift out of
 sync with the currencies' own memberships. See
 [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] for where this fits (or
 doesn't) in the entity model.
+
+** Currency groups and CRM topologies are separate
+
+A CRM topology and a currency group both name currencies, but they model
+different things. The CRM has no foreign key to a group.
+
+| Aspect       | Currency group                      | CRM topology                                        |
+|--------------+-------------------------------------+-----------------------------------------------------|
+| Scope        | Tenant                              | Party                                               |
+| Shape        | A set of currencies                 | A graph of currency pairs with one pivot currency   |
+| Membership   | A currency is in or out             | A currency is a pivot, a driver leg or a derived leg |
+| Owns         | Nothing but its members             | Driver pairs and enabled derived pairs              |
+
+A topology belongs to a party. The DQ bundle publishes the topologies to
+each party, so every party gets its own copy. A group belongs to the
+tenant and is shared by all its parties.
+
+The names match, but the sets do not. The "scandies" topology uses USD,
+EUR, SEK, NOK and DKK. USD is the pivot and EUR is not a Scandie. The
+Scandies group holds only DKK, NOK and SEK. The "majors" topology has
+eight driver pairs, while G11 has eleven currencies. The "exotics"
+topology matches no group.
+
+A foreign key from a topology to a group would force the two sets to
+agree, and they must not. A later feature may offer to seed a topology
+from the members of a group. That feature reads the group and writes a
+topology. It does not link them.
 
 * See also
 

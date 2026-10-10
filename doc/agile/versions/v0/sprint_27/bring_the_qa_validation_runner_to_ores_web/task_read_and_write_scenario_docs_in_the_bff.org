@@ -41,6 +41,9 @@ The BFF lists scenarios, reads one with its steps, finds a story or task doc by 
 - The store records each step's Result table and the overall State and Results in place, in the format the compass template creates.
 - A write that would leave the doc root is refused, and a write names the steps it changes.
 - Tests run against copies of real compass-created scenario docs: single client, several clients and an earlier result.
+- A test fails when a doc made by the current compass test_scenario template does not parse, so a change to the template shows up here.
+- A doc id resolves only to a file inside the doc root, and a path with .. is refused.
+- Two saves of one scenario do not merge. The last write wins, and the task states it.
 - The doc root is configuration. No code path runs compass.
 
 * Plan

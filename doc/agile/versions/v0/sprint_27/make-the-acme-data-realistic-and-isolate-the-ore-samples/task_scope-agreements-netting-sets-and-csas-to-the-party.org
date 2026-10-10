@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/scope-agreements-netting-sets-and-csas-to-the-party
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -34,7 +34,7 @@ two bundle tasks, because both depend on it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -76,14 +76,37 @@ two bundle tasks, because both depend on it.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Lookups of an agreement by number or a netting set by code that name no party | not yet measured | the search in Plan step 1 | |
+| Places that look up an agreement, a set or an identifier by number or code | 5 SQL files and 2 C++ files, listed in Notes | =grep -rIn= over =projects= for the table names and =netting_set= | 8744fb7165 |
 
 * Notes
 
-*Blocking open question.* The netting set =party_id= is nullable today. A
-party-scoped CSA needs a party. Choose one: make the netting set =party_id=
-required, or allow a set with no party and refuse a CSA on it. Settle this
-before implementation.
+*Decision, 2026-10-10.* A netting set belongs to a party and follows the usual
+RLS pattern. The pattern is the one =book= uses: a required =party_id= that is
+part of the natural key, a foreign key to parties, and a restrictive party
+isolation policy for select. This closes the open question: the netting set
+=party_id= becomes required.
+
+*Findings from the search.* The scope is wider than the three tables.
+
+- =ores_refdata_netting_sets_tbl.party_id= is nullable. Its RLS policy reads
+  =party_id is null or party_id = ANY(visible parties)=, because a set read
+  from an ORE document has no legal entity yet. A required party removes the
+  null branch. The ORE import must then give each set the importing party.
+- =netting_agreements_agreement_number_uniq_idx= is on =(tenant_id,
+  agreement_number)=. =netting_sets_code_uniq_idx= is on =(tenant_id, code)=.
+  Both become per party.
+- =ores_refdata_csas_tbl= has no =party_id= and no RLS policy at all.
+- =netting_set_identifiers_ore_alias_idx= is unique on =(tenant_id, id_scheme,
+  id_value)= for the ORE scheme. An ORE id such as =CPTY_A= can name only one
+  set in the whole tenant. It collides in the same way when every party holds a
+  set for it, so it must be per party too. The identifier takes its party from
+  its netting set.
+- Lookups that name an agreement or a set: the publish-from-DQ functions in
+  =refdata_publish_from_dq_create.sql= (agreements, sets, CSAs, aliases), the
+  trade booking validation in =trading_trade_bookings_create.sql=, the trade
+  component functions in =trading_trade_components_functions_create.sql=,
+  =ore_import_execute_handler.cpp= and the netting set mapper in =ores.ore=.
+  The DQ staging tables carry the same keys.
 
 * Test Scenarios
 

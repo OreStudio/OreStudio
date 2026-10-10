@@ -31,39 +31,22 @@ import { subjects as partyCounterpartySubjects } from '@ores/wire-protocol/gener
 import { subjects as partyIdSchemeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_id_scheme_protocol';
 import { subjects as partyStatusSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_status_protocol';
 import { subjects as partyTypeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_type_protocol';
-import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
+import { invalidRequest } from './errors.js';
+import {
+    idSchema,
+    input,
+    intentSchema,
+    paramId,
+    readAll,
+    resultSchema,
+    row,
+    text,
+    write,
+} from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
-
-const PAGE = 1000;
 
 /** The most counterparties one page, or one children request, may name. */
 const MAX_PAGE = 200;
-
-const NO_ORDER = { field: '', descending: false } as const;
-
-const resultSchema = z.object({
-    outcome: z.enum(['ok', 'invalid', 'denied', 'missing', 'conflict', 'unavailable', 'failed']),
-    code: z.string().default(''),
-    message: z.string().default(''),
-    fields: z
-        .array(
-            z.object({
-                field: z.string().default(''),
-                code: z.string().default(''),
-                message: z.string().default(''),
-            }),
-        )
-        .default([]),
-});
-
-const row = z.looseObject({});
-
-const intentSchema = z.object({
-    reason_code: z.string().trim().min(1).max(200),
-    commentary: z.string().max(2000).default(''),
-});
-
-const idSchema = z.uuid();
 
 const pageQuerySchema = z.object({
     offset: z.coerce.number().int().min(0).default(0),
@@ -107,15 +90,6 @@ const compositeBodySchema = z.looseObject({
     eligible_currencies: z.array(row).default([]),
 });
 
-/** A request's input read against its schema, or a 400 that says what was wrong. */
-function input<Schema extends z.ZodType>(schema: Schema, value: unknown): z.infer<Schema> {
-    const parsed = schema.safeParse(value);
-    if (!parsed.success) {
-        throw invalidRequest(parsed.error.issues.map((issue) => issue.message).join(' '));
-    }
-    return parsed.data;
-}
-
 /** A pick list: the read-only reference list a counterparty form fills a select from. */
 interface PickList {
     readonly key: string;
@@ -130,7 +104,12 @@ interface PickList {
  * stated here from its generated subjects. Business centres and currencies
  * come from the table.
  */
-function listResource(key: string, entityType: string, rows: string, list: string): RecordResource {
+export function listResource(
+    key: string,
+    entityType: string,
+    rows: string,
+    list: string,
+): RecordResource {
     return {
         key,
         entityType,
@@ -184,67 +163,6 @@ const PICK_LISTS: readonly PickList[] = [
     },
 ];
 
-/**
- * Turns a refused read into the status that says why, so the browser can tell a
- * missing permission from a bad request.
- */
-function refusal(result: z.infer<typeof resultSchema>): HttpFailure {
-    switch (result.outcome) {
-        case 'denied':
-            return notPermitted(result.message);
-        case 'missing':
-            return notFound(result.message);
-        case 'unavailable':
-        case 'failed':
-            return new HttpFailure(502, { code: 'upstream-unavailable', message: result.message });
-        default:
-            return invalidRequest(result.message);
-    }
-}
-
-/** Every row of a list, read a page at a time until a page comes back short. */
-async function readAll(
-    session: LiveSession,
-    subject: string,
-    rows: string,
-    request: Readonly<Record<string, unknown>>,
-): Promise<readonly Record<string, unknown>[]> {
-    const all: Record<string, unknown>[] = [];
-    for (let offset = 0; ; offset += PAGE) {
-        const reply = await session.client.callAuthenticated(
-            subject,
-            { ...request, offset, limit: PAGE, order: NO_ORDER },
-            z.looseObject({ result: resultSchema }),
-        );
-        if (reply.result.outcome !== 'ok') {
-            throw refusal(reply.result);
-        }
-        const page = z.array(row).default([]).parse(reply[rows]);
-        all.push(...page);
-        if (page.length < PAGE) {
-            return all;
-        }
-    }
-}
-
-/** A write's result, with the row it wrote when the server returns one. */
-async function write(
-    session: LiveSession,
-    subject: string,
-    body: unknown,
-): Promise<z.infer<typeof resultSchema>> {
-    const reply = await session.client.callAuthenticated(
-        subject,
-        body,
-        z.looseObject({ result: resultSchema }),
-    );
-    return reply.result;
-}
-
-function text(value: unknown): string {
-    return typeof value === 'string' ? value : '';
-}
-
 /** Whether a counterparty matches the search: its short code, full name or id. */
 function matches(counterparty: Record<string, unknown>, search: string): boolean {
     if (search === '') {
@@ -254,11 +172,6 @@ function matches(counterparty: Record<string, unknown>, search: string): boolean
     return [counterparty['short_code'], counterparty['full_name'], counterparty['id']].some(
         (value) => text(value).toLowerCase().includes(needle),
     );
-}
-
-/** The counterparty id the address names, or a 400. */
-function paramId(request: FastifyRequest): string {
-    return input(idSchema, (request.params as { id: string }).id);
 }
 
 function isActive(counterparty: Record<string, unknown>): boolean {

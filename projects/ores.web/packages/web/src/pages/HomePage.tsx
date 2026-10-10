@@ -492,6 +492,18 @@ function TenantHome({
             icon: 'add',
         },
         {
+            title: t('home.tenant.partyDetails'),
+            body: t('home.tenant.partyDetailsBody'),
+            to: '/parties/details',
+            icon: 'party',
+        },
+        {
+            title: t('home.tenant.counterpartyOnboard'),
+            body: t('home.tenant.counterpartyOnboardBody'),
+            to: '/counterparties/onboard',
+            icon: 'people',
+        },
+        {
             title: t('home.tenant.rescue'),
             body: t('home.tenant.rescueBody'),
             to: '/rescue',

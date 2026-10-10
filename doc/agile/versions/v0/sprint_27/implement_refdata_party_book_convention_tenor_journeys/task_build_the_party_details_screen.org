@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-party-details-screen
-#+pr:
+#+pr: 3031
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -26,16 +26,21 @@ A tenant administrator keeps a party's record current in ores.web, and the scree
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- A tenant administrator opens /parties/details from the home page, finds a party and corrects its record, identifiers and contacts.
+- The memberships, the counterparty links and the business unit types are set on their own steps.
+- The review lists every difference with its before, its after and the operation that writes it, and nothing is written before the confirm.
+- The confirm writes the composite first and stops at the first refusal, naming the step to walk back to.
+- The history reads every version and loads an older version into the review.
+- The BFF serves every call the screen makes.
 
 * Plan
 
@@ -74,12 +79,50 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3031][#3031]] | [web] Build the party details screen |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The retire route ignores its party id | =party-details.ts= | Accept | The route reads the party's identifiers and refuses with 404 a value the party does not hold. The delete key carries only the value, so this is the check. |
+| 2 | The junction far param is unvalidated | =party-details.ts= | Accept | A length cap, and a uuid check for a counterparty link. |
+| 3 | DELETE routes require a JSON body | =party-details.ts= | Accept | The client always sends one. A test now pins the 400 for a missing body. |
+| 4 | Pick lists read one after another | =party-details.ts= | Decline | Sequential on purpose. The session's broker client answers concurrent requests far slower than sequential ones, as classifications.ts records. |
+| 5 | The list reads every party per request | =party-details.ts= | Decline | Already a recorded limit, shared with the counterparty list. A cache needs an invalidation rule on the change events and is its own task. |
+| 6 | The confirm is not atomic | =partyDetailsSteps.tsx= | Accept | A refusal now lists the calls already written, or says nothing was written. |
+| 7 | State the revert restores party fields only | =en.ts, fr.ts, pt.ts= | Accept | The history step's note says so in all three languages. |
 
 * Result
+
+Built journey 6 and the BFF half it needs, on the pattern the counterparty
+screen set, and added the home tiles the counterparty screen lacked.
+
+** What was built
+
+| File | What it carries |
+|------+-----------------|
+| =bff/src/party-details.ts= | The list, the six sets a party carries, the pick lists, the composite write and read, the three membership links, the identifier retire and the unit reclassification. |
+| =bff/src/refdata-calls.ts= | The calls the party and counterparty routes share. |
+| =api/partyDetails.ts=, =journeys/partyDetailsServer.ts= | The browser client and the server interface the journey is handed. |
+| =journeys/partyDetailsState.ts= | The draft, the review's changes and the write plan. |
+| =journeys/partyDetailsSteps.tsx=, =PartyDetailsJourney.tsx= | The nine steps and the page. |
+| =pages/HomePage.tsx=, =AppRoutes.tsx= | The /parties/details route and a tile for it and for the counterparty screen. |
+
+** Verification
+
+| Command | Result |
+|---------+--------|
+| =npm run typecheck= | exit 0 |
+| =npm run format:check= | exit 0 |
+| =npm test= | exit 0; bff 338 tests, web 535, wire-protocol 163 |
+
+The tests answer from canned replies. *Nothing ran against the live fleet.*
+
+** What is not done
+
+1. The parent party is a free-text id, because the pick lists carry no party list. A picker is a small follow-up.
+2. A membership has no history, which is task 75FC1047. The screen shows the open memberships and the party history is the only trail, as the journey document says.
+3. A history revert loads the older party fields into the review. It does not restore the identifiers or the contacts of that version.
+4. The unit level rule is checked in the browser and by the server. The browser check cannot see a type the server's rule treats differently.
+5. The confirm is several calls. A refusal part way leaves the earlier calls written, and the refusal names the step.

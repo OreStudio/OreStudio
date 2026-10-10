@@ -32,6 +32,12 @@
  *                                   lookup, and ?refusal=1 is the alias
  *   ?version=3                      the version the history step shows
  *   ?diff=1                         show the history field diff (default on)
+ * Four-eyes states, from the book controls note (four-eyes.js draws them):
+ *   ?state=waiting|decide|declined  a raised request waiting, the checker's
+ *                                   decision screen, and a declined request
+ *   ?actor=m.risk|o.ops|...         who answers on the decision screen (decide only)
+ *   ?maker=h.desk|m.risk|...        who raised the request; the maker cannot decide it
+ *   ?check=lookup                   make the term-lookup check fail
  * The bar mirrors the same states as buttons. */
 
 (function () {
@@ -368,7 +374,10 @@
         version: 3,
         diff: true,
         saved: false,
-        savedVersion: 3
+        savedVersion: 3,
+        original: {},
+        /* The four-eyes state in view, or '' for none. */
+        fe: ''
     };
 
     var REFUSED_AT = 5;
@@ -817,7 +826,7 @@
             (miss.length === 1 ? '' : 's') + ' cannot be written. The write will be refused.</div>' : '';
 
         var f = family();
-        return '<div>' + block +
+        return '<div>' + reviewGate() + block +
             '<div class="notice info">This is what will change. The write is one request: ' +
             '<span class="mono">refdata.v1.' + esc(f.ent) + '.put</span> with ' +
             '<span class="mono">change.write</span>, the precondition, and the intent.</div>' +
@@ -845,7 +854,7 @@
         var f = family();
         return '<div class="outcome">' +
             '<div class="mark ok">\u25cf</div>' +
-            '<div class="what">' + esc(S.values.id) + ' is saved as version ' + esc(S.savedVersion) + '</div>' +
+            '<div class="what">' + esc(S.values.id) + (FE.S.applied ? ' is approved and saved as version ' : ' is saved as version ') + esc(S.savedVersion) + '</div>' +
             '<div class="say">A trade that picks ' + esc(f === undefined ? 'this family' : f.name) +
             ' reads these terms.</div></div>' +
             '<div class="nextcards" style="margin-top:20px">' +
@@ -1039,7 +1048,53 @@
             }).join('') + '</ol></nav>';
     }
 
+    /* The changes the save would write. Every convention write is decided by
+       Market Risk, which owns how a trade, a curve or a report reads these
+       terms, from the book controls note. */
+    function changesOf() {
+        var p = plan();
+        if (p === undefined) return [];
+        var touched = p.fields.filter(function (f) { return S.touched[f.name]; });
+        if (touched.length === 0) {
+            return [{ what: 'New convention ' + S.values.id, who: family().name, from: null, to: null, decider: 'Market Risk' }];
+        }
+        return touched.map(function (f) {
+            return { what: 'Set ' + f.label, who: S.values.id,
+                from: String(S.original[f.name] === '' || S.original[f.name] === undefined ? '\u2014' : S.original[f.name]),
+                to: String(f.kind.check ? (S.values[f.name] === true ? 'yes' : 'no') : labelFor(f)),
+                decider: 'Market Risk' };
+        });
+    }
+
+    var FE = FourEyes.create({
+        getChanges: changesOf,
+        subject: function () { return S.values.id === undefined || S.values.id === '' ? 'The convention' : S.values.id; },
+        checks: function (actor, changes, check) {
+            var missing = missingFields().length > 0 || check === 'lookup';
+            return [{ ok: !missing, label: 'Every term names a value its list still holds',
+                detail: missing ? 'A term names a value the list no longer holds.' : 'All terms resolve.' }];
+        }
+    });
+
+    var FE_TITLES = { waiting: 'Waiting', decide: 'Decide', declined: 'Declined' };
+    var FE_LEADS = {
+        waiting: 'The request is raised and the convention has not changed.',
+        decide: 'The checker reads the change and answers it.',
+        declined: 'The request was declined and the convention has not changed.'
+    };
+
+    function reviewGate() {
+        var changes = changesOf();
+        return FE.reviewNotice(changes) +
+            '<ul class="fe-changes" style="margin-bottom:16px">' + changes.map(function (c) {
+                var fromto = c.from === null ? '' :
+                    '<div class="fe-fromto"><span class="fe-was">' + esc(c.from) + '</span><span>\u2192</span><span class="fe-now">' + esc(c.to) + '</span></div>';
+                return '<li><div class="fe-what">' + esc(c.what) + FE.badge(c) + '</div><div class="fe-who">' + esc(c.who) + '</div>' + fromto + '</li>';
+            }).join('') + '</ul>';
+    }
+
     function stepBody() {
+        if (S.fe !== '') return FE.html(S.fe);
         var id = STEPS[S.at].id;
         if (id === 'instrument') return instrumentStep();
         if (id === 'convention') return conventionStep();
@@ -1050,6 +1105,7 @@
     }
 
     function stepLead() {
+        if (S.fe !== '') return FE_LEADS[S.fe];
         var id = STEPS[S.at].id;
         if (id === 'terms' && S.history) {
             return 'Every version of this convention, with the field-level difference from the one before.';
@@ -1067,6 +1123,7 @@
     /* The history body carries its own foot, so the step foot is withheld
        while the overlay is open. */
     function nextOf() {
+        if (S.fe !== '') return null;
         var id = STEPS[S.at].id;
         if (S.history) return null;
         if (id === 'refused') return null;
@@ -1076,7 +1133,7 @@
             var miss = missingFields();
             return { label: 'Review', enabled: plan() !== undefined && miss.length === 0 };
         }
-        if (id === 'review') return { label: 'Save the convention', enabled: true };
+        if (id === 'review') return { label: FE.primaryLabel(changesOf(), 'Save the convention'), enabled: plan() !== undefined };
         return null;
     }
 
@@ -1086,7 +1143,9 @@
         var backAllowed = at > 0 && STEPS[at - 1].final !== true;
         var next = nextOf();
         var foot;
-        if (next === null) {
+        if (S.fe !== '') {
+            foot = '';
+        } else if (next === null) {
             foot = '<div class="stepfoot">' +
                 '<button type="button" class="btn ghost" data-act="back"' +
                 (backAllowed ? '' : ' disabled') + '>Back</button></div>';
@@ -1102,7 +1161,7 @@
             '<div class="page"><h1>Define the conventions for an instrument</h1>' +
             '<div class="journey">' + rail() +
             '<section class="card">' + stepHeader() +
-            '<h2>' + esc(step.title) + (S.history ? ' \u00b7 history' : '') + '</h2>' +
+            '<h2>' + esc(S.fe !== '' ? FE_TITLES[S.fe] : step.title) + (S.history ? ' \u00b7 history' : '') + '</h2>' +
             '<p class="lead">' + stepLead() + '</p>' +
             stepBody() + foot + '</section></div></div>' +
             workspaceNote();
@@ -1148,7 +1207,10 @@
             '<button data-act="diff"' + (S.diff ? ' class="on"' : '') + '>diff</button>' +
             '<button data-act="state" data-state="history"' + (S.history ? ' class="on"' : '') + '>history</button>' +
             '<button data-act="state" data-state="refused"' +
-            (STEPS[S.at].id === 'refused' ? ' class="on"' : '') + '>refused</button>';
+            (STEPS[S.at].id === 'refused' ? ' class="on"' : '') + '>refused</button>' +
+            FE.states.map(function (st) {
+                return '<button data-act="state" data-state="' + st + '"' + (S.fe === st ? ' class="on"' : '') + '>' + st + '</button>';
+            }).join('');
         document.getElementById('proto-bar').innerHTML =
             '<span class="label">state</span>' + steps +
             '<span class="sep">|</span><span class="label">instrument</span>' + fams + extras;
@@ -1209,11 +1271,19 @@
         });
         S.values.id = S.id !== '' ? S.id : (base.id === undefined ? '' : base.id);
         S.touched = {};
+        S.original = JSON.parse(JSON.stringify(S.values));
     }
 
     /* One place resolves a named state, so the bar, the links and the query
        string all agree about what `refused` and `history` mean. */
     function goToState(id) {
+        if (FE.states.indexOf(id) >= 0) {
+            S.fe = id;
+            S.history = false;
+            S.at = 3;
+            return;
+        }
+        S.fe = '';
         if (id === 'history') {
             S.history = true;
             S.at = 2;
@@ -1223,6 +1293,14 @@
         STEPS.forEach(function (s, i) { if (s.id === id) S.at = i; });
     }
 
+    function applySave() {
+        S.savedVersion = S.version + 1;
+        S.version = S.savedVersion;
+        S.saved = true;
+        S.fe = '';
+        S.at = 4;
+    }
+
     function goNext() {
         var id = STEPS[S.at].id;
         if (id === 'review') {
@@ -1230,10 +1308,14 @@
                 S.at = REFUSED_AT;
                 return;
             }
-            S.savedVersion = S.version + 1;
-            S.version = S.savedVersion;
-            S.saved = true;
-            S.at = 4;
+            var changes = changesOf();
+            if (FE.gated(changes).length > 0) {
+                FE.raise(changes);
+                S.fe = 'waiting';
+                return;
+            }
+            FE.reset();
+            applySave();
             return;
         }
         S.at += 1;
@@ -1350,6 +1432,7 @@
             S.focus = field;
             if (p.get('value') !== null) S.values[field] = p.get('value');
         }
+        FE.params(p);
         var state = p.get('state');
         if (state !== null && state !== '') goToState(state);
         /* The refused screen always names a kind, so the first kind is the
@@ -1360,4 +1443,24 @@
 
     readParams();
     render();
+
+    /* The four-eyes screens: their own controls, not the journey's. */
+    document.addEventListener('click', function (ev) {
+        var el = ev.target.closest('[data-fe]');
+        if (!el) return;
+        ev.preventDefault();
+        var to = FE.click(el);
+        if (to === null || to === 'stay') return;
+        if (to === 'outcome') applySave();
+        else goToState(to);
+        rerender();
+    });
+
+    function onFeInput(ev) {
+        var el = ev.target;
+        if (el && el.getAttribute && FE.input(el)) rerender();
+    }
+
+    document.addEventListener('input', onFeInput);
+    document.addEventListener('change', onFeInput);
 })();

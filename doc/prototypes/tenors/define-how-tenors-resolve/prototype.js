@@ -17,6 +17,12 @@
  *   ?roll=Following ?schedule=ROLL_QUARTER ?rollcount=12 ?rollstart=spot
  *   ?fail=<kind>|1   the refusal to draw; 1 picks the first kind, kind_mismatch
  *   ?version=2
+ * Four-eyes states, from the book controls note (four-eyes.js draws them):
+ *   ?state=waiting|decide|declined   a raised request waiting, the checker's
+ *                                    decision screen, and a declined request
+ *   ?actor=m.risk|o.ops|...          who answers on the decision screen (decide only)
+ *   ?maker=h.desk|m.risk|...         who raised the request; the maker cannot decide it
+ *   ?check=resolve                   make the tenor-resolves check fail
  * The bar mirrors the same states as buttons and carries the refusal and the
  * convention as toggles. */
 
@@ -276,7 +282,10 @@
     ];
     var OFF_RAIL = [
         { id: 'refused', title: 'The refusal', lead: 'A tenor that cannot resolve on the chosen calendar is refused, with the step that refused it.' },
-        { id: 'history', title: 'History', lead: 'Every version of the row, and the field-level difference from the version before.' }
+        { id: 'history', title: 'History', lead: 'Every version of the row, and the field-level difference from the version before.' },
+        { id: 'waiting', title: 'Waiting', lead: 'The request is raised and the tenor has not changed.' },
+        { id: 'decide', title: 'Decide', lead: 'The checker reads the change and answers it.' },
+        { id: 'declined', title: 'Declined', lead: 'The request was declined and the tenor has not changed.' }
     ];
     var ALL = STEPS.concat(OFF_RAIL);
 
@@ -800,16 +809,16 @@
         var check = result.ok
             ? '<div class="notice success"><b>This resolves.</b> ' + esc(t.code) + ' on ' + esc(S.cal) + ' gives ' + esc(iso(result.adj || result.raw)) + '.</div>'
             : '<div class="notice error"><b>This cannot resolve.</b> ' + esc(result.message) + ' The write is refused.</div>';
-        return check + '<dl class="reviewgrid">' + dl + '</dl>' +
+        return reviewGate() + check + '<dl class="reviewgrid">' + dl + '</dl>' +
             '<label class="failtoggle"><input type="checkbox" data-act="fail-kind"' + (kindFail() ? ' checked' : '') + '> Prototype: leave 3M as kind PERIOD with unit NONE</label>' +
             '<div class="stepfoot"><button type="button" class="btn ghost" data-act="go" data-go="convention">Back</button>' +
-            '<button type="button" class="btn primary ml-auto"' + (result.ok ? '' : ' disabled') + ' data-act="write">Write the tenor and the convention</button></div>';
+            '<button type="button" class="btn primary ml-auto"' + (result.ok ? '' : ' disabled') + ' data-act="write">' + esc(FE.primaryLabel(changesOf(), 'Write the tenor and the convention')) + '</button></div>';
     }
 
     function outcomeStep() {
         var t = activeTenor();
         var result = resolutionNow();
-        return '<div class="notice success"><b>Written.</b> ' + esc(t.code) + ' is at version ' + esc(t.version + 1) +
+        return '<div class="notice success"><b>' + (FE.S.applied ? 'Approved and written.' : 'Written.') + '</b> ' + esc(t.code) + ' is at version ' + esc(t.version + 1) +
             ' and it resolves to ' + esc(result.ok ? iso(result.adj || result.raw) : '\u2014') + ' on ' + esc(S.cal) + '.</div>' +
             '<div class="reviewgrid">' +
             '<dt>Tenor</dt><dd class="mono">' + esc(t.code) + '</dd>' +
@@ -992,7 +1001,41 @@
             }).join('') + '</ol></nav>';
     }
 
+    /* The changes the write would make. A tenor and a convention decide the
+       date a trade, a curve or a report reads, so Market Risk decides both, from
+       the book controls note. */
+    function changesOf() {
+        var t = activeTenor();
+        var conv = activeConvention();
+        return [
+            { what: 'Write the tenor ' + t.code, who: t.display_name, from: null, to: null, decider: 'Market Risk' },
+            { what: 'Write the convention ' + conv.code, who: conv.description || conv.code, from: null, to: null, decider: 'Market Risk' }
+        ];
+    }
+
+    var FE = FourEyes.create({
+        getChanges: changesOf,
+        subject: function () { return activeTenor().code; },
+        checks: function (actor, changes, check) {
+            var result = resolutionNow();
+            var ok = result.ok && check !== 'resolve';
+            return [{ ok: ok, label: 'The tenor resolves on the chosen calendar',
+                detail: ok ? activeTenor().code + ' resolves to ' + iso(result.adj || result.raw) + ' on ' + S.cal + '.' : 'The tenor cannot resolve on ' + S.cal + '.' }];
+        }
+    });
+
+    var FE_IDS = ['waiting', 'decide', 'declined'];
+
+    function reviewGate() {
+        var changes = changesOf();
+        return FE.reviewNotice(changes) +
+            '<ul class="fe-changes" style="margin-bottom:16px">' + changes.map(function (c) {
+                return '<li><div class="fe-what">' + esc(c.what) + FE.badge(c) + '</div><div class="fe-who">' + esc(c.who) + '</div></li>';
+            }).join('') + '</ul>';
+    }
+
     function stepBody(step) {
+        if (FE_IDS.indexOf(step.id) >= 0) return FE.html(step.id);
         if (step.id === 'list') return listStep();
         if (step.id === 'tenor') return tenorStep();
         if (step.id === 'convention') return conventionStep();
@@ -1017,6 +1060,7 @@
         var i = ALL.indexOf(step);
         var prev = i > 0 ? ALL[i - 1] : null;
         var next = i >= 0 && i < ALL.length - 1 ? ALL[i + 1] : null;
+        if (FE_IDS.indexOf(step.id) >= 0) return '';
         if (step.id === 'refused') {
             var reason = S.raisedBy === 'tenor' ? 'Back to the tenor' : 'Back to the resolved dates';
             return '<div class="stepfoot">' +
@@ -1110,6 +1154,7 @@
 
     function readParams() {
         var p = new URLSearchParams(window.location.search);
+        FE.params(p);
         var state = p.get('state') || p.get('step');
         if (state) goTo(state);
         if (p.get('tenor') !== null && tenorBy(p.get('tenor')) !== null) S.tenor = p.get('tenor');
@@ -1226,7 +1271,14 @@
             clearFail();
         } else if (act === 'write') {
             ev.preventDefault();
-            goTo('outcome');
+            var changes = changesOf();
+            if (FE.gated(changes).length > 0) {
+                FE.raise(changes);
+                goTo('waiting');
+            } else {
+                FE.reset();
+                goTo('outcome');
+            }
         } else if (act === 'new-tenor') {
             ev.preventDefault();
             S.tenor = 'O/N';
@@ -1243,4 +1295,23 @@
     readParams();
     if (ALL[S.at].id === 'refused') armFail();
     render();
+
+    /* The four-eyes screens: their own controls, not the journey's. */
+    document.addEventListener('click', function (ev) {
+        var el = ev.target.closest('[data-fe]');
+        if (!el) return;
+        ev.preventDefault();
+        var to = FE.click(el);
+        if (to === null || to === 'stay') return;
+        goTo(to);
+        rerender();
+    });
+
+    function onFeInput(ev) {
+        var el = ev.target;
+        if (el && el.getAttribute && FE.input(el)) rerender();
+    }
+
+    document.addEventListener('input', onFeInput);
+    document.addEventListener('change', onFeInput);
 })();

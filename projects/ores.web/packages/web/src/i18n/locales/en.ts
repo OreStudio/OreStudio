@@ -927,6 +927,7 @@ export const en: SourceCatalogue = {
         upcomingModules: 'Upcoming Modules / Roadmap Preview',
         welcome: 'Welcome, {name}',
         system: {
+            installation: 'Installation',
             lead: {
                 one: 'This deployment runs {count} tenant.',
                 other: 'This deployment runs {count} tenants.',

@@ -38,6 +38,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
 import { PaintedValue } from './TenantParts.js';
+import { DEFAULT_HEALTH_RANGE, InstallationFigures } from '../operations/InstallationHealth.js';
 import { Tiles, TilesSection, type Tile } from '../ui/Tiles.js';
 
 /**
@@ -109,6 +110,10 @@ function SystemHome({ name }: { readonly name: string }): ReactNode {
                     {data.attention.length > 0 && <Attention overview={data} />}
                 </>
             )}
+            <section className="card space-y-4 p-5">
+                <h2 className="text-sm font-semibold text-ink">{t('home.system.installation')}</h2>
+                <InstallationFigures range={DEFAULT_HEALTH_RANGE} />
+            </section>
             <SystemTiles />
             {data !== undefined && (
                 <FirstTenants

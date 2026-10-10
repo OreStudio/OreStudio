@@ -940,6 +940,7 @@ const fr: SourceCatalogue = {
         upcomingModules: 'Modules à venir / Aperçu de la feuille de route',
         welcome: 'Bienvenue, {name}',
         system: {
+            installation: 'Installation',
             lead: {
                 one: 'Ce déploiement héberge {count} locataire.',
                 other: 'Ce déploiement héberge {count} locataires.',

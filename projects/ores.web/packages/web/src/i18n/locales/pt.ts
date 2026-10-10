@@ -933,6 +933,7 @@ const pt: SourceCatalogue = {
         upcomingModules: 'Módulos futuros / Pré-visualização do roteiro',
         welcome: 'Bem-vindo, {name}',
         system: {
+            installation: 'Instalação',
             lead: {
                 one: 'Esta instalação serve {count} inquilino.',
                 other: 'Esta instalação serve {count} inquilinos.',

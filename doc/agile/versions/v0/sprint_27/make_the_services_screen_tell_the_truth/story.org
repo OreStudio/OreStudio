@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 0251A201-7674-4ABD-BB5B-7AEC42C88D8D
+:END:
+#+title: Story: Make the services screen tell the truth about the installation
+#+description: The web service is an expected service but never sends a heartbeat, so the Operations services screen cannot show it running. The screen also lists instances without summing them up. Report the web service's heartbeat, then summarise the installation: services up, lost and missing, errors, and version skew.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Operations services screen shows the web service running, and an overview states how healthy the installation is at a glance.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- The web service publishes the same heartbeat as the other services, and the services screen shows it running.
+- The Operations services screen opens with an overview: services running of expected, lost, missing, errors and warnings in a range, and version skew.
+- The system administrator's home shows the same installation figures, from the same code.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F1F0125D-4687-4028-95B7-1D2F5443EA80][Scaffold story: Make the services screen tell the truth about the installation]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:C3BB4669-F21F-4B46-B835-704D3F41147B][Report the web service's heartbeat]] | BACKLOG | | | Initial task for: Make the services screen tell the truth about the installation |
+| [[id:4D5ECB2D-7156-49E6-805A-3BE52327DA33][Summarise the installation on the Operations services screen]] | BACKLOG | | | Open the services screen with an overview: services running of expected, lost, missing, errors and warnings in a range, and version skew. Built from the roster and the logs total, with no new backend. |
+| [[id:3A3358DE-0E21-4B28-82B7-999AA875EE1B][Show the installation figures on the system administrator's home]] | BACKLOG | | | Add the installation figures to the system home's health block, from the same code as the services overview, so a system administrator sees services and errors without opening Operations. |
+
+* Decisions
+
+- The heartbeat is a publish on =telemetry.v1.ops.service_heartbeat=, which needs no session. The generated TypeScript protocol already carries the subject and its message, so the web service reuses it. Its first step proves the web service's NATS identity may publish on that subject.
+- The overview needs no new backend. The roster read gives running, lost and missing; the logs read gives a total for any level and range, so the error count is a read with a page size of one.
+- The overview lives on the Operations services screen, the screen that answers whether the installation is healthy. The system home shows the same figures in its health block, from one shared hook and one figures component, so the two cannot disagree.
+- The home keeps its tenant health figures. Tenant health and installation health are different questions, and the home states both.
+- The operations hub stays a plain list of cards.
+
+* Out of scope
+
+- A last-tick or uptime history for services. The services journey records it as a gap.
+- Alerting when a service goes quiet.

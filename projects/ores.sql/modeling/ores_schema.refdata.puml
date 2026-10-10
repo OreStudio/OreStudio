@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T15:44:21.568457Z
+' Generated: 2026-10-10T17:28:10.176948Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -5413,8 +5413,8 @@ ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_identifiers_tbl
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_driver_pairs_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_enabled_derived_pairs_tbl : "has"
 ores_refdata_csas_tbl ||--o{ ores_refdata_csa_eligible_currencies_tbl : "has"
-ores_refdata_netting_sets_tbl ||--o{ ores_refdata_csas_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_csas_tbl : "has"
+ores_refdata_netting_sets_tbl ||--o{ ores_refdata_csas_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_curve_bootstrap_configs_tbl : "has"
 ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_curve_bootstrap_configs_tbl : "has"
 ores_refdata_curve_configurations_tbl ||--o{ ores_refdata_curve_configuration_sections_tbl : "has"
@@ -5455,8 +5455,8 @@ ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_intraday_power_curve_conf
 ores_refdata_ir_curve_bootstrap_configs_tbl ||--o{ ores_refdata_ir_curve_bootstrap_pillars_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_netting_agreements_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_netting_agreements_tbl : "has"
-ores_refdata_netting_sets_tbl ||--o{ ores_refdata_netting_set_identifiers_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_netting_set_identifiers_tbl : "has"
+ores_refdata_netting_sets_tbl ||--o{ ores_refdata_netting_set_identifiers_tbl : "has"
 ores_refdata_netting_agreements_tbl ||--o{ ores_refdata_netting_sets_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_netting_sets_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_netting_sets_tbl : "has"

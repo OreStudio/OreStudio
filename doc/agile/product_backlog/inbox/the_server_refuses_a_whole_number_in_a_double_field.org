@@ -35,6 +35,12 @@ value. The type must be float or double.
 =0.0= also fails, because the BFF parses the JSON body and encodes it
 again, and JavaScript writes =0.0= as =0=.
 
+The saves fail the same way. Through =PUT /api/synthetic/fx-feeds= a feed
+with =gmm_initial_price= =1= is refused as =bad_request= and the same feed
+with =1.05= saves; a GMM component with =weight= =1= is refused through
+=PUT /api/synthetic/gmm-components=. So every write and every preview that
+carries a whole-valued double fails, not only the FX preview.
+
 The candidate fix is in the decoder, not in each client: accept a msgpack
 positive or negative integer for a floating-point field. That is a patch to
 the reflect-cpp port through a vcpkg overlay, or a custom reader. A client

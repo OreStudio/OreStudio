@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 2F4FEA08-EC25-4BB6-A090-7442E51D01E6
+:END:
+#+title: A codegen test fails only in the full suite
+#+description: test_a_routed_table_checks_exactly_the_codes_routed_to_it passes alone and fails when the whole codegen suite runs, on a clean main, so an earlier test leaks state into the model index it reads.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:tests:flaky:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/tests/test_trade_type_catalogue.py::test_a_routed_table_checks_exactly_the_codes_routed_to_it=
+passes when it runs alone and fails when the whole suite runs:
+
+#+begin_example
+ValueError: projects/ores.trading/modeling/ores.trading.rate_instruments.org:
+pinned key anchor: ores_trading_trades_tbl declares no column id, party_id,
+trade_type.
+#+end_example
+
+Observed on 2026-10-10 in a clean worktree at =origin/main= =629573080a=
+with =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q=:
+1 failed, 1314 passed. The same file alone: 8 passed. So an earlier test
+leaves state behind, probably in the model index that maps a table to the
+model declaring it, and this test reads the stale entry.
+
+* Why
+
+The =codegen-tests= local check is red on every branch, so a real codegen
+failure hides behind it, and every pull request has to explain it away.
+
+* References
+
+- Seen while raising [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] (PR 3062).
+
+* See also
+
+-

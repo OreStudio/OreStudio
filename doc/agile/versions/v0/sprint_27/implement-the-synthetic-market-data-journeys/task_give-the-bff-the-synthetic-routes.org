@@ -168,6 +168,16 @@ via its "Verifies task" field.
 | 3 | Minor: =answer= repeats the conflict mapping of =records.ts= and =classifications.ts= | =synthetic.ts= | Decline | Each module words its own conflict. A shared mapper is a refactor of three modules, not part of this task. |
 | 4 | Minor: the feed and folder start and stop were not run against the live services | =synthetic.ts= | Accept | The test tenant has no feeds, and starting the system feeds would change shared state. Unit tests cover the request and the reply mapping; the collection screen task runs them live. |
 | 5 | Misspell check | changed files | Clean | =misspell-fixer= exit 0. |
+| 6 | Round 2, @claude: the whole-number defect reaches the saves, not only the FX preview | =synthetic.ts= | Accept | Verified live: a feed with price 1 and a component with weight 1 are refused, 1.05 saves. The codec capture now says so. A BFF-side float encoding would replace the shared wire codec's number handling, so it stays with the codec fix. |
+| 7 | Round 2: a batch save or removal can name one row twice | =synthetic.ts= | Accept | Both now refuse a repeated key with 400 before the call; two tests cover it. |
+| 8 | Round 2: the batch limit of 1000 has no stated reason | =synthetic.ts= | Accept | The limit is now =PAGE=, the page size the BFF reads with, so one request writes at most what one read returns. |
+| 9 | Round 2: the client sends =party_id= | =synthetic.ts= | Decline | Same as finding 2: the restrictive party policy's write check bounds it. |
+| 10 | Round 2: the catalogue calls =readOnlyFor= twice per resource | =synthetic.ts= | Accept | Called once and reused. |
+| 11 | Round 2: =resourceName= parses the subject | =synthetic.ts= | Decline | Every generated subject is =component.v1.resource.verb= by the protocol specification; the refdata registry derives its permissions the same way. |
+| 12 | Round 2: one helper block uses =/* */= | =synthetic.ts= | Accept | Now a doc comment. |
+| 13 | Round 2: a single removal without a version does not guard against a stale row | =synthetic.ts= | Decline | The route takes the version when the screen has it; sending it is the screen tasks' decision. |
+| 14 | Round 2: give the codegen test failure its own item | backlog | Accept | Captured as [[id:2F4FEA08-EC25-4BB6-A090-7442E51D01E6][A codegen test fails only in the full suite]]. |
+| 15 | Round 2: run feed start and stop live | =synthetic.ts= | Accept | Run live: start answers 409 with the server's reason (a disabled collection, an unknown feed), stop answers 200 with its count. A feed was not left running, because the test collection stays disabled. |
 
 * Result
 

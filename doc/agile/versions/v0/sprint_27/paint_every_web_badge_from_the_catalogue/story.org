@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: A75A9B98-46BD-46CE-8ED1-BA15A1881385
+:END:
+#+title: Story: Paint every web badge from the catalogue
+#+description: Replace the hand-picked Tag tones on state and type values in ores.web with one shared Badge component that paints from the badge catalogue.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:badges:sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The web paints a state or type value with a Tag and a tone the screen picks, so the same value is drawn in different colours on different screens. The platform already has one badge catalogue, with a code domain for each value and a mapping from value to badge, and the Qt client draws from it. The web needs one shared component that does all the badge management: it reads the catalogue once, finds the badge for a code or for a value in a code domain, draws the value as the row wrote it in the catalogue's colours with the catalogue's tooltip, draws the reserved unmapped badge when nothing maps, and shows plain text while the catalogue loads. Then every screen uses it, and the hand-picked tones leave the state and type values. Seed: AccountLockBadge and useBadge in ui/, added by Polish the audit sign-ins screen. The web has 77 uses of Tag in 26 files. Each use is either a state or type value, which moves to the component, or a plain marker such as a count or a kind, which stays a Tag. The first task is that audit.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- One shared Badge component reads the catalogue and paints a badge by code or by value in a code domain.
+- The component draws the unmapped badge when no badge maps, and plain text while the catalogue loads.
+- Every use of Tag in ores.web is classified as a state or type value, or as a plain marker, in a table on the story.
+- Every state or type value paints through the component, and no screen picks a tone for it.
+- A check fails the build when a screen passes a state or type value to Tag with a tone.
+- The values the web needs and the catalogue lacks are added to the catalogue seed and its page.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

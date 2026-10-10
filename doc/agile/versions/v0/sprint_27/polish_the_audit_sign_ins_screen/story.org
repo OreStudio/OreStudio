@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: D7A13BC8-2B73-4D60-B05A-E017E9E81B52
+:END:
+#+title: Story: Polish the audit sign-ins screen
+#+description: Group the audit and versions cards under an Operations card, link the username to the profile, use the standard badge for an unlocked account, and let the failed attempts tab hide accounts that never signed in.
+#+type: story
+#+level: s2
+#+filetags: :web:iam:sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1242EF75-BC1F-4761-83CF-73AC7A5E59BC][Scaffold story: Polish the audit sign-ins screen]] | STARTED | 2026-10-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A16F0C21-42E8-4BAA-884C-813A90293997][Implement Polish the audit sign-ins screen]] | BACKLOG | | | Initial task for: Polish the audit sign-ins screen |
+
+* Decisions
+
+* Out of scope
+
+-

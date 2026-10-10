@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/draw-the-four-eyes-controls-in-the-book-structure-prototype
-#+pr:
+#+pr: 3051
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3051][#3051]] | [doc] Draw the four-eyes controls in the book structure prototype |
 
 * Review
 

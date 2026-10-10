@@ -90,8 +90,13 @@ struct book_apply {
 };
 
 /**
- * @brief Whether an error's text names the infrastructure failing and not the
+ * @brief Whether an error names the infrastructure failing and not the
  * database refusing a write.
+ *
+ * The server labels every answer it gives: ERROR for a refusal, FATAL for a
+ * connection it ends. An error with neither label never came from the server,
+ * so it is the client failing to reach it. The first label decides, because
+ * text after it can carry a value the caller supplied.
  */
 ORES_REFDATA_SERVICE_EXPORT bool is_infrastructure_failure(const std::string& what);
 
@@ -152,6 +157,11 @@ public:
      * transient, leaving the request approved.
      */
     book_apply apply(const std::string& request_id);
+
+    /**
+     * @brief The most lines a request may hold.
+     */
+    static constexpr std::size_t max_lines = 1000;
 
 private:
     ores::database::context ctx_;

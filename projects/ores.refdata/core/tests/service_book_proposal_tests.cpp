@@ -251,11 +251,12 @@ TEST_CASE("a_change_to_one_column_names_only_the_part_of_that_column", tags) {
     const auto live = make_live(w, created);
 
     auto edit = edit_line(live, created);
-    edit.book_status = live.book_status == "Active" ? "Inactive" : "Active";
+    edit.book_status = live.book_status == "Active" ? "Frozen" : "Active";
 
     const auto preview = svc.preview({edit});
 
     REQUIRE(preview.lines.size() == 1);
+    CHECK(preview.lines[0].refusal.empty());
     CHECK(preview.lines[0].columns == std::vector<std::string>{"book_status"});
     CHECK(preview.part_codes == std::vector<std::string>{"operations"});
 }
@@ -491,7 +492,7 @@ TEST_CASE("a_refused_line_rolls_the_whole_apply_back_and_fails_the_request", tag
     const auto live = make_live(w, existing);
     auto edit = edit_line(live, existing);
     edit.description = "Reworded";
-    edit.book_status = live.book_status == "Active" ? "Inactive" : "Active";
+    edit.book_status = live.book_status == "Active" ? "Frozen" : "Active";
     const auto added = new_book_line(h, w);
 
     const auto proposal = svc.raise({added, edit}, "Open one desk, change another");
@@ -542,6 +543,40 @@ TEST_CASE("a_request_that_is_not_approved_is_not_applied", tags) {
           "waiting");
 }
 
+TEST_CASE("a_request_that_failed_to_apply_is_not_applied_again", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto line = new_book_line(h, w);
+    const auto proposal = svc.raise({line}, "Open the desk");
+    REQUIRE(proposal.request);
+    approve_every_part(w, h, *proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+    ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
+    REQUIRE(lifecycle.fail_apply(id, "Could not apply").outcome == "ok");
+
+    const auto result = svc.apply(id);
+
+    CHECK_FALSE(result.applied);
+    CHECK_FALSE(result.transient);
+    ores::refdata::service::book_service books(w.ctx);
+    CHECK_FALSE(books.get_book(line.entity_id).has_value());
+}
+
+TEST_CASE("a_request_over_the_line_limit_is_not_raised", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    std::vector<book_change> lines;
+    for (std::size_t i = 0; i <= book_proposal_service::max_lines; ++i)
+        lines.push_back(new_book_line(h, w));
+
+    const auto proposal = svc.raise(lines, "Too many");
+
+    CHECK_FALSE(proposal.request.has_value());
+    CHECK_FALSE(proposal.message.empty());
+}
+
 TEST_CASE("a_recheck_reads_the_stored_lines_against_the_live_book", tags) {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
@@ -549,7 +584,7 @@ TEST_CASE("a_recheck_reads_the_stored_lines_against_the_live_book", tags) {
     const auto existing = new_book_line(h, w);
     const auto live = make_live(w, existing);
     auto edit = edit_line(live, existing);
-    edit.book_status = live.book_status == "Active" ? "Inactive" : "Active";
+    edit.book_status = live.book_status == "Active" ? "Frozen" : "Active";
     const auto proposal = svc.raise({edit}, "Change the status");
     REQUIRE(proposal.request);
     const auto id = boost::uuids::to_string(proposal.request->id);
@@ -566,8 +601,13 @@ TEST_CASE("a_recheck_reads_the_stored_lines_against_the_live_book", tags) {
 
 TEST_CASE("only_the_database_refusing_a_write_is_a_refusal_and_not_the_infrastructure", tags) {
     using ores::refdata::service::is_infrastructure_failure;
+    // The client cannot reach the server: no label from the server at all.
     CHECK(is_infrastructure_failure("server closed the connection unexpectedly"));
-    CHECK(is_infrastructure_failure("Cannot commit the transaction: timeout"));
-    CHECK_FALSE(is_infrastructure_failure("Invalid functional_currency: QQQ"));
-    CHECK_FALSE(is_infrastructure_failure("The book changed since it was read"));
+    CHECK(is_infrastructure_failure("Cannot commit the transaction"));
+    // The server ends the connection.
+    CHECK(is_infrastructure_failure("FATAL:  terminating connection due to administrator command"));
+    // The server answers, so it is a refusal, whatever the text goes on to say.
+    CHECK_FALSE(is_infrastructure_failure("Executing INSERT failed: ERROR:  Invalid currency: QQQ"));
+    CHECK_FALSE(is_infrastructure_failure(
+        "Executing INSERT failed: ERROR:  Invalid name: lost connection timed out"));
 }

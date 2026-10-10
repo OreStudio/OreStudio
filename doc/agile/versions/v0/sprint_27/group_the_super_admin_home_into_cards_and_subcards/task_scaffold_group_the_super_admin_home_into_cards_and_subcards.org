@@ -8,7 +8,7 @@
 #+filetags: :group_the_super_admin_home_into_cards_and_subcards:sprint_27:v0:
 #+owner: marco
 #+branch: feature/group-the-super-admin-home-into-cards-and-subcards
-#+pr:
+#+pr: 3046
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3046][#3046]] | [agile] Scaffold the super administrator home grouping story |
 
 * Review
 

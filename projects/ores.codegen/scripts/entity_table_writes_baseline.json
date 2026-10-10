@@ -530,6 +530,12 @@
     },
     {
       "kind": "sql_function",
+      "name": "ores_refdata_publish_currency_currency_groups_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "publishes a DQ dataset into the tenant, like every other publish_from_dq function"
+    },
+    {
+      "kind": "sql_function",
       "name": "ores_refdata_publish_currency_groups_from_dq_fn",
       "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
       "reason": "publishes a DQ dataset into the tenant, like every other publish_from_dq function"

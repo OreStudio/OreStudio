@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 579032D2-3637-4188-859E-6C17C1D144F7
+:ores.sql.schema.junction_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.currency_currency_group
 #+description: Codegen junction model for currency_currency_groups.

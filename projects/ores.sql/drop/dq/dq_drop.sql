@@ -55,6 +55,7 @@
 \ir ./dq_currency_calendars_artefact_drop.sql
 \ir ./dq_currency_countries_artefact_drop.sql
 \ir ./dq_currency_groups_artefact_drop.sql
+\ir ./dq_currency_currency_groups_artefact_drop.sql
 \ir ./dq_currency_pair_convention_calendars_artefact_drop.sql
 \ir ./dq_payment_frequencies_artefact_drop.sql
 \ir ./dq_currency_pair_conventions_artefact_drop.sql

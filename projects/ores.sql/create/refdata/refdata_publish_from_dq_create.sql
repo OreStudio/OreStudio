@@ -2601,20 +2601,29 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- =============================================================================
--- Named Portfolios
+-- Sandbox Portfolios
 -- =============================================================================
 
 /**
- * Publishes portfolios by name from a DQ dataset to a party.
+ * Publishes the portfolios of a sample sandbox from a DQ dataset to a party.
  *
- * Each staged portfolio is written as a top-level portfolio of the target
- * party under its staged name; the staged id and parent are not used, because
- * a portfolio a document names by its name needs no place in a tree. A name
- * the party already holds is skipped, so the publish adds names to a party
- * that already has portfolios, which the portfolio tree publish does not. A
- * publish only inserts.
+ * The publish opens one sandbox for the target party, named after the dataset
+ * and the party, and writes each staged portfolio as a root portfolio of that
+ * sandbox under its staged name. The sandbox is anchored at the party's
+ * official top portfolio (the one named by the anchor_portfolio_name
+ * parameter, else Global Portfolio, else the first by name), shared with
+ * everyone who may read the anchor, and owned by the account of the actor
+ * that publishes, else the tenant's administrator (a TenantAdmin, else a
+ * SuperAdmin account). The owner is granted the right to open sandboxes at the
+ * anchor. The staged id and parent are not used: a portfolio a document
+ * names by its name needs no place in a tree, and a sandbox's roots have no
+ * parent. A name the sandbox already holds is skipped, so a repeat publish
+ * adds nothing. A publish only inserts.
+ *
+ * The publish does nothing, and says why, when no owner can be found or the
+ * party holds no official portfolio to anchor at.
  */
-create or replace function ores_refdata_publish_named_portfolios_from_dq_fn(
+create or replace function ores_refdata_publish_sandbox_portfolios_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
     p_mode text default 'upsert',
@@ -2624,6 +2633,12 @@ returns table (action text, record_count bigint) as $$
 declare
     v_dataset_name text;
     v_party_id uuid;
+    v_party_code text;
+    v_anchor_id uuid;
+    v_owner_id uuid;
+    v_sandbox_id uuid;
+    v_sandbox_name text;
+    v_actor text;
     v_staged bigint;
     v_inserted bigint;
 begin
@@ -2642,19 +2657,102 @@ begin
         return;
     end if;
 
+    v_owner_id := ores_refdata_actor_account_id_fn(p_target_tenant_id);
+    if v_owner_id is null then
+        select a.id into v_owner_id
+        from ores_iam_account_roles_tbl ar
+        join ores_iam_roles_tbl r
+          on r.id = ar.role_id and r.valid_to = ores_utility_infinity_timestamp_fn()
+        join ores_iam_accounts_tbl a
+          on a.id = ar.account_id and a.valid_to = ores_utility_infinity_timestamp_fn()
+        where a.tenant_id = p_target_tenant_id
+          and a.account_type = 'user'
+          and ar.valid_to = ores_utility_infinity_timestamp_fn()
+          and r.name in ('TenantAdmin', 'SuperAdmin')
+        order by (r.name = 'TenantAdmin') desc, a.username
+        limit 1;
+    end if;
+    if v_owner_id is null then
+        return query select 'skipped_no_owner'::text, 0::bigint;
+        return;
+    end if;
+    v_actor := coalesce(ores_iam_current_service_fn(), current_user);
+
+    select short_code into v_party_code
+    from ores_refdata_parties_tbl
+    where tenant_id = p_target_tenant_id
+      and id = v_party_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    select id into v_anchor_id
+    from ores_refdata_portfolios_tbl
+    where tenant_id = p_target_tenant_id
+      and party_id = v_party_id
+      and parent_portfolio_id is null
+      and sandbox_id is null
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    order by (name = coalesce(p_params ->> 'anchor_portfolio_name', 'Global Portfolio')) desc,
+             name
+    limit 1;
+    if v_anchor_id is null then
+        return query select 'skipped_no_anchor'::text, 0::bigint;
+        return;
+    end if;
+
+    v_sandbox_name := v_dataset_name || ' (' || v_party_code || ')';
+
+    select id into v_sandbox_id
+    from ores_refdata_sandboxes_tbl
+    where tenant_id = p_target_tenant_id
+      and name = v_sandbox_name
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_sandbox_id is null then
+        if not exists (
+            select 1 from ores_refdata_portfolio_rights_tbl
+            where tenant_id = p_target_tenant_id
+              and account_id = v_owner_id
+              and portfolio_id = v_anchor_id
+              and right_code = 'open_sandbox'
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            insert into ores_refdata_portfolio_rights_tbl (
+                tenant_id, id, version, account_id, portfolio_id, right_code,
+                modified_by, performed_by, change_reason_code, change_commentary
+            ) values (
+                p_target_tenant_id, gen_random_uuid(), 0, v_owner_id, v_anchor_id, 'open_sandbox',
+                v_actor, current_user,
+                'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+            );
+        end if;
+
+        v_sandbox_id := gen_random_uuid();
+        insert into ores_refdata_sandboxes_tbl (
+            tenant_id, id, version, name, purpose, anchor_portfolio_id, owner_account_id,
+            visibility, status, review_date, description,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, v_sandbox_id, 0, v_sandbox_name, 'sample', v_anchor_id, v_owner_id,
+            'shared', 'open', current_date + 365,
+            'Sample data from the ORE examples. Imports of the samples land here, apart from the official portfolios.',
+            v_actor, current_user,
+            'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+        );
+    end if;
+
     select count(*) into v_staged
     from ores_dq_portfolios_artefact_tbl
     where dataset_id = p_dataset_id;
 
     insert into ores_refdata_portfolios_tbl (
         tenant_id, id, version, party_id, name, parent_portfolio_id, owner_unit_id,
-        purpose_type, aggregation_ccy, is_virtual, status,
+        purpose_type, aggregation_ccy, is_virtual, status, sandbox_id,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select distinct on (s.name)
         p_target_tenant_id, gen_random_uuid(), 0, v_party_id, s.name, null, null,
-        s.purpose_type, s.aggregation_ccy, s.is_virtual, 'Active',
-        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        s.purpose_type, s.aggregation_ccy, s.is_virtual, 'Active', v_sandbox_id,
+        v_actor, current_user,
         'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
     from ores_dq_portfolios_artefact_tbl s
     where s.dataset_id = p_dataset_id

@@ -280,6 +280,13 @@ describe("the system administrator's home", () => {
         expect(occurrences(html, ALL_CLEAR)).toBe(5);
     });
 
+    it('spends no line on a panel that is fine: its mark says so, and only the top status says it in words', () => {
+        const html = home('system-administration', quiet, undefined, seedHealthy);
+
+        expect(occurrences(html, `>${ALL_CLEAR}<`)).toBe(1);
+        expect(occurrences(html, `aria-label="${ALL_CLEAR}"`)).toBe(4);
+    });
+
     it('counts the areas that need the person in the one status at the top', () => {
         const html = home('system-administration', busy, undefined, (client) => {
             seedHealthy(client);

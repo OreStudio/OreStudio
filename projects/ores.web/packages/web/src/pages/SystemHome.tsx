@@ -221,12 +221,20 @@ const MARK: Readonly<Record<StatusTone, { readonly glyph: string; readonly class
     none: { glyph: '–', classes: 'border-line bg-surface-base text-ink-faint' },
 };
 
-function StatusMark({ tone }: { readonly tone: StatusTone }): ReactNode {
+function StatusMark({
+    tone,
+    label,
+}: {
+    readonly tone: StatusTone;
+    /** What a screen reader says, since the mark itself is a glyph. */
+    readonly label: string;
+}): ReactNode {
     const mark = MARK[tone];
     return (
         <span
-            aria-hidden="true"
-            className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border font-bold ${mark.classes}`}
+            role="img"
+            aria-label={label}
+            className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border text-xs font-bold ${mark.classes}`}
         >
             {mark.glyph}
         </span>
@@ -250,11 +258,12 @@ function StatusChip({ status }: { readonly status: PanelStatus }): ReactNode {
 }
 
 /**
- * One dashboard panel: a title that leads to its screen, one line of status,
- * the figures behind it, and a footer that says how old they are.
+ * One dashboard panel: a title with a mark that says how it is doing, the
+ * figures behind it, and a footer that says how old they are.
  *
- * Every panel has the same four parts in the same order, so the four read as
- * one family: the first thing a person reads in each is whether it needs them.
+ * A panel that is fine says so with its mark alone, because four sentences
+ * saying the same thing take the room the figures need. A panel that needs the
+ * person, or has not been read, says why in a line under its title.
  */
 function Panel({
     title,
@@ -275,15 +284,21 @@ function Panel({
         <section className="card flex flex-col justify-between gap-4 p-5">
             <div className="space-y-4">
                 <header className="flex flex-wrap items-center justify-between gap-2">
-                    <h2 className="text-sm font-semibold text-ink">{title}</h2>
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-sm font-semibold text-ink">{title}</h2>
+                        <StatusMark tone={status.tone} label={status.text} />
+                    </div>
                     <LinkButton to={to} size="sm">
                         {t('home.system.panels.open')}
                     </LinkButton>
                 </header>
-                <div className="flex items-center gap-3">
-                    <StatusMark tone={status.tone} />
-                    <span className="text-sm text-ink">{status.text}</span>
-                </div>
+                {status.tone !== 'ok' && (
+                    <p
+                        className={`text-sm ${status.tone === 'attention' ? 'text-warn' : 'text-ink-muted'}`}
+                    >
+                        {status.text}
+                    </p>
+                )}
                 {children}
             </div>
             {footer !== undefined && (

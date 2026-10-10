@@ -159,8 +159,9 @@ public:
             "Checking the tenant code and hostname are free");
         for (const auto& row : taken) {
             if (row.size() >= 2 && row[0] && *row[0] == code)
-                throw std::runtime_error("A tenant with the code '" + code +
-                                         "' already exists. Sign in to it, or choose another name.");
+                throw std::runtime_error(
+                    "A tenant with the code '" + code +
+                    "' already exists. Sign in to it, or choose another name.");
             throw std::runtime_error("A tenant with the hostname '" + hostname +
                                      "' already exists. Choose another hostname.");
         }

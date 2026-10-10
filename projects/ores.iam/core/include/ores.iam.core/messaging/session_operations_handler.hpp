@@ -245,9 +245,8 @@ public:
                   get_session_statistics_response{.rows = std::move(stats), .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_,
-                  msg,
-                  get_session_statistics_response{.success = false, .message = e.what()});
+            reply(
+                nats_, msg, get_session_statistics_response{.success = false, .message = e.what()});
         }
     }
 

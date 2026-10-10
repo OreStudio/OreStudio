@@ -35,8 +35,7 @@ namespace ores::iam::messaging {
 namespace {
 
 inline auto& auth_event_handler_lg() {
-    static auto instance =
-        ores::logging::make_logger("ores.iam.messaging.auth_event_handler");
+    static auto instance = ores::logging::make_logger("ores.iam.messaging.auth_event_handler");
     return instance;
 }
 
@@ -68,7 +67,8 @@ public:
      * @brief Serves iam.v1.auth_events.list.
      */
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_event_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(auth_event_handler_lg(), msg);
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, signer_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -113,7 +113,9 @@ public:
 
             BOOST_LOG_SEV(auth_event_handler_lg(), debug)
                 << "Completed " << msg.subject << " with " << events.size() << " event(s)";
-            reply(nats_, msg, list_auth_events_response{.events = std::move(events), .success = true});
+            reply(nats_,
+                  msg,
+                  list_auth_events_response{.events = std::move(events), .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auth_event_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, list_auth_events_response{.success = false, .message = e.what()});

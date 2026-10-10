@@ -107,9 +107,10 @@ acct_project_my_party(const boost::uuids::uuid& party_id,
  * cannot see. A party the cache cannot name keeps empty strings: the screen
  * states the gap and invents no name.
  */
-inline void acct_name_tree_parties(service::cache::party_cache& cache,
-                                   const std::string& tenant_id,
-                                   std::vector<ores::iam::messaging::reporting_tree_party>& parties) {
+inline void
+acct_name_tree_parties(service::cache::party_cache& cache,
+                       const std::string& tenant_id,
+                       std::vector<ores::iam::messaging::reporting_tree_party>& parties) {
     boost::uuids::string_generator sg;
     std::unordered_set<std::string> in_scope;
     for (const auto& party : parties) {

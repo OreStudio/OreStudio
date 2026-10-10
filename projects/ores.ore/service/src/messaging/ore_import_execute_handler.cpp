@@ -1294,8 +1294,7 @@ std::string save_option_block(Nats& nats,
         if (block.exercise_prices && !data.option_exercise_dates.empty()) {
             const auto prices = split_numbers(*block.exercise_prices);
             int price_number = 0;
-            for (std::size_t i = 0;
-                 i < prices.size() && i < data.option_exercise_dates.size();
+            for (std::size_t i = 0; i < prices.size() && i < data.option_exercise_dates.size();
                  ++i) {
                 auto parsed = ores::utility::decimal::decimal::from_string(prices[i]);
                 if (!parsed)
@@ -1305,7 +1304,8 @@ std::string save_option_block(Nats& nats,
                 child.change.write.trade_activity_id = trade_activity_id;
                 child.change.write.sequence_number = ++price_number;
                 child.change.write.exercise_date =
-                    ores::platform::time::datetime::from_iso8601_date(data.option_exercise_dates[i]);
+                    ores::platform::time::datetime::from_iso8601_date(
+                        data.option_exercise_dates[i]);
                 child.change.write.price = std::move(*parsed);
                 auto child_resp = nats_call(nats, child, error);
                 if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
@@ -2083,8 +2083,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     // without its header has no party and no trade type.
                     put_rate_instrument_request header_req;
                     header_req.change.write.trade_id = r.header.identity.trade_id;
-                    header_req.change.write.trade_activity_id =
-                        r.header.identity.trade_activity_id;
+                    header_req.change.write.trade_activity_id = r.header.identity.trade_activity_id;
                     header_req.change.write.trade_type_code = r.header.identity.trade_type_code;
                     header_req.change.write.start_date = r.header.start_date;
                     header_req.change.write.maturity_date = r.header.maturity_date;
@@ -2336,7 +2335,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         w.premium_currency = option.premium_currency;
                         w.premium_pay_date = option.premium_pay_date;
                         w.exercise_fee_settlement_period = option.exercise_fee_settlement_period;
-                        w.exercise_fee_settlement_calendar = option.exercise_fee_settlement_calendar;
+                        w.exercise_fee_settlement_calendar =
+                            option.exercise_fee_settlement_calendar;
                         w.exercise_fee_settlement_convention =
                             option.exercise_fee_settlement_convention;
                         w.automatic_exercise = option.automatic_exercise;
@@ -2399,8 +2399,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         payment_req.change.write.sequence_number = payment.sequence_number;
                         payment_req.change.write.trade_activity_id = payment.trade_activity_id;
                         payment_req.change.write.payment_date = payment.payment_date;
-                        auto payment_resp =
-                            nats_call(delegated_nats, payment_req, instr_error);
+                        auto payment_resp = nats_call(delegated_nats, payment_req, instr_error);
                         if (!payment_resp ||
                             payment_resp->result.outcome != ores::utility::domain::outcome::ok)
                             return false;

@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.security/validation/email_validator.hpp"
@@ -33,9 +33,9 @@
 #include <format>
 #include <limits>
 #include <openssl/evp.h>
+#include <set>
 #include <stdexcept>
 #include <unordered_map>
-#include <set>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -1027,9 +1027,9 @@ messaging::set_reporting_line_response account_operations_service::set_reporting
     return response;
 }
 
-messaging::get_reporting_tree_response account_operations_service::get_reporting_tree(
-    const messaging::get_reporting_tree_request& request,
-    const std::optional<boost::uuids::uuid>& viewer) {
+messaging::get_reporting_tree_response
+account_operations_service::get_reporting_tree(const messaging::get_reporting_tree_request& request,
+                                               const std::optional<boost::uuids::uuid>& viewer) {
     messaging::get_reporting_tree_response response;
 
     // The tenant's own roster, which row-level security bounds.
@@ -1089,7 +1089,8 @@ messaging::get_reporting_tree_response account_operations_service::get_reporting
                     below.push(report);
                 }
                 // The parties of the people under the viewer are the viewer's to see.
-                if (const auto linked = parties_of_all.find(report); linked != parties_of_all.end()) {
+                if (const auto linked = parties_of_all.find(report);
+                    linked != parties_of_all.end()) {
                     nameable_parties.insert(linked->second.begin(), linked->second.end());
                 }
             }
@@ -1215,14 +1216,13 @@ messaging::get_reporting_tree_response account_operations_service::get_reporting
             .full_name = account->full_name,
             .job_title = account->job_title,
             .account_type = account->account_type,
-            .image_id = account->image_id ? boost::uuids::to_string(*account->image_id) :
-                                            std::string{},
+            .image_id =
+                account->image_id ? boost::uuids::to_string(*account->image_id) : std::string{},
             .reports_to_account_id = manager_of(*account).value_or(std::string{}),
             .depth = d,
             .direct_reports = static_cast<int>(kids == children.end() ? 0 : kids->second.size()),
             .reports_outside_scope = outside_view(*account),
-            .party_ids = parties_of.count(id) > 0 ? parties_of.at(id) :
-                                                    std::vector<std::string>{}};
+            .party_ids = parties_of.count(id) > 0 ? parties_of.at(id) : std::vector<std::string>{}};
     };
 
     if (request.root_account_id.empty()) {

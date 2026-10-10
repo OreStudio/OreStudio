@@ -145,16 +145,15 @@ public:
      * The shared strike row and the schedule rows the forward mapper wrote
      * rebuild the document's strike and its underlying swap leg's schedule.
      */
-    static trade
-    reverse_capfloor(const ores::trading::domain::rate_instrument& header,
-                     const ores::trading::domain::cap_floor_instrument& instr,
-                     const std::vector<ores::trading::domain::swap_leg>& legs,
-                     const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
-                     const std::vector<ores::trading::domain::swap_leg_rate>& rates,
-                     const std::vector<ores::trading::domain::instrument_strike>& strikes,
-                     const std::vector<ores::trading::domain::instrument_schedule>& schedules,
-                     const std::vector<ores::trading::domain::instrument_schedule_date>&
-                         schedule_dates);
+    static trade reverse_capfloor(
+        const ores::trading::domain::rate_instrument& header,
+        const ores::trading::domain::cap_floor_instrument& instr,
+        const std::vector<ores::trading::domain::swap_leg>& legs,
+        const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+        const std::vector<ores::trading::domain::swap_leg_rate>& rates,
+        const std::vector<ores::trading::domain::instrument_strike>& strikes,
+        const std::vector<ores::trading::domain::instrument_schedule>& schedules,
+        const std::vector<ores::trading::domain::instrument_schedule_date>& schedule_dates);
 
     /**
      * @brief Forward-maps a Swaption trade (SwaptionData) to ORES domain types,
@@ -171,24 +170,22 @@ public:
      * The shared option row and its children rebuild the option element, and
      * the schedule rows rebuild the exercise-date group.
      */
-    static trade
-    reverse_swaption(const ores::trading::domain::rate_instrument& header,
-                     const ores::trading::domain::swaption_instrument& instr,
-                     const std::vector<ores::trading::domain::swap_leg>& legs,
-                     const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
-                     const std::vector<ores::trading::domain::swap_leg_rate>& rates,
-                     const std::vector<ores::trading::domain::instrument_schedule>& schedules,
-                     const std::vector<ores::trading::domain::instrument_schedule_date>&
-                         schedule_dates,
-                     const std::vector<ores::trading::domain::instrument_option>& options,
-                     const std::vector<ores::trading::domain::instrument_option_premium>&
-                         option_premiums,
-                     const std::vector<ores::trading::domain::instrument_option_exercise_fee>&
-                         option_exercise_fees,
-                     const std::vector<ores::trading::domain::instrument_option_payment_date>&
-                         option_payment_dates,
-                     const std::vector<ores::trading::domain::instrument_option_exercise_price>&
-                         option_exercise_prices);
+    static trade reverse_swaption(
+        const ores::trading::domain::rate_instrument& header,
+        const ores::trading::domain::swaption_instrument& instr,
+        const std::vector<ores::trading::domain::swap_leg>& legs,
+        const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+        const std::vector<ores::trading::domain::swap_leg_rate>& rates,
+        const std::vector<ores::trading::domain::instrument_schedule>& schedules,
+        const std::vector<ores::trading::domain::instrument_schedule_date>& schedule_dates,
+        const std::vector<ores::trading::domain::instrument_option>& options,
+        const std::vector<ores::trading::domain::instrument_option_premium>& option_premiums,
+        const std::vector<ores::trading::domain::instrument_option_exercise_fee>&
+            option_exercise_fees,
+        const std::vector<ores::trading::domain::instrument_option_payment_date>&
+            option_payment_dates,
+        const std::vector<ores::trading::domain::instrument_option_exercise_price>&
+            option_exercise_prices);
 
     /**
      * @brief Forward-maps a CallableSwap trade (CallableSwapData) to ORES

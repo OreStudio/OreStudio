@@ -319,8 +319,8 @@ TEST_CASE("every_committed_index_map_row_round_trips_through_the_codecs", tags) 
     // makes it data that can rot under a codec change: this is the guard. Every
     // committed row must be a name the index codec reads and the URI it writes
     // back from it, or the fixed table has drifted from the codec.
-    const auto path = ores::testing::project_root::resolve(
-        "tools/ore_conventions/oresmd_index_map.tsv");
+    const auto path =
+        ores::testing::project_root::resolve("tools/ore_conventions/oresmd_index_map.tsv");
     const auto content = ores::platform::filesystem::file::read_content(path);
     std::istringstream stream(content);
     std::string line;

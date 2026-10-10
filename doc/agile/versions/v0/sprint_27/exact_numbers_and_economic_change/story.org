@@ -39,11 +39,11 @@ Hold every money quantity as an exact decimal, read the ORE boundary without los
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B06A7058-C406-42E8-98E2-4A7E929C6261][Read the ORE boundary as text]] | STARTED | | | The XML binding keeps the document's lexical form so a money value is parsed exactly. |
-| [[id:A1358CC9-3EA3-4D2A-97DF-AE6E27A83DCF][Make money exact by role across families]] | STARTED | | | 12 of 37 money columns converted; 25 money and 10 continuous columns remain, all in ores.trading. The scale is numeric(38, 12). |
-| [[id:37651D1D-7929-4813-AC5B-5D47A3512D03][Add the trade external version]] | STARTED | | | The trade carries the version the customer's records match, moved only by economic change. The column, the domain field, the protocol and the history projection are in; the fold that moves it is the task below. |
+| [[id:B06A7058-C406-42E8-98E2-4A7E929C6261][Read the ORE boundary as text]] | DONE | | | The XML binding keeps the document's lexical form so a money value is parsed exactly. |
+| [[id:A1358CC9-3EA3-4D2A-97DF-AE6E27A83DCF][Make money exact by role across families]] | DONE | | | Money columns are exact decimals at numeric(38, 12); the money gate passes. |
+| [[id:37651D1D-7929-4813-AC5B-5D47A3512D03][Add the trade external version]] | DONE | | | The trade carries the version the customer's records match, moved only by economic change. The column, the domain field, the protocol, the history projection and the fold that moves it are in. |
 | [[id:30FDE60C-DBDB-47DA-9C9D-D4262A948AC4][Declare the economic fields]] | BACKLOG | | | The model states which fields are economic and which components make up an instrument's shape. Not started: the digest task ships a name-based first cut in its place, and this task replaces it. |
-| [[id:87305402-9907-4C0D-8463-3FE03C9A1785][Digest the instrument shape and fold it up]] | STARTED | | | An economic digest computed where the whole shape exists, stored as text, folded from components to the trade. The digest and its tests are in; the write-path fold is in flight. |
+| [[id:87305402-9907-4C0D-8463-3FE03C9A1785][Digest the instrument shape and fold it up]] | DONE | | | An economic digest computed where the whole shape exists, stored as text, folded from components to the trade. The digest, the write-path fold and a test for every instrument family are in. |
 
 * Decisions
 
@@ -83,7 +83,7 @@ something that was run, not something that was read.
 | No double crosses into the persisted domain | **done** | both baselines empty; live database at 94 `numeric(38, 12)` and 70 `double precision` after a recreate; 0 offenders in both directions | Nothing |
 | Money is exact in both the domain type and the column, agreeing by role across families | **done** | `check-money-decimal-columns` reports 0 and 0 with empty baselines; `check-model-sql-types` 0 mismatches over 3152 columns; `ores.trading.core.tests` 929/140 green | Nothing |
 | A trade carries an external version that moves on economic change and not otherwise | **done** | `ores.trading.core.digest.tests` 25 assertions in 4 cases passing: a null amend changes neither, a system-reason change moves the digest and not the version, and a **user-reason amendment moves both** | Nothing required. The shape-carrying request remains the stronger design and is recorded in the ADR |
-| An economic digest is folded from every instrument component up to the trade | **done** | `ores.trading.core.digest.tests` 19 assertions in 3 cases passing; the fold now observes the **29 instrument families** and reads the instrument and its legs, amounts, rates, amortizations, schedules, strikes, options and premiums; the five non-economic children (state, booking, additional field, portfolio, structure member) are out, identifiers and party roles stay in | The external version is still deliberately unmoved; the boundary and the interim rule are in the ADR |
+| An economic digest is folded from every instrument component up to the trade | **done** | `ores.trading.core.digest.tests` passing, with one case that writes the instrument of each of the 22 instrument tables and checks the trade digest moves; the fold observes the **22 instrument tables** (the rate header plus its product fact tables count as one) and reads the instrument and its legs, amounts, rates, amortizations, schedules, strikes, options and premiums; the five non-economic children (state, booking, additional field, portfolio, structure member) are out, identifiers and party roles stay in | The external version is still deliberately unmoved; the boundary and the interim rule are in the ADR |
 
 Two of the five are done, three are partly done, and the row that matters most
 for the customer-facing claim is the last one: the mechanism is in and its

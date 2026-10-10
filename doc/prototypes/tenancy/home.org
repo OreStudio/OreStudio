@@ -7,12 +7,12 @@
 #+level: cross
 #+filetags: :prototype:ui:navigation:tenancy:
 #+created: 2026-10-04
-#+updated: 2026-10-09
+#+updated: 2026-10-10
 
 | Item          | Where                                  |
 |---------------+----------------------------------------|
 | Prototype     | [[file:home/][the prototype]]          |
-| Gemini review | none                                   |
+| Gemini review | [[file:home/review/][the review]]               |
 | Group         | [[file:index.org][Tenancy prototypes]] |
 
 * Summary
@@ -51,7 +51,7 @@ sign-in and the person's own screens under their name stand as they were.
 
 ** System administration
 
-- *Home* opens with a *System health* card: the tenants in service, on
+- *Home* opens with a *System health* card (the built screen has since become a dashboard of four panels on a tab, after the Gemini review below): the tenants in service, on
   evaluation and setting up, a plain verdict (a green tick and *Everything is
   running*, or an amber mark and how many tenants need attention), and the
   recent activity. *Needs attention* lists the failed setups and suspended
@@ -68,6 +68,32 @@ sign-in and the person's own screens under their name stand as they were.
   tenant's code to confirm.
 - *Add tenant* is one form: the organisation, what to start from, and its
   administrator.
+
+** The Gemini review of the system administrator's home
+
+Gemini drew the system administrator's home a second time, as a dashboard: four
+panels in two columns (tenants, services, the compute grid and the message
+queue) under one installation-wide status, each panel with metric tiles, a
+footer and a "see all" or "open" control, and a sparkline on the grid and the
+queue. It is kept as the record of an alternative, at
+[[file:home/review/][the review]], and the agreed design above is unchanged.
+
+The built screen took four things from it, and left the rest:
+
+| Taken | Why |
+|-------+-----|
+| Four panels with one status language, and one status for the whole installation at the top | The home had one verdict for tenants and nothing for the installation. A person reads the same sentence in every panel, and the top status says whether any of them needs them. |
+| Metric tiles in a box, with the figure large and the label small | The figures read as separate facts instead of one run of text. |
+| Two columns, so the four panels have the same weight | The first build gave tenants a full row and squeezed the other three into thirds. |
+| A footer on each panel that says when it was read, or which release it is | A panel that cannot say how old it is invites a wrong reading. |
+
+| Left | Why |
+|------+-----|
+| The processor load sparkline on the grid | No read gives the grid's processor load. The grid samples the journey asks for do not exist yet. |
+| The scheduler status line | Nothing records it. |
+| The broker name as a footer | It is static text that adds nothing a person can act on. |
+| The message throughput sparkline as drawn | The built panel draws the rate from the server samples it already reads: the difference between two samples of the message counter, over the seconds between them. The figure is real, and the curve is the samples' own. |
+| "All clusters operational" | The installation has one deployment, not clusters. |
 
 ** Tenant administration and the party user
 
@@ -112,3 +138,4 @@ framework and no build step. The site build copies the directory through
 
 - [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
 - [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell prototype]] — the shell this home screen sits in.
+- [[file:home/review/][The Gemini review]] — the dashboard Gemini drew for the system administrator's home.

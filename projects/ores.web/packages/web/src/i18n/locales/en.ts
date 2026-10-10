@@ -979,6 +979,13 @@ export const en: SourceCatalogue = {
             panels: {
                 open: 'Open',
                 unread: 'Could not be read',
+                sampled: 'Sampled',
+                summary: {
+                    needAttention: {
+                        one: '{count} area needs attention',
+                        other: '{count} areas need attention',
+                    },
+                },
                 services: {
                     title: 'Services',
                     needAttention: {
@@ -1009,6 +1016,8 @@ export const en: SourceCatalogue = {
                     slowConsumers: 'Slow consumers',
                     streams: 'Streams',
                     stored: 'Messages stored',
+                    throughput: 'Messages in per second',
+                    perSecond: '{rate} msg/s',
                 },
             },
         },
@@ -1088,6 +1097,7 @@ export const en: SourceCatalogue = {
             running: 'Services running',
             lost: 'Lost',
             missing: 'Missing',
+            lostOrMissing: 'Lost or missing',
             errors: 'Errors, {range}',
             warnings: 'Warnings, {range}',
             release: 'Newest release',

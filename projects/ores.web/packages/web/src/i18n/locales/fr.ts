@@ -994,6 +994,13 @@ const fr: SourceCatalogue = {
             panels: {
                 open: 'Ouvrir',
                 unread: 'N’a pas pu être lu',
+                sampled: 'Échantillon de',
+                summary: {
+                    needAttention: {
+                        one: '{count} zone demande votre attention',
+                        other: '{count} zones demandent votre attention',
+                    },
+                },
                 services: {
                     title: 'Services',
                     needAttention: {
@@ -1024,6 +1031,8 @@ const fr: SourceCatalogue = {
                     slowConsumers: 'Consommateurs lents',
                     streams: 'Flux',
                     stored: 'Messages stockés',
+                    throughput: 'Messages reçus par seconde',
+                    perSecond: '{rate} msg/s',
                 },
             },
         },
@@ -1099,6 +1108,7 @@ const fr: SourceCatalogue = {
             running: 'Services en marche',
             lost: 'Perdus',
             missing: 'Absents',
+            lostOrMissing: 'Perdus ou absents',
             errors: 'Erreurs, {range}',
             warnings: 'Avertissements, {range}',
             release: 'Version la plus récente',

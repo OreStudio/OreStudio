@@ -274,10 +274,40 @@ describe("the system administrator's home", () => {
         }
     });
 
-    it('says Everything is running in every panel when nothing needs the person', () => {
+    it('says Everything is running in every panel, and once more for the whole installation', () => {
         const html = home('system-administration', quiet, undefined, seedHealthy);
 
-        expect(occurrences(html, ALL_CLEAR)).toBe(4);
+        expect(occurrences(html, ALL_CLEAR)).toBe(5);
+    });
+
+    it('counts the areas that need the person in the one status at the top', () => {
+        const html = home('system-administration', busy, undefined, (client) => {
+            seedHealthy(client);
+            client.setQueryData(SERVICES_QUERY_KEY, [
+                serviceRow('ores.iam.service', 'running'),
+                serviceRow('ores.dq.service', 'lost'),
+            ]);
+            client.setQueryData(GRID_QUERY_KEY, gridView({ total_hosts: 5, online_hosts: 4 }));
+            client.setQueryData([BUS_QUERY_KEY, '15m'], busView({ slow_consumers: 2 }));
+        });
+
+        expect(html).toContain('4 areas need attention');
+    });
+
+    it('says nothing at the top until every panel has read, and the panel that has read says so alone', () => {
+        const html = home('system-administration', quiet);
+
+        expect(html).not.toContain('area needs attention');
+        expect(html).not.toContain('areas need attention');
+        expect(occurrences(html, ALL_CLEAR)).toBe(1);
+    });
+
+    it('closes the Services panel with the newest release, and the others with when they were read', () => {
+        const html = home('system-administration', quiet, undefined, seedHealthy);
+
+        expect(html).toContain('>v0.0.27<');
+        expect(occurrences(html, '>Sampled<')).toBe(2);
+        expect(html).toContain('12:00:00 UTC');
     });
 
     it('says how many need attention, in the same words, in the panel that does', () => {
@@ -312,6 +342,7 @@ describe("the system administrator's home", () => {
 
         expect(occurrences(html, ALL_CLEAR)).toBe(3);
         expect(html).toContain('Could not be read');
+        expect(html).not.toContain('area needs attention');
     });
 
     it('says so plainly when a panel has nothing to report yet', () => {

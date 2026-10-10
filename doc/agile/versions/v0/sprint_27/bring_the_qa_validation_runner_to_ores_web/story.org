@@ -44,28 +44,31 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 
 * The arc
 
-ores.web gains a development module, on when the deployment has the developer
-surface on. It joins development and testing in one place. It replaces
-=ores.org-js= and =ores.dsh_kanban=. This story is the first step.
+ores.web gains a module for development and testing. It is a regular module, like
+the others, and it does not depend on the developer surface. It joins development
+and testing in one place. It replaces =ores.org-js= and =ores.dsh_kanban=. This
+story is the first step.
 
 | Story | What it adds |
 |-------+--------------|
-| 1. Test scenarios (this story) | A Development area in ores.web. A Tests tab lists scenarios waiting and scenarios done. The runner opens one: its steps, its story and its task, a PASS or FAIL and a note on each step, and a save that writes the org file. |
+| 1. Test scenarios (this story) | A regular module in ores.web. A Tests tab lists scenarios waiting and scenarios done. The runner opens one: its steps, its story and its task, a PASS or FAIL and a note on each step, and a save that writes the org file. |
 | 2. Browse the agile tree | Kanban for the sprint, stories, tasks, the backlog buckets and any doc by link. It reaches parity with =ores.dsh_kanban= and =ores.org-js=, then both go. |
 | 3. The test queue as notifications | A scenario waiting for a tester raises an inbox notification. The bell shows it. A tester role and an assignment arrive here. |
 
 * Decisions
 
-- The module is the developer surface. The BFF serves it only when =developerTools= is on, as it does the Deployment page.
+- The module is a regular module. It does not use =developerTools=. A trader may run test scenarios without developer tools. How a development mode works, and whether the module runs in production, are open.
 - Compass stays the only reader and writer of the org tree. The BFF calls compass and never parses or writes org files itself. A new =compass scenario= verb records the results, so the rule that only compass changes agile artefacts holds. The first cut writes straight into the story's own folder, which is where scenarios already live.
-- The board shows the work tree the BFF runs in. It never merges work trees, as the =ores.dsh_kanban= contract says.
+- Until the production question is settled, the module reads the work tree the BFF runs in. It never merges work trees, as the =ores.dsh_kanban= contract says.
 - The browser cannot capture the screen, so a step takes a pasted or dropped image. The BFF saves it next to the scenario doc.
 - Org text renders in the browser with the parser from =ores.org-js=, ported into the web package. The port is the first step of retiring that project.
 
 * Open questions
 
 - =ores.org-js= is also the public, static view on the project site. The new module needs a running BFF, so it cannot replace that view. Keep a static export, or drop the public view?
-- Who may use the module? The first cut allows any signed-in user on a developer deployment. A tester role comes with story 3.
+- Who may use the module? The first cut allows any signed-in user. A permission and a tester role come with story 3.
+- Does the module run in production? A deployed BFF has no work tree, so it has no org files to read or write. The answer decides where scenarios and their results live. Settle it before the module leaves development.
+- How does a development mode work? It is open. The module does not assume one.
 
 * Out of scope
 

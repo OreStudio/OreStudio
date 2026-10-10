@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: DD46C06C-5605-4A45-B6D5-AFE8178F3D44
+:END:
+#+title: Task: Implement Hotfix: the er-diagram and pgtap checks fail on main
+#+description: Initial task for: Hotfix: the er-diagram and pgtap checks fail on main
+#+type: task
+#+level: s1
+#+filetags: :clear_the_local_check_failures_in_the_er_diagram_and_pgtap:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:56DA3709-B087-4870-AB5F-A66F95795B92][Hotfix: the er-diagram and pgtap checks fail on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The local check gate passes er-diagram and pgtap on main, so a clean run means the branch is clean.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:56DA3709-B087-4870-AB5F-A66F95795B92][Hotfix: the er-diagram and pgtap checks fail on main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- er-diagram passes: the RLS_002 warnings are cleared and the committed diagrams match the schema.
+- pgtap passes: every suite runs its full plan.
+- The full local check gate is green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The pgTAP suite passes: 33 files, 308 tests. Five suites inserted books with no book_purpose_type or ledger_feed_type, which the book validator now requires, so each fixture states both. The outcome functions test called the raiser without the value argument it gained, so version_conflict mixed up its versions. The test now passes null for the value.
+
+The er-diagram check passes. The parser reported 24 DROP_001 warnings: 24 DQ convention artefact tables had no drop script. Each has one now and dq_drop.sql runs them. It reported 22 RLS_002 warnings for the same artefact tables. The publish function never copies their party_id, so a party policy would only hide the staged rows. The ignore file now says so. The 22 ER diagrams were stale, so I regenerated them.

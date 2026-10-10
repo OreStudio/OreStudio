@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 56DA3709-B087-4870-AB5F-A66F95795B92
+:END:
+#+title: Story: Hotfix: the er-diagram and pgtap checks fail on main
+#+description: The local check gate fails on main in two checks. er-diagram fails on 46 RLS_002 warnings under strict mode and on stale diagrams. pgtap fails in outcome_functions_test, refdata_sandbox_test, reporting_official_reports_test and three trading suites.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:checks:sql:v0:sprint_27:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The local check gate passes er-diagram and pgtap on main, so a clean run means the branch is clean.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- er-diagram passes: the RLS_002 warnings are cleared and the committed diagrams match the schema.
+- pgtap passes: every suite runs its full plan.
+- The full local check gate is green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:251849EC-BDDD-4D2F-BA43-3D917CB0DA7E][Scaffold story: Hotfix: the er-diagram and pgtap checks fail on main]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:DD46C06C-5605-4A45-B6D5-AFE8178F3D44][Implement Hotfix: the er-diagram and pgtap checks fail on main]] | DONE | | 2026-10-10 | Initial task for: Hotfix: the er-diagram and pgtap checks fail on main |
+
+* Decisions
+
+- The DQ artefact tables skip the party isolation policy. The publish function stamps the target party and never copies the artefact's party_id, so no party reads these rows.
+- The fix rides one pull request with the scaffold. The two failures share one goal and the diff is small.
+
+* Out of scope
+
+- The check gate's db step collides with running services. Stop the services before a full gate run.
+
+-
+
+* Result
+
+The er-diagram and pgtap checks pass on this branch. Five pgTAP fixtures state the book purpose and ledger feed they need, and one outcome test passes the raiser its value argument. The 24 DQ convention artefact tables have drop scripts. The ignore file explains why the DQ artefact tables skip party isolation. The ER diagrams are regenerated.

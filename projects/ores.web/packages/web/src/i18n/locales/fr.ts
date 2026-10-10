@@ -365,8 +365,6 @@ const fr: SourceCatalogue = {
         never: 'Jamais',
         failed: 'Tentatives échouées',
         state: 'État',
-        locked: 'Verrouillé',
-        notLocked: 'Non verrouillé',
         passwordDue: 'Changement de mot de passe requis',
         noSessions: 'Aucune session n’est enregistrée pour ce compte.',
         started: 'Début',
@@ -465,10 +463,9 @@ const fr: SourceCatalogue = {
             failed: 'Échecs',
             lastAddress: 'Dernière adresse',
             lastSignIn: 'Dernière connexion',
-            locked: 'Verrouillé',
-            notLocked: 'Non verrouillé',
             never: 'Jamais',
             neverSignedIn: 'Jamais connecté',
+            hideNeverSignedIn: 'Masquer les comptes jamais connectés',
         },
         events: {
             title: 'Événements d’authentification',
@@ -1103,6 +1100,8 @@ const fr: SourceCatalogue = {
             conventionsBody: "Rédiger les termes qu'ORE utilise pour un instrument.",
             rescue: 'Verrouiller ou déverrouiller un compte',
             rescueBody: 'Aider quelqu’un qui ne peut pas se connecter, ou bloquer un compte.',
+            operations: 'Opérations',
+            operationsBody: 'Qui s’est connecté, et les versions que ce déploiement exécute.',
             audit: 'Connexions',
             auditBody: 'Qui est connecté maintenant, et les connexions qui ont échoué.',
             versions: 'Versions et base de données',
@@ -1161,6 +1160,9 @@ const fr: SourceCatalogue = {
             },
         },
         screens: {
+            signIns: 'Connexions',
+            signInsBody:
+                'Qui est connecté, les connexions échouées et les événements qui les expliquent.',
             versions: 'Versions et base de données',
             versionsBody:
                 'La version du client, la version du déploiement et l’empreinte de la base de données.',

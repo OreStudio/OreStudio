@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AFA1723-1C43-4B95-BBEE-14281A950154][Review the tenant administrator's home screen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A tenant administrator lands on a dashboard of panels that say what needs them, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6AFA1723-1C43-4B95-BBEE-14281A950154][Review the tenant administrator's home screen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -96,5 +96,11 @@ The home that tenant administrators and members land on has the system home's sh
 The first version of this work changed the wrong home. The session mode is decided in one place, sessionModeFor, which returns only system-administration or application; tenant-administration is declared and nothing produces it. A tenant administrator therefore signs in as application and lands on the home built for a party, which the first version did not touch, so the screen looked identical. The work now sits in ApplicationHome, which serves the application mode and the declared tenant mode alike, and decides what to show from the permissions the person holds.
 
 The panels are People (accounts, locked accounts, password resets due; needs login records and account read), Sign-ins (signed in now, accounts with failed sign-ins; needs login records and session read), Access requests (waiting, answered; needs the right to assign roles) and Parties (how many, with a way to add one; needs party read). A panel appears only for a person who may read what it shows, and a person who may read none of them gets no Dashboard tab and lands on Active modules. The cards on that tab are gated the same way: parties, organisation, roles, add and correct a party, onboard a counterparty, lock or unlock, and sign-ins appear only for the permission each needs. The TenantAdmin role holds everything, so it sees every panel and card; the Member role holds none of the dashboard reads.
+
+The dashboard now refreshes every 15 seconds, so a failed sign-in shows at once. Locked accounts and failed sign-ins show red or green, and requests show amber or green. The tenant side keeps no history on the server, so the dashboard has no plots.
+
+The menu is now one list for every person, defined in the knowledge page menu_structure. An area is drawn when the person holds a read one of its screens needs, and a card is drawn when the person holds the read of its screen. Operations is drawn for everyone, and Versions needs no read. Sign-ins sits under Operations. Roles and Rescue access sit under Organisation. Each of these screens shows Home, the area, then the screen in its breadcrumb, drawn by one shared AreaTrail. A UX structure note, ux_hub, lists the UX pages, and the UX pages link to each other.
+
+One exception remains. Tenants and the Services, Grid, Message queue and Telemetry cards are drawn by session mode, because the server guards those reads by session mode and no permission exists that only the operator holds.
 
 A panel that is fine shows a check beside its title, and one that needs the person says why in the same words. The top status counts the panels that need the person, and says Everything is running only when none needs them and none is still being read. The locked, failed and password-reset counts come from the login records, read up to the server's cap of a thousand; a count from a set that is not all of them is marked with a plus sign. The failed sign-in rule is any account with failed attempts since its last good sign-in. The web package passes 716 tests and the format check. I did not look at the home in a browser.

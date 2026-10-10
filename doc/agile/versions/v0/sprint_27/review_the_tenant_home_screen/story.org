@@ -21,11 +21,11 @@ A tenant administrator lands on a dashboard of panels that say what needs them, 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -38,13 +38,19 @@ A tenant administrator lands on a dashboard of panels that say what needs them, 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:4DF68339-7E93-49CE-A81C-1C9D4B17BB98][Scaffold story: Review the tenant administrator's home screen]] | STARTED | 2026-10-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:926CBA1E-D7C9-4324-AFC3-6B96A35DEED9][Rework the tenant home into three tabs with a dashboard]] | BACKLOG | | | Initial task for: Review the tenant administrator's home screen |
+| [[id:4DF68339-7E93-49CE-A81C-1C9D4B17BB98][Scaffold story: Review the tenant administrator's home screen]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:926CBA1E-D7C9-4324-AFC3-6B96A35DEED9][Rework the tenant home into three tabs with a dashboard]] | DONE | | 2026-10-10 | Initial task for: Review the tenant administrator's home screen |
 
 * Decisions
 
 * Out of scope
 
--
+- Plots on the tenant dashboard. The tenant side keeps no history on the server.
+- A permission only the operator holds. Tenants and the installation cards stay drawn by session mode until the server has one.
+- Translated strings for the Rescue access screen.
 
-The tenant administrator's home has the system home's shape: a header with one status, three tabs, and a dashboard of panels that say what needs the person in the same words.
+* Result
+
+The tenant administrator's home has the system home's shape: a header with one status, three tabs, and a dashboard of panels that say what needs the person in the same words. The dashboard refreshes every 15 seconds and colours its figures.
+
+Every person gets the same menu. An area is drawn when the person holds a read one of its screens needs, and a card is drawn when the person holds the read of its screen. The knowledge page menu_structure defines the rule, and the UX structure note ux_hub lists the UX pages. Operations is drawn for everyone, with Sign-ins, Roles and Rescue access under their areas and a breadcrumb on each screen.

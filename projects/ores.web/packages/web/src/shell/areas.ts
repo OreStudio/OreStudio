@@ -61,6 +61,7 @@ export const MENU: readonly MenuItem[] = [
     { nameKey: 'shell.menu.requests', to: '/requests' },
     { nameKey: 'shell.menu.refdata', to: '/refdata' },
     { nameKey: 'shell.menu.operations', to: '/operations' },
+    { nameKey: 'shell.menu.development', to: '/development' },
 ];
 
 export function modeKey(mode: SessionMode): string {

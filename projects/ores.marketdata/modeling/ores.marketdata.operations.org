@@ -968,7 +968,8 @@ Oldest first, one entry per distinct market instant read.
 ** point_provenance
 
 Where one value of a snapshot came from: its source kind and, for a point with
-an annex row, who set it, when and why.
+an annex row, who set it, when and why. For a derived point it also names the recipe,
+the recipe's version and the as-of of the data the recipe read.
 
 #+begin_src cpp :name comment
 /**
@@ -1037,6 +1038,42 @@ The epoch for a quoted point and for a hole.
 
 #+begin_src cpp :name comment
 /** When the annex row was recorded. The epoch for a quoted point and for a hole. */
+#+end_src
+
+*** derivation_config_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The recipe that built a derived point: the id of its derivation config. Empty for a
+quoted point, a manual point and a hole, none of which a recipe built.
+
+#+begin_src cpp :name comment
+/** The recipe that built a derived point. Empty unless the point is derived. */
+#+end_src
+
+*** derivation_config_version
+:PROPERTIES:
+:cpp_type: int
+:END:
+
+The version of that recipe the point was built under. Zero when no recipe built the
+point.
+
+#+begin_src cpp :name comment
+/** The recipe version the point was built under. Zero unless the point is derived. */
+#+end_src
+
+*** source_as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The as-of of the upstream data the derivation read. The epoch when no derivation
+built the point.
+
+#+begin_src cpp :name comment
+/** The as-of of the upstream data the derivation read. The epoch unless the point is derived. */
 #+end_src
 
 ** get_curve_snapshot_request

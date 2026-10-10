@@ -77,6 +77,7 @@ const pt: SourceCatalogue = {
             accounts: 'Contas',
             tenants: 'Inquilinos',
             operations: 'Operações',
+            development: 'Desenvolvimento',
             parties: 'Partes',
             rescue: 'Recuperar acesso',
             audit: 'Entradas',
@@ -1120,6 +1121,69 @@ const pt: SourceCatalogue = {
         },
     },
 
+    development: {
+        tabs: {
+            label: 'Áreas de desenvolvimento',
+            tests: 'Testes',
+        },
+        tests: {
+            waiting: 'Aguardando',
+            done: 'Concluídos',
+            nothingWaiting: 'Nada está aguardando.',
+            nothingDone: 'Nada foi testado ainda.',
+            scenario: 'Cenário',
+            target: 'Alvo',
+            progress: 'Progresso',
+            state: 'Estado',
+            completed: 'Concluído em',
+            stepsDone: '{done} de {total} passos',
+            states: {
+                pending: 'Pendente',
+                inProgress: 'Em andamento',
+                passed: 'Aprovado',
+                failed: 'Reprovado',
+            },
+        },
+        runner: {
+            states: {
+                PENDING: 'Pendente',
+                PASSED: 'Aprovado',
+                FAILED: 'Reprovado',
+            },
+            stepStates: {
+                PENDING: 'Pendente',
+                PASS: 'Aprovado',
+                FAIL: 'Reprovado',
+                DROPPED: 'Descartado',
+            },
+            marked: '{done} de {total} passos marcados',
+            clients: 'Clientes',
+            oneClient: 'Um',
+            lastSaved: 'Última gravação',
+            retest: 'Retestar',
+            closedHelp: 'Este cenário está fechado. Um reteste limpa cada passo e recomeça.',
+            save: 'Gravar',
+            saveHelp:
+                'Gravar escreve o resultado de cada passo e o estado geral no documento do cenário.',
+            back: 'Voltar aos testes',
+            retestTitle: 'Iniciar um reteste?',
+            retestBody:
+                'Um reteste limpa cada passo e a sua nota. Uma gravação então substitui o resultado anterior. O Git guarda o histórico.',
+            retestConfirm: 'Retestar',
+            cancel: 'Cancelar',
+            previous: 'Voltar',
+            skip: 'Pular',
+            stepOf: 'Passo {step} de {total}',
+            pass: 'Aprovar',
+            fail: 'Reprovar',
+            clear: 'Limpar',
+            note: 'Nota',
+            notePlaceholder: 'O que você viu?',
+            savedClosed: 'Gravado e fechado como {state}.',
+            savedOpen:
+                'Gravado. {pending} passos ainda precisam ser marcados. O cenário continua aberto.',
+        },
+    },
     operations: {
         back: 'Voltar às operações',
         instance: {

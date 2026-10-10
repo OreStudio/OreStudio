@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/decide-how-a-nodes-coordinate-is-queryable
+#+pr: 3083
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The story's typed-coordinates bullet is either met by a stated design or waived 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -40,9 +40,9 @@ The story's typed-coordinates bullet is either met by a stated design or waived 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Look for a consumer that needs a coordinate in SQL: a query across series, a join, an
+index. Read how the typed reads select a coordinate today. Decide from what is found,
+and name the event that would reopen the decision.
 
 * Measurements
 
@@ -56,7 +56,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Journeys that ask for points across series by coordinate | 0 | =grep -n -i "across curves\|across series\|all curves\|by tenor\|by coordinate\|cross-curve" journey_*.org= in =doc/knowledge/journeys/market_data=: one hit, and it is a client matching a candidate to quotes | 511fdcdfa1 |
+| Typed coordinate reads in the service | slice reader and the shared grid | =grep -c "coordinate_of" series_slice_reader.cpp series_shape.cpp= (2 and 2) | 511fdcdfa1 |
+| Coordinate columns on =market_observation= | 0 | the model's column list: identity is =oresmd_uri= | 511fdcdfa1 |
 
 * Notes
 
@@ -75,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3083][#3083]] | [agile] Decide against coordinate columns and close the curve story |
 
 * Review
 
@@ -84,3 +86,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+*Decision: no coordinate columns. The bullet is met in the service tier, and the story
+now says so.*
+
+*What the bullet asks.* A node's coordinate tuple is queryable and joinable, not only
+text inside an identity string.
+
+*What is true.* A coordinate is a typed field of the point's URI. The codec parses it
+once. =coordinate_of= reads it as a typed value, the write refuses a point whose
+coordinate is not a value of the declared shape, and the shared grid places the point
+at its node. A caller queries by coordinate through the typed reads: the slice read
+names an axis and a component, and the evolution read names the object. The coordinate
+joins to the declared shape by value, in the service. SQL cannot query it, because the
+column set was removed on purpose when the URI became the only identity.
+
+*Why no column.* No journey asks for points across series by coordinate. The one
+journey that matches by coordinate does so in the client, over a candidate and its
+quotes. A column would reverse a decision the component made, and it would add one
+facet's coordinate to a generic time-series table. It would also give two identities
+that can disagree, the cost the URI decision exists to avoid.
+
+*What would reopen it.* A journey that needs a query across series by coordinate, for
+example every five-year point of every curve. The earlier decision already names the
+form: an index on a derived projection of the URI's parts, not a new table and not a
+column on the points.
+
+*Effect on the story.* The acceptance bullet is reworded to say how it is met. With the
+recipe on a point's provenance done, every bullet is met and the story closes.

@@ -19,6 +19,7 @@
  *
  */
 
+import { scenarioStateOf } from '@ores/contracts';
 import {
     fieldTable,
     findSection,
@@ -95,13 +96,20 @@ export interface StepOutcome extends StepRef {
     readonly notes: string;
 }
 
+/**
+ * A tester's save. It carries no overall state: the state follows from the
+ * steps once the save is in. A scenario closes when no step is pending, and
+ * then it is FAILED if any step failed, else PASSED. A scenario in which no
+ * step passed or failed stays PENDING. `completedAt` is written
+ * only when the save closes the scenario.
+ */
 export interface RunInput {
-    readonly state: ScenarioState;
     readonly steps: readonly StepOutcome[];
     readonly completedAt: string;
-    readonly branch: string;
-    readonly commit: string;
-    readonly worktree: string;
+    /** The build the run was made against. A value left out keeps what the doc holds. */
+    readonly branch?: string | undefined;
+    readonly commit?: string | undefined;
+    readonly worktree?: string | undefined;
 }
 
 export class ScenarioFormatError extends Error {
@@ -342,6 +350,8 @@ function newResultSection(level: number, outcome: StepOutcome): string[] {
 
 export interface RecordedRun {
     readonly text: string;
+    /** The state the scenario has after the save. */
+    readonly state: ScenarioState;
     /** The steps this save wrote, in the order the doc has them. */
     readonly changed: readonly StepRef[];
 }
@@ -415,19 +425,46 @@ export function recordRun(text: string, input: RunInput): RecordedRun {
         }
     }
 
+    const outcomeOf = new Map<Located, StepStatus>();
+    for (const outcome of input.steps) {
+        const step = located.find(
+            (l) => l.ref.client === outcome.client && l.ref.title === outcome.title,
+        );
+        if (step !== undefined) outcomeOf.set(step, outcome.status);
+    }
+    const statuses = located.map(
+        (l) =>
+            outcomeOf.get(l) ??
+            stepStatus(l.result === undefined ? '' : (fieldTable(l.result).get('status') ?? '')),
+    );
+    const state = scenarioStateOf(statuses);
+
     const resultsTable = results.tables[0];
     const run: [string, string][] = [
-        ['Status', input.state],
-        ['Completed at', input.completedAt],
-        ['Branch', input.branch],
-        ['Commit', input.commit],
-        ['Worktree', input.worktree],
+        ['Status', state],
+        ['Completed at', state === 'PENDING' ? '' : input.completedAt],
+        ['Branch', input.branch ?? ''],
+        ['Commit', input.commit ?? ''],
+        ['Worktree', input.worktree ?? ''],
     ];
+    // A build field the save leaves out keeps the value the doc holds.
+    const resultRows = run.filter(
+        ([field]) =>
+            (field !== 'Branch' || input.branch !== undefined) &&
+            (field !== 'Commit' || input.commit !== undefined) &&
+            (field !== 'Worktree' || input.worktree !== undefined),
+    );
     if (resultsTable !== undefined) {
         splices.push({
             begin: resultsTable.firstLine,
             end: resultsTable.lastLine + 1,
-            lines: setRows(doc.lines, resultsTable.firstLine, resultsTable.lastLine, run, 13),
+            lines: setRows(
+                doc.lines,
+                resultsTable.firstLine,
+                resultsTable.lastLine,
+                resultRows,
+                13,
+            ),
         });
     } else {
         splices.push({
@@ -453,7 +490,7 @@ export function recordRun(text: string, input: RunInput): RecordedRun {
                 doc.lines,
                 infoTable.firstLine,
                 infoTable.lastLine,
-                [['State', input.state]],
+                [['State', state]],
                 13,
             ),
         });
@@ -465,6 +502,7 @@ export function recordRun(text: string, input: RunInput): RecordedRun {
     }
     return {
         text: lines.join(doc.eol) + doc.eol,
+        state,
         changed: located.filter((l) => written.has(l)).map((l) => l.ref),
     };
 }

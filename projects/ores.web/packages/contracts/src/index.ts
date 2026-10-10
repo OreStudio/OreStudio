@@ -22,15 +22,16 @@
 /**
  * `@ores/contracts` holds the HTTP shapes the BFF serves.
  *
- * The BFF imports this package. The browser does not import it: the browser
- * parses with `@ores/wire-protocol/browser`, so the two sides do not yet share
- * one schema. Sharing one schema is the intent, because then the browser
- * validates what the server serialised with the definition the server
- * serialised it from, and a shape change fails loudly on whichever side is
- * stale. Until then this package is the BFF's alone.
+ * The BFF imports this package. The browser imports only the QA shapes in
+ * `qa.ts`, which it parses with the schema the server serialised them from, so
+ * a shape change fails loudly on whichever side is stale. The other shapes are
+ * the BFF's alone, because the browser parses those with
+ * `@ores/wire-protocol/browser`. Sharing one schema for all of them is the
+ * intent.
  *
  * It carries no Node dependency, so the browser can load it when the split is
  * finished.
  */
 export * from './site.js';
 export * from './session.js';
+export * from './qa.js';

@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: AD390F50-FE3D-47E5-BA8C-58F8C0D5FB02
+:END:
+#+title: Story: Show a curve evolving in ores.web
+#+description: The curve reads are built on the server and no screen reaches them. Give the BFF its routes for the snapshot, slice, evolution and identity reads, and build the watch a curve or surface evolve screen.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person opens ores.web, names a curve or a surface, and watches it evolve as an aligned matrix of instants by nodes, with each node's change, staleness and provenance.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- The BFF exposes the identity, snapshot, slice and evolution reads, each behind the permission the server checks.
+- A person reaches the evolution screen from the market data area and reads the aligned matrix for a named object.
+- The screen shows each node's status, the age of each value and, on request, where each value came from.
+- A hole is shown as a hole and a refused request is shown as a reason.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D0BC3754-FF8F-4150-BF08-60C1BE4F0064][Scaffold story: Show a curve evolving in ores.web]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9BD6425D-8655-45C8-8AA8-9A6B73B47FAA][Give the BFF the curve read routes]] | BACKLOG | | | Route each curve read through the BFF. |
+| [[id:AE07523A-A702-43C2-AD16-544FEB4264AE][Build the watch a curve or surface evolve screen]] | BACKLOG | | | Build the screen of the journey: name an object, pick a range or a set of instants, read the aligned matrix with each node's change, age and provenance. |
+
+* Decisions
+
+* Out of scope
+
+- Writing a point. Keying and clearing a manual point needs a wire operation first.
+- The approval chain: ask, decide, publish and withdraw.
+- Charts beyond the aligned matrix. The first screen is a table.

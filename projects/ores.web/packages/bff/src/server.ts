@@ -37,6 +37,9 @@ import { registerSyntheticRoutes } from './synthetic.js';
 import { registerAuditRoutes } from './audit.js';
 import { registerTimelineRoutes } from './timeline.js';
 import { registerInboxRoutes } from './inbox.js';
+import { registerQaRoutes } from './qa.js';
+import { FileScenarioStore } from './scenarios/file-scenario-store.js';
+import type { ScenarioStore } from './scenarios/scenario-store.js';
 import { startHeartbeat } from './heartbeat.js';
 import { registerOperationsRoutes } from './operations.js';
 import { registerRecordRoutes } from './records.js';
@@ -295,6 +298,11 @@ export interface ServerDependencies {
      * release. Absent in tests, so no timer outlives one.
      */
     readonly heartbeat?: { readonly version: string };
+    /**
+     * Where the QA validation runner keeps its scenarios. Absent, the BFF reads
+     * them from `config.docRoot`, and with no doc root the runner is off.
+     */
+    readonly scenarios?: ScenarioStore;
 }
 
 export function buildServer(dependencies: ServerDependencies): FastifyInstance {
@@ -2528,6 +2536,12 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerSyntheticRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
+    registerQaRoutes(
+        server,
+        requireSession,
+        dependencies.scenarios ??
+            (config.docRoot === undefined ? undefined : new FileScenarioStore(config.docRoot)),
+    );
     registerAuditRoutes(server, requireSession);
     registerTimelineRoutes(server, requireSession);
     registerOperationsRoutes(

@@ -471,6 +471,13 @@ struct point_provenance {
     std::string change_commentary;
     /** When the annex row was recorded. The epoch for a quoted point and for a hole. */
     std::chrono::system_clock::time_point recorded_at;
+    /** The recipe that built a derived point. Empty unless the point is derived. */
+    std::string derivation_config_id;
+    /** The recipe version the point was built under. Zero unless the point is derived. */
+    int derivation_config_version;
+    /** The as-of of the upstream data the derivation read. The epoch unless the point is derived.
+     */
+    std::chrono::system_clock::time_point source_as_of;
 };
 
 /**

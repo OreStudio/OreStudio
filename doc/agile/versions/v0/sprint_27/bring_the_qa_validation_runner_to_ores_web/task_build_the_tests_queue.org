@@ -8,12 +8,12 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-tests-queue
-#+pr:
+#+pr: 3088
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A signed-in user opens Development, then Tests, and sees the scenarios waiting a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -42,9 +42,15 @@ A signed-in user opens Development, then Tests, and sees the scenarios waiting a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A new area in =projects/ores.web/packages/web/src/development/=, drawn from the prototype in =doc/prototypes/testing/test-scenarios/=.
+
+- =shell/areas.ts= gets a Development entry in =MENU=, with no permission and no scope, so the menu draws it for everybody. =AppRoutes.tsx= gets =/development= and =/development/tests/:id=.
+- =DevelopmentArea= draws the breadcrumb and the tab bar through =useTabs=. The only tab is Tests. Board, Stories and Tasks join it in story 2.
+- =TestsQueue= reads =GET /api/qa/scenarios= through =api/qa.ts= and draws two cards, Waiting and Done. A row shows the scenario, its story and task, its target and clients, a progress bar with "n of m steps", a state tag and the completion time. A row opens =/development/tests/:id=. The tab has no heading of its own.
+- =queue.ts= holds the logic and is tested alone: the state of a row, the percent done, and the order. Waiting scenarios in progress come before those not started. Done scenarios come newest completion first, and undated ones last.
+- =ScenarioPage= is the page a row opens. It names the scenario and lists its steps, and says the runner is not built yet. Task 5 replaces its body with the runner.
+- The catalogue gets a =development= block and a menu key in English, French and Portuguese.
+- =@ores/contracts= now serves the browser as well as the BFF for the QA shapes, and its comment says so.
 
 * Measurements
 
@@ -62,6 +68,10 @@ task and name that file in the Command column.
 
 * Notes
 
+- The Updated column of the prototype is a Completed column here. A summary carries the completion time and no edit time. A waiting scenario shows it blank.
+- A load that fails shows the server's message in an error notice. With no doc root the BFF answers not found and names ORES_WEB_DOC_ROOT, so a developer sees what to set.
+- The tests render the screens to markup with the query cache seeded, as the other screens' tests do. No test drives a browser against a live BFF, because a sign-in needs the NATS broker.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -77,12 +87,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3088][#3088]] | [web] Build the Tests queue |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A row click navigates twice | TestsQueue.tsx | Fix | The row opens the scenario only for a click the title link did not already handle. React Router's Link marks the click handled with preventDefault, which I read in lib.js. A unit test of the guard fails without it. |
+| 2 | Step keys can collide | ScenarioPage.tsx | Fix | The key carries the step index. |
+| 3 | The breadcrumb links to the area twice | ScenarioPage.tsx | Fix | The Tests crumb is gone. A route test counts the links to the area: one in the menu and one crumb. |
+| 4 | A redundant ternary, an undocumented ISO sort, a fixture in the source folder | queue.ts, TestsQueue.tsx | Fix, Decline | The ternary is gone and the sort comment says the times are ISO-8601. The fixture stays: Vite bundles only what the app imports, and nothing in the app imports testSummary.ts. |
 
 * Result
+
+The top menu has a Development entry, drawn for everybody with no permission. It opens an area whose only tab is Tests. The tab has no heading and draws no Board, Stories or Tasks tab. Two cards, Waiting and Done, list the scenarios the BFF serves. A row shows the scenario with its story and task, its target and clients, a progress bar with "n of m steps", a state tag and the completion time, and it opens /development/tests/:id. Scenarios in progress come before those not started, and done scenarios come newest completion first. The page a row opens names the scenario, lists its steps and says the runner is not built yet. Task 5 replaces its body.
+
+The queue logic is in queue.ts and is tested alone. The screens are tested as rendered markup with a seeded query cache, for an empty queue, a mixed queue, a failed load and the loading state, and the routes are tested under the shell. The web suite passes with 745 tests. Breaking the ordering, the error branch, the row link or the click guard fails its own tests. The review found one real fault, a click that navigated twice, and it is fixed.
+
+No test drives a browser against a live BFF, because a sign-in needs the NATS broker. The French and Portuguese text is my translation and needs a read by a speaker. The Completed column replaces the prototype's Updated column, because a summary carries a completion time and no edit time. Task 5 builds the runner.

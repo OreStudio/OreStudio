@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/expose-the-recipe-on-a-points-provenance
+#+pr: 3081
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A derived point's provenance names the recipe that built it and the source as-of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -40,9 +40,10 @@ A derived point's provenance names the recipe that built it and the source as-of
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add the recipe to =point_provenance= in the operations model: the derivation config
+id, its version and the source as-of, filled from the annex row the reader already
+holds. Regenerate the C++ and TypeScript wire files. Test a derived point. Decide the
+evolution read from the watch journey, and record it in the story.
 
 * Measurements
 
@@ -56,7 +57,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Snapshot reader suite | 11 cases, 105 assertions, pass | =ores.marketdata.core.tests "[series_snapshot_reader]"= with =.env= sourced | c9a3da5c2a plus the uncommitted change |
+| Fields added to =point_provenance= | 3: =derivation_config_id=, =derivation_config_version=, =source_as_of= | =git diff --stat= on =operations_protocol.hpp= (7 lines) and =operations_protocol.ts= (6 lines) | c9a3da5c2a plus the uncommitted change |
+| Watch journey steps that read a lineage | 1: one derived point, on selection | =grep -n -i "lineage" journey_watch-a-curve-or-surface-evolve.org= | c9a3da5c2a |
 
 * Notes
 
@@ -75,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3081][#3081]] | [marketdata] Name the recipe on a derived point's provenance |
 
 * Review
 
@@ -84,3 +87,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A derived point's provenance now names the recipe that built it. =point_provenance=
+carries =derivation_config_id=, =derivation_config_version= and =source_as_of=, read
+from the annex row the snapshot already fetches. A quoted point, a manual point and a
+hole carry an empty id, version zero and the epoch. The snapshot asks for no extra
+read, and still asks for provenance only when the caller sets =include_provenance=.
+
+A test writes a derived annex row and checks that the snapshot returns its config id,
+version and source as-of, and that every other node carries none. Without the reader
+change the three fields stay empty, so the test fails.
+
+The evolution read keeps no provenance. The story records the reason: the watch
+journey reads the lineage of one selected point, so no step needs a matrix over the
+range. This closes the second acceptance bullet by its second branch.
+
+The acceptance audit's bullet 8 now has its recipe. Whether the lineage read for a
+point in the past needs a key by observation stays a gap of that read, named in the
+journey, and not of this task.

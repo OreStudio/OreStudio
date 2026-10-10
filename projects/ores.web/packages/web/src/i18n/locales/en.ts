@@ -78,6 +78,7 @@ export const en: SourceCatalogue = {
             accounts: 'Accounts',
             tenants: 'Tenants',
             operations: 'Operations',
+            development: 'Development',
             parties: 'Parties',
             rescue: 'Rescue access',
             audit: 'Sign-ins',
@@ -1117,6 +1118,67 @@ export const en: SourceCatalogue = {
      * doing. The versions screen belongs to every session, so it is offered
      * from Home as well as from this area's hub.
      */
+    development: {
+        tabs: {
+            label: 'Development areas',
+            tests: 'Tests',
+        },
+        tests: {
+            waiting: 'Waiting',
+            done: 'Done',
+            nothingWaiting: 'Nothing is waiting.',
+            nothingDone: 'Nothing has been tested yet.',
+            scenario: 'Scenario',
+            target: 'Target',
+            progress: 'Progress',
+            state: 'State',
+            completed: 'Completed',
+            stepsDone: '{done} of {total} steps',
+            states: {
+                pending: 'Pending',
+                inProgress: 'In progress',
+                passed: 'Passed',
+                failed: 'Failed',
+            },
+        },
+        runner: {
+            states: {
+                PENDING: 'Pending',
+                PASSED: 'Passed',
+                FAILED: 'Failed',
+            },
+            stepStates: {
+                PENDING: 'Pending',
+                PASS: 'Passed',
+                FAIL: 'Failed',
+                DROPPED: 'Dropped',
+            },
+            marked: '{done} of {total} steps marked',
+            clients: 'Clients',
+            oneClient: 'One',
+            lastSaved: 'Last saved',
+            retest: 'Retest',
+            closedHelp: 'This scenario is closed. A retest clears every step and starts again.',
+            save: 'Save',
+            saveHelp: "Save writes each step's result and the overall state into the scenario doc.",
+            back: 'Back to the tests',
+            retestTitle: 'Start a retest?',
+            retestBody:
+                'A retest clears every step and its note. A save then overwrites the earlier result. Git keeps the history.',
+            retestConfirm: 'Retest',
+            cancel: 'Cancel',
+            previous: 'Back',
+            skip: 'Skip',
+            stepOf: 'Step {step} of {total}',
+            pass: 'Pass',
+            fail: 'Fail',
+            clear: 'Clear',
+            note: 'Note',
+            notePlaceholder: 'What did you see?',
+            savedClosed: 'Saved and closed as {state}.',
+            savedOpen: 'Saved. {pending} steps are still to mark. The scenario stays open.',
+        },
+    },
     operations: {
         back: 'Back to operations',
         instance: {

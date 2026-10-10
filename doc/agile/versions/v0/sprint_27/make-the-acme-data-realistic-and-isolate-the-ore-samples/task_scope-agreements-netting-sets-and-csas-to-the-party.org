@@ -27,36 +27,38 @@ hold the same code, so every party must invent its own, and the ORE samples
 bundle cannot install on every party.
 
 Scope all three to the party. Agreement number and netting set code become
-unique per party. The CSA gets its own =party_id=. This task comes before the
+unique per party. The CSA and the netting set identifier get their own
+=party_id=. A netting set must belong to a party. This task comes before the
 two bundle tasks, because both depend on it.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
 
-- Two parties can each hold an agreement with the same number and a netting
-  set with the same code.
+- Two parties can each hold an agreement with the same number, a netting set
+  with the same code, and a netting set that answers to the same ORE id.
 - Agreement number is unique per tenant and party. Netting set code is unique
-  per tenant and party.
-- The CSA has a =party_id=. It is fixed for life, and it equals the party of
-  its netting set. What happens for a netting set that has no party is the
-  blocking open question below. Settle it before implementation.
-- Every lookup of an agreement or netting set by number or code names the
-  party. The DQ publish functions, the alias resolution and the ORE import are
-  covered.
-- pgTAP covers: the same code under two parties, a CSA whose party differs
-  from its set's, and a lookup that names no party. That lookup raises an
-  error. It never returns a row chosen from another party.
-- A fresh ACME provision passes.
+  per tenant and party. The ORE alias is unique per tenant, party, scheme and
+  value.
+- A netting set has a required =party_id=. The CSA and the netting set
+  identifier have a fixed =party_id= and take the party of their netting set.
+  The two are equal by construction in the publish functions and the mapper;
+  no pinned key holds them equal (see Notes).
+- The DQ publish functions check what a party already holds within that party
+  and write the party. The ORE netting set mapper takes the importing party.
+  The ORE import resolves an ORE id through the session's visible parties.
+- pgTAP covers: the same code and the same ORE id under two parties, every CSA
+  taking the party of its netting set, and an unknown party being refused.
+- A fresh ACME provision passes, and the root party holds the sample data.
 
 * Plan
 
@@ -66,8 +68,7 @@ two bundle tasks, because both depend on it.
    =ores.refdata.netting_set= and =ores.refdata.csa=, and the DQ staging models
    =ores.dq.netting_agreement=, =ores.dq.netting_set= and =ores.dq.csa=, then
    regenerate the SQL and the C++. Do not edit generated files by hand.
-3. Settle the rule for a netting set with no party (see Notes). This blocks
-   steps 2 and 4.
+3. Settled: a netting set must have a party (see Notes).
 4. Update the publish functions, the alias resolution and the ORE import to
    name the party in every lookup.
 5. Update pgTAP. Provision ACME.
@@ -77,6 +78,12 @@ two bundle tasks, because both depend on it.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Places that look up an agreement, a set or an identifier by number or code | 5 SQL files and 2 C++ files, listed in Notes | =grep -rIn= over =projects= for the table names and =netting_set= | 8744fb7165 |
+| Sample data held by Acme Corporation Plc after a fresh ACME provision | 8 agreements, 19 netting sets, 7 CSAs, 19 ORE ids, 2 sample portfolios | =compass sql= count by =party_id= over the four tables and =ores_refdata_portfolios_tbl= | f12bba9723 |
+| Other ACME parties holding sample data | 0 (HK, UK, US and the system party) | the same query | f12bba9723 |
+| Identifiers and set-agreement pairs whose party differs from their set's | 0 identifiers, 0 set-agreement pairs, 1 CSA written by the generated unit test | =compass sql= joins on =netting_set_id= and =netting_agreement_id= | f12bba9723 |
+| pgTAP | 314 tests in 33 files pass; =test.sql= is a loader with no plan | =pg_prove= as the test DDL role over =projects/ores.sql/test/*.sql= | f12bba9723 |
+| C++ suites | refdata, ORE (3), DQ (4), shell (16) and trading (4) executables pass | =compass test run= with one =-R= filter per suite | f12bba9723 |
+| Web | =counterpartyState.test.ts= 14 of 14 pass | =npx vitest run= in =ores.web/packages/web= | f12bba9723 |
 
 * Notes
 
@@ -159,4 +166,23 @@ via its "Verifies task" field.
 
 * Result
 
-Not started.
+Agreements, netting sets, CSAs and netting set identifiers are scoped to the
+legal entity of the firm. Two parties can each hold the same agreement number,
+netting set code and ORE id. A netting set must belong to a party. A fresh ACME
+provision gives Acme Corporation Plc 8 agreements, 19 netting sets, 7 CSAs, 19
+ORE ids and the 2 sample portfolios, and gives the other parties none, as the
+profile intends. All 314 pgTAP tests, the C++ suites for refdata, ORE, DQ,
+shell and trading, and the web test pass.
+
+Not as first planned:
+
+- The CSA and the identifier have no pinned key to the party of their set. The
+  generated eventing integration test cannot satisfy it, so the two are kept
+  equal by the publish functions and the mapper. A direct write can still name
+  two parties; the generated unit test wrote one such CSA.
+- A lookup that names no party does not raise an error. The publish functions
+  default to the tenant's root party, as before.
+- The ORE import names no party. It resolves an ORE id through the session's
+  visible parties, as it resolves a portfolio by name.
+- =ores_refdata_csa_eligible_currencies_tbl= has no party column or policy.
+  It is left for a follow-up.

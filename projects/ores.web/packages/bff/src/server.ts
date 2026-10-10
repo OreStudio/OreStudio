@@ -267,6 +267,9 @@ async function readStepsDone(client: OresClient, instanceId: string): Promise<nu
     }
 }
 
+/** How long to wait before trying the shared connection again after it failed. */
+const EVENT_CONNECT_RETRY_MS = 5_000;
+
 export interface ServerDependencies {
     readonly config: Config;
     readonly site: LoadedSiteConfiguration;
@@ -2578,20 +2581,28 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * than among them.
      */
     const eventClient = createClient();
+    let closing = false;
     let stopHeartbeat: (() => void) | undefined;
     const heartbeat = dependencies.heartbeat;
-    void eventClient
-        .connect()
-        .catch(() => undefined)
-        .then(() => {
-            if (heartbeat !== undefined) {
-                stopHeartbeat = startHeartbeat({
-                    sink: eventClient.client,
-                    version: heartbeat.version,
-                    log: server.log,
-                });
+    void (async () => {
+        // A broker that is not there yet is not a reason to give up: the
+        // connection is what the listening and the heartbeat both stand on.
+        while (!closing) {
+            try {
+                await eventClient.connect();
+                break;
+            } catch {
+                await new Promise((resolve) => setTimeout(resolve, EVENT_CONNECT_RETRY_MS).unref());
             }
-        });
+        }
+        if (heartbeat !== undefined && !closing) {
+            stopHeartbeat = startHeartbeat({
+                sink: eventClient.client,
+                version: heartbeat.version,
+                log: server.log,
+            });
+        }
+    })();
     const events = new ChangeEventRegistry(eventClient.client);
 
     server.get('/api/events', async (request, reply) => {
@@ -2651,6 +2662,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     server.addHook('onClose', async () => {
+        closing = true;
         stopHeartbeat?.();
         await sessions.destroyAll();
     });

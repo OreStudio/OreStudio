@@ -110,7 +110,9 @@ export function startHeartbeat(options: HeartbeatOptions): () => void {
  * place. The service runs from its own package directory, not from the
  * checkout root, so the search climbs until it finds the declaration. The C++
  * services report the number without a leading `v`, and the services screen
- * compares releases as text, so this does the same. A tree with no declaration
+ * compares releases as text, so this does the same. It reads the declaration
+ * on one line, `project(Name VERSION x.y.z`, as the project writes it, and a
+ * different layout reports `unknown` rather than a wrong number. A tree with no declaration
  * reports `unknown`, which the screen shows rather than hides.
  */
 export function releaseVersion(start: string): string {

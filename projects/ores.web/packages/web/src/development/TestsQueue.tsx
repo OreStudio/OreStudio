@@ -26,7 +26,7 @@ import type { ScenarioSummary } from '@ores/contracts';
 import { qa } from '../api/qa.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Notice, Tag } from '../ui/Primitives.js';
-import { percentDone, queueOf, stateOf, stepsDone, type QueueState } from './queue.js';
+import { openFromRow, percentDone, queueOf, stateOf, stepsDone, type QueueState } from './queue.js';
 
 export const QA_SCENARIOS_KEY = ['qa-scenarios'] as const;
 
@@ -134,7 +134,7 @@ function Row({ scenario }: { readonly scenario: ScenarioSummary }): ReactNode {
     return (
         <tr
             className="cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-overlay"
-            onClick={() => void navigate(open)}
+            onClick={(event) => openFromRow(event, () => void navigate(open))}
         >
             <td className="px-4 py-2.5">
                 <Link to={open} className="font-medium text-accent hover:text-accent-bright">
@@ -175,9 +175,7 @@ function Row({ scenario }: { readonly scenario: ScenarioSummary }): ReactNode {
             <td className="px-4 py-2.5">
                 <Tag tone={TONES[state]}>{t(`development.tests.states.${state}`)}</Tag>
             </td>
-            <td className="px-4 py-2.5 text-xs text-ink-muted">
-                {scenario.completedAt === '' ? '' : scenario.completedAt}
-            </td>
+            <td className="px-4 py-2.5 text-xs text-ink-muted">{scenario.completedAt}</td>
         </tr>
     );
 }

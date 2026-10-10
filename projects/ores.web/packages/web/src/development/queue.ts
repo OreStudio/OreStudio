@@ -47,6 +47,15 @@ export function percentDone(scenario: ScenarioSummary): number {
         : Math.round((stepsDone(scenario) / scenario.steps.total) * 100);
 }
 
+/**
+ * Open a scenario from a click on its row. A click on the title link reaches
+ * the row after the link has handled it and marked the event as handled, so the
+ * row opens the scenario only for a click the link did not take.
+ */
+export function openFromRow(event: { readonly defaultPrevented: boolean }, open: () => void): void {
+    if (!event.defaultPrevented) open();
+}
+
 export interface Queue {
     readonly waiting: readonly ScenarioSummary[];
     readonly done: readonly ScenarioSummary[];
@@ -55,7 +64,8 @@ export interface Queue {
 /**
  * Waiting scenarios first, with the ones in progress ahead of the ones not
  * started, and done scenarios second, newest completion first. Within a group
- * the server's order stands.
+ * the server's order stands. The completion times are ISO-8601 strings in one
+ * format, so a text comparison orders them by time.
  */
 export function queueOf(scenarios: readonly ScenarioSummary[]): Queue {
     const waiting = scenarios.filter((s) => s.phase === 'waiting');

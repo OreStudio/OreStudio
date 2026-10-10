@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { percentDone, queueOf, stateOf, stepsDone } from './queue.js';
+import { openFromRow, percentDone, queueOf, stateOf, stepsDone } from './queue.js';
 import { summary } from './testSummary.js';
 
 describe('the state of a scenario in the queue', () => {
@@ -97,5 +97,19 @@ describe('ordering the queue', () => {
 
     it('is empty for no scenarios', () => {
         expect(queueOf([])).toEqual({ waiting: [], done: [] });
+    });
+});
+
+describe('opening a scenario from its row', () => {
+    it('opens it for a click on the row itself', () => {
+        let opened = 0;
+        openFromRow({ defaultPrevented: false }, () => (opened += 1));
+        expect(opened).toBe(1);
+    });
+
+    it('does not open it again for a click the title link already handled', () => {
+        let opened = 0;
+        openFromRow({ defaultPrevented: true }, () => (opened += 1));
+        expect(opened).toBe(0);
     });
 });

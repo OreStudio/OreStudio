@@ -42,7 +42,6 @@ export function ScenarioPage(): ReactNode {
                 parts={[
                     { label: t('shell.menu.home'), to: '/' },
                     { label: t('shell.menu.development'), to: '/development' },
-                    { label: t('development.tabs.tests'), to: '/development' },
                 ]}
             />
             {scenario.isError && <Notice tone="error">{scenario.error.message}</Notice>}
@@ -55,8 +54,8 @@ export function ScenarioPage(): ReactNode {
                     />
                     <Notice>{t('development.scenario.notBuilt')}</Notice>
                     <ol className="list-decimal space-y-1 pl-6 text-sm">
-                        {scenario.data.steps.map((step) => (
-                            <li key={`${step.client ?? ''}/${step.title}`}>
+                        {scenario.data.steps.map((step, index) => (
+                            <li key={`${index}/${step.client ?? ''}/${step.title}`}>
                                 {step.client === null
                                     ? step.title
                                     : `${step.client}: ${step.title}`}

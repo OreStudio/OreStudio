@@ -153,11 +153,12 @@ describe('the development routes', () => {
         expect(html).toContain(`href="/development/tests/${ID}"`);
     });
 
-    it('draws the scenario a row opens, with its steps', () => {
+    it('draws the scenario a row opens, with its steps, linked to the area from the menu and one crumb', () => {
         const html = render(`/development/tests/${ID}`);
         expect(html).toContain('Retake the currency screenshots');
         expect(html).toContain('Open the General tab');
         expect(html).toContain('Open the Rounding tab');
         expect(html).toContain('not built yet');
+        expect(html.match(/href="\/development"/g)?.length).toBe(2);
     });
 });

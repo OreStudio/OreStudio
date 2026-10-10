@@ -31,6 +31,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ReportingLineDialog } from '../access/PersonForms.js';
 import { useHolds } from '../access/holds.js';
+import { actorPathFor } from '../access/PeoplePage.js';
 import { Crumbs } from '../refdata/shared.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
@@ -362,6 +363,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                         {story.isError && <Notice tone="error">{story.error.message}</Notice>}
                         {story.data !== undefined && (
                             <Timeline
+                                actorPath={actorPathFor(mayReadAccounts)}
                                 hideUnchanged
                                 timeline={lineTimeline(
                                     story.data,

@@ -242,6 +242,9 @@ const fr: SourceCatalogue = {
         },
     },
 
+    people: {
+        outsideView: 'Une personne hors de votre périmètre',
+    },
     inbox: {
         state: {
             waiting: 'En attente',
@@ -273,6 +276,8 @@ const fr: SourceCatalogue = {
             submit: 'Demander',
         },
         mine: {
+            none: 'Vous n’avez fait aucune demande.',
+            lead: 'Les demandes que vous avez faites, et la réponse reçue.',
             title: 'Vos demandes',
             asked: 'demandé le {date}',
             youWrote: 'Vous avez écrit : {reason}',
@@ -1557,6 +1562,7 @@ const fr: SourceCatalogue = {
 
     timeline: {
         empty: 'Rien ne lui est encore arrivé.',
+        details: 'Détails',
         field: 'Champ',
         notRevertible: 'Cette entrée relate un fait, il n’y a donc rien à rétablir.',
         changeNotOffered: 'Rétablir un champ modifié n’est pas proposé ici.',

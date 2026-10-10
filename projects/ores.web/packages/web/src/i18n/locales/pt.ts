@@ -244,6 +244,9 @@ const pt: SourceCatalogue = {
         },
     },
 
+    people: {
+        outsideView: 'Alguém fora da sua vista',
+    },
     inbox: {
         state: {
             waiting: 'À espera',
@@ -274,6 +277,8 @@ const pt: SourceCatalogue = {
             submit: 'Pedir',
         },
         mine: {
+            none: 'Não fez nenhum pedido.',
+            lead: 'Os pedidos que fez e a resposta que receberam.',
             title: 'Os seus pedidos',
             asked: 'pedido a {date}',
             youWrote: 'Escreveu: {reason}',
@@ -1550,6 +1555,7 @@ const pt: SourceCatalogue = {
 
     timeline: {
         empty: 'Ainda nada lhe aconteceu.',
+        details: 'Detalhes',
         field: 'Campo',
         notRevertible: 'Esta entrada regista um facto, por isso não há nada a reverter.',
         changeNotOffered: 'Repor um campo alterado não é oferecido aqui.',

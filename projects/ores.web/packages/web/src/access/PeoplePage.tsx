@@ -37,6 +37,17 @@ export function personPath(username: string): string {
     return `/people/${encodeURIComponent(username)}`;
 }
 
+/**
+ * Where an entry's author is opened, for a reader who may open people.
+ *
+ * A service writes entries too, and a service has no person page, so only a
+ * name that is a person is linked.
+ */
+export function actorPathFor(mayOpen: boolean): (actor: string) => string | undefined {
+    return (actor) =>
+        mayOpen && !/(_service|^system$|^ores_)/.test(actor) ? personPath(actor) : undefined;
+}
+
 /** The tenant's people, one page at a time, searched and ordered on the server. */
 const PEOPLE: ListSource<Account> = {
     key: 'people',

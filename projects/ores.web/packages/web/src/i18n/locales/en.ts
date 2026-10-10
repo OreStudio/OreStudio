@@ -244,6 +244,9 @@ export const en: SourceCatalogue = {
         },
     },
 
+    people: {
+        outsideView: 'Someone outside your view',
+    },
     inbox: {
         state: {
             waiting: 'Waiting',
@@ -274,6 +277,8 @@ export const en: SourceCatalogue = {
             submit: 'Ask',
         },
         mine: {
+            none: 'You have made no requests.',
+            lead: 'The requests you have made, and how they were answered.',
             title: 'Your requests',
             asked: 'asked {date}',
             youWrote: 'You wrote: {reason}',
@@ -1537,6 +1542,7 @@ export const en: SourceCatalogue = {
 
     timeline: {
         empty: 'Nothing has happened to this yet.',
+        details: 'Details',
         field: 'Field',
         notRevertible: 'This entry records something that happened, so there is nothing to revert.',
         changeNotOffered: 'Putting a changed field back is not offered here.',

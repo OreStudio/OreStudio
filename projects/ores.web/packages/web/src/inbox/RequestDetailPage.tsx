@@ -29,6 +29,7 @@ import { api } from '../api/client.js';
 import { areasOf, covers } from '../access/catalogue.js';
 import { PermissionAreas } from '../access/PermissionAreas.js';
 import { roleLabel } from '../access/words.js';
+import { PersonRef } from '../access/PersonRef.js';
 import { AccountPicture } from '../ui/Images.js';
 import { Button, Detail, Notice, PageHeader } from '../ui/Primitives.js';
 import { RequestStateChip } from './RequestStateChip.js';
@@ -169,7 +170,7 @@ function Request({
                 />
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm font-medium">
-                        {self ? t('inbox.request.you') : request.requestedBy}
+                        {self ? t('inbox.request.you') : <PersonRef who={request.requestedBy} />}
                         <RequestStateChip stateCode={request.stateCode} />
                     </div>
                     {/* A deadline only means something while the request is
@@ -260,7 +261,9 @@ function Request({
                             name={request.decision.decidedBy}
                             size="sm"
                         />
-                        <span className="font-medium">{request.decision.decidedBy}</span>
+                        <span className="font-medium">
+                            <PersonRef who={request.decision.decidedBy} />
+                        </span>
                         <span className="text-xs text-ink-faint">
                             {formatDateTime(request.decision.decidedAt, language)}
                         </span>

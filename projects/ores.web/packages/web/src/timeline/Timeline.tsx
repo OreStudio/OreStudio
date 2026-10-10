@@ -20,6 +20,7 @@
  */
 
 import { Fragment, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import {
     TIMELINE_PROVENANCE_FIELDS,
     fieldValue,
@@ -59,11 +60,18 @@ export function Timeline({
     timeline,
     renderActions,
     renderHead,
+    actorPath,
     hideUnchanged = false,
 }: {
     readonly timeline: Stream;
     readonly renderActions?: (event: TimelineEvent) => ReactNode;
     readonly renderHead?: (event: TimelineEvent) => ReactNode;
+    /**
+     * Where the person who wrote an entry is opened, or undefined when they
+     * cannot be. An entry written by a service has no page, and a reader who
+     * may not read accounts cannot open one, so the caller states which.
+     */
+    readonly actorPath?: (actor: string) => string | undefined;
     /**
      * Leaves out the versions that changed none of the fields the stream
      * carries. A stream narrowed to one field, such as a reporting line, keeps
@@ -97,6 +105,7 @@ export function Timeline({
                         before={previous.get(earlier(event))}
                         actions={renderActions?.(event)}
                         head={renderHead?.(event)}
+                        actorPath={actorPath}
                     />
                 </Fragment>
             ))}
@@ -225,11 +234,13 @@ function Entry({
     before,
     actions,
     head,
+    actorPath,
 }: {
     readonly event: TimelineEvent;
     readonly before: TimelineEvent | undefined;
     readonly actions: ReactNode;
     readonly head: ReactNode;
+    readonly actorPath: ((actor: string) => string | undefined) | undefined;
 }): ReactNode {
     const { t, language } = useTranslation();
     const changed = changedFields(event, before);
@@ -247,12 +258,22 @@ function Entry({
                 />
             </div>
             <div className={`grid min-w-0 gap-1.5 pb-3.5 pl-1.5 pt-1 ${quiet ? 'opacity-90' : ''}`}>
-                {head ?? <DefaultHead event={event} changed={changed} />}
-                {event.commentary !== '' && (
-                    <p className="text-[0.8rem] text-ink-muted italic">{event.commentary}</p>
+                {head === undefined ? (
+                    <DefaultHead event={event} changed={changed} actorPath={actorPath} />
+                ) : (
+                    <>
+                        {head}
+                        {event.commentary !== '' && (
+                            <p className="text-[0.8rem] text-ink-muted italic">
+                                {event.commentary}
+                            </p>
+                        )}
+                    </>
                 )}
                 {changed.length > 0 && before !== undefined ? (
-                    <ChangeTable changed={changed} before={before} />
+                    <Details>
+                        <ChangeTable changed={changed} before={before} />
+                    </Details>
                 ) : isAChange(event.kind) && before !== undefined ? (
                     /*
                      * A version that changed no field against the one before
@@ -261,9 +282,11 @@ function Entry({
                      * has nothing to be read against.
                      */
                     <p className="text-[0.8rem] text-ink-faint">{t('timeline.noChanges')}</p>
-                ) : (
-                    <Facts event={event} before={before} />
-                )}
+                ) : ownFields(event).length > 0 ? (
+                    <Details>
+                        <Facts event={event} before={before} />
+                    </Details>
+                ) : null}
                 {actions}
                 {actions === undefined && isAnAct(event.kind) && (
                     <p className="text-[0.78rem] text-ink-faint">{t('timeline.notRevertible')}</p>
@@ -289,9 +312,11 @@ function Entry({
 function DefaultHead({
     event,
     changed,
+    actorPath,
 }: {
     readonly event: TimelineEvent;
     readonly changed: readonly TimelineField[];
+    readonly actorPath: ((actor: string) => string | undefined) | undefined;
 }): ReactNode {
     const { t, language } = useTranslation();
     const badge = [entityOf(event), event.entityId === '' ? '' : shortId(event.entityId)]
@@ -309,14 +334,48 @@ function DefaultHead({
                     {event.reasonCode}
                 </span>
             )}
-            {event.actor !== '' && (
-                <span className="text-sm font-semibold text-ink">{event.actor}</span>
-            )}
+            {event.actor !== '' && <Actor name={event.actor} path={actorPath?.(event.actor)} />}
             <span className="text-sm text-ink-muted">{sentenceOf(event, changed)}</span>
+            {event.commentary !== '' && (
+                <span className="text-[0.8rem] text-ink-muted italic">{event.commentary}</span>
+            )}
             <span className="ml-auto text-[0.72rem] text-ink-faint">
                 {formatDateTime(event.at, language)}
             </span>
         </div>
+    );
+}
+
+/** Who wrote the entry, opening their page when the caller says it can be opened. */
+function Actor({
+    name,
+    path,
+}: {
+    readonly name: string;
+    readonly path: string | undefined;
+}): ReactNode {
+    return path === undefined ? (
+        <span className="text-sm font-semibold text-ink">{name}</span>
+    ) : (
+        <Link
+            to={path}
+            className="text-sm font-semibold text-ink underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+        >
+            {name}
+        </Link>
+    );
+}
+
+/** An entry's detail, kept behind its header until a reader asks for it. */
+function Details({ children }: { readonly children: ReactNode }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <details className="group">
+            <summary className="w-fit cursor-pointer text-[0.78rem] text-ink-faint select-none hover:text-ink">
+                {t('timeline.details')}
+            </summary>
+            <div className="mt-1.5">{children}</div>
+        </details>
     );
 }
 

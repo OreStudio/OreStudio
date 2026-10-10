@@ -494,9 +494,9 @@ describe('a server that does not answer', () => {
 });
 
 /*
- * The requests queue is the administrator's, and the menu says so: the screen
- * offers the door only to somebody who holds the permission the kind names to
- * decide it. The server checks the same permission again on every call.
+ * Requests is every member's: it holds the person's own requests, and the
+ * queue to decide appears only for somebody who holds the permission the kind
+ * names to decide it. The server checks the same permission again on every call.
  */
 describe('the requests queue', () => {
     it('is offered in the menu to somebody who may assign roles', () => {
@@ -506,10 +506,10 @@ describe('the requests queue', () => {
         expect(html).toContain('>Requests</a>');
     });
 
-    it('is left out of the menu for somebody who may not', () => {
+    it('is offered in the menu to every member, who reads their own requests there', () => {
         const html = render('/', ready, authenticated, {}, ['refdata::currencies:read']);
 
-        expect(html).not.toContain('href="/requests"');
+        expect(html).toContain('href="/requests"');
     });
 
     it('renders the queue for a signed-in person at its own route, not the sign-in form', () => {

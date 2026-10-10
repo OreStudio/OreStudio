@@ -27,6 +27,7 @@ import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { AccountPicture } from '../ui/Images.js';
 import { Button, Dialog, Field, Notice } from '../ui/Primitives.js';
+import { PersonRef } from '../access/PersonRef.js';
 import { RequestStateChip } from './RequestStateChip.js';
 import { askedFor } from './words.js';
 
@@ -45,7 +46,7 @@ const PAGE = 50;
  * own requests come back with no roles at all. The kind's label stands in, and
  * the reason beneath it says what was asked for.
  */
-export function MyRequests(): ReactNode {
+export function MyRequests({ showEmpty = false }: { readonly showEmpty?: boolean }): ReactNode {
     const { t, language } = useTranslation();
     const [withdrawing, setWithdrawing] = useState<InboxRequestView | null>(null);
     const requests = useQuery({
@@ -58,7 +59,12 @@ export function MyRequests(): ReactNode {
     }
     const rows = requests.data?.items ?? [];
     if (rows.length === 0) {
-        return null;
+        return showEmpty && !requests.isPending ? (
+            <section className="rounded-md border border-line bg-surface-raised">
+                <h2 className="px-4 pt-4 text-sm font-semibold">{t('inbox.mine.title')}</h2>
+                <p className="px-4 py-3 text-sm text-ink-muted">{t('inbox.mine.none')}</p>
+            </section>
+        ) : null;
     }
 
     return (
@@ -92,7 +98,7 @@ export function MyRequests(): ReactNode {
                                             size="sm"
                                         />
                                         <span className="font-medium">
-                                            {request.decision.decidedBy}
+                                            <PersonRef who={request.decision.decidedBy} />
                                         </span>
                                     </span>
                                     {request.decision.comment !== '' && (

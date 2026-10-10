@@ -37,6 +37,7 @@ import { ContactTab, IdentityTab, useAccountWrites } from './PersonForms.js';
 import { ACCOUNT_ENTITY, PersonRevertDialog, isRevertable, latestVersion } from './PersonRevert.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { useHolds } from './holds.js';
+import { actorPathFor } from './PeoplePage.js';
 import { RecordHeader } from '../refdata/records.js';
 import { useTabs } from '../ui/Tabs.js';
 import { AccountDoors } from '../pages/AccountDoors.js';
@@ -183,6 +184,7 @@ function Person({
                     {story.data !== undefined && (
                         <Timeline
                             timeline={story.data}
+                            actorPath={actorPathFor(holds('iam::accounts:read'))}
                             /*
                              * Two entries can be acted on. A grant is taken
                              * away, which closes it and is the write the roles

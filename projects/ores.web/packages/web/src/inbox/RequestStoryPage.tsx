@@ -27,6 +27,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { askedFor, sourceLabel, stateLabel } from './words.js';
 import { formatDateTime } from '../ui/Time.js';
+import { PersonRef } from '../access/PersonRef.js';
 import { AccountPicture } from '../ui/Images.js';
 import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { Timeline, kindTone } from '../timeline/Timeline.js';
@@ -132,7 +133,9 @@ function RequestEventHead({ event }: { readonly event: InboxStoryEvent }): React
             {event.actor !== '' && (
                 <>
                     <AccountPicture username={event.actor} name={event.actor} size="sm" />
-                    <span className="font-medium">{event.actor}</span>
+                    <span className="font-medium">
+                        <PersonRef who={event.actor} />
+                    </span>
                 </>
             )}
             <span className="text-ink-muted">{sourceLabel(t, event.entityType)}</span>

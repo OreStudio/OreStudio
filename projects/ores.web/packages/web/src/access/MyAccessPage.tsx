@@ -30,7 +30,6 @@ import { areasOf, countCovered, grantedBy, rolesGranting, search } from './catal
 import { PermissionAreas } from './PermissionAreas.js';
 import { roleLabel } from './words.js';
 import { AskForRoleDialog } from '../inbox/AskForRoleDialog.js';
-import { MyRequests } from '../inbox/MyRequests.js';
 
 /** How many answers "Can I…?" shows at once. */
 const ANSWERS = 8;
@@ -110,8 +109,6 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
                     </ul>
                 )}
             </section>
-
-            <MyRequests />
 
             <section className="space-y-3 rounded-md border border-line bg-surface-raised p-4">
                 <h2 className="text-sm font-semibold">{t('access.mine.canI')}</h2>

@@ -23,7 +23,11 @@ Choose the person by name, by job title, or by role. Title and role take an offi
 ./compass.sh open-as name "adrian vance"
 ./compass.sh open-as title "senior trader" --location hk
 ./compass.sh open-as role trading --location hk --pick 3
+./compass.sh open-as tenant_admin
+./compass.sh open-as super_admin
 #+end_src
+
+The two administrators have their own words: tenant_admin opens as tenant_admin@acme_corporation, and super_admin opens as the system administrator. Neither takes more text.
 
 The browser opens on the web sign-in page with the username (for example adrian.vance@acme_corporation) and the password filled in. Press Sign in. A near miss in a name, such as "adrian vince", still finds the closest person. The Chrome profile carries the person's name. Chrome gives a profile that is not signed in to Google no way to show a photo, so the photo is not set. The command finds the Wayland or X display itself, so it also runs from a shell that was not started on the desktop. Add --workspace N to open the window on workspace N, where 1 is the first. GNOME on Wayland cannot move a native window from outside, so this runs Chrome under X11 and moves the window with wmctrl. Each person keeps their own Chrome data, and each workspace keeps its own copy, so the same person on two workspaces keeps different pages. Close Chrome in the normal way and the pages left open, and the sign-in, come back the next time you open that person on that workspace. Use --fresh to discard a persona's browser data, and --no-fill to leave the form empty.
 

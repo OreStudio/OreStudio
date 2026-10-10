@@ -117,8 +117,21 @@ def by_role(staff, text, location):
     return sorted(found, key=lambda p: (p["job_title"], p["full_name"]))
 
 
+ADMINS = {
+    "tenant_admin": {"username": "tenant_admin",
+                     "principal": f"tenant_admin@{TENANT_HOSTNAME}",
+                     "full_name": "Tenant Administrator",
+                     "job_title": "Administrator of the Acme tenant",
+                     "role": "TenantAdmin", "business_unit_code": None},
+    "super_admin": {"username": "super_admin", "principal": "super_admin",
+                    "full_name": "System Administrator",
+                    "job_title": "Administrator of the whole system",
+                    "role": "SuperAdmin", "business_unit_code": None},
+}
+
+
 def principal(person):
-    return f"{person['username']}@{TENANT_HOSTNAME}"
+    return person.get("principal") or f"{person['username']}@{TENANT_HOSTNAME}"
 
 
 def web_url(project_root, env_file=None):
@@ -518,9 +531,11 @@ def run(argv, project_root=None, env_file=None) -> int:
         prog="compass open-as",
         description="Open the web in an isolated Chrome signed in as an Acme "
                     "user. Press Sign in; the form is already filled.")
-    parser.add_argument("by", choices=["name", "title", "role"],
+    parser.add_argument("by", choices=["name", "title", "role", *ADMINS],
                         help="how to choose the person")
-    parser.add_argument("text", help="the name, job title or role to match")
+    parser.add_argument("text", nargs="?", default="",
+                        help="the name, job title or role to match; not used "
+                             "for tenant_admin or super_admin")
     parser.add_argument("--location", default=DEFAULT_LOCATION,
                         help="office for title and role: london (default), "
                              "new york, hong kong (aliases: uk, ny, us, hk)")
@@ -541,7 +556,11 @@ def run(argv, project_root=None, env_file=None) -> int:
     args = parser.parse_args(argv)
 
     staff = load_staff(project_root)
-    if args.by == "name":
+    if args.by in ADMINS:
+        found = [ADMINS[args.by]]
+    elif not args.text:
+        parser.error(f"{args.by} needs the text to match")
+    elif args.by == "name":
         found = by_name(staff, args.text)
     elif args.by == "title":
         found = by_title(staff, args.text, args.location)

@@ -149,3 +149,11 @@ def test_the_profile_restores_the_previous_session(tmp_path):
     open_as.prepare_profile(tmp_path, False)
     prefs = open_as.json.loads((tmp_path / "Default" / "Preferences").read_text())
     assert prefs["session"]["restore_on_startup"] == 1
+
+
+def test_the_tenant_administrator_signs_in_to_the_acme_tenant():
+    assert open_as.principal(open_as.ADMINS["tenant_admin"]) == "tenant_admin@acme_corporation"
+
+
+def test_the_system_administrator_signs_in_without_a_tenant():
+    assert open_as.principal(open_as.ADMINS["super_admin"]) == "super_admin"

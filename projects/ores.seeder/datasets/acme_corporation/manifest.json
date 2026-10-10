@@ -10,6 +10,12 @@
             "description": "Methodology for generating artefact files using the OreStudio code generator",
             "url": "https://github.com/OreStudio/OreStudio/tree/main/projects/ores.codegen",
             "steps_file": "methodology.txt"
+        },
+        {
+            "name": "ACME Counterparty Netting Methodology",
+            "description": "Counterparty netting data for the ACME legal entities: master agreements, netting sets and credit support annexes, built from the shape of the ORE samples and made realistic",
+            "url": "https://en.wikipedia.org/wiki/Acme_Corporation",
+            "steps_file": "netting_methodology.txt"
         }
     ],
     "catalogs": [
@@ -49,7 +55,9 @@
             "business_context": "Party hierarchy for ACME Corporation",
             "license": "Internal use only",
             "artefact_type": "lei_relationships",
-            "dependencies": ["acme.lei_entities"],
+            "dependencies": [
+                "acme.lei_entities"
+            ],
             "tag_code": "acme",
             "tag_description": "ACME Corporation reference data"
         },
@@ -66,7 +74,9 @@
             "business_context": "Organisational hierarchy for ACME Corporation",
             "license": "Internal use only",
             "artefact_type": "business_units",
-            "dependencies": ["acme.lei_entities"],
+            "dependencies": [
+                "acme.lei_entities"
+            ],
             "tag_code": "acme",
             "tag_description": "ACME Corporation reference data"
         },
@@ -83,7 +93,9 @@
             "business_context": "Portfolio hierarchy for ACME Corporation",
             "license": "Internal use only",
             "artefact_type": "portfolios",
-            "dependencies": ["acme.business_units"],
+            "dependencies": [
+                "acme.business_units"
+            ],
             "tag_code": "acme",
             "tag_description": "ACME Corporation reference data"
         },
@@ -100,7 +112,9 @@
             "business_context": "Trading books for ACME Corporation",
             "license": "Internal use only",
             "artefact_type": "books",
-            "dependencies": ["acme.portfolios"],
+            "dependencies": [
+                "acme.portfolios"
+            ],
             "tag_code": "acme",
             "tag_description": "ACME Corporation reference data"
         },
@@ -117,9 +131,75 @@
             "business_context": "Staff accounts for ACME Corporation, one per desk/support-function role",
             "license": "Internal use only",
             "artefact_type": "accounts",
-            "dependencies": ["acme.business_units"],
+            "dependencies": [
+                "acme.business_units"
+            ],
             "tag_code": "acme",
             "tag_description": "ACME Corporation reference data"
+        },
+        {
+            "name": "ACME Corporation LEI Counterparties",
+            "code": "acme.lei_counterparties",
+            "catalog": "ACME Corporation",
+            "subject_area": "Parties",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "source_system": "ACMEBANK",
+            "business_context": "Counterparty netting for ACME Corporation",
+            "license": "Internal use only",
+            "tag_code": "acme",
+            "tag_description": "ACME Corporation reference data",
+            "description": "Publish trigger that makes the four ACME legal entities counterparties of one another, with their group hierarchy and LEI identifiers. It carries no rows of its own.",
+            "artefact_type": "lei_counterparties"
+        },
+        {
+            "name": "ACME Corporation Netting Agreements",
+            "code": "acme.<entity>.netting_agreements",
+            "catalog": "ACME Corporation",
+            "subject_area": "Netting and Collateral",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "ACME Counterparty Netting Methodology",
+            "source_system": "ACMEBANK",
+            "business_context": "Counterparty netting for ACME Corporation",
+            "license": "Internal use only",
+            "tag_code": "acme",
+            "tag_description": "ACME Corporation reference data",
+            "description": "ISDA master agreements between each ACME legal entity and its banks and group entities. One dataset for each entity.",
+            "artefact_type": "netting_agreements"
+        },
+        {
+            "name": "ACME Corporation Netting Sets",
+            "code": "acme.<entity>.netting_sets",
+            "catalog": "ACME Corporation",
+            "subject_area": "Netting and Collateral",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "ACME Counterparty Netting Methodology",
+            "source_system": "ACMEBANK",
+            "business_context": "Counterparty netting for ACME Corporation",
+            "license": "Internal use only",
+            "tag_code": "acme",
+            "tag_description": "ACME Corporation reference data",
+            "description": "Netting sets of each ACME legal entity, one for each collateral regime under an agreement. One dataset for each entity.",
+            "artefact_type": "netting_sets"
+        },
+        {
+            "name": "ACME Corporation CSAs",
+            "code": "acme.<entity>.csas",
+            "catalog": "ACME Corporation",
+            "subject_area": "Netting and Collateral",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "ACME Counterparty Netting Methodology",
+            "source_system": "ACMEBANK",
+            "business_context": "Counterparty netting for ACME Corporation",
+            "license": "Internal use only",
+            "tag_code": "acme",
+            "tag_description": "ACME Corporation reference data",
+            "description": "Credit support annexes of each ACME legal entity: currency, overnight index, thresholds, minimum transfer amounts and margin periods. One dataset for each entity.",
+            "artefact_type": "csas"
         }
     ]
 }

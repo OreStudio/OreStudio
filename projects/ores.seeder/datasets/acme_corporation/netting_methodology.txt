@@ -1,0 +1,50 @@
+Data Sourcing and Generation Steps:
+
+    1. START FROM THE ORE SAMPLES
+       The shape comes from the ORE sample netting data: one master agreement
+       with each bank, a netting set for each agreement, and a credit support
+       annex for each collateralised set. The content does not: the samples name
+       the banks and terms the ORE examples happen to use, and are published
+       separately as sample data.
+
+    2. CHOOSE A PANEL FOR EACH LEGAL ENTITY
+       Each of the four legal entities faces the banks that deal with its
+       jurisdiction: the US entity three US dealers, the UK entity five European
+       and UK dealers, the Hong Kong entity three banks active in Hong Kong, and
+       the holding company two banks for its treasury. Each bank is the legal
+       entity the GLEIF counterparty set holds for it, named by LEI. An
+       affiliate with a similar name is a different counterparty.
+
+    3. DOCUMENT EACH RELATIONSHIP
+       Every relationship is an ISDA 2002 Master Agreement. New York law governs
+       the US entity and English law governs the others. The reference is the
+       entity, the bank, the document and the year signed.
+
+    4. GIVE EACH RELATIONSHIP A COLLATERAL REGIME
+       Variation margin only, variation and initial margin, or uncollateralised.
+       The largest relationships take initial margin. A relationship may hold a
+       second, uncollateralised netting set for trades the credit support annex
+       does not cover, such as commodity derivatives.
+
+    5. SET REALISTIC CSA TERMS
+       Each CSA is in the currency its entity margins in, on that currency's
+       current overnight rate: USD-SOFR, GBP-SONIA or EUR-ESTER. No retired
+       index is used. Variation margin has a zero threshold and a minimum
+       transfer amount that depends on the currency; a combined variation and
+       initial margin agreement takes a higher amount. Calls and postings are
+       daily, the margin period of risk is ten days, and the eligible
+       currencies are the three major currencies with the margin currency
+       first.
+
+    6. ADD THE INTRAGROUP AGREEMENTS
+       The holding company hedges for each subsidiary, so it holds an agreement
+       with each of them, uncollateralised. The UK and US entities also hold an
+       agreement with each other for risk transfer between booking centres, with
+       variation margin and no minimum transfer amount. The two entities to one
+       intragroup agreement each hold it under the same reference.
+
+    7. PUBLISH
+       The datasets are members of the legal entity bundles. They publish in
+       dependency order to the party the bundle names. The intragroup
+       counterparties are the ACME legal entities themselves, published by the
+       acme.lei_counterparties dataset.

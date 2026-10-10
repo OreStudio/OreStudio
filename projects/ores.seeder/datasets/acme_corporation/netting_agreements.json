@@ -1,0 +1,170 @@
+[
+  {
+    "company_code": "acme_us",
+    "agreement_number": "ACUS-JPM-ISDA-2015",
+    "counterparty_lei": "7H6GLXDRUGQFU57RNE97",
+    "agreement_type": "ISDA",
+    "governing_law": "New York",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation US Inc and JPMorgan Chase Bank, National Association, New York law, signed 2015"
+  },
+  {
+    "company_code": "acme_us",
+    "agreement_number": "ACUS-BOFA-ISDA-2017",
+    "counterparty_lei": "B4TYDEB6GKMZO031MB27",
+    "agreement_type": "ISDA",
+    "governing_law": "New York",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation US Inc and Bank of America, National Association, New York law, signed 2017"
+  },
+  {
+    "company_code": "acme_us",
+    "agreement_number": "ACUS-CITI-ISDA-2016",
+    "counterparty_lei": "E57ODZWZ7FF32TWEFA76",
+    "agreement_type": "ISDA",
+    "governing_law": "New York",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation US Inc and Citibank, National Association, New York law, signed 2016"
+  },
+  {
+    "company_code": "acme_uk",
+    "agreement_number": "ACUK-BARC-ISDA-2014",
+    "counterparty_lei": "G5GSEF7VJP5I7OUK5573",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation UK plc and Barclays Bank PLC, English law, signed 2014"
+  },
+  {
+    "company_code": "acme_uk",
+    "agreement_number": "ACUK-HSBC-ISDA-2016",
+    "counterparty_lei": "MP6I5ZYZBEU3UXPYFY54",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation UK plc and HSBC Bank plc, English law, signed 2016"
+  },
+  {
+    "company_code": "acme_uk",
+    "agreement_number": "ACUK-DB-ISDA-2015",
+    "counterparty_lei": "7LTWFZYICNSX8D621K86",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation UK plc and Deutsche Bank AG, English law, signed 2015"
+  },
+  {
+    "company_code": "acme_uk",
+    "agreement_number": "ACUK-BNPP-ISDA-2018",
+    "counterparty_lei": "R0MUWSFPU8MPRO8K5P83",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation UK plc and BNP Paribas, English law, signed 2018"
+  },
+  {
+    "company_code": "acme_uk",
+    "agreement_number": "ACUK-UBS-ISDA-2012",
+    "counterparty_lei": "BFM8T61CT2L1QCEMIK50",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation UK plc and UBS AG, English law, signed 2012"
+  },
+  {
+    "company_code": "acme_hk",
+    "agreement_number": "ACHK-HBAP-ISDA-2017",
+    "counterparty_lei": "2HI3YI5320L3RW6NJ957",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation HK Ltd and The Hongkong and Shanghai Banking Corporation Limited, English law, signed 2017"
+  },
+  {
+    "company_code": "acme_hk",
+    "agreement_number": "ACHK-SCB-ISDA-2018",
+    "counterparty_lei": "RILFO74KP1CM8P6PCT96",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation HK Ltd and Standard Chartered Bank, English law, signed 2018"
+  },
+  {
+    "company_code": "acme_hk",
+    "agreement_number": "ACHK-CITI-ISDA-2019",
+    "counterparty_lei": "E57ODZWZ7FF32TWEFA76",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation HK Ltd and Citibank, National Association, English law, signed 2019"
+  },
+  {
+    "company_code": "acme_group",
+    "agreement_number": "ACGR-HSBC-ISDA-2016",
+    "counterparty_lei": "MP6I5ZYZBEU3UXPYFY54",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between Acme Corporation Plc and HSBC Bank plc, English law, signed 2016"
+  },
+  {
+    "company_code": "acme_group",
+    "agreement_number": "ACGR-JPM-ISDA-2015",
+    "counterparty_lei": "7H6GLXDRUGQFU57RNE97",
+    "agreement_type": "ISDA",
+    "governing_law": "New York",
+    "description": "ISDA 2002 Master Agreement between Acme Corporation Plc and JPMorgan Chase Bank, National Association, New York law, signed 2015"
+  },
+  {
+    "company_code": "acme_group",
+    "agreement_number": "ACGR-ACUK-ISDA-2018",
+    "counterparty_lei": "9695ACMEUK0000000047",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between Acme Corporation Plc and ACME Corporation UK plc, English law, signed 2018"
+  },
+  {
+    "company_code": "acme_uk",
+    "agreement_number": "ACGR-ACUK-ISDA-2018",
+    "counterparty_lei": "9695ACMEGROUP0000030",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation UK plc and Acme Corporation Plc, English law, signed 2018"
+  },
+  {
+    "company_code": "acme_group",
+    "agreement_number": "ACGR-ACUS-ISDA-2018",
+    "counterparty_lei": "9695ACMEUS0000000043",
+    "agreement_type": "ISDA",
+    "governing_law": "New York",
+    "description": "ISDA 2002 Master Agreement between Acme Corporation Plc and ACME Corporation US Inc, New York law, signed 2018"
+  },
+  {
+    "company_code": "acme_us",
+    "agreement_number": "ACGR-ACUS-ISDA-2018",
+    "counterparty_lei": "9695ACMEGROUP0000030",
+    "agreement_type": "ISDA",
+    "governing_law": "New York",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation US Inc and Acme Corporation Plc, New York law, signed 2018"
+  },
+  {
+    "company_code": "acme_group",
+    "agreement_number": "ACGR-ACHK-ISDA-2018",
+    "counterparty_lei": "9695ACMEHK0000000018",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between Acme Corporation Plc and ACME Corporation HK Ltd, English law, signed 2018"
+  },
+  {
+    "company_code": "acme_hk",
+    "agreement_number": "ACGR-ACHK-ISDA-2018",
+    "counterparty_lei": "9695ACMEGROUP0000030",
+    "agreement_type": "ISDA",
+    "governing_law": "English",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation HK Ltd and Acme Corporation Plc, English law, signed 2018"
+  },
+  {
+    "company_code": "acme_uk",
+    "agreement_number": "ACUK-ACUS-ISDA-2019",
+    "counterparty_lei": "9695ACMEUS0000000043",
+    "agreement_type": "ISDA",
+    "governing_law": "New York",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation UK plc and ACME Corporation US Inc, New York law, signed 2019"
+  },
+  {
+    "company_code": "acme_us",
+    "agreement_number": "ACUK-ACUS-ISDA-2019",
+    "counterparty_lei": "9695ACMEUK0000000047",
+    "agreement_type": "ISDA",
+    "governing_law": "New York",
+    "description": "ISDA 2002 Master Agreement between ACME Corporation US Inc and ACME Corporation UK plc, New York law, signed 2019"
+  }
+]

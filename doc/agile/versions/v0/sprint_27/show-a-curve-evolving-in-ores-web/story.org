@@ -40,7 +40,7 @@ A person opens ores.web, names a curve or a surface, and watches it evolve as an
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D0BC3754-FF8F-4150-BF08-60C1BE4F0064][Scaffold story: Show a curve evolving in ores.web]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:9BD6425D-8655-45C8-8AA8-9A6B73B47FAA][Give the BFF the curve read routes]] | BACKLOG | | | Route each curve read through the BFF. |
+| [[id:9BD6425D-8655-45C8-8AA8-9A6B73B47FAA][Give the BFF the curve read routes]] | DONE | 2026-10-10 | 2026-10-10 | Route each curve read through the BFF. |
 | [[id:AE07523A-A702-43C2-AD16-544FEB4264AE][Build the watch a curve or surface evolve screen]] | BACKLOG | | | Build the screen of the journey: name an object, pick a range or a set of instants, read the aligned matrix with each node's change, age and provenance. |
 
 * Decisions

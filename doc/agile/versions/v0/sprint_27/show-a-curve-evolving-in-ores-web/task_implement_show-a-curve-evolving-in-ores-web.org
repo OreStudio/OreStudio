@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :show-a-curve-evolving-in-ores-web:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-show-a-curve-evolving-in-ores-web
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AD390F50-FE3D-47E5-BA8C-58F8C0D5FB02][Show a curve evolving in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The BFF exposes the identity, snapshot, slice and evolution reads, so a screen c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AD390F50-FE3D-47E5-BA8C-58F8C0D5FB02][Show a curve evolving in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -41,9 +41,12 @@ The BFF exposes the identity, snapshot, slice and evolution reads, so a screen c
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One module, =curves.ts=, registers four POST routes under =/api/curves/=: series,
+snapshot, slice and evolution. Each checks the structure of the request with a strict
+schema, forwards it to the server's subject, and returns the reply without its success
+and message. The server checks the permission and the shape. A refused read becomes a
+422 with the server's words. The module follows the shape of =synthetic.ts=. A test file
+drives each route through a canned client.
 
 * Measurements
 
@@ -57,7 +60,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curve route tests | 11 pass | =npx vitest run src/curves.test.ts= in =packages/bff= | 785e1bda50 plus the uncommitted change |
+| Whole BFF suite | 52 files, 492 tests, pass | =npx vitest run= in =packages/bff= | 785e1bda50 plus the uncommitted change |
+| BFF type check | clean | =npx tsc --build= in =packages/bff= | 785e1bda50 plus the uncommitted change |
 
 * Notes
 
@@ -85,3 +90,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The BFF now routes the four curve reads. A signed-in session can POST to
+=/api/curves/series=, =/snapshot=, =/slice= and =/evolution= with a typed identity and
+read what the server answers. The module is =curves.ts=, registered in =server.ts=.
+
+Each route checks the structure of the request and nothing more. The schemas are strict,
+so a field the route does not know is refused, and an instant must be a wire timestamp.
+An evolution states its instants or both ends of its range, and a stated set is capped at
+500. The server keeps the permission and the shape rules. A refused read comes back as a
+422 with the server's words, so the screen can show the reason.
+
+Eleven tests drive the routes through a canned client: each read, the provenance flag,
+both evolution forms, three refused requests that never reach the server, a server
+refusal and a missing session. The whole BFF suite passes, and so do the web,
+route-auth, open-reads, reachability and handler-permissions checks.
+
+Left for the screen task: a page that calls these routes. The routes do not draw anything.

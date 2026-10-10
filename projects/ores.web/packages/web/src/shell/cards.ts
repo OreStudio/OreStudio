@@ -275,3 +275,22 @@ export function areaOfCard(id: CardId): CardArea | undefined {
         AREA_GROUPS[area].some((group) => (group.cards as readonly CardId[]).includes(id)),
     );
 }
+
+/**
+ * A folder card: the card of an area, which opens that area's page of cards.
+ * Its name and its address are the menu entry's, so the menu and Home cannot
+ * differ. Home draws one for each entry of the menu except Home.
+ */
+export interface FolderDef {
+    readonly to: string;
+    readonly bodyKey: string;
+    readonly icon: IconName;
+}
+
+export const FOLDERS: readonly FolderDef[] = [
+    { to: PATHS.refdata, bodyKey: 'refdata.area.lead', icon: 'database' },
+    { to: PATHS.organisation, bodyKey: 'access.hub.lead', icon: 'people' },
+    { to: '/requests', bodyKey: 'inbox.queue.lead', icon: 'document' },
+    { to: PATHS.operations, bodyKey: 'operations.hub.description', icon: 'server' },
+    { to: '/tenants', bodyKey: 'home.system.tenantsLead', icon: 'party' },
+];

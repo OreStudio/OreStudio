@@ -533,12 +533,12 @@ describe('the route to the versions screen', () => {
         }
     });
 
-    it('is offered from home in the modes with no operations menu entry', () => {
+    it('is reached from home through the Operations folder card, in every mode', () => {
         const tenant = renderRoute('/?tab=active', sessionWith({ mode: 'tenant-administration' }));
         const party = renderRoute('/', sessionWith({ mode: 'application' }));
 
-        expect(tenant).toContain('href="/operations/versions"');
-        expect(party).toContain('href="/operations/versions"');
+        expect(tenant).toContain('href="/operations"');
+        expect(party).toContain('href="/operations"');
     });
 
     it('is offered to system administration through the operations hub', () => {

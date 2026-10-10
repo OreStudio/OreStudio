@@ -454,14 +454,10 @@ describe("the system administrator's home", () => {
     it('offers the same cards as the area pages on the Active modules tab, and no tenant creation', () => {
         const html = home('system-administration', quiet, undefined, undefined, '/?tab=active');
 
-        for (const href of [
-            '/tenants',
-            '/operations/services',
-            '/operations/versions',
-            '/security',
-        ]) {
+        for (const href of ['/tenants', '/refdata', '/operations', '/security']) {
             expect(html).toContain(`href="${href}"`);
         }
+        expect(html).not.toContain('href="/operations/');
         expect(html).not.toContain('System health');
         expect(html).not.toContain('href="/tenants/new"');
         expect(html).not.toContain('Add tenant');
@@ -680,10 +676,11 @@ describe("the tenant administrator's home", () => {
         );
 
         for (const href of [
-            '/refdata/parties',
-            '/refdata/parties/new',
-            '/organisation/rescue',
-            '/operations/sign-ins',
+            '/refdata',
+            '/organisation',
+            '/requests',
+            '/operations',
+            '/access',
             '/security',
         ]) {
             expect(html).toContain(`href="${href}"`);
@@ -750,21 +747,10 @@ describe("a member's home", () => {
     it('offers only the screens that are theirs', () => {
         const html = home('application', undefined, undefined, seedMember);
 
-        for (const href of [
-            '/security',
-            '/access',
-            '/refdata/currencies',
-            '/operations/versions',
-        ]) {
+        for (const href of ['/security', '/access', '/refdata', '/requests', '/operations']) {
             expect(html).toContain(`href="${href}"`);
         }
-        for (const href of [
-            '/operations/sign-ins',
-            '/organisation/rescue',
-            '/organisation/roles',
-            '/refdata/parties/new',
-            '/organisation/people',
-        ]) {
+        for (const href of ['/organisation', '/tenants']) {
             expect(html).not.toContain(`href="${href}"`);
         }
         expect(html).not.toContain('href="/tenants');

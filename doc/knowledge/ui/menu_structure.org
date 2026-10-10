@@ -62,8 +62,23 @@ is offered. A screen that has no header of its own, such as a journey, takes its
 title, its line and its trail from its file card (=CardScreen=). A test holds
 the card title and the screen title equal in every language.
 
-Home's Active modules tab shows the file cards of each folder under that
-folder's name.
+Home's Active modules tab shows one folder card for each area the person is
+offered, in the order of the menu, and then the cards of their own account. It
+does not repeat the file cards of the areas. A person opens a folder to reach its
+screens.
+
+*** Topics inside an area
+
+An area page splits its file cards into topics. Each topic has a heading, and
+the cards of the topic stand under it. Reference data is the example: Parties and
+counterparties, Books and portfolios, Currencies and FX, Calendars and tenors,
+Conventions, and Classifications.
+
+A topic stays a heading on the area page until it holds more than about six
+cards. Then it becomes a folder of its own: the area page shows it as a folder
+card, and the cards stand on its page. Market data is the likely first case. The
+breadcrumb of a screen in a topic that is only a heading does not name the topic,
+so it stays at three levels: Home, the area, the screen.
 
 ** The rule
 

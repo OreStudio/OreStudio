@@ -24,10 +24,11 @@ import type { SessionMode } from '@ores/wire-protocol/browser';
 import { useHolds } from '../access/holds.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Tiles, type Tile } from '../ui/Tiles.js';
-import { offered } from './areas.js';
+import { MENU, offered } from './areas.js';
 import {
     ACCOUNT_CARDS,
     AREA_GROUPS,
+    FOLDERS,
     cardOf,
     type CardArea,
     type CardGroup,
@@ -94,58 +95,26 @@ export function AreaCards({
 }
 
 /**
- * Every card the person may open, area by area, then their own account. This is
- * Home's Active modules: the same cards the area pages draw, as shortcuts.
+ * Home's Active modules: the folder card of each area the person is offered, in
+ * the order of the menu, then the cards of their own account. A folder card
+ * opens its area, whose page draws the file cards of the screens in it.
  */
 export function ActiveCards({ mode }: { readonly mode: SessionMode }): ReactNode {
     const { t } = useTranslation();
-    const areas: readonly (readonly [CardArea, string])[] = [
-        ['tenants', 'shell.menu.tenants'],
-        ['refdata', 'shell.menu.refdata'],
-        ['organisation', 'shell.menu.organisation'],
-        ['operations', 'shell.menu.operations'],
-    ];
-    return (
-        <div className="space-y-10">
-            {areas.map(([area, nameKey]) => (
-                <AreaSection key={area} area={area} name={t(nameKey)} mode={mode} />
-            ))}
-            <AccountSection mode={mode} />
-        </div>
-    );
-}
-
-function AreaSection({
-    area,
-    name,
-    mode,
-}: {
-    readonly area: CardArea;
-    readonly name: string;
-    readonly mode: SessionMode;
-}): ReactNode {
     const holds = useHolds();
-    const any = AREA_GROUPS[area].some((group) =>
-        group.cards.some((id) => offered(cardOf(id), holds, mode)),
-    );
-    if (!any) {
-        return null;
-    }
-    return (
-        <section className="space-y-4">
-            <h2 className="text-base font-semibold text-ink">{name}</h2>
-            <AreaCards area={area} mode={mode} />
-        </section>
-    );
-}
-
-function AccountSection({ mode }: { readonly mode: SessionMode }): ReactNode {
-    const { t } = useTranslation();
-    const tiles = useTiles(ACCOUNT_CARDS, mode);
-    return (
-        <section className="space-y-4">
-            <h2 className="text-base font-semibold text-ink">{t('shell.account')}</h2>
-            <Tiles tiles={tiles} />
-        </section>
-    );
+    const folders: Tile[] = FOLDERS.flatMap((folder) => {
+        const entry = MENU.find((item) => item.to === folder.to);
+        return entry !== undefined && offered(entry, holds, mode)
+            ? [
+                  {
+                      title: t(entry.nameKey),
+                      body: t(folder.bodyKey),
+                      to: folder.to,
+                      icon: folder.icon,
+                  },
+              ]
+            : [];
+    });
+    const account = useTiles(ACCOUNT_CARDS, mode);
+    return <Tiles tiles={[...folders, ...account]} />;
 }

@@ -8,7 +8,7 @@
 #+filetags: :clear_the_local_check_failures_in_the_er_diagram_and_pgtap:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/clear-the-local-check-failures-in-the-er-diagram-and-pgtap
-#+pr:
+#+pr: 3048
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3048][#3048]] | [sql] Clear the er-diagram and pgtap check failures |
 
 * Review
 

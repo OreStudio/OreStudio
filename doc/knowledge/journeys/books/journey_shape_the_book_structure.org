@@ -69,16 +69,30 @@ server-side state: every step completes when the server replies.
    stays on record, and the function stops honouring it.
 6. *Review.* Nothing is written until the person confirms. The system lists each
    change with its field, its old value and its new value, and the subject that
-   will carry it. The person picks a reason code.
-7. *Read the outcome.* The system writes the book and the rights, and shows the
-   book's new version. The person can open the history, go to the rights, or
-   return to the tree.
+   will carry it. It marks each change as needing a second person or not, and
+   names the function that decides it, as [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]]
+   states. The person picks a reason code.
+7. *Raise the request, or read the outcome.* When any change needs a second
+   person, the system raises one approval request for the gated changes, shows it
+   waiting, and leaves the book as it was. When none does, the system writes the
+   book and the rights directly and shows the book's new version. Either way the
+   person can open the history, go to the rights, or return to the tree.
+8. *Decide.* A different person, from the function the control names, opens the
+   request. The system shows what would change and the checks it ran, and the
+   decider approves or declines with a comment. The person who asked cannot
+   decide. On approval the system applies the change as a new version. A new
+   book goes first to a controller, then to Finance, Market Risk and Operations,
+   who each approve their own part.
 
-Two states sit beside the steps. *Refused* shows the error the server returns
+Five states sit beside the steps. *Waiting* shows a raised request with who must
+still answer. *Decide* is the checker's screen, and it refuses the person who
+asked. *Declined* shows a declined request: the book keeps its version and the
+declined request stays on record. *Refused* shows the error the server returns
 when a write is not allowed, with the subject, the intent, the error code and
 the record version. *History* shows every version of one book with the
 field-level difference from the version before it, and offers a revert, which
-the system writes as a new version.
+the system raises as a request when the reverted fields are gated and writes as a
+new version when they are not. A virtual book in a sandbox is never gated.
 
 No step waits on the server after its reply, and the journey keeps no state.
 
@@ -162,17 +176,25 @@ the book write carries every field the screen draws.
 | Set the rights | Grant the rights | =refdata.v1.portfolio_rights.put_many= | exists |
 | Set the rights | Remove the rights | =refdata.v1.portfolio_rights.delete_many= | exists |
 | Review | Read the change reasons | =dq.v1.change_reasons.list= | exists |
-| Read the outcome | Write the book | =refdata.v1.books.put= | exists |
-| Read the outcome | Write the rights | =refdata.v1.portfolio_rights.put_many= | exists |
+| Raise the request | Raise one request for the gated changes | =inbox.v1.ops.raise_approval= | partial |
+| Raise the request | Withdraw the request | =inbox.v1.ops.withdraw_approval= | exists |
+| Raise the request | Read my requests | =inbox.v1.ops.list_my_approval_requests= | exists |
+| Decide | Read the queue a decider owns | =inbox.v1.ops.list_approval_queue= | exists |
+| Decide | Read one request | =inbox.v1.ops.get_approval= | exists |
+| Decide | Approve or decline with a comment | =inbox.v1.ops.decide_approval= | partial |
+| Read the outcome | Write the book, when no change is gated | =refdata.v1.books.put= | exists |
+| Read the outcome | Write the rights, when no change is gated | =refdata.v1.portfolio_rights.put_many= | exists |
+| Read the outcome | Apply an approved change as a new version | no operation | missing |
 | Refused | Read the refused write | =refdata.v1.books.put= | exists |
 | History | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.book=) | exists |
 | History | Revert by writing the old values | =refdata.v1.books.put= | exists |
 
 * What is missing
 
-One item is the missing row of the coverage table above. One is a rule the
-journey draws that cannot be enforced where it reads as if it would be, and it is
-recorded rather than dropped. One is out of scope by the story's own decision.
+Three items are missing rows of the coverage table above or the parts they need.
+One is a rule the journey draws that cannot be enforced where it reads as if it
+would be, and it is recorded rather than dropped. One is out of scope by the
+story's own decision.
 
 1. *Nothing refuses closing a book with open activity, and the store cannot.*
    The journey wants a refusal on the close that names the open trades, unsettled
@@ -192,6 +214,18 @@ recorded rather than dropped. One is out of scope by the story's own decision.
    from the portfolio node. Until the rights journey exists, this screen carries
    the panel and links to the Access group. This is out of scope for the book
    work by the story's own decision.
+
+3. *A gated change has nowhere to wait, and an approval cannot apply it.* The
+   approval request records who asked and who decided, and the book and rights
+   write subjects apply a change at once. No request kind is seeded for the book
+   acts, a request holds no pending change, and nothing applies the change when
+   the last decider approves. The deferred four-eyes authorisation framework is
+   that missing piece ([[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][Implement four-eyes authorisation framework]]). Until it exists
+   the screen cannot raise or apply a gated change, and this document does not
+   claim it can.
+4. *Two of the deciding parts have no account in Acme.* The controls name a
+   controller and Finance, and the Acme dataset holds neither. The task
+   [[id:C37EA3F0-1A82-4E42-A21B-599C6873191A][Add the missing book-control actors to Acme]] adds them.
 
 The four items this section used to carry are built, and the coverage table says
 so: the book carries and saves its purpose and its ledger feed, the status

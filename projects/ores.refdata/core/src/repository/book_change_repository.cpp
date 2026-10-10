@@ -101,11 +101,19 @@ filter_condition(const std::optional<messaging::book_changes_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->request_id)
+        r.push_back(equals("request_id", filter_value(*filter->request_id)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->request_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->request_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("request_id", std::move(values)));
     }
     return all_of(std::move(r));
 }
@@ -246,6 +254,49 @@ book_change_repository::read_at_version(context ctx, const std::string& id, std:
     if (entities.empty())
         return std::nullopt;
     return entities.front();
+}
+
+std::vector<domain::book_change> book_change_repository::read_latest_by_request_id(
+    context ctx,
+    const std::string& request_id,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::book_changes_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest book changes. request_id: " << request_id
+                               << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<book_change_entity>> |
+        where("tenant_id"_c == tid && "request_id"_c == request_id && "valid_to"_c == max.value()) |
+        sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_ordered_read_query<book_change_entity, domain::book_change>(
+        ctx,
+        query,
+        list_order(order, {"id"}, false),
+        filter_condition(filter),
+        [](const auto& entities) { return book_change_mapper::map(entities); },
+        lg(),
+        "Reading latest book changes by request_id.");
+}
+
+std::uint32_t book_change_repository::get_total_book_change_count_by_request_id(
+    context ctx,
+    const std::string& request_id,
+    const std::optional<messaging::book_changes_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active book changes count. request_id: "
+                               << request_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<book_change_entity>> |
+        where("tenant_id"_c == tid && "request_id"_c == request_id && "valid_to"_c == max.value());
+
+    return execute_count_query<book_change_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting book changes by request_id");
 }
 
 

@@ -158,9 +158,8 @@ std::string refusal_of(const ores::utility::domain::result& r) {
  */
 std::string run_write(book_service& svc,
                       const std::optional<domain::book>& live,
-                      const domain::book_change& line) {
-    const ores::utility::domain::change_intent intent{line.change_reason_code,
-                                                      line.change_commentary};
+                      const domain::book_change& line,
+                      const ores::utility::domain::change_intent& intent) {
     if (line.operation == "put") {
         messaging::put_book_request req;
         req.change.write = to_write(line);
@@ -244,7 +243,10 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
 
         in_transaction(ctx, std::string("savepoint ") + savepoint);
         try {
-            out.refusal = run_write(svc, live, line);
+            out.refusal = run_write(svc,
+                                    live,
+                                    line,
+                                    {line.change_reason_code, line.change_commentary});
         } catch (const std::exception& e) {
             out.refusal = e.what();
         }
@@ -266,6 +268,104 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
     }
     std::ranges::sort(result.part_codes);
     return result;
+}
+
+bool is_infrastructure_failure(const std::string& what) {
+    for (const char* marker : {"connection", "could not connect", "server closed", "timeout",
+                               "timed out", "terminating", "Cannot begin a transaction",
+                               "Cannot commit the transaction"}) {
+        if (what.find(marker) != std::string::npos)
+            return true;
+    }
+    return false;
+}
+
+namespace {
+
+/**
+ * @brief The stored lines of a request, in line order.
+ */
+std::vector<domain::book_change> lines_of(const ores::database::context& ctx,
+                                          const std::string& request_id) {
+    auto rows = repository::book_change_repository{}.read_latest_by_request_id(
+        ctx, request_id, 0, 1000);
+    std::ranges::sort(rows, {}, &domain::book_change::line_no);
+    return rows;
+}
+
+}
+
+book_preview book_proposal_service::recheck(const std::string& request_id) {
+    return preview(lines_of(ctx_, request_id));
+}
+
+book_apply book_proposal_service::apply(const std::string& request_id) {
+    ores::inbox::service::approval_lifecycle lifecycle(ctx_);
+    const auto request = lifecycle.request(request_id);
+    if (!request)
+        return {.refusal = "No such request."};
+    if (request->state_code != "approved") {
+        return {.refusal = "The request is " + request->state_code +
+                           " and cannot be applied."};
+    }
+
+    book_apply out;
+    try {
+        db::unit_of_work uow(ctx_);
+        const auto& ctx = uow.ctx();
+        book_service svc(ctx);
+        repository::book_change_repository lines;
+
+        for (auto row : lines_of(ctx, request_id)) {
+            // A line applies once, so a rerun after a partial failure that
+            // rolled back finds the same lines, and one that completed finds
+            // none.
+            if (row.applied)
+                continue;
+
+            const auto live = svc.get_book(row.entity_id);
+            std::string refusal;
+            try {
+                const ores::utility::domain::change_intent intent{
+                    row.change_reason_code,
+                    "Approval request " + request_id +
+                        (row.change_commentary.empty() ? "" : ": " + row.change_commentary)};
+                refusal = run_write(svc, live, row, intent);
+            } catch (const std::exception& e) {
+                if (is_infrastructure_failure(e.what()))
+                    throw;
+                refusal = e.what();
+            }
+            if (!refusal.empty()) {
+                out.failed_line = row.line_no;
+                out.refusal = refusal;
+                break;
+            }
+
+            row.applied = true;
+            row.modified_by = ctx.actor();
+            row.performed_by = ctx.service_account();
+            row.change_reason_code = "system.update";
+            lines.write(ctx, row);
+            ++out.lines_applied;
+        }
+
+        if (out.failed_line == 0) {
+            uow.commit();
+            out.applied = true;
+            return out;
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(log(), ores::logging::error)
+            << "Applying request " << request_id << " failed: " << e.what();
+        return {.transient = true, .refusal = e.what()};
+    }
+
+    // The transaction is rolled back, so nothing was written. The request ends
+    // here: a refusal does not change on a retry.
+    out.lines_applied = 0;
+    lifecycle.fail_apply(request_id, "Line " + std::to_string(out.failed_line) + ": " + out.refusal);
+    return out;
 }
 
 book_proposal book_proposal_service::raise(const std::vector<domain::book_change>& lines,

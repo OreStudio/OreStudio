@@ -202,6 +202,52 @@ public:
     }
 
     /**
+     * @brief Serves refdata.v1.book_changes.list_by_request_id.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_by_request_id_book_changes(ores::nats::message msg) {
+        BOOST_LOG_SEV(book_change_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::book_changes:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<list_by_request_id_book_changes_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(book_change_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::book_change_service svc(req_ctx);
+        try {
+            auto response = svc.list_by_request_id_book_changes(*req);
+            BOOST_LOG_SEV(book_change_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(book_change_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_by_request_id_book_changes_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
      * @brief Serves refdata.v1.book_changes_versions.list.
      *
      * The adapter decides nothing: it proves the request, checks the

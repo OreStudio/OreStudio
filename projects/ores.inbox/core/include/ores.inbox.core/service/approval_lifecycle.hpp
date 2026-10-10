@@ -158,6 +158,17 @@ public:
                            const std::string& part_code = "");
 
     /**
+     * @brief Moves an approved request to apply_failed, with the reason in the
+     * row's commentary.
+     *
+     * The owning component calls this when applying the request's changes is
+     * refused for a reason that cannot change. It is not a decision. Only an
+     * approved request moves, and a request already in apply_failed answers ok
+     * so a repeated call changes nothing.
+     */
+    decision_result fail_apply(const std::string& request_id, const std::string& reason);
+
+    /**
      * @brief The open requests of the given kinds not raised by an account,
      * oldest first.
      */

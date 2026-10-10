@@ -73,6 +73,29 @@ struct book_proposal {
 };
 
 /**
+ * @brief What an apply came to.
+ *
+ * An apply either writes every line and marks each applied, or writes none.
+ * A refusal is permanent: the real write gave an answer that cannot change, and
+ * the request has moved to apply_failed. A transient failure is the
+ * infrastructure failing, such as a lost connection: nothing was written, the
+ * request stays approved, and the apply may be run again.
+ */
+struct book_apply {
+    bool applied = false;
+    bool transient = false;
+    int lines_applied = 0;
+    int failed_line = 0;
+    std::string refusal;
+};
+
+/**
+ * @brief Whether an error's text names the infrastructure failing and not the
+ * database refusing a write.
+ */
+ORES_REFDATA_SERVICE_EXPORT bool is_infrastructure_failure(const std::string& what);
+
+/**
  * @brief Proposes changes to books as typed lines held by an approval request.
  *
  * A line is a pending book change: the book's own columns, the operation and
@@ -108,6 +131,27 @@ public:
      */
     book_proposal raise(const std::vector<ores::refdata::domain::book_change>& lines,
                         const std::string& reason);
+
+    /**
+     * @brief Runs the stored lines of a request through the real write again
+     * and writes nothing.
+     *
+     * The live book may have moved since the raise, so this is the check the
+     * apply repeats. It reads every line of the request, applied or not.
+     */
+    book_preview recheck(const std::string& request_id);
+
+    /**
+     * @brief Applies the stored lines of an approved request in one transaction.
+     *
+     * Each line goes through the real write, with the request as the reason, and
+     * is marked applied in the same transaction, so a line applies once and a
+     * second call finds nothing to do. The first refusal rolls everything back,
+     * moves the request to apply_failed with the line and the reason, and
+     * returns it. A failure of the infrastructure rolls back and returns
+     * transient, leaving the request approved.
+     */
+    book_apply apply(const std::string& request_id);
 
 private:
     ores::database::context ctx_;

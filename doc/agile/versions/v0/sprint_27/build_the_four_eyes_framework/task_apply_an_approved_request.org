@@ -2,52 +2,60 @@
 :ID: 5FA7003F-7370-461C-A7E8-44A14F3D6D44
 :END:
 #+title: Task: Apply an approved request
-#+description: Start an apply workflow on the last approval that applies every line in one transaction, moves a refused request to apply_failed, and resumes an interrupted run until the kind's window ends.
+#+description: Apply the stored lines of an approved request to the books in one transaction, mark each line applied, and move a request whose apply is refused to apply_failed. The workflow that starts and resumes this is the next task.
 #+type: task
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/apply-an-approved-request
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The last approval applies every line of the request in one transaction, and a refused or interrupted apply is recorded and recoverable.
+An approved request's lines are written to the books in one transaction, each once, and a refused apply ends the request in apply_failed.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Built and tested.                      |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Raise the PR.                          |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
 
 - The apply re-checks each line's base version against the live row, because the book can change between the raise and the apply. It replays the write with the maker's reason and commentary, which the line keeps.
 
-- The last approval starts an apply workflow whose steps re-check, apply every line in one transaction, marking each applied once, and tell the maker.
-- A refusal at apply moves the request to apply_failed with the line and reason and ends the run as failed.
-- An infrastructure failure or missed deadline stops the run, and the retry verb resumes it until the kind's window ends, then the request moves to apply_failed.
-- The run shows on the workflow screens.
-- apply_failed is final, and a new request needs every part to approve again.
+- A line holds an applied marker. The apply writes each line through the real book service, with the request as the reason, and marks it applied in the same transaction, so a line applies once and a second apply finds nothing to do.
+- A request that is not approved is not applied.
+- A refusal from the real write rolls the whole apply back, moves the request to apply_failed with the line and the reason in the row's commentary, and returns the refusal.
+- An infrastructure failure rolls back and returns transient, leaving the request approved.
+- A re-check reads the stored lines against the live row and writes nothing.
+- apply_failed is a final state. Only an approved request moves to it, and a request already there answers ok.
+- The workflow, the start on the last approval, the retry and the screens are the next task, "Run the apply as a workflow".
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Add the =apply_failed= state and =ores_inbox_fail_apply_fn=, which moves an approved request to it. It is not a decision: no person decides it, so no decision row is written.
+- Add an =applied= column to the derived pending model and a read of the lines by request.
+- Build the apply as a method of the proposal service so the workflow steps are thin: =recheck= (the preview over stored lines) and =apply= (one transaction, marks each line, fails the request on a refusal).
+- Tell a refusal from the infrastructure failing by the error text. A write the database answers is a refusal. A lost connection or a timeout is transient and is never retried as a refusal.
+- Leave the workflow definition, its start and its retry to the next task, because they need a kind to name a workflow and the engine's retry verb.
 
 * Measurements
 
@@ -64,6 +72,11 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The apply runs the real write with the line's own base version as the claim, so the re-check at apply is the write's own precondition. A book that moved since the raise makes the write refuse, and the whole apply rolls back.
+- The reason the apply states is the line's reason code, and its commentary is "Approval request <id>" followed by the maker's commentary.
+- The kinds the apply could not tell apart by text are listed in =is_infrastructure_failure=. It is a short list of markers and has its own test.
+- The gate is not yet built, so any caller may still write a book directly. The apply does not yet pass the request to a gate.
 
 * Test Scenarios
 

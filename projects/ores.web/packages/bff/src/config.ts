@@ -69,6 +69,13 @@ const environmentSchema = z.object({
      */
     ORES_WEB_LOGIN_ATTEMPTS_PER_MINUTE: z.coerce.number().int().positive().default(10),
 
+    /**
+     * The folder that holds the org documents the QA validation runner reads
+     * and writes: scenarios, and the stories and tasks they point at. Unset
+     * means the runner is off.
+     */
+    ORES_WEB_DOC_ROOT: z.string().optional(),
+
     /** Where the site configuration lives, when it is not the repository default. */
     ORES_WEB_SITE_CONFIG: z.string().optional(),
     /** Chooses the environment, equivalent to `--env`. */
@@ -89,6 +96,7 @@ export interface Config {
     };
     readonly allowedOrigins: readonly string[];
     readonly loginAttemptsPerMinute: number;
+    readonly docRoot: string | undefined;
 }
 
 /** Builds a configuration from already-validated values, for tests. */
@@ -108,6 +116,7 @@ export function buildConfig(input: ConfigurationInput): Config {
         },
         allowedOrigins: env.ORES_WEB_ALLOWED_ORIGINS,
         loginAttemptsPerMinute: env.ORES_WEB_LOGIN_ATTEMPTS_PER_MINUTE,
+        docRoot: env.ORES_WEB_DOC_ROOT,
     };
 }
 

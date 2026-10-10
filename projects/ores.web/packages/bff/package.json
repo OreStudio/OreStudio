@@ -15,6 +15,7 @@
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
     "@fastify/static": "^10.1.2",
+    "@ores/org": "*",
     "@ores/wire-protocol": "*",
     "fastify": "5.12.5",
     "@ores/contracts": "*",

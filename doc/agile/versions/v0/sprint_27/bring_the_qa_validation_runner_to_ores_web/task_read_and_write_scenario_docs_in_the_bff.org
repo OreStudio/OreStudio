@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The BFF lists scenarios, reads one with its steps, finds a story or task doc by 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -48,9 +48,19 @@ The BFF lists scenarios, reads one with its steps, finds a story or task doc by 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three layers, each in =projects/ores.web/packages/bff/src/scenarios/=.
+
+1. =scenario-doc.ts= is pure. =parseScenario= reads the text of a scenario doc. =recordRun= returns new text with a run written in. It uses the =@ores/org= outline, so it edits lines in place and leaves every other line alone.
+2. =scenario-store.ts= is the interface: =list=, =read=, =readDoc=, =record=. A database store can replace the files later.
+3. =file-scenario-store.ts= keeps scenarios as files under a doc root. A scan reads the head of each .org file for its :ID:, and an id lookup finds only a file the scan found. A write goes to a temporary file and is renamed over the doc.
+
+Decisions:
+
+- A client is a level-two heading that has a child other than =Result=. The Clients cell is not trusted, because the template says the cell is blank for one client and old docs disagree.
+- A step is named by its client and its title. A save that names a missing step, or a title the doc repeats, refuses the whole save.
+- A closed Results status (PASSED or FAILED) outranks the State row, because the Qt runner wrote only the Results table. 89 scenarios in the corpus show PASSED there with State at PENDING.
+- A save sets Status and Notes in a Result table and keeps any other row, so a later task can add an image row.
+- The doc root is =ORES_WEB_DOC_ROOT=. Unset means the runner is off.
 
 * Measurements
 
@@ -64,9 +74,21 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| .org files under doc/ | 6829 | =find doc -name '*.org' \| wc -l= | 868a64737b + this branch |
+| Scenario docs the store lists | 134 | =FileScenarioStore.list()= on doc/, 16 of them waiting | this branch |
+| A scan: walk, stat every file | about 0.44 s | a temporary vitest timing walk 157 ms + stat 285 ms, load average low | this branch |
+| A list within the rescan interval | 1 ms | a temporary vitest timing, =rescanAfterMs= 600000 | this branch |
+| A cold list, and a list that rescans | 3.4 s, and 1.7 to 3.2 s | the same timing at load average 50 from other builds | this branch |
+| BFF suite | 50 files, 450 tests pass | =npx vitest run= in packages/bff | this branch |
 
 * Notes
+
+- Two saves of one scenario do not merge. Saves to one file run one after the other, and each writes only the steps it names. The last save to name a step wins that step. A step that only the first save named keeps the first save's result.
+- A save writes the whole doc back with the doc's own line end and a final line end. A byte order mark is dropped.
+- A note goes in one table cell. A line end becomes "; " and a pipe becomes "/", as in the Qt runner.
+- The scan does not follow a symbolic link. Before a read or a write, the real path of the file must sit inside the real doc root, else =PathEscapeError=.
+- Nothing calls compass. A test renders the current =doc_test_scenario.org.mustache= template and parses it, so a change to the template shows up there.
+- A call for the Tests queue reads one index entry per doc and caches each scenario summary by file time and size. The first call after a start scans the tree.
 
 * Test Scenarios
 

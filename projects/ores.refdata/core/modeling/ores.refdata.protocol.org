@@ -44,17 +44,22 @@ Request/reply payloads are JSON serialisations of the structs in
 
 ** Events
 
-Change notification is a single event per entity, not per-operation
-=saved=/=deleted= subjects. Defined in
-=ores.refdata.api/eventing/currency_changed_event.hpp=:
+One payload, three subjects. The collection's prefix is
+=refdata.v1.currencies_events= and the action completes it. Defined in
+=ores.refdata.api/eventing/currency_event.hpp=:
 
-| Event name | Payload | Published when |
-|------------+---------+----------------|
-| =ores.refdata.currency_changed= | =timestamp= (UTC time point), =iso_codes= (string[]), =tenant_id= (string) | Any currency is created, updated or deleted; =iso_codes= may carry several codes for batch operations. |
+| Subject | Payload | Published when |
+|---------+---------+----------------|
+| =refdata.v1.currencies_events.created= | =event_id= (uuid), =key.iso_code= (string), =action=, =version= (int), =occurred_at= (UTC time point), =correlation_id= (string, optional) | A currency is created. |
+| =refdata.v1.currencies_events.updated= | the same | A currency is updated. |
+| =refdata.v1.currencies_events.deleted= | the same | A currency is deleted. |
 
-Subscribers receive the event through the [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] event channel
-machinery (=ores.eventing.api= =event_bus= / =event_channel_registry=)
-and can use =timestamp= to query for changes since that point.
+A subscriber that wants every action subscribes to
+=refdata.v1.currencies_events.>=, which =event_subject_wildcard<currency_event>()=
+states once. Events are delivered at least once, so =event_id= recognises a
+redelivery. The event names the row that changed and its version; it does not
+carry the tenant, which the in-process =entity_change_event= does (see
+[[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]).
 
 * Parties
 

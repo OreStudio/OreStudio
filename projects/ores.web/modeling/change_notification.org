@@ -18,7 +18,11 @@ that, derived from what the Qt client does, written down so it is not reinvented
 per entity.
 
 *Status.* The transport survives: the BFF streams the events and holds the shared,
-routed subscriptions. The consumer does not exist. There are no screens and no
+routed subscriptions. Its registry still subscribes to the retired
+=ores.<component>.<entity>_changed= subjects, which no service publishes since the
+canonical protocol (=<component>.v1.<resource>_events.<action>=), so it must move
+to each entity's subject prefix before any screen can hear a change. The consumer
+does not exist. There are no screens and no
 routes, so nothing subscribes, nothing marks a row, and nothing pulses. §5 and §6
 specify the consumer that is still to be built.
 
@@ -84,9 +88,10 @@ The parts, in the order data flows.
 
 ** The events exist already
 
-The generator emits a changed event per entity — =country_changed_event= and its
-siblings — and the services publish them. They are not something the interface
-invents.
+The generator emits an event per entity — =country_event= and its siblings — and
+the services publish them on ={component}.v1.{resource}_events.{action}=, for
+example =refdata.v1.countries_events.updated=. They are not something the
+interface invents.
 
 ** A channel to the browser
 

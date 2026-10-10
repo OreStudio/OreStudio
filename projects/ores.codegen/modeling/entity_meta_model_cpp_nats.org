@@ -73,39 +73,38 @@ one of the fixed post-generation steps.
 
 Independent of any client request: whenever a row changes, Postgres
 =NOTIFY='s a channel; the *event-registrar* bridges that
-=LISTEN=/=NOTIFY= channel into the *eventing* pipeline's changed-event
+=LISTEN=/=NOTIFY= channel into the *eventing* pipeline's entity event
 type; any consumer wanting a fast local view of the entity keeps a
-*event-cache* warm by listening for that changed-event.
+*event-cache* warm by listening for that event.
 
-- =ores.cpp.nats-eventing= → =<entity>_changed_event.hpp= — the event
-  type itself.
+- =ores.cpp.nats-eventing= → =<entity>_event.hpp= — the event type's
+  traits, which state the subject prefix ={component}.v1.{resource}_events=.
 - =ores.cpp.nats-event-registrar= → =<entity>_event_registrar.hpp= —
   declares =register_<entity>_event_mapping()=, bridging the DB
-  notify channel to the changed-event pipeline.
+  notify channel to the event pipeline.
 - =ores.cpp.nats-event-cache= → =<entity>_cache.hpp= — a
-  consumer-side in-process mirror, kept fresh via the changed-event
+  consumer-side in-process mirror, kept fresh via the event
   above. Not every entity needs a cache; this facet only fires for
   entities another component actually mirrors (=party= is mirrored
   by [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]], for example).
 
-Generates, in =book_changed_event.hpp=:
+Generates, in =book_event.hpp=, the traits that address the entity's events:
 
 #+begin_src cpp
-namespace ores::refdata::eventing {
+namespace ores::eventing::domain {
 
-/**
- * @brief Domain event indicating that book data has changed.
- *
- * Published when any book entity is created, updated, or
- * deleted. Subscribers use the timestamp to query for changes since that point.
- */
-struct book_changed_event final {
-    std::chrono::system_clock::time_point timestamp;
-    // ...
+template <>
+struct entity_event_traits<ores::refdata::messaging::book_event> {
+    static constexpr std::string_view subject_prefix = "refdata.v1.books_events";
+    // from_notification(...) converts the store's notification into the event.
 };
 
 }
 #+end_src
+
+The event itself, =book_event=, is declared in the entity's protocol header
+beside its key. The action completes the subject, so one payload is addressed
+by =refdata.v1.books_events.created=, =.updated= and =.deleted=.
 
 And, in another component's =party_event_registrar.hpp= (the
 event-registrar pattern, illustrated from a real consumer):

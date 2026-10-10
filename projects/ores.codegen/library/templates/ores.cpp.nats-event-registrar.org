@@ -35,14 +35,14 @@ Projects the entity model onto its live-eventing registration surface: the
 Postgres LISTEN/NOTIFY channel a row change fires on, and the in-process
 =event_bus= subscription that republishes it as a NATS message. It consumes
 the same =domain_entity= model the [[id:55E74B24-DD8C-4810-A5FA-D15358234711][nats-eventing]] facet does (the
-={{entity}}_changed_event= struct this facet's implementation subscribes
+={{entity}}_event= struct this facet's implementation subscribes
 to), and derives its Postgres channel name identically to the
 [[id:3EAC73DC-6ECE-4DB3-8172-790A2C709AAC][notify_trigger]] SQL facet
 (=product_component_entity_plural=), so the two sides of the pipeline can
 never drift out of sync.
 
 Replaces the pattern of hand-wiring one =#include= + one
-=register_mapping<T>()= call + one =event_bus.subscribe<T>()= lambda per
+=register_entity_event_mapping<T>()= call + one =event_bus.subscribe<T>()= lambda per
 entity directly in each component's =application.cpp= — a hand-maintained
 surface that has already caused two missed-wiring regressions
 (=party_type=, =purpose_type=). A small per-component aggregator (not

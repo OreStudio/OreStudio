@@ -25,11 +25,11 @@ attacker or a forgotten password could be locking out.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The screen changes are done and tested. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Review the screens, then open the PR.  |
+| Next          | Nothing. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -65,3 +65,12 @@ attacker or a forgotten password could be locking out.
   This stays in the backlog capture "Retrieve NAT'ed IP address from local IP".
 - The shared badge component for the whole codebase.
 - Recording the size of NATS messages per server.
+
+* Result
+
+The Sign-ins screen links each username to the person's profile. The lock state
+on Sign-ins and Rescue access is the =AccountLockBadge=, painted from the badge
+catalogue. The failed attempts tab has a knob that hides accounts that never
+signed in. The web tests, the type check and Prettier pass. The Operations
+area came from main. The real client address, the NAT lookup and the flag stay
+in the backlog.

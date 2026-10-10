@@ -1,0 +1,17 @@
+--- a/include/rfl/msgpack/Reader.hpp
++++ b/include/rfl/msgpack/Reader.hpp
+@@ -115,9 +115,13 @@
+       if (type == MSGPACK_OBJECT_FLOAT32 || type == MSGPACK_OBJECT_FLOAT64 ||
+           type == MSGPACK_OBJECT_FLOAT) {
+         return static_cast<T>(_var.via.f64);
++      } else if (type == MSGPACK_OBJECT_POSITIVE_INTEGER) {
++        return static_cast<T>(_var.via.u64);
++      } else if (type == MSGPACK_OBJECT_NEGATIVE_INTEGER) {
++        return static_cast<T>(_var.via.i64);
+       }
+       return error(
+-          "Could not cast to numeric value. The type must be float "
++          "Could not cast to numeric value. The type must be integral, float "
+           "or double.");
+ 
+     } else if constexpr (std::is_integral<std::remove_cvref_t<T>>()) {

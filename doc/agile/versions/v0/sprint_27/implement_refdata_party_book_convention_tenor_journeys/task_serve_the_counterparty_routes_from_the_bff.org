@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-counterparty-routes-from-the-bff
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A tenant administrator opens /counterparties/onboard against a running fleet and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -88,3 +88,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added =packages/bff/src/counterparties.ts= and wired it in =server.ts=. It
+serves the eight endpoints =api/counterparties.ts= calls, from the generated
+refdata subjects.
+
+** Verification
+
+| Command | Result |
+|---------+--------|
+| =npm run typecheck= | exit 0 |
+| =npm run format:check= | exit 0 |
+| =npm test= | exit 0; bff 40 files, 326 tests; web 49 files, 510 tests; wire-protocol 16 files, 163 tests |
+
+The eight new tests answer from canned replies. *Nothing ran against the live
+fleet.* The task is not closed until =/counterparties/onboard= is walked once
+against a running fleet.
+
+** Decisions and limits
+
+- The server's counterparty list filters by id only. The BFF reads the tenant's
+  whole list and applies the search and the status before it cuts the page.
+  This is fine for a tenant's counterparties and wrong for a very large one.
+- A closed counterparty is any status other than =Active=.
+- The business centre write closes the dropped centres, then links the new
+  ones, one call each. A refusal part way leaves the earlier changes written.
+- The visibility write links one party and removes none. The client sends one
+  party id, so "replace" is not what it asks for.

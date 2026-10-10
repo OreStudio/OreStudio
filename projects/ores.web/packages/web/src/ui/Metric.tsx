@@ -52,7 +52,7 @@ export function Metric({
 }): ReactNode {
     const body = (
         <>
-            <span className={`text-2xl font-semibold tabular-nums ${TONE_CLASS[tone]}`}>
+            <span className={`text-lg font-semibold tabular-nums ${TONE_CLASS[tone]}`}>
                 {value}
             </span>
             <span className="text-xs text-ink-muted">{label}</span>

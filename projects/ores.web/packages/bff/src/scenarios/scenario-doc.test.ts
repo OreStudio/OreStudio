@@ -380,6 +380,40 @@ describe('writing a run into a scenario', () => {
         expect(done.text).toMatch(/\| Worktree\s+\| eager_maxwell \|\n\n/);
     });
 
+    it('keeps the build of the last run when a save names none', () => {
+        const input: RunInput = {
+            steps: [outcome('blue', 'Read', 'PASS')],
+            completedAt: '2026-10-11T09:00:00Z',
+        };
+        const back = parseScenario(recordRun(multi, input).text);
+        expect(back.run.branch).toBe('feature/build-composite-child-table-qt-facet');
+        expect(back.run.commit).toBe('944622678');
+        expect(back.run.worktree).toBe('prime_origin');
+    });
+
+    it('writes the build when a save names it', () => {
+        const back = parseScenario(recordRun(multi, run([outcome('blue', 'Read', 'PASS')])).text);
+        expect(back.run.branch).toBe('feature/x');
+        expect(back.run.commit).toBe('abc1234');
+    });
+
+    it('matches steps by client and title, so a dropped step in the middle shifts nothing', () => {
+        const titles = parseScenario(single).steps.map((s) => s.title);
+        const dropped = recordRun(single, run([outcome(null, titles[2] ?? '', 'DROPPED')])).text;
+        const others = titles
+            .filter((_, i) => i !== 2)
+            .map((title) => outcome(null, title, 'PASS'));
+        const back = parseScenario(recordRun(dropped, run(others)).text);
+        expect(back.steps.map((s) => s.status)).toEqual([
+            'PASS',
+            'PASS',
+            'DROPPED',
+            'PASS',
+            'PASS',
+        ]);
+        expect(back.state).toBe('PASSED');
+    });
+
     it('refuses text that is not a scenario', () => {
         expect(() => recordRun('* Steps\n', run([]))).toThrow(ScenarioFormatError);
         expect(() => parseScenario('#+type: task\n')).toThrow(ScenarioFormatError);

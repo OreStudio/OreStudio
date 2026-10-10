@@ -19,6 +19,9 @@
       "path": "../contracts"
     },
     {
+      "path": "../org"
+    },
+    {
       "path": "../wire-protocol"
     }
   ]

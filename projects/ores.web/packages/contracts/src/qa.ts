@@ -37,6 +37,21 @@ export type StepStatus = z.infer<typeof stepStatusSchema>;
 export const scenarioStateSchema = z.enum(['PENDING', 'PASSED', 'FAILED']);
 export type ScenarioState = z.infer<typeof scenarioStateSchema>;
 
+/**
+ * The state a scenario has once its steps have these statuses. It closes when
+ * no step is pending and some step passed or failed. It is then FAILED if a
+ * step failed, else PASSED. A scenario in which nothing passed or failed, such
+ * as one whose steps are all dropped, has not been run, so it stays PENDING.
+ *
+ * The server decides with this when it saves a run, and the browser shows the
+ * same answer while a tester marks steps, so the two cannot differ.
+ */
+export function scenarioStateOf(statuses: readonly StepStatus[]): ScenarioState {
+    const ran = statuses.some((status) => status === 'PASS' || status === 'FAIL');
+    if (statuses.includes('PENDING') || !ran) return 'PENDING';
+    return statuses.includes('FAIL') ? 'FAILED' : 'PASSED';
+}
+
 /** A link to another doc: its :ID: and the text of the link. */
 export const docLinkSchema = z.object({ id: z.string(), title: z.string() });
 export type DocLink = z.infer<typeof docLinkSchema>;
@@ -122,12 +137,15 @@ export const stepOutcomeSchema = z.strictObject({
 });
 export type StepOutcome = z.infer<typeof stepOutcomeSchema>;
 
-/** A tester's save. It names every step it writes, and the build it ran against. */
+/**
+ * A tester's save. It names every step it writes. It may name the build it ran
+ * against. A field it leaves out keeps the value the doc already holds.
+ */
 export const runRequestSchema = z.strictObject({
     steps: z.array(stepOutcomeSchema).min(1).max(500),
-    branch: z.string().max(200),
-    commit: z.string().max(200),
-    worktree: z.string().max(200),
+    branch: z.string().max(200).optional(),
+    commit: z.string().max(200).optional(),
+    worktree: z.string().max(200).optional(),
 });
 export type RunRequest = z.infer<typeof runRequestSchema>;
 

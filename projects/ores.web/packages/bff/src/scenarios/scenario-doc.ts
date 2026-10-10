@@ -19,6 +19,7 @@
  *
  */
 
+import { scenarioStateOf } from '@ores/contracts';
 import {
     fieldTable,
     findSection,
@@ -105,9 +106,10 @@ export interface StepOutcome extends StepRef {
 export interface RunInput {
     readonly steps: readonly StepOutcome[];
     readonly completedAt: string;
-    readonly branch: string;
-    readonly commit: string;
-    readonly worktree: string;
+    /** The build the run was made against. A value left out keeps what the doc holds. */
+    readonly branch?: string | undefined;
+    readonly commit?: string | undefined;
+    readonly worktree?: string | undefined;
 }
 
 export class ScenarioFormatError extends Error {
@@ -435,29 +437,34 @@ export function recordRun(text: string, input: RunInput): RecordedRun {
             outcomeOf.get(l) ??
             stepStatus(l.result === undefined ? '' : (fieldTable(l.result).get('status') ?? '')),
     );
-    // A scenario in which nothing passed or failed, such as one whose steps
-    // are all dropped, has not been run, so it stays open.
-    const ran = statuses.some((status) => status === 'PASS' || status === 'FAIL');
-    const state: ScenarioState =
-        statuses.includes('PENDING') || !ran
-            ? 'PENDING'
-            : statuses.includes('FAIL')
-              ? 'FAILED'
-              : 'PASSED';
+    const state = scenarioStateOf(statuses);
 
     const resultsTable = results.tables[0];
     const run: [string, string][] = [
         ['Status', state],
         ['Completed at', state === 'PENDING' ? '' : input.completedAt],
-        ['Branch', input.branch],
-        ['Commit', input.commit],
-        ['Worktree', input.worktree],
+        ['Branch', input.branch ?? ''],
+        ['Commit', input.commit ?? ''],
+        ['Worktree', input.worktree ?? ''],
     ];
+    // A build field the save leaves out keeps the value the doc holds.
+    const resultRows = run.filter(
+        ([field]) =>
+            (field !== 'Branch' || input.branch !== undefined) &&
+            (field !== 'Commit' || input.commit !== undefined) &&
+            (field !== 'Worktree' || input.worktree !== undefined),
+    );
     if (resultsTable !== undefined) {
         splices.push({
             begin: resultsTable.firstLine,
             end: resultsTable.lastLine + 1,
-            lines: setRows(doc.lines, resultsTable.firstLine, resultsTable.lastLine, run, 13),
+            lines: setRows(
+                doc.lines,
+                resultsTable.firstLine,
+                resultsTable.lastLine,
+                resultRows,
+                13,
+            ),
         });
     } else {
         splices.push({

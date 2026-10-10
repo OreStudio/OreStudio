@@ -1144,8 +1144,44 @@ const pt: SourceCatalogue = {
                 failed: 'Reprovado',
             },
         },
-        scenario: {
-            notBuilt: 'O executor deste cenário ainda não foi construído.',
+        runner: {
+            states: {
+                PENDING: 'Pendente',
+                PASSED: 'Aprovado',
+                FAILED: 'Reprovado',
+            },
+            stepStates: {
+                PENDING: 'Pendente',
+                PASS: 'Aprovado',
+                FAIL: 'Reprovado',
+                DROPPED: 'Descartado',
+            },
+            marked: '{done} de {total} passos marcados',
+            clients: 'Clientes',
+            oneClient: 'Um',
+            lastSaved: 'Última gravação',
+            retest: 'Retestar',
+            closedHelp: 'Este cenário está fechado. Um reteste limpa cada passo e recomeça.',
+            save: 'Gravar',
+            saveHelp:
+                'Gravar escreve o resultado de cada passo e o estado geral no documento do cenário.',
+            back: 'Voltar aos testes',
+            retestTitle: 'Iniciar um reteste?',
+            retestBody:
+                'Um reteste limpa cada passo e a sua nota. Uma gravação então substitui o resultado anterior. O Git guarda o histórico.',
+            retestConfirm: 'Retestar',
+            cancel: 'Cancelar',
+            previous: 'Voltar',
+            skip: 'Pular',
+            stepOf: 'Passo {step} de {total}',
+            pass: 'Aprovar',
+            fail: 'Reprovar',
+            clear: 'Limpar',
+            note: 'Nota',
+            notePlaceholder: 'O que você viu?',
+            savedClosed: 'Gravado e fechado como {state}.',
+            savedOpen:
+                'Gravado. {pending} passos ainda precisam ser marcados. O cenário continua aberto.',
         },
     },
     operations: {

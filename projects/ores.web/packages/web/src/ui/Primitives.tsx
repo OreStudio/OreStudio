@@ -255,24 +255,55 @@ export function PageHeader({
     description,
     actions,
     mark,
+    subdued = false,
 }: {
     readonly title: string;
     readonly description?: string;
     readonly actions?: ReactNode;
     /** A picture drawn before the title, such as a currency's flag. */
     readonly mark?: ReactNode;
+    /** Draws the description small, for an identifier rather than a sentence. */
+    readonly subdued?: boolean;
 }): ReactNode {
+    const heading = (
+        <h1
+            className={cx(
+                'text-xl font-semibold tracking-tight',
+                !subdued && 'flex items-center gap-3',
+            )}
+        >
+            {!subdued && mark}
+            {title}
+        </h1>
+    );
     return (
         <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-            <div>
-                <h1 className="flex items-center gap-3 text-xl font-semibold tracking-tight">
+            {subdued ? (
+                /*
+                 * A subdued line is an identifier, which belongs directly under
+                 * the name. The picture sits beside the pair, not before the
+                 * name alone, so a tall picture does not push the identifier
+                 * away from it.
+                 */
+                <div className="flex items-center gap-3">
                     {mark}
-                    {title}
-                </h1>
-                {description !== undefined && (
-                    <p className="mt-1 text-sm text-ink-muted">{description}</p>
-                )}
-            </div>
+                    <div>
+                        {heading}
+                        {description !== undefined && (
+                            <p className="mt-0.5 break-all font-mono text-xs text-ink-faint">
+                                {description}
+                            </p>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <div>
+                    {heading}
+                    {description !== undefined && (
+                        <p className="mt-1 text-sm text-ink-muted">{description}</p>
+                    )}
+                </div>
+            )}
             {actions !== undefined && (
                 <div className="flex shrink-0 items-center gap-2">{actions}</div>
             )}
@@ -285,16 +316,28 @@ export function Detail({
     label,
     value,
     mono = false,
+    href,
 }: {
     readonly label: string;
     readonly value: string;
     readonly mono?: boolean;
+    /** Makes the value a link, such as a `mailto:` address. */
+    readonly href?: string;
 }): ReactNode {
     return (
         <div className="min-w-0">
             <dt className="text-[11px] uppercase tracking-wide text-ink-faint">{label}</dt>
             <dd className={cx('mt-0.5 break-words text-sm', mono && 'font-mono text-xs')}>
-                {value}
+                {href === undefined ? (
+                    value
+                ) : (
+                    <a
+                        href={href}
+                        className="underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+                    >
+                        {value}
+                    </a>
+                )}
             </dd>
         </div>
     );

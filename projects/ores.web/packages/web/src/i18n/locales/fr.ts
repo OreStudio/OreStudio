@@ -141,9 +141,8 @@ const fr: SourceCatalogue = {
             why: 'Pourquoi',
             noRole: 'Aucun rôle. La personne peut se connecter mais ne peut encore rien faire.',
             takeAway: 'Retirer',
+            currentVersion: 'C’est la version actuelle.',
             notYourself: 'Vous ne pouvez pas vous retirer un rôle.',
-            whenItApplies:
-                'Le changement atteint {name} sous 30 minutes, au prochain renouvellement de sa connexion. Se reconnecter l’applique aussitôt.',
             whatTheyAllow: 'Ce que ces rôles permettent',
             giveTitle: 'Accorder un rôle à {name}',
             alreadyHeld: 'déjà détenu',
@@ -341,7 +340,6 @@ const fr: SourceCatalogue = {
         locked: 'Verrouillé',
         notLocked: 'Non verrouillé',
         passwordDue: 'Changement de mot de passe requis',
-        noEnds: 'Aucune session n’enregistre encore sa fin : la déconnexion n’écrit aucune heure de fin, donc une ancienne session paraît ouverte.',
         noSessions: 'Aucune session n’est enregistrée pour ce compte.',
         started: 'Début',
         ended: 'Fin',
@@ -682,7 +680,7 @@ const fr: SourceCatalogue = {
             mine: 'Votre photo, votre nom, votre intitulé de poste et la façon dont vos collègues vous joignent. Un panneau que vous ne pouvez pas modifier dit pourquoi.',
             other: "Corrigez le profil et les coordonnées d'un collègue. Vous êtes connecté en tant que {signedIn} et vous modifiez {person}.",
         },
-        version: "Version de l'enregistrement {version}.",
+        version: 'v{version}',
         search: {
             title: 'Trouver la personne',
             lead: "Tous les comptes de ce locataire, filtrés au fil de la saisie. Choisissez la personne dont les panneaux affichent l'enregistrement.",
@@ -694,6 +692,7 @@ const fr: SourceCatalogue = {
         },
         identity: {
             title: 'Photo et identité',
+            editTitle: 'Modifier l’identité',
             fullName: 'Nom complet',
             jobTitle: 'Intitulé du poste',
             username: "Nom d'utilisateur",
@@ -712,6 +711,7 @@ const fr: SourceCatalogue = {
             reportsToUnknown:
                 "Cet écran ne peut pas nommer la personne ici ; l'identifiant enregistré est affiché.",
             noLine: "Aucune ligne hiérarchique n'est enregistrée.",
+            changeLine: 'Changer la ligne hiérarchique',
             propose: 'Proposer une modification',
             proposeWhy: 'Cet écran ne peut pas encore envoyer de proposition.',
             proposeApprovers:
@@ -734,6 +734,7 @@ const fr: SourceCatalogue = {
         },
         contact: {
             title: 'Coordonnées',
+            editTitle: 'Modifier les coordonnées',
             noRecord:
                 "Ce compte n'a pas encore de fiche de coordonnées. Le premier enregistrement la crée.",
             noRecordShort: 'Pas encore de fiche',
@@ -764,8 +765,6 @@ const fr: SourceCatalogue = {
             failed: "Vos accès n'ont pas pu être lus, donc les panneaux d'administration ne sont pas proposés. {reason}",
         },
         save: {
-            identity: "Enregistrer l'identité",
-            contact: 'Enregistrer les coordonnées',
             why: "Pourquoi l'enregistrement change-t-il ?",
             chooseReason: 'Choisir un motif',
             commentary: 'Commentaire',
@@ -1519,6 +1518,7 @@ const fr: SourceCatalogue = {
         field: 'Champ',
         notRevertible: 'Cette entrée relate un fait, il n’y a donc rien à rétablir.',
         changeNotOffered: 'Rétablir un champ modifié n’est pas proposé ici.',
+        noChanges: 'Aucune modification',
         kind: {
             raised: 'Créé',
             changed: 'Modifié',
@@ -2160,8 +2160,7 @@ const fr: SourceCatalogue = {
             linkChoose: 'Choisir un élément à ajouter…',
             link: 'Ajouter',
             revertTitle: 'Rétablir la version {version} ?',
-            revertBody:
-                "Les valeurs de la version {to} sont réécrites comme nouvelle version après la version {from}. Rien n'est perdu dans l'historique.",
+            revertBody: 'Rétablit la v{to} comme nouvelle version.',
             refresh: 'Actualiser',
             search: 'Rechercher…',
             columns: 'Colonnes',

@@ -146,9 +146,8 @@ const pt: SourceCatalogue = {
             why: 'Porquê',
             noRole: 'Sem papel. Pode iniciar sessão mas ainda não pode fazer nada.',
             takeAway: 'Retirar',
+            currentVersion: 'Esta é a versão atual.',
             notYourself: 'Não pode retirar um papel a si próprio.',
-            whenItApplies:
-                'A alteração chega a {name} dentro de 30 minutos, quando a sessão se renovar. Iniciar sessão de novo aplica-a de imediato.',
             whatTheyAllow: 'O que estes papéis permitem',
             giveTitle: 'Dar um papel a {name}',
             alreadyHeld: 'já atribuído',
@@ -341,7 +340,6 @@ const pt: SourceCatalogue = {
         locked: 'Bloqueada',
         notLocked: 'Não bloqueada',
         passwordDue: 'Mudança de palavra-passe pendente',
-        noEnds: 'Nenhuma sessão regista ainda o seu fim: terminar a sessão não escreve hora de fim, por isso uma sessão antiga parece aberta.',
         noSessions: 'Não há sessões registadas para esta conta.',
         started: 'Início',
         ended: 'Fim',
@@ -680,7 +678,7 @@ const pt: SourceCatalogue = {
             mine: 'A sua fotografia, o seu nome, o seu cargo e a forma como os colegas o contactam. Um painel que não pode alterar diz porquê.',
             other: 'Corrija o perfil e os contactos de um colega. Tem a sessão iniciada como {signedIn} e está a editar {person}.',
         },
-        version: 'Versão do registo {version}.',
+        version: 'v{version}',
         search: {
             title: 'Encontrar a pessoa',
             lead: 'Todas as contas deste inquilino, filtradas à medida que escreve. Escolha a pessoa cujos painéis mostram o registo.',
@@ -692,6 +690,7 @@ const pt: SourceCatalogue = {
         },
         identity: {
             title: 'Fotografia e identidade',
+            editTitle: 'Editar identidade',
             fullName: 'Nome completo',
             jobTitle: 'Cargo',
             username: 'Nome de utilizador',
@@ -708,6 +707,7 @@ const pt: SourceCatalogue = {
             reportsToUnknown:
                 'Este ecrã não consegue nomear a pessoa aqui; o identificador registado é mostrado.',
             noLine: 'Não está registada nenhuma linha hierárquica.',
+            changeLine: 'Alterar a linha hierárquica',
             propose: 'Propor uma alteração',
             proposeWhy: 'Este ecrã ainda não consegue enviar uma proposta.',
             proposeApprovers:
@@ -730,6 +730,7 @@ const pt: SourceCatalogue = {
         },
         contact: {
             title: 'Contactos',
+            editTitle: 'Editar contactos',
             noRecord: 'Esta conta ainda não tem registo de contactos. A primeira gravação cria-o.',
             noRecordShort: 'Ainda sem registo',
             streetLine1: 'Rua',
@@ -758,8 +759,6 @@ const pt: SourceCatalogue = {
             failed: 'Não foi possível ler os seus acessos, por isso os painéis de administração não são oferecidos. {reason}',
         },
         save: {
-            identity: 'Guardar identidade',
-            contact: 'Guardar contactos',
             why: 'Porque está o registo a mudar?',
             chooseReason: 'Escolher um motivo',
             commentary: 'Comentário',
@@ -1512,6 +1511,7 @@ const pt: SourceCatalogue = {
         field: 'Campo',
         notRevertible: 'Esta entrada regista um facto, por isso não há nada a reverter.',
         changeNotOffered: 'Repor um campo alterado não é oferecido aqui.',
+        noChanges: 'Sem alterações',
         kind: {
             raised: 'Criado',
             changed: 'Alterado',
@@ -2143,8 +2143,7 @@ const pt: SourceCatalogue = {
             linkChoose: 'Escolha um para adicionar…',
             link: 'Adicionar',
             revertTitle: 'Reverter para a versão {version}?',
-            revertBody:
-                'Os valores da versão {to} são escritos como nova versão depois da versão {from}. Nada se perde no histórico.',
+            revertBody: 'Repõe a v{to} como nova versão.',
             refresh: 'Atualizar',
             search: 'Pesquisar…',
             columns: 'Colunas',

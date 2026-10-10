@@ -178,11 +178,16 @@ describe('ProfilePage', () => {
         expect(html).toContain('>Contact<');
         expect(html).toContain('>Access<');
         expect(html).toContain('Photo and identity');
-        expect(html).toContain('value="Ada Lovelace"');
-        expect(html).toContain('value="Head of Desk"');
+        expect(html).toContain('>Ada Lovelace<');
+        expect(html).toContain('>Head of Desk<');
+        expect(html).toContain('href="mailto:ada@example.com"');
+        // The fields are read as text; the edit, and its reason, are in the dialog.
+        expect(html).not.toContain('<input');
+        expect(html).toContain('>Edit<');
         expect(html).toContain('src="/api/images/55555555-5555-5555-5555-555555555555"');
-        expect(html).toContain('Record version 7.');
-        expect(html).toContain('Non-material update');
+        expect(html).toContain('v7');
+        // The change reasons are asked in the edit dialog, not beside the fields.
+        expect(html).not.toContain('Non-material update');
         /*
          * The tenant list that names the manager is the administrator's read,
          * so a member reads the recorded identifier and the panel says why.
@@ -190,17 +195,18 @@ describe('ProfilePage', () => {
         expect(html).toContain(`Reports to ${MANAGER_ID}.`);
         expect(html).toContain('the recorded identifier is shown');
         expect(html).toContain('Propose a change');
-        expect(html).not.toContain('value="1 Panton Street"');
+        expect(html).not.toContain('>1 Panton Street<');
     });
 
     it('draws the contact record on its tab, telling the two addresses apart', () => {
         const html = render(member, '/profile?tab=contact');
 
         expect(html).toContain('ada@example.com');
-        expect(html).toContain('value="ada@colleagues.example.com"');
+        expect(html).toContain('href="mailto:ada@colleagues.example.com"');
+        expect(html).toContain('>ada@colleagues.example.com<');
         expect(html).toContain('not the sign-in address (ada@example.com)');
-        expect(html).toContain('value="1 Panton Street"');
-        expect(html).not.toContain('value="Ada Lovelace"');
+        expect(html).toContain('>1 Panton Street<');
+        expect(html).not.toContain('>Ada Lovelace<');
     });
 
     it('draws the access held, and the doors to sign-in and access, on its tab', () => {
@@ -219,7 +225,8 @@ describe('ProfilePage', () => {
         });
 
         expect(html).not.toContain('Find the person');
-        expect(html).toContain('Editable');
+        expect(html).toContain('>Edit<');
+        expect(html).not.toContain('Editable');
         expect(html).not.toContain('iam::');
         /*
          * A reporting line is an account identifier. It is drawn as the person
@@ -231,12 +238,13 @@ describe('ProfilePage', () => {
         expect(html).toContain('>Grace Hopper<');
     });
 
-    it("marks the member's own panels editable, naming no permission", () => {
+    it("offers the member's own panels an Edit button, naming no permission", () => {
         const html = render((client) => {
             client.setQueryData(['my-access'], access([]));
             client.setQueryData(['account', 'ada'], account);
         }, '/profile');
-        expect(html).toContain('Editable');
+        expect(html).toContain('>Edit<');
+        expect(html).not.toContain('Editable');
         expect(html).not.toContain('iam::');
     });
 
@@ -245,14 +253,14 @@ describe('ProfilePage', () => {
 
         expect(html).toContain('The server did not let this screen read the account');
         expect(html).toContain('offers no save');
-        expect(html).not.toContain('value="Ada Lovelace"');
+        expect(html).not.toContain('>Ada Lovelace<');
     });
 
     it('keeps the contact tab working when the account read is refused', async () => {
         const html = await renderAfterRefusal('/profile?tab=contact');
 
         expect(html).toContain('Contact details');
-        expect(html).toContain('value="1 Panton Street"');
+        expect(html).toContain('>1 Panton Street<');
     });
 });
 

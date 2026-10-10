@@ -42,7 +42,6 @@ import {
     eventTone,
     formatReadAt,
     isZeroAddress,
-    isZeroTimestamp,
     orderLoginRecords,
     withinPeriod,
 } from './AuditPage.js';
@@ -275,12 +274,6 @@ describe('the audit helpers', () => {
     it('states a read time in UTC, and nothing before any read', () => {
         expect(formatReadAt(0)).toBeUndefined();
         expect(formatReadAt(Date.UTC(2026, 9, 1, 22, 14, 0))).toBe('22:14:00 UTC');
-    });
-
-    it('states a zero or empty timestamp as no moment at all', () => {
-        expect(isZeroTimestamp('1970-01-01 00:00:00Z')).toBe(true);
-        expect(isZeroTimestamp('')).toBe(true);
-        expect(isZeroTimestamp('2026-09-29 21:03:00Z')).toBe(false);
     });
 
     it('states a zero or empty address as no address at all', () => {

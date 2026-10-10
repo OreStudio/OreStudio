@@ -33,7 +33,9 @@ import type {
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
-import { Button, Detail, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
+import { FlagOf, FlaggedCode } from '../images/flags.js';
+import { managerCandidates } from '../membership/ReportingLinesPage.js';
+import { Button, Detail, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
 import { displayName } from './names.js';
 import { personPath } from './PeoplePage.js';
 import { useHolds } from './holds.js';
@@ -70,6 +72,12 @@ interface PanelOutcome {
         readonly code: string;
         readonly message: string;
     }[];
+}
+
+/** The link that sends mail to an address, present only when there is an address to send to. */
+function mailto(address: string): { readonly href?: string } {
+    const trimmed = address.trim();
+    return trimmed === '' ? {} : { href: `mailto:${trimmed}` };
 }
 
 /** The wire's field name as the panel's own, so a failure lands under its input. */
@@ -134,13 +142,8 @@ export function IdentityPanel({
     readonly onSaved: () => Promise<unknown>;
 }): ReactNode {
     const { t } = useTranslation();
-    const [edits, setEdits] = useState<
-        Partial<{ fullName: string; jobTitle: string; imageId: string }>
-    >({});
-    const [reasonCode, setReasonCode] = useState('');
-    const [commentary, setCommentary] = useState('');
-    const [busy, setBusy] = useState(false);
-    const [outcome, setOutcome] = useState<PanelOutcome | undefined>(undefined);
+    const [editing, setEditing] = useState(false);
+    const [changingLine, setChangingLine] = useState(false);
 
     if (pending) {
         return (
@@ -167,6 +170,198 @@ export function IdentityPanel({
         );
     }
 
+    const name = displayName(account, account.username);
+    return (
+        <section className="card space-y-4 p-6">
+            <header className="flex items-center justify-between gap-3">
+                <div>
+                    <h2 className="text-lg font-medium">{t('profile.identity.title')}</h2>
+                    <p className="text-xs text-ink-muted">
+                        {t('profile.version', { version: String(account.version) })}
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    {!canWrite && <AccessMark canWrite={false} />}
+                    {canWrite && (
+                        <Button icon="edit" onClick={() => setEditing(true)}>
+                            {t('refdata.records.edit')}
+                        </Button>
+                    )}
+                </div>
+            </header>
+
+            <div className="flex flex-wrap items-start gap-5">
+                <div className="flex flex-col items-center gap-2">
+                    <Avatar
+                        name={name}
+                        size="lg"
+                        src={account.imageId === null ? null : imageUrl(account.imageId)}
+                    />
+                    {account.imageId === null && (
+                        <p className="text-xs text-ink-faint">{t('profile.identity.noPhoto')}</p>
+                    )}
+                </div>
+                <dl className="grid min-w-0 flex-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+                    <Detail
+                        label={t('profile.identity.fullName')}
+                        value={account.fullName === '' ? '—' : account.fullName}
+                    />
+                    <Detail
+                        label={t('profile.identity.jobTitle')}
+                        value={account.jobTitle === '' ? '—' : account.jobTitle}
+                    />
+                    <div>
+                        <Detail label={t('profile.identity.username')} value={account.username} />
+                        <p className="mt-1 text-xs text-ink-faint">
+                            {t('profile.identity.usernameWhy')}
+                        </p>
+                    </div>
+                    <div>
+                        <Detail
+                            label={t('profile.identity.signInAddress')}
+                            value={signInEmail === '' ? t('account.notSet') : signInEmail}
+                            {...mailto(signInEmail)}
+                        />
+                        <p className="mt-1 text-xs text-ink-faint">
+                            {t('profile.identity.signInAddressWhy')}
+                        </p>
+                    </div>
+                    <div>
+                        <Detail
+                            label={t('profile.identity.accountType')}
+                            value={account.accountType}
+                        />
+                        <p className="mt-1 text-xs text-ink-faint">
+                            {t('profile.identity.accountTypeWhy')}
+                        </p>
+                    </div>
+                </dl>
+            </div>
+
+            <div className="space-y-2 border-t border-line-subtle pt-4">
+                <h3 className="text-sm font-medium">{t('profile.identity.reporting')}</h3>
+                <div className="flex flex-wrap items-center gap-2">
+                    {account.reportsToAccountId === null && (
+                        <p className="text-sm">{t('profile.identity.noLine')}</p>
+                    )}
+                    {account.reportsToAccountId !== null && manager === null && (
+                        <p className="text-sm">
+                            {t('profile.identity.reportsTo', {
+                                name: account.reportsToAccountId,
+                            })}
+                        </p>
+                    )}
+                    {manager !== null && (
+                        /*
+                         * A link rather than plain text: the point of naming
+                         * the person is that a reader can go and look at them,
+                         * and a reader who cannot see that it is a link will
+                         * not try. The job title beside the name says who they
+                         * are to this person without opening the page.
+                         */
+                        <Link
+                            to={personPath(manager.username)}
+                            className="flex w-fit items-center gap-2 text-sm text-ink"
+                        >
+                            <AccountPicture
+                                username={manager.username}
+                                name={displayName(manager, manager.username)}
+                                size="sm"
+                            />
+                            <span className="underline decoration-line-strong underline-offset-2 hover:decoration-accent">
+                                {displayName(manager, manager.username)}
+                            </span>
+                            {manager.jobTitle !== '' && (
+                                <span className="text-xs text-ink-muted">{manager.jobTitle}</span>
+                            )}
+                        </Link>
+                    )}
+                    {/*
+                     * An administrator sets the line: the server allows it to a
+                     * holder of iam::accounts:update and refuses a person who
+                     * names their own. Everyone else can only propose, and
+                     * nothing holds that approval yet.
+                     */}
+                    {canWrite && !me ? (
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            icon="edit"
+                            aria-label={t('profile.identity.changeLine')}
+                            title={t('profile.identity.changeLine')}
+                            onClick={() => setChangingLine(true)}
+                        />
+                    ) : (
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            icon="edit"
+                            disabled
+                            aria-label={t('profile.identity.propose')}
+                            title={`${t('profile.identity.propose')}. ${t('profile.identity.proposeWhy')}`}
+                        />
+                    )}
+                </div>
+                {account.reportsToAccountId !== null && manager === null && (
+                    <p className="text-xs text-ink-faint">
+                        {t('profile.identity.reportsToUnknown')}
+                    </p>
+                )}
+                <p className="text-xs text-ink-faint">{t('profile.identity.proposeApprovers')}</p>
+                <p className="text-xs text-ink-faint">{t('profile.identity.proposeGap')}</p>
+            </div>
+
+            {changingLine && (
+                <ReportingLineDialog
+                    account={account}
+                    reasons={reasons}
+                    onClose={() => setChangingLine(false)}
+                    onSaved={onSaved}
+                />
+            )}
+            {editing && (
+                <IdentityDialog
+                    account={account}
+                    me={me}
+                    username={username}
+                    reasons={reasons}
+                    onClose={() => setEditing(false)}
+                    onSaved={onSaved}
+                />
+            )}
+        </section>
+    );
+}
+
+/**
+ * The identity edit: the fields a person may change, and the reason for the
+ * change, which is asked here and nowhere else. A refusal stays in the dialog
+ * under the field it names; a save closes it.
+ */
+function IdentityDialog({
+    account,
+    me,
+    username,
+    reasons,
+    onClose,
+    onSaved,
+}: {
+    readonly account: Account;
+    readonly me: boolean;
+    readonly username: string;
+    readonly reasons: readonly AmendReason[];
+    readonly onClose: () => void;
+    readonly onSaved: () => Promise<unknown>;
+}): ReactNode {
+    const { t } = useTranslation();
+    const [edits, setEdits] = useState<
+        Partial<{ fullName: string; jobTitle: string; imageId: string }>
+    >({});
+    const [reasonCode, setReasonCode] = useState('');
+    const [commentary, setCommentary] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [outcome, setOutcome] = useState<PanelOutcome | undefined>(undefined);
+
     const draft = {
         fullName: edits.fullName ?? account.fullName,
         jobTitle: edits.jobTitle ?? account.jobTitle,
@@ -174,9 +369,8 @@ export function IdentityPanel({
     };
     const chosen = reasons.find((reason) => reason.code === reasonCode);
     const maySave =
-        canWrite &&
-        reasonCode !== '' &&
-        !(chosen?.requiresCommentary === true && commentary.trim() === '');
+        reasonCode !== '' && !(chosen?.requiresCommentary === true && commentary.trim() === '');
+    const name = displayName({ fullName: draft.fullName }, account.username);
 
     const save = async (): Promise<void> => {
         setBusy(true);
@@ -184,20 +378,7 @@ export function IdentityPanel({
         try {
             if (me) {
                 const view = await api.saveMyProfile({ ...draft, reasonCode, commentary });
-                if (view.result.outcome === 'ok') {
-                    setEdits({});
-                    setOutcome({
-                        ok: true,
-                        message:
-                            view.account === null
-                                ? t('profile.saved.done')
-                                : t('profile.saved.version', {
-                                      version: String(view.account.version),
-                                  }),
-                        fields: [],
-                    });
-                    await onSaved();
-                } else {
+                if (view.result.outcome !== 'ok') {
                     setOutcome({
                         ok: false,
                         message:
@@ -206,13 +387,13 @@ export function IdentityPanel({
                                 : view.result.message,
                         fields: view.result.fields,
                     });
+                    return;
                 }
             } else {
                 await api.saveAccountProfile(username, { ...draft, reasonCode, commentary });
-                setEdits({});
-                setOutcome({ ok: true, message: t('profile.saved.done'), fields: [] });
-                await onSaved();
             }
+            await onSaved();
+            onClose();
         } catch (error) {
             setOutcome({
                 ok: false,
@@ -225,134 +406,64 @@ export function IdentityPanel({
     };
 
     return (
-        <section className="card space-y-4 p-6">
-            <header className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-medium">{t('profile.identity.title')}</h2>
-                <AccessMark canWrite={canWrite} />
-            </header>
-
-            <div className="flex flex-wrap items-start gap-5">
-                <div className="flex flex-col items-center gap-2">
-                    <Avatar
-                        name={displayName({ fullName: draft.fullName }, account.username)}
-                        size="lg"
-                        src={draft.imageId === '' ? null : imageUrl(draft.imageId)}
+        <Dialog
+            title={t('profile.identity.editTitle')}
+            onClose={onClose}
+            wide
+            footer={
+                <>
+                    <Button variant="ghost" icon="cancel" onClick={onClose}>
+                        {t('refdata.records.cancel')}
+                    </Button>
+                    <Button
+                        variant="primary"
+                        icon="save"
+                        disabled={!maySave}
+                        pending={busy}
+                        onClick={() => void save()}
+                    >
+                        {t('refdata.records.save')}
+                    </Button>
+                </>
+            }
+        >
+            <div className="space-y-4">
+                <div className="flex flex-wrap items-start gap-5">
+                    <PhotoPicker
+                        name={name}
+                        imageId={draft.imageId === '' ? null : draft.imageId}
+                        label={
+                            draft.imageId === ''
+                                ? t('profile.identity.choosePhoto')
+                                : t('profile.identity.replacePhoto')
+                        }
+                        onChoose={(imageId) => setEdits({ ...edits, imageId })}
                     />
-                    {draft.imageId === '' && (
-                        <p className="text-xs text-ink-faint">{t('profile.identity.noPhoto')}</p>
-                    )}
-                    {canWrite && (
-                        <PhotoPicker
-                            name={displayName({ fullName: draft.fullName }, account.username)}
-                            imageId={draft.imageId === '' ? null : draft.imageId}
-                            label={
-                                draft.imageId === ''
-                                    ? t('profile.identity.choosePhoto')
-                                    : t('profile.identity.replacePhoto')
-                            }
-                            onChoose={(imageId) => setEdits({ ...edits, imageId })}
-                        />
-                    )}
-                </div>
-                <div className="min-w-0 flex-1">
-                    <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
-                        <div>
-                            <Detail
-                                label={t('profile.identity.username')}
-                                value={account.username}
+                    <div className="grid min-w-0 flex-1 gap-4 sm:grid-cols-2">
+                        <Field
+                            label={t('profile.identity.fullName')}
+                            {...fieldIssue(outcome, 'fullName')}
+                        >
+                            <Input
+                                value={draft.fullName}
+                                onChange={(event) =>
+                                    setEdits({ ...edits, fullName: event.target.value })
+                                }
                             />
-                            <p className="mt-1 text-xs text-ink-faint">
-                                {t('profile.identity.usernameWhy')}
-                            </p>
-                        </div>
-                        <div>
-                            <Detail
-                                label={t('profile.identity.signInAddress')}
-                                value={signInEmail === '' ? t('account.notSet') : signInEmail}
+                        </Field>
+                        <Field
+                            label={t('profile.identity.jobTitle')}
+                            {...fieldIssue(outcome, 'jobTitle')}
+                        >
+                            <Input
+                                value={draft.jobTitle}
+                                onChange={(event) =>
+                                    setEdits({ ...edits, jobTitle: event.target.value })
+                                }
                             />
-                            <p className="mt-1 text-xs text-ink-faint">
-                                {t('profile.identity.signInAddressWhy')}
-                            </p>
-                        </div>
-                        <div>
-                            <Detail
-                                label={t('profile.identity.accountType')}
-                                value={account.accountType}
-                            />
-                            <p className="mt-1 text-xs text-ink-faint">
-                                {t('profile.identity.accountTypeWhy')}
-                            </p>
-                        </div>
+                        </Field>
                     </div>
                 </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={t('profile.identity.fullName')} {...fieldIssue(outcome, 'fullName')}>
-                    <Input
-                        value={draft.fullName}
-                        disabled={!canWrite}
-                        onChange={(event) => setEdits({ ...edits, fullName: event.target.value })}
-                    />
-                </Field>
-                <Field label={t('profile.identity.jobTitle')} {...fieldIssue(outcome, 'jobTitle')}>
-                    <Input
-                        value={draft.jobTitle}
-                        disabled={!canWrite}
-                        onChange={(event) => setEdits({ ...edits, jobTitle: event.target.value })}
-                    />
-                </Field>
-            </div>
-
-            <div className="space-y-2 border-t border-line-subtle pt-4">
-                <h3 className="text-sm font-medium">{t('profile.identity.reporting')}</h3>
-                {account.reportsToAccountId === null && (
-                    <p className="text-sm">{t('profile.identity.noLine')}</p>
-                )}
-                {account.reportsToAccountId !== null && manager === null && (
-                    <>
-                        <p className="text-sm">
-                            {t('profile.identity.reportsTo', {
-                                name: account.reportsToAccountId,
-                            })}
-                        </p>
-                        <p className="text-xs text-ink-faint">
-                            {t('profile.identity.reportsToUnknown')}
-                        </p>
-                    </>
-                )}
-                {manager !== null && (
-                    /*
-                     * A link rather than plain text: the point of naming the
-                     * person is that a reader can go and look at them, and a
-                     * reader who cannot see that it is a link will not try.
-                     */
-                    <Link
-                        to={personPath(manager.username)}
-                        className="flex w-fit items-center gap-2 text-sm text-ink"
-                    >
-                        <AccountPicture
-                            username={manager.username}
-                            name={displayName(manager, manager.username)}
-                            size="sm"
-                        />
-                        <span className="underline decoration-line-strong underline-offset-2 hover:decoration-accent">
-                            {displayName(manager, manager.username)}
-                        </span>
-                    </Link>
-                )}
-                <div className="flex flex-wrap items-center gap-3">
-                    <Button disabled title={t('profile.identity.proposeWhy')}>
-                        {t('profile.identity.propose')}
-                    </Button>
-                    <span className="text-xs text-ink-muted">
-                        {t('profile.identity.proposeApprovers')}
-                    </span>
-                </div>
-                <p className="text-xs text-ink-faint">{t('profile.identity.proposeGap')}</p>
-            </div>
-
-            {canWrite && (
                 <ReasonRow
                     reasons={reasons}
                     reasonCode={reasonCode}
@@ -361,37 +472,144 @@ export function IdentityPanel({
                     onReason={setReasonCode}
                     onCommentary={setCommentary}
                 />
-            )}
-            {outcome !== undefined && (
-                <Notice tone={outcome.ok ? 'success' : 'error'}>
-                    {outcome.message}
-                    {outcome.fields.length > 0 && (
-                        <ul className="mt-1 list-disc pl-5">
-                            {outcome.fields.map((failure) => (
-                                <li key={`${failure.field}:${failure.code}`}>
-                                    {failure.field}: {failure.message}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </Notice>
-            )}
-            {canWrite && (
-                <div className="flex items-center justify-end gap-3">
-                    <span className="text-xs text-ink-faint">
-                        {t('profile.version', { version: String(account.version) })}
-                    </span>
+                <OutcomeNotice outcome={outcome} />
+            </div>
+        </Dialog>
+    );
+}
+
+/**
+ * The reporting-line change: who this person reports to, and why.
+ *
+ * It writes one field and states the version the screen read, so a record that
+ * moved since is refused as a conflict rather than overwritten. The people
+ * offered exclude the person and everyone under them, because a line to one of
+ * them would be a loop.
+ */
+function ReportingLineDialog({
+    account,
+    reasons,
+    onClose,
+    onSaved,
+}: {
+    readonly account: Account;
+    readonly reasons: readonly AmendReason[];
+    readonly onClose: () => void;
+    readonly onSaved: () => Promise<unknown>;
+}): ReactNode {
+    const { t } = useTranslation();
+    const queries = useQueryClient();
+    const tree = useQuery({ queryKey: ['reporting-tree'], queryFn: () => api.reportingTree() });
+    const [managerId, setManagerId] = useState<string | undefined>(undefined);
+    const [reasonCode, setReasonCode] = useState('');
+    const [commentary, setCommentary] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [outcome, setOutcome] = useState<PanelOutcome | undefined>(undefined);
+
+    const nodes = tree.data?.nodes ?? [];
+    const self = nodes.find((node) => node.accountId === account.id);
+    const candidates = self === undefined ? [] : managerCandidates(nodes, self);
+    const chosenManager = managerId ?? account.reportsToAccountId ?? '';
+    const chosen = reasons.find((reason) => reason.code === reasonCode);
+    const maySave =
+        chosenManager !== (account.reportsToAccountId ?? '') &&
+        reasonCode !== '' &&
+        !(chosen?.requiresCommentary === true && commentary.trim() === '');
+
+    const save = async (): Promise<void> => {
+        setBusy(true);
+        setOutcome(undefined);
+        try {
+            await api.setReportingLine(account.id, {
+                reportsToAccountId: chosenManager,
+                expectedVersion: String(account.version),
+                reasonCode,
+                commentary,
+            });
+            await queries.invalidateQueries({ queryKey: ['reporting-tree'] });
+            await queries.invalidateQueries({ queryKey: ['accounts'] });
+            await queries.invalidateQueries({ queryKey: ['timeline', 'person', account.username] });
+            await onSaved();
+            onClose();
+        } catch (error) {
+            setOutcome({
+                ok: false,
+                message: error instanceof Error ? error.message : t('profile.saved.failed'),
+                fields: [],
+            });
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    return (
+        <Dialog
+            title={t('profile.identity.changeLine')}
+            onClose={onClose}
+            footer={
+                <>
+                    <Button variant="ghost" icon="cancel" onClick={onClose}>
+                        {t('refdata.records.cancel')}
+                    </Button>
                     <Button
                         variant="primary"
+                        icon="save"
                         disabled={!maySave}
                         pending={busy}
                         onClick={() => void save()}
                     >
-                        {t('profile.save.identity')}
+                        {t('refdata.records.save')}
                     </Button>
-                </div>
+                </>
+            }
+        >
+            <div className="space-y-4">
+                {tree.isError && <Notice tone="error">{tree.error.message}</Notice>}
+                <Field label={t('membership.reporting.reportsTo')}>
+                    <Select
+                        value={chosenManager}
+                        disabled={tree.isPending}
+                        onChange={(event) => setManagerId(event.target.value)}
+                    >
+                        <option value="">{t('membership.reporting.noManager')}</option>
+                        {candidates.map((node) => (
+                            <option key={node.accountId} value={node.accountId}>
+                                {node.fullName === '' ? node.username : node.fullName}
+                                {node.jobTitle === '' ? '' : ` — ${node.jobTitle}`}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+                <ReasonRow
+                    reasons={reasons}
+                    reasonCode={reasonCode}
+                    commentary={commentary}
+                    issue={fieldIssue(outcome, 'changeReasonCode')}
+                    onReason={setReasonCode}
+                    onCommentary={setCommentary}
+                />
+                <OutcomeNotice outcome={outcome} />
+            </div>
+        </Dialog>
+    );
+}
+
+/** What a failed save says, with the fields the server named. */
+function OutcomeNotice({ outcome }: { readonly outcome: PanelOutcome | undefined }): ReactNode {
+    if (outcome === undefined) return null;
+    return (
+        <Notice tone={outcome.ok ? 'success' : 'error'}>
+            {outcome.message}
+            {outcome.fields.length > 0 && (
+                <ul className="mt-1 list-disc pl-5">
+                    {outcome.fields.map((failure) => (
+                        <li key={`${failure.field}:${failure.code}`}>
+                            {failure.field}: {failure.message}
+                        </li>
+                    ))}
+                </ul>
             )}
-        </section>
+        </Notice>
     );
 }
 
@@ -446,9 +664,24 @@ function PhotoPicker({
 
     if (!open) {
         return (
-            <Button size="sm" onClick={() => setOpen(true)}>
-                {label}
-            </Button>
+            <div className="flex flex-col items-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => setOpen(true)}
+                    title={label}
+                    aria-label={label}
+                    className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent hover:opacity-80"
+                >
+                    <Avatar
+                        name={name}
+                        size="lg"
+                        src={imageId === null ? null : imageUrl(imageId)}
+                    />
+                </button>
+                <p className="text-xs text-ink-faint">
+                    {imageId === null ? t('profile.identity.noPhoto') : label}
+                </p>
+            </div>
         );
     }
 
@@ -572,11 +805,7 @@ export function ContactPanel({
     readonly onSaved: () => Promise<unknown>;
 }): ReactNode {
     const { t } = useTranslation();
-    const [edits, setEdits] = useState<Partial<ContactDraft>>({});
-    const [reasonCode, setReasonCode] = useState('');
-    const [commentary, setCommentary] = useState('');
-    const [busy, setBusy] = useState(false);
-    const [outcome, setOutcome] = useState<PanelOutcome | undefined>(undefined);
+    const [editing, setEditing] = useState(false);
 
     if (pending) {
         return (
@@ -585,6 +814,124 @@ export function ContactPanel({
             </section>
         );
     }
+
+    const shown = (value: string | undefined): string =>
+        value === undefined || value === '' ? '—' : value;
+    return (
+        <section className="card space-y-4 p-6">
+            <header className="flex items-center justify-between gap-3">
+                <div>
+                    <h2 className="text-lg font-medium">{t('profile.contact.title')}</h2>
+                    <p className="text-xs text-ink-muted">
+                        {contact === null
+                            ? t('profile.contact.noRecordShort')
+                            : t('profile.version', { version: String(contact.version) })}
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    {!canWrite && <AccessMark canWrite={false} />}
+                    {canWrite && (
+                        <Button icon="edit" onClick={() => setEditing(true)}>
+                            {t('refdata.records.edit')}
+                        </Button>
+                    )}
+                </div>
+            </header>
+
+            {refused !== null && <Notice tone="error">{refused}</Notice>}
+            {contact === null && refused === null && (
+                <p className="text-sm text-ink-muted">{t('profile.contact.noRecord')}</p>
+            )}
+
+            <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+                <Detail
+                    label={t('profile.contact.streetLine1')}
+                    value={shown(contact?.streetLine1)}
+                />
+                <Detail
+                    label={t('profile.contact.streetLine2')}
+                    value={shown(contact?.streetLine2)}
+                />
+                <Detail label={t('profile.contact.city')} value={shown(contact?.city)} />
+                <Detail label={t('profile.contact.state')} value={shown(contact?.state)} />
+                <Detail
+                    label={t('profile.contact.postalCode')}
+                    value={shown(contact?.postalCode)}
+                />
+                <div className="min-w-0">
+                    <dt className="text-[11px] uppercase tracking-wide text-ink-faint">
+                        {t('profile.contact.country')}
+                    </dt>
+                    <dd className="mt-0.5 text-sm">
+                        {contact?.countryCode === undefined || contact.countryCode === '' ? (
+                            '—'
+                        ) : (
+                            <FlaggedCode source="country" code={contact.countryCode} />
+                        )}
+                    </dd>
+                </div>
+                <Detail label={t('profile.contact.phone')} value={shown(contact?.phone)} />
+                <div>
+                    <Detail
+                        label={t('profile.contact.email')}
+                        value={shown(contact?.email)}
+                        {...mailto(contact?.email ?? '')}
+                    />
+                    <p className="mt-1 text-xs text-ink-faint">
+                        {accountRead && signInEmail !== ''
+                            ? t('profile.contact.emailHint', { email: signInEmail })
+                            : t('profile.contact.emailHintUnknown')}
+                    </p>
+                </div>
+                <Detail label={t('profile.contact.webPage')} value={shown(contact?.webPage)} />
+            </dl>
+
+            {editing && (
+                <ContactDialog
+                    contact={contact}
+                    me={me}
+                    accountId={accountId}
+                    signInEmail={signInEmail}
+                    accountRead={accountRead}
+                    reasons={reasons}
+                    onClose={() => setEditing(false)}
+                    onSaved={onSaved}
+                />
+            )}
+        </section>
+    );
+}
+
+/**
+ * The contact edit: the fields of the record, and the reason for the change,
+ * which is asked here and nowhere else. A record that moved since the panel
+ * was drawn is refused by the server and the panel is read again.
+ */
+function ContactDialog({
+    contact,
+    me,
+    accountId,
+    signInEmail,
+    accountRead,
+    reasons,
+    onClose,
+    onSaved,
+}: {
+    readonly contact: AccountContactInformation | null;
+    readonly me: boolean;
+    readonly accountId: string;
+    readonly signInEmail: string;
+    readonly accountRead: boolean;
+    readonly reasons: readonly AmendReason[];
+    readonly onClose: () => void;
+    readonly onSaved: () => Promise<unknown>;
+}): ReactNode {
+    const { t } = useTranslation();
+    const [edits, setEdits] = useState<Partial<ContactDraft>>({});
+    const [reasonCode, setReasonCode] = useState('');
+    const [commentary, setCommentary] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [outcome, setOutcome] = useState<PanelOutcome | undefined>(undefined);
 
     const base: ContactDraft = {
         streetLine1: contact?.streetLine1 ?? '',
@@ -597,22 +944,14 @@ export function ContactPanel({
         email: contact?.email ?? '',
         webPage: contact?.webPage ?? '',
     };
-    const draft: ContactDraft = {
-        streetLine1: edits.streetLine1 ?? base.streetLine1,
-        streetLine2: edits.streetLine2 ?? base.streetLine2,
-        city: edits.city ?? base.city,
-        state: edits.state ?? base.state,
-        countryCode: edits.countryCode ?? base.countryCode,
-        postalCode: edits.postalCode ?? base.postalCode,
-        phone: edits.phone ?? base.phone,
-        email: edits.email ?? base.email,
-        webPage: edits.webPage ?? base.webPage,
-    };
+    const draft: ContactDraft = { ...base, ...edits };
     const chosen = reasons.find((reason) => reason.code === reasonCode);
     const maySave =
-        canWrite &&
-        reasonCode !== '' &&
-        !(chosen?.requiresCommentary === true && commentary.trim() === '');
+        reasonCode !== '' && !(chosen?.requiresCommentary === true && commentary.trim() === '');
+    const set =
+        (field: keyof ContactDraft) =>
+        (event: ChangeEvent<HTMLInputElement>): void =>
+            setEdits({ ...edits, [field]: event.target.value });
 
     const save = async (): Promise<void> => {
         setBusy(true);
@@ -627,35 +966,25 @@ export function ContactPanel({
                       commentary,
                   });
             if (view.result.outcome === 'ok') {
-                setEdits({});
-                setOutcome({
-                    ok: true,
-                    message:
-                        view.contact === null
-                            ? t('profile.saved.done')
-                            : t('profile.saved.version', {
-                                  version: String(view.contact.version),
-                              }),
-                    fields: [],
-                });
                 await onSaved();
-            } else {
-                setOutcome({
-                    ok: false,
-                    /*
-                     * The sentence about a moved record belongs to the
-                     * server's conflict answer alone. Any other refusal --
-                     * a permission, a field it would not take -- travels
-                     * with its own words and nothing added.
-                     */
-                    message:
-                        !me && view.result.outcome === 'conflict'
-                            ? `${view.result.message} ${t('profile.refused.recordChanged')}`
-                            : view.result.message,
-                    fields: view.result.fields,
-                });
-                if (!me) await onSaved();
+                onClose();
+                return;
             }
+            setOutcome({
+                ok: false,
+                /*
+                 * The sentence about a moved record belongs to the server's
+                 * conflict answer alone. Any other refusal -- a permission, a
+                 * field it would not take -- travels with its own words and
+                 * nothing added.
+                 */
+                message:
+                    !me && view.result.outcome === 'conflict'
+                        ? `${view.result.message} ${t('profile.refused.recordChanged')}`
+                        : view.result.message,
+                fields: view.result.fields,
+            });
+            if (!me) await onSaved();
         } catch (error) {
             setOutcome({
                 ok: false,
@@ -668,102 +997,72 @@ export function ContactPanel({
     };
 
     return (
-        <section className="card space-y-4 p-6">
-            <header className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-medium">{t('profile.contact.title')}</h2>
-                <AccessMark canWrite={canWrite} />
-            </header>
-
-            {refused !== null && <Notice tone="error">{refused}</Notice>}
-            {contact === null && refused === null && (
-                <p className="text-sm text-ink-muted">{t('profile.contact.noRecord')}</p>
-            )}
-
-            <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={t('profile.contact.streetLine1')}>
-                    <Input
-                        value={draft.streetLine1}
-                        disabled={!canWrite}
-                        onChange={(event) =>
-                            setEdits({ ...edits, streetLine1: event.target.value })
+        <Dialog
+            title={t('profile.contact.editTitle')}
+            onClose={onClose}
+            wide
+            footer={
+                <>
+                    <Button variant="ghost" icon="cancel" onClick={onClose}>
+                        {t('refdata.records.cancel')}
+                    </Button>
+                    <Button
+                        variant="primary"
+                        icon="save"
+                        disabled={!maySave}
+                        pending={busy}
+                        onClick={() => void save()}
+                    >
+                        {t('refdata.records.save')}
+                    </Button>
+                </>
+            }
+        >
+            <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label={t('profile.contact.streetLine1')}>
+                        <Input value={draft.streetLine1} onChange={set('streetLine1')} />
+                    </Field>
+                    <Field label={t('profile.contact.streetLine2')}>
+                        <Input value={draft.streetLine2} onChange={set('streetLine2')} />
+                    </Field>
+                    <Field label={t('profile.contact.city')}>
+                        <Input value={draft.city} onChange={set('city')} />
+                    </Field>
+                    <Field label={t('profile.contact.state')}>
+                        <Input value={draft.state} onChange={set('state')} />
+                    </Field>
+                    <Field label={t('profile.contact.postalCode')}>
+                        <Input value={draft.postalCode} onChange={set('postalCode')} />
+                    </Field>
+                    <Field
+                        label={t('profile.contact.country')}
+                        hint={t('profile.contact.countryHint')}
+                        {...fieldIssue(outcome, 'countryCode')}
+                    >
+                        <div className="flex items-center gap-2">
+                            <FlagOf source="country" code={draft.countryCode.trim().toUpperCase()} />
+                            <Input value={draft.countryCode} onChange={set('countryCode')} />
+                        </div>
+                    </Field>
+                    <Field label={t('profile.contact.phone')} {...fieldIssue(outcome, 'phone')}>
+                        <Input value={draft.phone} onChange={set('phone')} />
+                    </Field>
+                    <Field
+                        label={t('profile.contact.email')}
+                        hint={
+                            accountRead && signInEmail !== ''
+                                ? t('profile.contact.emailHint', { email: signInEmail })
+                                : t('profile.contact.emailHintUnknown')
                         }
-                    />
-                </Field>
-                <Field label={t('profile.contact.streetLine2')}>
-                    <Input
-                        value={draft.streetLine2}
-                        disabled={!canWrite}
-                        onChange={(event) =>
-                            setEdits({ ...edits, streetLine2: event.target.value })
-                        }
-                    />
-                </Field>
-                <Field label={t('profile.contact.city')}>
-                    <Input
-                        value={draft.city}
-                        disabled={!canWrite}
-                        onChange={(event) => setEdits({ ...edits, city: event.target.value })}
-                    />
-                </Field>
-                <Field label={t('profile.contact.state')}>
-                    <Input
-                        value={draft.state}
-                        disabled={!canWrite}
-                        onChange={(event) => setEdits({ ...edits, state: event.target.value })}
-                    />
-                </Field>
-                <Field label={t('profile.contact.postalCode')}>
-                    <Input
-                        value={draft.postalCode}
-                        disabled={!canWrite}
-                        onChange={(event) => setEdits({ ...edits, postalCode: event.target.value })}
-                    />
-                </Field>
-                <Field
-                    label={t('profile.contact.country')}
-                    hint={t('profile.contact.countryHint')}
-                    {...fieldIssue(outcome, 'countryCode')}
-                >
-                    <Input
-                        value={draft.countryCode}
-                        disabled={!canWrite}
-                        onChange={(event) =>
-                            setEdits({ ...edits, countryCode: event.target.value })
-                        }
-                    />
-                </Field>
-                <Field label={t('profile.contact.phone')} {...fieldIssue(outcome, 'phone')}>
-                    <Input
-                        value={draft.phone}
-                        disabled={!canWrite}
-                        onChange={(event) => setEdits({ ...edits, phone: event.target.value })}
-                    />
-                </Field>
-                <Field
-                    label={t('profile.contact.email')}
-                    hint={
-                        accountRead && signInEmail !== ''
-                            ? t('profile.contact.emailHint', { email: signInEmail })
-                            : t('profile.contact.emailHintUnknown')
-                    }
-                    {...fieldIssue(outcome, 'email')}
-                >
-                    <Input
-                        value={draft.email}
-                        disabled={!canWrite}
-                        onChange={(event) => setEdits({ ...edits, email: event.target.value })}
-                    />
-                </Field>
-                <Field label={t('profile.contact.webPage')}>
-                    <Input
-                        value={draft.webPage}
-                        disabled={!canWrite}
-                        onChange={(event) => setEdits({ ...edits, webPage: event.target.value })}
-                    />
-                </Field>
-            </div>
-
-            {canWrite && (
+                        {...fieldIssue(outcome, 'email')}
+                    >
+                        <Input value={draft.email} onChange={set('email')} />
+                    </Field>
+                    <Field label={t('profile.contact.webPage')}>
+                        <Input value={draft.webPage} onChange={set('webPage')} />
+                    </Field>
+                </div>
                 <ReasonRow
                     reasons={reasons}
                     reasonCode={reasonCode}
@@ -772,39 +1071,9 @@ export function ContactPanel({
                     onReason={setReasonCode}
                     onCommentary={setCommentary}
                 />
-            )}
-            {outcome !== undefined && (
-                <Notice tone={outcome.ok ? 'success' : 'error'}>
-                    {outcome.message}
-                    {outcome.fields.length > 0 && (
-                        <ul className="mt-1 list-disc pl-5">
-                            {outcome.fields.map((failure) => (
-                                <li key={`${failure.field}:${failure.code}`}>
-                                    {failure.field}: {failure.message}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </Notice>
-            )}
-            {canWrite && (
-                <div className="flex items-center justify-end gap-3">
-                    <span className="text-xs text-ink-faint">
-                        {contact === null
-                            ? t('profile.contact.noRecordShort')
-                            : t('profile.version', { version: String(contact.version) })}
-                    </span>
-                    <Button
-                        variant="primary"
-                        disabled={!maySave}
-                        pending={busy}
-                        onClick={() => void save()}
-                    >
-                        {t('profile.save.contact')}
-                    </Button>
-                </div>
-            )}
-        </section>
+                <OutcomeNotice outcome={outcome} />
+            </div>
+        </Dialog>
     );
 }
 
@@ -872,7 +1141,7 @@ function ReasonRow({
  * do. The panel names both rather than copying what they show.
  */
 /** Which account and contact writes the signed-in person holds. */
-function useAccountWrites(): {
+export function useAccountWrites(): {
     readonly pending: boolean;
     readonly accounts: boolean;
     readonly contacts: boolean;

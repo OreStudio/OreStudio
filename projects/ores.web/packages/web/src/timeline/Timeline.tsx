@@ -235,6 +235,14 @@ function Entry({
                 )}
                 {changed.length > 0 && before !== undefined ? (
                     <ChangeTable changed={changed} before={before} />
+                ) : isAChange(event.kind) && before !== undefined ? (
+                    /*
+                     * A version that changed no field against the one before
+                     * it, such as a revert to values already held, has nothing
+                     * to show. The whole record is for a first version, which
+                     * has nothing to be read against.
+                     */
+                    <p className="text-[0.8rem] text-ink-faint">{t('timeline.noChanges')}</p>
                 ) : (
                     <Facts event={event} before={before} />
                 )}

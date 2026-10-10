@@ -93,6 +93,25 @@ describe('the timeline', () => {
         expect(html).toContain('system.update');
     });
 
+    it('says a version that changed no field changed nothing, and does not draw the record', () => {
+        const same = [
+            { name: 'Job Title', value: 'Head of Rates' },
+            { name: 'Username', value: 'ana' },
+        ];
+        const html = render({
+            subject: 'person',
+            id: 'ana',
+            events: [
+                event({ version: 2, fields: same }),
+                event({ version: 1, kind: 'raised', fields: same }),
+            ],
+            gaps: EMPTY_GAPS,
+        });
+
+        expect(html).toContain('No changes');
+        expect(html).toContain('Head of Rates');
+    });
+
     it('draws an act that changed no field quietly, as the facts it carries', () => {
         const html = render({
             subject: 'person',

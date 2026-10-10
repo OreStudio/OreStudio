@@ -364,8 +364,6 @@ const pt: SourceCatalogue = {
         never: 'Nunca',
         failed: 'Tentativas falhadas',
         state: 'Estado',
-        locked: 'Bloqueada',
-        notLocked: 'Não bloqueada',
         passwordDue: 'Mudança de palavra-passe pendente',
         noSessions: 'Não há sessões registadas para esta conta.',
         started: 'Início',
@@ -464,10 +462,9 @@ const pt: SourceCatalogue = {
             failed: 'Falhas',
             lastAddress: 'Último endereço',
             lastSignIn: 'Último início de sessão',
-            locked: 'Bloqueada',
-            notLocked: 'Não bloqueada',
             never: 'Nunca',
             neverSignedIn: 'Nunca iniciou sessão',
+            hideNeverSignedIn: 'Ocultar contas que nunca entraram',
         },
         events: {
             title: 'Eventos de autenticação',
@@ -1096,6 +1093,8 @@ const pt: SourceCatalogue = {
             conventionsBody: 'Redigir os termos que o ORE usa para um instrumento.',
             rescue: 'Bloquear ou desbloquear uma conta',
             rescueBody: 'Ajudar quem não consegue entrar, ou impedir que uma conta seja usada.',
+            operations: 'Operações',
+            operationsBody: 'Quem entrou, e as versões que esta instalação executa.',
             audit: 'Entradas',
             auditBody: 'Quem está ligado agora, e as entradas que falharam.',
             versions: 'Versões e base de dados',
@@ -1153,6 +1152,9 @@ const pt: SourceCatalogue = {
             },
         },
         screens: {
+            signIns: 'Entradas',
+            signInsBody:
+                'Quem está ligado agora, as entradas que falharam e os eventos por trás delas.',
             versions: 'Versões e base de dados',
             versionsBody:
                 'A versão do cliente, a versão da instalação e a impressão digital da base de dados.',

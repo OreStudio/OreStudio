@@ -368,8 +368,6 @@ export const en: SourceCatalogue = {
         never: 'Never',
         failed: 'Failed attempts',
         state: 'State',
-        locked: 'Locked',
-        notLocked: 'Not locked',
         passwordDue: 'Password change due',
         noSessions: 'No sessions are recorded for this account.',
         started: 'Started',
@@ -468,10 +466,9 @@ export const en: SourceCatalogue = {
             failed: 'Failed',
             lastAddress: 'Last address',
             lastSignIn: 'Last sign-in',
-            locked: 'Locked',
-            notLocked: 'Not locked',
             never: 'Never',
             neverSignedIn: 'Never signed in',
+            hideNeverSignedIn: 'Hide accounts that never signed in',
         },
         events: {
             title: 'Authentication events',
@@ -1088,6 +1085,8 @@ export const en: SourceCatalogue = {
             conventionsBody: 'Author the terms ORE uses for one instrument.',
             rescue: 'Lock or unlock an account',
             rescueBody: 'Help someone who cannot sign in, or stop an account from being used.',
+            operations: 'Operations',
+            operationsBody: 'Who signed in, and the versions this deployment runs.',
             audit: 'Sign-ins',
             auditBody: 'Who is signed in now, and the sign-ins that failed.',
             versions: 'Versions and the database',
@@ -1150,6 +1149,9 @@ export const en: SourceCatalogue = {
             },
         },
         screens: {
+            signIns: 'Sign-ins',
+            signInsBody:
+                'Who is signed in now, the sign-ins that failed, and the events behind them.',
             versions: 'Versions and the database',
             versionsBody:
                 'The client build, the deployment build, and the fingerprint of the database.',

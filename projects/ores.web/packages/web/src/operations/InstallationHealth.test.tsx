@@ -76,11 +76,21 @@ function render(options: {
     readonly warnings?: number;
     readonly range?: LogsRange;
     readonly logsFailed?: boolean;
+    readonly rosterFailed?: boolean;
 }): string {
     const range = options.range ?? '1h';
     const client = new QueryClient({
         defaultOptions: { queries: { retry: false, retryOnMount: false } },
     });
+    if (options.rosterFailed === true) {
+        const query = client.getQueryCache().build(client, { queryKey: SERVICES_QUERY_KEY });
+        query.setState({
+            ...query.state,
+            status: 'error',
+            error: new Error('the roster could not be read'),
+            fetchStatus: 'idle',
+        });
+    }
     if (options.logsFailed === true) {
         for (const level of ['error', 'warn'] as const) {
             const query = client.getQueryCache().build(client, {
@@ -200,6 +210,14 @@ describe('the figures', () => {
     it('says the logs could not be read only when the read failed', () => {
         expect(render({ roster, logsFailed: true })).toContain('Could not be read');
         expect(render({ roster })).not.toContain('Could not be read');
+    });
+
+    it('says the services could not be read, and shows no figure it made up', () => {
+        const html = render({ rosterFailed: true, errors: 3, warnings: 1 });
+
+        expect(html).toContain('The services could not be read.');
+        expect(html).not.toContain('Services running');
+        expect(html).not.toContain(' of ');
     });
 
     it('does not paint an installation that expects nothing as healthy', () => {

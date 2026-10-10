@@ -31,6 +31,7 @@ import type {
     TenantSummary,
 } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
+import { enFlat } from '../i18n/locales/en.js';
 import {
     DEFAULT_HEALTH_RANGE,
     SERVICES_QUERY_KEY,
@@ -305,15 +306,18 @@ describe("the system administrator's installation figures", () => {
         });
 
         expect(html).toContain('>Installation<');
-        expect(html).toContain('>2 of 3<');
-        expect(html).toContain('>7<');
-        expect(html).toContain('>31<');
+        expect(html).toMatch(/>2 of 3<\/span><span[^>]*>Services running</);
+        expect(html).toMatch(/>7<\/span><span[^>]*>Errors, Last hour</);
+        expect(html).toMatch(/>31<\/span><span[^>]*>Warnings, Last hour</);
         expect(html).toContain('System health');
     });
 
     it('is not shown to a tenant administrator or a member', () => {
-        expect(home('tenant-administration')).not.toContain('Services running');
-        expect(home('application')).not.toContain('Services running');
+        const label = enFlat['operations.overview.running'] ?? '';
+
+        expect(label).not.toBe('');
+        expect(home('tenant-administration')).not.toContain(label);
+        expect(home('application')).not.toContain(label);
     });
 });
 

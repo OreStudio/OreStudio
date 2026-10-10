@@ -453,6 +453,27 @@ struct get_series_evolution_response {
 };
 
 /**
+ * @brief Where one value of a snapshot came from.
+ */
+struct point_provenance {
+    /**
+     * @brief One of quoted, derived or manual.
+     *
+     * A point with no annex row is quoted. The empty string marks a hole, which has
+     * no source.
+     */
+    std::string source_kind;
+    /** Who set the point. Empty for a quoted point and for a hole. */
+    std::string modified_by;
+    /** Why the point was set. Empty for a quoted point and for a hole. */
+    std::string change_reason_code;
+    /** The free-text reason for the change. Empty when none was given. */
+    std::string change_commentary;
+    /** When the annex row was recorded. The epoch for a quoted point and for a hole. */
+    std::chrono::system_clock::time_point recorded_at;
+};
+
+/**
  * @brief Requests a composite object as it stands now, as one instant by nodes.
  *
  * The object is named the way the resolver names one, as the slice read and the
@@ -472,6 +493,14 @@ struct get_curve_snapshot_request {
     static constexpr bool requires_session = true;
     /** The object, as the typed identity the resolver already takes. */
     resolve_series_identity_request identity;
+    /**
+     * @brief Whether the response states where each value came from.
+     *
+     * The annex is read only when this is set, so a caller that does not ask pays
+     * nothing for it. The provenance is the current annex row of each point shown, the
+     * same generation the values come from, not the row as it stood at the instant.
+     */
+    bool include_provenance = false;
 };
 
 /**
@@ -518,6 +547,12 @@ struct get_curve_snapshot_response {
      * the value arrived.
      */
     std::vector<std::chrono::system_clock::time_point> recorded_at;
+    /**
+     * @brief Where each value came from, index for index with nodes.
+     *
+     * Empty when the request did not ask for provenance.
+     */
+    std::vector<point_provenance> provenance;
     /**
      * @brief The age of the snapshot's oldest point, in seconds.
      *

@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: BA13262B-EB14-492B-AD25-B4C46E3263A8
+:END:
+#+title: Task: Draw the four-eyes controls in the book structure prototype
+#+description: The book structure prototype lets one administrator write every change. The book controls note gates a new book, a change to a live book, a move, a rights grant and a new portfolio behind a second person. Draw the raise, wait, decide and decline states for sign-off before any screen is reworked.
+#+type: task
+#+level: s1
+#+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/draw-the-four-eyes-controls-in-the-book-structure-prototype
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reviewer can walk the book structure prototype as a maker, see the request wait, and walk it as the checker who decides, and sign the design off.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The review step names, for each change, whether it is gated and who decides.
+- A gated write raises a request and shows it waiting. An ungated write is made directly.
+- A checker view shows the delta, the decision with a comment, and refuses the person who asked.
+- A move to another portfolio, a new portfolio and a close are drawn.
+- The prototype note and the group page describe the new states.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Drew the four-eyes controls into the book structure prototype and the journey
+document.
+
+*What the prototype shows.* The review step marks each change as =needs <part>= or
+=no approval=, from the decisions in the book controls note: Finance for the
+accounting fields and ledger feed, Market Risk for the classification and rates
+centre, Operations for status, a move, a rights grant and a new portfolio, the
+closing process for a close, and the opening chain for a new book. A description
+edit needs no approval. The confirm becomes =Raise request= when any change is
+gated. Three new states follow: =waiting= (the raised request and who still has
+to answer), =decide= (the checker's screen, which refuses the person who asked and
+needs a comment), and =declined= (the book keeps its version). A move under another
+portfolio and a new portfolio are drawn, through =?moveto= and the portfolio form.
+
+*What the journey document now says.* Steps 6 to 8, the five side states, the
+approval operations in the coverage table, and two new gaps: a gated change has
+nowhere to wait and nothing applies it on approval, and the controller and Finance
+have no Acme account.
+
+*What is not drawn.* The other four prototypes (counterparty, party, convention,
+tenor) do not yet carry these states. They follow the same pattern once this one
+is signed off.
+
+*Verification.* Rendered each new state in headless Chrome and read the result:
+the review with a move and a status change, the waiting request for a new book
+with the four deciders, and the decision screen refusing the maker. =node= parses
+the script. No automated test covers a prototype.

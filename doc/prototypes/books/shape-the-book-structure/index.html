@@ -32,6 +32,11 @@
     ?fail=open_activity|transition|1      which refusal the server returns
                                           (1 selects the first kind)
     ?version=2                            the history version under review
+    ?state=waiting|decide|declined        a raised request waiting, the checker's
+                                          decision screen, and a declined request
+    ?actor=h.desk|c.control|f.ledger|m.risk|o.ops   who acts on the decision screen
+    ?moveto=RATES.USD                     move the open book under another portfolio
+    ?newpf=Credit                         a new portfolio created in the same walk
 
   The bar at the foot mirrors the same states as buttons, plus the two
   refusals.

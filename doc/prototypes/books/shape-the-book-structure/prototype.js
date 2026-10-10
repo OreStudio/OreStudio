@@ -34,6 +34,12 @@
  *   ?fail=open_activity|transition|1      which refusal the server returns
  *                                          (1 selects the first kind)
  *   ?version=2                            the history version under review
+ * Four-eyes states, from the book controls note:
+ *   ?state=waiting|decide|declined        a raised request waiting, the checker's
+ *                                          decision screen, and a declined request
+ *   ?actor=h.desk|c.control|f.ledger|m.risk|o.ops   who is acting on the decision screen
+ *   ?moveto=RATES.USD                     move the open book under another portfolio
+ *   ?newpf=Credit                         a new portfolio created in the same walk
  * The bar mirrors the same states as buttons, plus the two refusals. */
 
 (function () {
@@ -48,6 +54,28 @@
         { id: 'a.tanaka', name: 'a.tanaka' },
         { id: 'm.okafor', name: 'm.okafor' }
     ];
+
+    /* The people who ask and decide. The part is what the book controls note
+     * says decides each act. Controller and Finance are not in the Acme
+     * dataset today; a task adds them. */
+    var ACTORS = [
+        { id: 'h.desk', name: 'R. Alvarez', part: 'Head of Desk', acme: true },
+        { id: 'c.control', name: 'P. Nwosu', part: 'Controller', acme: false },
+        { id: 'f.ledger', name: 'S. Haddad', part: 'Finance', acme: false },
+        { id: 'm.risk', name: 'T. Brandt', part: 'Market Risk', acme: true },
+        { id: 'o.ops', name: 'K. Mori', part: 'Operations', acme: true }
+    ];
+
+    /* Which part decides a change to each book field. A description-only edit
+     * is not gated. A close follows the closing process, not a status edit. */
+    var FIELD_OWNER = {
+        description: null, name: null,
+        functional_currency: 'Finance', gl_account_ref: 'Finance', cost_center: 'Finance',
+        owner_unit_id: 'Finance', ledger_feed_type: 'Finance',
+        regulatory_book_type: 'Market Risk', book_purpose_type: 'Market Risk',
+        rates_centre_code: 'Market Risk', is_sweepable: 'Market Risk',
+        book_status: 'Operations'
+    };
 
     /* The portfolio tree. A portfolio is a folder: it holds books and other
      * portfolios and never a deal. GLOBAL is the root, so every book is
@@ -231,6 +259,9 @@
 
     var SIDES = [
         { id: 'refused', title: 'Refused' },
+        { id: 'waiting', title: 'Waiting' },
+        { id: 'decide', title: 'Decide' },
+        { id: 'declined', title: 'Declined' },
         { id: 'history', title: 'History' }
     ];
 
@@ -279,7 +310,12 @@
         right: 'read',
         fail: null,
         version: -1,
-        pfForm: false
+        pfForm: false,
+        moveTo: null,
+        newPf: null,
+        actor: 'o.ops',
+        applied: false,
+        comment: ''
     };
 
     /* ------------------------------------------------------- lookups */
@@ -346,6 +382,9 @@
         'book_purpose_type', 'ledger_feed_type', 'is_sweepable', 'rates_centre_code'];
 
     function resetWorking() {
+        S.moveTo = null;
+        S.newPf = null;
+        S.applied = false;
         var b = storedBook();
         var p = pf(S.portfolio) || PORTFOLIOS[0];
         if (b) {
@@ -404,6 +443,12 @@
         if (['None', 'Automatic', 'Manual'].indexOf(p.get('ledger')) >= 0) S.fields.ledger_feed_type = p.get('ledger');
         if (p.get('sweepable') === '1') S.fields.is_sweepable = true;
         if (p.get('purpose') !== null) S.fields.book_purpose_type = p.get('purpose');
+
+        var actorParam = p.get('actor');
+        if (actorParam !== null && ACTORS.some(function (a) { return a.id === actorParam; })) S.actor = actorParam;
+        var moveParam = p.get('moveto');
+        if (moveParam !== null && pf(moveParam) && !S.isNew && S.book && book(S.book).portfolio !== moveParam) S.moveTo = moveParam;
+        if (p.get('newpf') !== null) S.newPf = { name: p.get('newpf') || 'New portfolio', parent: S.portfolio };
 
         var state = p.get('state') || p.get('step');
         if (ALL_STATES.indexOf(state) >= 0) S.screen = state;
@@ -607,7 +652,8 @@
             '</div>' +
             '<p class="legend">' +
             srcChip('tenant', 'This tenant’s data') + ' portfolios and books are yours to shape. ' +
-            srcChip('shared', 'Shared list') + ' the taxonomy they name is the system tenant’s, and is edited under Reference data \u2192 Classifications, not here.' +
+            srcChip('shared', 'Shared list') + ' the taxonomy they name is the system tenant’s, and is edited under Reference data \u2192 Classifications, not here. ' +
+            badge('needs a second person', 'warn') + ' marks a change that waits for a decider; a sandbox’s virtual books need none.' +
             '</p>' +
             '<div class="split"><div class="tree">' + treeRows() + '</div>' + detail + '</div>';
     }
@@ -643,7 +689,7 @@
                 '<p class="hint">Writes <span class="mono">refdata.v1.portfolios.put</span> with ' +
                 '<span class="mono">intent = must_not_exist</span>. The server sets the party from the session.</p>' +
                 '<div class="stepfoot"><button type="button" class="btn ghost" data-act="pf-cancel">Cancel</button>' +
-                '<button type="button" class="btn primary ml-auto" data-act="pf-write">Create portfolio</button></div></div>';
+                '<button type="button" class="btn primary ml-auto" data-act="pf-write">Add to the review</button></div></div>';
         } else {
             form = '<button type="button" class="btn small" data-act="pf-form" style="margin-top:14px">New portfolio here</button>';
         }
@@ -855,7 +901,7 @@
         var out = [];
         var b = storedBook();
         if (S.isNew) {
-            out.push({ what: 'Create the book', who: S.fields.name,
+            out.push({ what: 'Create the book', who: S.fields.name, decider: 'Opening chain',
                 sub: 'refdata.v1.books.put \u00b7 intent = must_not_exist, in portfolio ' + S.portfolio, from: null, to: null });
         } else if (b) {
             var labels = {
@@ -877,12 +923,23 @@
                 var was = String(current[k]);
                 var now = String(S.fields[k]);
                 if (was !== now) {
-                    out.push({ what: 'Set ' + labels[k], who: b.name,
+                    var owner = k === 'book_status' && now === 'Closed' ? 'Closing process' : FIELD_OWNER[k];
+                    out.push({ what: 'Set ' + labels[k], who: b.name, decider: owner || null,
                         sub: 'refdata.v1.books.put \u00b7 intent = must_match_version',
                         from: was === 'true' ? 'Yes' : was === 'false' ? 'No' : was,
                         to: now === 'true' ? 'Yes' : now === 'false' ? 'No' : now });
                 }
             });
+        }
+        if (S.moveTo && b) {
+            out.push({ what: 'Move the book under ' + pf(S.moveTo).name, who: b.name, decider: 'Operations',
+                sub: 'refdata.v1.books.put \u00b7 parent_portfolio_id \u00b7 rights at the new node now cover it',
+                from: pf(b.portfolio).name, to: pf(S.moveTo).name });
+        }
+        if (S.newPf) {
+            out.push({ what: 'Create the portfolio ' + S.newPf.name, who: S.newPf.name, decider: 'Operations',
+                sub: 'refdata.v1.portfolios.put \u00b7 intent = must_not_exist, under ' + pf(S.newPf.parent).name,
+                from: null, to: null });
         }
         /* Rights: what the working copy adds or removes against the baseline. */
         var keyed = {};
@@ -890,7 +947,7 @@
         S.rights.forEach(function (r) {
             var k = r.account + '|' + r.portfolio + '|' + r.right;
             if (!keyed[k]) {
-                out.push({ what: 'Grant the right ' + r.right, who: r.account,
+                out.push({ what: 'Grant the right ' + r.right, who: r.account, decider: 'Operations',
                     sub: 'refdata.v1.portfolio_rights.put_many \u00b7 at ' + r.portfolio,
                     from: null, to: 'granted at ' + r.portfolio });
             }
@@ -899,12 +956,30 @@
         RIGHTS_BASE.forEach(function (r) {
             var k = r.account + '|' + r.portfolio + '|' + r.right;
             if (keyed[k] === true) {
-                out.push({ what: 'Remove the right ' + r.right, who: r.account,
+                out.push({ what: 'Remove the right ' + r.right, who: r.account, decider: 'Operations',
                     sub: 'refdata.v1.portfolio_rights.delete_many \u00b7 at ' + r.portfolio,
                     from: 'held at ' + r.portfolio, to: null });
             }
         });
         return out;
+    }
+
+    function gatedChanges(changes) {
+        return changes.filter(function (c) { return c.decider; });
+    }
+
+    function deciderNames(changes) {
+        var seen = {};
+        changes.forEach(function (c) { seen[c.decider] = true; });
+        return Object.keys(seen);
+    }
+
+    function actorOf(id) {
+        return ACTORS.filter(function (a) { return a.id === id; })[0];
+    }
+
+    function actorForPart(part) {
+        return ACTORS.filter(function (a) { return a.part === part; })[0];
     }
 
     function reviewScreen() {
@@ -917,14 +992,21 @@
                     '<span class="was">' + (c.from === null ? '\u2014' : esc(c.from)) + '</span>' +
                     '<span class="arrow">\u2192</span>' +
                     '<span class="now">' + (c.to === null ? '\u2014' : esc(c.to)) + '</span></div>';
-                return '<li><div class="what">' + esc(c.what) + '</div><div class="who">' + esc(c.who) + '</div>' +
+                var gate = c.decider ?
+                    badge('needs ' + c.decider, 'warn') : badge('no approval', 'ok');
+                return '<li><div class="what">' + esc(c.what) + ' ' + gate + '</div><div class="who">' + esc(c.who) + '</div>' +
                     fromto + '<div class="sub">' + esc(c.sub) + '</div></li>';
             }).join('') + '</ul>';
 
         var r = refusalOf();
+        var gated = gatedChanges(changes);
         var refusal = r ?
             '<div class="notice error"><span class="title">The server will refuse this write</span>' + refusalText(r) + '</div>' :
-            '<div class="notice success"><span class="title">The write is allowed</span>Every change is recorded as a new version, with the actor and the change reason.</div>';
+            gated.length ?
+            '<div class="notice warn"><span class="title">This raises an approval request</span>' +
+            gated.length + ' of ' + changes.length + ' changes need a second person: ' + esc(deciderNames(gated).join(', ')) +
+            '. Nothing changes until each of them answers, and the person who asks cannot decide.</div>' :
+            '<div class="notice success"><span class="title">The write is allowed</span>No change here needs a second person. Every change is recorded as a new version, with the actor and the change reason.</div>';
 
         return list + refusal +
             '<div class="panel-soft" style="margin-top:14px"><h3 style="font-size:13px;margin-top:0">The change reason</h3>' +
@@ -950,10 +1032,109 @@
                 '<span class="nm">' + esc(c[0]) + '</span><p>' + esc(c[1]) + '</p></button>';
         }).join('');
         return '<div class="outcome"><div class="mark ok">\u2713</div>' +
-            '<h2>' + (S.isNew ? 'The book is created' : 'The book is written') + '</h2>' +
+            '<h2>' + (S.applied ? 'The change is approved and applied' : S.isNew ? 'The book is created' : 'The book is written') + '</h2>' +
             '<p>' + (S.isNew ? esc(S.fields.name) + ' now sits in ' + esc(pf(S.portfolio).name) + '.' : esc(S.book) + ' is at version ' + version + '.') +
             ' The rights you changed are written at ' + esc(S.portfolio) + '. Every write is a new version with an actor and a reason.</p>' +
             '<div class="nextcards">' + cards + '</div></div>';
+    }
+
+    /* ------------------------------------------- waiting, decide, declined */
+
+    var REQUEST_ID = 'REQ-0412';
+
+    function requiredParts(changes) {
+        var names = deciderNames(gatedChanges(changes));
+        var opening = names.indexOf('Opening chain') >= 0;
+        var closing = names.indexOf('Closing process') >= 0;
+        var parts = names.filter(function (p) { return p !== 'Opening chain' && p !== 'Closing process'; });
+        if (closing && parts.indexOf('Finance') < 0) parts.push('Finance');
+        if (opening) {
+            ['Finance', 'Market Risk', 'Operations'].forEach(function (p) { if (parts.indexOf(p) < 0) parts.push(p); });
+            parts.unshift('Controller');
+        }
+        return parts;
+    }
+
+    function waitingScreen() {
+        var changes = changesList();
+        var parts = requiredParts(changes);
+        var maker = actorOf('h.desk');
+        var rows = parts.map(function (part) {
+            var who = actorForPart(part);
+            var holds = who && !who.acme ? ' ' + badge('no account in Acme yet', 'bad') : '';
+            return '<tr><td>' + esc(part) + '</td><td>' + esc(who ? who.name : '\u2014') + holds + '</td>' +
+                '<td>' + badge('waiting', 'warn') + '</td></tr>';
+        }).join('');
+        return '<div class="outcome"><div class="mark ok">\u23f3</div>' +
+            '<h2>The request is raised</h2>' +
+            '<p><span class="mono">' + REQUEST_ID + '</span> was raised by ' + esc(maker.name) + ' (' + esc(maker.part) + ') for ' +
+            changes.length + ' change' + (changes.length === 1 ? '' : 's') + '. The book stays at its current version until every decider answers. ' +
+            'The request is written down, so you can leave this screen and find it under <b>My requests</b>.</p>' +
+            '<table class="difftable"><thead><tr><th>Decider</th><th>Person</th><th>Answer</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+            '<p class="hint" style="margin-top:10px">The person who asks cannot decide. A new book needs the controller first, then Finance, Market Risk and Operations each approve their own part.</p>' +
+            '<div class="nextcards">' +
+            '<button type="button" class="nextcard" data-act="opendecide"><span class="nm">Open as the checker</span><p>See what the decider sees.</p></button>' +
+            '<button type="button" class="nextcard" data-act="withdraw"><span class="nm">Withdraw the request</span><p>Go back to the review.</p></button>' +
+            '</div></div>';
+    }
+
+    function decideScreen() {
+        var changes = changesList();
+        var parts = requiredParts(changes);
+        var actor = actorOf(S.actor) || ACTORS[0];
+        var maker = actorOf('h.desk');
+        var isMaker = actor.id === maker.id;
+        var mine = changes.filter(function (c) {
+            if (!c.decider) return false;
+            if (c.decider === 'Opening chain') return actor.part === 'Controller';
+            if (c.decider === 'Closing process') return actor.part === 'Finance';
+            return c.decider === actor.part;
+        });
+        var options = ACTORS.map(function (a) {
+            return '<option value="' + esc(a.id) + '"' + (a.id === actor.id ? ' selected' : '') + '>' +
+                esc(a.name) + ' \u00b7 ' + esc(a.part) + (a.acme ? '' : ' (not in Acme yet)') + '</option>';
+        }).join('');
+        var delta = mine.length === 0 ?
+            '<div class="notice info">Nothing in this request is for ' + esc(actor.part) + '. ' +
+            (parts.indexOf(actor.part) < 0 ? 'This part decides none of its changes.' : 'It waits for an earlier part.') + '</div>' :
+            '<ul class="changes">' + mine.map(function (c) {
+                var fromto = c.from === null && c.to === null ? '' :
+                    '<div class="fromto"><span class="was">' + (c.from === null ? '\u2014' : esc(c.from)) + '</span>' +
+                    '<span class="arrow">\u2192</span><span class="now">' + (c.to === null ? '\u2014' : esc(c.to)) + '</span></div>';
+                return '<li><div class="what">' + esc(c.what) + '</div><div class="who">' + esc(c.who) + '</div>' + fromto + '</li>';
+            }).join('') + '</ul>';
+        var checks = '<ul class="changes">' +
+            '<li><div class="what">' + badge(isMaker ? 'fail' : 'pass', isMaker ? 'bad' : 'ok') + ' The maker is not the decider</div><div class="who">' +
+            esc(maker.name) + ' asked; ' + esc(actor.name) + ' is answering.</div></li>' +
+            (changes.some(function (c) { return c.decider === 'Closing process'; }) ?
+                '<li><div class="what">' + badge('pass', 'ok') + ' The book is flat</div><div class="who">0 open trades against ' + esc(S.book) + '.</div></li>' : '') +
+            (S.fields.owner_unit_id ? '<li><div class="what">' + badge('pass', 'ok') + ' The owner unit is in the portfolio ancestry chain</div><div class="who">' + esc(S.fields.owner_unit_id) + '</div></li>' : '') +
+            '</ul>';
+        var blocked = isMaker || mine.length === 0 || S.comment.trim() === '';
+        var why = isMaker ? '<div class="notice error"><span class="title">You asked for this</span>A different person must decide it.</div>' : '';
+        return '<div class="panel-soft"><label class="field" style="margin-bottom:0"><span class="lbl">Acting as</span>' +
+            '<select data-actor="1">' + options + '</select></label></div>' +
+            '<div class="panel"><h2>Request ' + REQUEST_ID + ' \u00b7 raised by ' + esc(maker.name) + '</h2>' +
+            '<p class="lead">The checker reads what would change, then answers with a comment.</p>' + delta + '</div>' +
+            '<div class="panel"><h2>Checks</h2>' + checks + '</div>' + why +
+            '<div class="panel-soft"><label class="field"><span class="lbl">Comment \u00b7 required</span>' +
+            '<input data-comment="1" placeholder="Why you approve or decline" value="' + esc(S.comment) + '"></label>' +
+            '<div class="stepfoot"><button type="button" class="btn ghost" data-act="decline"' + (blocked ? ' disabled' : '') + '>Decline</button>' +
+            '<button type="button" class="btn primary ml-auto" data-act="approve"' + (blocked ? ' disabled' : '') + '>Approve</button></div></div>';
+    }
+
+    function declinedScreen() {
+        var actor = actorOf(S.actor) || ACTORS[0];
+        var b = storedBook();
+        return '<div class="outcome"><div class="mark bad">\u2715</div>' +
+            '<h2>The request was declined</h2>' +
+            '<p>' + esc(actor.name) + ' (' + esc(actor.part) + ') declined <span class="mono">' + REQUEST_ID + '</span>' +
+            (S.comment.trim() ? ': \u201c' + esc(S.comment) + '\u201d' : '') + '.</p>' +
+            '<table class="difftable"><tbody>' +
+            '<tr><td>What changed</td><td>Nothing. ' + (b ? esc(b.name) + ' stays at version ' + historyFor(b).length + '.' : 'No book is created.') + '</td></tr>' +
+            '<tr><td>What the maker can do</td><td>Change the request and raise it again, or leave it. The declined request stays on record.</td></tr>' +
+            '</tbody></table>' +
+            '<div class="nextcards"><button type="button" class="nextcard" data-act="withdraw"><span class="nm">Back to the review</span><p>Change the request and raise it again.</p></button></div></div>';
     }
 
     /* --------------------------------------------------- refused screen */
@@ -1131,7 +1312,7 @@
 
     function renderRail() {
         var currentIndex = STEPS.map(function (s) { return s.id; }).indexOf(S.screen);
-        var sideParent = S.screen === 'refused' ? 'review' : S.screen === 'history' ? 'tree' : null;
+        var sideParent = ['refused', 'waiting', 'decide', 'declined'].indexOf(S.screen) >= 0 ? 'review' : S.screen === 'history' ? 'tree' : null;
         return '<nav class="railnav" aria-label="Journey steps"><ol>' +
             STEPS.map(function (s, i) {
                 var cls;
@@ -1162,6 +1343,9 @@
         if (S.screen === 'review') return reviewScreen();
         if (S.screen === 'outcome') return outcomeScreen();
         if (S.screen === 'refused') return refusedScreen();
+        if (S.screen === 'waiting') return waitingScreen();
+        if (S.screen === 'decide') return decideScreen();
+        if (S.screen === 'declined') return declinedScreen();
         return historyScreen();
     }
 
@@ -1176,7 +1360,10 @@
         if (id === 'book') return { label: 'Continue', enabled: S.fields.name.trim() !== '', to: 'classify' };
         if (id === 'classify') return { label: 'Continue', enabled: true, to: 'rights' };
         if (id === 'rights') return { label: 'Continue', enabled: true, to: 'review' };
-        if (id === 'review') return { label: 'Write', enabled: true, to: 'write' };
+        if (id === 'review') {
+            var raise = gatedChanges(changesList()).length > 0;
+            return { label: raise ? 'Raise request' : 'Write', enabled: changesList().length > 0, to: 'write' };
+        }
         return null;
     }
 
@@ -1184,7 +1371,8 @@
         var step = currentStep();
         var side = SIDES.filter(function (s) { return s.id === S.screen; })[0];
         var title = step ? step.title : (side ? side.title : S.screen);
-        var lead = step ? step.lead : (S.screen === 'refused' ? 'What the server says when the write is not allowed.' : 'Every version, with the field diff.');
+        var SIDE_LEADS = { refused: 'What the server says when the write is not allowed.', waiting: 'The request is raised and the book has not changed.', decide: 'The checker reads the change and answers it.', declined: 'The request was declined and the book has not changed.' };
+        var lead = step ? step.lead : (SIDE_LEADS[S.screen] || 'Every version, with the field diff.');
         var next = nextOf();
         var prevId = STEPS[STEPS.map(function (s) { return s.id; }).indexOf(S.screen) - 1];
         var foot = next === null ? '' :
@@ -1265,11 +1453,11 @@
         S.portfolio = id;
         var b = S.book ? book(S.book) : undefined;
         if (!S.isNew && b && b.portfolio !== id) {
-            /* A book belongs to exactly one portfolio, so choosing another
-             * portfolio starts a new book rather than moving one. */
-            S.isNew = true;
-            S.book = '';
-            resetWorking();
+            /* A book belongs to exactly one portfolio. Choosing another one
+             * for an open book is a move, and a move is a gated change. */
+            S.moveTo = id;
+        } else if (!S.isNew && b) {
+            S.moveTo = null;
         } else if (S.isNew) {
             resetWorking();
         }
@@ -1316,6 +1504,8 @@
         } else if (act === 'pf-cancel') {
             S.pfForm = false;
         } else if (act === 'pf-write') {
+            var nameEl = document.querySelector('[data-f="pfname"]');
+            S.newPf = { name: (nameEl && nameEl.value.trim()) || 'New portfolio', parent: S.portfolio };
             S.pfForm = false;
         } else if (act === 'right') {
             var account = el.getAttribute('data-account');
@@ -1326,6 +1516,14 @@
             });
             if (el.checked && i < 0) S.rights.push({ account: account, portfolio: S.portfolio, right: right });
             else if (!el.checked && i >= 0) S.rights.splice(i, 1);
+        } else if (act === 'approve') {
+            if (!el.disabled) { S.applied = true; go('outcome'); }
+        } else if (act === 'decline') {
+            if (!el.disabled) go('declined');
+        } else if (act === 'opendecide') {
+            go('decide');
+        } else if (act === 'withdraw') {
+            go('review');
         } else if (act === 'version') {
             S.version = parseInt(el.getAttribute('data-v'), 10);
         } else if (act === 'fail') {
@@ -1339,7 +1537,7 @@
             if (!el.disabled) {
                 var ids = STEPS.map(function (s) { return s.id; });
                 var idx = ids.indexOf(S.screen);
-                if (S.screen === 'refused' || S.screen === 'history') go('review');
+                if (['refused', 'waiting', 'decide', 'declined', 'history'].indexOf(S.screen) >= 0) go('review');
                 else if (idx > 0) go(ids[idx - 1]);
             }
         } else if (act === 'next') {
@@ -1348,7 +1546,9 @@
                 if (!n) return;
                 if (n.to === 'write') {
                     var r = refusalOf();
-                    if (r) { S.fail = r.kind; go('refused'); } else { S.fail = null; go('outcome'); }
+                    if (r) { S.fail = r.kind; go('refused'); }
+                    else if (gatedChanges(changesList()).length > 0) { S.fail = null; S.actor = actorForPart(requiredParts(changesList())[0]).id; go('waiting'); }
+                    else { S.fail = null; go('outcome'); }
                 } else {
                     go(n.to);
                 }
@@ -1362,6 +1562,8 @@
     function inputChanged(el) {
         if (el.getAttribute('data-act') !== null) return false;
         if (el.getAttribute('data-q') !== null) { S.query = el.value; return true; }
+        if (el.getAttribute('data-comment') !== null) { S.comment = el.value; return true; }
+        if (el.getAttribute('data-actor') !== null) { S.actor = el.value; return true; }
         var f = el.getAttribute('data-f');
         if (f === null) return false;
         if (f === 'is_sweepable') S.fields.is_sweepable = el.checked;

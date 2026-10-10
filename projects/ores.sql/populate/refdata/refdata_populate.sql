@@ -69,6 +69,10 @@
 \ir ./refdata_currency_countries_seed_populate.sql
 
 \echo ''
+\echo '--- Currency Groups Seed Data ---'
+\ir ./refdata_currency_groups_seed_populate.sql
+
+\echo ''
 \echo '--- Currency Pair Convention Calendars Seed Data ---'
 \ir ./refdata_currency_pair_convention_calendars_seed_populate.sql
 

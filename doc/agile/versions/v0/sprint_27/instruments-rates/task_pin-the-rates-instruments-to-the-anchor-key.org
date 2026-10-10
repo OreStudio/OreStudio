@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/pin-the-rates-instruments-to-the-anchor-key
-#+pr:
+#+pr: 3032
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3032][#3032]] | [trading,sql] Pin the rates header to the trade anchor |
 
 * Review
 

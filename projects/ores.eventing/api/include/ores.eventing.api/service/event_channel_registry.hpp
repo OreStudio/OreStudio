@@ -46,7 +46,7 @@ namespace ores::eventing::service {
  *     event_channel_registry registry;
  *
  *     // Register channels during initialization
- *     registry.register_channel<currency_changed_event>("Currency data modified");
+ *     registry.register_channel<role_assigned_event>("A role was assigned");
  *
  *     // Later, query available channels
  *     auto channels = registry.get_channels();

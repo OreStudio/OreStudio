@@ -23,7 +23,6 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
 #include "ores.http.api/net/http_server.hpp"
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.core/routes/variability_routes.hpp"

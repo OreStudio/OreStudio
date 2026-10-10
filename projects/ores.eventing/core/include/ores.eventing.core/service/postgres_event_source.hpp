@@ -40,24 +40,20 @@ namespace ores::eventing::service {
  * @brief Event source that bridges PostgreSQL LISTEN/NOTIFY to the event bus.
  *
  * This class wraps postgres_listener_service and turns the notify trigger's
- * canonical notification into typed domain events on the event bus. One
- * channel can serve two mappings, and the notification carries what both
- * need: register_entity_event_mapping() converts it through the event's own
- * traits, key record included, and register_mapping() builds an event from
- * the notification's time, its changed ids and its tenant.
- *
- * Components can register their entity-to-event mappings via register_mapping(),
- * enabling the event source to automatically publish the correct typed event
- * when a database notification is received.
+ * canonical notification into events on the event bus. A channel registered
+ * with register_entity_event_mapping() publishes two things for each
+ * notification: the typed event its traits name, converted through the event's
+ * own key record, and an entity_change_event carrying the entity's name, the
+ * changed ids and the tenant. The second is for an in-process subscriber that
+ * must know the tenant, which the typed event does not state; it filters on
+ * the entity name.
  *
  * Usage:
  * @code
  *     event_bus bus;
  *     postgres_event_source source(ctx, bus);
  *
- *     // Register entity mappings
- *     source.register_mapping<currency_changed_event>("ores.refdata.currency",
- *         "ores_refdata_currencies");
+ *     source.register_entity_event_mapping<country_event>("ores_refdata_countries");
  *
  *     source.start();
  * @endcode
@@ -69,21 +65,6 @@ private:
         static auto instance = make_logger("ores.eventing.service.postgres_event_source");
         return instance;
     }
-
-    /**
-     * @brief Type-erased publisher function.
-     *
-     * Takes a timestamp, entity_ids, and tenant_id, publishes the
-     * appropriate typed event.
-     */
-    using publisher_fn = std::function<void(std::chrono::system_clock::time_point,
-                                            const std::vector<std::string>&,
-                                            const std::string&)>;
-
-    struct entity_mapping {
-        std::string channel_name;
-        publisher_fn publisher;
-    };
 
     /**
      * @brief Type-erased publisher for one canonical entity event.
@@ -113,48 +94,15 @@ public:
     postgres_event_source& operator=(const postgres_event_source&) = delete;
 
     /**
-     * @brief Register a mapping from entity name to typed domain event.
-     *
-     * When a notification is received for the specified entity, the event
-     * source will publish an instance of Event to the bus with the
-     * notification's timestamp, its changed ids and its tenant.
-     *
-     * @tparam Event The domain event type to publish (must have a timestamp member).
-     * @param entity_name The fully qualified entity name (e.g., "ores.refdata.currency").
-     * @param channel_name The PostgreSQL channel to listen on (e.g., "ores_refdata_currencies").
-     */
-    template <typename Event>
-    void register_mapping(const std::string& entity_name, const std::string& channel_name) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), info) << "Registering entity-to-event mapping: entity='" << entity_name
-                                  << "', channel='" << channel_name << "'";
-
-        channel_entities_[channel_name] = entity_name;
-        entity_mappings_[entity_name] = entity_mapping{
-            .channel_name = channel_name,
-            .publisher = [this, entity_name](std::chrono::system_clock::time_point ts,
-                                             const std::vector<std::string>& entity_ids,
-                                             const std::string& tenant_id) {
-                using namespace ores::logging;
-                BOOST_LOG_SEV(lg(), info)
-                    << "Publishing domain event for entity: " << entity_name << " with "
-                    << entity_ids.size() << " entity IDs" << " (tenant: " << tenant_id << ")";
-                bus_.publish(Event{ts, entity_ids, tenant_id});
-            }};
-
-        listener_.subscribe(channel_name);
-        BOOST_LOG_SEV(lg(), debug) << "Subscribed to PostgreSQL channel: " << channel_name;
-    }
-
-    /**
      * @brief Register a mapping from a canonical event's channel to its type.
      *
      * The notification trigger publishes the specification's event fields on
      * @p channel_name: the event identity, the key, the action, the version,
      * the time and the correlation. The mapping converts each notification
      * into @p Event -- which knows its own key record -- and publishes it on
-     * the bus. A subscriber then publishes it to NATS on the subject the
-     * action names.
+     * the bus, then publishes the notification as an entity_change_event for
+     * a subscriber that needs the tenant. A subscriber then publishes the
+     * typed event to NATS on the subject the action names.
      *
      * The conversion is read from the event's own traits, because only the
      * event knows the columns its key carries.
@@ -212,25 +160,9 @@ public:
     wait_until_ready(std::chrono::milliseconds timeout = std::chrono::seconds(2));
 
 private:
-    /**
-     * @brief Dispatches a canonical notification to its registered mapping.
-     */
-    void on_entity_event(const std::string& channel, const domain::entity_event_notification& e);
-
     event_bus& bus_;
     ores::database::service::postgres_listener_service listener_;
-    std::unordered_map<std::string, entity_mapping> entity_mappings_;
     std::unordered_map<std::string, entity_event_mapping> entity_event_mappings_;
-    /**
-     * @brief The entity each channel serves, for the older mapping.
-     *
-     * entity_mappings_ is keyed by entity name, so a notification arriving on a
-     * channel cannot find its mapping without this index. It exists because one
-     * channel can serve both mappings: the canonical one publishes the typed
-     * event to NATS, and the older one hands the change to an in-process
-     * subscriber that needs the tenant and the changed ids.
-     */
-    std::unordered_map<std::string, std::string> channel_entities_;
     std::string registered_entities_;
     std::atomic<std::uint64_t> parse_failure_count_{0};
 };

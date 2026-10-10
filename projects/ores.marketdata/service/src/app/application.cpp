@@ -21,7 +21,6 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/eventing/feed_binding_event.hpp"
@@ -39,9 +38,9 @@
 #include "ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.refdata.api/eventing/crm_driver_pair_changed_event.hpp"
-#include "ores.refdata.api/eventing/crm_enabled_derived_pair_changed_event.hpp"
-#include "ores.refdata.api/eventing/crm_topology_config_changed_event.hpp"
+#include "ores.refdata.api/eventing/crm_driver_pair_event.hpp"
+#include "ores.refdata.api/eventing/crm_enabled_derived_pair_event.hpp"
+#include "ores.refdata.api/eventing/crm_topology_config_event.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
@@ -112,7 +111,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     namespace ev = ores::eventing;
     namespace mdm = ores::marketdata::messaging;
-    namespace rdev = ores::refdata::eventing;
+    namespace rdm = ores::refdata::messaging;
     namespace mdsm = ores::marketdata::service::messaging;
     ev::service::event_bus event_bus;
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
@@ -144,31 +143,31 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             ingest->refresh();
         });
 
-    ev::service::registrar::register_mapping<rdev::crm_topology_config_changed_event>(
-        event_source, "ores.refdata.crm_topology_config", "ores_refdata_crm_topology_configs");
-    ev::service::registrar::register_mapping<rdev::crm_driver_pair_changed_event>(
-        event_source, "ores.refdata.crm_driver_pair", "ores_refdata_crm_driver_pairs");
-    ev::service::registrar::register_mapping<rdev::crm_enabled_derived_pair_changed_event>(
-        event_source,
-        "ores.refdata.crm_enabled_derived_pair",
+    // Refdata owns these tables and publishes their changes. This service
+    // listens on the same channels to rebuild its engines, so each channel is
+    // mapped to the canonical event and nothing here republishes it.
+    event_source.register_entity_event_mapping<rdm::crm_topology_config_event>(
+        "ores_refdata_crm_topology_configs");
+    event_source.register_entity_event_mapping<rdm::crm_driver_pair_event>(
+        "ores_refdata_crm_driver_pairs");
+    event_source.register_entity_event_mapping<rdm::crm_enabled_derived_pair_event>(
         "ores_refdata_crm_enabled_derived_pairs");
-    auto crm_topology_sub = event_bus.subscribe<rdev::crm_topology_config_changed_event>(
-        [crm_bridge](const rdev::crm_topology_config_changed_event&) {
+    auto crm_topology_sub = event_bus.subscribe<rdm::crm_topology_config_event>(
+        [crm_bridge](const rdm::crm_topology_config_event&) {
             BOOST_LOG_SEV(lg(), info) << "CRM topology config changed — refreshing CRM engines.";
             crm_bridge->refresh();
         });
-    auto crm_driver_pair_sub = event_bus.subscribe<rdev::crm_driver_pair_changed_event>(
-        [crm_bridge](const rdev::crm_driver_pair_changed_event&) {
+    auto crm_driver_pair_sub = event_bus.subscribe<rdm::crm_driver_pair_event>(
+        [crm_bridge](const rdm::crm_driver_pair_event&) {
             BOOST_LOG_SEV(lg(), info) << "CRM driver pair changed — refreshing CRM engines.";
             crm_bridge->refresh();
         });
-    auto crm_enabled_derived_pair_sub =
-        event_bus.subscribe<rdev::crm_enabled_derived_pair_changed_event>(
-            [crm_bridge](const rdev::crm_enabled_derived_pair_changed_event&) {
-                BOOST_LOG_SEV(lg(), info)
-                    << "CRM enabled derived pair changed — refreshing CRM engines.";
-                crm_bridge->refresh();
-            });
+    auto crm_enabled_derived_pair_sub = event_bus.subscribe<rdm::crm_enabled_derived_pair_event>(
+        [crm_bridge](const rdm::crm_enabled_derived_pair_event&) {
+            BOOST_LOG_SEV(lg(), info)
+                << "CRM enabled derived pair changed — refreshing CRM engines.";
+            crm_bridge->refresh();
+        });
     event_source.start();
     crm_bridge->refresh();
 

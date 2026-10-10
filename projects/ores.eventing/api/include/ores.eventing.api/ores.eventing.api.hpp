@@ -26,8 +26,10 @@
  * process (e.g. handlers inside ores.comms.service, or between service layers).
  * Does not cross process boundaries and has no network dependency.
  *
- * - @b domain sub-namespace: event_traits<T> — compile-time mapping from a
- *   C++ event type to its string name (e.g. "ores.refdata.currency_changed").
+ * - @b domain sub-namespace: entity_event_traits<T> — compile-time mapping from
+ *   an entity's change event to the NATS subject prefix it is published on
+ *   (e.g. "refdata.v1.countries_events"). event_traits<T> names an in-process
+ *   domain event that is not an entity change (e.g. "ores.iam.role_assigned").
  *   Also defines entity_change_event, the common payload for all domain
  *   change notifications.
  *
@@ -36,8 +38,9 @@
  *   so that database-side changes (triggers, pg_notify) raise in-process
  *   events without polling.
  *
- * The event_traits string names defined here are reused as NATS subject
- * suffixes by ores.nats when publishing events to external subscribers.
+ * An entity's change event is published to NATS on the subject its
+ * entity_event_traits state, the prefix and the action. An in-process domain
+ * event is not published to NATS.
  *
  * Contrast with ores.nats (external NATS bus, cross-process) and
  * ores.mq (durable PostgreSQL-backed queues, persistent across restarts).

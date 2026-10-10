@@ -25,7 +25,6 @@ set(files
     "domain_report_definition_tests.cpp"
     "domain_report_instance_tests.cpp"
     "domain_report_type_tests.cpp"
-    "eventing_reporting_events_tests.cpp"
     "generators_tests.cpp"
     "main.cpp"
     "workflow_report_execution_tests.cpp"

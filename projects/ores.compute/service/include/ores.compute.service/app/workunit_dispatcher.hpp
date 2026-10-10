@@ -20,8 +20,8 @@
 #ifndef ORES_COMPUTE_SERVICE_APP_WORKUNIT_DISPATCHER_HPP
 #define ORES_COMPUTE_SERVICE_APP_WORKUNIT_DISPATCHER_HPP
 
-#include "ores.compute.api/eventing/workunit_changed_event.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.iam.client/client/storage_capability_minter.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
@@ -67,7 +67,7 @@ public:
      * events for an already-dispatched workunit are safe and a partially
      * failed publish heals on the next event.
      */
-    void dispatch(const ores::compute::eventing::workunit_changed_event& evt);
+    void dispatch(const ores::eventing::domain::entity_change_event& evt);
 
 private:
     void dispatch_one(const ores::database::context& tenant_ctx, const std::string& workunit_id);

@@ -27,14 +27,16 @@ namespace ores::eventing::domain {
 /**
  * @brief Traits template for mapping event types to their logical names.
  *
- * Each domain event should specialize this template to provide its
- * string identifier used in the notification protocol.
+ * An in-process domain event that is not a change to an entity, such as a
+ * role being assigned, specializes this template to name itself on the bus.
+ * A change to an entity does not use it: that event states its NATS subject
+ * through entity_event_traits.
  *
  * Example:
  * @code
  *     template<>
- *     struct event_traits<currency_changed_event> {
- *         static constexpr std::string_view name = "ores.refdata.currency_changed";
+ *     struct event_traits<role_assigned_event> {
+ *         static constexpr std::string_view name = "ores.iam.role_assigned";
  *     };
  * @endcode
  *

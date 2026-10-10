@@ -31,5 +31,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.core/service/cache/partitioned_cache.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.core/service/entity_event_publisher.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.core/service/postgres_event_source.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.core/service/registrar.hpp"
 )

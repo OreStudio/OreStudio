@@ -965,6 +965,80 @@ Oldest first, one entry per distinct market instant read.
 /** Oldest first, one entry per distinct market instant read. */
 #+end_src
 
+** point_provenance
+
+Where one value of a snapshot came from: its source kind and, for a point with
+an annex row, who set it, when and why.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where one value of a snapshot came from.
+ */
+#+end_src
+
+*** source_kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+One of =quoted=, =derived= or =manual=. A point with no annex row is quoted. The
+empty string marks a hole: no point stands at the node, so it has no source.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One of quoted, derived or manual.
+ *
+ * A point with no annex row is quoted. The empty string marks a hole, which has
+ * no source.
+ */
+#+end_src
+
+*** modified_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Who set the point, from its annex row. Empty for a quoted point and for a hole.
+
+#+begin_src cpp :name comment
+/** Who set the point. Empty for a quoted point and for a hole. */
+#+end_src
+
+*** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Why the point was set, from its annex row. Empty for a quoted point and for a
+hole.
+
+#+begin_src cpp :name comment
+/** Why the point was set. Empty for a quoted point and for a hole. */
+#+end_src
+
+*** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The free-text reason for a manual point.
+
+#+begin_src cpp :name comment
+/** The free-text reason for the change. Empty when none was given. */
+#+end_src
+
+*** recorded_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+When the annex row was recorded, which for a manual point is when it was keyed.
+The epoch for a quoted point and for a hole.
+
+#+begin_src cpp :name comment
+/** When the annex row was recorded. The epoch for a quoted point and for a hole. */
+#+end_src
+
 ** get_curve_snapshot_request
 :PROPERTIES:
 :subject: marketdata.v1.curve_snapshot.get
@@ -996,6 +1070,25 @@ The object, as the typed identity the resolver already takes.
 
 #+begin_src cpp :name comment
 /** The object, as the typed identity the resolver already takes. */
+#+end_src
+
+*** include_provenance
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Whether the response states where each value came from. The annex is cold and
+holds only the derived and manual points, so a caller that does not ask pays
+nothing for it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the response states where each value came from.
+ *
+ * The annex is read only when this is set, so a caller that does not ask pays
+ * nothing for it.
+ */
 #+end_src
 
 ** get_curve_snapshot_response
@@ -1113,6 +1206,22 @@ row carries that row's own record time, not the time of the value it replaced.
  * minus the point's instant is market staleness, the age of the market state
  * it belongs to; now minus its record time is record staleness, how long ago
  * the value arrived.
+ */
+#+end_src
+
+*** provenance
+:PROPERTIES:
+:cpp_type: std::vector<point_provenance>
+:END:
+
+Index for index with =nodes= when the request asked for it, and empty when it
+did not.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where each value came from, index for index with nodes.
+ *
+ * Empty when the request did not ask for provenance.
  */
 #+end_src
 

@@ -23,8 +23,10 @@
 #include "ores.marketdata.core/repository/curve_snapshot_staleness.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
+#include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/series_shape.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -50,6 +52,40 @@ messaging::get_curve_snapshot_response refuse(std::string why) {
     response.success = false;
     response.message = std::move(why);
     return response;
+}
+
+/// Where each placed value came from, index for index with the grid. A point with
+/// no annex row is quoted, and a node no point stands at is a hole.
+std::vector<messaging::point_provenance>
+read_provenance(ores::database::context ctx,
+                const boost::uuids::uuid& series_id,
+                const std::vector<repository::observation_record>& placed,
+                const std::vector<std::size_t>& placed_nodes,
+                std::size_t node_count) {
+    std::vector<repository::observation_lineage_repository::point_key> keys;
+    keys.reserve(placed.size());
+    for (const auto& record : placed)
+        keys.push_back({record.observation.observation_datetime, record.observation.oresmd_uri});
+    const auto annexes =
+        repository::observation_lineage_repository{}.read_latest_for_points(ctx, series_id, keys);
+
+    std::vector<messaging::point_provenance> result(node_count);
+    for (std::size_t i = 0; i < placed.size(); ++i) {
+        auto& entry = result[placed_nodes[i]];
+        entry.source_kind = "quoted";
+        for (const auto& annex : annexes) {
+            if (annex.oresmd_uri != placed[i].observation.oresmd_uri ||
+                annex.observation_datetime != placed[i].observation.observation_datetime)
+                continue;
+            entry.source_kind = annex.point_source_kind;
+            entry.modified_by = annex.modified_by;
+            entry.change_reason_code = annex.change_reason_code;
+            entry.change_commentary = annex.change_commentary;
+            entry.recorded_at = annex.recorded_at;
+            break;
+        }
+    }
+    return result;
 }
 
 }
@@ -97,7 +133,9 @@ series_snapshot_reader::read(ores::database::context ctx,
     // The staleness is measured over the points the response shows, so the age
     // and the spread never include a point that has no node.
     std::vector<repository::observation_record> placed;
+    std::vector<std::size_t> placed_nodes;
     placed.reserve(records.size());
+    placed_nodes.reserve(records.size());
     // The read returns one record per distinct oresmd URI, and the URIs of one
     // series differ only in their coordinates, so no two records share a node.
     for (const auto& record : records) {
@@ -111,7 +149,12 @@ series_snapshot_reader::read(ores::database::context ctx,
         response.values[*node] = record.observation.value;
         response.recorded_at[*node] = record.recorded_at;
         placed.push_back(record);
+        placed_nodes.push_back(*node);
     }
+
+    if (request.include_provenance)
+        response.provenance =
+            read_provenance(ctx, series.front().id, placed, placed_nodes, grid.size());
 
     const auto summary = repository::summarise_staleness(placed, as_of);
     response.oldest_age_seconds = summary.oldest_age_seconds;

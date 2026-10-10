@@ -198,6 +198,18 @@ public:
                                std::chrono::system_clock::time_point observation_datetime,
                                const std::string& oresmd_uri);
 
+    /**
+     * @brief The natural key of a market observation within one series, which is the
+     * point an annex row describes.
+     */
+    struct point_key {
+        std::chrono::system_clock::time_point observation_datetime;
+        std::string oresmd_uri;
+    };
+
+    std::vector<domain::observation_lineage> read_latest_for_points(
+        context ctx, const boost::uuids::uuid& series_id, const std::vector<point_key>& points);
+
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or

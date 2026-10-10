@@ -19,6 +19,8 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
+#include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.marketdata.core/service/series_evolution_reader.hpp"
 #include "ores.marketdata.core/service/series_snapshot_reader.hpp"
@@ -227,4 +229,72 @@ TEST_CASE("a_snapshot_of_an_identity_no_series_carries_is_empty", tags) {
     CHECK(resp.nodes.empty());
     CHECK(resp.values.empty());
     CHECK(resp.as_of == at);
+}
+
+TEST_CASE("a_snapshot_asked_for_provenance_names_the_source_of_each_value", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    import(h,
+           "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/1Y/ATM 0.080\n"
+           "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/2Y/ATM 0.085\n"
+           "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/1Y/25RR 0.011\n");
+
+    const auto identity = fx_option_identity("NZD", "PLN");
+    const auto series =
+        ores::marketdata::repository::market_series_identity_reader{}.read(h.context(), identity);
+    REQUIRE(series.size() == 1);
+    ores::marketdata::repository::market_observation_repository obs_repo;
+    std::string over_keyed_uri;
+    for (const auto& obs : obs_repo.read_latest_for_series(h.context(), series.front().id))
+        if (obs.oresmd_uri.find("maturity=2Y") != std::string::npos ||
+            obs.oresmd_uri.find("expiry=2Y") != std::string::npos)
+            over_keyed_uri = obs.oresmd_uri;
+    REQUIRE_FALSE(over_keyed_uri.empty());
+
+    const auto at = instant("2017-09-11T12:00:00Z");
+    obs_repo.write_manual_point(
+        h.context().with_party(
+            h.tenant_id(), series.front().party_id, {series.front().party_id}, h.db_user()),
+        series.front().id,
+        over_keyed_uri,
+        instant("2017-09-10T00:00:00Z"),
+        "0.090",
+        "system.test",
+        "operator over-key");
+
+    auto req = snapshot_request(identity);
+    req.include_provenance = true;
+    const auto resp = series_snapshot_reader::read(h.context(), req, at);
+
+    REQUIRE(resp.success);
+    // Nodes: 1Y/ATM, 1Y/25RR, 2Y/ATM, 2Y/25RR.
+    REQUIRE(resp.provenance.size() == resp.nodes.size());
+    CHECK(resp.values == std::vector<std::string>{"0.080", "0.011", "0.090", ""});
+    CHECK(resp.provenance[0].source_kind == "quoted");
+    CHECK(resp.provenance[0].modified_by.empty());
+    CHECK(resp.provenance[1].source_kind == "quoted");
+    CHECK(resp.provenance[2].source_kind == "manual");
+    CHECK(resp.provenance[2].modified_by == h.db_user());
+    CHECK(resp.provenance[2].change_reason_code == "system.test");
+    CHECK(resp.provenance[2].change_commentary == "operator over-key");
+    CHECK(resp.provenance[2].recorded_at != std::chrono::system_clock::time_point{});
+    // A hole has no source.
+    CHECK(resp.provenance[3].source_kind.empty());
+}
+
+TEST_CASE("a_snapshot_not_asked_for_provenance_carries_none", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    import(h, "20170911 FX_OPTION/RATE_LNVOL/NZD/CZK/1Y/ATM 0.080\n");
+
+    const auto resp =
+        series_snapshot_reader::read(h.context(),
+                                     snapshot_request(fx_option_identity("NZD", "CZK")),
+                                     instant("2017-09-12T12:00:00Z"));
+
+    REQUIRE(resp.success);
+    CHECK(resp.values == std::vector<std::string>{"0.080"});
+    CHECK(resp.provenance.empty());
 }

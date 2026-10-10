@@ -394,4 +394,53 @@ observation_lineage_repository::read_latest_by_observation(
     return results.front();
 }
 
+std::vector<domain::observation_lineage> observation_lineage_repository::read_latest_for_points(
+    context ctx, const boost::uuids::uuid& series_id, const std::vector<point_key>& points) {
+    using ores::platform::time::datetime;
+    if (points.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+
+    // The query is a per-column cross-product of the stated URIs and the stated
+    // time span, so the rows it returns are narrowed to the exact points below.
+    std::vector<std::string> uris;
+    uris.reserve(points.size());
+    auto first = points.front().observation_datetime;
+    auto last = first;
+    for (const auto& point : points) {
+        uris.push_back(point.oresmd_uri);
+        first = std::min(first, point.observation_datetime);
+        last = std::max(last, point.observation_datetime);
+    }
+    std::ranges::sort(uris);
+    uris.erase(std::unique(uris.begin(), uris.end()), uris.end());
+
+    const auto query =
+        sqlgen::read<std::vector<observation_lineage_entity>> |
+        where("tenant_id"_c == tid && "series_id"_c == sid && "oresmd_uri"_c.in(uris) &&
+              "observation_datetime"_c >= datetime::to_iso8601_utc(first) &&
+              "observation_datetime"_c <= datetime::to_iso8601_utc(last) &&
+              "valid_to"_c == max.value()) |
+        order_by("id"_c);
+    const auto rows = execute_read_query<observation_lineage_entity, domain::observation_lineage>(
+        ctx,
+        query,
+        [](const auto& entities) { return observation_lineage_mapper::map(entities); },
+        lg(),
+        "Reading latest observation lineages for points");
+
+    std::vector<domain::observation_lineage> result;
+    for (const auto& row : rows) {
+        const auto stated = std::ranges::any_of(points, [&](const point_key& point) {
+            return point.oresmd_uri == row.oresmd_uri &&
+                   point.observation_datetime == row.observation_datetime;
+        });
+        if (stated)
+            result.push_back(row);
+    }
+    return result;
+}
+
 }

@@ -46,6 +46,15 @@ latest value of a node forward from before the instant, and the evolution states
 only what an instant states. Where the evolution holds a value, the snapshot
 holds the same one, and a test checks it.
 
+A caller that sets =include_provenance= also gets, for each node, where its value
+came from. The source kind is =quoted= for a point with no annex row, and
+=derived= or =manual= as the annex row of =observation_lineage= states. A derived
+or manual point also carries who set it, why and when the annex row was
+recorded. A hole has no source, so its entry is empty. The reader asks the annex
+only for the points it placed, and only when the caller asks, so the point path
+pays nothing for provenance. The annex is the one cold table keyed by the point's
+natural key (series, observation instant and oresmd URI).
+
 The staleness figures (oldest age, spread and the warning) are measured over
 every point the read returns.
 

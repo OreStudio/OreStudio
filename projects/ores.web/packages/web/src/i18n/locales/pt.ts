@@ -1048,6 +1048,20 @@ const pt: SourceCatalogue = {
                 'A instalação tal como está a correr: do que é feita, o que guarda e o que fez.',
             notBuilt: 'Ainda não construído',
         },
+        overview: {
+            title: 'A instalação num relance',
+            unreadable: 'Não foi possível ler os serviços.',
+            running: 'Serviços em execução',
+            lost: 'Perdidos',
+            missing: 'Em falta',
+            errors: 'Erros, {range}',
+            warnings: 'Avisos, {range}',
+            release: 'Versão mais recente',
+            behind: {
+                one: '{count} serviço numa versão mais antiga',
+                other: '{count} serviços numa versão mais antiga',
+            },
+        },
         screens: {
             versions: 'Versões e base de dados',
             versionsBody:

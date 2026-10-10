@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0251A201-7674-4ABD-BB5B-7AEC42C88D8D][Make the services screen tell the truth about the installation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A system administrator reads how healthy the installation is before reading the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0251A201-7674-4ABD-BB5B-7AEC42C88D8D][Make the services screen tell the truth about the installation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Operations services screen now opens with an installation overview: services running of those expected, lost, missing, errors and warnings in a chosen range, and the newest release with how many services run an older one. The roster gives the service figures. The logs read gives the error and warning totals, as a read with a page size of one, so no backend changed. Each figure leads to the services or logs screen. A failed logs read leaves the roster figures standing and shows a dash for the counts. The code sits in one hook and one component, InstallationHealth, which the home will reuse. The web package passes 638 tests and the format check. I did not look at the screen in a browser.

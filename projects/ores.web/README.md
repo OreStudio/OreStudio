@@ -101,6 +101,7 @@ the certificates. It never holds the bearer token.
 | --------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@ores/wire-protocol` | `packages/wire-protocol` | The ORE NATS protocol: msgpack codec, subjects, schemas, session lifecycle, mTLS transport.                                                                         |
 | `@ores/contracts`     | `packages/contracts`     | The HTTP shapes the BFF parses. The browser does not import the package today; it parses with `@ores/wire-protocol/browser`. The shared-schema split is unfinished. |
+| `@ores/org`           | `packages/org`           | Parses org text into a line-indexed outline and renders it as safe HTML. The BFF reads and writes scenario docs with it, and the browser renders them.              |
 | `@ores/bff`           | `packages/bff`           | The Fastify server. It owns the NATS connection and the session token.                                                                                              |
 | `@ores/web`           | `packages/web`           | The React client. It talks to the BFF only.                                                                                                                         |
 

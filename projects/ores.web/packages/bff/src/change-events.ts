@@ -38,7 +38,12 @@ import type { OresClient } from '@ores/wire-protocol';
  * with the last, so nothing is held open for an entity nobody is looking at.
  */
 
-/** What one session is watching. */
+/**
+ * What one session is watching.
+ *
+ * The entity is the events collection as it stands in the subject, such as
+ * `accounts` or `tenant_types`, so no plural is guessed here.
+ */
 export interface Watch {
     readonly component: string;
     readonly entity: string;
@@ -52,24 +57,25 @@ export interface ChangeEvent {
     readonly entity: string;
     /** When the change happened, server-side. */
     readonly at: string;
-    /** The records that changed, as the service named them. */
-    readonly ids: readonly string[];
+}
+
+/** A name that can stand in a subject: it cannot be a wildcard or add a segment. */
+const SUBJECT_NAME = /^[a-z][a-z0-9_]*$/;
+
+/** Whether a watch names a component and an events collection, and nothing else. */
+export function isWatchable(watch: Watch): boolean {
+    return SUBJECT_NAME.test(watch.component) && SUBJECT_NAME.test(watch.entity);
 }
 
 /**
- * The event names the services publish.
+ * The subject the services publish an entity's changes on.
  *
- * The traits name is reused as the NATS subject suffix, so `country` becomes
- * `ores.refdata.country_changed`. The component is in the name rather than the
- * prefix, which is why the key is built here rather than passed in.
+ * The canonical form is `component.v1.collection_events.action`, so a watch
+ * listens on the collection's wildcard and hears created, updated and deleted
+ * alike.
  */
 export function eventSubject(component: string, entity: string): string {
-    return `ores.${component}.${snake(entity)}_changed`;
-}
-
-/** `businessUnit` to `business_unit`, which is how the event names are written. */
-function snake(value: string): string {
-    return value.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
+    return `${component}.v1.${entity}_events.>`;
 }
 
 export class ChangeEventRegistry {
@@ -109,6 +115,9 @@ export class ChangeEventRegistry {
      */
     watch(sessionId: string, tenantId: string, watches: readonly Watch[]): void {
         if (!this.#listeners.has(sessionId)) return;
+        // A name with a wildcard in it would listen to more than was asked for, and
+        // the names arrive from the browser, so only plain names are watched.
+        watches = watches.filter(isWatchable);
         const previous = this.#watching.get(sessionId);
         if (previous !== undefined) {
             for (const watch of previous.watches) {
@@ -150,7 +159,6 @@ export class ChangeEventRegistry {
                         component: watch.component,
                         entity: watch.entity,
                         at: change.at,
-                        ids: change.ids,
                     };
                     for (const listener of listeners.values()) listener(event);
                 },

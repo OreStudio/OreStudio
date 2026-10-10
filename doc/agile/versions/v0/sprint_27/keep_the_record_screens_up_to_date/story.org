@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ The web screens read once and never learn that a record changed elsewhere. Add l
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -40,14 +40,15 @@ The web screens read once and never learn that a record changed elsewhere. Add l
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:48943E90-9B2B-41C9-83CD-6951391FED61][Carry an entity-changed time to the browser]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:48943E90-9B2B-41C9-83CD-6951391FED61][Carry an entity-changed time to the browser]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 | [[id:C72D4C9F-59E5-4177-AC69-A78172F75044][Know when a screen is stale: useEntityChanges]] | BACKLOG | | | Task for: Keep the record screens up to date |
 | [[id:84E9A065-C228-49A9-B571-A482DDB987C3][A Refresh button that pulses while the screen is stale]] | BACKLOG | | | Task for: Keep the record screens up to date |
 | [[id:A699B0E9-6188-4E01-936F-30FD3052D11F][Mark the rows that changed after a reload]] | BACKLOG | | | Task for: Keep the record screens up to date |
 | [[id:BC8E62C0-BE32-4BDF-80AD-729A837E5D7D][Tell a person editing that the record changed]] | BACKLOG | | | Task for: Keep the record screens up to date |
 | [[id:E8453624-79DC-4470-9AC0-FAE741726149][Refresh the record page and its timeline]] | BACKLOG | | | Task for: Keep the record screens up to date |
 | [[id:ADEE695C-905F-43EB-9A88-F7B189FC1D29][Complete the updates and refresh documents]] | BACKLOG | | | Task for: Keep the record screens up to date |
-| [[id:ED7D9486-7BA6-4E74-A64F-096FA9AD8EA7][Move the change registry to the canonical event subjects]] | BACKLOG | | | Task for: Keep the record screens up to date |
+| [[id:ED7D9486-7BA6-4E74-A64F-096FA9AD8EA7][Move the change registry to the canonical event subjects]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
+| [[id:2263A9B5-802A-4C95-B2BA-0B301CDEF523][Analyse who may listen to which tenant and party events]] | BACKLOG | | | Task for: Keep the record screens up to date |
 
 * Decisions
 
@@ -75,6 +76,10 @@ Decided by the product owner:
 
 - A record page waits for Refresh, as a list does. It never reloads its cards by itself.
 - The history waits for Refresh too. A new entry makes the Refresh button stale, and the entry is marked once the history is read again.
+
+Known limit, found in task 1:
+
+- A published entity event names no tenant, in its subject or its payload, and ores.qt ignores the tenant it logs. The web follows ores.qt. A change in one tenant can mark a screen stale in another, which costs one refresh that reads only the reader's own data. The product owner finds this unacceptable: a session may listen only to the tenants and parties it may see. The task "Analyse who may listen to which tenant and party events" decides how.
 
 Open decisions for the product owner:
 

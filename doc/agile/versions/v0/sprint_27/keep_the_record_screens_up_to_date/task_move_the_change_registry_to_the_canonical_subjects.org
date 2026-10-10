@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The BFF subscribes to the subjects the services publish, component.v1.resource_e
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,7 +35,7 @@ The BFF subscribes to the subjects the services publish, component.v1.resource_e
 
 * Acceptance
 
-- A change published by a service reaches a session watching that entity, and no session of another tenant.
+- A change published by a service reaches a session watching that entity. Tenant isolation is a known limit, stated in the story.
 - The last watcher to leave tears the subscription down.
 
 * Plan
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The registry listens on the wildcard of each collection's canonical subject and hands on the time of the change (=occurred_at=). A watch accepts plain names only, so the browser cannot ask for a wildcard. Seven unit tests cover the subject, the sharing and the teardown. Not yet seen end to end: no screen watches anything until task 2.

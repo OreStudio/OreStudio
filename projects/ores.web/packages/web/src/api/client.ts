@@ -605,6 +605,17 @@ export const api = {
         );
     },
 
+    /** Tells the server which entities this session listens to. */
+    async watchEntities(
+        watches: readonly { readonly component: string; readonly entity: string }[],
+    ): Promise<void> {
+        await request('/api/events/watch', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ watches }),
+        });
+    },
+
     /** One page of the people who hold a role, by name. */
     async roleHolders(
         roleId: string,

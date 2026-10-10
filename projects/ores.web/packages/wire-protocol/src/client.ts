@@ -974,11 +974,10 @@ export class OresClient {
     /**
      * Listens for changes to an entity.
      *
-     * The payload is a change notification: when it happened, which records, and
-     * whose they are. The time and the records are handed on. The time says whether
-     * what is on screen is older than what exists; the records say how many, so a
-     * screen can say so, and which, so it can badge them without comparing
-     * timestamps.
+     * The payload is the canonical entity event, and what is handed on is the time
+     * it happened. The time says whether what is on screen is older than what
+     * exists. Which records changed is worked out from the data after a reload, not
+     * from the event, so the event's key is not read.
      *
      * Nothing is authenticated here. These are published events, not replies, so
      * there is no session to present and no failure to report: a subscription that
@@ -987,7 +986,7 @@ export class OresClient {
      */
     subscribeToEvents(
         relative: string,
-        onEvent: (change: { readonly at: string; readonly ids: readonly string[] }) => void,
+        onEvent: (change: { readonly at: string }) => void,
     ): () => void {
         const subscribe = this.#transport.subscribe;
         if (subscribe === undefined) {
@@ -996,7 +995,7 @@ export class OresClient {
         return subscribe.call(this.#transport, relative, (payload) => {
             try {
                 const decoded = this.#codec.decodeAs(payload, changeEventSchema);
-                onEvent({ at: decoded.timestamp, ids: decoded.alpha2_codes });
+                onEvent({ at: decoded.occurred_at });
             } catch {
                 // An event this build does not understand is one it cannot act on.
             }
@@ -1370,9 +1369,7 @@ export class OresClient {
  * it does nothing, which is the safe direction.
  */
 const changeEventSchema = z.object({
-    timestamp: z.string().default(''),
-    alpha2_codes: z.array(z.string()).default([]),
-    tenant_id: z.string().default(''),
+    occurred_at: z.string().default(''),
 });
 
 /**

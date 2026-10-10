@@ -158,9 +158,10 @@ A NATS subscriber registers interest in a prefix's wildcard and receives the
 typed event as the payload. The web server holds one subscription per tenant
 and entity for all the sessions watching it and relays the events to each
 browser on =GET /api/events=; see
-[[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]]. Its registry still names the retired
-=ores.<component>.<entity>_changed= subjects, so it needs to move to the
-prefixes above before a screen can use it.
+[[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]]. The registry listens on the
+wildcard of each collection's prefix, such as =iam.v1.accounts_events.>=, and
+relays the time of the change. The event names no tenant, so the web server
+cannot yet keep one tenant's change from another tenant's session.
 
 * Verifying eventing
 

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The one event stream per session sends entity-changed with component, entity and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The browser holds one change stream for the signed-in session (=EntityEventStream=, mounted by =EntityEventsProvider= inside the shell). It opens when the first screen watches something and closes with the last. The union of the watches goes to =POST /api/events/watch= once for a burst of changes, and again after a reconnect, because the server forgets watches when a stream closes. A screen listens with =useEntityChangeEvents(component, entity, onChange)=. The news is a time, so a thousand changes make a screen stale once. Seven unit tests cover it. Not yet seen live: no screen watches an entity until task 3.

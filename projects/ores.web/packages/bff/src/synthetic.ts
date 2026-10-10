@@ -60,6 +60,7 @@ import {
     idSchema,
     input,
     intentSchema,
+    pageQuerySchema,
     paramId,
     readAll,
     refusal,
@@ -86,6 +87,10 @@ const text = z.string().max(2000);
  * A system-owned resource is one catalogue every tenant reads. The server
  * reads and writes it in the system tenant, so a write from a tenant session
  * would change every tenant's catalogue; only a system session writes it.
+ *
+ * `search` and `sortable` say what the model made searchable and sortable, so
+ * a page asks the server only for what it can answer. `parentField` names the
+ * filter that reads the rows of one parent, such as one feed's mixture.
  */
 interface SyntheticResource {
     readonly key: string;
@@ -102,6 +107,9 @@ interface SyntheticResource {
     readonly writes?: z.ZodType<Record<string, unknown>>;
     readonly readOnlyBecause?: string;
     readonly systemOwned?: true;
+    readonly search?: true;
+    readonly sortable?: readonly string[];
+    readonly parentField?: string;
 }
 
 /**
@@ -147,6 +155,14 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'fx_spot_generation_configs',
+        search: true,
+        sortable: [
+            'base_currency_code',
+            'quote_currency_code',
+            'source_name',
+            'ore_key',
+            'ticks_per_hour',
+        ],
         subjects: {
             list: fxFeedSubjects.list_fx_spot_generation_configs_request,
             putMany: fxFeedSubjects.put_many_fx_spot_generation_configs_request,
@@ -177,6 +193,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'gmm_components',
+        parentField: 'fx_spot_config_id',
         subjects: {
             list: gmmSubjects.list_gmm_components_request,
             putMany: gmmSubjects.put_many_gmm_components_request,
@@ -518,6 +535,8 @@ export function registerSyntheticRoutes(
                     keyField: resource.keyField,
                     writable: because === undefined,
                     readOnlyBecause: because ?? null,
+                    search: resource.search === true,
+                    sortable: resource.sortable ?? [],
                     readPermission: `synthetic::${resourceName(resource)}:read`,
                     writePermission: `synthetic::${resourceName(resource)}:write`,
                     deletePermission: `synthetic::${resourceName(resource)}:delete`,
@@ -556,12 +575,57 @@ export function registerSyntheticRoutes(
         return { entries: reply.entries };
     });
 
+    /**
+     * Every row of a resource, or one page of it with the server's total,
+     * searched and ordered on the server, when the request names a limit.
+     */
     server.get('/api/synthetic/:resource', async (request) => {
         const session = requireSession(request);
         const resource = resourceFor(request);
+        const query = request.query as Record<string, unknown>;
+        if (query['limit'] === undefined) {
+            return {
+                rows: await readAll(session, resource.subjects.list, resource.rows, {
+                    filter: null,
+                    as_of: null,
+                }),
+            };
+        }
+        const page = input(pageQuerySchema, query);
+        if (page.sort !== '' && !(resource.sortable ?? []).includes(page.sort)) {
+            throw invalidRequest(`${resource.key} cannot be ordered by ${page.sort}.`);
+        }
+        if (page.search !== '' && resource.search !== true) {
+            throw invalidRequest(`${resource.key} cannot be searched.`);
+        }
+        const reply = await session.client.callAuthenticated(
+            resource.subjects.list,
+            {
+                offset: page.offset,
+                limit: page.limit,
+                order: { field: page.sort, descending: page.descending },
+                filter: page.search === '' ? null : { search: page.search },
+                as_of: null,
+            },
+            z.looseObject({ result: resultSchema, total: z.int().nonnegative().default(0) }),
+        );
+        if (reply.result.outcome !== 'ok') {
+            throw refusal(reply.result);
+        }
+        return { rows: z.array(row).default([]).parse(reply[resource.rows]), total: reply.total };
+    });
+
+    /** The rows that belong to one parent, such as one feed's mixture. */
+    server.get('/api/synthetic/:resource/by/:parent', async (request) => {
+        const session = requireSession(request);
+        const resource = resourceFor(request);
+        if (resource.parentField === undefined) {
+            throw notFound(`${resource.key} is not read by a parent.`);
+        }
+        const parent = input(idSchema, (request.params as { parent: string }).parent);
         return {
             rows: await readAll(session, resource.subjects.list, resource.rows, {
-                filter: null,
+                filter: { [resource.parentField]: parent },
                 as_of: null,
             }),
         };

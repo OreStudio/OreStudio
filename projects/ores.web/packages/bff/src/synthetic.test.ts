@@ -179,6 +179,75 @@ describe('synthetic resource routes', () => {
         expect(calls[0]?.body).toMatchObject({ filter: null, as_of: null, offset: 0 });
     });
 
+    it('reads one page searched and ordered on the server, with its total', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                total: 31,
+                fx_spot_generation_configs: [{ id: ID, base_currency_code: 'EUR' }],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/fx-feeds?offset=15&limit=15&search=eur&sort=source_name&descending=true',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            rows: [{ id: ID, base_currency_code: 'EUR' }],
+            total: 31,
+        });
+        expect(calls[0]?.body).toEqual({
+            offset: 15,
+            limit: 15,
+            order: { field: 'source_name', descending: true },
+            filter: { search: 'eur' },
+            as_of: null,
+        });
+    });
+
+    it('refuses an order or a search the model does not declare, before any call', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const order = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/fx-feeds?limit=15&sort=gmm_initial_price',
+        );
+        expect(order.statusCode).toBe(400);
+        const search = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/gmm-components?limit=15&search=calm',
+        );
+        expect(search.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it("reads one feed's mixture through its parent filter", async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.gmm_components.list': { result: ok, gmm_components: [COMPONENT] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/gmm-components/by/${OTHER}`,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json().rows).toEqual([COMPONENT]);
+        expect(calls[0]?.body).toMatchObject({ filter: { fx_spot_config_id: OTHER } });
+    });
+
+    it('answers 404 for a parent read of a resource that has no parent', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'GET', `/api/synthetic/fx-feeds/by/${ID}`);
+        expect(response.statusCode).toBe(404);
+        expect(calls).toHaveLength(0);
+    });
+
     it('answers 404 for a resource the table does not name', async () => {
         const { server, sessionId, calls } = buildTestServer({});
         const response = await send(server, sessionId, 'GET', '/api/synthetic/stub-feeds');

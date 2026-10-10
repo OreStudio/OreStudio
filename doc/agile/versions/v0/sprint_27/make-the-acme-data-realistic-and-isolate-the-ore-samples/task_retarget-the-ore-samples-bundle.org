@@ -64,9 +64,8 @@ party. Land every import in a sandbox portfolio tree.
 
 * Measurements
 
-Measured on a database recreated from the scripts and a fresh ACME provision,
-then on the same database after calling the sandbox publish directly (see
-Result).
+Measured on a database recreated from the scripts and a fresh ACME provision
+through the bundle path.
 
 | Party  | Sample agreements | Sample sets | Sample aliases | Sandboxes | PF1/PF2 in sandbox | Official PF1/PF2 |
 |--------+-------------------+-------------+----------------+-----------+--------------------+------------------|
@@ -78,7 +77,7 @@ Result).
 - Every sandbox is open, shared, purpose =sample=, anchored at =Global
   Portfolio= and owned by =tenant_admin=.
 - The ACME base data from the earlier task is intact on every party.
-- pgTAP: 11 of 11 new sandbox tests pass. The sample netting and envelope names
+- pgTAP: 12 of 12 new sandbox tests pass. The sample netting and envelope names
   tests pass.
 
 * Notes
@@ -127,7 +126,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Duplicate-name check and the empty sandbox | refdata_publish_from_dq_create.sql | Accepted | The check stays party-wide, because portfolio names are unique per party. The sandbox is now created only when a name is to be added. The comment says so. |
+| 2 | Silent skips | publish handler | Declined | Logging needs a handler change. Left for a follow-up; noted under Known gap. |
+| 3 | Missing party code | refdata_publish_from_dq_create.sql | Accepted | A missing code returns =skipped_no_party=. |
+| 4 | Anchor fallback | refdata_publish_from_dq_create.sql | Declined | =anchor_portfolio_name= is a preference, as documented. Every ACME party has Global Portfolio. |
+| 5 | Test coverage | refdata_publish_sandbox_portfolios_test.sql | Partly accepted | Added a check that a repeat publish opens no second sandbox. The admin fallback is shown by the clean provision, not by a fixture. |
+| 6 | Process: run a full provision | PR body | Done | Clean provision run; see Proof. |
 
 * Result
 
@@ -158,12 +162,13 @@ descriptions say sample data.
 - The bundle does not hold the counterparty aliases. They stay a tenant-level
   opt-in, because counterparties are tenant-level.
 
-*Proof limits.* The sandboxes were created by a direct call of the publish
-after a first provision. A clean provision through the bundle path was not
-completed: the database rebuild hung on a Postgres cluster shared with other
-worktrees. The first provision showed the publish ran with no actor and wrote
-nothing, which led to the tenant administrator fallback. The fallback was run
-by hand, not through the provisioning path.
+*Proof.* A clean provision through the bundle path, from a database recreated
+from the final scripts, gave every party one open, shared sample sandbox owned
+by =tenant_admin=, with PF1 and PF2 as its roots. The first provision, before
+the owner fallback, showed the publish ran with no actor and wrote nothing.
+The publish function was changed once more after that provision (the sandbox is
+created only when a name is to be added, and a missing party code is guarded);
+the new version passes pgTAP but was not provisioned.
 
 *Known gap.* The publish handler logs only inserted, updated and skipped
 counts. A =skipped_no_owner= or =skipped_no_anchor= result is silent.

@@ -2640,6 +2640,7 @@ declare
     v_sandbox_name text;
     v_actor text;
     v_staged bigint;
+    v_to_insert bigint;
     v_inserted bigint;
 begin
     select name into v_dataset_name
@@ -2654,6 +2655,24 @@ begin
     v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
     if v_party_id is null then
         return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    select count(*) into v_staged
+    from ores_dq_portfolios_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    select count(distinct s.name) into v_to_insert
+    from ores_dq_portfolios_artefact_tbl s
+    where s.dataset_id = p_dataset_id
+      and not exists (
+        select 1 from ores_refdata_portfolios_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.party_id = v_party_id
+          and o.name = s.name
+          and o.valid_to = ores_utility_infinity_timestamp_fn());
+    if v_to_insert = 0 then
+        return query select 'skipped'::text, v_staged where v_staged > 0;
         return;
     end if;
 
@@ -2683,6 +2702,10 @@ begin
     where tenant_id = p_target_tenant_id
       and id = v_party_id
       and valid_to = ores_utility_infinity_timestamp_fn();
+    if v_party_code is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
 
     select id into v_anchor_id
     from ores_refdata_portfolios_tbl
@@ -2739,10 +2762,6 @@ begin
             'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
         );
     end if;
-
-    select count(*) into v_staged
-    from ores_dq_portfolios_artefact_tbl
-    where dataset_id = p_dataset_id;
 
     insert into ores_refdata_portfolios_tbl (
         tenant_id, id, version, party_id, name, parent_portfolio_id, owner_unit_id,

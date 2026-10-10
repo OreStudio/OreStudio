@@ -33,7 +33,7 @@
 
 begin;
 
-select plan(11);
+select plan(12);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.visible_party_ids',
@@ -157,6 +157,9 @@ select results_eq(
     $$select * from pg_temp.publish()$$,
     $$values ('skipped'::text, 2::bigint)$$,
     'a second publish adds nothing');
+
+select is((select count(*) from t_sandbox), 1::bigint,
+    'a second publish opens no second sandbox');
 
 select * from finish();
 

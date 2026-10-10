@@ -2,7 +2,7 @@
 :ID: 658C1D4E-83D0-4DD1-9F5B-AB3D141AA99D
 :END:
 #+title: Task: Prototype the QA validation runner
-#+description: Initial task for: Bring the QA validation runner to ores.web
+#+description: Show the Tests tab and the runner, and confirm how results are written.
 #+type: task
 #+level: s1
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A tester works through a test scenario in ores.web: open a scenario, read its steps beside its story and task, mark each step PASS or FAIL with a note, and save the result. The browser cannot write repo files, so the story first decides where scenarios live and where results go.
+Show a tester working through a test scenario: the Tests tab with scenarios waiting and done, and the runner with steps, story and task. The prototype also confirms how results are written, so the build tasks start from a settled storage decision.
 
 * Status
 
@@ -30,15 +30,14 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Draw the prototype and confirm the storage decision. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
 
-- A prototype of the runner is accepted before any code is built.
-- The story records where scenario docs are read from and where results are written.
-- A tester can open a scenario, mark every step and save, and the result is stored.
-- The scenario's story and task show beside its steps.
+- The prototype shows the Tests tab, the runner, a step with its note and the story and task beside the steps.
+- The prototype is accepted before any code is built.
+- The story records how results are written, as a decision.
 
 * Plan
 

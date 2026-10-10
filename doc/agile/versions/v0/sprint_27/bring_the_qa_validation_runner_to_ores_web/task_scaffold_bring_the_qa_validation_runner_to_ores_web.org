@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Create the story, its prototype task and the sprint wiring, and record the arc the story starts.
 
 * Status
 
@@ -35,7 +35,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The story page records the arc, the decisions and the open questions.
+- The prototype task exists and the sprint lists the story.
+- The docs check gate passes.
 
 * Plan
 
@@ -80,7 +82,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Story state contradicts its status and the sprint row | story.org, sprint.org | Accept | The story is STARTED, its Now row says the scaffold is in review, and the sprint row is STARTED. |
+| 2 | Story Next row is stale | story.org | Accept | Next now says to prototype the runner. |
+| 3 | Prototype task Next row says begin implementation | prototype task | Accept | Next now says to draw the prototype. |
+| 4 | Scaffold task goal and acceptance are placeholders | scaffold task | Accept | Both are filled in. |
+| 5 | Prototype task copies the story's goal and acceptance | prototype task | Accept | It has its own, narrower goal and acceptance. |
+| 6 | The arc says the module replaces the old tools now | story.org | Accept | It says story 2 replaces them. |
+| 7 | Goal and decisions disagree on where results go | story.org | Accept | The goal now says compass records results and the prototype confirms it. |
+| 8 | BFF never parses org, yet the browser parses it | story.org | Accept | A note separates display from parsing the tree. The verb is named as a task. |
+| 9 | Table padding is uneven | story.org | Decline | Cosmetic. Compass writes those cells. |
 
 * Result
 

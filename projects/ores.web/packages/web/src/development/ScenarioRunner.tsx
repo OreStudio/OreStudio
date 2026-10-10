@@ -235,21 +235,17 @@ function Progress({ runner, dispatch }: ScenarioRunnerProps): ReactNode {
     );
 }
 
-function StepCard({ runner, dispatch }: ScenarioRunnerProps): ReactNode {
+function StepCard({ runner, dispatch, saving }: ScenarioRunnerProps): ReactNode {
     const { t } = useTranslation();
     const step: DraftStep | undefined = runner.steps[runner.index];
     if (step === undefined) return null;
-    const readOnly = runner.closed;
+    // Marks and notes wait while a save is in flight, so none is lost when the
+    // server's answer replaces the working copy.
+    const readOnly = runner.closed || saving;
     return (
         <section className="card space-y-4 p-4">
             <div className="flex items-start justify-between gap-3">
                 <div>
-                    <h2 className="text-xs text-ink-muted">
-                        {t('development.runner.stepOf', {
-                            step: runner.index + 1,
-                            total: runner.steps.length,
-                        })}
-                    </h2>
                     <p className="text-base font-medium text-ink">
                         {step.client !== null && (
                             <span className="mr-2">

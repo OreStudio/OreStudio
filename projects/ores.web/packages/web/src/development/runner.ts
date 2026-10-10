@@ -119,7 +119,10 @@ export function reduce(runner: Runner, action: Action): Runner {
             };
         case 'saved': {
             const reopened = openRunner(action.scenario);
-            return { ...reopened, index: Math.min(runner.index, Math.max(0, last)) };
+            return {
+                ...reopened,
+                index: Math.min(runner.index, Math.max(0, reopened.steps.length - 1)),
+            };
         }
     }
 }
@@ -142,7 +145,8 @@ export function percentMarked(runner: Runner): number {
 
 /**
  * What a save sends: every step the tester can mark. A dropped step is left
- * out, because a save never writes one.
+ * out, because a save never writes one. It names no build, so the doc keeps the
+ * build of the last run.
  */
 export function saveRequest(runner: Runner): RunRequest {
     return {
@@ -158,9 +162,6 @@ export function saveRequest(runner: Runner): RunRequest {
                       },
                   ],
         ),
-        branch: '',
-        commit: '',
-        worktree: '',
     };
 }
 

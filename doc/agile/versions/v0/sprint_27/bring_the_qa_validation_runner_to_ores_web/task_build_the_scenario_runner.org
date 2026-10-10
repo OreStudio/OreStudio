@@ -70,7 +70,7 @@ task and name that file in the Command column.
 
 - A save sends every step the tester can mark. A dropped step is left out, because a save never writes one. A retest leaves a dropped step as it was.
 - A retest changes nothing on disk until the tester saves. A tester who leaves after a retest leaves the closed result in place.
-- A save sends blank branch, commit and worktree, so the Results table of the doc loses those three values on a save. The BFF should fill them from its own work tree. That is open.
+- A save names no build. The branch, commit and worktree fields of a save are optional, and a field left out keeps the value the doc holds. Recording the build of a run is open: the BFF could fill the three from its own work tree.
 - The tests render the view with the reducer's states as markup. A throwaway harness, not committed, mounted the real page against an in-memory fake of the two endpoints and drove it in headless Chrome: 25 checks covered Fail then note, Pass moving on, the last Pass, Save closing a scenario, a closed scenario being read-only, the retest dialog with Cancel and Confirm, a partial save, and the save message clearing on the next action. All 25 passed, with no script errors.
 - Images for a step wait for task 7. The Story and Task tabs wait for task 6.
 
@@ -95,6 +95,19 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Every save blanks the Results table values | runner.ts, qa.ts, scenario-doc.ts | Fix | The branch, commit and worktree fields of a save are optional. A field left out keeps the value the doc holds, and the browser sends none. Tests in the contract, the codec and the route fail without it. |
+| 2 | A save drops edits made while it is in flight | ScenarioRunner.tsx, ScenarioPage.tsx | Fix | Pass, Fail, Clear and the note are held while a save is pending, and the page ignores a mark or a note in that time. Skip and Back still work. A markup test and a browser run cover it. |
+| 3 | Steps are matched without a visible key | scenario-doc.ts | Confirm | The codec matches by client and title, not by position. A test saves around a dropped step in the middle. |
+| 4 | No guard against leaving with unsaved marks | ScenarioRunner.tsx | Follow-up | useBlocker needs a data router and the app uses a plain router. Filed as the capture leaving_the_scenario_runner_with_unsaved_marks_loses_them. |
+| 5 | The runner does not follow a refetch | ScenarioPage.tsx | Fix | The working copy is a snapshot. The query is not kept for a later visit and is not refetched on focus or reconnect, so the header and the steps cannot differ. A browser run under StrictMode shows one fetch and no loop. |
+| 6 | Step X of Y appears twice | ScenarioRunner.tsx | Fix | The step card no longer repeats it. A test counts one. |
+| 7 | A test for hostile markup in a step | ScenarioRunner.test.tsx | Already there | The test file has a step with a script tag and a javascript link, and the review did not read it. |
+| 8 | The index after a save can point past the end | runner.ts | Fix | The index is clamped to the new step count. A test covers a shorter answer. |
 
 * Result
+
+A queue row opens the runner, in layout B. The header shows the scenario, its story and task, the target, the clients, the last save and a state tag that follows the steps. A progress bar and Back and Skip sit above the step. The step shows its client tag, its instructions as rendered org text, Pass, Fail and Clear, and a note. A Pass moves to the next step, and a Fail and a Clear stay. Marking never closes the scenario. A save goes through the BFF, which closes the scenario when no step is pending, and the page says whether it closed or how many steps are left, or why the save failed. A closed scenario opens read-only with Retest in place of Save, and Retest asks in a dialog before it clears every step and its note.
+
+The state rule is one function, scenarioStateOf in @ores/contracts, used by the BFF codec and by the header. The rules of the runner are a reducer in runner.ts, tested alone. The web suite passes with 782 tests, the BFF suite with 485 and contracts with 7. A throwaway harness drove the real page in headless Chrome, twice: 25 checks for the flows, and 11 for StrictMode, no refetch loop, no refetch on focus, the held controls during a slow save and a save that names no build. All passed with no script errors.
+
+The review found five real faults, and all five are fixed. The worst was a save that blanked the branch, commit and worktree of the last run. The build fields of a save are now optional. A save holds the marks and notes while it is in flight. The runner works on a snapshot that nothing refetches. Leaving the runner with unsaved marks still loses them, and that is a capture. Recording the build of a run is open. The French and Portuguese text is my translation and needs a read by a speaker. Images for a step are task 7, and the story and task beside the steps are task 6.

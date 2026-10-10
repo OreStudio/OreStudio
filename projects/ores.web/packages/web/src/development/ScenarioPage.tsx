@@ -35,9 +35,15 @@ import { QA_SCENARIOS_KEY } from './TestsQueue.js';
 export function ScenarioPage(): ReactNode {
     const { t } = useTranslation();
     const { id = '' } = useParams();
+    // The runner works on a snapshot taken when the page opens, so the query is
+    // never kept for a later visit and never refetched behind the tester's
+    // back. A save replaces the snapshot with the server's answer.
     const scenario = useQuery({
         queryKey: ['qa-scenario', id],
         queryFn: () => qa.scenario(id),
+        gcTime: 0,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
     });
 
     return (
@@ -63,13 +69,6 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
     const [outcome, setOutcome] = useState<Outcome | null>(null);
     const [confirmingRetest, setConfirmingRetest] = useState(false);
 
-    // An action of the tester clears the message about the last save. A save
-    // dispatches on the raw dispatch, so its own message stays.
-    const act = (action: Action): void => {
-        setOutcome(null);
-        dispatch(action);
-    };
-
     const save = useMutation({
         mutationFn: () => qa.record(id, saveRequest(runner)),
         onSuccess: (saved) => {
@@ -80,6 +79,14 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
         },
         onError: (error) => setOutcome({ kind: 'failed', message: error.message }),
     });
+
+    // An action of the tester clears the message about the last save. A save
+    // dispatches on the raw dispatch, so its own message stays.
+    const act = (action: Action): void => {
+        if (save.isPending && (action.type === 'mark' || action.type === 'note')) return;
+        setOutcome(null);
+        dispatch(action);
+    };
 
     return (
         <ScenarioRunner

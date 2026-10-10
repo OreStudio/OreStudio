@@ -107,6 +107,10 @@ describe('a scenario being run', () => {
         expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*>(Pass|Fail|Clear)</);
     });
 
+    it('names the step count once', () => {
+        expect(screen(fresh()).match(/Step 1 of 3/g)?.length).toBe(1);
+    });
+
     it('shows no scenario heading twice and names the story and task once', () => {
         const html = screen(fresh());
         expect(html.match(/Refresh the manual/g)?.length).toBe(1);
@@ -201,6 +205,15 @@ describe('after a save', () => {
 
     it('shows a save in progress', () => {
         expect(screen(fresh(), { saving: true })).toContain('animate-spin');
+    });
+
+    it('holds marks and notes while the save is in flight, and leaves moving between steps', () => {
+        const html = screen(fresh(), { saving: true });
+        for (const label of ['Pass', 'Fail', 'Clear']) {
+            expect(html).toMatch(new RegExp(`<button[^>]*disabled=""[^>]*>${label}<`));
+        }
+        expect(html).toMatch(/<textarea[^>]*disabled=""/);
+        expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*>Skip</);
     });
 });
 

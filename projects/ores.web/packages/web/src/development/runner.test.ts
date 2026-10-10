@@ -179,9 +179,24 @@ describe('saving', () => {
         ]);
     });
 
+    it('names no build, so the doc keeps the build of the last run', () => {
+        const request = saveRequest(fresh(2));
+        expect(Object.keys(request)).toEqual(['steps']);
+    });
+
     it('leaves a dropped step out', () => {
         const runner = openRunner(scenario(['PENDING', 'DROPPED']));
         expect(saveRequest(runner).steps.map((s) => s.title)).toEqual(['Step 1']);
+    });
+
+    it('keeps the index inside the steps when the server answers with fewer', () => {
+        let runner = fresh(4);
+        runner = reduce(reduce(reduce(runner, { type: 'next' }), { type: 'next' }), {
+            type: 'next',
+        });
+        expect(runner.index).toBe(3);
+        const saved = reduce(runner, { type: 'saved', scenario: scenario(['PASS', 'PENDING']) });
+        expect(saved.index).toBe(1);
     });
 
     it('keeps the step on show after a partial save, and closes only as the server says', () => {

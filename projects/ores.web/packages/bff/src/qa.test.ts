@@ -322,6 +322,16 @@ describe('saving a run', () => {
         expect(body.scenario.run.completedAt).toBe('');
     });
 
+    it('keeps the build of the last run when the save names none', async () => {
+        const { server, sessionId } = buildTestServer({ store: new MemoryStore() });
+        const response = await send(server, sessionId, 'PUT', `/api/qa/scenarios/${MULTI}/run`, {
+            steps: [{ client: 'blue', title: 'Read', status: 'PASS', notes: '' }],
+        });
+        expect(response.statusCode).toBe(200);
+        const body = runResponseSchema.parse(response.json());
+        expect(body.scenario.run.branch).toBe('feature/build-composite-child-table-qt-facet');
+    });
+
     it('refuses a step the scenario does not have, names it, and writes nothing', async () => {
         const store = new MemoryStore();
         const before = store.texts.get(MULTI);

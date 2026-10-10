@@ -137,12 +137,15 @@ export const stepOutcomeSchema = z.strictObject({
 });
 export type StepOutcome = z.infer<typeof stepOutcomeSchema>;
 
-/** A tester's save. It names every step it writes, and the build it ran against. */
+/**
+ * A tester's save. It names every step it writes. It may name the build it ran
+ * against. A field it leaves out keeps the value the doc already holds.
+ */
 export const runRequestSchema = z.strictObject({
     steps: z.array(stepOutcomeSchema).min(1).max(500),
-    branch: z.string().max(200),
-    commit: z.string().max(200),
-    worktree: z.string().max(200),
+    branch: z.string().max(200).optional(),
+    commit: z.string().max(200).optional(),
+    worktree: z.string().max(200).optional(),
 });
 export type RunRequest = z.infer<typeof runRequestSchema>;
 

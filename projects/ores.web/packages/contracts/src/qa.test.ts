@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { scenarioStateOf } from './qa.js';
+import { runRequestSchema, scenarioStateOf } from './qa.js';
 
 describe('the state of a scenario from its steps', () => {
     it('stays pending while any step is pending', () => {
@@ -42,5 +42,23 @@ describe('the state of a scenario from its steps', () => {
     it('stays pending when nothing passed or failed', () => {
         expect(scenarioStateOf([])).toBe('PENDING');
         expect(scenarioStateOf(['DROPPED', 'DROPPED'])).toBe('PENDING');
+    });
+});
+
+describe('a save', () => {
+    const step = { client: null, title: 'Open the tab', status: 'PASS', notes: '' };
+
+    it('may leave out the build it ran against', () => {
+        expect(runRequestSchema.safeParse({ steps: [step] }).success).toBe(true);
+    });
+
+    it('may name the build', () => {
+        const named = { steps: [step], branch: 'feature/x', commit: 'abc1234', worktree: 'w' };
+        expect(runRequestSchema.safeParse(named).success).toBe(true);
+    });
+
+    it('carries no state and no time', () => {
+        expect(runRequestSchema.safeParse({ steps: [step], state: 'PASSED' }).success).toBe(false);
+        expect(runRequestSchema.safeParse({ steps: [step], completedAt: 'x' }).success).toBe(false);
     });
 });

@@ -24,8 +24,12 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/domain/flexi_swap_instrument.hpp"
+#include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
@@ -51,8 +55,8 @@ namespace ores::ore::domain {
  *   - Swaption (SwaptionData — European and Bermudan)
  *   - CallableSwap (CallableSwapData)
  *   - KnockOutSwap (KnockOutSwapData)
- *   - FlexiSwap (FlexiSwapData — forward-only; domain has no tranche fields)
- *   - BalanceGuaranteedSwap (BalanceGuaranteedSwapData — forward-only)
+ *   - FlexiSwap (FlexiSwapData)
+ *   - BalanceGuaranteedSwap (BalanceGuaranteedSwapData)
  *
  * Forward mapping (ORE XSD → ORES domain) captures the economic fields that
  * the ORES relational model stores. Fields not yet modelled in ORES are
@@ -225,22 +229,55 @@ public:
 
     /**
      * @brief Forward-maps a FlexiSwap trade (FlexiSwapData) to ORES domain
-     * types, producing a vanilla_swap_instrument.
+     * types, producing a flexi_swap_instrument.
      *
-     * Only leg economics are captured. LowerNotionalBounds and Prepayment
-     * schedule are not stored in the current domain model — these are coverage
-     * gaps reported by the Python gap check.
+     * The option direction lands on the fact row. Each notional of each lower
+     * bound block becomes one flexi_swap_lower_notional row on the carrier,
+     * numbered across the whole list and tagged with its block's ordinal and
+     * currency.
      */
     static trading::domain::swap_instrument_data forward_flexi_swap(const trade& t);
+
+    /**
+     * @brief Reverse-maps ORES domain types back to a FlexiSwap ORE XSD trade.
+     *
+     * The lower notional rows regroup into the blocks the document stated,
+     * by block ordinal.
+     */
+    static trade reverse_flexi_swap(
+        const ores::trading::domain::rate_instrument& header,
+        const ores::trading::domain::flexi_swap_instrument& instr,
+        const std::vector<ores::trading::domain::swap_leg>& legs,
+        const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+        const std::vector<ores::trading::domain::swap_leg_rate>& rates,
+        const std::vector<ores::trading::domain::flexi_swap_lower_notional>& lower_notionals);
 
     /**
      * @brief Forward-maps a BalanceGuaranteedSwap trade to ORES domain types,
      * producing a balance_guaranteed_swap_instrument.
      *
-     * Only leg economics are captured. Tranche structure and ReferenceSecurity
-     * are not stored in the current domain model.
+     * The reference security lands on the fact row. Each tranche and each of
+     * its notionals becomes a row of its own on the carrier, and the tranche
+     * schedule lands in the shared schedule rows under the owner role
+     * =tranches=.
      */
     static trading::domain::swap_instrument_data forward_balance_guaranteed_swap(const trade& t);
+
+    /**
+     * @brief Reverse-maps ORES domain types back to a BalanceGuaranteedSwap
+     * ORE XSD trade.
+     */
+    static trade reverse_balance_guaranteed_swap(
+        const ores::trading::domain::rate_instrument& header,
+        const ores::trading::domain::balance_guaranteed_swap_instrument& instr,
+        const std::vector<ores::trading::domain::swap_leg>& legs,
+        const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+        const std::vector<ores::trading::domain::swap_leg_rate>& rates,
+        const std::vector<ores::trading::domain::balance_guaranteed_swap_tranche>& tranches,
+        const std::vector<ores::trading::domain::balance_guaranteed_swap_tranche_notional>&
+            tranche_notionals,
+        const std::vector<ores::trading::domain::instrument_schedule>& schedules,
+        const std::vector<ores::trading::domain::instrument_schedule_date>& schedule_dates);
 
 private:
     /**

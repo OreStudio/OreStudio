@@ -89,7 +89,7 @@ The activity that wrote this version.
 :primary_key: true
 :END:
 
-Which list of the instrument states this schedule: =trs_funding=,
+Which list of the instrument states this schedule: =tranches=, =trs_funding=,
 =repo=, =ascot_swap=, =option= or =trs=.
 
 The first four name a leg list. =option= is the exercise schedule an
@@ -405,7 +405,7 @@ is immutable.
 | expression                                                                     |
 |--------------------------------------------------------------------------------|
 | "schedule_kind" in ('rules', 'dates')                                          |
-| "owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs', 'swap')  |
+| "owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs', 'swap', 'tranches')  |
 | "owner_number" > 0                                                             |
 | "sequence_number" > 0                                                          |
 

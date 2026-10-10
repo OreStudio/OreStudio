@@ -23,6 +23,7 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/domain/flexi_swap_instrument.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
@@ -46,6 +47,7 @@ using rates_fact_variant = std::variant<fra_instrument,
                                         cap_floor_instrument,
                                         swaption_instrument,
                                         balance_guaranteed_swap_instrument,
+                                        flexi_swap_instrument,
                                         callable_swap_instrument,
                                         knock_out_swap_instrument,
                                         inflation_swap_instrument>;

@@ -39,6 +39,11 @@ namespace ores::trading::domain {
  * Represents a Balance Guaranteed Swap instrument where the notional
  * amortises in line with an underlying pool of assets (e.g., mortgages).
  *
+ * The document names the reference security here, lists the tranches in
+ * balance_guaranteed_swap_tranche with their notionals in
+ * balance_guaranteed_swap_tranche_notional, and states the tranche schedule as
+ * an instrument_schedule row under the owner role tranches.
+ *
  * This row is the family's fact table, not its identity. The header,
  * ores.trading.rate_instruments, holds the trade type code, the party, the
  * instrument's start and maturity dates and its description; this table holds
@@ -68,6 +73,13 @@ struct balance_guaranteed_swap_instrument final {
      * @brief The activity that wrote this version.
      */
     boost::uuids::uuid trade_activity_id;
+
+    /**
+     * @brief The security the swap's balance follows.
+     *
+     * The ORE schema requires the member. The document states it as an identifier such as an ISIN.
+     */
+    std::string reference_security;
 
     /**
      * @brief Optional lockout period in days.

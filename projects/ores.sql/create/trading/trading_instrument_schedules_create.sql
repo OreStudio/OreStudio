@@ -109,7 +109,7 @@ create table if not exists "ores_trading_instrument_schedules_tbl" (
     check ("owner_role" <> ''),
     check ("schedule_role" <> ''),
     check ("schedule_kind" in ('rules', 'dates')),
-    check ("owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs', 'swap')),
+    check ("owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs', 'swap', 'tranches')),
     check ("owner_number" > 0),
     check ("sequence_number" > 0)
 );

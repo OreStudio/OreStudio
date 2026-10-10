@@ -18,9 +18,13 @@
  *
  */
 #include "ores.trading.core/messaging/balance_guaranteed_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/balance_guaranteed_swap_tranche_registrar.hpp"
+#include "ores.trading.core/messaging/balance_guaranteed_swap_tranche_notional_registrar.hpp"
 #include "ores.trading.core/messaging/callable_swap_call_date_registrar.hpp"
 #include "ores.trading.core/messaging/callable_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/cap_floor_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/flexi_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/flexi_swap_lower_notional_registrar.hpp"
 #include "ores.trading.core/messaging/fra_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/inflation_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_exercise_fee_registrar.hpp"
@@ -78,6 +82,30 @@ register_rates_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(balance_guaranteed_swap_instrument_subs.begin()),
                 std::make_move_iterator(balance_guaranteed_swap_instrument_subs.end()));
+
+    auto balance_guaranteed_swap_tranche_subs =
+        register_balance_guaranteed_swap_tranche_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(balance_guaranteed_swap_tranche_subs.begin()),
+                std::make_move_iterator(balance_guaranteed_swap_tranche_subs.end()));
+
+    auto balance_guaranteed_swap_tranche_notional_subs =
+        register_balance_guaranteed_swap_tranche_notional_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(balance_guaranteed_swap_tranche_notional_subs.begin()),
+                std::make_move_iterator(balance_guaranteed_swap_tranche_notional_subs.end()));
+
+    auto flexi_swap_instrument_subs =
+        register_flexi_swap_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(flexi_swap_instrument_subs.begin()),
+                std::make_move_iterator(flexi_swap_instrument_subs.end()));
+
+    auto flexi_swap_lower_notional_subs =
+        register_flexi_swap_lower_notional_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(flexi_swap_lower_notional_subs.begin()),
+                std::make_move_iterator(flexi_swap_lower_notional_subs.end()));
 
     auto callable_swap_instrument_subs =
         register_callable_swap_instrument_handlers(nats, ctx, verifier);

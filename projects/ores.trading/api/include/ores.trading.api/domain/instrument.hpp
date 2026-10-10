@@ -20,6 +20,8 @@
 #ifndef ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 
+#include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
@@ -27,6 +29,7 @@
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
+#include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
@@ -103,6 +106,9 @@ struct swap_instrument_data {
     std::vector<instrument_option_exercise_fee> option_exercise_fees;
     std::vector<instrument_option_payment_date> option_payment_dates;
     std::vector<instrument_option_exercise_price> option_exercise_prices;
+    std::vector<flexi_swap_lower_notional> lower_notionals;
+    std::vector<balance_guaranteed_swap_tranche> tranches;
+    std::vector<balance_guaranteed_swap_tranche_notional> tranche_notionals;
 };
 
 using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
@@ -207,6 +213,15 @@ inline void stamp_ids(swap_instrument_data& data,
     }
     for (auto& exercise_price : data.option_exercise_prices) {
         stamp_ids(exercise_price, trade_id, activity_id);
+    }
+    for (auto& lower_notional : data.lower_notionals) {
+        stamp_ids(lower_notional, trade_id, activity_id);
+    }
+    for (auto& tranche : data.tranches) {
+        stamp_ids(tranche, trade_id, activity_id);
+    }
+    for (auto& tranche_notional : data.tranche_notionals) {
+        stamp_ids(tranche_notional, trade_id, activity_id);
     }
 }
 

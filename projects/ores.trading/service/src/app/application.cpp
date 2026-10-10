@@ -50,6 +50,8 @@
 #include "ores.trading.service/messaging/bond_option_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_repo_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_trs_event_registrar.hpp"
+#include "ores.trading.service/messaging/balance_guaranteed_swap_tranche_event_registrar.hpp"
+#include "ores.trading.service/messaging/balance_guaranteed_swap_tranche_notional_event_registrar.hpp"
 #include "ores.trading.service/messaging/callable_swap_call_date_event_registrar.hpp"
 #include "ores.trading.service/messaging/callable_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/cap_floor_instrument_event_registrar.hpp"
@@ -69,6 +71,8 @@
 #include "ores.trading.service/messaging/equity_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_variance_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fpml_event_type_event_registrar.hpp"
+#include "ores.trading.service/messaging/flexi_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/flexi_swap_lower_notional_event_registrar.hpp"
 #include "ores.trading.service/messaging/fra_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_asian_forward_instrument_event_registrar.hpp"
@@ -246,6 +250,18 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         register_balance_guaranteed_swap_instrument_event_mapping(event_source, event_bus, nats);
     auto rate_instrument_sub =
         ores::trading::service::messaging::register_rate_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto balance_guaranteed_swap_tranche_sub =
+        ores::trading::service::messaging::register_balance_guaranteed_swap_tranche_event_mapping(
+            event_source, event_bus, nats);
+    auto balance_guaranteed_swap_tranche_notional_sub =
+        ores::trading::service::messaging::register_balance_guaranteed_swap_tranche_notional_event_mapping(
+            event_source, event_bus, nats);
+    auto flexi_swap_instrument_sub =
+        ores::trading::service::messaging::register_flexi_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto flexi_swap_lower_notional_sub =
+        ores::trading::service::messaging::register_flexi_swap_lower_notional_event_mapping(
             event_source, event_bus, nats);
     auto callable_swap_instrument_sub =
         ores::trading::service::messaging::register_callable_swap_instrument_event_mapping(

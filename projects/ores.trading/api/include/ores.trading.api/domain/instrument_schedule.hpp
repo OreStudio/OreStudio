@@ -96,8 +96,8 @@ struct instrument_schedule final {
     boost::uuids::uuid trade_id;
 
     /**
-     * @brief Which list of the instrument states this schedule: trs_funding, repo, ascot_swap,
-     * option or trs.
+     * @brief Which list of the instrument states this schedule: tranches, trs_funding, repo,
+     * ascot_swap, option or trs.
      *
      * The first four name a leg list. option is the exercise schedule an option block states, and
      * trs is the return schedule a total return swap states. Neither is a leg, so the column names

@@ -12,10 +12,15 @@
 #+entity_plural: balance_guaranteed_swap_instruments
 #+entity_title: Balance Guaranteed Swap Instrument
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-10-10
 
 Represents a Balance Guaranteed Swap instrument where the notional
 amortises in line with an underlying pool of assets (e.g., mortgages).
+
+The document names the reference security here, lists the tranches in
+=balance_guaranteed_swap_tranche= with their notionals in
+=balance_guaranteed_swap_tranche_notional=, and states the tranche schedule as
+an =instrument_schedule= row under the owner role =tranches=.
 
 This row is the family's fact table, not its identity. The header,
 =ores.trading.rate_instruments=, holds the trade type code, the party, the
@@ -55,6 +60,22 @@ trade it names gives the instrument its scope.
 :END:
 
 The activity that wrote this version.
+
+** reference_security
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The security the swap's balance follows.
+
+The ORE schema requires the member. The document states it as an identifier
+such as an ISIN.
+
+#+begin_src cpp :name generator
+std::string("ISIN:XS0983610930")
+#+end_src
 
 ** lockout_days
 :PROPERTIES:
@@ -132,6 +153,7 @@ is immutable.
 
 | expression |
 |------------|
+| "reference_security" <> '' |
 | "lockout_days" is null or "lockout_days" >= 0 |
 
 * C++
@@ -177,6 +199,7 @@ annotations; domain and repository profiles regenerate correctly.
 | column       | header       |
 |--------------+--------------|
 | trade_id     | ID           |
+| reference_security | Reference Security |
 | lockout_days | Lockout Days |
 | modified_by  | Modified By  |
 | version      | Version      |

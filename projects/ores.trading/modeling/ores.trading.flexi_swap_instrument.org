@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: FFE4182F-0FA0-4F7C-B7F9-8DFD59141493
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.flexi_swap_instrument
+#+description: Codegen entity model for the trading =flexi_swap_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Flexi swap instrument: a swap whose owner may vary the notional between a lower bound and the leg notional.
+#+entity_singular: flexi_swap_instrument
+#+entity_plural: flexi_swap_instruments
+#+entity_title: Flexi Swap Instrument
+#+created: 2026-10-10
+#+updated: 2026-10-10
+
+Represents a Flexi Swap instrument: a swap whose owner may choose, period by
+period, a notional between the lower bounds and the legs' notionals. The
+document states the option's direction here and the bounds in
+=flexi_swap_lower_notional=; the legs are the family's swap legs.
+
+This row is the family's fact table, not its identity. The header,
+=ores.trading.rate_instruments=, holds the trade type code, the party, the
+instrument's start and maturity dates and its description; this table holds
+only the product's own fields, and joins the header by =trade_id=.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The trade this instrument belongs to, and the instrument's own key.
+
+The trade id identifies both the trade and its instrument, so the
+instrument carries no identity of its own: this column is the key, and the
+trade it names gives the instrument its scope.
+
+** trade_activity_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that wrote this version.
+
+** option_long_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Direction of the flexibility option: Long or Short.
+
+The ORE schema types the member as its =longShort= set, which the SQL schema states as a check.
+Long means the party holds the option to vary the notional; Short means the
+party writes it.
+
+#+begin_src cpp :name generator
+std::string("Short")
+#+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this instrument. An instrument is written beside
+its trade, so a row cannot exist without one.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:constraint_name: ores_trading_flexi_swap_instruments_activity_fk
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_flexi_swap_instruments_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "option_long_short" in ('Long', 'Short') |
+
+* C++
+
+The C++ domain class is a fact table's: the two keys stay flat, the
+implicit scaffolding columns carry the version and the tenant, and the
+columns below are the product's own fields. The row carries no
+=instrument_identity= and no audit member, because it carries neither the
+identity nor the party: the header, =ores.trading.rate_instruments=, owns
+both and this row joins it by =trade_id=. The SQL schema, DB entity and
+column lists are unaffected. The entity templates consume these
+annotations; domain and repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: flexi_swap_instrument
+:entity_plural_short:   flexi_swap_instruments
+:entity_singular_words: flexi swap instrument
+:entity_plural_words:   flexi swap instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fs
+:END:
+
+** Table display
+
+| column            | header      |
+|-------------------+-------------|
+| trade_id     | ID           |
+| option_long_short | Option |
+| modified_by  | Modified By  |
+| version      | Version      |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

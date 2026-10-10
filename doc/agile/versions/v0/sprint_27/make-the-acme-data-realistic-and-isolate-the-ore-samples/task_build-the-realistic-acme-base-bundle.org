@@ -164,7 +164,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Generator workflow unclear | generate_sql.py | Accepted | Header and docstring name both generators and their order. Regenerated. |
+| 2 | IM regulation codes unverified | generate_netting_data.py | Declined for now | No accepted-value list exists in the repo (the xsd types the field as a string). Stays an assumption in Result. |
+| 3 | Dangling report references | task page | Noted | The report-needs read stays an open item for the next task. |
+| 4 | Two failures on main | PR body | Noted | Both listed in Result. No issue opened. |
+| 5 | Gate still running | PR body | Noted | Result checked before merge. |
+| 6 | Pinned counts in the test | acme_netting_data_test.sql | Accepted | Comment added. |
+| 7 | Generator out of step with five files | task page | Noted | Listed in Result. |
 
 * Result
 

@@ -35,6 +35,8 @@
 
 begin;
 
+-- The expected counts are pinned on purpose. A change to the netting data must
+-- change this test, so a count never moves unnoticed.
 select plan(14);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);

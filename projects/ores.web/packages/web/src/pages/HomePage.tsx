@@ -101,16 +101,6 @@ function SystemHome({ name }: { readonly name: string }): ReactNode {
                 {...(data === undefined
                     ? {}
                     : { description: plural('home.system.lead', data.totalCount) })}
-                actions={
-                    <div className="flex flex-wrap gap-2">
-                        <LinkButton to="/tenants" variant="secondary">
-                            {t('home.system.manageTenants')}
-                        </LinkButton>
-                        <LinkButton to="/tenants/new" variant="primary">
-                            {t('home.system.addTenant')}
-                        </LinkButton>
-                    </div>
-                }
             />
             {overview.isError && <Notice tone="error">{overview.error.message}</Notice>}
             {data !== undefined && (
@@ -148,46 +138,16 @@ function SystemTiles(): ReactNode {
             icon: 'party',
         },
         {
-            title: t('home.system.addTenant'),
-            body: t('home.system.addTenantBody'),
-            to: '/tenants/new',
-            icon: 'add',
-        },
-        {
-            title: t('home.tenant.people'),
-            body: t('home.tenant.peopleBody'),
+            title: t('shell.menu.accounts'),
+            body: t('home.system.accountsBody'),
             to: '/people',
             icon: 'people',
         },
         {
-            title: t('operations.screens.services'),
-            body: t('operations.screens.servicesBody'),
-            to: '/operations/services',
+            title: t('shell.menu.operations'),
+            body: t('operations.hub.description'),
+            to: '/operations',
             icon: 'server',
-        },
-        {
-            title: t('operations.screens.grid'),
-            body: t('operations.screens.gridBody'),
-            to: '/operations/grid',
-            icon: 'apps',
-        },
-        {
-            title: t('operations.screens.bus'),
-            body: t('operations.screens.busBody'),
-            to: '/operations/bus',
-            icon: 'bus',
-        },
-        {
-            title: t('operations.screens.logs'),
-            body: t('operations.screens.logsBody'),
-            to: '/operations/logs',
-            icon: 'log',
-        },
-        {
-            title: t('home.tenant.versions'),
-            body: t('home.tenant.versionsBody'),
-            to: '/operations/versions',
-            icon: 'history',
         },
         {
             title: t('home.tenant.security'),

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :group_the_super_admin_home_into_cards_and_subcards:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-group-the-super-admin-home-into-cards-and-subcards
+#+pr: 3047
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F6590721-A48A-45D8-B97B-DD56B165271A][Group the super administrator's home into cards and subcards]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A system administrator lands on Tenants, Accounts, Operations and Security cards
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F6590721-A48A-45D8-B97B-DD56B165271A][Group the super administrator's home into cards and subcards]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -76,12 +76,16 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3047][#3047]] | [web] Reduce the system administrator's home to four cards |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Key-leak regex covers only home keys | HomePage.test.tsx | Accepted | Pattern widened to home, shell and operations, scoped to the cards |
+| 2 | Link count gives an unclear failure | HomePage.test.tsx | Declined | The count enforces four cards |
+| 3 | Layout untested by eye | HomePage.tsx | Declined | The reviewer builds and checks the page |
 
 * Result
+
+The system administrator's home now offers four cards: Tenants, Accounts, Operations and Security. The Operations card opens the existing operations hub, which holds the running services, the compute grid, the message bus, the telemetry logs, and the versions and the database. The Add tenant card and the two header buttons are gone, because the Tenants screen offers them. The Accounts card shows its words. The Upcoming Modules run keeps its three cards. The package passes 629 tests and the format check. I did not open the page in a browser.

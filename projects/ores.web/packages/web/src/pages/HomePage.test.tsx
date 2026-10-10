@@ -156,14 +156,18 @@ describe('every home', () => {
 });
 
 describe("the system administrator's home", () => {
-    it('welcomes the person and offers to add and manage tenants', () => {
+    it('welcomes the person and states how many tenants there are', () => {
         const html = home('system-administration', busy);
 
         expect(html).toContain('Welcome, marco');
         expect(html).toContain('This deployment runs 9 tenants.');
-        expect(html).toContain('href="/tenants/new"');
-        expect(html).toContain('>Add tenant<');
-        expect(html).toContain('>Manage tenants<');
+    });
+
+    it('does not offer to add a tenant, which the Tenants screen does', () => {
+        const html = home('system-administration', busy);
+
+        expect(html).not.toContain('href="/tenants/new"');
+        expect(html).not.toContain('Add tenant');
     });
 
     it('states the counts and how many tenants need attention', () => {
@@ -211,22 +215,26 @@ describe("the system administrator's home", () => {
 });
 
 describe("the system administrator's cards", () => {
-    it('leads to every screen the system administrator works in', () => {
+    it('offers four cards and reaches the operations screens through one of them', () => {
         const html = home('system-administration', busy);
+        const active = html.slice(html.indexOf('Active Modules'), html.indexOf('Upcoming Modules'));
 
-        expect(html).toContain('Active Modules');
-        for (const href of [
-            '/tenants',
-            '/tenants/new',
-            '/people',
-            '/operations/services',
-            '/operations/grid',
-            '/operations/bus',
-            '/operations/logs',
-            '/operations/versions',
-            '/security',
-        ]) {
-            expect(html).toContain(`href="${href}"`);
+        expect(active).toContain('Active Modules');
+        for (const href of ['/tenants', '/people', '/operations', '/security']) {
+            expect(active).toContain(`href="${href}"`);
+        }
+        expect(active.match(/href="/g)).toHaveLength(4);
+        expect(active).not.toContain('href="/operations/');
+    });
+
+    it('shows words and never a translation key on any card', () => {
+        for (const html of [home('system-administration', busy), home('system-administration')]) {
+            const cards = html.slice(
+                html.indexOf('Active Modules'),
+                html.indexOf('Tenants</span>', html.indexOf('Upcoming Modules')),
+            );
+
+            expect(cards).not.toMatch(/\b(home|shell|operations)\.[a-zA-Z]+\.?[a-zA-Z]*/);
         }
     });
 
@@ -253,7 +261,7 @@ describe("the system administrator's cards", () => {
     it('offers the cards before the overview has been read', () => {
         const html = home('system-administration');
 
-        expect(html).toContain('href="/operations/grid"');
+        expect(html).toContain('href="/operations"');
         expect(html).not.toContain('System health');
     });
 });

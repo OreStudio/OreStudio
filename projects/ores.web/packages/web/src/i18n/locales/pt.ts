@@ -937,8 +937,6 @@ const pt: SourceCatalogue = {
                 one: 'Esta instalação serve {count} inquilino.',
                 other: 'Esta instalação serve {count} inquilinos.',
             },
-            addTenant: 'Adicionar inquilino',
-            manageTenants: 'Gerir inquilinos',
             health: 'Estado do sistema',
             inService: 'Em serviço',
             onEvaluation: 'Em avaliação',
@@ -958,7 +956,7 @@ const pt: SourceCatalogue = {
             open: 'Abrir',
             tenants: 'Inquilinos',
             tenantsLead: 'As organizações que esta instalação serve, e o estado de cada uma.',
-            addTenantBody: 'Crie um inquilino a partir de um perfil inicial e entregue-o.',
+            accountsBody: 'Quem pode entrar nesta instalação, e as funções de cada um.',
             feeds: 'Fluxos de dados de mercado',
             feedsBody:
                 'Que fluxos estão a correr, quando cada um emitiu pela última vez, e iniciar ou parar um.',

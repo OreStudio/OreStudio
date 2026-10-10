@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 import { holdsFrom } from './holds.js';
 import { meets, PERMISSION } from './permissions.js';
 import { NEEDS, tabsFor } from './screens.js';
-import { offered, SHELL_MENUS } from '../shell/areas.js';
+import { MENU, offered } from '../shell/areas.js';
 
 const member = holdsFrom(new Set([PERMISSION.organisationRead]));
 const administrator = holdsFrom(new Set([PERMISSION.accountsRead, PERMISSION.organisationRead]));
@@ -53,10 +53,10 @@ describe('what a screen needs', () => {
     });
 
     it('offers the organisation in the menu to those who can use one of its lists', () => {
-        const item = SHELL_MENUS.application.find((entry) => entry.to === '/organisation');
+        const item = MENU.find((entry) => entry.to === '/organisation');
         expect(item).toBeDefined();
-        expect(offered(item!, member)).toBe(true);
-        expect(offered(item!, nobody)).toBe(false);
+        expect(offered(item!, member, 'application')).toBe(true);
+        expect(offered(item!, nobody, 'application')).toBe(false);
     });
 
     it('offers only the tabs a reader can use, in the order declared', () => {

@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
+#+blocked_on: Give the BFF the curve read routes
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
@@ -29,7 +29,7 @@ A person watches a named curve or surface evolve in ores.web, as the journey and
 | State        | BACKLOG                              |
 | Parent story | [[id:AD390F50-FE3D-47E5-BA8C-58F8C0D5FB02][Show a curve evolving in ores.web]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | The BFF curve read routes.             |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-10                               |
 

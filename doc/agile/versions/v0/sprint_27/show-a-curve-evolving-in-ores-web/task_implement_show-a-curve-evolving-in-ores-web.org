@@ -2,7 +2,7 @@
 :ID: 9BD6425D-8655-45C8-8AA8-9A6B73B47FAA
 :END:
 #+title: Task: Give the BFF the curve read routes
-#+description: Initial task for: Show a curve evolving in ores.web
+#+description: Route the identity, snapshot, slice and evolution reads through the BFF so a screen can reach them.
 #+type: task
 #+level: s1
 #+filetags: :show-a-curve-evolving-in-ores-web:sprint_27:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A person opens ores.web, names a curve or a surface, and watches it evolve as an aligned matrix of instants by nodes, with each node's change, staleness and provenance.
+The BFF exposes the identity, snapshot, slice and evolution reads, so a screen can reach what the server already answers.
 
 * Status
 
@@ -35,10 +35,9 @@ A person opens ores.web, names a curve or a surface, and watches it evolve as an
 
 * Acceptance
 
-- The BFF exposes the identity, snapshot, slice and evolution reads, each behind the permission the server checks.
-- A person reaches the evolution screen from the market data area and reads the aligned matrix for a named object.
-- The screen shows each node's status, the age of each value and, on request, where each value came from.
-- A hole is shown as a hole and a refused request is shown as a reason.
+- The BFF has a session-guarded route for each of the identity, snapshot, slice and evolution reads.
+- Each route sends the request to the server's subject, which checks its own permission, and returns a refusal as a reason.
+- Each route has a test, including a refused request.
 
 * Plan
 

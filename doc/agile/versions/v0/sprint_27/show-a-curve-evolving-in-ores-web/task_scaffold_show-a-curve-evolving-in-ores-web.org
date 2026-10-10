@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The story, its sprint row and its two tasks exist, so the work can start.
 
 * Status
 
@@ -35,7 +35,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The story, its sprint row and its tasks exist, and the doc checks pass.
 
 * Plan
 

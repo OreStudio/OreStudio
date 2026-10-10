@@ -50,7 +50,9 @@ A caller that sets =include_provenance= also gets, for each node, where its valu
 came from. The source kind is =quoted= for a point with no annex row, and
 =derived= or =manual= as the annex row of =observation_lineage= states. A derived
 or manual point also carries who set it, why and when the annex row was
-recorded. A hole has no source, so its entry is empty. A client tests =source_kind= to
+recorded. A derived point also names the recipe that built it: the derivation
+config, its version and the as-of of the data the recipe read. These three are empty,
+zero and the epoch for every other point. A hole has no source, so its entry is empty. A client tests =source_kind= to
 tell a hole from a point and never tests =recorded_at=, which is the epoch for a
 quoted point as well as for a hole. The provenance is the current annex row of
 each point shown, the same generation the values come from, and not the row as it

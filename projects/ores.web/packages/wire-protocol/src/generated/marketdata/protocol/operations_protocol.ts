@@ -395,6 +395,12 @@ export interface PointProvenance {
     change_commentary: string;
     /** When the annex row was recorded. The epoch for a quoted point and for a hole. */
     recorded_at: string;
+    /** The recipe that built a derived point. Empty unless the point is derived. */
+    derivation_config_id: string;
+    /** The recipe version the point was built under. Zero unless the point is derived. */
+    derivation_config_version: number;
+    /** The as-of of the upstream data the derivation read. The epoch unless the point is derived. */
+    source_as_of: string;
 }
 
 /**

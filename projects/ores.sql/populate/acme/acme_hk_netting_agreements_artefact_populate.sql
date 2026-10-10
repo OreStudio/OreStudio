@@ -27,13 +27,9 @@
 -- =============================================================================
 
 /**
- * ACME Corporation ACME_GROUP Portfolios Artefact Population Script
+ * ACME Corporation HK Netting Agreements Artefact Population Script
  *
- * parent_portfolio_id is the artefact-space id (uuid) of the parent
- * portfolio's own row in this dataset; owner_unit_id is the artefact-
- * space id of the owning row in the matching business_units dataset --
- * both self/cross-referential ids resolved by name at publish time (see
- * ores_refdata_publish_portfolios_from_dq_fn). This script is idempotent.
+ * The agreement number is unique within the entity; the counterparty is resolved by LEI at publish time, so a bank is the legal entity GLEIF holds. This script is idempotent.
  */
 
 DO $$
@@ -42,20 +38,22 @@ declare
 begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
-    where code = 'acme.acme_group.portfolios'
+    where code = 'acme.acme_hk.netting_agreements'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: acme.acme_group.portfolios. Run acme_dataset_populate.sql first.';
+        raise exception 'Dataset not found: acme.acme_hk.netting_agreements. Run acme_dataset_populate.sql first.';
     end if;
 
-    delete from ores_dq_portfolios_artefact_tbl
+    delete from ores_dq_netting_agreements_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    insert into ores_dq_portfolios_artefact_tbl (
-        dataset_id, tenant_id, id, version, name,
-        parent_portfolio_id, owner_unit_id, purpose_type, aggregation_ccy, is_virtual
+    insert into ores_dq_netting_agreements_artefact_tbl (
+        dataset_id, tenant_id, agreement_number, version, counterparty_lei, agreement_type, governing_law, description
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '05e93bbe-2a59-5432-8a4d-43b26d3d33cf', 0, 'Group Treasury Portfolio', null, 'ef912421-d1fc-5fde-95d0-48c0567bfbe8', 'Risk', 'GBP', true);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ACHK-HBAP-ISDA-2017', 0, '2HI3YI5320L3RW6NJ957', 'ISDA', 'English', 'ISDA 2002 Master Agreement between ACME Corporation HK Ltd and The Hongkong and Shanghai Banking Corporation Limited, English law, signed 2017'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ACHK-SCB-ISDA-2018', 0, 'RILFO74KP1CM8P6PCT96', 'ISDA', 'English', 'ISDA 2002 Master Agreement between ACME Corporation HK Ltd and Standard Chartered Bank, English law, signed 2018'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ACHK-CITI-ISDA-2019', 0, 'E57ODZWZ7FF32TWEFA76', 'ISDA', 'English', 'ISDA 2002 Master Agreement between ACME Corporation HK Ltd and Citibank, National Association, English law, signed 2019'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ACGR-ACHK-ISDA-2018', 0, '9695ACMEGROUP0000030', 'ISDA', 'English', 'ISDA 2002 Master Agreement between ACME Corporation HK Ltd and Acme Corporation Plc, English law, signed 2018');
 end $$;

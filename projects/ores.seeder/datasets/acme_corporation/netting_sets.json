@@ -1,0 +1,140 @@
+[
+  {
+    "company_code": "acme_us",
+    "code": "ACUS-JPM-VMIM",
+    "agreement_number": "ACUS-JPM-ISDA-2015",
+    "description": "OTC derivatives with JPMorgan Chase Bank, National Association under the 2016 Credit Support Annex for Variation Margin (New York law) and the 2018 Credit Support Annex for Initial Margin (New York law), variation and initial margin, margined daily"
+  },
+  {
+    "company_code": "acme_us",
+    "code": "ACUS-JPM-CMDTY-UNC",
+    "agreement_number": "ACUS-JPM-ISDA-2015",
+    "description": "Commodity derivatives with JPMorgan Chase Bank, National Association outside the credit support annex, uncollateralised"
+  },
+  {
+    "company_code": "acme_us",
+    "code": "ACUS-BOFA-VM",
+    "agreement_number": "ACUS-BOFA-ISDA-2017",
+    "description": "OTC derivatives with Bank of America, National Association under the 2016 Credit Support Annex for Variation Margin (New York law), variation margin only, margined daily"
+  },
+  {
+    "company_code": "acme_us",
+    "code": "ACUS-CITI-VM",
+    "agreement_number": "ACUS-CITI-ISDA-2016",
+    "description": "OTC derivatives with Citibank, National Association under the 2016 Credit Support Annex for Variation Margin (New York law), variation margin only, margined daily"
+  },
+  {
+    "company_code": "acme_uk",
+    "code": "ACUK-BARC-VMIM",
+    "agreement_number": "ACUK-BARC-ISDA-2014",
+    "description": "OTC derivatives with Barclays Bank PLC under the 2016 Credit Support Annex for Variation Margin (English law, title transfer) and the 2016 Credit Support Deed for Initial Margin (English law, security interest), variation and initial margin, margined daily"
+  },
+  {
+    "company_code": "acme_uk",
+    "code": "ACUK-BARC-CMDTY-UNC",
+    "agreement_number": "ACUK-BARC-ISDA-2014",
+    "description": "Commodity derivatives with Barclays Bank PLC outside the credit support annex, uncollateralised"
+  },
+  {
+    "company_code": "acme_uk",
+    "code": "ACUK-HSBC-VM",
+    "agreement_number": "ACUK-HSBC-ISDA-2016",
+    "description": "OTC derivatives with HSBC Bank plc under the 2016 Credit Support Annex for Variation Margin (English law, title transfer), variation margin only, margined daily"
+  },
+  {
+    "company_code": "acme_uk",
+    "code": "ACUK-DB-VM",
+    "agreement_number": "ACUK-DB-ISDA-2015",
+    "description": "OTC derivatives with Deutsche Bank AG under the 2016 Credit Support Annex for Variation Margin (English law, title transfer), variation margin only, margined daily"
+  },
+  {
+    "company_code": "acme_uk",
+    "code": "ACUK-BNPP-VM",
+    "agreement_number": "ACUK-BNPP-ISDA-2018",
+    "description": "OTC derivatives with BNP Paribas under the 2016 Credit Support Annex for Variation Margin (English law, title transfer), variation margin only, margined daily"
+  },
+  {
+    "company_code": "acme_uk",
+    "code": "ACUK-UBS-UNC",
+    "agreement_number": "ACUK-UBS-ISDA-2012",
+    "description": "OTC derivatives with UBS AG, uncollateralised"
+  },
+  {
+    "company_code": "acme_hk",
+    "code": "ACHK-HBAP-VM",
+    "agreement_number": "ACHK-HBAP-ISDA-2017",
+    "description": "OTC derivatives with The Hongkong and Shanghai Banking Corporation Limited under the 2016 Credit Support Annex for Variation Margin (English law, title transfer), variation margin only, margined daily"
+  },
+  {
+    "company_code": "acme_hk",
+    "code": "ACHK-SCB-VM",
+    "agreement_number": "ACHK-SCB-ISDA-2018",
+    "description": "OTC derivatives with Standard Chartered Bank under the 2016 Credit Support Annex for Variation Margin (English law, title transfer), variation margin only, margined daily"
+  },
+  {
+    "company_code": "acme_hk",
+    "code": "ACHK-CITI-VM",
+    "agreement_number": "ACHK-CITI-ISDA-2019",
+    "description": "OTC derivatives with Citibank, National Association under the 2016 Credit Support Annex for Variation Margin (English law, title transfer), variation margin only, margined daily"
+  },
+  {
+    "company_code": "acme_group",
+    "code": "ACGR-HSBC-VM",
+    "agreement_number": "ACGR-HSBC-ISDA-2016",
+    "description": "OTC derivatives with HSBC Bank plc under the 2016 Credit Support Annex for Variation Margin (English law, title transfer), variation margin only, margined daily"
+  },
+  {
+    "company_code": "acme_group",
+    "code": "ACGR-JPM-VM",
+    "agreement_number": "ACGR-JPM-ISDA-2015",
+    "description": "OTC derivatives with JPMorgan Chase Bank, National Association under the 2016 Credit Support Annex for Variation Margin (New York law), variation margin only, margined daily"
+  },
+  {
+    "company_code": "acme_group",
+    "code": "ACGR-ACUK-IC-UNC",
+    "agreement_number": "ACGR-ACUK-ISDA-2018",
+    "description": "Intragroup derivatives with ACME Corporation UK plc, uncollateralised"
+  },
+  {
+    "company_code": "acme_uk",
+    "code": "ACUK-ACGR-IC-UNC",
+    "agreement_number": "ACGR-ACUK-ISDA-2018",
+    "description": "Intragroup derivatives with Acme Corporation Plc, uncollateralised"
+  },
+  {
+    "company_code": "acme_group",
+    "code": "ACGR-ACUS-IC-UNC",
+    "agreement_number": "ACGR-ACUS-ISDA-2018",
+    "description": "Intragroup derivatives with ACME Corporation US Inc, uncollateralised"
+  },
+  {
+    "company_code": "acme_us",
+    "code": "ACUS-ACGR-IC-UNC",
+    "agreement_number": "ACGR-ACUS-ISDA-2018",
+    "description": "Intragroup derivatives with Acme Corporation Plc, uncollateralised"
+  },
+  {
+    "company_code": "acme_group",
+    "code": "ACGR-ACHK-IC-UNC",
+    "agreement_number": "ACGR-ACHK-ISDA-2018",
+    "description": "Intragroup derivatives with ACME Corporation HK Ltd, uncollateralised"
+  },
+  {
+    "company_code": "acme_hk",
+    "code": "ACHK-ACGR-IC-UNC",
+    "agreement_number": "ACGR-ACHK-ISDA-2018",
+    "description": "Intragroup derivatives with Acme Corporation Plc, uncollateralised"
+  },
+  {
+    "company_code": "acme_uk",
+    "code": "ACUK-ACUS-IC-VM",
+    "agreement_number": "ACUK-ACUS-ISDA-2019",
+    "description": "Intragroup derivatives with ACME Corporation US Inc, variation margin only"
+  },
+  {
+    "company_code": "acme_us",
+    "code": "ACUS-ACUK-IC-VM",
+    "agreement_number": "ACUK-ACUS-ISDA-2019",
+    "description": "Intragroup derivatives with ACME Corporation UK plc, variation margin only"
+  }
+]

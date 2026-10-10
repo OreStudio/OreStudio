@@ -56,6 +56,45 @@ BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.books', 'acme.acme_hk.portfolios', 'parent_portfolio_source');
 
+    -- Each entity's netting data publishes in dependency order: an agreement
+    -- needs its counterparty (a bank from the GLEIF set, or another ACME
+    -- entity), a netting set needs its agreement, a CSA needs its set.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.netting_agreements', 'gleif.lei_counterparties.small', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.netting_agreements', 'acme.lei_counterparties', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.netting_sets', 'acme.acme_group.netting_agreements', 'agreement_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.csas', 'acme.acme_group.netting_sets', 'netting_set_reference');
+
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.netting_agreements', 'gleif.lei_counterparties.small', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.netting_agreements', 'acme.lei_counterparties', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.netting_sets', 'acme.acme_uk.netting_agreements', 'agreement_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.csas', 'acme.acme_uk.netting_sets', 'netting_set_reference');
+
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.netting_agreements', 'gleif.lei_counterparties.small', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.netting_agreements', 'acme.lei_counterparties', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.netting_sets', 'acme.acme_us.netting_agreements', 'agreement_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.csas', 'acme.acme_us.netting_sets', 'netting_set_reference');
+
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.netting_agreements', 'gleif.lei_counterparties.small', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.netting_agreements', 'acme.lei_counterparties', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.netting_sets', 'acme.acme_hk.netting_agreements', 'agreement_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.csas', 'acme.acme_hk.netting_sets', 'netting_set_reference');
+
     -- The service accounts' images ride assets.system_avatars, and the
     -- provisioning attaches them by code. Every ACME dataset declares the
     -- dependency, so publishing ACME data publishes the images first.

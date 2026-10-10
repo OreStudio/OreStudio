@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-the-realistic-acme-base-bundle
+#+pr: 3077
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ group's data and carries ACME's own catalogue, methodology and licence.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -65,9 +65,83 @@ group's data and carries ACME's own catalogue, methodology and licence.
 
 * Measurements
 
-None yet.
+Measured on a freshly recreated database and a fresh ACME provision.
+
+| Party                   | Agreements | Netting sets | CSAs |
+|-------------------------+------------+--------------+------|
+| Acme Corporation Plc    |          5 |            5 |    2 |
+| ACME Corporation UK plc |          7 |            8 |    5 |
+| ACME Corporation US Inc |          5 |            6 |    4 |
+| ACME Corporation HK Ltd |          4 |            4 |    3 |
+| Total new               |         21 |           23 |   14 |
+
+- Acme Corporation Plc also still holds the 8 sample agreements, 19 sample sets
+  and 7 sample CSAs. The retarget task removes them.
+- The four intragroup agreements each appear under both parties.
+- Four ACME counterparties carry the =9695ACME...= LEIs.
+- No netting set belongs to a different party than its agreement. No CSA
+  belongs to a different party than its set.
+- New CSAs: 7 USD-SOFR, 3 GBP-SONIA, 4 EUR-ESTER. The 5 EUR-EONIA CSAs are the
+  sample ones.
+- pgTAP: 14 of 14 new tests pass. 6 of them fail when the data is corrupted.
+  The full pgTAP run passes except two known failures that also fail on main.
 
 * Notes
+
+*Audit, 2026-10-10 (plan step 1).* Read from a freshly provisioned ACME
+tenant and from the repository. The database was queried; the report needs are
+not yet read (plan step 2).
+
+- *What ACME publishes today, per party.* Four legal entities plus the system
+  party. Each entity has a bundle (=acme_group=, =acme_uk=, =acme_us=,
+  =acme_hk=) of datasets named =acme.<entity>.<thing>=: business units,
+  portfolios, books, accounts and contact information. The =load_staff= step of
+  the =acme_demo= profile publishes each bundle to its own party. The realistic
+  netting data fits this pattern with no new party machinery: add
+  =acme.<entity>.netting_agreements=, =netting_sets= and =csas= datasets to the
+  entity's bundle.
+- *Counts after provisioning.* Acme Corporation Plc 1 business unit, 22
+  portfolios, 22 books. UK 15 business units, HK 6, US 6, each with 20
+  portfolios and 22 books. The tenant holds 12,959 GLEIF counterparties, 67
+  market series, 155 report definitions and no trades.
+- *Mixed portfolios.* Every entity has two official top-level portfolios,
+  =Global Portfolio= and =Regulatory Capital=, both aggregating in USD. Acme
+  Corporation Plc also holds the sample portfolios =PF1= and =PF2= at the top of
+  the same tree, because the =ore_samples= bundle publishes them there. Official
+  and sample portfolios are not separated.
+- *What the sample netting data is.* Eight banks, 19 netting sets, 7 CSAs and 19
+  ORE aliases, published to Acme Corporation Plc only. All 7 CSAs are in EUR and
+  every threshold pair is identical. Five use the overnight index EUR-EONIA,
+  retired in 2022. The set descriptions read as test data ("pricing test book",
+  "wrapped trades").
+- *References to the current dataset codes.* The sample netting and portfolio
+  dataset scripts, the bundle and bundle member scripts, the =acme_demo=
+  profile, =party_provisioning_plan.hpp=, the pgTAP sample netting test, the
+  trading envelope names test, the manual chapter on initial setup, and a
+  number of plans. The retarget task owns the renaming; this task adds new
+  datasets and leaves these in place.
+- *Banks are real GLEIF entities.* A counterparty is found by LEI, and the
+  GLEIF set holds many affiliates of one bank (BNP Paribas alone has dozens),
+  so each agreement must name the right legal entity by LEI.
+
+*Decisions.*
+
+- *Panel.* US Inc faces JPMorgan, Bank of America and Citi under New York law.
+  UK plc faces Barclays, HSBC, Deutsche Bank, BNP Paribas and UBS under English
+  law. HK Ltd faces HSBC Hong Kong, Standard Chartered and Citi under English
+  law. Group Plc faces HSBC and JPMorgan.
+- *Hong Kong.* Bank of China (Hong Kong) is not in the loaded GLEIF set. Citi is
+  the third bank. Standard Chartered Bank is the covering legal entity for its
+  Hong Kong branch.
+- *Intragroup.* Group Plc holds an uncollateralised agreement with each
+  subsidiary. UK plc and US Inc hold a variation margin agreement in USD. Both
+  sides share one reference.
+- *CSA archetypes.* Variation margin only, variation and initial margin, and
+  uncollateralised. Only live overnight indices are used.
+- *Counterparties.* The new dataset =acme.lei_counterparties= makes the ACME
+  entities counterparties, so intragroup agreements resolve by LEI.
+- *Assumption.* The initial margin regulation codes =ESA=, =CFTC,PRUDENTIAL= and
+  =HKMA= are not yet checked against the codes ORE accepts.
 
 * Test Scenarios
 
@@ -84,14 +158,43 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3077][#3077]] | [seeder,sql] Build the realistic ACME netting base data |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Generator workflow unclear | generate_sql.py | Accepted | Header and docstring name both generators and their order. Regenerated. |
+| 2 | IM regulation codes unverified | generate_netting_data.py | Declined for now | No accepted-value list exists in the repo (the xsd types the field as a string). Stays an assumption in Result. |
+| 3 | Dangling report references | task page | Noted | The report-needs read stays an open item for the next task. |
+| 4 | Two failures on main | PR body | Noted | Both listed in Result. No issue opened. |
+| 5 | Gate still running | PR body | Noted | Result checked before merge. |
+| 6 | Pinned counts in the test | acme_netting_data_test.sql | Accepted | Comment added. |
+| 7 | Generator out of step with five files | task page | Noted | Listed in Result. |
 
 * Result
 
-Not started.
+Each ACME legal entity now holds realistic netting agreements, netting sets and
+CSAs. They come from the new datasets =acme.<entity>.netting_agreements=,
+=netting_sets= and =csas=, with a methodology that names the ORE samples as the
+starting point and lists every improvement. The data is in the entity bundles
+and is verified on a fresh provision.
+
+*Acceptance.* Met: the methodology; per-jurisdiction agreements with matching
+type and law; all three CSA regimes with live indices; no sample wording in the
+new data; pgTAP and a fresh provision.
+
+*Not met, and why.*
+
+- The report definitions' needs were not read (plan step 2). It is not verified
+  that every netting set, counterparty and portfolio a seeded report definition
+  names exists.
+- Acme Corporation Plc still carries the sample netting data and the portfolios
+  PF1 and PF2. The retarget task removes them.
+- No trade corpus exists yet.
+- The regulation codes are assumptions.
+
+*Known issues not caused by this task.* The generator is out of step with five
+checked-in files (books and photos). The codegen test
+=test_trade_type_catalogue= fails in a full run on main. The pgTAP synthetic
+scope test hard-codes a DDL user name.

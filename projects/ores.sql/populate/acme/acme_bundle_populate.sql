@@ -50,6 +50,7 @@ BEGIN
         'The four-party ACME Corporation LEI hierarchy. Published tenant-wide with the {"root_lei": "9695ACMEGROUP0000030"} param, before any operating-company party exists. Depends on fpml.business_center already having been published via the base bundle.'
     );
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_lei_import', 'acme.lei_parties', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_lei_import', 'acme.lei_counterparties', 30);
 
     -- --- Group-level staff plus the Group Treasury business
     -- unit/portfolio/books -- published once the holding company's own
@@ -64,6 +65,9 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_group', 'acme.acme_group.books', 30);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_group', 'acme.acme_group.accounts', 40);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_group', 'acme.acme_group.account_contact_informations', 50);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_group', 'acme.acme_group.netting_agreements', 60);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_group', 'acme.acme_group.netting_sets', 70);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_group', 'acme.acme_group.csas', 80);
 
     -- --- Per-office business units, portfolios, books, accounts, and
     -- account contact informations -- published once each operating
@@ -79,6 +83,9 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_uk', 'acme.acme_uk.books', 30);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_uk', 'acme.acme_uk.accounts', 40);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_uk', 'acme.acme_uk.account_contact_informations', 50);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_uk', 'acme.acme_uk.netting_agreements', 60);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_uk', 'acme.acme_uk.netting_sets', 70);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_uk', 'acme.acme_uk.csas', 80);
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme_us',
@@ -90,6 +97,9 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_us', 'acme.acme_us.books', 30);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_us', 'acme.acme_us.accounts', 40);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_us', 'acme.acme_us.account_contact_informations', 50);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_us', 'acme.acme_us.netting_agreements', 60);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_us', 'acme.acme_us.netting_sets', 70);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_us', 'acme.acme_us.csas', 80);
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme_hk',
@@ -101,4 +111,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_hk', 'acme.acme_hk.books', 30);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_hk', 'acme.acme_hk.accounts', 40);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_hk', 'acme.acme_hk.account_contact_informations', 50);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_hk', 'acme.acme_hk.netting_agreements', 60);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_hk', 'acme.acme_hk.netting_sets', 70);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_hk', 'acme.acme_hk.csas', 80);
 END $$;

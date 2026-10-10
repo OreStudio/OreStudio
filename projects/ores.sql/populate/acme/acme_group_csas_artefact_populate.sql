@@ -27,13 +27,9 @@
 -- =============================================================================
 
 /**
- * ACME Corporation ACME_GROUP Portfolios Artefact Population Script
+ * ACME Corporation Group CSAs Artefact Population Script
  *
- * parent_portfolio_id is the artefact-space id (uuid) of the parent
- * portfolio's own row in this dataset; owner_unit_id is the artefact-
- * space id of the owning row in the matching business_units dataset --
- * both self/cross-referential ids resolved by name at publish time (see
- * ores_refdata_publish_portfolios_from_dq_fn). This script is idempotent.
+ * Each CSA names its netting set by code; the eligible currencies are a comma list, margin currency first. This script is idempotent.
  */
 
 DO $$
@@ -42,20 +38,20 @@ declare
 begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
-    where code = 'acme.acme_group.portfolios'
+    where code = 'acme.acme_group.csas'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: acme.acme_group.portfolios. Run acme_dataset_populate.sql first.';
+        raise exception 'Dataset not found: acme.acme_group.csas. Run acme_dataset_populate.sql first.';
     end if;
 
-    delete from ores_dq_portfolios_artefact_tbl
+    delete from ores_dq_csas_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    insert into ores_dq_portfolios_artefact_tbl (
-        dataset_id, tenant_id, id, version, name,
-        parent_portfolio_id, owner_unit_id, purpose_type, aggregation_ccy, is_virtual
+    insert into ores_dq_csas_artefact_tbl (
+        dataset_id, tenant_id, netting_set_code, version, is_active, bilateral, csa_currency, index_name, threshold_pay, threshold_receive, minimum_transfer_amount_pay, minimum_transfer_amount_receive, independent_amount_held, independent_amount_type, call_frequency, post_frequency, margin_period_of_risk, collateral_compounding_spread_receive, collateral_compounding_spread_pay, apply_initial_margin, initial_margin_type, calculate_im_amount, calculate_vm_amount, non_exempt_im_regulations, eligible_currencies
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '05e93bbe-2a59-5432-8a4d-43b26d3d33cf', 0, 'Group Treasury Portfolio', null, 'ef912421-d1fc-5fde-95d0-48c0567bfbe8', 'Risk', 'GBP', true);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ACGR-HSBC-VM', 0, true, 'Bilateral', 'GBP', 'GBP-SONIA', 0.0, 0.0, 200000.0, 200000.0, 0.0, 'FIXED', '1D', '1D', '10D', 0.0, 0.0, false, null, false, true, null, 'GBP,USD,EUR'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ACGR-JPM-VM', 0, true, 'Bilateral', 'USD', 'USD-SOFR', 0.0, 0.0, 250000.0, 250000.0, 0.0, 'FIXED', '1D', '1D', '10D', 0.0, 0.0, false, null, false, true, null, 'USD,EUR,GBP');
 end $$;

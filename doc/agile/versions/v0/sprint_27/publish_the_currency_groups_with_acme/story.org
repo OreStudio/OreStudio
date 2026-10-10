@@ -21,11 +21,11 @@ A new tenant, Acme included, holds the desk currency groups and their members af
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The scaffold is in review. The CRM analysis task is next. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Record the CRM analysis, then publish the groups from DQ. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -43,7 +43,7 @@ A new tenant, Acme included, holds the desk currency groups and their members af
 | [[id:EEA1A082-DC41-440E-9FF7-29AD624F9062][Decide how currency groups relate to the CRM topology bundles]] | DONE | 2026-10-10 | 2026-10-10 | Record why currency groups and CRM topologies are separate concepts, with no foreign key between them. |
 | [[id:81A847AF-6814-4B5E-8B43-ED220FD01CC1][Publish the currency groups from DQ]] | DONE | 2026-10-10 | 2026-10-10 | Add the currency groups artefact table, artefact type, publish function and the curated dataset: G11, Scandies, Antipodeans, Asians, Latams and commodity currencies. |
 | [[id:4C1856B4-99D3-4BCD-B31D-32CA5872149D][Publish the currency group members from DQ]] | DONE | 2026-10-10 | 2026-10-10 | Add the membership junction artefact, publish function and dataset, following the currency countries dataset. Each member resolves to a published group and a published currency. |
-| [[id:5C57D605-6DFF-4A25-98F1-CC909F4D47F0][Provision the currency groups with Acme]] | BACKLOG | | | Add both datasets to the base bundle and prove with a test that a provisioned tenant holds the groups and members. Check that an Acme user sees them in the web UI. |
+| [[id:5C57D605-6DFF-4A25-98F1-CC909F4D47F0][Provision the currency groups with Acme]] | DONE | 2026-10-10 | 2026-10-10 | Add both datasets to the base bundle and prove with a test that a provisioned tenant holds the groups and members. Check that an Acme user sees them in the web UI. |
 
 * Decisions
 
@@ -54,3 +54,7 @@ A new tenant, Acme included, holds the desk currency groups and their members af
 
 - Seeding a CRM topology from a group's members.
 - Changes to the web screens beyond checking that an Acme user sees the groups.
+
+* Result
+
+A new tenant, Acme included, now holds the six desk currency groups and their 37 memberships after provisioning. Two DQ datasets carry them: refdata.currency_groups and refdata.currency_currency_groups. Both are in the base bundle. The CRM topology bundles stay separate and get no foreign key to a group, because their currency sets differ. A pgTAP test covers the bundle, the artefacts and a publish. I did not open the Desk groups screen in a browser.

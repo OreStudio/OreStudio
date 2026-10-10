@@ -69,6 +69,11 @@ export interface RecordResult {
     readonly changed: readonly StepRef[];
 }
 
+/** An image the store kept: its name, which the step's note links to. */
+export interface SavedImage {
+    readonly name: string;
+}
+
 export interface ScenarioStore {
     /** Every scenario under the doc root, newest id order is not promised. */
     list(): Promise<ScenarioSummary[]>;
@@ -81,6 +86,12 @@ export interface ScenarioStore {
      * the steps it names, so the last save to name a step wins that step.
      */
     record(id: string, input: RunInput): Promise<RecordResult>;
+    /**
+     * Keep a screenshot of step number `step` (counted from one) beside the
+     * scenario. The store builds the name from the scenario and the step, and
+     * decides the kind of image from its bytes.
+     */
+    saveImage(id: string, step: number, bytes: Uint8Array): Promise<SavedImage>;
 }
 
 /** The id is not a document id. A path is never an id. */
@@ -103,5 +114,30 @@ export class PathEscapeError extends Error {
     constructor(path: string) {
         super(`${path} is outside the doc root.`);
         this.name = 'PathEscapeError';
+    }
+}
+
+/** The bytes are not an image the store accepts. */
+export class InvalidImageError extends Error {
+    readonly reason: 'empty' | 'not-image' | 'too-large';
+
+    constructor(reason: 'empty' | 'not-image' | 'too-large') {
+        super(
+            reason === 'too-large'
+                ? 'The image is too large.'
+                : reason === 'empty'
+                  ? 'The image is empty.'
+                  : 'The file is not a PNG, JPEG, GIF or WebP image.',
+        );
+        this.name = 'InvalidImageError';
+        this.reason = reason;
+    }
+}
+
+/** The step number is not one of the scenario's steps. */
+export class StepNumberError extends Error {
+    constructor(step: number, count: number) {
+        super(`The scenario has ${count} steps, so there is no step ${step}.`);
+        this.name = 'StepNumberError';
     }
 }

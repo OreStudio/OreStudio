@@ -60,6 +60,7 @@ export type Action =
     | { readonly type: 'note'; readonly notes: string }
     | { readonly type: 'previous' }
     | { readonly type: 'next' }
+    | { readonly type: 'attach'; readonly index: number; readonly name: string }
     | { readonly type: 'retest' }
     | { readonly type: 'saved'; readonly scenario: Scenario };
 
@@ -105,6 +106,19 @@ export function reduce(runner: Runner, action: Action): Runner {
                 ...runner,
                 steps: replaceStep(runner.steps, runner.index, { notes: action.notes }),
             };
+        case 'attach': {
+            // The link goes to the step the image was dropped on, which may no
+            // longer be the step on show when the upload ends.
+            const step = runner.steps[action.index];
+            if (runner.closed || step === undefined) return runner;
+            const link = `[[file:${action.name}]]`;
+            return {
+                ...runner,
+                steps: replaceStep(runner.steps, action.index, {
+                    notes: step.notes === '' ? link : `${step.notes}\n${link}`,
+                }),
+            };
+        }
         case 'previous':
             return { ...runner, index: Math.max(0, runner.index - 1) };
         case 'next':

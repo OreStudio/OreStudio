@@ -25,6 +25,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+    MAX_IMAGE_BYTES,
+    imageUploadResponseSchema,
     qaDocResponseSchema,
     runResponseSchema,
     scenarioListSchema,
@@ -35,8 +37,19 @@ import type { Config } from './config.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { parseScenario, recordRun, ScenarioFormatError } from './scenarios/scenario-doc.js';
 import type { RunInput, Scenario } from './scenarios/scenario-doc.js';
-import { InvalidDocIdError, ScenarioNotFoundError } from './scenarios/scenario-store.js';
-import type { DocText, ScenarioStore, ScenarioSummary } from './scenarios/scenario-store.js';
+import { detectImage } from './scenarios/image.js';
+import {
+    InvalidDocIdError,
+    InvalidImageError,
+    ScenarioNotFoundError,
+    StepNumberError,
+} from './scenarios/scenario-store.js';
+import type {
+    DocText,
+    SavedImage,
+    ScenarioStore,
+    ScenarioSummary,
+} from './scenarios/scenario-store.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
 
@@ -144,6 +157,20 @@ class MemoryStore implements ScenarioStore {
         return doc === undefined || text === undefined ? null : { id: key, ...doc, text };
     }
 
+    readonly images: { id: string; step: number; bytes: Uint8Array }[] = [];
+
+    async saveImage(id: string, step: number, bytes: Uint8Array): Promise<SavedImage> {
+        const key = this.check(id);
+        if (docs.get(key)?.type !== 'test_scenario') throw new ScenarioNotFoundError(key);
+        const kind = detectImage(bytes);
+        if (kind === null) throw new InvalidImageError('not-image');
+        const count = parseScenario(this.texts.get(key) ?? '').steps.length;
+        if (!Number.isInteger(step) || step < 1 || step > count)
+            throw new StepNumberError(step, count);
+        this.images.push({ id: key, step, bytes });
+        return { name: `scenario_step${step}_20261011_090000.${kind}` };
+    }
+
     async record(id: string, input: RunInput) {
         const key = this.check(id);
         const text = this.texts.get(key);
@@ -205,7 +232,7 @@ function buildTestServer(options: { store?: ScenarioStore; docRoot?: string }) {
 function send(
     server: ReturnType<typeof buildServer>,
     sessionId: string | null,
-    method: 'GET' | 'PUT',
+    method: 'GET' | 'PUT' | 'POST',
     url: string,
     payload?: unknown,
 ): ReturnType<ReturnType<typeof buildServer>['inject']> {
@@ -228,6 +255,7 @@ describe('a request with no session', () => {
             ['GET', `/api/qa/scenarios/${SINGLE}`],
             ['GET', `/api/qa/docs/${STORY}`],
             ['PUT', `/api/qa/scenarios/${SINGLE}/run`],
+            ['POST', `/api/qa/scenarios/${SINGLE}/steps/1/images`],
         ];
         for (const [method, url] of calls) {
             const response = await send(
@@ -235,7 +263,7 @@ describe('a request with no session', () => {
                 null,
                 method,
                 url,
-                method === 'PUT' ? {} : undefined,
+                method === 'GET' ? undefined : {},
             );
             expect(response.statusCode, url).toBe(401);
             expect(response.json().code).toBe('not-authenticated');
@@ -398,6 +426,139 @@ describe('saving a run', () => {
     });
 });
 
+const PNG_BYTES = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+const upload = (bytes: Uint8Array | Buffer, mediaType = 'image/png') => ({
+    mediaType,
+    data: Buffer.from(bytes).toString('base64'),
+});
+
+describe('uploading a screenshot of a step', () => {
+    const url = (id: string, step: number | string) =>
+        `/api/qa/scenarios/${id}/steps/${step}/images`;
+
+    it('keeps an image and answers the name its step note links to', async () => {
+        const store = new MemoryStore();
+        const { server, sessionId } = buildTestServer({ store });
+        const response = await send(server, sessionId, 'POST', url(MULTI, 3), upload(PNG_BYTES));
+        expect(response.statusCode).toBe(200);
+        expect(imageUploadResponseSchema.parse(response.json()).name).toMatch(/_step3_.*\.png$/);
+        expect(store.images).toHaveLength(1);
+        expect(store.images[0]).toMatchObject({ id: MULTI, step: 3 });
+        expect(Buffer.from(store.images[0]?.bytes ?? [])).toEqual(PNG_BYTES);
+    });
+
+    it('refuses a media type that is not an image, and an SVG', async () => {
+        const store = new MemoryStore();
+        const { server, sessionId } = buildTestServer({ store });
+        for (const type of ['text/html', 'image/svg+xml', 'application/octet-stream', '']) {
+            const response = await send(
+                server,
+                sessionId,
+                'POST',
+                url(MULTI, 1),
+                upload(PNG_BYTES, type),
+            );
+            expect(response.statusCode, type).toBe(415);
+        }
+        expect(store.images).toHaveLength(0);
+    });
+
+    it('refuses bytes that are not an image whatever the media type says', async () => {
+        const store = new MemoryStore();
+        const { server, sessionId } = buildTestServer({ store });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            url(MULTI, 1),
+            upload(Buffer.from('<script>alert(1)</script>')),
+        );
+        expect(response.statusCode).toBe(415);
+        expect(response.json().message).toContain('not a PNG, JPEG, GIF or WebP');
+        expect(store.images).toHaveLength(0);
+    });
+
+    it('refuses data that is not base64', async () => {
+        const { server, sessionId } = buildTestServer({ store: new MemoryStore() });
+        const response = await send(server, sessionId, 'POST', url(MULTI, 1), {
+            mediaType: 'image/png',
+            data: 'not base64 at all!',
+        });
+        expect(response.statusCode).toBe(415);
+    });
+
+    it('refuses a body that is not an upload', async () => {
+        const { server, sessionId } = buildTestServer({ store: new MemoryStore() });
+        for (const body of [
+            {},
+            { mediaType: 'image/png' },
+            { data: 'AAAA' },
+            { ...upload(PNG_BYTES), extra: 1 },
+        ]) {
+            const response = await send(server, sessionId, 'POST', url(MULTI, 1), body);
+            expect(response.statusCode, JSON.stringify(body)).toBe(400);
+        }
+    });
+
+    it('refuses a step the scenario does not have', async () => {
+        const store = new MemoryStore();
+        const { server, sessionId } = buildTestServer({ store });
+        for (const step of [0, 14, 'x', '1.5']) {
+            const response = await send(
+                server,
+                sessionId,
+                'POST',
+                url(MULTI, step),
+                upload(PNG_BYTES),
+            );
+            expect(response.statusCode, String(step)).toBe(400);
+        }
+        expect(store.images).toHaveLength(0);
+    });
+
+    it('answers not found for a scenario that does not exist', async () => {
+        const { server, sessionId } = buildTestServer({ store: new MemoryStore() });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            url('E0000000-0000-4000-8000-000000000003', 1),
+            upload(PNG_BYTES),
+        );
+        expect(response.statusCode).toBe(404);
+    });
+
+    it('refuses a caller with no session before it reads a large body', async () => {
+        const store = new MemoryStore();
+        const { server } = buildTestServer({ store });
+        const response = await send(server, null, 'POST', url(MULTI, 1), {
+            mediaType: 'image/png',
+            data: 'A'.repeat(Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 100_000),
+        });
+        expect(response.statusCode).toBe(401);
+        expect(store.images).toHaveLength(0);
+    });
+
+    it('refuses an upload with no data', async () => {
+        const { server, sessionId } = buildTestServer({ store: new MemoryStore() });
+        const response = await send(server, sessionId, 'POST', url(MULTI, 1), {
+            mediaType: 'image/png',
+            data: '',
+        });
+        expect(response.statusCode).toBe(400);
+    });
+
+    it('answers 413, and not 500, for a body past the limit', async () => {
+        const { server, sessionId } = buildTestServer({ store: new MemoryStore() });
+        const response = await send(server, sessionId, 'POST', url(MULTI, 1), {
+            mediaType: 'image/png',
+            data: 'A'.repeat(Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 100_000),
+        });
+        expect(response.statusCode).toBe(413);
+        expect(response.json().code).toBe('invalid-request');
+    });
+});
+
 describe('when the store fails', () => {
     const request = (store: MemoryStore) => {
         const { server, sessionId } = buildTestServer({ store });
@@ -451,6 +612,28 @@ describe('the doc root', () => {
         const response = await send(server, sessionId, 'GET', '/api/qa/scenarios');
         expect(response.statusCode).toBe(404);
         expect(response.json().message).toContain('ORES_WEB_DOC_ROOT');
+    });
+
+    it('keeps a screenshot as a file beside the scenario, and refuses one over the limit', async () => {
+        const root = mkdtempSync(join(tmpdir(), 'ores-qa-'));
+        roots.push(root);
+        mkdirSync(join(root, 'sprint'));
+        writeFileSync(
+            join(root, 'sprint/scenario_single.org'),
+            fixture('single_client_scenario.org'),
+        );
+        const { server, sessionId } = buildTestServer({ docRoot: root });
+        const url = `/api/qa/scenarios/${SINGLE}/steps/2/images`;
+        const saved = await send(server, sessionId, 'POST', url, upload(PNG_BYTES));
+        expect(saved.statusCode).toBe(200);
+        const name = imageUploadResponseSchema.parse(saved.json()).name;
+        expect(name).toMatch(/^scenario_single_step2_\d{8}_\d{6}\.png$/);
+        expect(readFileSync(join(root, 'sprint', name))).toEqual(PNG_BYTES);
+
+        const big = Buffer.alloc(MAX_IMAGE_BYTES + 1);
+        PNG_BYTES.copy(big);
+        const refused = await send(server, sessionId, 'POST', url, upload(big));
+        expect(refused.statusCode).toBe(413);
     });
 
     it('reads the files under the doc root, and saves into them', async () => {

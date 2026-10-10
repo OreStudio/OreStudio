@@ -156,3 +156,24 @@ export const runResponseSchema = z.object({
     changed: z.array(z.object({ client: z.string().nullable(), title: z.string() })),
 });
 export type RunResponse = z.infer<typeof runResponseSchema>;
+
+/** The media types a step screenshot may have. */
+export const IMAGE_MEDIA_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'] as const;
+
+/** The most bytes of image the server keeps for one screenshot. */
+export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
+/**
+ * A screenshot for one step: its media type and its bytes in base64. The server
+ * checks the bytes, not the media type, and answers 415 for a file that is not
+ * a PNG, JPEG, GIF or WebP image, and 413 for one over the limit.
+ */
+export const imageUploadRequestSchema = z.strictObject({
+    mediaType: z.string().max(100),
+    data: z.string().min(1),
+});
+export type ImageUploadRequest = z.infer<typeof imageUploadRequestSchema>;
+
+/** The name the server gave the image. It is saved beside the scenario doc. */
+export const imageUploadResponseSchema = z.object({ name: z.string() });
+export type ImageUploadResponse = z.infer<typeof imageUploadResponseSchema>;

@@ -24,6 +24,7 @@ import { Link } from 'react-router';
 import type { Scenario, ScenarioState } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Field, Notice, Tag } from '../ui/Primitives.js';
+import { carriesFiles, filesOf } from './images.js';
 import { OrgText } from './OrgText.js';
 import {
     markedCount,
@@ -55,6 +56,10 @@ export interface ScenarioRunnerProps {
     readonly onSave: () => void;
     readonly saving: boolean;
     readonly outcome: Outcome | null;
+    /** The files pasted or dropped on the step on show. The page checks each one. */
+    readonly onImages: (files: File[]) => void;
+    readonly imageBusy: boolean;
+    readonly imageError: string | null;
     readonly confirmingRetest: boolean;
     readonly onAskRetest: () => void;
     readonly onConfirmRetest: () => void;
@@ -138,6 +143,9 @@ export function ScenarioRunner(props: ScenarioRunnerProps): ReactNode {
                             type="button"
                             variant="primary"
                             pending={props.saving}
+                            // A save while a file is uploading would replace the working
+                            // copy before the link for that file is in it.
+                            disabled={props.imageBusy}
                             onClick={props.onSave}
                         >
                             {t('development.runner.save')}
@@ -235,15 +243,44 @@ function Progress({ runner, dispatch }: ScenarioRunnerProps): ReactNode {
     );
 }
 
-function StepCard({ runner, dispatch, saving }: ScenarioRunnerProps): ReactNode {
+function StepCard({
+    runner,
+    dispatch,
+    saving,
+    onImages,
+    imageBusy,
+    imageError,
+}: ScenarioRunnerProps): ReactNode {
     const { t } = useTranslation();
     const step: DraftStep | undefined = runner.steps[runner.index];
     if (step === undefined) return null;
     // Marks and notes wait while a save is in flight, so none is lost when the
     // server's answer replaces the working copy.
     const readOnly = runner.closed || saving;
+    // A paste or a drop of a file anywhere on the card sends it to the step on
+    // show, and the page says if it is not an image. Text pasted into the note is
+    // left to the note.
+    const attach = (transfer: DataTransfer | null): boolean => {
+        const files = filesOf(transfer);
+        if (files.length === 0 || readOnly) return false;
+        onImages(files);
+        return true;
+    };
     return (
-        <section className="card space-y-4 p-4">
+        <section
+            className="card space-y-4 p-4"
+            onPaste={(event) => {
+                if (attach(event.clipboardData)) event.preventDefault();
+            }}
+            onDragOver={(event) => {
+                if (!readOnly && carriesFiles(event.dataTransfer)) event.preventDefault();
+            }}
+            onDrop={(event) => {
+                if (readOnly || !carriesFiles(event.dataTransfer)) return;
+                event.preventDefault();
+                attach(event.dataTransfer);
+            }}
+        >
             <div className="flex items-start justify-between gap-3">
                 <div>
                     <p className="text-base font-medium text-ink">
@@ -300,6 +337,14 @@ function StepCard({ runner, dispatch, saving }: ScenarioRunnerProps): ReactNode 
                     onChange={(event) => dispatch({ type: 'note', notes: event.target.value })}
                 />
             </Field>
+            {!readOnly && (
+                <p className="rounded-md border border-dashed border-line px-3 py-2 text-xs text-ink-muted">
+                    {imageBusy
+                        ? t('development.runner.imageSaving')
+                        : t('development.runner.imageHint')}
+                </p>
+            )}
+            {imageError !== null && <Notice tone="error">{imageError}</Notice>}
         </section>
     );
 }

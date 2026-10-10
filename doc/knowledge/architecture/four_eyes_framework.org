@@ -136,25 +136,43 @@ A part later in the order cannot be answered, and so cannot refuse, until the pa
 before it have approved. A refusal from a part that can be answered ends the request.
 The notification goes only to the deciders of the parts that can be answered now.
 
-*** Applying
+*** Applying, as a workflow
 
-When the last part approves, the owning component applies every line in one
-transaction, through the same service code the direct write uses, as the approver
-with the request as the reason, as IAM already does for roles. Each line is marked
-applied in the same transaction, so a line applies once.
+The wait for a person stays a record, not a workflow. The engine cannot wait on a
+person: its states are pending, in progress, completed, failed, compensating and
+compensated, nothing suspends a run, and a wait is a bounded budget whose expiry is
+a failure ([[id:C71A0118-63B5-4150-9C9F-007C690CBF11][Waiting, deadlines and cancellation]]). A decision may take days. So the parts,
+the order, the decisions, the expiry and the reminders are the record's own state.
 
-Apply is by reconciliation, as IAM's is, so a missed event or a service that was
-down converges on the next run. A failure is one of two kinds, and the difference
-decides the stop condition:
+What happens after the last approval is a process, and the engine is built for it.
+The approval's change event starts an *apply workflow* for the request. Its steps
+are each idempotent and each states a deadline:
+
+1. *Re-check.* Run the checks again against the live row and each typed pending row,
+   because the live row may have moved since raise.
+2. *Apply.* Apply every line in one transaction, through the same service code the
+   direct write uses, as the approver with the request as the reason, as IAM does for
+   roles. Each line is marked applied in the same transaction, so a line applies once.
+3. *Tell.* Tell the person who asked, and the deciders, that it applied.
+
+The definition's failure policy is =stop=, as provisioning's is, because the work
+that matters is one transaction that either happened or did not, and the recovery
+wanted is a retry and not a rollback. A failure is one of two kinds, and the
+difference decides what happens:
 
 - A *refusal* from the service, such as a stale version or a validation rule, is
-  permanent. The whole request is rolled back, the request moves to =apply_failed=
-  with the line and the reason, the person who asked is told, and the reconciler
-  stops. A refusal is never retried, because the answer cannot change.
-- An *infrastructure failure*, such as a service that is down or a timeout, is
-  transient. The request stays approved and the next run tries it again, up to the
-  kind's window. When the window ends the request moves to =apply_failed= with the
-  reason "could not apply", so a request never retries forever.
+  permanent. The apply step rolls the transaction back, moves the request to
+  =apply_failed= with the line and the reason, tells the person who asked, and ends
+  the run as failed. A refusal is never retried, because the answer cannot change.
+- An *infrastructure failure*, such as a service that is down, or a missed deadline,
+  is transient. The run stops with its completed steps kept, the request stays
+  approved, and the engine's retry verb resumes the run. A scheduled retry calls the
+  verb until the kind's window ends, and then the request moves to =apply_failed=
+  with the reason "could not apply", so a request never retries forever.
+
+This replaces the hand-written reconciliation the role request uses. The run shows
+on the same workflow screens as provisioning, so an operator sees an apply that is
+stuck and why. The role request can move onto the same workflow later.
 
 =apply_failed= is terminal, like =refused=, =withdrawn= and =expired=. The maker
 raises a new request from the current row, and the new request needs every part to
@@ -251,8 +269,9 @@ The work splits so each piece is usable and reviewable alone:
    the dry run, the apply, and the typed read of a pending change. First entity: the
    book.
 3. *Raise, preview and apply.* The operations that combine the generated pieces:
-   one raise for lines of several entities, the one-transaction apply, =apply_failed=,
-   and the reconciler with its transient and permanent failures.
+   one raise for lines of several entities, the apply workflow with its one-transaction
+   apply, =apply_failed=,
+   and the apply workflow with its transient and permanent failures.
 4. *The gate.* The policy check in the generated handlers and the composite handler,
    the =approval_required= result, and the request-tied pass for the applier.
 5. *The common experience.* The BFF routes for preview, raise and the request page,

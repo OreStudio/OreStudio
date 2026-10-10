@@ -11,7 +11,7 @@
 #+entity_plural: approval_decisions
 #+entity_title: Approval Decision
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-10
 
 A request is decided by many decisions, not one: a kind may need two approvers,
 and a hold, a return to waiting, a withdrawal, a refusal and a reversal are each
@@ -61,6 +61,18 @@ ores_inbox_approval_requests_tbl.
 
 What the decision does. FK reference to ores_inbox_approval_decision_types_tbl,
 which the system tenant holds.
+
+** part_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The part of the request this decision answers, or null for a request that names
+no parts. FK reference to ores_inbox_approval_parts_tbl, which the system tenant
+holds. An approval of a part counts only for that part, and one person approves a
+request at most once, so each part is approved by a different person.
 
 ** decided_by
 :PROPERTIES:
@@ -128,6 +140,17 @@ The lookup is system reference data, so the check reads the system tenant.
 :nullable:      false
 :error_message: Invalid decided_by: %. No account found with this id.
 :END:
+
+** part_code
+:PROPERTIES:
+:table:             ores_inbox_approval_parts_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid part_code: %. No approval part found with this code.
+:END:
+
+The part the decision answers, when the request names parts.
 
 * SQL
 

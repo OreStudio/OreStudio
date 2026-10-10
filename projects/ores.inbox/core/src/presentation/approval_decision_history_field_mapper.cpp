@@ -28,6 +28,7 @@
 #include "ores.inbox.api/domain/approval_decision.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::inbox::presentation {
@@ -40,6 +41,7 @@ render_approval_decision_fields(const domain::approval_decision& v) {
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Request ID", .value = boost::uuids::to_string(v.request_id)});
     fields.push_back({.name = "Decision Code", .value = v.decision_code});
+    fields.push_back({.name = "Part Code", .value = v.part_code.value_or(std::string{})});
     fields.push_back({.name = "Decided By", .value = boost::uuids::to_string(v.decided_by)});
     fields.push_back({.name = "Decided At",
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.decided_at)});

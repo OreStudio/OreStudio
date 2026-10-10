@@ -39,17 +39,34 @@
  * index one approval per person. An approval closes the request only once the
  * kind's approvals_required approvals stand.
  *
+ * A request that names parts is decided by part instead of by count:
+ *  - an approval or a refusal names one of the request's parts;
+ *  - a part with an approval already standing cannot answer again;
+ *  - a part cannot answer until every part of an earlier answer_order has
+ *    approved, so equal orders answer in parallel;
+ *  - the request is approved when every part has approved, and one refusal
+ *    from any part refuses it.
+ * The caller checks that the person holds the part's decider permission. A
+ * request with no part rows is decided by the count above.
+ *
+ * One person approves a request once, whatever the part. A person who holds the
+ * decider permission of two parts answers for one of them, and a second person
+ * answers for the other. Hold, resume and withdraw name no part.
+ *
  * The function runs as the caller, so row-level security scopes every read to
  * the caller's tenant. It answers one row: the outcome (ok, missing, conflict,
  * invalid), a message, and the request's state and version afterwards.
  */
+drop function if exists ores_inbox_decide_approval_request_fn(uuid, integer, text, uuid, text, text);
+
 create or replace function ores_inbox_decide_approval_request_fn(
     p_request_id uuid,
     p_version integer,
     p_decision_code text,
     p_decided_by uuid,
     p_comment text,
-    p_actor text
+    p_actor text,
+    p_part_code text default null
 ) returns table (outcome text, message text, state_code text, version integer)
 as $$
 declare
@@ -58,6 +75,9 @@ declare
     v_type ores_inbox_approval_decision_types_tbl%rowtype;
     v_next_state text;
     v_approvals integer;
+    v_has_parts boolean;
+    v_part_order integer;
+    v_open_parts integer;
 begin
     select * into v_request
     from ores_inbox_approval_requests_tbl r
@@ -138,15 +158,91 @@ begin
         return;
     end if;
 
+    select exists (
+        select 1 from ores_inbox_approval_request_parts_tbl rp
+        where rp.request_id = p_request_id
+          and rp.valid_to = ores_utility_infinity_timestamp_fn()
+    ) into v_has_parts;
+
+    if v_has_parts and p_decision_code in ('approve', 'refuse') then
+        select p.answer_order into v_part_order
+        from ores_inbox_approval_request_parts_tbl rp
+        join ores_inbox_approval_parts_tbl p
+          on p.tenant_id = ores_utility_system_tenant_id_fn()
+         and p.code = rp.part_code
+         and p.valid_to = ores_utility_infinity_timestamp_fn()
+        where rp.request_id = p_request_id
+          and rp.part_code = p_part_code
+          and rp.valid_to = ores_utility_infinity_timestamp_fn();
+
+        if not found then
+            return query select 'invalid'::text,
+                'Name one of the parts this request needs.'::text,
+                v_request.state_code, v_request.version;
+            return;
+        end if;
+
+        if exists (
+            select 1 from ores_inbox_approval_decisions_tbl d
+            where d.request_id = p_request_id
+              and d.part_code = p_part_code
+              and d.decision_code = 'approve'
+              and d.valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            return query select 'conflict'::text,
+                format('The %s part has already approved.', p_part_code),
+                v_request.state_code, v_request.version;
+            return;
+        end if;
+
+        if exists (
+            select 1
+            from ores_inbox_approval_request_parts_tbl rp
+            join ores_inbox_approval_parts_tbl p
+              on p.tenant_id = ores_utility_system_tenant_id_fn()
+             and p.code = rp.part_code
+             and p.valid_to = ores_utility_infinity_timestamp_fn()
+            where rp.request_id = p_request_id
+              and rp.valid_to = ores_utility_infinity_timestamp_fn()
+              and p.answer_order < v_part_order
+              and not exists (
+                  select 1 from ores_inbox_approval_decisions_tbl d
+                  where d.request_id = p_request_id
+                    and d.part_code = rp.part_code
+                    and d.decision_code = 'approve'
+                    and d.valid_to = ores_utility_infinity_timestamp_fn())
+        ) then
+            return query select 'conflict'::text,
+                'An earlier part must approve before this part can answer.'::text,
+                v_request.state_code, v_request.version;
+            return;
+        end if;
+    end if;
+
     insert into ores_inbox_approval_decisions_tbl (
-        id, tenant_id, version, request_id, decision_code, decided_by, decided_at, comment,
+        id, tenant_id, version, request_id, decision_code, part_code, decided_by, decided_at, comment,
         modified_by, performed_by, change_reason_code, change_commentary)
     values (
-        gen_random_uuid(), v_request.tenant_id, 0, p_request_id, p_decision_code, p_decided_by,
-        clock_timestamp(), coalesce(p_comment, ''),
+        gen_random_uuid(), v_request.tenant_id, 0, p_request_id, p_decision_code,
+        case when v_has_parts and p_decision_code in ('approve', 'refuse')
+             then p_part_code end,
+        p_decided_by, clock_timestamp(), coalesce(p_comment, ''),
         p_actor, p_actor, 'system.new_record', '');
 
-    if p_decision_code = 'approve' then
+    if p_decision_code = 'approve' and v_has_parts then
+        select count(*) into v_open_parts
+        from ores_inbox_approval_request_parts_tbl rp
+        where rp.request_id = p_request_id
+          and rp.valid_to = ores_utility_infinity_timestamp_fn()
+          and not exists (
+              select 1 from ores_inbox_approval_decisions_tbl d
+              where d.request_id = p_request_id
+                and d.part_code = rp.part_code
+                and d.decision_code = 'approve'
+                and d.valid_to = ores_utility_infinity_timestamp_fn());
+        v_next_state := case when v_open_parts = 0
+                             then 'approved' else v_request.state_code end;
+    elsif p_decision_code = 'approve' then
         select count(*) into v_approvals
         from ores_inbox_approval_decisions_tbl d
         where d.request_id = p_request_id

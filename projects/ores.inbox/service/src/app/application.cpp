@@ -30,6 +30,8 @@
 #include "ores.inbox.service/messaging/approval_decision_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_decision_type_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_kind_event_registrar.hpp"
+#include "ores.inbox.service/messaging/approval_part_event_registrar.hpp"
+#include "ores.inbox.service/messaging/approval_policy_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_request_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_request_state_event_registrar.hpp"
 #include "ores.inbox.service/messaging/delivery_outcome_type_event_registrar.hpp"
@@ -100,6 +102,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     events.push_back(
         msg::register_approval_decision_type_event_mapping(event_source, event_bus, nats));
     events.push_back(msg::register_approval_kind_event_mapping(event_source, event_bus, nats));
+    events.push_back(msg::register_approval_part_event_mapping(event_source, event_bus, nats));
+    events.push_back(msg::register_approval_policy_event_mapping(event_source, event_bus, nats));
     events.push_back(msg::register_approval_request_event_mapping(event_source, event_bus, nats));
     events.push_back(
         msg::register_approval_request_state_event_mapping(event_source, event_bus, nats));

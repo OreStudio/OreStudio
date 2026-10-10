@@ -36,6 +36,7 @@ export interface ApprovalDecision {
     id: string;
     request_id: string;
     decision_code: string;
+    part_code: string | null;
     decided_by: string;
     decided_at: string;
     comment: string;

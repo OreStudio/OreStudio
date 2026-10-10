@@ -43,6 +43,7 @@ struct approval_decision_write {
     boost::uuids::uuid id;
     boost::uuids::uuid request_id;
     std::string decision_code;
+    std::optional<std::string> part_code;
     boost::uuids::uuid decided_by;
     std::chrono::system_clock::time_point decided_at;
     std::string comment;

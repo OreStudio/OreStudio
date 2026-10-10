@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-parts-and-policy-to-the-approval-request
+#+pr: 3065
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Let a request name several deciding parts, each answered by a person who holds t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -45,6 +45,12 @@ Let a request name several deciding parts, each answered by a person who holds t
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Model three tables in codegen: =approval_part= (code, decider permission, answer order), =approval_policy= (entity type, operation, optional field, part) and =approval_request_part= (the parts one request needs).
+- Add a nullable =part_code= to =approval_decision=, so a decision names the part it answers.
+- Make the decide function count by part when a request has part rows, and keep the old count when it has none.
+- Let the handler check the permission the named part carries, and tell the deciders whose turn it is.
+- Seed the four parts and the policy rows from the controls note.
 
 * Measurements
 
@@ -62,6 +68,11 @@ task and name that file in the Command column.
 
 * Notes
 
+- The junction template could not point a foreign key at a system tenant lookup. It now reads =use_system_tenant= as the entity template does.
+- The queue and the request access check still read the kind's decider permission. They do not read part permissions yet. No kind names parts until the gate task adds the refdata kinds, so that task closes the gap.
+- A refusal is subject to the same order as an approval. A later part cannot refuse before the parts ahead of it approve.
+- Policy rows use unique names. A =delete= row carries the word "removal".
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -77,12 +88,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3065][#3065]] | [inbox] Add parts and a policy to the approval request |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | raise is not atomic: a failed link write leaves a request with no parts, decided by count | approval_lifecycle.cpp | Accept | A failed link write now withdraws the request and rethrows. The store has no transaction across the two writes |
+| 2 | Duplicate or unknown part codes at raise | approval_lifecycle.cpp | Accept | Empty codes are rejected before any write. Duplicates are dropped. An unknown code fails on the foreign key. A test covers all three |
+| 3 | One person cannot approve two parts | decide function | Accept as intended | Stated in the function header. A test covers it |
+| 4 | Hold, resume and withdraw name no part | approval_lifecycle.cpp | Accept as intended | Stated in the function header. These fall back to any part permission in the handler. A test covers withdraw on a request with parts |
+| 5 | N+1 reads and the open rule repeated in SQL | approval_lifecycle.cpp | Decline the join, accept the comment | There are four parts, so the cost is small. A comment links the two copies of the rule |
+| 6 | Policy rows for kinds that name parts | seed | Note | No kind names parts yet. The gate task adds them and closes the queue gap |
+| 7 | Comment on the system tenant read | approval_lifecycle.cpp | Accept | Added |
 
 * Result
+
+A request can now name parts. Each part is a function whose approval the request needs. A decision names the part it answers.
+
+- Three new tables, generated from models: =approval_part=, =approval_policy= and =approval_request_part=. =approval_decision= gains =part_code=.
+- The decide function approves a request when every part has approved. One refusal refuses it. A part answers only after every part of an earlier answer order has approved. Parts of the same order answer in either order. A request with no part rows keeps the old count.
+- The handler checks the permission of the part the decider names. It tells the holders of the parts whose turn it is, on raise and after each approval.
+- The system tenant holds four parts (Controller first, then Finance, Market Risk and Operations together) and 33 policy rows from the controls note. A permission code per part is seeded.
+- The raise and decide protocol carry =part_codes= and =part_code=, in the model and in the TypeScript client.
+
+Evidence: =ores.inbox.core.tests [approval]= passes, 17 cases and 63 assertions, against a freshly recreated database. Four of the cases are new and cover order, parallel parts, naming a part and a part refusal. The populate, handler permission, paste block and test case reachability checks pass. The web typecheck and format check pass.

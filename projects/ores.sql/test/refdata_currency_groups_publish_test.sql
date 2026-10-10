@@ -88,25 +88,25 @@ select is(
 );
 
 select results_eq(
-    $$select record_count::int from ores_refdata_publish_currency_groups_from_dq_fn(
+    $$select sum(record_count)::int from ores_refdata_publish_currency_groups_from_dq_fn(
         (select id from ores_dq_datasets_tbl
          where code = 'refdata.currency_groups'
            and valid_to = ores_utility_infinity_timestamp_fn()),
         ores_utility_system_tenant_id_fn())
-      where action = 'inserted'$$,
+      where action in ('inserted', 'updated')$$,
     $$values (6)$$,
-    'publish: the groups dataset inserts six groups'
+    'publish: the groups dataset writes six groups'
 );
 
 select results_eq(
-    $$select record_count::int from ores_refdata_publish_currency_currency_groups_from_dq_fn(
+    $$select sum(record_count)::int from ores_refdata_publish_currency_currency_groups_from_dq_fn(
         (select id from ores_dq_datasets_tbl
          where code = 'refdata.currency_currency_groups'
            and valid_to = ores_utility_infinity_timestamp_fn()),
         ores_utility_system_tenant_id_fn())
-      where action = 'inserted'$$,
+      where action in ('inserted', 'updated')$$,
     $$values (37)$$,
-    'publish: the members dataset inserts 37 memberships'
+    'publish: the members dataset writes 37 memberships'
 );
 
 select is(

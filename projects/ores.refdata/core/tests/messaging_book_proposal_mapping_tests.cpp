@@ -52,9 +52,17 @@ TEST_CASE("a_mix_needs_each_permission_once", tags) {
     CHECK(needed == std::vector<std::string>{"refdata::books:write", "refdata::books:delete"});
 }
 
-TEST_CASE("an_unknown_operation_needs_the_write_permission", tags) {
-    const auto needed = ores::refdata::messaging::required_permissions({line("anything")});
-    CHECK(needed == std::vector<std::string>{"refdata::books:write"});
+TEST_CASE("no_lines_cannot_be_proposed", tags) {
+    CHECK_FALSE(ores::refdata::messaging::invalid_lines({}).empty());
+}
+
+TEST_CASE("an_unknown_operation_cannot_be_proposed_and_is_not_counted_as_a_write", tags) {
+    CHECK_FALSE(ores::refdata::messaging::invalid_lines({line("put"), line("purge")}).empty());
+    CHECK(ores::refdata::messaging::required_permissions({line("purge")}).empty());
+}
+
+TEST_CASE("puts_and_deletes_can_be_proposed", tags) {
+    CHECK(ores::refdata::messaging::invalid_lines({line("put"), line("delete")}).empty());
 }
 
 TEST_CASE("the_outcomes_carry_each_line_as_the_service_found_it", tags) {

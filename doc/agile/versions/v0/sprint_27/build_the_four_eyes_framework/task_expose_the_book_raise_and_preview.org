@@ -93,7 +93,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unknown operation counts as a write | book_proposal_mapping.cpp | Accept | An unknown operation is refused with bad_request before the permission check, and only a put needs the write permission. |
+| 2 | Empty lines pass the permission check | book_proposal_handler.hpp | Accept | Empty lines get the bad_request reply, as a malformed request does. |
+| 3 | Preview needs write or delete permission | book_proposal_handler.hpp | Decline | Deliberate. The preview shows the effect of a write, so it needs the permission the write needs. The handler comment states it. |
+| 4 | Two passes over the lines | book_proposal_mapping.cpp | Decline | The sizes are small. |
+| 5 | Error text reaches the caller | book_proposal_handler.hpp | Accept | The reply carries a generic message. The detail stays in the log. |
+| 6 | Duplicated decode and permission steps | book_proposal_handler.hpp | Accept | The permission and line check is one private function. The decode stays in each operation. |
+| 7 | Handler forbidden path untested | tests | Accept | The new cases pin the empty, unknown-operation and mixed cases. The forbidden reply itself needs NATS and stays untested. |
 
 * Result
 

@@ -80,11 +80,8 @@ public:
                 nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        if (!permitted(*ctx, req->lines)) {
-            ores::service::messaging::error_reply(
-                nats_, msg, ores::service::error_code::forbidden);
+        if (!admitted(*ctx, msg, req->lines))
             return;
-        }
         try {
             const auto previewed = service::book_proposal_service(*ctx).preview(req->lines);
             ores::service::messaging::reply(nats_,
@@ -99,7 +96,9 @@ public:
                 nats_,
                 msg,
                 preview_book_changes_response{
-                    .result = result_of(outcome::failed, "preview_failed", e.what()),
+                    .result = result_of(outcome::failed,
+                                        "preview_failed",
+                                        "The changes could not be previewed."),
                     .lines = {},
                     .part_codes = {}});
         }
@@ -119,11 +118,8 @@ public:
                 nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        if (!permitted(*ctx, req->lines)) {
-            ores::service::messaging::error_reply(
-                nats_, msg, ores::service::error_code::forbidden);
+        if (!admitted(*ctx, msg, req->lines))
             return;
-        }
         try {
             const auto proposal = service::book_proposal_service(*ctx).raise(req->lines, req->reason);
             raise_book_changes_response response{.result = {},
@@ -143,7 +139,9 @@ public:
                 nats_,
                 msg,
                 raise_book_changes_response{
-                    .result = result_of(outcome::failed, "raise_failed", e.what()),
+                    .result = result_of(outcome::failed,
+                                        "raise_failed",
+                                        "The changes could not be raised."),
                     .request_id = std::nullopt,
                     .lines = {},
                     .part_codes = {}});
@@ -164,11 +162,28 @@ private:
         return "bad_request";
     }
 
-    static bool permitted(const ores::database::context& ctx,
-                          const std::vector<domain::book_change>& lines) {
+    /**
+     * @brief Whether the lines can be proposed by this caller, replying with
+     * the refusal when they cannot.
+     *
+     * The preview shows the effect of a write, so it needs the permission the
+     * write needs. Lines that cannot be proposed at all are refused before the
+     * permission is read.
+     */
+    bool admitted(const ores::database::context& ctx,
+                  const ores::nats::message& msg,
+                  const std::vector<domain::book_change>& lines) {
+        if (!invalid_lines(lines).empty()) {
+            ores::service::messaging::error_reply(
+                nats_, msg, ores::service::error_code::bad_request);
+            return false;
+        }
         for (const auto& permission : required_permissions(lines)) {
-            if (!ores::service::messaging::has_permission(ctx, permission))
+            if (!ores::service::messaging::has_permission(ctx, permission)) {
+                ores::service::messaging::error_reply(
+                    nats_, msg, ores::service::error_code::forbidden);
                 return false;
+            }
         }
         return true;
     }

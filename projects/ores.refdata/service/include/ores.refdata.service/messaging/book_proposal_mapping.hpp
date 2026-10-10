@@ -30,11 +30,22 @@
 namespace ores::refdata::messaging {
 
 /**
+ * @brief Why the lines cannot be proposed at all, or empty when they can.
+ *
+ * There must be at least one line, and each line must be a put or a delete.
+ * The permission check reads the operation, so a value it does not know is
+ * refused before the check and never counted as a write.
+ */
+ORES_REFDATA_SERVICE_EXPORT std::string
+invalid_lines(const std::vector<domain::book_change>& lines);
+
+/**
  * @brief The permissions a caller needs to propose the lines.
  *
  * A proposal asks for a write, so the caller needs the permission the write
- * itself needs: books:delete for a delete line and books:write for any other.
- * Each permission is named once, in a fixed order.
+ * itself needs: books:delete for a delete line and books:write for a put.
+ * Each permission is named once, in a fixed order. The lines have passed
+ * invalid_lines.
  */
 ORES_REFDATA_SERVICE_EXPORT std::vector<std::string>
 required_permissions(const std::vector<domain::book_change>& lines);

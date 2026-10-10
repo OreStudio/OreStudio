@@ -22,11 +22,21 @@
 
 namespace ores::refdata::messaging {
 
+std::string invalid_lines(const std::vector<domain::book_change>& lines) {
+    if (lines.empty())
+        return "Propose at least one change.";
+    for (const auto& l : lines) {
+        if (l.operation != "put" && l.operation != "delete")
+            return "The operation must be put or delete: " + l.operation;
+    }
+    return {};
+}
+
 std::vector<std::string> required_permissions(const std::vector<domain::book_change>& lines) {
     const bool deletes = std::ranges::any_of(
         lines, [](const auto& l) { return l.operation == "delete"; });
     const bool writes = std::ranges::any_of(
-        lines, [](const auto& l) { return l.operation != "delete"; });
+        lines, [](const auto& l) { return l.operation == "put"; });
 
     std::vector<std::string> needed;
     if (writes)

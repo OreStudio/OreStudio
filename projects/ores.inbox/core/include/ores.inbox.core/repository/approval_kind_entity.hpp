@@ -54,6 +54,7 @@ struct approval_kind_entity {
     bool comment_on_approve = false;
     std::optional<int> expires_after_days;
     std::optional<std::string> apply_workflow_type;
+    std::optional<int> apply_window_hours;
     int approvals_required = 0;
     int display_order = 0;
     std::string modified_by;

@@ -47,6 +47,7 @@ create table if not exists "ores_inbox_approval_kinds_tbl" (
     "comment_on_approve" boolean not null default false,
     "expires_after_days" integer null,
     "apply_workflow_type" text null,
+    "apply_window_hours" integer null,
     "approvals_required" integer not null default 1,
     "display_order" integer not null default 0,
     "modified_by" text not null,

@@ -106,6 +106,11 @@
 - ores_inbox_delivery_outcome_types_
 - ores_iam_accounts_
 
+# A read of an account is limited by a restrictive policy that looks at the
+# parties the caller's account works in, and a policy runs with the privileges
+# of the caller, so the service must be able to read the account-party links.
+- ores_iam_account_parties_
+
 ** Execute prefixes
 
 - ores_refdata_publish_
@@ -521,10 +526,13 @@ hold the permission.
 # requests nobody answered before their kind's deadline (see
 # ores_inbox_expire_approval_requests_fn) and one answers the requests close to
 # running out so the service can warn their deciders (see
-# ores_inbox_remind_expiring_approval_requests_fn). The inbox owns the requests,
-# so it is the service that runs both.
+# ores_inbox_remind_expiring_approval_requests_fn). A third lists the approved
+# requests whose apply has not finished, so the service can resume each one (see
+# ores_inbox_stalled_applies_fn). The inbox owns the requests, so it is the
+# service that runs all three.
 - ores_inbox_expire_approval_requests_
 - ores_inbox_remind_expiring_approval_requests_
+- ores_inbox_stalled_applies_
 
 * ores.compute.wrapper
 :PROPERTIES:

@@ -24,3 +24,4 @@ drop trigger if exists ores_inbox_approval_decisions_rules_trg on "ores_inbox_ap
 drop function if exists ores_inbox_approval_decisions_rules_fn;
 drop function if exists ores_inbox_decide_approval_request_fn;
 drop function if exists ores_inbox_expire_approval_requests_fn;
+drop function if exists ores_inbox_stalled_applies_fn;

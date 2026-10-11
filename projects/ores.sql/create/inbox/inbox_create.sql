@@ -51,6 +51,7 @@
 \ir ./inbox_approval_fail_apply_fn_create.sql
 \ir ./inbox_approval_policy_parts_fn_create.sql
 \ir ./inbox_approval_expire_fn_create.sql
+\ir ./inbox_approval_stalled_applies_fn_create.sql
 
 -- =============================================================================
 -- Notifications

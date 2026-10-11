@@ -6299,8 +6299,12 @@ def _require_economic_component(
         raise ValueError(
             f"{path.name}: * Digest/{where} names {component}, which no "
             "entity model declares.")
-    if not re.search(r"^:economic:\s+(true|false)\s*$",
-                     org_of[component].read_text(encoding="utf-8"), re.M):
+    text = org_of[component].read_text(encoding="utf-8")
+    declares = re.search(r"^:economic:\s+(true|false)\s*$", text, re.M)
+    # A grouped entity carries every field in a group, and the group's own
+    # model declares them.
+    grouped = re.search(r"^\*+ Domain groups\s*$", text, re.M)
+    if not (declares or grouped):
         raise ValueError(
             f"{path.name}: * Digest/{where} names {component}, whose model "
             "declares no ':economic:' on any column. Declare it, or leave the "

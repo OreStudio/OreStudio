@@ -19,6 +19,7 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.core import generate_from_model  # noqa: E402
 from codegen.org_loader import (  # noqa: E402
+    _require_economic_component,
     economic_declaration,
     load_org_field_group_model,
     load_org_trade_type_catalogue_model,
@@ -313,3 +314,12 @@ def test_the_catalogue_refuses_a_component_that_declares_nothing(tmp_path):
 
     with pytest.raises(ValueError, match="declares no ':economic:'"):
         load_org_trade_type_catalogue_model(path)
+
+
+def test_a_grouped_entity_counts_as_declared_through_its_groups(tmp_path):
+    org = tmp_path / "ores.testcomp.widget.org"
+    org.write_text("** Domain groups\n\n| member | field_group |\n", encoding="utf-8")
+
+    _require_economic_component(
+        tmp_path / "catalogue.org", "Instrument components", "widget",
+        {"widget"}, {"widget": org})

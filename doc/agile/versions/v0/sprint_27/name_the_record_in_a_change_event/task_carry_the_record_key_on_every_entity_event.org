@@ -8,7 +8,7 @@
 #+filetags: :name_the_record_in_a_change_event:sprint_27:v0:
 #+owner: marco
 #+branch: feature/keep-the-record-screens-up-to-date
-#+pr:
+#+pr: 3099
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3099][#3099]] | [web] Keep the record screens up to date |
 
 * Review
 

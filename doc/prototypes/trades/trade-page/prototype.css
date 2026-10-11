@@ -188,8 +188,24 @@ details.det summary{cursor:pointer;color:var(--ink-faint);font-size:.78rem;margi
 .nw{white-space:nowrap}
 input[disabled],select[disabled],textarea[disabled]{opacity:.5;cursor:not-allowed}
 
-ul.tree{list-style:none;margin:0;padding-left:1.2rem;border-left:1px solid var(--line-soft)}
-ul.tree.root{border-left:none;padding-left:0}
-ul.tree li{margin:.25rem 0}
-ul.tree summary{cursor:pointer;list-style:revert}
-.tn.leaf{display:inline-block;padding-left:.2rem}
+
+/* a workspace: a tree panel beside the page, as in the structure editor */
+.workspace{display:grid;grid-template-columns:minmax(320px,1fr) minmax(420px,1.7fr);gap:12px;align-items:start}
+@media (max-width:900px){.workspace{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-card);overflow:hidden}
+.panel>header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+.panel>header h2{margin:0;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-dim)}
+.panel>header .legend{margin:0;font-size:.72rem;color:var(--ink-faint)}
+.tree{padding:8px}
+.node.depth-0>.node-row{background:var(--panel-2);border-color:var(--line)}
+.node-row{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid transparent;border-radius:var(--radius-card);cursor:pointer}
+.node-row:hover{background:#1f2733}
+.node-row.selected{border-color:var(--accent);background:#16293d}
+.node-row .twisty{width:12px;color:var(--ink-faint);font-size:10px;user-select:none;flex:none}
+.node-row .label{flex:1;min-width:0}
+.node-row .label .name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.node-row .label .meta{display:block;color:var(--ink-faint);font-size:11px}
+.node-row .num{color:var(--ink-dim);font-variant-numeric:tabular-nums;font-size:11px;white-space:nowrap}
+.group-children{margin-left:14px;border-left:1px solid var(--line-soft);padding-left:6px;display:grid;gap:2px;margin-top:2px}
+.type-tag{font-size:10px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;border-radius:3px;padding:1px 5px;background:#24303f;color:var(--ink-dim);flex:none}
+.tree-note{padding:.6rem .8rem;border-top:1px solid var(--line-soft);color:var(--ink-faint);font-size:.75rem}

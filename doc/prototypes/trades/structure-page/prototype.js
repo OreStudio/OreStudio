@@ -65,11 +65,11 @@ function renderDeal() {
     if (!s) return put(wrap(h('div', { class: 'notice bad' }, 'No structure or package ' + SID + '. It may have been removed, or you may not see its party.')));
     const N = noun(s.kind), pk = s.kind === 'Package';
     const ms = tmem(s);
-    const title = pk ? 'Package' : (s.template ? s.template.replace(/([A-Z])/g, ' $1').trim() : s.kind + ' structure');
+    const ttl = title(s);
     const roleCheck = kindRule(s) ? kindRule(s).map(([role, lo, hi]) => ({ role, lo, hi, n: s.members.filter(m => m[1] === role).length })) : [];
     const ok = roleCheck.every(r => r.n >= r.lo && (!r.hi || r.n <= r.hi));
     const head = pageHead({
-        title, id: SID, actions: [refreshButton({ stale, onClick: () => { stale = false; LOADED = NOW; renderDeal(); } }),
+        title: ttl, id: SID, actions: [refreshButton({ stale, onClick: () => { stale = false; LOADED = NOW; renderDeal(); } }),
             workflowMenu([{ title: 'Link a trade', line: 'Add a trade of this party and counterparty as a leg.', run: () => linkDialog(s), allowed: !!CAN.structure },
                 pk ? { title: 'Price the legs', line: 'A package has no price of its own. Open the pricing screen of the trade-entry prototype.', href: EDITOR + 'pricing.html' }
                     : { title: 'Price this structure', line: 'Open the pricing screen of the trade-entry prototype.', href: EDITOR + 'pricing.html' },
@@ -91,27 +91,51 @@ function renderDeal() {
             { label: 'Pricing', value: pricingText(s.kind), type: 'text', fixedWhy: pk ? 'No leg depends on another, so the price is the sum of the parts.' : 'The legs interact, so the deal has one price.' },
             { label: 'External version', value: pk ? 'Of each trade' : 'Of the deal', type: 'text', fixedWhy: pk ? 'Each leg moves on its own: see the Members tab.' : 'Moves when the economics of a leg change. The structure table has no column for it yet.' },
             { label: 'Internal version', value: 'Read from the legs', type: 'text', fixedWhy: 'A ' + N + ' stores none.' }] }, { readOnlyNote: true }),
-        treeCard(s),
         membersCard(s, ms, roleCheck));
-    put(wrap(head, sub, tabs([['details', 'Details'], ['members', 'Members'], ['history', 'History']], TAB, id => qs({ tab: id === 'details' ? null : id })), content));
+    const right = SEL ? tradePanel(SEL) : h('div', null, tabs([['details', 'Details'], ['members', 'Members'], ['history', 'History']], TAB, id => qs({ tab: id === 'details' ? null : id })), content);
+    put(wrap(head, sub, h('div', { class: 'workspace' }, treePanel(), right)));
 }
-function node(id, depth) {
-    const v = DEALS[id], pk = v.kind === 'Package';
-    const legs = tmem(v), kids = childrenOf(id);
-    const head = h('span', { class: 'tn' }, id === SID ? h('b', null, id) : h('a', { href: qs({ deal: id, tab: null }) }, id), ' ', chip(v.kind, 'acc'), v.template ? [' ', chip(v.template)] : null, ' ',
-        chip(pk ? 'confirms trade by trade' : 'one document', pk ? 'warn' : 'flow'), id === SID ? chip('this page', 'v') : null);
-    const body = h('ul', { class: 'tree' }, kids.map(([cid]) => node(cid, depth + 1)),
-        legs.map(m => h('li', null, h('span', { class: 'tn leaf' }, h('span', { class: 'faint' }, m.role + ' · '), h('a', { href: '../trade-page/?trade=' + m.t.code }, m.t.code), ' ', tradeType(m.t.type).description, ' ', chip(m.t.state, { live: 'ok', draft: 'warn', cancelled: 'bad' }[m.t.state]), ' ',
-            h('span', { class: 'muted small' }, money(m.t.notional, m.t.ccy) + (pk ? ' · ext ' + m.t.ext : ''))))));
-    return h('li', null, h('details', { open: true }, h('summary', null, head), body));
+/* The tree is its own panel, beside the page, as in the structure editor of the
+ * trade-entry prototype: the root, its inner structures, and the trades, one row each. */
+const SEL = P.get('trade') || '';
+const title = (v) => v.kind === 'Package' ? 'Package' : (v.template ? v.template.replace(/([A-Z])/g, ' $1').trim() : v.kind + ' structure');
+const productTag = t => ({ swap: 'Rates', fx: 'FX', credit: 'Credit', bond: 'Bond', equity: 'Equity', composite: 'Composite' }[t.product] || t.product);
+function treeRow(depth, selected, onclick, kids) {
+    return h('div', { class: 'node-row' + (selected ? ' selected' : ''), role: 'treeitem', tabindex: 0, onclick, onkeydown: e => { if (e.key === 'Enter') onclick(); } }, kids);
 }
-function treeCard(s) {
+function treeNode(id, depth) {
+    const v = DEALS[id], legs = tmem(v), kids = childrenOf(id);
+    const here = id === SID && !SEL;
+    const row = treeRow(depth, here, () => { location.href = qs({ deal: id, trade: null, tab: null }); }, [
+        h('span', { class: 'twisty' }, '▾'),
+        depth ? h('span', { class: 'type-tag' }, v.kind) : null,
+        h('span', { class: 'label' }, h('span', { class: 'name' }, title(v)), h('span', { class: 'meta' }, id + ' · ' + (kids.length ? kids.length + ' inner · ' : '') + legs.length + ' trade' + (legs.length === 1 ? '' : 's'))),
+        depth ? h('span', { class: 'num' }, confirmText(v.kind) === 'Confirmed as one document' ? 'one document' : 'by trade') : chip(v.kind, 'acc')]);
+    const children = h('div', { class: 'group-children' }, kids.map(([cid]) => treeNode(cid, depth + 1)),
+        legs.map(m => h('div', { class: 'node depth-2' }, treeRow(2, SEL === m.t.code, () => { location.href = qs({ deal: id, trade: m.t.code, tab: null }); }, [
+            h('span', { class: 'twisty' }),
+            h('span', { class: 'type-tag' }, productTag(m.t)),
+            h('span', { class: 'label' }, h('span', { class: 'name' }, tradeType(m.t.type).description), h('span', { class: 'meta' }, m.t.code + ' · ' + m.role)),
+            h('span', { class: 'num' }, money(m.t.notional, m.t.ccy))]))));
+    return h('div', { class: 'node depth-' + depth }, row, children);
+}
+function treePanel() {
     const root = rootOf(SID), rv = DEALS[root];
     const inner = childrenOf(root).length;
-    return h('section', { class: 'card' }, h('header', null, h('h2', null, 'Structure tree'), chip(inner + ' inner structure' + (inner === 1 ? '' : 's'), 'v'), h('span', { class: 'sp' }), h('span', { class: 'faint small' }, 'root ' + root)),
-        h('div', { class: 'body' }, h('ul', { class: 'tree root' }, node(root, 0)),
-            inner && rv.kind !== 'Package' ? h('div', { class: 'notice warn', style: 'margin-top:.6rem' }, 'The root confirms as one document. How a package inside it confirms, trade by trade or inside the one document, is not decided. It is filed as a capture.') : null,
-            h('div', { class: 'faint small', style: 'margin-top:.4rem' }, 'A structure nests one level at most: the root holds inner structures, and an inner structure holds only trades. The data-oriented design note shows a deeper tree. The insert trigger refuses it today.')));
+    return h('section', { class: 'panel' }, h('header', null, h('h2', null, 'Structure'), h('span', { class: 'legend' }, inner + ' inner structure' + (inner === 1 ? '' : 's') + ' · ' + 'root ' + root)),
+        h('div', { class: 'tree', role: 'tree', 'aria-label': 'The structure tree' }, treeNode(root, 0)),
+        h('div', { class: 'tree-note' }, 'A structure nests one level at most: the root holds inner structures, and an inner structure holds only trades. The insert trigger refuses a deeper tree.',
+            inner && rv.kind !== 'Package' ? h('div', { class: 'notice warn', style: 'margin-top:.5rem' }, 'The root confirms as one document. How a package inside it confirms is not decided. It is filed as a capture.') : null));
+}
+function tradePanel(code) {
+    const t = trade(code), role = (tmem(DEALS[SID]).find(m => m.t.code === code) || {}).role;
+    if (!t) return h('div', { class: 'notice bad' }, 'No trade ' + code + '.');
+    const pk = DEALS[SID].kind === 'Package';
+    return h('div', { class: 'cards' }, card({ id: 'leg', title: 'Trade in ' + SID, table: 'structure_member', version: 1, fields: [
+        { label: 'Trade', value: t.code, type: 'text' }, { label: 'Type', value: tradeType(t.type).description, type: 'text' }, { label: 'Role', value: role, type: 'text' },
+        { label: 'State', value: t.state, type: 'text' }, { label: 'Counterparty', value: cpty(t.cp).name, type: 'text' }, { label: 'Notional', value: t.notional, type: 'money' },
+        { label: 'External version', value: 'v' + t.ext, type: 'text', fixedWhy: pk ? 'This trade confirms on its own, so this is the version the customer quotes.' : 'The deal carries the confirmation. This trade has its own version too.' }] }, { readOnlyNote: true }),
+        h('div', { class: 'filters' }, h('a', { class: 'btn primary', href: '../trade-page/?trade=' + t.code }, 'Open the trade'), h('a', { class: 'btn', href: qs({ trade: null }) }, 'Back to the ' + noun(DEALS[SID].kind))));
 }
 function membersCard(s, ms, roleCheck) {
     const pk = s.kind === 'Package';

@@ -23,7 +23,7 @@ A structure is an entity: an immutable identity and legs that are trades. A pack
 
 ** A structure is a tree
 
-The root is the deal the customer sees. Inside it are strategies, packages and plain trades, and the leaves are trades. This is the deal topology of [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]. The page draws it as a tree: the root, its inner structures with their kind and how each confirms, and the trades with their role. A structure page shows the tree of its root with the current node marked, and a node opens that page.
+The root is the deal the customer sees. Inside it are strategies, packages and plain trades, and the leaves are trades. This is the deal topology of [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]. The page draws it as a tree in its own panel beside the page, in the manner of the structure editor of the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]]: one row for the root, one for each inner structure with its kind tag and how it confirms, and one for each trade with its product tag, its role and its notional. The panel shows the whole tree of the root whichever node is open. A click on a structure opens its page. A click on a trade selects it, and the page shows that trade's card in the tree, with a link to the trade.
 
 The model nests one level at most. =parent_structure_id= points to a root, and an inner structure holds only trades. The note draws a deeper tree, and the insert trigger refuses it. The page says so under the tree.
 

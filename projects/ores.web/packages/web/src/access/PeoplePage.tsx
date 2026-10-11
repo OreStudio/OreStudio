@@ -71,7 +71,6 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
     const system = mode === 'system-administration';
     const title = system ? t('accounts.title') : t('access.people.title');
     const trail = useAreaParts('organisation', title);
-    const crumbs = system ? [{ label: t('shell.menu.home'), to: '/' }, { label: title }] : trail;
     /*
      * The roles column reads one person's grants a row at a time, and that read
      * is its own permission. A caller who does not hold it is not shown the
@@ -105,7 +104,7 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
             source={PEOPLE}
             title={title}
             lead={lead}
-            crumbs={crumbs}
+            crumbs={trail}
             pathOf={(account) => personPath(account.username)}
             columns={[
                 ...personColumns(t),

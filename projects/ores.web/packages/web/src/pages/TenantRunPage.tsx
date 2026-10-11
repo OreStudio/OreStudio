@@ -25,6 +25,8 @@ import { useParams } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { RunProgress } from '../journeys/parts.js';
+import { Crumbs } from '../refdata/shared.js';
+import { useAreaRoot } from '../shell/AreaTrail.js';
 import { useJourneyServer } from '../journeys/server.js';
 import { LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
 
@@ -58,8 +60,15 @@ export function TenantRunPage(): ReactNode {
 
     const completed = tenant?.setup?.status === 'completed';
 
+    const title =
+        tenant === undefined
+            ? t('tenants.run.unknownTenant')
+            : t('tenants.run.title', { name: tenant.name });
+    const root = useAreaRoot('tenants');
+
     return (
         <div>
+            <Crumbs parts={[...root, { label: title }]} />
             <PageHeader
                 title={
                     tenant === undefined

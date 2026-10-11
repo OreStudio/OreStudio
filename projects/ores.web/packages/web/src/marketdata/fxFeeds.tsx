@@ -23,6 +23,7 @@ import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { useAreaParts, useAreaRoot } from '../shell/AreaTrail.js';
 import { RecordList, useRecordSource } from '../refdata/RecordList.js';
 import {
     RecordDetails,
@@ -301,10 +302,7 @@ function FxFeedsList(): ReactNode {
                     : {})}
                 title={t('marketdata.fxFeeds.title')}
                 lead={t('marketdata.fxFeeds.lead')}
-                crumbs={[
-                    { label: t('marketdata.area.title'), to: '/market-data' },
-                    { label: t('marketdata.fxFeeds.title') },
-                ]}
+                crumbs={useAreaParts('marketdata', t('marketdata.fxFeeds.title'))}
                 pathOf={(row) => fxFeedPath(show(row['id']))}
                 addLabel={t('marketdata.fxFeeds.add')}
                 onAdd={() => setAdding(true)}
@@ -442,7 +440,7 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
         <div className="space-y-4">
             <RecordHeader
                 crumbs={[
-                    { label: t('marketdata.area.title'), to: '/market-data' },
+                    ...useAreaRoot('marketdata'),
                     { label: t('marketdata.fxFeeds.title'), to: fxFeedPath() },
                     { label: pair },
                 ]}

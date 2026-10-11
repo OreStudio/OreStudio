@@ -129,6 +129,23 @@ export const CARDS = {
         bodyKey: 'refdata.area.classificationsBody',
         to: '/refdata/classifications',
         icon: 'classification',
+        screenTitleKey: 'refdata.classifications.title',
+    },
+    fxFeeds: {
+        titleKey: 'marketdata.area.screens.fxFeeds',
+        bodyKey: 'marketdata.area.screens.fxFeedsBody',
+        to: '/market-data/fx-feeds',
+        icon: 'trend',
+        permission: 'synthetic::fx_spot_generation_configs:read',
+        screenTitleKey: 'marketdata.fxFeeds.title',
+    },
+    curveEvolution: {
+        titleKey: 'market.evolution.title',
+        bodyKey: 'marketdata.area.screens.evolutionBody',
+        to: '/market-data/evolution',
+        icon: 'chart',
+        permission: 'marketdata::curve_snapshots:read',
+        screenTitleKey: 'market.evolution.title',
     },
     people: {
         titleKey: 'access.hub.staff',
@@ -252,6 +269,7 @@ export const AREA_CARDS = {
         'conventions',
     ],
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
+    marketdata: ['fxFeeds', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
     tenants: ['tenants'],
 } as const satisfies Record<string, readonly CardId[]>;

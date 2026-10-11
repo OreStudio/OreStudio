@@ -29,6 +29,9 @@ const AREAS = {
     operations: { nameKey: 'shell.menu.operations', to: '/operations' },
     requests: { nameKey: 'shell.menu.requests', to: '/requests' },
     refdata: { nameKey: 'shell.menu.refdata', to: '/refdata' },
+    marketdata: { nameKey: 'shell.menu.marketdata', to: '/market-data' },
+    development: { nameKey: 'shell.menu.development', to: '/development' },
+    tenants: { nameKey: 'shell.menu.tenants', to: '/tenants' },
 } as const;
 
 export type AreaName = keyof typeof AREAS;

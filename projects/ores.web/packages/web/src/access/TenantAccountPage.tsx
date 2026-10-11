@@ -20,8 +20,9 @@
  */
 
 import type { ReactNode } from 'react';
-import { Link, useParams } from 'react-router';
-import { useTranslation } from '../i18n/Provider.js';
+import { useParams } from 'react-router';
+import { Crumbs } from '../refdata/shared.js';
+import { useAreaRoot } from '../shell/AreaTrail.js';
 import { api } from '../api/client.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { PageHeader } from '../ui/Primitives.js';
@@ -36,24 +37,17 @@ import { SignInsPanel } from './SignIns.js';
  * where the platform's own services sign in. It writes nothing.
  */
 export function TenantAccountPage(): ReactNode {
-    const { t } = useTranslation();
     const { code = '', username = '' } = useParams();
 
     return (
         <div className="space-y-6">
-            <p className="text-xs text-ink-faint">
-                <Link to="/tenants" className="text-accent-bright hover:underline">
-                    {t('tenants.title')}
-                </Link>{' '}
-                /{' '}
-                <Link
-                    to={`/tenants/${encodeURIComponent(code)}?tab=people`}
-                    className="text-accent-bright hover:underline"
-                >
-                    {code}
-                </Link>{' '}
-                / {username}
-            </p>
+            <Crumbs
+                parts={[
+                    ...useAreaRoot('tenants'),
+                    { label: code, to: `/tenants/${encodeURIComponent(code)}?tab=people` },
+                    { label: username },
+                ]}
+            />
             <SignInsPanel
                 queryKey={['tenant-account-sign-ins', code, username]}
                 read={(page) => api.tenantAccountSignIns(code, username, page)}

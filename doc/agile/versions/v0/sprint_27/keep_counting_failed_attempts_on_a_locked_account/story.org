@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: D384CF87-DE48-404E-B787-96E6149C120F
+:END:
+#+title: Story: Keep counting failed attempts on a locked account
+#+description: A locked account still counts its failed sign-in attempts and records the address of each, so a run of attempts against a locked account shows as an attack.
+#+type: story
+#+level: s2
+#+filetags: :iam:web:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+When an account is locked for too many failed attempts, the sign-in is refused before the password check, so the failed count stops at 5 and the last attempt address stays at the attempt that locked it. An attack on a locked account then shows only in the authentication event log, and the Failed attempts tab looks quiet. The login record keeps counting while the account is locked, and records the address and time of every attempt. A locked-account attempt gets an event type of its own, so the Events tab can filter for it. The story also decides whether the password is checked on a locked account, so that a correct password on a locked account can be told from a wrong one.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- A refused sign-in on a locked account adds one to the failed count and updates the last attempt address and time.
+- The refusal is recorded as its own authentication event type, and the Events tab filters for it.
+- The Failed attempts tab shows a count above 5 for an account under attack, drawn in red.
+- The decision on checking the password of a locked account is recorded in the story, with the reason.
+- Unit tests in ores.iam cover the count, the address and the event type for a locked account.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+- Where it happens today: =account_operations_service.cpp= refuses a locked
+  account before the password check, so it neither counts the attempt nor
+  records its address. The refusal still reaches the authentication event log as
+  a =login_failure= with the message of the lock.
+- The number of failed attempts that locks an account (five) stays as it is.
+
+* Out of scope
+
+-

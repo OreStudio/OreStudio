@@ -19,16 +19,22 @@
  *
  */
 
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Field, Input, Notice, Tag, cx } from '../ui/Primitives.js';
+import { Button, Field, Input, Notice, Select, Tag, cx } from '../ui/Primitives.js';
 import { NEW_RECORD_REASON, show, useRecordPermissions, useRecords } from '../refdata/records.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
 import { ComponentDialog } from './ComponentDialog.js';
-import { SaveMixtureDialog } from './SaveMixtureDialog.js';
-import { bandWidth, halfLifeMinutes, processTypeOf, profileOf } from './processHelp.js';
+import { SaveMixtureDialog, type SaveEngine } from './SaveMixtureDialog.js';
+import {
+    bandWidth,
+    halfLifeMinutes,
+    processTypeOf,
+    profileOf,
+    type ProcessType,
+} from './processHelp.js';
 import {
     changesOf,
     densityOf,
@@ -86,9 +92,13 @@ function figure(value: number): string {
 export function MixturePanel({
     feed,
     running,
+    mayWriteFeed,
+    saveEngine,
 }: {
     readonly feed: RecordRow;
     readonly running: boolean;
+    readonly mayWriteFeed: boolean;
+    readonly saveEngine: SaveEngine;
 }): ReactNode {
     const { t } = useTranslation();
     const feedId = show(feed['id']);
@@ -100,8 +110,20 @@ export function MixturePanel({
         return <Notice tone="error">{rows.error.message}</Notice>;
     }
     return (
-        <MixtureEditor key={rows.dataUpdatedAt} feed={feed} rows={rows.data} running={running} />
+        <MixtureEditor
+            key={`${String(rows.dataUpdatedAt)}-${String(feed.version)}`}
+            feed={feed}
+            rows={rows.data}
+            running={running}
+            mayWriteFeed={mayWriteFeed}
+            saveEngine={saveEngine}
+        />
     );
+}
+
+/** A converted number as a person would type it, without the float's trailing noise. */
+function typed(value: number | undefined): string {
+    return String(Number((value ?? 0).toPrecision(10)));
 }
 
 /** A cell the draft changed is tinted, so what is not saved yet is seen at a glance. */
@@ -111,10 +133,14 @@ function MixtureEditor({
     feed,
     rows,
     running,
+    mayWriteFeed,
+    saveEngine,
 }: {
     readonly feed: RecordRow;
     readonly rows: readonly RecordRow[];
     readonly running: boolean;
+    readonly mayWriteFeed: boolean;
+    readonly saveEngine: SaveEngine;
 }): ReactNode {
     const { t } = useTranslation();
     const may = useRecordPermissions(COMPONENTS);
@@ -126,6 +152,47 @@ function MixtureEditor({
         readonly index: number;
     } | null>(null);
     const [saving, setSaving] = useState(false);
+    const savedEngine = processTypeOf(feed['process_type']);
+    const [engine, setEngine] = useState<ProcessType>(savedEngine);
+    const savedPrice = Number(feed['gmm_initial_price']);
+    const fixedPrice = feed['price_source'] === 'fixed' && savedPrice > 0;
+    const [previewPrice, setPreviewPrice] = useState(savedPrice > 0 ? String(savedPrice) : '1');
+    const [converted, setConverted] = useState<{
+        readonly from: ProcessType;
+        readonly to: ProcessType;
+        readonly price: number;
+    } | null>(null);
+    const conversion = useMutation({
+        mutationFn: async (to: ProcessType) => {
+            const numbers = gaussiansOf(draft);
+            if (numbers === undefined) {
+                throw new Error(t('marketdata.mixture.problems.number'));
+            }
+            const price = fixedPrice ? savedPrice : Number(previewPrice);
+            const out = await api.convertFxMixture({
+                gmm_means: numbers.map((one) => one.mean),
+                gmm_stdevs: numbers.map((one) => one.stdev),
+                gmm_weights: numbers.map((one) => one.weight),
+                from_process_type: engine,
+                to_process_type: to,
+                initial_price: price,
+                ticks_per_hour: Number(feed['ticks_per_hour']),
+            });
+            return { to, price, out };
+        },
+        onSuccess: ({ to, price, out }) => {
+            setDraft(
+                draft.slice(0, out.gmm_means.length).map((component, index) => ({
+                    ...component,
+                    mean: typed(out.gmm_means[index]),
+                    stdev: typed(out.gmm_stdevs[index]),
+                    weight: typed(out.gmm_weights[index]),
+                })),
+            );
+            setConverted({ from: engine, to, price });
+            setEngine(to);
+        },
+    });
     const plan = savePlan(feedId, saved, draft);
     const changes = changesOf(saved, draft);
     const removed = removedFrom(saved, draft);
@@ -136,12 +203,13 @@ function MixtureEditor({
         ).length,
         removed: removed.length,
     };
-    const dirty = counts.added + counts.changed + counts.removed > 0;
+    const engineChanged = engine !== savedEngine;
+    const dirty = engineChanged || counts.added + counts.changed + counts.removed > 0;
     const problems = problemsOf(draft);
     const gaussians = gaussiansOf(draft);
     const sum = gaussians === undefined ? undefined : weightSum(gaussians);
     const shares = sharesOf(draft);
-    const processType = processTypeOf(feed['process_type']);
+    const processType = engine;
     const ou = processType === 'ornstein_uhlenbeck';
     const columnHelp = (field: 'mean' | 'stdev' | 'weight'): string =>
         t(`marketdata.process.columns.${processType}.${field}`);
@@ -178,7 +246,12 @@ function MixtureEditor({
                     {dirty ? (
                         <Tag tone="warn">
                             {t('marketdata.mixture.unsaved', {
-                                count: String(counts.added + counts.changed + counts.removed),
+                                count: String(
+                                    counts.added +
+                                        counts.changed +
+                                        counts.removed +
+                                        (engineChanged ? 1 : 0),
+                                ),
                             })}
                         </Tag>
                     ) : (
@@ -186,8 +259,28 @@ function MixtureEditor({
                             {t('marketdata.mixture.clean')}
                         </span>
                     )}
+                    <label className="ml-auto flex items-center gap-2 text-sm">
+                        <span className="text-ink-muted">{t('refdata.fields.process_type')}</span>
+                        <Select
+                            className={engineChanged ? 'border-warn' : ''}
+                            value={engine}
+                            disabled={!mayWriteFeed || !may.write || conversion.isPending}
+                            title={t(`marketdata.process.about.${engine}`)}
+                            onChange={(event) =>
+                                conversion.mutate(processTypeOf(event.target.value))
+                            }
+                        >
+                            {(['geometric', 'arithmetic', 'ornstein_uhlenbeck'] as const).map(
+                                (one) => (
+                                    <option key={one} value={one}>
+                                        {t(`refdata.choices.process_type.${one}`)}
+                                    </option>
+                                ),
+                            )}
+                        </Select>
+                    </label>
                     {may.write && (
-                        <div className="ml-auto flex gap-2">
+                        <div className="flex gap-2">
                             <Button
                                 icon="add"
                                 onClick={() =>
@@ -203,7 +296,11 @@ function MixtureEditor({
                                 variant="ghost"
                                 icon="cancel"
                                 disabled={!dirty}
-                                onClick={() => setDraft(saved)}
+                                onClick={() => {
+                                    setDraft(saved);
+                                    setEngine(savedEngine);
+                                    setConverted(null);
+                                }}
                             >
                                 {t('marketdata.mixture.discard')}
                             </Button>
@@ -218,6 +315,17 @@ function MixtureEditor({
                         </div>
                     )}
                 </div>
+                {conversion.isError && <Notice tone="error">{conversion.error.message}</Notice>}
+                {converted !== null && engineChanged && (
+                    <Notice tone="info">
+                        {t('marketdata.mixture.converted', {
+                            from: t(`refdata.choices.process_type.${converted.from}`),
+                            to: t(`refdata.choices.process_type.${converted.to}`),
+                            price: String(converted.price),
+                        })}
+                        {!fixedPrice && ` ${t('marketdata.mixture.convertedAtPreview')}`}
+                    </Notice>
+                )}
                 <div className="overflow-x-auto rounded-md border border-line">
                     <table className="w-full text-left text-sm">
                         <thead>
@@ -453,7 +561,13 @@ function MixtureEditor({
                     </Notice>
                 ))}
             </section>
-            <Preview feed={feed} draft={draft} />
+            <Preview
+                feed={feed}
+                draft={draft}
+                processType={engine}
+                price={previewPrice}
+                onPrice={setPreviewPrice}
+            />
             {open !== null && (
                 <ComponentDialog
                     component={open.component}
@@ -470,6 +584,8 @@ function MixtureEditor({
                     components={COMPONENTS}
                     plan={plan}
                     counts={counts}
+                    engine={engineChanged ? { from: savedEngine, to: engine } : undefined}
+                    saveEngine={saveEngine}
                     running={running}
                     onClose={() => setSaving(false)}
                 />
@@ -522,17 +638,20 @@ function MeanReversion({
  * reads the saved feed, so the person judges the values before saving them.
  */
 function Preview({
-    feed,
     draft,
+    processType,
+    price,
+    onPrice,
 }: {
     readonly feed: RecordRow;
     readonly draft: readonly DraftComponent[];
+    readonly processType: ProcessType;
+    readonly price: string;
+    readonly onPrice: (price: string) => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const processType = show(feed['process_type']);
     const mixing = processType !== 'ornstein_uhlenbeck';
-    const savedPrice = Number(feed['gmm_initial_price']);
-    const [price, setPrice] = useState(savedPrice > 0 ? String(savedPrice) : '1');
+    const setPrice = onPrice;
     const [ticks, setTicks] = useState('250');
     const [paths, setPaths] = useState('5');
     const [seed, setSeed] = useState(42);
@@ -668,7 +787,7 @@ function Preview({
                 </div>
             </div>
             <Notice tone={processType === 'arithmetic' ? 'warn' : 'info'}>
-                {t(`marketdata.process.about.${processTypeOf(processType)}`)}
+                {t(`marketdata.process.about.${processType}`)}
             </Notice>
         </section>
     );

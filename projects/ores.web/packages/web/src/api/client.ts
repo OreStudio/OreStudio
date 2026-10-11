@@ -1143,6 +1143,35 @@ export const api = {
         ).paths;
     },
 
+    /** The mixture an engine change leaves, as the synthetic service converts it. */
+    async convertFxMixture(input: {
+        readonly gmm_means: readonly number[];
+        readonly gmm_stdevs: readonly number[];
+        readonly gmm_weights: readonly number[];
+        readonly from_process_type: string;
+        readonly to_process_type: string;
+        readonly initial_price: number;
+        readonly ticks_per_hour: number;
+    }): Promise<{
+        readonly gmm_means: readonly number[];
+        readonly gmm_stdevs: readonly number[];
+        readonly gmm_weights: readonly number[];
+    }> {
+        return z
+            .object({
+                gmm_means: z.array(z.number()),
+                gmm_stdevs: z.array(z.number()),
+                gmm_weights: z.array(z.number()),
+            })
+            .parse(
+                await request('/api/synthetic/convert/fx', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify(input),
+                }),
+            );
+    },
+
     /** Stops one feed. A feed that is not running stops nothing. */
     async stopFeed(id: string): Promise<void> {
         await request(`/api/synthetic/feeds/${encodeURIComponent(id)}/stop`, {

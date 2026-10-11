@@ -36,6 +36,12 @@ export interface MixtureCounts {
     readonly removed: number;
 }
 
+/** Writes the feed's engine, with the reason the mixture is saved under. */
+export type SaveEngine = (
+    engine: string,
+    intent: { readonly reasonCode: string; readonly commentary: string },
+) => Promise<void>;
+
 /**
  * Asks why the mixture changes and writes it. The removed components go
  * first and the rest in one write, all under one reason. A running feed drew
@@ -48,6 +54,8 @@ export function SaveMixtureDialog({
     plan,
     counts,
     running,
+    engine,
+    saveEngine,
     onClose,
 }: {
     readonly feedId: string;
@@ -55,12 +63,16 @@ export function SaveMixtureDialog({
     readonly plan: ReturnType<typeof savePlan>;
     readonly counts: MixtureCounts;
     readonly running: boolean;
+    readonly engine: { readonly from: string; readonly to: string } | undefined;
+    readonly saveEngine: SaveEngine;
     readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
     const onlyNew =
-        plan.removals.length === 0 && plan.changes.every((change) => change.version === null);
+        engine === undefined &&
+        plan.removals.length === 0 &&
+        plan.changes.every((change) => change.version === null);
     const reason = useReason('amend', true);
     const [commentary, setCommentary] = useState('');
     const [restart, setRestart] = useState(true);
@@ -71,6 +83,9 @@ export function SaveMixtureDialog({
             const intent = onlyNew
                 ? { reasonCode: NEW_RECORD_REASON, commentary: '' }
                 : { reasonCode: reason.code, commentary: commentary.trim() };
+            if (engine !== undefined) {
+                await saveEngine(engine.to, intent);
+            }
             if (plan.removals.length > 0) {
                 await api.removeSynthetic(
                     components,
@@ -90,7 +105,7 @@ export function SaveMixtureDialog({
             }
         },
         onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: ['records', components] });
+            await queries.invalidateQueries({ queryKey: ['records'] });
             await queries.invalidateQueries({ queryKey: ['history'] });
             await queries.invalidateQueries({ queryKey: RUNNING_KEY });
             onClose();
@@ -119,6 +134,14 @@ export function SaveMixtureDialog({
             }
         >
             <div className="space-y-4">
+                {engine !== undefined && (
+                    <p className="text-sm">
+                        {t('marketdata.mixture.saveEngine', {
+                            from: t(`refdata.choices.process_type.${engine.from}`),
+                            to: t(`refdata.choices.process_type.${engine.to}`),
+                        })}
+                    </p>
+                )}
                 <p className="text-sm">
                     {t('marketdata.mixture.saveSummary', {
                         added: String(counts.added),

@@ -3330,6 +3330,9 @@ export const en: SourceCatalogue = {
                 moved: 'Moved',
                 deleted: 'Deleted',
             },
+            converted: 'Converted from {from} to {to} at a price of {price}.',
+            convertedAtPreview: 'The feed has no fixed price, so the preview price was used.',
+            saveEngine: 'Engine: {from} → {to}.',
         },
         preview: {
             distribution: 'Return distribution',

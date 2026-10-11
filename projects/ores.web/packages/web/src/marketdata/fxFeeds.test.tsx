@@ -27,7 +27,7 @@ import type { AccountAccess } from '@ores/wire-protocol/browser';
 import type { RecordRow, SyntheticResourceView } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
-import { completeFeed, FxFeedPage, FxFeedsPage } from './fxFeeds.js';
+import { completeFeed, feedWrite, FxFeedPage, FxFeedsPage } from './fxFeeds.js';
 import { MarketDataPage } from './MarketDataPage.js';
 
 const FEED_ID = '55555555-5555-4555-8555-555555555555';
@@ -161,6 +161,17 @@ describe('the fields a feed derives', () => {
     });
 });
 
+describe('the feed an engine change writes', () => {
+    it('writes the feed as the BFF takes it, with the new engine and nothing of its provenance', () => {
+        const write = feedWrite({ ...feed, modified_by: 'priya' }, { process_type: 'arithmetic' });
+        expect(write['process_type']).toBe('arithmetic');
+        expect(write['ticks_per_hour']).toBe(3600);
+        expect(write).not.toHaveProperty('version');
+        expect(write).not.toHaveProperty('modified_by');
+        expect(Object.keys(write)).toHaveLength(15);
+    });
+});
+
 describe('the market data area', () => {
     it('offers the FX price feeds to a person who reads them', () => {
         const html = render('/market-data', (client) => {
@@ -238,7 +249,7 @@ describe('the FX feed screens', () => {
         expect(html).toContain('>11.1%<');
         expect(html).toContain('No unsaved changes.');
         expect(html).toMatch(/<button[^>]*disabled=""[^>]*>.*?Save</);
-        expect(html.indexOf('so the price stays positive')).toBeGreaterThan(
+        expect(html.lastIndexOf('so the price stays positive')).toBeGreaterThan(
             html.indexOf('Sample paths'),
         );
         expect(html).toContain('Return distribution');
@@ -390,6 +401,17 @@ describe('the FX feed screens', () => {
         });
         expect(html).toContain('the price can go to zero or below');
         expect(html).toContain('in price units, not a percentage');
+    });
+
+    it('offers the engine on the mixture tab and not in the feed form', () => {
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=behaviour`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toMatch(
+            /<select[^>]*>.*?<option value="geometric" selected="">Geometric<\/option>/,
+        );
     });
 
     it('reads a mean reverting mixture as κ and σ, with its half-life and band', () => {

@@ -57,6 +57,7 @@ import {
     subjects as collectionSubjects,
     type MarketDataGenerationConfigsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/market_data_generation_config_protocol';
+import { subjects as fxConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_mixture_protocol';
 import { subjects as fxSimulateSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/simulate_fx_spot_paths_protocol';
 import {
     subjects as definitionSubjects,
@@ -559,6 +560,33 @@ const fxSimulateSchema = z
         { message: 'The mixture has one mean, one deviation and one weight per component.' },
     );
 
+/** The engines an FX feed runs, which the conversion reads between. */
+const fxEngine = z.enum(['geometric', 'arithmetic', 'ornstein_uhlenbeck']);
+
+const fxConvertSchema = z
+    .object({
+        gmm_means: z.array(z.number()).max(100),
+        gmm_stdevs: z.array(z.number()).max(100),
+        gmm_weights: z.array(z.number()).max(100),
+        from_process_type: fxEngine,
+        to_process_type: fxEngine,
+        initial_price: z.number().positive(),
+        ticks_per_hour: z.int().positive(),
+    })
+    .strict()
+    .refine(
+        (request) =>
+            request.gmm_means.length === request.gmm_stdevs.length &&
+            request.gmm_means.length === request.gmm_weights.length,
+        { message: 'The mixture has one mean, one deviation and one weight per component.' },
+    );
+
+const mixtureReplySchema = operationReplySchema.extend({
+    gmm_means: z.array(z.number()).default([]),
+    gmm_stdevs: z.array(z.number()).default([]),
+    gmm_weights: z.array(z.number()).default([]),
+});
+
 const irSimulateSchema = z.object({
     process_type: code,
     parameters: parameterSpecs,
@@ -871,6 +899,25 @@ export function registerSyntheticRoutes(
         );
         refuseUnless(reply, invalidRequest);
         return { paths: reply.paths };
+    });
+
+    /**
+     * The mixture an engine change leaves, converted by the synthetic service,
+     * which knows how each engine reads the numbers. Nothing is stored.
+     */
+    server.post('/api/synthetic/convert/fx', async (request) => {
+        const session = requireSession(request);
+        const reply = await session.client.callAuthenticated(
+            fxConvertSubjects.convert_fx_mixture_request,
+            input(fxConvertSchema, request.body),
+            mixtureReplySchema,
+        );
+        refuseUnless(reply, invalidRequest);
+        return {
+            gmm_means: reply.gmm_means,
+            gmm_stdevs: reply.gmm_stdevs,
+            gmm_weights: reply.gmm_weights,
+        };
     });
 
     /** Sample short-rate paths from the process and parameters on the screen. */

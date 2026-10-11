@@ -729,6 +729,50 @@ describe('synthetic operations', () => {
         expect(calls).toHaveLength(0);
     });
 
+    it('converts a mixture to another engine through the synthetic service', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.convert_fx_mixture': {
+                success: true,
+                message: '',
+                gmm_means: [0],
+                gmm_stdevs: [0.001],
+                gmm_weights: [0.046],
+            },
+        });
+        const body = {
+            gmm_means: [0, 0],
+            gmm_stdevs: [0.0005, 0.002],
+            gmm_weights: [0.95, 0.05],
+            from_process_type: 'geometric',
+            to_process_type: 'ornstein_uhlenbeck',
+            initial_price: 2,
+            ticks_per_hour: 60,
+        };
+        const response = await send(server, sessionId, 'POST', '/api/synthetic/convert/fx', body);
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            gmm_means: [0],
+            gmm_stdevs: [0.001],
+            gmm_weights: [0.046],
+        });
+        expect(calls[0]?.body).toEqual(body);
+    });
+
+    it('refuses a conversion to an engine it does not know before it reaches the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', '/api/synthetic/convert/fx', {
+            gmm_means: [0],
+            gmm_stdevs: [0.001],
+            gmm_weights: [1],
+            from_process_type: 'geometric',
+            to_process_type: 'jump',
+            initial_price: 2,
+            ticks_per_hour: 60,
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     it('answers 400 with the server words when a preview is refused', async () => {
         const { server, sessionId } = buildTestServer({
             'synthetic.v1.ops.simulate_ir_curve_paths': {

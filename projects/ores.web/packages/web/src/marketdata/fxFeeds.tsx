@@ -140,6 +140,42 @@ const FEED_FIELDS: readonly FieldSpec[] = [
 /** The fields the server needs that the form does not edit. */
 const FEED_KEPT = ['folder_id'];
 
+/**
+ * The fields the edit dialog offers: the engine is changed on the Price
+ * behaviour tab, where the mixture is converted with it.
+ */
+const FEED_EDIT_FIELDS = FEED_FIELDS.filter((spec) => spec.field !== 'process_type');
+
+/** The fields a feed write carries, as the BFF takes them. */
+const FEED_WRITE_FIELDS = [
+    'id',
+    'config_id',
+    'base_currency_code',
+    'quote_currency_code',
+    'source_name',
+    'ore_key',
+    'price_source',
+    'gmm_initial_price',
+    'ticks_per_hour',
+    'process_type',
+    'enabled',
+    'auto_start',
+    'vintage_source',
+    'vintage_date',
+    'folder_id',
+] as const;
+
+/** The feed as written back with a change, such as a new engine. */
+export function feedWrite(
+    feed: Readonly<Record<string, unknown>>,
+    change: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+    return {
+        ...Object.fromEntries(FEED_WRITE_FIELDS.map((field) => [field, feed[field] ?? null])),
+        ...change,
+    };
+}
+
 const NEW_FEED: FieldValues = {
     process_type: 'geometric',
     ticks_per_hour: '3600',
@@ -449,7 +485,25 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                     extra={[[t('refdata.fields.ore_key'), show(feed['ore_key'])]]}
                 />
             )}
-            {tab === 'behaviour' && <MixturePanel feed={feed} running={running === true} />}
+            {tab === 'behaviour' && (
+                <MixturePanel
+                    feed={feed}
+                    running={running === true}
+                    mayWriteFeed={may.write}
+                    saveEngine={async (engine, intent) => {
+                        await api.saveSynthetic(
+                            FEEDS,
+                            [
+                                {
+                                    write: feedWrite(feed, { process_type: engine }),
+                                    version: feed.version,
+                                },
+                            ],
+                            intent,
+                        );
+                    }}
+                />
+            )}
             {tab === 'ticks' && (
                 <TicksPanel feed={feed} running={running} mixture={mixture.data ?? []} />
             )}
@@ -469,9 +523,9 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                 <RecordDialog
                     title={t('refdata.records.editTitle', { code: pair })}
                     resource={FEEDS}
-                    specs={FEED_FIELDS}
+                    specs={FEED_EDIT_FIELDS}
                     row={feed}
-                    keep={['id', ...FEED_KEPT]}
+                    keep={['id', 'process_type', ...FEED_KEPT]}
                     complete={completeFeed}
                     check={check}
                     onClose={() => setEditing(false)}

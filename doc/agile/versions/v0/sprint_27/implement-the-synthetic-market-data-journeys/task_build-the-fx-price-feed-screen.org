@@ -100,6 +100,11 @@ the screen lacked:
     half-life and band. The Qt simple mode, sliders for drift, volatility and
     jumps, is a second editor for the same mixture and is left for its own
     task.
+12. *Engine.* The engine moves from the feed form to the Price behaviour
+    tab, beside the mixture it decides the meaning of. Changing it asks the
+    synthetic service to convert the draft (=convert_fx_mixture=, with its
+    logic in =ores.synthetic.api/feeds/fx_mixture_conversion.hpp=), and Save
+    writes the feed's engine and the mixture under one reason.
 11. *Login.* A login waiting on a party made =GET /api/session= answer 500,
     which kept the party picker from showing. It now answers 401.
 

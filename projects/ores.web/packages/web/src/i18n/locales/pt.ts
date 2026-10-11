@@ -3355,6 +3355,10 @@ const pt: SourceCatalogue = {
                 moved: 'Movida',
                 deleted: 'Apagada',
             },
+            converted: 'Convertido de {from} para {to} ao preço de {price}.',
+            convertedAtPreview:
+                'O fluxo não tem preço fixo, por isso foi usado o preço da pré-visualização.',
+            saveEngine: 'Motor: {from} → {to}.',
         },
         preview: {
             distribution: 'Distribuição dos retornos',

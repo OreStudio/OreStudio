@@ -3380,6 +3380,9 @@ const fr: SourceCatalogue = {
                 moved: 'Déplacée',
                 deleted: 'Supprimée',
             },
+            converted: 'Converti de {from} vers {to} au prix de {price}.',
+            convertedAtPreview: 'Le flux n’a pas de prix fixe : le prix de l’aperçu a été utilisé.',
+            saveEngine: 'Moteur : {from} → {to}.',
         },
         preview: {
             distribution: 'Distribution des rendements',

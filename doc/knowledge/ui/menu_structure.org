@@ -186,6 +186,14 @@ person has their own requests, so the entry is drawn for everyone.
 Tenants is last because it serves only the installation, and it is drawn only
 for a person who holds the read of the deployment (see [[*The deployment read][The deployment read]]).
 
+*** Market data
+
+Market data is its own area. It holds data that changes by the minute: the feeds
+that generate prices and the curves built from them. Reference data is a list
+that changes by the month, and a person who looks for a curve does not look in
+it. It has two screens, FX price feeds and Watch a curve evolve, each drawn for a
+person who holds its read.
+
 *** Reference data
 
 | Cards | Journeys |
@@ -246,12 +254,12 @@ the first step of every trail.
 | Currencies, Currency pairs, Desk groups, Holiday calendars, Classifications | Reference data | They are the shared lists |
 | Staff, Hierarchy | Organisation | They are about the people of the tenant |
 | Roles | Organisation | A role is held by a person |
-| Rescue access | Organisation | It acts on one person's account |
+| Rescue access | Organisation | It acts on one person's account: it unlocks it. Sign-ins only reads sessions, so the two are not the same kind of screen and do not share an area |
 | Sign-ins | Operations | It reads sessions and failed sign-ins. It is the Audit of how the installation is used |
 | Tests, Board, Backlog | Development | They are the work a team does on the product, not how an installation runs |
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
-| FX price feeds | Market data | A feed generates the prices that market data holds |
+| FX price feeds, Watch a curve evolve | Market data | A feed generates the prices that market data holds, and a curve is one of them |
 | Trades, Book a trade, Import a portfolio from ORE, Export a portfolio to ORE | Trades | A trade is held by the tenant and is not a shared list |
 | Structures and packages, Group trades | Trades | A structure is the tree of a deal made of trades |
 | Tenants | Tenants | The roster of the installation |
@@ -312,17 +320,15 @@ Operations. They are drawn, and the server serves them, for a person who holds
 
 The menu, the cards, the addresses and the breadcrumbs follow this page.
 
-** Open points
+** Not built yet
 
-- Whether Rescue access belongs in Organisation, because it acts on a person, or
-  in Operations with Sign-ins, because it answers a problem with signing in.
-  This page puts it in Organisation.
-- The Trades area has journeys and prototypes and no web screens yet. The BFF has
-  no trading route, and the trade list can filter only by trade id until the
-  model declares the columns a person searches by.
-- Market data (curves, surfaces and their feeds) has journeys and no web
-  screens yet. When it has screens it may need an area of its own, because it is
-  data that changes by the minute and not a list that changes by the month.
+The Trades area has journeys and prototypes and no web screens yet. The BFF has
+no trading route, and the trade list can filter only by trade id until the model
+declares the columns a person searches by. The area is in the menu order above,
+and it is drawn when its first screen exists and a person holds its read.
+
+Market data has no screen for curve surfaces or for feeds of other kinds yet.
+They are added to the Market data area when they have screens.
 
 ** Changing the menu
 

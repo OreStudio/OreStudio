@@ -42,7 +42,7 @@ Who sees an area or a card depends on the reads a person holds and on nothing el
 | [[id:09C615C1-56B2-4FA7-A144-252EB5D89BEA][Scaffold story: Draw the menu by reads alone]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:93BE66B8-042D-4EDB-A42E-BD3A27626D3E][Give the installation screens a read of their own]] | DONE | 2026-10-11 | 2026-10-11 | Initial task for: Draw the menu by reads alone |
 | [[id:BBF2EB3F-BC2E-416E-8F57-DEDA19600A95][Review every card, breadcrumb and menu against the menu structure page]] | DONE | 2026-10-11 | 2026-10-11 | List every difference between the menu, the area cards, the breadcrumbs and addresses of the web screens and the menu structure page, then fix each one in the code or the page. |
-| [[id:8E1666B4-BF28-4E11-929C-C5C7D0216208][Settle the open points on the menu structure page]] | BACKLOG | | | Decide where Rescue access belongs and whether Market data gets its own area, and write both decisions on the page. |
+| [[id:8E1666B4-BF28-4E11-929C-C5C7D0216208][Settle the open points on the menu structure page]] | DONE | 2026-10-11 | 2026-10-11 | Decide where Rescue access belongs and whether Market data gets its own area, and write both decisions on the page. |
 | [[id:9931C2FF-95F9-4434-ACC1-30566EE27C34][Walk every screen for its area, address and trail]] | BACKLOG | | | A test walks every screen of the web app and checks it has one area, one address and the trail Home, the area, the screen. |
 
 * Decisions

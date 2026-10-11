@@ -235,6 +235,14 @@ answers a tenant administrator with the whole tenant, because the
 administrator's account is linked to every party. The code is the permission to
 read an account. The policy is which accounts.
 
+One rule does not depend on the party. A shared account is visible to every reader of
+every tenant who holds the account code. The shared accounts are the service accounts
+and the super admin. They work in no party, and a history must name the service that
+wrote an entry. They hold no private data, and an account never carries a credential,
+a contact record or a sign-in. The rule is one case of
+[[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]], which states the
+building blocks and the checklist for any table that is read across tenants.
+
 An account is not credentials. The password hash, the contact record, the
 sign-ins and the sessions are other tables. Each has its own permission code,
 and Member holds none of them. A member reads a colleague's account (name,

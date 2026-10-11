@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 0EAAEDFD-7954-4649-A463-9EE377B023F7
+:END:
+#+title: Data read across tenants
+#+description: The one standard for data that every tenant reads: the six building blocks, the checklist for a new shared table, and the rows of the accounts table that follow it.
+#+type: knowledge
+#+level: cross
+#+filetags: :security:multi_tenancy:iam:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+* Summary
+
+Most data belongs to one tenant, and a tenant reads only its own. Some rows belong to the system tenant and every tenant must read them. Reference data is one case. The service accounts are another. This page states the six building blocks that make a table readable across tenants. Every table that is read across tenants uses all six, and no table uses a second mechanism. A new shared table follows the checklist at the end.
+
+* Detail
+
+** When to share
+
+Share a row only when every tenant has a reason to read it and the row holds no private data. A history names the service that wrote an entry. The service account holds a name, a picture and a type, so every tenant may read it. A person of a tenant is not shared. The party rule keeps applying to people.
+
+Do not share a row to avoid a token exchange. A service that needs the data of one tenant acts inside that tenant instead. See [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]].
+
+** The six building blocks
+
+1. *Owner.* A shared row has =tenant_id = system=. A table that holds both tenant rows and shared rows adds a boolean column =shared=, false by default. Only the seed sets it. A row is admitted by its owner and by the flag, so a later row of the system tenant stays hidden until a person sets the flag.
+2. *Policy.* One policy per command. The select policy admits the rows of the current tenant and the shared rows of the system tenant. The insert, update and delete policies admit only the current tenant. One =for all= policy is not enough, because it uses one =using= clause for select, update and delete, and a tenant could then change or remove a shared row. A restrictive policy, such as the party rule, must also pass the shared rows. A restrictive policy only narrows.
+3. *Read.* The model states =:system_tenant_visible: true= on its repository. The generated read then asks for the rows of the current tenant or of the system tenant. The policy decides which system rows return. A table whose rows are all shared states =:tenant_read_scope: shared= and the read has no tenant predicate. Writes stay in the own tenant.
+4. *Guard.* The read has a =:read= code, or an allow-list row with a reason, as the [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][authorised reads]] rules require.
+5. *Existence check.* A record that names a shared row, or a row the party rule hides, checks that it exists through a security definer function. The function returns yes or no and names no column. It takes the id and nothing else, and it takes the tenant from the session, so a caller cannot probe another tenant. It sets a fixed =search_path=. The grant is revoked from public and given to the service roles by name. The codegen map =EXISTENCE_FUNCTIONS= in =org_loader.py= names the function for each table, and the generated soft foreign key trigger calls it.
+6. *Page.* This page. The model of the table links to it.
+
+** The accounts table
+
+The accounts table follows the blocks. It is the open table: username, type, status, full name, picture, email, job title, reports-to and default party. The confidential data of an account is in other tables with their own read codes: the credential, the contact information, the sign-ins and the sessions. No column hides.
+
+| Block | In the accounts table |
+|-------+-----------------------|
+| Owner | The service accounts and the super admin belong to the system tenant. The column =shared= is true for them. |
+| Policy | =accounts_select_policy= admits the current tenant and the shared system rows. =accounts_insert_policy=, =accounts_update_policy= and =accounts_delete_policy= admit the current tenant only. The party rule passes a shared row. |
+| Read | =:system_tenant_visible: true= on the account repository. |
+| Guard | =iam::accounts:read=. The account holds no private data that a shared row adds. |
+| Existence | =ores_iam_account_exists_fn(id)=. Every soft foreign key to the accounts table calls it. |
+
+The super admin is a =user= account, because humans sign in with it. It is shared by its flag and not by its type.
+
+** Who sees which account
+
+A person sees the accounts of the parties they have access to, the accounts of the system party, and the shared accounts. A tenant administrator sees the tenant, because the administrator is linked to every party. A service sees every account through the existence function and no account through the table.
+
+** Checklist for a new shared table
+
+- The rows belong to the system tenant, and no row holds private data.
+- The table has the column =shared= if it also holds tenant rows.
+- The policy is one per command, and every restrictive policy passes shared rows.
+- The model states =:system_tenant_visible: true=, or =:tenant_read_scope: shared= if every row is shared.
+- The read has a read code or an allow-list row with a reason.
+- A record that names a row of the table checks it through an existence function, and the map =EXISTENCE_FUNCTIONS= names the function.
+- A pgTAP test proves five facts: a tenant reads the shared rows, a tenant reads nothing else of the system tenant, a tenant reads no other tenant, a tenant changes or removes no shared row, and a tenant writes none for the system tenant.
+- This page and the model link to each other.
+
+* See also
+
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]: the four mechanisms and the reads that cross tenants.
+- [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]: the read codes and the allow-list.
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]: the accounts exception and the system tenant.
+- [[id:ABA133C1-B8F3-4B13-999F-4C03400A8BCB][Story: Split accounts into open and confidential data]]: why the standard exists.

@@ -141,6 +141,42 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
 }
 
 describe('POST /api/accounts/:accountId/lock', () => {
+    it('accepts the request a browser sends: JSON content type and no body', async () => {
+        const { server, sessionId } = buildTestServer({
+            'iam.v1.ops.lock_account': { results: [{ success: true, message: '' }] },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: `/api/accounts/${ACCOUNT_ID}/lock`,
+            headers: { 'content-type': 'application/json' },
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+
+        await server.close();
+    });
+
+    it('answers a body that is not JSON as a bad request, not as an internal failure', async () => {
+        const { server, sessionId } = buildTestServer({
+            'iam.v1.ops.lock_account': { results: [{ success: true, message: '' }] },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: `/api/accounts/${ACCOUNT_ID}/lock`,
+            headers: { 'content-type': 'application/json' },
+            payload: '{not json',
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({ code: 'invalid-request' });
+
+        await server.close();
+    });
+
     it('locks the one account the screen named', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'iam.v1.ops.lock_account': { results: [{ success: true, message: '' }] },
@@ -217,6 +253,24 @@ describe('POST /api/accounts/:accountId/unlock', () => {
         expect(calls).toEqual([
             { subject: 'iam.v1.ops.unlock_account', body: { account_ids: [ACCOUNT_ID] } },
         ]);
+
+        await server.close();
+    });
+
+    it('accepts the request a browser sends: JSON content type and no body', async () => {
+        const { server, sessionId } = buildTestServer({
+            'iam.v1.ops.unlock_account': { results: [{ success: true, message: '' }] },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: `/api/accounts/${ACCOUNT_ID}/unlock`,
+            headers: { 'content-type': 'application/json' },
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ success: true });
 
         await server.close();
     });

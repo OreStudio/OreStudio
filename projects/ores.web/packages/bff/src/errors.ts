@@ -227,13 +227,14 @@ export function toHttpFailure(error: unknown): HttpFailure {
             message: 'Cannot reach the message bus.',
         });
     }
-    // A body past a route's limit is the caller's fault, and Fastify says so
-    // with its own status. It is not an internal fault.
-    if ((error as { statusCode?: unknown } | null)?.statusCode === 413) {
-        return new HttpFailure(413, {
-            code: 'invalid-request',
-            message: 'The request is too large.',
-        });
+    /*
+     * The framework's own refusal of a request it could not read, such as a body
+     * that is not JSON, carries the status it means. Reporting it as an internal
+     * failure hides a client mistake behind a server one.
+     */
+    const status = (error as { statusCode?: unknown } | null)?.statusCode;
+    if (typeof status === 'number' && status >= 400 && status < 500 && error instanceof Error) {
+        return new HttpFailure(status, { code: 'invalid-request', message: error.message });
     }
     return new HttpFailure(500, {
         code: 'internal',

@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: D763A432-443A-4CE1-BC00-75D4A9970EDF
+:END:
+#+title: User Journey: Record a lifecycle event on a trade
+#+description: An operations user records an exercise, a termination, a novation or another event that changes a live trade.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:trading:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An operations user records an exercise, a termination, a novation or another event that changes a live trade.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint. These trade journeys are
+use cases, so they name the operations and messages each step needs and leave the
+screens to the UX standards.
+
+* Goal
+
+"Something happened to a live trade, such as an exercise, a termination or a novation, and
+I want the firm's record to say so, with the effect on the trade, so that the trade is
+right on the day." The journey is done when the activity is recorded, the trade's state
+has moved, and the versions the event causes are written.
+
+* Actor and trigger
+
+The actor is an operations user. The trigger is a notice from a counterparty or a venue,
+or a date in the trade. The journey starts on a trade and ends with the event recorded,
+awaiting confirmation, or refused.
+
+* Steps
+
+1. *Open the trade.* The person opens the trade the event concerns.
+2. *Choose the event.* The person chooses an event type. The system offers only the
+   events the trade's state allows.
+3. *Give the facts of the event.* The person gives the date and the terms the event
+   changes, such as the exercised amount or the new counterparty.
+4. *Review the effect.* The system shows the trades the event touches, the state each one
+   moves to and the versions it writes.
+5. *Record.* The system writes the activity and the versions in one transaction.
+6. *Confirm, if needed.* When the event requires confirmation, it waits for it.
+
+* Screens
+
+This journey is a use case. The Workflows menu of the trade page carries the event
+actions, and the activity shows in the History timeline. The Qt event window maintained the
+lookup of event types, which is reference data. This journey records an event on one
+trade.
+
+No wireframe is drawn here. The prototype story draws the screens, from the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =trade_activity= | The event, who recorded it and when | [[id:6B361413-828D-4F84-8AD7-58DA1442580B][ores.trading.trade_activity]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose | Offer the activity and event types | =trading.v1.activity_types.list=, =trading.v1.lifecycle_events.list= | exists |
+| Choose | Say which events the state allows | none | missing |
+| Record | Write the activity and the versions it causes in one transaction | none | missing |
+| Record | Write the activity | =trading.v1.trade_activities.put= | exists |
+
+Status is one of =exists=, =partial=, or =missing=. A subject that contains
+=<instrument>= stands for the one instrument table the trade type routes to. The plural
+is written with a plain =s=. A table whose plural is irregular, such as
+=trade_activities=, has its own subject: check the protocol header, not the pattern.
+
+* What is missing
+
+- No operation writes an activity with the versions it causes. This is the same gap as in
+  the amendment journey. One operation should serve both.
+- The effect of each event on other trades (a novation moves a trade to a new
+  counterparty) has no operation.
+- The model lists =lifecycle_event= as reference data and =activity_type= as the type of an
+  event. The two overlap. A decision on which one the screen offers is needed.
+
+* Related journeys
+
+- [[id:93F08DE9-0843-40D8-8EE9-313A18AC581E][Amend a trade's economics]] — when the event is an ordinary change.
+- [[id:9E66EB4C-D456-41DB-AC46-8936B61FD80F][Review a trade and its history]] — to read the activity after it is recorded.
+
+* Related knowledge
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

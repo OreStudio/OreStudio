@@ -48,6 +48,7 @@ A party is edited on one standard entity page, in dialogs on its cards, like a c
 | [[id:BFC1673E-AF64-4743-9354-4132918528A8][Give party codenames a numeric suffix]] | BACKLOG | | | A party codename ends in letters, such as purple_dream_d, because the table forbids digits and the generator encodes its sequence in base 26. A codename should end in a number, such as purple_dream_4. |
 | [[id:131891BA-81DB-4C4A-B9EF-433804C16F2A][Give the Acme parties offices, countries and currencies]] | BACKLOG | | | The four Acme parties have no contact information, no countries and no currencies in the sample data, so the Contacts and Memberships tabs are empty. Add an office for each contact type to every party, and the countries and currencies each one operates in, to the Acme dataset and to the way it is published. |
 | [[id:C0BFF354-6F4C-48E3-897E-12C5ED500B8D][Give the Acme parties counterparties to trade with]] | BACKLOG | | | The Acme dataset links no counterparty to any party, so the Counterparties tab is empty. Add a set of counterparties and link each party to the ones it may trade with. |
+| [[id:763FF721-1EEB-4E37-BFD5-19FC1BFA528C][Page the lookups of the party link panels]] | BACKLOG | | | The Memberships and Counterparties tabs read every country, currency and counterparty to name the few a party links, and a tenant holds about 13000 counterparties. The panels should look up the few rows they draw and search the rest on the server, as the entity specification says. |
 
 * Decisions
 

@@ -271,6 +271,60 @@ export function PartyPage(): ReactNode {
     );
 }
 
+/** The names a link panel offers, read when the tab that needs them is open and not before. */
+function namesOf(
+    rows: readonly RecordRow[] | undefined,
+    value: string,
+    label: string,
+): readonly { readonly value: string; readonly label: string }[] {
+    return (rows ?? []).map((row) => ({ value: show(row[value]), label: show(row[label]) }));
+}
+
+/** The countries and the currencies a party works in. */
+function Memberships({ partyId }: { readonly partyId: string }): ReactNode {
+    const { t } = useTranslation();
+    const countries = useRecords('countries');
+    const currencies = useRecords('currencies');
+    return (
+        <div className="space-y-4">
+            <LinkPanel
+                title={t('refdata.parties.countries')}
+                junction="party-countries"
+                parentField="party_id"
+                parentValue={partyId}
+                childField="country_alpha2_code"
+                flag="country"
+                choices={namesOf(countries.data, 'alpha2_code', 'name')}
+            />
+            <LinkPanel
+                title={t('refdata.parties.currencies')}
+                junction="party-currencies"
+                parentField="party_id"
+                parentValue={partyId}
+                childField="currency_iso_code"
+                flag="currency"
+                choices={namesOf(currencies.data, 'iso_code', 'name')}
+            />
+        </div>
+    );
+}
+
+/** The counterparties a party may trade with. */
+function TradingCounterparties({ partyId }: { readonly partyId: string }): ReactNode {
+    const { t } = useTranslation();
+    const counterparties = useRecords('counterparties');
+    return (
+        <LinkPanel
+            title={t('refdata.parties.counterparties')}
+            junction="party-counterparties"
+            parentField="party_id"
+            parentValue={partyId}
+            childField="counterparty_id"
+            choices={namesOf(counterparties.data, 'id', 'full_name')}
+        />
+    );
+}
+
 function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
     const { t } = useTranslation();
     const id = show(row['id']);
@@ -292,13 +346,8 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
     const identifiers = useRecords(IDENTIFIERS, id);
     const contacts = useRecords(CONTACTS, id);
     const units = useRecords(UNITS, id);
-    const countries = useRecords('countries');
-    const currencies = useRecords('currencies');
-    const counterparties = useRecords('counterparties');
     const [editing, setEditing] = useState(false);
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
-    const choices = (rows: readonly RecordRow[] | undefined, value: string, label: string) =>
-        (rows ?? []).map((choice) => ({ value: show(choice[value]), label: show(choice[label]) }));
     const image = show(row['image_id']);
 
     return (
@@ -429,28 +478,7 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
                     sort={(row) => show(row['contact_type'])}
                 />
             )}
-            {tab === 'memberships' && (
-                <div className="space-y-4">
-                    <LinkPanel
-                        title={t('refdata.parties.countries')}
-                        junction="party-countries"
-                        parentField="party_id"
-                        parentValue={id}
-                        childField="country_alpha2_code"
-                        flag="country"
-                        choices={choices(countries.data, 'alpha2_code', 'name')}
-                    />
-                    <LinkPanel
-                        title={t('refdata.parties.currencies')}
-                        junction="party-currencies"
-                        parentField="party_id"
-                        parentValue={id}
-                        childField="currency_iso_code"
-                        flag="currency"
-                        choices={choices(currencies.data, 'iso_code', 'name')}
-                    />
-                </div>
-            )}
+            {tab === 'memberships' && <Memberships partyId={id} />}
             {tab === 'centres' && (
                 <PartsPanel
                     resource={UNITS}
@@ -495,16 +523,7 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
                     sort={(row) => show(row['unit_code'])}
                 />
             )}
-            {tab === 'counterparties' && (
-                <LinkPanel
-                    title={t('refdata.parties.counterparties')}
-                    junction="party-counterparties"
-                    parentField="party_id"
-                    parentValue={id}
-                    childField="counterparty_id"
-                    choices={choices(counterparties.data, 'id', 'full_name')}
-                />
-            )}
+            {tab === 'counterparties' && <TradingCounterparties partyId={id} />}
             {tab === 'history' && (
                 <HistoryPanel
                     entityType="ores.refdata.party"

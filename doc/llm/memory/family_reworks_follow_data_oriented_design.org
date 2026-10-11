@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: E9B10A70-DDA3-459B-B333-2D733F0AE5D8
+:END:
+#+title: Family reworks follow data-oriented design
+#+description: Rework every instrument family by access pattern and identity by key, not by product taxonomy.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+Rework each instrument family with the data-oriented approach. Organise the tables by how the code reads and writes the data together, not by the product taxonomy. Key every row by its trade. Hold a list as rows of a child table. State the variation as a header with one fact table per product. Review the design with the data-model review skill before any model is written.
+
+*Why:* The bond pilot and the rates rework both came from this method. The wide credit table, with 25 columns for eight codes, is what the taxonomy approach produces.
+
+*How to apply:* Before a family rework, read doc/knowledge/architecture/data_oriented_design.org, state the regime (persisted domain data), and write the analysis as findings with evidence before any model. Follow the family rework runbook.

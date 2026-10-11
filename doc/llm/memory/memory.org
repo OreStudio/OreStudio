@@ -123,6 +123,9 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:B4E38241-6AD1-4859-9610-033CC39C0AF4][Use ores.platform for cross-platform functionality]] — always use ores.platform for getenv and any other cross-platform functionality it supports, rather than the native approach.
 - [[id:177EDB1C-6241-45AA-81B1-46C4B9D6329D][Do not number org headings]] — org numbers sections itself on export; a typed number renders after org's own as =4.1. 1. What is already settled=.
 - [[id:BA740C1B-8307-47D1-B359-AF20D0B2CBF0][Run pgTAP under a role that row-level security binds]] — =pg_prove= as the test DDL role; the owner role bypasses RLS and sees every tenant.
+- [[id:E9B10A70-DDA3-459B-B333-2D733F0AE5D8][Family reworks follow data-oriented design]] — organise tables by access pattern, key every row by its trade, lists are child rows, one fact table per product; follow the family rework runbook.
+- [[id:1E6E9374-E57D-4D3D-BAF7-16FC23651F19][Split hot and cold data by usage]] — main-path fields stay in the header and fact table, rarely read data gets its own table, and a column no mapper writes leaves the model.
+- [[id:E47BAF35-066F-4EF2-BA3D-522AED44FF33][Use exact decimals for rates, amounts and every money value]] — decimal in the domain type and numeric(38, 12) in the column; a double never enters the persisted domain; keep the document's digits at the ORE boundary.
 
 ** User
 

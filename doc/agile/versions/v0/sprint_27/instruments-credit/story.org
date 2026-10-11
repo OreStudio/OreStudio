@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0
+:END:
+#+title: Story: Rework the credit instruments to the instrument table rule
+#+description: Apply the bond pattern to the credit family: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum.
+#+type: story
+#+level: s2
+#+filetags: :trading:data-model:codegen:data-oriented:instrument:credit:sprint_27:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-11
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]], promoted from the product backlog's =next= bucket where it was scaffolded on 2026-10-02. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Rework the credit trade types and the risk participation agreement to the instrument table rule of the trade shape investigation (section 14), as the bonds were reworked, with the data-oriented review deciding the tables.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The analysis is done and the design is written. The rework is staged into seven more units, all BACKLOG. |
+| Waiting on    | Nothing.                               |
+| Next          | Unit 2, carry the credit digits.       |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- The family header's trade_type check lists exactly the family's codes, and each product fact table checks its own.
+- Every instrument row is keyed by its trade and pinned to the anchor's trade type and party by a composite foreign key.
+- The family's trade types route to their tables through the trade-type catalogue, not hand-written code.
+- The ORE round trip stays lossless across the family's corpus, and a money value is stored and exported as the digits the document wrote.
+- The credit family's dates are mapped into the blotter's common-date view.
+- The family's tables have a generated eventing integration test.
+- =RiskParticipationAgreement= routes, imports and exports through the credit family, with no table left that nothing writes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4434DCEA-FBDA-4C19-BF98-0EF57E0A546C][Analyse the credit family and propose its relational data model]] | DONE | 2026-10-11 | 2026-10-11 | Credit is the third family after the bond pilot and the rates rework. Survey every credit-related type and subtype in the tree (modeling orgs, SQL, domain C++, mappers, repositories, services, messaging, the ores.ore mapping), then propose the entity-relationship model in the clean data-oriented shape, taking in the risk participation agreement the rates rework left for credit. (Staging unit 1.) |
+| [[id:C5829235-D255-4C13-9EC1-6658CA518B02][Carry the credit digits]] | BACKLOG | | | The credit money members are bare floats in the ORE binding, so the mapper stores float artifacts: 0.025 becomes 0.02500000037252903. Make them lexical leaves through the reapply script and store recovery_rate as a decimal. (Staging unit 2.) |
+| [[id:1BE86F61-1DEF-4430-8AA6-C41F1C658007][Retire the unproduced rpa_instruments table]] | BACKLOG | | | RiskParticipationAgreement routes to credit_instrument, so nothing writes ores_trading_rpa_instruments_tbl and nothing reads it. Remove the table, its model and every generated file named for it, including the shell commands and their tests. (Staging unit 3.) |
+| [[id:DD0F79D0-38B4-43DE-B2E0-135976B8BA25][Author the credit family header and its fact tables]] | BACKLOG | | | Replace the 25-column credit table with a header holding the reference entity and the two dates, and six product fact tables keyed by the trade. Remove the two importer-less codes from the routing. (Staging unit 4.) |
+| [[id:CFBA80D2-A5EA-45DA-8566-D65C41C37D53][Write the credit legs and the basket]] | BACKLOG | | | A credit swap's premium leg and a credit linked swap's payment groups are rows of the shared swap leg tables, told apart by a new leg_group column. The names of a basket get a new child table. (Staging unit 5.) |
+| [[id:8B6C30D1-9BFE-484A-AACD-7541CBE77715][Close the credit round trip]] | BACKLOG | | | The agreement's export omits its required ParticipationRate, ProtectionFee and Underlying, so it is not valid ORE, and every credit product drops elements of the schema. Write them on import and export. (Staging unit 6.) |
+| [[id:E58A1EF3-89FF-4AD8-BB25-462A2F8F29D7][Map the credit dates into the common-date view]] | BACKLOG | | | The blotter's common-date view lists the rates family only. Map the credit header's start and maturity dates, and give the family generated eventing tests. (Staging unit 7.) |
+| [[id:0B4B0C19-93BE-44BB-AA8A-25DD1A3D3143][Prove the credit round trip over the corpus]] | BACKLOG | | | Run the ORE round trip over the credit corpus at the new shape: each trade imported, exported alone and imported again must give the same family rows. The last unit; it proves a shape the other units settle. (Staging unit 8.) |
+
+* Decisions
+
+Distilled from =design.org=, which carries the argument and the evidence.
+
+- *The family header holds the reference entity and the two dates.* The six
+  products share nothing else, and a header column must hold for every code.
+- *Credit reuses the swap leg tables,* told apart by a nullable =leg_group=
+  column. The legs are keyed by the trade, so a second leg table would repeat
+  the first.
+- *The two codes with no importer leave the routing.* The catalogue rule is
+  that a type with no writer has no table.
+- *The agreement's facts get a table of their own.* Its participation rate
+  and protection fee are required by the schema and belong to no other
+  product.
+- *Every money column is an exact decimal.* A float column stores an artifact
+  of the document's value.
+
+* Documents
+
+| Document | What it is |
+|----------+------------|
+| =design.org= | The design: the inventory, the findings and the proposed model. Transitional; expires when this story lands. |
+| =design_er.puml=, =design_er.png= | The proposed model's entity-relationship diagram. |
+
+* Out of scope
+
+- The =CBO= product and a =CreditDefaultSwapOption= importer.
+- The agreement's treasury lock underlying.

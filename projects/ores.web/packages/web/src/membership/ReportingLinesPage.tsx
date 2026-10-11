@@ -36,6 +36,7 @@ import { tabsFor } from '../access/screens.js';
 import { actorPathFor } from '../access/PeoplePage.js';
 import { useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
 import { Crumbs } from '../refdata/shared.js';
+import { useAreaParts } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
@@ -104,6 +105,7 @@ export function lineTimeline(
  */
 export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     const { t } = useTranslation();
+    const trail = useAreaParts('organisation', t('access.hub.hierarchy'));
     const queries = useQueryClient();
     const holds = useHolds();
     const { can } = usePermissions();
@@ -209,15 +211,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     if (tree.isPending || tree.isError) {
         return (
             <ScreenFrame
-                trail={
-                    <Crumbs
-                        parts={[
-                            { label: t('shell.menu.home'), to: '/' },
-                            { label: t('access.hub.title'), to: '/organisation' },
-                            { label: t('access.hub.hierarchy') },
-                        ]}
-                    />
-                }
+                trail={<Crumbs parts={trail} />}
                 title={t('access.hub.hierarchy')}
                 description={t('membership.reporting.lead')}
             >
@@ -290,13 +284,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     return (
         <div className="space-y-6">
             <div>
-                <Crumbs
-                    parts={[
-                        { label: t('shell.menu.home'), to: '/' },
-                        { label: t('access.hub.title'), to: '/organisation' },
-                        { label: t('access.hub.hierarchy') },
-                    ]}
-                />
+                <Crumbs parts={trail} />
                 <PageHeader
                     title={t('access.hub.hierarchy')}
                     description={t('membership.reporting.lead')}

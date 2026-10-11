@@ -23,7 +23,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { PageHeader } from '../ui/Primitives.js';
 import { AreaTrail, type AreaName } from './AreaTrail.js';
-import { areaOfCard, cardOf, type CardId } from './cards.js';
+import { cardOf, screenAreaOf, type CardId } from './cards.js';
 
 /**
  * The head of a screen that a file card leads to: the trail, the title and the
@@ -39,9 +39,7 @@ export function CardScreen({
 }): ReactNode {
     const { t } = useTranslation();
     const def = cardOf(card);
-    // A workflow listed on the screen it acts on has no area page of its own, so
-    // its trail is that screen's: Home, Reference data, Onboard a party.
-    const area = areaOfCard(card) ?? (def.on === undefined ? undefined : areaOfCard(def.on as CardId));
+    const area = screenAreaOf(card);
     return (
         <div className="space-y-6">
             <div>

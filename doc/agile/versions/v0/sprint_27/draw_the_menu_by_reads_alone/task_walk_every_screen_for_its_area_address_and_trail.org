@@ -91,7 +91,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The test repeats the card screen's area rule | walk.test.tsx, CardScreen.tsx | Accept | One helper, screenAreaOf in cards.ts, serves both, and the casts are in one place. |
+| 2 | The Hierarchy trail is written by hand with a literal address | ReportingLinesPage.tsx | Accept | It and the Staff list for a member now take their trail from the shared area parts, so the address and the area name come from one place. Classifications already did. |
+| 3 | The frame and the loaded screen declare the trail twice | the seven pages | Decline | The two copies sit a few lines apart in one component, and the Hierarchy and Staff pages now share one value. A test that loads data for all seven would cost more than the risk. |
+| 4 | CardScreen no longer excludes the tenants area | CardScreen.tsx | Answer | No card of the tenants area uses CardScreen. The guard was a leftover from when the shared trail did not know the area. The Add tenant journey has its own trail, and the walk checks it. |
+| 5 | The route scan is fragile | walk.test.tsx | Accept in part | A case now fails when a declared address still holds an unresolved template. The count guard stays loose, because the route count changes with every screen. |
+| 6 | The error priority on My access changed | MyAccessPage.tsx | Accept | A test pins it: a failed read shows its message under the trail and header while the other read waits, and a waiting screen shows the trail too. |
 
 * Result
 

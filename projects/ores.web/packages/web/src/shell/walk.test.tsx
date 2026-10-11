@@ -31,7 +31,7 @@ import { TranslationProvider } from '../i18n/Provider.js';
 import { enFlat } from '../i18n/locales/en.js';
 import type { BootstrapState } from '../session/BootstrapProvider.js';
 import { MENU } from './areas.js';
-import { AREA_CARDS, AREA_PAGE, CARDS, areaOfCard, cardOf, type CardId } from './cards.js';
+import { AREA_CARDS, AREA_PAGE, CARDS, cardOf, screenAreaOf, type CardId } from './cards.js';
 import { PATHS } from './paths.js';
 
 const party = {
@@ -120,12 +120,6 @@ const en = (key: string): string => enFlat[key] ?? `(missing ${key})`;
 const home = en('shell.menu.home');
 const trail = (...labels: string[]): string => [home, ...labels].join(' › ');
 
-/** The area of a card's screen: its own area, or the area of the screen a workflow is listed on. */
-function areaOf(id: CardId) {
-    const card = cardOf(id);
-    return areaOfCard(id) ?? (card.on === undefined ? undefined : areaOfCard(card.on as CardId));
-}
-
 /** The English name of an area, which is the middle of every trail inside it. */
 function nameOfArea(path: string): string {
     const entry = MENU.find((item) => item.to === path);
@@ -145,7 +139,7 @@ describe('walking every screen', () => {
         expect(new Set(addresses).size).toBe(addresses.length);
 
         const outside = ids.flatMap((id) => {
-            const area = areaOf(id);
+            const area = screenAreaOf(id);
             if (area === undefined) {
                 return [];
             }
@@ -161,7 +155,7 @@ describe('walking every screen', () => {
 
     for (const id of ids) {
         const card = cardOf(id);
-        const area = areaOf(id);
+        const area = screenAreaOf(id);
         if (area === undefined) {
             continue;
         }
@@ -251,7 +245,8 @@ describe('the routes of the application', () => {
         expect(unwalked).toEqual([]);
     });
 
-    it('declares routes at all', () => {
+    it('declares routes at all, and resolves every address it can', () => {
         expect(declared.length).toBeGreaterThan(30);
+        expect(declared.map(resolve).filter((path) => path.includes('${'))).toEqual([]);
     });
 });

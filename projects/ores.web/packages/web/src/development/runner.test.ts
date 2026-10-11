@@ -233,3 +233,44 @@ describe('the message after a save', () => {
         });
     });
 });
+
+describe('attaching an image to a step', () => {
+    it('puts the link in the note of the step, in the form the Qt tool used', () => {
+        const next = reduce(fresh(), {
+            type: 'attach',
+            index: 0,
+            name: 'scenario_step1_20261011_093015.png',
+        });
+        expect(next.steps[0]?.notes).toBe('[[file:scenario_step1_20261011_093015.png]]');
+    });
+
+    it('goes on a new line after the note the tester wrote', () => {
+        let runner = reduce(fresh(), { type: 'note', notes: 'The tab stayed blank.' });
+        runner = reduce(runner, { type: 'attach', index: 0, name: 'a.png' });
+        runner = reduce(runner, { type: 'attach', index: 0, name: 'b.png' });
+        expect(runner.steps[0]?.notes).toBe(
+            'The tab stayed blank.\n[[file:a.png]]\n[[file:b.png]]',
+        );
+    });
+
+    it('goes to the step the image was dropped on, not the step on show now', () => {
+        let runner = reduce(fresh(), { type: 'note', notes: 'first note' });
+        runner = reduce(reduce(runner, { type: 'next' }), { type: 'note', notes: 'second note' });
+        const next = reduce(runner, { type: 'attach', index: 0, name: 'a.png' });
+        expect(next.index).toBe(1);
+        expect(next.steps[0]?.notes).toBe('first note\n[[file:a.png]]');
+        expect(next.steps[1]?.notes).toBe('second note');
+    });
+
+    it('is ignored for a closed scenario and for a step that is not there', () => {
+        const closed = openRunner(scenario(['PASS'], { state: 'PASSED' }));
+        expect(reduce(closed, { type: 'attach', index: 0, name: 'a.png' })).toBe(closed);
+        const open = fresh();
+        expect(reduce(open, { type: 'attach', index: 9, name: 'a.png' })).toBe(open);
+    });
+
+    it('reaches the save in the note, so the doc records the name', () => {
+        const runner = reduce(fresh(2), { type: 'attach', index: 1, name: 'a.png' });
+        expect(saveRequest(runner).steps[1]?.notes).toBe('[[file:a.png]]');
+    });
+});

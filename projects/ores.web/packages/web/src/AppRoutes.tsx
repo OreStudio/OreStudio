@@ -54,6 +54,7 @@ import { DocPage } from './development/DocPage.js';
 import { ScenarioPage } from './development/ScenarioPage.js';
 import { OperationsArea } from './operations/OperationsArea.js';
 import { BusPage } from './operations/BusPage.js';
+import { EvolutionPage } from './market/EvolutionPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
@@ -546,6 +547,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <LogsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/market-data/evolution"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <EvolutionPage />
                     ),
                     'workspace',
                 )}

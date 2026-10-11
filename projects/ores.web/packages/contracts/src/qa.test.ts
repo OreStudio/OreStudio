@@ -20,7 +20,14 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { runRequestSchema, scenarioStateOf } from './qa.js';
+import {
+    IMAGE_MEDIA_TYPES,
+    MAX_IMAGE_BYTES,
+    imageUploadRequestSchema,
+    imageUploadResponseSchema,
+    runRequestSchema,
+    scenarioStateOf,
+} from './qa.js';
 
 describe('the state of a scenario from its steps', () => {
     it('stays pending while any step is pending', () => {
@@ -60,5 +67,38 @@ describe('a save', () => {
     it('carries no state and no time', () => {
         expect(runRequestSchema.safeParse({ steps: [step], state: 'PASSED' }).success).toBe(false);
         expect(runRequestSchema.safeParse({ steps: [step], completedAt: 'x' }).success).toBe(false);
+    });
+});
+
+describe('a screenshot upload', () => {
+    it('is a media type and the bytes in base64, and nothing else', () => {
+        expect(
+            imageUploadRequestSchema.safeParse({ mediaType: 'image/png', data: 'AAAA' }).success,
+        ).toBe(true);
+        expect(imageUploadRequestSchema.safeParse({ mediaType: 'image/png' }).success).toBe(false);
+        expect(
+            imageUploadRequestSchema.safeParse({ mediaType: 'image/png', data: '' }).success,
+        ).toBe(false);
+        expect(
+            imageUploadRequestSchema.safeParse({ mediaType: 'image/png', data: 'AAAA', name: 'x' })
+                .success,
+        ).toBe(false);
+    });
+
+    it('answers the name of the file', () => {
+        expect(imageUploadResponseSchema.parse({ name: 'a_step1_20261011_090000.png' }).name).toBe(
+            'a_step1_20261011_090000.png',
+        );
+    });
+
+    it('accepts four kinds of image and no SVG, within eight megabytes', () => {
+        expect([...IMAGE_MEDIA_TYPES]).toEqual([
+            'image/png',
+            'image/jpeg',
+            'image/gif',
+            'image/webp',
+        ]);
+        expect(IMAGE_MEDIA_TYPES).not.toContain('image/svg+xml');
+        expect(MAX_IMAGE_BYTES).toBe(8 * 1024 * 1024);
     });
 });

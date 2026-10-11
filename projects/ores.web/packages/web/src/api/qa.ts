@@ -20,6 +20,7 @@
  */
 
 import {
+    imageUploadResponseSchema,
     qaDocResponseSchema,
     runResponseSchema,
     scenarioListSchema,
@@ -30,6 +31,7 @@ import {
     type Scenario,
     type ScenarioSummary,
 } from '@ores/contracts';
+import { base64Of } from './base64.js';
 import { request } from './transport.js';
 
 /**
@@ -57,6 +59,21 @@ export const qa = {
         return qaDocResponseSchema.parse(
             await request(`/api/qa/docs/${encodeURIComponent(id)}`, { method: 'GET' }),
         ).doc;
+    },
+
+    /**
+     * Keep a screenshot of step number `step`, counted from one. It answers the
+     * name the server gave the file, which the step's note links to.
+     */
+    async uploadImage(id: string, step: number, file: Blob): Promise<string> {
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        return imageUploadResponseSchema.parse(
+            await request(`/api/qa/scenarios/${encodeURIComponent(id)}/steps/${step}/images`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mediaType: file.type, data: base64Of(bytes) }),
+            }),
+        ).name;
     },
 
     /** Save a run into a scenario. The server says whether the save closed it. */

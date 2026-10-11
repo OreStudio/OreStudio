@@ -153,6 +153,10 @@ inline std::chrono::system_clock::time_point timestamp_to_timepoint(const db_tim
  * keeps the sentinel in one place, so a caller never compares a timestamp with
  * it, and never reads the sentinel as the year 9999.
  *
+ * The sentinel is compared as text, before any conversion: a
+ * std::chrono::system_clock::time_point counts nanoseconds and cannot hold
+ * the year 9999, so converting the sentinel first would overflow.
+ *
  * @param valid_to The row's valid_to, as the entity holds it
  * @return The instant the row ended, or nothing while it is current
  *

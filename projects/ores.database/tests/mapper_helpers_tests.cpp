@@ -20,8 +20,8 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <chrono>
 
 namespace {
 
@@ -46,6 +46,5 @@ TEST_CASE("a_row_that_ended_has_the_instant_it_ended", tags) {
     const auto end = validity_end(ended.value());
     REQUIRE(end.has_value());
     CHECK(*end == timestamp_to_timepoint(ended.value()));
-    CHECK(std::chrono::duration_cast<std::chrono::seconds>(end->time_since_epoch()).count() ==
-          1791737570);
+    CHECK(ores::platform::time::datetime::to_iso8601_utc(*end) == "2026-10-11 16:52:50Z");
 }

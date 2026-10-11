@@ -87,7 +87,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A promise about the future in the Market data section | menu_structure.org | Accept | The sentence moved to Not built yet, so the area text describes only what exists. |
+| 2 | Uneven table padding in the task | task file | Decline | Org realigns tables on save. |
+| 3 | The Result relies on the earlier review task | task file | Accept | The Result now names that task and its PR. |
+| 4 | The Review table is empty | task file | Accept | Filled with these decisions. |
 
 * Result
 
@@ -97,6 +100,6 @@ The menu structure page has no open point. Two decisions are written where a rea
 - Market data is its own area, with a short section beside Reference data that gives the reason and the screens it holds.
 - The Trades area is listed under Not built yet.
 
-Evidence: the page publishes with no failure, and the code already follows it (the menu, the area cards and the addresses were checked in the review task).
+Evidence: the page publishes with no failure, and the code already follows it. The task "Review every card, breadcrumb and menu against the menu structure page" (PR 3142) checked the menu, the area cards and the addresses, and its table is the trace.
 
 Not done here: the test that walks every screen, which is the story's last task.

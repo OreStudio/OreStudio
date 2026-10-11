@@ -192,8 +192,7 @@ Market data is its own area. It holds data that changes by the minute: the feeds
 that generate prices and the curves built from them. Reference data is a list
 that changes by the month, and a person who looks for a curve does not look in
 it. It has two screens, FX price feeds and Watch a curve evolve, each drawn for a
-person who holds its read. Curve surfaces and the feeds of other kinds are added
-here when they have screens.
+person who holds its read.
 
 *** Reference data
 
@@ -327,6 +326,9 @@ The Trades area has journeys and prototypes and no web screens yet. The BFF has
 no trading route, and the trade list can filter only by trade id until the model
 declares the columns a person searches by. The area is in the menu order above,
 and it is drawn when its first screen exists and a person holds its read.
+
+Market data has no screen for curve surfaces or for feeds of other kinds yet.
+They are added to the Market data area when they have screens.
 
 ** Changing the menu
 

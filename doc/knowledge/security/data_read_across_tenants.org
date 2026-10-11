@@ -25,6 +25,8 @@ Do not share a row to avoid a token exchange. A service that needs the data of o
 
 1. *Owner.* A shared row has =tenant_id = system=. A table that holds both tenant rows and shared rows adds a boolean column =shared=, false by default. Only the seed sets it. A row is admitted by its owner and by the flag, so a later row of the system tenant stays hidden until a person sets the flag.
 2. *Policy.* One policy per command. The select policy admits the rows of the current tenant and the shared rows of the system tenant. The insert, update and delete policies admit only the current tenant. One =for all= policy is not enough, because it uses one =using= clause for select, update and delete, and a tenant could then change or remove a shared row. A restrictive policy, such as the party rule, must also pass the shared rows. A restrictive policy only narrows.
+
+   The generated delete rule needs the same care. A delete is a rule that closes the row, and the rule runs with the owner's rights, which row-level security does not bind. A tenant that reads a shared row could otherwise close it. The template adds =and tenant_id = ores_iam_current_tenant_id_fn()= to the delete rule of every entity that states =:system_tenant_visible: true=. The pgTAP test of the table proves it.
 3. *Read.* The model states =:system_tenant_visible: true= on its repository. The generated read then asks for the rows of the current tenant or of the system tenant. The policy decides which system rows return. A table whose rows are all shared states =:tenant_read_scope: shared= and the read has no tenant predicate. Writes stay in the own tenant.
 4. *Guard.* The read has a =:read= code, or an allow-list row with a reason, as the [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][authorised reads]] rules require.
 5. *Existence check.* A record that names a shared row, or a row the party rule hides, checks that it exists through a security definer function. The function returns yes or no and names no column. It takes the id and nothing else, and it takes the tenant from the session, so a caller cannot probe another tenant. It sets a fixed =search_path=. The grant is revoked from public and given to the service roles by name. The codegen map =EXISTENCE_FUNCTIONS= in =org_loader.py= names the function for each table, and the generated soft foreign key trigger calls it.
@@ -52,7 +54,7 @@ A person sees the accounts of the parties they have access to, the accounts of t
 
 - The rows belong to the system tenant, and no row holds private data.
 - The table has the column =shared= if it also holds tenant rows.
-- The policy is one per command, and every restrictive policy passes shared rows.
+- The policy is one per command, every restrictive policy passes shared rows, and the delete rule keeps to the own tenant.
 - The model states =:system_tenant_visible: true=, or =:tenant_read_scope: shared= if every row is shared.
 - The read has a read code or an allow-list row with a reason.
 - A record that names a row of the table checks it through an existence function, and the map =EXISTENCE_FUNCTIONS= names the function.

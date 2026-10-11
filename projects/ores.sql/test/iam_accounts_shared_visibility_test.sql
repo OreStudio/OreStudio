@@ -37,7 +37,7 @@
 
 begin;
 
-select plan(10);
+select plan(13);
 
 create temporary table t_other on commit drop as
 select id from ores_iam_tenants_tbl
@@ -73,6 +73,14 @@ limit 1;
 select set_config('app.current_tenant_id', coalesce((select id::text from t_other),
     ores_utility_system_tenant_id_fn()::text), true);
 select set_config('app.current_actor', '', true);
+
+create temporary table t_person on commit drop as
+select id from ores_iam_accounts_tbl
+where tenant_id = ores_iam_current_tenant_id_fn()
+  and not shared
+  and valid_to = ores_utility_infinity_timestamp_fn()
+order by username
+limit 1;
 
 -- The system tenant id in a write means the session tenant, so a tenant that
 -- states the system tenant still writes into its own.
@@ -133,6 +141,45 @@ select case when not exists(select 1 from t_other)
               and username = 'shared_probe_forged'),
            0,
            'a tenant writes no account for the system tenant'))
+    end;
+
+-- The party rule limits a person to the accounts of their parties. A shared
+-- account works in no party, so the rule passes it.
+select set_config('app.current_actor',
+    coalesce((select username from ores_iam_accounts_tbl
+              where tenant_id = ores_iam_current_tenant_id_fn() and not shared
+                and valid_to = ores_utility_infinity_timestamp_fn()
+              order by username limit 1), ''),
+    true);
+
+select case when not exists(select 1 from t_other)
+    then skip('no other active tenant is provisioned', 1)
+    else ok(exists(select 1 from ores_iam_accounts_tbl
+                   where tenant_id = ores_utility_system_tenant_id_fn()
+                     and account_type = 'service'),
+            'a person of a tenant reads the shared accounts whatever their parties')
+    end;
+
+-- A service works in no party, so the party rule hides every person from it.
+-- A record that names a person still finds the person through the existence
+-- function. This is the inbox service writing a notice to a person.
+select set_config('app.current_actor',
+    coalesce((select username from ores_iam_accounts_tbl
+              where tenant_id = ores_utility_system_tenant_id_fn()
+                and account_type = 'service' and shared
+                and valid_to = ores_utility_infinity_timestamp_fn()
+              order by username limit 1), ''),
+    true);
+
+select case when not exists(select 1 from t_other)
+    then skip('no other active tenant is provisioned', 2)
+    else collect_tap(
+        is((select count(*)::int from ores_iam_accounts_tbl
+            where tenant_id = ores_iam_current_tenant_id_fn() and not shared),
+           0,
+           'a service acting in a tenant reads no person of the tenant'),
+        ok(ores_iam_account_exists_fn((select id from t_person)),
+           'a service acting in a tenant finds a person through the existence check'))
     end;
 
 select * from finish();

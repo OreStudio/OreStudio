@@ -29,6 +29,7 @@ import type {
 } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { useAreaRoot } from '../shell/AreaTrail.js';
 import { Button, Dialog, Field, Input, Notice } from '../ui/Primitives.js';
 import { HistoryPanel, fieldValue } from './HistoryPanel.js';
 import {
@@ -113,7 +114,7 @@ function RowBody({
         <div className="space-y-4">
             <RecordHeader
                 crumbs={[
-                    { label: t('refdata.area.title'), to: '/refdata' },
+                    ...useAreaRoot('refdata'),
                     { label: t('refdata.classifications.title'), to: classificationsPath() },
                     { label: title, to: classificationsPath(list.key) },
                     { label: row.code },

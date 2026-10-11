@@ -29,6 +29,8 @@ import { AccountPicture } from '../ui/Images.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 import { PersonRef } from '../access/PersonRef.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
+import { RefreshQueries } from '../ui/RefreshButton.js';
 import { useHolds } from '../access/holds.js';
 import { MyRequests } from './MyRequests.js';
 import { RequestStateChip } from './RequestStateChip.js';
@@ -58,9 +60,11 @@ export function RequestsPage(): ReactNode {
     const mayDecide = useHolds()('iam::roles:assign');
     return (
         <div className="space-y-6">
+            <AreaTrail area="requests" />
             <PageHeader
                 title={t('inbox.queue.title')}
                 description={mayDecide ? t('inbox.queue.lead') : t('inbox.mine.lead')}
+                actions={<RefreshQueries keys={[['my-requests'], ['request-queue']]} />}
             />
             <MyRequests showEmpty />
             {mayDecide && <Queue />}

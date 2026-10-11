@@ -113,6 +113,33 @@ export function PersonRef({ who }: { readonly who: string }): ReactNode {
     );
 }
 
+/** The marker that stands for the nth name in a translated phrase until the name is drawn. */
+export function slot(index: number): string {
+    return String.fromCharCode(1 + index);
+}
+
+/**
+ * A translated phrase with names in it, such as "Modified by {who}", where each
+ * name is drawn as a link and not as text. Ask the phrase for `slot(0)`,
+ * `slot(1)` and so on, and give the names in the same order.
+ */
+export function Phrase({
+    text,
+    names,
+}: {
+    readonly text: string;
+    readonly names: readonly ReactNode[];
+}): ReactNode {
+    return (
+        <>
+            {text.split(/([\u0001-\u0009])/).map((piece, index) => {
+                const named = piece.length === 1 ? names[piece.charCodeAt(0) - 1] : undefined;
+                return <span key={index}>{named ?? piece}</span>;
+            })}
+        </>
+    );
+}
+
 /**
  * The picture a person who wrote something is drawn with: the address of their
  * picture, or null for their initials. A name the directory cannot resolve, such

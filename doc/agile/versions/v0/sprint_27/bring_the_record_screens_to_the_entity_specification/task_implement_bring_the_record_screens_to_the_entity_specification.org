@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 37289A3C-DEA7-4D6D-8E53-697241E3D201
+:END:
+#+title: Task: Check the existing screens against the specification and fix them
+#+description: Initial task for: Bring the existing screens to the entity screen specification
+#+type: task
+#+level: s1
+#+filetags: :bring_the_record_screens_to_the_entity_specification:sprint_27:v0:
+#+owner: marco
+#+branch: feature/implement-bring-the-record-screens-to-the-entity-specification
+#+pr: 3087
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21546E45-9DD3-4406-B5EB-86C87C88524D][Bring the existing screens to the entity screen specification]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every existing screen follows the entity screen specification: paging on the server, people as links, history as a timeline, edit in a dialog, flags, states and words.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:21546E45-9DD3-4406-B5EB-86C87C88524D][Bring the existing screens to the entity screen specification]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- Each existing screen is checked against the specification, and each difference is fixed or recorded as a follow-up.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3087][#3087]] | [web] Bring the existing screens to the entity screen specification |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

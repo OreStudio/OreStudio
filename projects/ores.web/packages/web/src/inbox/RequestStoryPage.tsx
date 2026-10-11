@@ -21,7 +21,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { Link, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import type { InboxStoryEvent } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
@@ -30,6 +30,7 @@ import { formatDateTime } from '../ui/Time.js';
 import { PersonRef, useActorPictures } from '../access/PersonRef.js';
 import { AccountPicture } from '../ui/Images.js';
 import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
 import { Timeline, kindTone } from '../timeline/Timeline.js';
 
 /**
@@ -47,7 +48,7 @@ import { Timeline, kindTone } from '../timeline/Timeline.js';
  * where the answer was given, and the screen says so rather than letting the
  * request look as if it went straight from waiting to answered.
  */
-export function RequestStoryPage({ me }: { readonly me: string }): ReactNode {
+export function RequestStoryPage(): ReactNode {
     const actorPicture = useActorPictures();
     const { t, language } = useTranslation();
     const { id = '' } = useParams();
@@ -77,22 +78,19 @@ export function RequestStoryPage({ me }: { readonly me: string }): ReactNode {
     // between a story with a hole in it and a story that lies.
     const answered = request.stateCode !== 'waiting' && request.stateCode !== 'held';
     const showsAnswer = events.some((event) => event.kind === 'decided');
-    const mine = request.requestedBy === me;
 
     return (
         <div className="space-y-6">
-            <nav className="flex items-center gap-2 text-sm text-ink-muted">
-                {/* Back to where this reader works. A member has no queue and
-                    an empty one would send them nowhere, so their own request
-                    goes back to the screen that lists their own requests. */}
-                <Link to={mine ? '/access' : '/requests'} className="hover:text-ink">
-                    {mine ? t('shell.menu.access') : t('inbox.queue.title')}
-                </Link>
-                <span aria-hidden>/</span>
-                <Link to={`/requests/${encodeURIComponent(id)}`} className="hover:text-ink">
-                    {t('inbox.request.title', { role: askedFor(t, request) })}
-                </Link>
-            </nav>
+            <AreaTrail
+                area="requests"
+                steps={[
+                    {
+                        label: t('inbox.request.title', { role: askedFor(t, request) }),
+                        to: `/requests/${encodeURIComponent(id)}`,
+                    },
+                ]}
+                screen={t('inbox.story.request')}
+            />
 
             <PageHeader
                 title={t('inbox.story.title', { role: askedFor(t, request) })}

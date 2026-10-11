@@ -567,7 +567,7 @@ describe('the story of one request', () => {
                 client.setQueryData(['request', REQUEST], queued({ stateCode, requestedBy }));
                 client.setQueryData(['request-story', REQUEST], { requestId: REQUEST, events });
             },
-            <RequestStoryPage me={me} />,
+            <RequestStoryPage />,
             `/requests/${REQUEST}/story`,
             '/requests/:id/story',
         );
@@ -619,12 +619,10 @@ describe('the story of one request', () => {
         expect(html).toContain('the answer is not yours to read');
     });
 
-    it('sends a member back to their own access, not to a queue they do not have', () => {
-        const member = story(versions(), 'approved', 'daniel', 'daniel');
-        expect(member).toContain('href="/access"');
-        expect(member).toContain('My access');
-
-        const administrator = story(versions());
-        expect(administrator).toContain('href="/requests"');
+    it('gives a member and an administrator the same trail, through Requests', () => {
+        for (const html of [story(versions(), 'approved', 'daniel', 'daniel'), story(versions())]) {
+            expect(html).toContain('href="/requests"');
+            expect(html).toContain('href="/"');
+        }
     });
 });

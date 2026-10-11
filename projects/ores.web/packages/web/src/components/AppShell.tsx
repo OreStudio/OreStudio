@@ -19,7 +19,7 @@
  *
  */
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink } from 'react-router';
 import type { Account, SessionMode } from '@ores/wire-protocol/browser';
 import type { EnvironmentView } from '@ores/contracts';
@@ -27,9 +27,11 @@ import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { Button } from '../ui/Primitives.js';
+import { useDismiss } from '../ui/useDismiss.js';
 import { useHeld } from '../access/holds.js';
 import { displayName } from '../access/names.js';
 import { NotificationBell } from '../inbox/NotificationBell.js';
+import { AccessNotice } from '../shell/AccessNotice.js';
 import { MENU, modeKey, offered } from '../shell/areas.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
 import { VersionFooter } from './VersionFooter.js';
@@ -168,7 +170,10 @@ export function AppShell({
              * screen looks the same either side of the door.
              */}
             <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8">
-                <div className={`mx-auto w-full ${SHELL_WIDTHS[width]}`}>{children}</div>
+                <div className={`mx-auto w-full ${SHELL_WIDTHS[width]}`}>
+                    <AccessNotice />
+                    {children}
+                </div>
             </main>
             <VersionFooter
                 serverVersion={serverVersion}
@@ -211,25 +216,8 @@ function AccountMenu({
     const name = displayName(self, username);
     const photo = self == null ? undefined : self.imageId === null ? null : imageUrl(self.imageId);
 
-    useEffect(() => {
-        if (!open) return undefined;
-        const outside = (event: MouseEvent) => {
-            if (root.current !== null && !root.current.contains(event.target as Node)) {
-                setOpen(false);
-            }
-        };
-        const escape = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') setOpen(false);
-        };
-        document.addEventListener('mousedown', outside);
-        document.addEventListener('keydown', escape);
-        return () => {
-            document.removeEventListener('mousedown', outside);
-            document.removeEventListener('keydown', escape);
-        };
-    }, [open]);
-
-    const close = () => setOpen(false);
+    const close = useCallback(() => setOpen(false), []);
+    useDismiss(root, open, close);
     const item = 'block rounded px-2 py-1.5 text-sm text-ink hover:bg-surface-hover';
 
     return (

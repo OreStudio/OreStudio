@@ -41,7 +41,7 @@ import { useEntityChangeEvents } from '../events/EntityEvents.js';
 import { NewerVersionNotice, useNewerVersion } from './newerVersion.js';
 import { useRecordEdit, type EditOutcome } from './useRecordEdit.js';
 import { displayName } from './names.js';
-import { personPath } from './PeoplePage.js';
+import { personPath } from '../shell/paths.js';
 import { useHolds, usePermissions } from './holds.js';
 import { PERMISSION } from './permissions.js';
 /**

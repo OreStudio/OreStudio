@@ -28,9 +28,9 @@ A report definition is ready to run only when every configuration document its r
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
-| Now          | Not yet started.                       |
+| Now          | Phase A under way: staging and publish exist for the three documents, bindings publish, and ACME pricing engines publish. Today's market and curve content are not written. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Prove the pricing engines publish through a provision, then craft today's market and curve configuration for each entity, the conventions binding, and the risk configurations. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -82,7 +82,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Pricing engines documents after a clean provision | One header, its products and its parameters, and one reporting configuration, for each of the four parties | =compass sql= counts of the analytics tables and of the reporting configurations, by party, after =compass db recreate -y -k= and =bootstrap setup --profile acme_demo= | the commit that adds the publish |
+| Definitions bound to their pricing engines | Every definition of every party: group 10, UK 24, US 22, HK 22 | the same query on the report configurations table | the same commit |
 
 * Notes
 

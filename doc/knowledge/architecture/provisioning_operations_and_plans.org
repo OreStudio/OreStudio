@@ -80,6 +80,27 @@ dataset through that party's bundle. The Acme demo does this, because a real gro
 do not run the same reports. The tier and jurisdiction qualifiers cannot express such a design,
 because the entities share a tier and differ in the desks they run.
 
+** A configuration document is published whole, and bound by name
+A report configuration document is a header and the rows that reference it: a pricing engines
+document, a today's market document, a curve configuration. A dataset stages the whole document, one
+staging table for each live table. One shared publish copies the staged rows into the live tables for
+the party a publish names, and a thin function for each document says which tables it spans and in
+which order.
+
+Every party gets the same staged document, and a live id is unique in a tenant, so the publish maps a
+staged id to a live id that depends on the party. The map depends on the staged id and the party and
+nothing else. A reference between two rows of the document therefore needs no lookup, and a republish
+finds the rows it wrote. The publish also writes the reporting configuration that the header names,
+because a definition binds the reporting configuration and the owner of the document finds the document
+through it.
+
+A definition binds its documents by name. The dataset that stages the definitions stages the bindings
+beside them, each naming a definition and a document, and the definitions publish resolves the names
+for the party. The documents are therefore published before the definitions, and the definitions
+dataset declares its dependency on them. A binding to a document that does not exist is not written and
+is counted as skipped. A binding to the conventions creates the conventions configuration it names,
+because the conventions have no document of their own.
+
 * See also
 
 - [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the structure note that orders this cluster, and where to read this page in it.

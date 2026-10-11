@@ -502,12 +502,11 @@ bool account_operations_service::unlock_account(const boost::uuids::uuid& accoun
     BOOST_LOG_SEV(lg(), info) << "Account unlocked: " << boost::uuids::to_string(account_id);
 
     login_info_repo_.write(ctx_, login_info);
-    record_lock_event(false,
-                      accounts.front(),
-                      detail.empty() ? std::format("{} failed attempts cleared", failed_before)
-                                     : std::format("{}; {} failed attempts cleared",
-                                                   detail,
-                                                   failed_before));
+    const auto cleared = failed_before == 0 ? std::string() : std::format(
+        "{} failed attempts cleared", failed_before);
+    const auto joined = detail.empty() || cleared.empty() ? detail + cleared
+                                                          : detail + "; " + cleared;
+    record_lock_event(false, accounts.front(), joined);
     return true;
 }
 

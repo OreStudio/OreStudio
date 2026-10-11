@@ -725,6 +725,25 @@ TEST_CASE("unlock_account_records_an_event_with_the_attempts_it_cleared", tags) 
     CHECK(events.front().error_detail == "Unlocked by an administrator; 5 failed attempts cleared");
 }
 
+TEST_CASE("unlock_after_a_manual_lock_leaves_the_attempt_count_out", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto account = generate_synthetic_account(ctx);
+    const auto generated = sut.create_account(
+        account.username, account.email, faker::internet::password(), account.modified_by);
+
+    sut.lock_account(generated.id);
+    sut.unlock_account(generated.id, "Unlocked by an administrator");
+
+    const auto events = lock_events(h.context(), generated.id, "account_unlocked");
+    REQUIRE(events.size() == 1);
+    CHECK(events.front().error_detail == "Unlocked by an administrator");
+}
+
 TEST_CASE("unlocking_an_account_that_is_not_locked_records_nothing", tags) {
     auto lg(make_logger(test_suite));
 

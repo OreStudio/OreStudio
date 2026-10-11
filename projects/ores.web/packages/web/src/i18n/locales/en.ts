@@ -1257,6 +1257,10 @@ export const en: SourceCatalogue = {
             noDone: 'No task has a finish date yet.',
         },
         board: {
+            current: 'Current',
+            trees: 'Work trees',
+            idle: 'Idle',
+            thisTree: 'This tree',
             search: 'Search stories, tasks, environments',
             searchLabel: 'Search the board',
             clear: 'Clear',

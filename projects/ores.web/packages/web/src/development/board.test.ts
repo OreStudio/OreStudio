@@ -20,9 +20,17 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { AgileStory, Board } from '@ores/contracts';
-import { columnOf, columnsOf, percentOfTasks, shownDay, visibleStories } from './board.js';
-import { story } from './boardFixture.js';
+import type { AgileStory, Board, WorkTree } from '@ores/contracts';
+import {
+    columnOf,
+    columnsOf,
+    currentStoryId,
+    percentOfTasks,
+    shortTitle,
+    shownDay,
+    visibleStories,
+} from './board.js';
+import { board as boardOf, story } from './boardFixture.js';
 
 describe('columnOf', () => {
     it('puts a discovered story with the backlog and leaves the others', () => {
@@ -101,5 +109,55 @@ describe('percentOfTasks', () => {
     it('rounds the share done and is zero without tasks', () => {
         expect(percentOfTasks(story({ progress: { done: 1, total: 3, abandoned: 0 } }))).toBe(33);
         expect(percentOfTasks(story({ progress: { done: 0, total: 0, abandoned: 0 } }))).toBe(0);
+    });
+});
+
+describe('currentStoryId', () => {
+    const tree = (over: Partial<WorkTree> = {}): WorkTree => ({
+        label: 'eager_maxwell',
+        branch: 'feature/x',
+        isSession: true,
+        current: null,
+        ...over,
+    });
+    const journal = (storyId: string): WorkTree['current'] => ({
+        storyId,
+        storyTitle: '',
+        taskId: '',
+        taskTitle: '',
+        state: 'STARTED',
+        branch: '',
+        pr: 0,
+    });
+    const stories = [
+        story({ id: 'A', updated: '2026-10-01', tasks: [{ branch: 'feature/x' }] }),
+        story({ id: 'B', updated: '2026-10-05', tasks: [{ branch: 'feature/x' }] }),
+        story({ id: 'C', tasks: [{ branch: 'feature/other' }] }),
+    ];
+    const board = boardOf(stories);
+
+    it('takes the journal story when the board has it', () => {
+        expect(currentStoryId(board, [tree({ current: journal('C') })])).toBe('C');
+    });
+
+    it('falls back to the story with a task on the branch, the latest update first', () => {
+        expect(currentStoryId(board, [tree()])).toBe('B');
+        expect(currentStoryId(board, [tree({ current: journal('NOT-HERE') })])).toBe('B');
+    });
+
+    it('is null for a tree with no branch, a branch no task has, or no session tree', () => {
+        expect(currentStoryId(board, [tree({ branch: '' })])).toBeNull();
+        expect(currentStoryId(board, [tree({ branch: 'feature/none' })])).toBeNull();
+        expect(currentStoryId(board, [tree({ isSession: false })])).toBeNull();
+        expect(currentStoryId(board, [])).toBeNull();
+    });
+});
+
+describe('shortTitle', () => {
+    it('keeps a short title and cuts a long one with an ellipsis inside the limit', () => {
+        expect(shortTitle('Short')).toBe('Short');
+        const cut = shortTitle('A very long task title that does not fit', 10);
+        expect(cut).toHaveLength(10);
+        expect(cut.endsWith('…')).toBe(true);
     });
 });

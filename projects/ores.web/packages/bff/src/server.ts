@@ -42,6 +42,7 @@ import { registerQaRoutes } from './qa.js';
 import { registerAgileRoutes } from './agile-routes.js';
 import { FileAgileStore } from './agile/file-agile-store.js';
 import type { AgileStore } from './agile/agile-store.js';
+import { GitWorkTreeSource, type WorkTreeSource } from './agile/work-trees.js';
 import { FileScenarioStore } from './scenarios/file-scenario-store.js';
 import type { ScenarioStore } from './scenarios/scenario-store.js';
 import { startHeartbeat } from './heartbeat.js';
@@ -338,6 +339,8 @@ export interface ServerDependencies {
      * browser is off.
      */
     readonly agile?: AgileStore;
+    /** Where the agile browser reads the work trees. Absent, git is asked from `config.docRoot`. */
+    readonly workTrees?: WorkTreeSource;
 }
 
 export function buildServer(dependencies: ServerDependencies): FastifyInstance {
@@ -2667,6 +2670,8 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         dependencies.agile ??
             (config.docRoot === undefined ? undefined : new FileAgileStore(config.docRoot)),
         scenarioStore === undefined ? undefined : (id) => scenarioStore.readDoc(id),
+        dependencies.workTrees ??
+            (config.docRoot === undefined ? undefined : new GitWorkTreeSource(config.docRoot)),
     );
     registerAuditRoutes(server, requireSession);
     registerTimelineRoutes(server, requireSession);

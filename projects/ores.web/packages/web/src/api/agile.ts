@@ -23,11 +23,13 @@ import {
     agileDocResponseSchema,
     backlogSchema,
     chartsResponseSchema,
+    workTreesResponseSchema,
     boardResponseSchema,
     sprintListSchema,
     type Backlog,
     type Board,
     type Charts,
+    type WorkTree,
     type QaDoc,
 } from '@ores/contracts';
 import { request } from './transport.js';
@@ -65,6 +67,12 @@ export const agile = {
         return chartsResponseSchema.parse(
             await request(`/api/agile/charts${query}`, { method: 'GET' }),
         ).charts;
+    },
+
+    /** Every work tree of the repository and the work item each is on. */
+    async trees(): Promise<readonly WorkTree[]> {
+        return workTreesResponseSchema.parse(await request('/api/agile/trees', { method: 'GET' }))
+            .trees;
     },
 
     /** The four backlog buckets, each newest first. */

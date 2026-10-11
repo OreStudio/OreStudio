@@ -277,12 +277,31 @@ export const AREA_CARDS = {
 
 export type CardArea = keyof typeof AREA_CARDS;
 
+/** The address of each area's page, which is also the start of every address inside it. */
+export const AREA_PAGE: Record<CardArea, string> = {
+    refdata: PATHS.refdata,
+    organisation: PATHS.organisation,
+    marketdata: '/market-data',
+    operations: PATHS.operations,
+    tenants: '/tenants',
+};
+
 /** The cards of a person's own account, which Home offers beside the areas. */
 export const ACCOUNT_CARDS: readonly CardId[] = ['myAccess', 'security'];
 
 /** The definition of one card. */
 export function cardOf(id: CardId): CardDef {
     return CARDS[id];
+}
+
+/**
+ * The area a card's screen belongs to. A workflow listed on the screen it acts
+ * on has no area page of its own, so its area is that screen's. A card of a
+ * person themselves has none.
+ */
+export function screenAreaOf(id: CardId): CardArea | undefined {
+    const on = (CARDS[id] as CardDef).on;
+    return areaOfCard(id) ?? (on === undefined ? undefined : areaOfCard(on as CardId));
 }
 
 /** The area whose page draws this card, or undefined for a card outside the areas. */

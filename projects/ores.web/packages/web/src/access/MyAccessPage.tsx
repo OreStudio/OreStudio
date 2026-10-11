@@ -27,6 +27,7 @@ import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { AccountPicture } from '../ui/Images.js';
 import { PageTrail } from '../shell/AreaTrail.js';
+import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Button, Notice, PageHeader } from '../ui/Primitives.js';
 import { areasOf, countCovered, grantedBy } from './catalogue.js';
 import { CanIPanel, RolesAllow } from './Allowances.js';
@@ -55,14 +56,21 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
     const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
     const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
 
-    if (access.isPending || catalogue.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (access.isError) {
-        return <Notice tone="error">{access.error.message}</Notice>;
-    }
-    if (catalogue.isError) {
-        return <Notice tone="error">{catalogue.error.message}</Notice>;
+    if (access.isPending || catalogue.isPending || access.isError || catalogue.isError) {
+        const failure = access.error ?? catalogue.error;
+        return (
+            <ScreenFrame
+                trail={<PageTrail screen={t('access.mine.title')} />}
+                title={t('access.mine.title')}
+                description={t('access.mine.lead', { tenant: tenantName })}
+            >
+                {failure !== null ? (
+                    <Notice tone="error">{failure.message}</Notice>
+                ) : (
+                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                )}
+            </ScreenFrame>
+        );
     }
     const roles = access.data.roles;
     const granted = grantedBy(roles);

@@ -1599,6 +1599,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'compute::grid_samples:read', 'View the compute grid statistics');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::curve_snapshots:read', 'View curve snapshots and their buckets');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::job_instances:read', 'View job instances and the scheduler status');
+
+    -- =============================================================================
+    -- Installation Permissions
+    -- =============================================================================
+    -- A session that acts on the deployment as a whole, across every tenant. The
+    -- wildcard '*' does not cover an installation code, so a tenant's
+    -- administrator, who holds '*', does not hold this. Only the code itself or
+    -- 'installation::*' grants it.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'installation::deployment:read', 'View the deployment as a whole: its tenants, services, grid, message bus and logs');
 END $$;
 
 

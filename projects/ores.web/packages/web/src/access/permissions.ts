@@ -44,6 +44,7 @@ export const PERMISSION = {
     rolesRead: 'iam::roles:read',
     rolesAssign: 'iam::roles:assign',
     sessionsRead: 'iam::sessions:read',
+    deploymentRead: 'installation::deployment:read',
 } as const;
 
 export type Permission = (typeof PERMISSION)[keyof typeof PERMISSION];

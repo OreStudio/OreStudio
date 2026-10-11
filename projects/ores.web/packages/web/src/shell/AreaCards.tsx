@@ -28,12 +28,12 @@ import { MENU, offered } from './areas.js';
 import { ACCOUNT_CARDS, AREA_CARDS, FOLDERS, cardOf, type CardArea, type CardId } from './cards.js';
 
 /** The cards of one list that this person is offered, named and worded in their language. */
-function useTiles(ids: readonly CardId[], mode: SessionMode): readonly Tile[] {
+function useTiles(ids: readonly CardId[]): readonly Tile[] {
     const { t } = useTranslation();
     const holds = useHeld();
     return ids
         .map(cardOf)
-        .filter((card) => offered(card, holds, mode))
+        .filter((card) => offered(card, holds))
         .map((card) => ({
             title: t(card.titleKey),
             body: t(card.bodyKey),
@@ -48,15 +48,9 @@ function useTiles(ids: readonly CardId[], mode: SessionMode): readonly Tile[] {
  * open, packed close together, with no headings. A workflow card is told from a
  * screen card by its hue and its tag.
  */
-export function AreaCards({
-    area,
-    mode,
-}: {
-    readonly area: CardArea;
-    readonly mode: SessionMode;
-}): ReactNode {
+export function AreaCards({ area }: { readonly area: CardArea }): ReactNode {
     const ids: readonly CardId[] = AREA_CARDS[area];
-    return <Tiles tiles={useTiles(ids, mode)} dense />;
+    return <Tiles tiles={useTiles(ids)} dense />;
 }
 
 /**
@@ -64,12 +58,12 @@ export function AreaCards({
  * the order of the menu, then the cards of their own account. A folder card
  * opens its area, whose page draws the file cards of the screens in it.
  */
-export function ActiveCards({ mode }: { readonly mode: SessionMode }): ReactNode {
+export function ActiveCards(): ReactNode {
     const { t } = useTranslation();
     const holds = useHeld();
     const folders: Tile[] = MENU.flatMap((entry) => {
         const folder = FOLDERS.find((candidate) => candidate.to === entry.to);
-        return folder !== undefined && offered(entry, holds, mode)
+        return folder !== undefined && offered(entry, holds)
             ? [
                   {
                       title: t(entry.nameKey),
@@ -80,6 +74,6 @@ export function ActiveCards({ mode }: { readonly mode: SessionMode }): ReactNode
               ]
             : [];
     });
-    const account = useTiles(ACCOUNT_CARDS, mode);
+    const account = useTiles(ACCOUNT_CARDS);
     return <Tiles tiles={[...folders, ...account]} />;
 }

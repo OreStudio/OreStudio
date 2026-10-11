@@ -3553,6 +3553,8 @@ const pt: SourceCatalogue = {
         rolesRead: 'ler os papéis e as suas permissões',
         rolesAssign: 'atribuir papéis às pessoas',
         sessionsRead: 'ler as sessões das pessoas',
+        deploymentRead:
+            'ver toda a implantação: os seus inquilinos, serviços, grelha, barramento de mensagens e registos',
         curveSnapshotsRead: 'ver as curvas de dados de mercado',
         fxFeedsRead: 'ver os fluxos de preços FX sintéticos',
     },

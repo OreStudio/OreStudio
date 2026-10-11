@@ -98,7 +98,7 @@ export function AppShell({
 }: AppShellProps): ReactNode {
     const { t } = useTranslation();
     const holds = useHeld();
-    const menu = MENU.filter((item) => offered(item, holds, mode));
+    const menu = MENU.filter((item) => offered(item, holds));
 
     return (
         <div className="flex min-h-full flex-col bg-bg-primary">

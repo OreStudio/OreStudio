@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :draw_the_menu_by_reads_alone:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-draw-the-menu-by-reads-alone
+#+pr: 3145
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:402E9624-50BC-4ABE-B65D-2C0E34764E48][Draw the menu by reads alone]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The installation screens (Tenants, Services, Grid, Message queue and Logs) are d
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:402E9624-50BC-4ABE-B65D-2C0E34764E48][Draw the menu by reads alone]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -43,6 +43,11 @@ The installation screens (Tenants, Services, Grid, Message queue and Logs) are d
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Name the read =installation::deployment:read=, in a component the wildcard =*= does not cover, so a tenant's administrator does not hold it. Grant it to the super administrator role by name.
+- State the rule once for the services (=grants= in =ores.security=) and once for the browser and the BFF (=permissionCovers= in =@ores/contracts=), with the same tests.
+- The BFF refuses a deployment route by that read, read from the caller's roles on each call, and no longer by the session mode.
+- The menu and the cards ask for the read and no longer take a scope or a mode. The page states the rule.
 
 * Measurements
 
@@ -60,6 +65,12 @@ task and name that file in the Command column.
 
 * Notes
 
+- The BFF reads the caller's roles for each guarded call, one more NATS read each time. A grant the caller lost stops the next read. If this shows up in a profile, the roles can be cached for a short time.
+- The services behind these routes (tenant list, telemetry, grid) still check their own permissions or none. The BFF is the guard this task adds, as the mode guard was. A service-side check of the new read is a separate piece of work.
+- Seven BFF guards changed: the tenant list, one tenant, a tenant's inside reads, the overview, a tenant's removal, and the four Operations reads. A tenant's parties route keeps its refusal of system administration, which is a different rule.
+- =actsOnDeployment=, the =scope= field of a menu entry or card, and the =mode= props of the area pages are gone.
+- The fake clients in five BFF test files now answer the caller's roles: the deployment read for a system administration session, and =*= for any other, which is the case that must be refused.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -75,12 +86,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3145][#3145]] | [web,iam] Draw the installation screens by a read of their own |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Other C++ checks treat * as full cover | authorization_service.cpp, accounts_commands.cpp | Accept in part | The two checks in the IAM service that say which roles grant a code now leave an installation code out of *. The shell's account listing only prints "all permissions" for *, grants nothing, and is left. |
+| 2 | A read permission gates the tenant removal route | server.ts | Decline | The tenant service checks iam::tenants:delete of its own, so the read only says the caller acts on the deployment. A comment on the route says so. |
+| 3 | One extra round trip on every deployment call | deployment-access.ts | Decline | Kept on purpose, so a lost grant stops the next read. A cache can come if a profile shows the cost. |
+| 4 | Existing databases need the grant | populate scripts | Decline | The project builds its database from the create and populate scripts, with no migration step, so a deployed database is recreated, or the idempotent populate scripts are run again. |
+| 5 | The C++ cases were not run | authorization_grants_tests.cpp | Accept | Run from a direct compile: 7 cases pass. |
+| 6 | Pin holdsFrom for an installation code | permissions.test.ts | Accept | A case holds that * does not hold the read and installation::* does. |
 
 * Result
+
+The installation screens are drawn and served by a read of their own.
+
+- =installation::deployment:read= is seeded and granted to the super administrator role by name. The wildcard =*= does not cover it, in the services, the BFF and the browser.
+- Tenants and the Running services, Compute grid, Message bus and Telemetry logs cards ask for it. The BFF refuses the routes behind them without it.
+- The menu structure page states the rule and its table of differences is empty. The role-based access control page states the exception to the wildcard.
+
+Evidence: the BFF suite (62 files, 674 tests) and the web suite (105 files, 1148 tests) pass with new cases for the wildcard exclusion, the typechecks and Prettier are clean, the permission is present and granted after a database recreate, and the populate reference and handler permission checks pass.
+
+The two new cases for the C++ rule were run from a direct compile of =authorization_grants_tests.cpp= against the build's Catch2 (7 cases, 14 assertions pass), not through the queued cmake target. The edited IAM service file passes a syntax check with the build's own flags.
+
+Not done here: a service-side check of the new read, and a test that signs in as a tenant administrator against a running stack.

@@ -70,11 +70,7 @@ export function TenantRunPage(): ReactNode {
         <div>
             <Crumbs parts={[...root, { label: title }]} />
             <PageHeader
-                title={
-                    tenant === undefined
-                        ? t('tenants.run.unknownTenant')
-                        : t('tenants.run.title', { name: tenant.name })
-                }
+                title={title}
                 description={t('tenants.run.lead')}
                 actions={
                     <LinkButton to="/tenants" variant="secondary">

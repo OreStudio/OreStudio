@@ -38,12 +38,13 @@ import { SignInsPanel } from './SignIns.js';
  */
 export function TenantAccountPage(): ReactNode {
     const { code = '', username = '' } = useParams();
+    const root = useAreaRoot('tenants');
 
     return (
         <div className="space-y-6">
             <Crumbs
                 parts={[
-                    ...useAreaRoot('tenants'),
+                    ...root,
                     { label: code, to: `/tenants/${encodeURIComponent(code)}?tab=people` },
                     { label: username },
                 ]}

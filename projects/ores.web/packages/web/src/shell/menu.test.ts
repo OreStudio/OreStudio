@@ -21,7 +21,16 @@
 
 import { describe, expect, it } from 'vitest';
 import { MENU } from './areas.js';
-import { FOLDERS } from './cards.js';
+import { AREA_CARDS, FOLDERS, cardOf, type CardArea, type CardId } from './cards.js';
+import { PATHS } from './paths.js';
+
+const AREA_PATH: Record<CardArea, string> = {
+    refdata: PATHS.refdata,
+    organisation: PATHS.organisation,
+    marketdata: '/market-data',
+    operations: PATHS.operations,
+    tenants: '/tenants',
+};
 
 /**
  * The menu is one list, in the order the Menu structure page gives: Home,
@@ -45,9 +54,34 @@ describe('the menu', () => {
     });
 
     it('is drawn on Home as one folder card for each entry but Home, in the same order', () => {
-        const entries = paths.filter((path) => path !== '/');
+        const homed = paths.filter((path) => FOLDERS.some((folder) => folder.to === path));
 
-        expect(FOLDERS.map((folder) => folder.to).sort()).toEqual([...entries].sort());
+        expect(homed).toEqual(paths.filter((path) => path !== '/'));
+        expect(FOLDERS.map((folder) => folder.to)).toEqual(homed);
+    });
+
+    it('asks of an area the reads its cards ask, where the menu names any', () => {
+        const mismatches = Object.entries(AREA_CARDS).flatMap(([area, ids]) => {
+            const entry = MENU.find((item) => item.to === AREA_PATH[area as CardArea]);
+            if (entry?.permission === undefined) {
+                return [];
+            }
+            const ofMenu = [entry.permission].flat().sort();
+            const ofCards = [
+                ...new Set(
+                    (ids as readonly CardId[]).flatMap((id) =>
+                        [cardOf(id).permission ?? []].flat(),
+                    ),
+                ),
+            ].sort();
+            return JSON.stringify(ofMenu) === JSON.stringify(ofCards)
+                ? []
+                : [
+                      `${area}: the menu asks ${ofMenu.join(', ')} but the cards ask ${ofCards.join(', ')}`,
+                  ];
+        });
+
+        expect(mismatches).toEqual([]);
     });
 
     it('lists no address twice', () => {

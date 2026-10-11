@@ -115,7 +115,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The menu test says "in the same order" but sorts both lists | menu.test.ts | Accept | It now compares the order of the two lists directly. |
+| 2 | The tenant run page repeats the title expression | TenantRunPage.tsx | Accept | The header takes the constant. |
+| 3 | Hooks called inside JSX | fxFeeds.tsx, TenantAccountPage.tsx | Accept | The hooks are called at the top of each component. |
+| 4 | Does the Organisation link work in system administration | PeoplePage.tsx | Decline | Nothing narrows the Organisation entry by mode, and a system administrator holds the accounts read, so the area is drawn and the link opens it. |
+| 5 | The tenants label may differ between two keys | TenantAccountPage.tsx | Decline | Both keys say the same word in English, French and Portuguese, which I compared. |
+| 6 | Unused i18n keys | locales | Accept | Removed market.area, market.evolution.screen, marketdata.area.screens.evolution and accounts.title from all three languages. |
+| 7 | Card reads and menu reads are written twice | cards.ts, areas.ts | Accept | A test holds the reads of each area's cards equal to the reads its menu entry names. |
 
 * Result
 

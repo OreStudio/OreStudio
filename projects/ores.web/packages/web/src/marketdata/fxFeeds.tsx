@@ -241,6 +241,7 @@ export function FxFeedsPage(): ReactNode {
 
 function FxFeedsList(): ReactNode {
     const { t } = useTranslation();
+    const trail = useAreaParts('marketdata', t('marketdata.fxFeeds.title'));
     const navigate = useNavigate();
     const [adding, setAdding] = useState(false);
     const source = useRecordSource(FEEDS);
@@ -302,7 +303,7 @@ function FxFeedsList(): ReactNode {
                     : {})}
                 title={t('marketdata.fxFeeds.title')}
                 lead={t('marketdata.fxFeeds.lead')}
-                crumbs={useAreaParts('marketdata', t('marketdata.fxFeeds.title'))}
+                crumbs={trail}
                 pathOf={(row) => fxFeedPath(show(row['id']))}
                 addLabel={t('marketdata.fxFeeds.add')}
                 onAdd={() => setAdding(true)}
@@ -420,6 +421,7 @@ export function FxFeedPage(): ReactNode {
 
 function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
     const { t } = useTranslation();
+    const root = useAreaRoot('marketdata');
     const navigate = useNavigate();
     const id = show(feed['id']);
     const pair = pairOf(feed);
@@ -440,7 +442,7 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
         <div className="space-y-4">
             <RecordHeader
                 crumbs={[
-                    ...useAreaRoot('marketdata'),
+                    ...root,
                     { label: t('marketdata.fxFeeds.title'), to: fxFeedPath() },
                     { label: pair },
                 ]}

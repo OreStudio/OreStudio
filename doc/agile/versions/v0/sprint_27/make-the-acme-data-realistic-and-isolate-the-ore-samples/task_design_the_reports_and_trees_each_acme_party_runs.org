@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 11AE607C-9F2B-479E-BAA7-36C743AC308F
+:END:
+#+title: Task: Design the reports, configs and portfolio trees each ACME party runs
+#+description: Give each ACME party the reports it would really run, with the configuration those reports need and a realistic portfolio tree, root portfolio and currencies. Record and justify every decision for later review.
+#+type: task
+#+level: s1
+#+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
+#+owner: marco
+#+branch: feature/design-the-reports-and-trees-each-acme-party-runs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Today every ACME party holds the same 31 report definitions. No party has a risk report config. The portfolio trees and currencies are not reviewed for realism. Design, per party, the reports that party would run, justify each choice in a document that a reviewer can read later, then seed the matching configuration, portfolio tree, root portfolio and currencies.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
+| Now          | Design drafted in [[id:6A1EE441-E132-4230-BCD9-E8BB786D721F][Which reports each ACME party runs]]. |
+| Waiting on   | The product owner's review of the draft. |
+| Next         | Settle the open decisions, then change the provisioning. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- A design document states, for each of the four parties, which reports it runs and why, from its role, its jurisdiction and its place in the group. Each decision names its justification and the alternative rejected.
+- Provisioning gives each party only the reports in the design. The tier and jurisdiction filter of the publish is driven by the party, not left at its default.
+- Each party's report definitions carry the configuration they need, with a base currency that matches the party.
+- Each party has a realistic portfolio tree, root portfolio and currencies, and each report scope names portfolios that exist for that party.
+- The seeds carry no comment that states a count. Existing count comments in the files the task touches are removed.
+- Trades are out of scope. The task proves the definitions, configs and trees on a clean provision, and records what it did not prove.
+
+* Plan
+
+Decided with the product owner on 2026-10-11:
+
+1. Each party runs reports designed for it. The same reports on every party
+   are not realistic. The design is documented and justified so a reviewer can
+   check each decision later.
+2. After the reports are chosen, add the configuration those reports need.
+3. Trades are ignored for now.
+4. The portfolio tree, root portfolio and currencies must be realistic.
+5. Seeds carry no comment that states a count, because the count goes stale.
+
+Steps:
+
+1. Write the design document: for each party, its role, jurisdiction and place
+   in the group, then the reports it runs, each with a justification and the
+   alternative rejected.
+2. Make provisioning pass the tiers and jurisdiction the design gives for each
+   party. Today only =party_id= is passed.
+3. Add the configuration for each chosen report, including a base currency that
+   matches the party.
+4. Rework the portfolio tree, the root portfolio and the currencies per party.
+5. Add the market data feeds for the currencies the new books need.
+6. Remove the count comments from the seeds the task touches.
+7. Prove on a clean provision, and record what was not proved.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Audit of the local database and the publish functions, 2026-10-11. The
+database schema was stale against the checkout, so the functions were read from
+the files.
+
+- Every ACME party holds all the seeded definitions, including the
+  holding-company reports and the UK-only, US-only and HK-only reports.
+- The definition publish filters by =tiers= and =jurisdiction=. The party
+  provisioning plan in =party_provisioning_plan.hpp= sets only =party_id=, so
+  the filter never runs. Both fields exist in =publish_bundle_params= and no
+  code sets them.
+- No party has a risk report config. The config publish skips a definition
+  that lacks four ORE bindings: pricing engines, today's market, curve
+  configuration and conventions. Only synthetic definitions carry them.
+- No seeded definition names a portfolio, book or netting set. An empty scope
+  means everything the tenant can see.
+- Every seeded risk config has base currency GBP, whatever the party. The
+  publish uses the root portfolio's currency when it has one.
+- Every party has a USD root portfolio, and two roots: Global Portfolio and
+  Regulatory Capital. The publish takes the first by name.
+- The official trees hold no trades. Trades are out of scope here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -83,6 +83,7 @@ ORE reference results. The ACME data does not copy ORE's terms.
 | [[id:6F2B9202-0F43-48E2-B115-86D321B01228][Describe the story and its tasks]] | DONE | 2026-10-10 | 2026-10-10 | Write the story that splits the ACME data from the ORE samples, with its decisions, its open questions and its three tasks, from a read of the netting and portfolio datasets, the acme_demo profile and the party keys. |
 | [[id:CF12FE09-6733-4B9A-9911-3B2052D03B5F][Place the ORE import in the sample sandbox]] | DONE | 2026-10-10 | 2026-10-11 | Make the ORE import create its portfolios and virtual books inside the party's sample sandbox instead of the official portfolio tree. |
 | [[id:95AAA0FE-4748-4830-B18E-8DCFEDE2EFE8][Default the import wizard and web to the sample sandbox]] | DONE | 2026-10-11 | 2026-10-11 | Make the Qt import wizard and the web import choose the party's sample sandbox, so an import without a choice no longer enters the official tree. |
+| [[id:11AE607C-9F2B-479E-BAA7-36C743AC308F][Design the reports, configs and portfolio trees each ACME party runs]] | STARTED | 2026-10-11 | | Give each ACME party the reports it would really run, with the configuration those reports need and a realistic portfolio tree, root portfolio and currencies. Record and justify every decision for later review. |
 
 * Decisions
 

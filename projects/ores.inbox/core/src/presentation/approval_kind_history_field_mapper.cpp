@@ -47,6 +47,8 @@ render_approval_kind_fields(const domain::approval_kind& v) {
     fields.push_back(
         {.name = "Expires After Days",
          .value = v.expires_after_days ? std::to_string(*v.expires_after_days) : std::string{}});
+    fields.push_back(
+        {.name = "Apply Workflow Type", .value = v.apply_workflow_type.value_or(std::string{})});
     fields.push_back({.name = "Approvals Required", .value = std::to_string(v.approvals_required)});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
     using ores::history::domain::provenance_fields;

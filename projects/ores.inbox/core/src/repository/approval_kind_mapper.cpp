@@ -51,6 +51,7 @@ domain::approval_kind approval_kind_mapper::map(const approval_kind_entity& v) {
     r.allows_hold = v.allows_hold;
     r.comment_on_approve = v.comment_on_approve;
     r.expires_after_days = v.expires_after_days;
+    r.apply_workflow_type = v.apply_workflow_type;
     r.approvals_required = v.approvals_required;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
@@ -78,6 +79,7 @@ approval_kind_entity approval_kind_mapper::map(const domain::approval_kind& v) {
     r.allows_hold = v.allows_hold;
     r.comment_on_approve = v.comment_on_approve;
     r.expires_after_days = v.expires_after_days;
+    r.apply_workflow_type = v.apply_workflow_type;
     r.approvals_required = v.approvals_required;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;

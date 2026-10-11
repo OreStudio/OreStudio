@@ -120,6 +120,20 @@ Whether an approval needs a comment. A refusal always needs one.
 The number of days after which an unanswered request closes as expired, or
 null when a request of this kind does not expire.
 
+** apply_workflow_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The type of the workflow that applies a request of this kind once every part
+has approved it, or null when the owning component applies the request itself.
+
+The workflow is started with the request's id as its request, which is
+={"request_id": "<id>"}=. Each definition reads that shape, so the inbox starts
+any kind's workflow without knowing what the kind changes.
+
 ** approvals_required
 :PROPERTIES:
 :type:     integer

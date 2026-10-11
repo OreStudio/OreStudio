@@ -243,6 +243,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/repository/notification_recipient_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/repository/notification_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/service/approval_announcer.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/service/approval_apply_start.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/service/approval_decision_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/service/approval_decision_type_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/service/approval_kind_service.hpp"

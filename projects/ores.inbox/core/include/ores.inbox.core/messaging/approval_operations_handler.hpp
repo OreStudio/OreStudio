@@ -24,12 +24,15 @@
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.core/presentation/approval_request_history_field_mapper.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
+#include "ores.inbox.core/service/approval_apply_start.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.inbox.core/service/approval_request_service.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -376,6 +379,8 @@ public:
                 tell_asker(*ctx, *kind, after, req->comment);
             else if (answers_for_part && r.outcome == "ok" && req->decision_code == "approve")
                 tell_open_parts(*ctx, lifecycle, *kind, after);
+            if (after.state_code == "approved" && current->state_code != "approved")
+                start_apply(msg, *kind, after);
             reply(nats_,
                   msg,
                   decide_approval_request_response{.result = decision_reply(r), .request = after});
@@ -684,6 +689,31 @@ private:
                          const domain::approval_kind& kind,
                          const domain::approval_request& raised) {
         service::approval_announcer(ctx).tell_open_parts(lifecycle, kind, raised);
+    }
+
+    /**
+     * @brief Starts the workflow that applies an approved request, if its kind
+     * names one.
+     *
+     * The run is attributed to the person whose decision approved the request,
+     * because the message forwards their token. A failure to start is logged and
+     * is not the decision: the request stays approved, and the decision stands.
+     */
+    void start_apply(const ores::nats::message& msg,
+                     const domain::approval_kind& kind,
+                     const domain::approval_request& approved) {
+        try {
+            const auto start = service::apply_start_of(kind, approved, "");
+            if (!start)
+                return;
+            nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
+                             ores::nats::default_wire_codec().encode(*start),
+                             ores::nats::service::forwarded_caller_headers(msg));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Request " << boost::uuids::to_string(approved.id)
+                << " is approved, but its apply was not started: " << e.what();
+        }
     }
 
     /**

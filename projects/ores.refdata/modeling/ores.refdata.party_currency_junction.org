@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 0BB9EF29-22CD-4088-9D9B-40AE4E7FF099
+:ores.sql.schema.junction_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.party_currency
 #+description: Codegen junction model for party_currencies.
@@ -62,6 +63,20 @@ References ores_refdata_currencies_tbl.iso_code (soft FK).
 #+begin_src cpp :name generator
 std::string("USD")
 #+end_src
+
+* Artefact columns
+
+The dataset is scoped to the party a publish names, so it stages the currency only. A currency the tenant does not hold is skipped.
+
+** currency_iso_code
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
 
 * Columns
 

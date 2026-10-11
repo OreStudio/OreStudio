@@ -156,14 +156,14 @@ ARTEFACT_COLUMNS = """\
 
 * Artefact columns
 
-** image_id
+** left_code
 :PROPERTIES:
-:type: uuid
+:type: text
 :END:
 
-** tag_id
+** right_code
 :PROPERTIES:
-:type: uuid
+:type: text
 :END:
 """
 
@@ -175,8 +175,8 @@ def test_a_declared_section_replaces_the_body(tmp_path):
         'create table if not exists "ores_dq_test_junctions_artefact_tbl" (\n'
         '    "dataset_id" uuid not null,\n'
         '    "tenant_id" uuid not null,\n'
-        '    "image_id" uuid not null,\n'
-        '    "tag_id" uuid not null\n'
+        '    "left_code" text not null,\n'
+        '    "right_code" text not null\n'
         ");"
     ) in sql
 
@@ -188,8 +188,8 @@ def test_a_declared_section_drops_the_projected_version(tmp_path):
 
 
 def test_the_key_indexes_still_follow_left_and_right(tmp_path):
-    """The section replaces the body, not the indexes: a junction's identity
-    is still the two key columns its model declares."""
+    """The section replaces the body, not the indexes: a junction that stages
+    both of its keys is still indexed on both."""
     sql = generate(tmp_path, ARTEFACT_COLUMNS)
 
     assert (
@@ -260,3 +260,32 @@ def test_a_junction_without_the_flag_gets_no_rls_trailer(tmp_path):
 
     assert "enable row level security" not in sql
     assert "create policy" not in sql
+
+
+ONE_SIDED = """\
+
+* Artefact columns
+
+The dataset is scoped to the party a publish names, so it stages the right side only.
+
+** right_code
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+"""
+
+
+def test_a_table_that_stages_one_side_indexes_only_that_side(tmp_path):
+    sql = generate(tmp_path, ONE_SIDED)
+
+    assert '"left_code"' not in sql
+    assert "dq_test_junctions_artefact_left_idx" not in sql
+    assert (
+        "create index if not exists dq_test_junctions_artefact_right_idx\n"
+        "on ores_dq_test_junctions_artefact_tbl (right_code);"
+    ) in sql

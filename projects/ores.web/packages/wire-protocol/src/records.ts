@@ -38,6 +38,16 @@ import { subjects as currencyCurrencyGroupSubjects } from './generated/refdata/p
 import { subjects as currencyPairSubjects } from './generated/refdata/protocol/currency_pair_protocol.js';
 import { subjects as currencyPairConventionSubjects } from './generated/refdata/protocol/currency_pair_convention_protocol.js';
 import { subjects as currencyPairConventionCalendarSubjects } from './generated/refdata/protocol/currency_pair_convention_calendar_protocol.js';
+import { subjects as partySubjects } from './generated/refdata/protocol/party_protocol.js';
+import { subjects as partyIdentifierSubjects } from './generated/refdata/protocol/party_identifier_protocol.js';
+import { subjects as partyContactSubjects } from './generated/refdata/protocol/party_contact_information_protocol.js';
+import { subjects as partyCountrySubjects } from './generated/refdata/protocol/party_country_protocol.js';
+import { subjects as partyCurrencySubjects } from './generated/refdata/protocol/party_currency_protocol.js';
+import { subjects as partyCounterpartySubjects } from './generated/refdata/protocol/party_counterparty_protocol.js';
+import { subjects as businessUnitSubjects } from './generated/refdata/protocol/business_unit_protocol.js';
+import { subjects as businessUnitTypeSubjects } from './generated/refdata/protocol/business_unit_type_protocol.js';
+import { subjects as partyIdSchemeSubjects } from './generated/refdata/protocol/party_id_scheme_protocol.js';
+import { subjects as counterpartySubjects } from './generated/refdata/protocol/counterparty_protocol.js';
 import { resultEnvelopeSchema } from './operations.js';
 
 /**
@@ -312,6 +322,185 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
             put: currencyPairConventionCalendarSubjects.put_currency_pair_convention_calendar_request,
             remove: currencyPairConventionCalendarSubjects.delete_currency_pair_convention_calendar_request,
             listBy: currencyPairConventionCalendarSubjects.list_by_pair_code_currency_pair_convention_calendars_request,
+        },
+    },
+    {
+        key: 'parties',
+        entityType: 'ores.refdata.party',
+        keyFields: ['id'],
+        rows: 'parties',
+        versioned: true,
+        writable: true,
+        search: true,
+        sortable: [
+            'short_code',
+            'full_name',
+            'party_category',
+            'party_type',
+            'business_center_code',
+            'status',
+        ],
+        asOf: true,
+        subjects: {
+            list: partySubjects.list_parties_request,
+            put: partySubjects.put_party_request,
+            remove: partySubjects.delete_party_request,
+        },
+    },
+    {
+        key: 'party-identifiers',
+        entityType: 'ores.refdata.party_identifier',
+        keyFields: ['id'],
+        rows: 'party_identifiers',
+        versioned: true,
+        writable: true,
+        search: false,
+        sortable: [],
+        asOf: true,
+        listBy: 'party_id',
+        subjects: {
+            list: partyIdentifierSubjects.list_party_identifiers_request,
+            put: partyIdentifierSubjects.put_party_identifier_request,
+            remove: partyIdentifierSubjects.delete_party_identifier_request,
+            listBy: partyIdentifierSubjects.list_by_party_id_party_identifiers_request,
+        },
+    },
+    {
+        key: 'party-contacts',
+        entityType: 'ores.refdata.party_contact_information',
+        keyFields: ['id'],
+        rows: 'party_contact_informations',
+        versioned: true,
+        writable: true,
+        search: false,
+        sortable: [],
+        asOf: true,
+        listBy: 'party_id',
+        subjects: {
+            list: partyContactSubjects.list_party_contact_informations_request,
+            put: partyContactSubjects.put_party_contact_information_request,
+            remove: partyContactSubjects.delete_party_contact_information_request,
+            listBy: partyContactSubjects.list_by_party_id_party_contact_informations_request,
+        },
+    },
+    {
+        key: 'party-countries',
+        entityType: 'ores.refdata.party_country',
+        keyFields: ['party_id', 'country_alpha2_code'],
+        rows: 'party_countries',
+        versioned: false,
+        writable: true,
+        search: false,
+        sortable: [],
+        asOf: false,
+        listBy: 'party_id',
+        subjects: {
+            list: partyCountrySubjects.list_party_countries_request,
+            put: partyCountrySubjects.put_party_country_request,
+            remove: partyCountrySubjects.delete_party_country_request,
+            listBy: partyCountrySubjects.list_by_party_id_party_countries_request,
+        },
+    },
+    {
+        key: 'party-currencies',
+        entityType: 'ores.refdata.party_currency',
+        keyFields: ['party_id', 'currency_iso_code'],
+        rows: 'party_currencies',
+        versioned: false,
+        writable: true,
+        search: false,
+        sortable: [],
+        asOf: false,
+        listBy: 'party_id',
+        subjects: {
+            list: partyCurrencySubjects.list_party_currencies_request,
+            put: partyCurrencySubjects.put_party_currency_request,
+            remove: partyCurrencySubjects.delete_party_currency_request,
+            listBy: partyCurrencySubjects.list_by_party_id_party_currencies_request,
+        },
+    },
+    {
+        key: 'party-counterparties',
+        entityType: 'ores.refdata.party_counterparty',
+        keyFields: ['party_id', 'counterparty_id'],
+        rows: 'party_counterparties',
+        versioned: false,
+        writable: true,
+        search: false,
+        sortable: [],
+        asOf: false,
+        listBy: 'party_id',
+        subjects: {
+            list: partyCounterpartySubjects.list_party_counterparties_request,
+            put: partyCounterpartySubjects.put_party_counterparty_request,
+            remove: partyCounterpartySubjects.delete_party_counterparty_request,
+            listBy: partyCounterpartySubjects.list_by_party_id_party_counterparties_request,
+        },
+    },
+    {
+        key: 'business-units',
+        entityType: 'ores.refdata.business_unit',
+        keyFields: ['id'],
+        rows: 'business_units',
+        versioned: true,
+        writable: true,
+        search: false,
+        sortable: [],
+        asOf: true,
+        listBy: 'party_id',
+        subjects: {
+            list: businessUnitSubjects.list_business_units_request,
+            put: businessUnitSubjects.put_business_unit_request,
+            remove: businessUnitSubjects.delete_business_unit_request,
+            listBy: businessUnitSubjects.list_by_party_id_business_units_request,
+        },
+    },
+    {
+        key: 'business-unit-types',
+        entityType: 'ores.refdata.business_unit_type',
+        keyFields: ['id'],
+        rows: 'types',
+        versioned: true,
+        writable: false,
+        search: false,
+        sortable: [],
+        asOf: true,
+        subjects: {
+            list: businessUnitTypeSubjects.list_business_unit_types_request,
+            put: businessUnitTypeSubjects.put_business_unit_type_request,
+            remove: businessUnitTypeSubjects.delete_business_unit_type_request,
+        },
+    },
+    {
+        key: 'party-id-schemes',
+        entityType: 'ores.refdata.party_id_scheme',
+        keyFields: ['code'],
+        rows: 'schemes',
+        versioned: true,
+        writable: false,
+        search: false,
+        sortable: [],
+        asOf: true,
+        subjects: {
+            list: partyIdSchemeSubjects.list_party_id_schemes_request,
+            put: partyIdSchemeSubjects.put_party_id_scheme_request,
+            remove: partyIdSchemeSubjects.delete_party_id_scheme_request,
+        },
+    },
+    {
+        key: 'counterparties',
+        entityType: 'ores.refdata.counterparty',
+        keyFields: ['id'],
+        rows: 'counterparties',
+        versioned: true,
+        writable: false,
+        search: false,
+        sortable: [],
+        asOf: true,
+        subjects: {
+            list: counterpartySubjects.list_counterparties_request,
+            put: counterpartySubjects.put_counterparty_request,
+            remove: counterpartySubjects.delete_counterparty_request,
         },
     },
 ];

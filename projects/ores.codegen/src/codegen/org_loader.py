@@ -2382,6 +2382,16 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
         j["artefact_columns"] = columns_section
         j["artefact_key_column"] = key_column
 
+    # A key index is built only on a key column the staging table has. A
+    # junction whose dataset is scoped to the party a publish names stages
+    # one side of the pair and leaves the other to the publisher, so it
+    # indexes only the side it carries.
+    staged = {column["name"] for column in columns_section}
+    for side in ("left", "right"):
+        j[f"artefact_{side}_indexed"] = (
+            not columns_section or j[side]["column"] in staged
+        )
+
     return {"junction": j}
 
 

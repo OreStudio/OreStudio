@@ -688,3 +688,172 @@ describe('a calendar rule write', () => {
         expect(calls[0]?.body).toMatchObject({ limit: 1, filter: { code_one_of: ['TARGET'] } });
     });
 });
+
+const PARTY_ID = '55555555-5555-4555-8555-555555555555';
+
+const party = {
+    id: PARTY_ID,
+    short_code: 'ACME_UK',
+    full_name: 'Acme UK Limited',
+    codename: 'ores_brave_hopper',
+    transliterated_name: null,
+    party_category: 'Operational',
+    party_type: 'Corporate',
+    parent_party_id: null,
+    business_center_code: 'GBLO',
+    status: 'Active',
+    image_id: null,
+    is_registration_default: false,
+};
+
+describe('a party write', () => {
+    it('corrects a party against the version read', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.parties.put': { result: ok },
+        });
+        const response = await send(server, sessionId, 'PUT', '/api/refdata/parties', {
+            write: party,
+            version: 4,
+            ...reason,
+        });
+        expect(response.statusCode).toBe(204);
+        expect(calls[0]?.body).toMatchObject({
+            change: {
+                write: { id: PARTY_ID, full_name: 'Acme UK Limited' },
+                precondition: { kind: 'must_match_version', version: 4 },
+            },
+        });
+    });
+
+    it('refuses a party with no name, and one whose parent is not an identifier', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'PUT', '/api/refdata/parties', {
+            write: { ...party, full_name: '', parent_party_id: 'acme_group' },
+            version: 4,
+            ...reason,
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('writes an identifier of a party and lists a party by its identifiers', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.party_identifiers.put': { result: ok },
+            'refdata.v1.party_identifiers.list_by_party_id': {
+                result: ok,
+                party_identifiers: [],
+                total: 0,
+            },
+        });
+        const write = {
+            id: '66666666-6666-4666-8666-666666666666',
+            party_id: PARTY_ID,
+            id_scheme: 'LEI',
+            id_value: '5493001KJTIIGC8Y1R12',
+            description: '',
+        };
+        const saved = await send(server, sessionId, 'PUT', '/api/refdata/party-identifiers', {
+            write,
+            version: null,
+            ...reason,
+        });
+        expect(saved.statusCode).toBe(204);
+        const listed = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/refdata/party-identifiers/by/${PARTY_ID}`,
+        );
+        expect(listed.statusCode).toBe(200);
+        expect(calls[1]?.body).toMatchObject({ party_id: PARTY_ID, scope: 'direct' });
+    });
+
+    it('links a party to a country and closes the link by both keys', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.party_countries.put': { result: ok },
+            'refdata.v1.party_countries.delete': { result: ok },
+        });
+        const link = { party_id: PARTY_ID, country_alpha2_code: 'GB' };
+        expect(
+            (
+                await send(server, sessionId, 'PUT', '/api/refdata/party-countries', {
+                    write: link,
+                    version: null,
+                    ...reason,
+                })
+            ).statusCode,
+        ).toBe(204);
+        expect(
+            (
+                await send(server, sessionId, 'DELETE', '/api/refdata/party-countries', {
+                    key: { party_id: PARTY_ID, country_alpha2_code: 'GB' },
+                    ...reason,
+                })
+            ).statusCode,
+        ).toBe(204);
+        expect(calls.map((call) => call.subject)).toEqual([
+            'refdata.v1.party_countries.put',
+            'refdata.v1.party_countries.delete',
+        ]);
+    });
+
+    it('refuses to write the lookups a party page only reads', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        for (const resource of ['counterparties', 'party-id-schemes', 'business-unit-types']) {
+            const response = await send(server, sessionId, 'PUT', `/api/refdata/${resource}`, {
+                write: {},
+                version: null,
+                ...reason,
+            });
+            expect(response.statusCode, resource).toBe(403);
+        }
+        expect(calls).toHaveLength(0);
+    });
+});
+
+describe('GET /api/timeline for a party', () => {
+    it('reads the party and answers its story with the junctions stated as gaps', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.parties.list': {
+                result: ok,
+                parties: [{ version: 2, id: PARTY_ID, short_code: 'ACME_UK' }],
+                total: 1,
+            },
+            'refdata.v1.history.get': {
+                success: true,
+                message: '',
+                versions: [
+                    {
+                        version: 1,
+                        modified_by: 'priya',
+                        recorded_at: '2026-10-04 10:00:00Z',
+                        fields: [
+                            { name: 'ID', value: PARTY_ID },
+                            { name: 'Short Code', value: 'ACME_UK' },
+                        ],
+                        changes: { entries: [] },
+                    },
+                ],
+            },
+            'refdata.v1.party_identifiers.list_by_party_id': { result: ok, party_identifiers: [] },
+            'refdata.v1.party_contact_informations.list_by_party_id': {
+                result: ok,
+                party_contact_informations: [],
+            },
+            'refdata.v1.business_units.list_by_party_id': { result: ok, business_units: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/timeline?subject=party&id=${PARTY_ID}`,
+        );
+        expect(response.statusCode).toBe(200);
+        const story = response.json() as {
+            events: { kind: string }[];
+            gaps: { entity: string }[];
+        };
+        expect(story.events.map((event) => event.kind)).toEqual(['raised']);
+        expect(story.gaps.map((gap) => gap.entity)).toContain('ores.refdata.party_country');
+    });
+});

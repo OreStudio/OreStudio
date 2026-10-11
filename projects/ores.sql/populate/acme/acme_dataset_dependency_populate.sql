@@ -94,6 +94,22 @@ BEGIN
         'acme.acme_hk.netting_sets', 'acme.acme_hk.netting_agreements', 'agreement_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.csas', 'acme.acme_hk.netting_sets', 'netting_set_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.party_counterparties', 'gleif.lei_counterparties.small', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.party_counterparties', 'acme.lei_counterparties', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.party_counterparties', 'gleif.lei_counterparties.small', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.party_counterparties', 'acme.lei_counterparties', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.party_counterparties', 'gleif.lei_counterparties.small', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.party_counterparties', 'acme.lei_counterparties', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.party_counterparties', 'gleif.lei_counterparties.small', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.party_counterparties', 'acme.lei_counterparties', 'counterparty_reference');
 
     -- The service accounts' images ride assets.system_avatars, and the
     -- provisioning attaches them by code. Every ACME dataset declares the

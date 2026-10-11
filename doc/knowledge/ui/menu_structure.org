@@ -72,10 +72,15 @@ screens.
 
 *** Workflows
 
-A /workflow/ is a guided run of steps. Onboard a party, Correct a party's
-details, Onboard a counterparty, Shape the book structure and Define instrument
-conventions are workflows. They are not CRUD commands, and the two are not
-given each other's names.
+A /workflow/ is a guided run of steps. Onboard a party, Onboard a counterparty,
+Shape the book structure and Define instrument conventions are workflows. They
+are not CRUD commands, and the two are not given each other's names.
+
+A workflow is kept only where the guidance has a value that an ordinary edit does
+not: Onboard a party provisions a hierarchy of parties from a legal entity, links
+the accounts that work in them and publishes their data. Correcting a party is
+not such a task. A party is changed on its own page, with an Edit button on each
+card, as a currency is.
 
 - A workflow is listed on the screen of the thing it acts on. The Parties list
   has a Workflows menu in its header with the three party workflows. A person
@@ -180,7 +185,7 @@ for a session that acts on the deployment (see [[*How today's menu differs][How 
 
 | Cards | Journeys |
 |-------+----------|
-| Parties, with the workflows Onboard a party, Correct a party's details and Onboard a counterparty | [[id:86CB724A-66E3-4FB3-A943-3CE22D41213A][Parties]], and new party in [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup]] |
+| Parties, with the workflows Onboard a party and Onboard a counterparty | [[id:86CB724A-66E3-4FB3-A943-3CE22D41213A][Parties]], and new party in [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup]] |
 | Currencies, Currency pairs, Desk groups | [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX]] |
 | Holiday calendars | [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars]], [[id:296089DE-83BF-4493-9DD1-E265A168773D][Tenors]] |
 | Classifications | [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] |
@@ -207,7 +212,7 @@ areas. A person reaches each in one place, as the entity specification says.
 
 | Screen | Area | Why |
 |--------+------+-----|
-| Parties, and its workflows Onboard a party, Correct a party's details and Onboard a counterparty | Reference data | A party is reference data. The journeys group it with the countries, currencies and business centres it connects to |
+| Parties, and its workflows Onboard a party and Onboard a counterparty | Reference data | A party is reference data. The journeys group it with the countries, currencies and business centres it connects to |
 | Shape the book structure, Define instrument conventions | Reference data | They are workflows on shared lists |
 | Currencies, Currency pairs, Desk groups, Holiday calendars, Classifications | Reference data | They are the shared lists |
 | People (Staff for a member), Hierarchy | Organisation | They are about the people of the tenant |
@@ -227,7 +232,7 @@ the same thing. A screen has one address.
 |--------+---------|
 | Parties | =/refdata/parties= |
 | Onboard a party | =/refdata/parties/new= |
-| Correct a party's details | =/refdata/parties/details= |
+| A party's page | =/refdata/parties/:id= |
 | Onboard a counterparty | =/refdata/counterparties/onboard= |
 | Shape the book structure | =/refdata/books/structure= |
 | Define instrument conventions | =/refdata/conventions= |

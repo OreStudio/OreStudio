@@ -172,6 +172,25 @@ function RowBody({
                 <RevertVersionDialog
                     current={row.version}
                     version={reverting}
+                    changes={[
+                        [t('refdata.classifications.name'), row.name, 'Name'],
+                        [t('refdata.classifications.description'), row.description, 'Description'],
+                        ...(list.shape === 'plain'
+                            ? []
+                            : [
+                                  [
+                                      t('refdata.classifications.order'),
+                                      String(row.displayOrder ?? ''),
+                                      'Display Order',
+                                  ],
+                              ]),
+                    ]
+                        .map(([label, from, name]) => ({
+                            label: label ?? '',
+                            from: from ?? '',
+                            to: fieldValue(reverting, name ?? ''),
+                        }))
+                        .filter((change) => change.from !== change.to)}
                     onClose={() => setReverting(null)}
                     write={async (intent) => {
                         const order = Number.parseInt(fieldValue(reverting, 'Display Order'), 10);

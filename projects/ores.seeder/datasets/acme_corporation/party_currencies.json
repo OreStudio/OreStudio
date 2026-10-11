@@ -1,0 +1,66 @@
+[
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "GBP"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "EUR"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "USD"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "CAD"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "HKD"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "CNY"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "JPY"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "GBP"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "EUR"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "USD"
+  },
+  {
+    "company_code": "acme_us",
+    "currency_iso_code": "USD"
+  },
+  {
+    "company_code": "acme_us",
+    "currency_iso_code": "CAD"
+  },
+  {
+    "company_code": "acme_hk",
+    "currency_iso_code": "HKD"
+  },
+  {
+    "company_code": "acme_hk",
+    "currency_iso_code": "USD"
+  },
+  {
+    "company_code": "acme_hk",
+    "currency_iso_code": "CNY"
+  },
+  {
+    "company_code": "acme_hk",
+    "currency_iso_code": "JPY"
+  }
+]

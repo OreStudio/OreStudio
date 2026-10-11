@@ -438,7 +438,8 @@ Some parts of a story cannot be answered, and the stream says so. A grant that w
 taken away is closed and no read returns it. A junction has no versions. The
 sign-in log keeps a window. Each such part is a gap on the answer, stated on the
 screen in words. A gap is never rounded away, and it is never shown as an empty
-list.
+list. The screen says a gap in its own words, in every language, and never in the
+server's reason, which names tables, reads and refusals.
 
 *** Narrowed histories
 
@@ -717,6 +718,7 @@ is entered, and a screen the reader cannot use is not drawn.
 | A history author's link | =actorPathFor= in =access/PeoplePage.tsx= | Exists |
 | The timeline | =Timeline= in =timeline/Timeline.tsx= | Exists; one-line headers, details on demand, the event chart, the author's photo beside the header, the author's link, the current-version emblem |
 | A person's merged story | =readPersonTimeline= in =wire-protocol/src/timeline.ts= | Exists; reads the whole account history, see the deviations |
+| A party's merged story | =readPartyTimeline= in =wire-protocol/src/timeline.ts=, drawn by =Timeline= with =recordName= | Exists; the party, its identifiers, its contacts and its business units, with the junctions stated as gaps |
 | The pager | =Pager= in =ui/Pager.tsx= | Exists |
 | The roles panel, paged on the server | =RolesAllow= in =access/Allowances.tsx=, =list_account_permissions= and =list_my_permissions= | Exists |
 | The role editor, paged on the server | =RoleEditor= in =access/RolePage.tsx=, =list_role_permissions= | Exists |

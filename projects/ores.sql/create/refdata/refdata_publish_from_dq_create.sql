@@ -5264,3 +5264,292 @@ begin
     where v_total_staged - v_total_inserted > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+/**
+ * Publishes the contacts of a party from a DQ dataset.
+ *
+ * A dataset of contacts is scoped to the party a publish names, so it stages
+ * no party. Each staged contact is written for the target party. A contact
+ * whose type the party already holds is skipped, and so is a contact that
+ * would be a second primary one. A publish only inserts.
+ */
+create or replace function ores_refdata_publish_party_contact_informations_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_staged bigint;
+    v_inserted bigint;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    select count(*) into v_staged
+    from ores_dq_party_contact_informations_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    insert into ores_refdata_party_contact_informations_tbl (
+        tenant_id, id, version, party_id, contact_type,
+        street_line_1, street_line_2, city, state, country_code, postal_code,
+        phone, email, web_page, is_primary,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, v_party_id, a.contact_type,
+        a.street_line_1, a.street_line_2, a.city, a.state, a.country_code,
+        a.postal_code, a.phone, a.email, a.web_page, a.is_primary,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+    from ores_dq_party_contact_informations_artefact_tbl a
+    where a.dataset_id = p_dataset_id
+      and not exists (
+        select 1 from ores_refdata_party_contact_informations_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.party_id = v_party_id
+          and o.contact_type = a.contact_type
+          and o.valid_to = ores_utility_infinity_timestamp_fn())
+      and (not a.is_primary or not exists (
+        select 1 from ores_refdata_party_contact_informations_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.party_id = v_party_id
+          and o.is_primary
+          and o.valid_to = ores_utility_infinity_timestamp_fn()));
+
+    get diagnostics v_inserted = row_count;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_staged - v_inserted
+    where v_staged - v_inserted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+/**
+ * Publishes the countries a party works in from a DQ dataset.
+ *
+ * A dataset of countries is scoped to the party a publish names, so it stages
+ * the country only. A country the tenant does not hold, and one the party
+ * already works in, are skipped. A publish only inserts.
+ */
+create or replace function ores_refdata_publish_party_countries_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_staged bigint;
+    v_inserted bigint;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    select count(*) into v_staged
+    from ores_dq_party_countries_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    insert into ores_refdata_party_countries_tbl (
+        tenant_id, party_id, version, country_alpha2_code,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select distinct
+        p_target_tenant_id, v_party_id, 0, a.country_alpha2_code,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+    from ores_dq_party_countries_artefact_tbl a
+    join ores_refdata_countries_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.alpha2_code = a.country_alpha2_code
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+        select 1 from ores_refdata_party_countries_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.party_id = v_party_id
+          and o.country_alpha2_code = a.country_alpha2_code
+          and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_inserted = row_count;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_staged - v_inserted
+    where v_staged - v_inserted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+/**
+ * Publishes the currencies a party works in from a DQ dataset.
+ *
+ * A dataset of currencies is scoped to the party a publish names, so it stages
+ * the currency only. A currency the tenant does not hold, and one the party
+ * already works in, are skipped. A publish only inserts.
+ */
+create or replace function ores_refdata_publish_party_currencies_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_staged bigint;
+    v_inserted bigint;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    select count(*) into v_staged
+    from ores_dq_party_currencies_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    insert into ores_refdata_party_currencies_tbl (
+        tenant_id, party_id, version, currency_iso_code,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select distinct
+        p_target_tenant_id, v_party_id, 0, a.currency_iso_code,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+    from ores_dq_party_currencies_artefact_tbl a
+    join ores_refdata_currencies_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.iso_code = a.currency_iso_code
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+        select 1 from ores_refdata_party_currencies_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.party_id = v_party_id
+          and o.currency_iso_code = a.currency_iso_code
+          and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_inserted = row_count;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_staged - v_inserted
+    where v_staged - v_inserted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+/**
+ * Publishes the counterparties a party may trade with from a DQ dataset.
+ *
+ * A dataset of counterparties is scoped to the party a publish names, so it
+ * stages the counterparty only, by LEI, because a counterparty id differs from
+ * tenant to tenant. A LEI that no counterparty of the tenant holds, and a
+ * counterparty the party can already see, are skipped. A publish only inserts.
+ */
+create or replace function ores_refdata_publish_party_counterparties_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_staged bigint;
+    v_inserted bigint;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    select count(*) into v_staged
+    from ores_dq_party_counterparties_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    insert into ores_refdata_party_counterparties_tbl (
+        tenant_id, party_id, version, counterparty_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select distinct
+        p_target_tenant_id, v_party_id, 0, ci.counterparty_id,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+    from ores_dq_party_counterparties_artefact_tbl a
+    join ores_refdata_counterparty_identifiers_tbl ci
+      on ci.tenant_id = p_target_tenant_id
+     and ci.id_scheme = 'LEI'
+     and ci.id_value = a.counterparty_lei
+     and ci.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+        select 1 from ores_refdata_party_counterparties_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.party_id = v_party_id
+          and o.counterparty_id = ci.counterparty_id
+          and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_inserted = row_count;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_staged - v_inserted
+    where v_staged - v_inserted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;

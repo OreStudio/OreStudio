@@ -43,8 +43,6 @@ import { ConventionJourney } from './journeys/ConventionJourney.js';
 import { useConventionsServer } from './journeys/conventionsServer.js';
 import { BookStructureJourney } from './journeys/BookStructureJourney.js';
 import { useBooksServer } from './journeys/booksServer.js';
-import { PartyDetailsJourney } from './journeys/PartyDetailsJourney.js';
-import { usePartyDetailsServer } from './journeys/partyDetailsServer.js';
 import { SignUpJourney } from './journeys/SignUpJourney.js';
 import { TenantSetupJourney } from './journeys/TenantSetupJourney.js';
 import { AppShell } from './components/AppShell.js';
@@ -89,7 +87,7 @@ import { CalendarPage, CalendarsPage } from './refdata/calendars.js';
 import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
-import { PartiesPage } from './pages/PartiesPage.js';
+import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { TenantPage } from './pages/TenantPage.js';
 import { TenantRunPage } from './pages/TenantRunPage.js';
@@ -169,7 +167,6 @@ export interface AppRoutesProps {
      * It is a route for the same reason the counterparty screen is: the session
      * already names the tenant.
      */
-    readonly partyDetailsJourney: ReactNode;
     /**
      * The book structure screen, which a tenant administrator runs to place
      * books in portfolios and classify them.
@@ -223,7 +220,6 @@ export function AppRoutes({
     newTenantJourney,
     newPartyJourney,
     counterpartyJourney,
-    partyDetailsJourney,
     bookStructureJourney,
     conventionJourney,
     signUpJourney,
@@ -617,6 +613,18 @@ export function AppRoutes({
                     'workspace',
                 )}
             />
+            <Route
+                path={`${PATHS.parties}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <PartyPage />
+                    ),
+                    'workspace',
+                )}
+            />
             {/*
              * Access: a person's own roles, and the administrator's people and
              * role catalogue. The lists are tables, so they take the width.
@@ -925,12 +933,6 @@ export function AppRoutes({
                 ))}
             />
             <Route
-                path={PATHS.partyDetails}
-                element={signedIn(gate.version, session, shell, () => (
-                    <CardScreen card="partyDetails">{partyDetailsJourney}</CardScreen>
-                ))}
-            />
-            <Route
                 path={PATHS.bookStructure}
                 element={signedIn(gate.version, session, shell, () => (
                     <CardScreen card="bookStructure">{bookStructureJourney}</CardScreen>
@@ -958,7 +960,6 @@ export function ConnectedApp(): ReactNode {
     const { t } = useTranslation();
     const server = useJourneyServer();
     const counterpartyServer = useCounterpartyServer();
-    const partyDetailsServer = usePartyDetailsServer();
     const booksServer = useBooksServer();
     const conventionsServer = useConventionsServer();
     const navigate = useNavigate();
@@ -1110,12 +1111,6 @@ export function ConnectedApp(): ReactNode {
                              * The journey ends at the counterparty list it opened
                              * on, or at the home page a person came from.
                              */
-                            onFinished={() => navigate('/')}
-                        />
-                    }
-                    partyDetailsJourney={
-                        <PartyDetailsJourney
-                            server={partyDetailsServer}
                             onFinished={() => navigate('/')}
                         />
                     }

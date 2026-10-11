@@ -33,8 +33,12 @@ on ores_dq_{{junction.name}}_artefact_tbl (dataset_id);
 create index if not exists dq_{{junction.name}}_artefact_tenant_idx
 on ores_dq_{{junction.name}}_artefact_tbl (tenant_id);
 
+{{#junction.artefact_left_indexed}}
 create index if not exists dq_{{junction.name}}_artefact_{{junction.left.column_short}}_idx
 on ores_dq_{{junction.name}}_artefact_tbl ({{junction.left.column}});
 
+{{/junction.artefact_left_indexed}}
+{{#junction.artefact_right_indexed}}
 create index if not exists dq_{{junction.name}}_artefact_{{junction.right.column_short}}_idx
 on ores_dq_{{junction.name}}_artefact_tbl ({{junction.right.column}});
+{{/junction.artefact_right_indexed}}

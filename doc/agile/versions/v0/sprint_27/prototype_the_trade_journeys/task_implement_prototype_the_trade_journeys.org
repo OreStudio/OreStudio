@@ -8,7 +8,7 @@
 #+filetags: :prototype_the_trade_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-prototype-the-trade-journeys
-#+pr:
+#+pr: 3123
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3123][#3123]] | [agile] Prototype the trade journeys |
 
 * Review
 

@@ -1614,7 +1614,8 @@ const pt: SourceCatalogue = {
                 node: 'Nó',
                 status: 'Mudança',
                 hole: 'Sem ponto',
-                noNodes: 'O objeto não declara nenhum nó.',
+                noNodes:
+                    'Nenhuma série com esta identidade é visível na parte para a qual trabalha. Verifique a identidade ou mude de parte.',
                 noInstants: 'O objeto não tem nenhum instante neste período.',
                 neverQuoted: '{count} nós não têm valor em nenhum instante deste período.',
             },

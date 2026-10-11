@@ -128,7 +128,7 @@ describe('MatrixPanel', () => {
     it('says so when the object declares no node or holds no instant', () => {
         expect(
             render(<MatrixPanel evolution={{ ...evolution, nodes: [], instants: [] }} />),
-        ).toContain('The object declares no node.');
+        ).toContain('No series with this identity is visible in the party you work for.');
         expect(render(<MatrixPanel evolution={{ ...evolution, instants: [] }} />)).toContain(
             'The object holds no instant in this range.',
         );

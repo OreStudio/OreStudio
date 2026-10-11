@@ -105,3 +105,10 @@ Real replies for the EUR/USD surface (45 nodes) now parse with both contract sch
 
 *What this does not prove.* It does not show the page in a browser. The data was the real
 ORE example file for 2016-02-05 plus three generated dates, so the ages are about ten years.
+
+*A second finding, from the first look in a browser.* The tenant administrator chooses a
+party at sign-in, and a party reads only its own series. The demo data was imported under
+the System Party, so the default party, Acme Corporation Plc, saw nothing. The screen then
+said "The object declares no node", which is wrong: a series with no axes is refused with a
+reason, so an empty answer means no visible series carries the identity. The message now says
+that, in three languages. To see the demo data, sign in and choose the System Party.

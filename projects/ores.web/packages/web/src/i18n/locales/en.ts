@@ -1605,7 +1605,8 @@ export const en: SourceCatalogue = {
                 node: 'Node',
                 status: 'Change',
                 hole: 'No point',
-                noNodes: 'The object declares no node.',
+                noNodes:
+                    'No series with this identity is visible in the party you work for. Check the identity, or switch party.',
                 noInstants: 'The object holds no instant in this range.',
                 neverQuoted: '{count} nodes hold no value at any instant of this range.',
             },

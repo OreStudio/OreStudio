@@ -1620,7 +1620,8 @@ const fr: SourceCatalogue = {
                 node: 'Nœud',
                 status: 'Changement',
                 hole: 'Aucun point',
-                noNodes: 'L’objet ne déclare aucun nœud.',
+                noNodes:
+                    'Aucune série avec cette identité n’est visible dans la partie pour laquelle vous travaillez. Vérifiez l’identité, ou changez de partie.',
                 noInstants: 'L’objet ne contient aucun instant sur cette période.',
                 neverQuoted: '{count} nœuds n’ont aucune valeur à aucun instant de cette période.',
             },

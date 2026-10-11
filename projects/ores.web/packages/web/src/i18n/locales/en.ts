@@ -1891,6 +1891,7 @@ export const en: SourceCatalogue = {
     timeline: {
         hideSystem: "Hide system activity",
         showSystem: "Show system activity",
+        systemUnknown: "Your access does not show which accounts are services.",
         empty: 'Nothing has happened to this yet.',
         details: 'Details',
         current: 'Current version',

@@ -227,9 +227,11 @@ export function HistoryPanel({
                         </span>
                     )}
                     <span className="flex items-center gap-2">
-                        {system.offeredFor(versions.map((version) => version.modifiedBy)) && (
-                            <SystemToggle hiding={system.hiding} onChange={system.setHiding} />
-                        )}
+                        <SystemToggle
+                            hiding={system.hiding}
+                            onChange={system.setHiding}
+                            canTell={system.canTell}
+                        />
                         {from !== undefined && (
                             <span className="inline-flex overflow-hidden rounded-md border border-line text-sm">
                                 {[false, true].map((only) => (

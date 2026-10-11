@@ -133,11 +133,13 @@ export function Timeline({
     const shown = events.filter((event) => system.shows(event.actor));
     return (
         <div className="grid gap-3" data-timeline>
-            {system.offeredFor(timeline.events.map((event) => event.actor)) && (
-                <div className="flex justify-end">
-                    <SystemToggle hiding={system.hiding} onChange={system.setHiding} />
-                </div>
-            )}
+            <div className="flex justify-end">
+                <SystemToggle
+                    hiding={system.hiding}
+                    onChange={system.setHiding}
+                    canTell={system.canTell}
+                />
+            </div>
             <EventChart events={shown} />
             <ol className="grid list-none gap-0 p-0">
                 {shown.map((event, index) => (

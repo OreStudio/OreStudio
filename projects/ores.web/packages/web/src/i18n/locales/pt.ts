@@ -1906,6 +1906,7 @@ const pt: SourceCatalogue = {
     timeline: {
         hideSystem: "Ocultar a atividade do sistema",
         showSystem: "Mostrar a atividade do sistema",
+        systemUnknown: "O seu acesso não mostra quais contas são serviços.",
         empty: 'Ainda nada lhe aconteceu.',
         details: 'Detalhes',
         current: 'Versão atual',

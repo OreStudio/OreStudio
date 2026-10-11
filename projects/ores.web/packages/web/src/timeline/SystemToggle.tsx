@@ -35,24 +35,24 @@ export function showsActor(
  * The state of the toggle that hides what service accounts did.
  *
  * `isService` answers for an actor, or undefined when the reader cannot tell a
- * service from a person. A reader who cannot tell is not offered the toggle,
- * because hiding by a guess would hide people.
+ * service from a person. The toggle is always drawn. For a reader who cannot
+ * tell, it is disabled and says why, because hiding by a guess would hide
+ * people.
  */
 export function useSystemFilter(isService: ((actor: string) => boolean | undefined) | undefined): {
     readonly hiding: boolean;
     readonly setHiding: (hiding: boolean) => void;
     /** Whether an entry by this actor is drawn. */
     readonly shows: (actor: string) => boolean;
-    /** Whether the toggle is worth offering for these actors. */
-    readonly offeredFor: (actors: readonly string[]) => boolean;
+    /** Whether the reader can tell a service from a person. */
+    readonly canTell: boolean;
 } {
     const [hiding, setHiding] = useState(false);
     return {
         hiding,
         setHiding,
         shows: (actor) => showsActor(hiding, isService, actor),
-        offeredFor: (actors) =>
-            isService !== undefined && actors.some((a) => isService(a) === true),
+        canTell: isService !== undefined,
     };
 }
 
@@ -60,17 +60,23 @@ export function useSystemFilter(isService: ((actor: string) => boolean | undefin
 export function SystemToggle({
     hiding,
     onChange,
+    canTell,
 }: {
     readonly hiding: boolean;
     readonly onChange: (hiding: boolean) => void;
+    readonly canTell: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     return (
         <button
             type="button"
             aria-pressed={hiding}
+            disabled={!canTell}
+            title={canTell ? undefined : t('timeline.systemUnknown')}
             className={
-                hiding
+                !canTell
+                    ? 'rounded-md border border-line px-3 py-1 text-sm text-ink-muted opacity-50'
+                    : hiding
                     ? 'rounded-md border border-line bg-surface-overlay px-3 py-1 text-sm text-ink'
                     : 'rounded-md border border-line px-3 py-1 text-sm text-ink-muted hover:text-ink'
             }

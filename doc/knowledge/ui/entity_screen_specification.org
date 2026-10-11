@@ -465,17 +465,17 @@ and below it a rail of entries, newest first.
 
 *** System activity
 
-- A history that holds entries written by a service account offers one toggle,
-  "Hide system activity". When it is on, the toggle reads "Show system activity".
+- Every history draws one toggle, "Hide system activity". When it is on, the
+  toggle reads "Show system activity". It is drawn even when no service account
+  wrote an entry.
 - The toggle starts off. A history shows every entry until the reader hides some.
 - The toggle hides an entry only when its author is a service account. The tenant
   administrator and the super administrator are people, so their entries stay.
 - The toggle also hides the entries in the chart, the legend and the day dividers.
   The chart counts what the rail shows.
-- Only a reader who may read accounts can tell a service from a person. Any other
-  reader gets no toggle. The screen does not guess, because a wrong guess hides
-  people.
-- A history that has no entry from a service account offers no toggle.
+- Only a reader who may read accounts can tell a service from a person. For any
+  other reader the toggle is disabled, and its tooltip says why. The screen does
+  not guess, because a wrong guess hides people.
 - The shared =Timeline= draws the toggle. A screen gives it =isService=, which
   =usePeopleDirectory= supplies.
 

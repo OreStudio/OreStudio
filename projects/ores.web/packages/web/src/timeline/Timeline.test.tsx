@@ -288,7 +288,7 @@ describe('kindTone', () => {
                 </TranslationProvider>,
             );
 
-        it('offers to hide them when a service wrote an entry', () => {
+        it('draws the toggle enabled when the reader can tell', () => {
             const html = withKinds((actor) => actor.endsWith('_service'));
 
             expect(html).toContain('Hide system activity');
@@ -296,12 +296,19 @@ describe('kindTone', () => {
             expect(html).toContain('tenant_admin');
         });
 
-        it('offers nothing to a reader who cannot tell a service from a person', () => {
-            expect(withKinds(undefined)).not.toContain('system activity');
+        it('draws the toggle disabled, and says why, for a reader who cannot tell a service from a person', () => {
+            const html = withKinds(undefined);
+
+            expect(html).toContain('Hide system activity');
+            expect(html).toContain('disabled');
+            expect(html).toContain('Your access does not show which accounts are services.');
         });
 
-        it('offers nothing when no service wrote an entry', () => {
-            expect(withKinds(() => false)).not.toContain('system activity');
+        it('draws the toggle even when no service wrote an entry', () => {
+            const html = withKinds(() => false);
+
+            expect(html).toContain('Hide system activity');
+            expect(html).not.toContain('disabled');
         });
 
         it('hides a service and keeps the tenant and super administrators, who are people', () => {

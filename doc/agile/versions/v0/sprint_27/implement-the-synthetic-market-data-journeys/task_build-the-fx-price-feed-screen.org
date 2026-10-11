@@ -47,6 +47,16 @@ A quant composes an FX feed and sees the paths it implies before saving it.
   the screen, and saves the set in one call.
 - The mixture of one feed is read by its parent, never by reading every
   component.
+- Each feed shows a Running or Stopped label, on the list and on its page. A
+  writer starts or stops one feed from its page, and the chosen feeds of the
+  list in one action; each refusal is named with the server's reason.
+- A Ticks tab plots the last 50, 200 or 500 ticks of a feed, with the last
+  price and the move over them, read again every two seconds while it runs.
+- The mixture tab explains the engine, each column and each row in the
+  engine's own terms, warns that the arithmetic engine can go below zero,
+  offers volatility profiles, and gives a mean reverting feed its half-life
+  and band. The engine, tick rate, price source, enabled and auto start
+  fields carry help in the form.
 
 * Plan
 
@@ -72,6 +82,26 @@ screen needs included. Each step ends in a check.
 6. *Words.* English, French and Portuguese.
 7. *Documents.* The journey, the record screen standard and the menu
    structure; the codec capture resolved; the gaps task told what landed.
+
+After the first test the user asked for what the Qt market simulator had and
+the screen lacked:
+
+8. *Ticks.* The ticks are published on =synthetic.v1.ops.tick.<source>=; the
+   stored observations need the feed's series identity, which [[id:3CD588CB-1B74-40BA-896F-75CFF8157EAF][Name a feed
+   by its oresmd URI]] brings. So the BFF keeps the newest 500 ticks of each
+   running feed it hears of, as Qt does, and serves them at
+   =GET /api/synthetic/feeds/:id/ticks= after reading the feed as the session.
+9. *Runs.* A status label from =GET /api/synthetic/running=, read every five
+   seconds; Start and Stop on the feed page; row choice and Start chosen and
+   Stop chosen on the list. Start all and Stop all for a collection, through
+   the folder routes, belong to the collection screen task.
+10. *Quant help.* The Qt editor's words, ported: the engine, the columns and
+    the rows per engine, the arithmetic warning, the profiles and the OU
+    half-life and band. The Qt simple mode, sliders for drift, volatility and
+    jumps, is a second editor for the same mixture and is left for its own
+    task.
+11. *Login.* A login waiting on a party made =GET /api/session= answer 500,
+    which kept the party picker from showing. It now answers 401.
 
 * Measurements
 

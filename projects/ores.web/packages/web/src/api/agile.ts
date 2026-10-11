@@ -22,10 +22,12 @@
 import {
     agileDocResponseSchema,
     backlogSchema,
+    chartsResponseSchema,
     boardResponseSchema,
     sprintListSchema,
     type Backlog,
     type Board,
+    type Charts,
     type QaDoc,
 } from '@ores/contracts';
 import { request } from './transport.js';
@@ -55,6 +57,14 @@ export const agile = {
         return boardResponseSchema.parse(
             await request(`/api/agile/board${query}`, { method: 'GET' }),
         ).board;
+    },
+
+    /** One sprint's chart series, and the velocity of every sprint. */
+    async charts(sprint?: string): Promise<Charts> {
+        const query = sprint === undefined ? '' : `?sprint=${encodeURIComponent(sprint)}`;
+        return chartsResponseSchema.parse(
+            await request(`/api/agile/charts${query}`, { method: 'GET' }),
+        ).charts;
     },
 
     /** The four backlog buckets, each newest first. */

@@ -124,6 +124,22 @@ export const sprintRefSchema = z.object({
 });
 export const sprintListSchema = z.object({ sprints: z.array(sprintRefSchema) });
 
+export const chartsSchema = z.object({
+    /** Stories done in each sprint, oldest first. */
+    velocity: z.array(z.object({ sprint: z.string(), done: z.number() })),
+    /** The running total of tasks done, by the date each was finished. */
+    burnup: z.array(z.object({ date: z.string(), done: z.number() })),
+    /** Every task of the sprint, which the burn-up is drawn against. */
+    scope: z.number(),
+    /** Tasks done on each day of the sprint. Empty when the sprint has no start date. */
+    perDay: z.array(
+        z.object({ date: z.string(), day: z.number(), done: z.number(), future: z.boolean() }),
+    ),
+    byState: z.array(z.object({ state: agileStateSchema, count: z.number() })),
+});
+export type Charts = z.infer<typeof chartsSchema>;
+export const chartsResponseSchema = z.object({ charts: chartsSchema });
+
 export const BACKLOG_BUCKET_IDS = ['inbox', 'next', 'deferred', 'discarded'] as const;
 
 export const backlogItemSchema = z.object({

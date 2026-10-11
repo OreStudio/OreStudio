@@ -78,6 +78,10 @@ export const qaQueries = {
         }),
 };
 
+export function chartsKey(sprint: string | undefined): readonly [string, string] {
+    return ['agile-charts', sprint ?? ''];
+}
+
 export function boardKey(sprint: string | undefined): readonly [string, string] {
     return ['agile-board', sprint ?? ''];
 }
@@ -98,6 +102,13 @@ export const agileQueries = {
         queryOptions({
             queryKey: AGILE_BACKLOG_KEY,
             queryFn: () => agile.backlog(),
+            meta: QUIET,
+        }),
+
+    charts: (sprint: string | undefined) =>
+        queryOptions({
+            queryKey: chartsKey(sprint),
+            queryFn: () => agile.charts(sprint),
             meta: QUIET,
         }),
 

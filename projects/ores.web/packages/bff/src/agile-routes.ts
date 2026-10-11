@@ -27,7 +27,7 @@ import { InvalidDocIdError, type DocText } from './scenarios/scenario-store.js';
 import type { LiveSession } from './sessions.js';
 
 /**
- * The agile browser routes: the sprints, one sprint's board, the backlog
+ * The agile browser routes: the sprints, one sprint's board and charts, the backlog
  * buckets, and any agile doc by id.
  *
  * A route never touches a file. It asks the agile store, so a database store
@@ -106,6 +106,17 @@ export function registerAgileRoutes(
         const board = await guarded(() => agile.board(sprint === '' ? undefined : sprint));
         if (board === null) throw notFound('No sprint has this name.');
         return { board };
+    });
+
+    server.get('/api/agile/charts', async (request) => {
+        const agile = open(request);
+        const { sprint } = request.query as { sprint?: unknown };
+        if (sprint !== undefined && typeof sprint !== 'string') {
+            throw invalidRequest('Give one sprint name.');
+        }
+        const charts = await guarded(() => agile.charts(sprint === '' ? undefined : sprint));
+        if (charts === null) throw notFound('No sprint has this name.');
+        return { charts };
     });
 
     server.get('/api/agile/backlog', async (request) => {

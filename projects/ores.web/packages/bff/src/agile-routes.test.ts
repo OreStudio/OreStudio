@@ -211,6 +211,12 @@ describe('the agile routes', () => {
         const { server, sessionId } = buildTestServer({ docRoot: tree() });
         const path = await send(server, sessionId, '/api/agile/board?sprint=..%2F..%2Fetc');
         expect(path.statusCode).toBe(400);
+        const twice = await send(
+            server,
+            sessionId,
+            '/api/agile/board?sprint=sprint_1&sprint=sprint_2',
+        );
+        expect(twice.statusCode).toBe(400);
         const missing = await send(server, sessionId, '/api/agile/board?sprint=sprint_99');
         expect(missing.statusCode).toBe(404);
     });

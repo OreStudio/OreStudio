@@ -81,6 +81,8 @@ export function registerAgileRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
     store: AgileStore | undefined,
+    // The doc route reads through the scenario store's id index, so it reads the
+    // same doc root as the file agile store only while both come from the config.
     readDoc: ((id: string) => Promise<DocText | null>) | undefined,
 ): void {
     const open = (request: FastifyRequest): AgileStore => {
@@ -96,7 +98,11 @@ export function registerAgileRoutes(
 
     server.get('/api/agile/board', async (request) => {
         const agile = open(request);
-        const { sprint } = request.query as { sprint?: string };
+        const { sprint } = request.query as { sprint?: unknown };
+        // A repeated parameter arrives as an array. Only one name is a sprint.
+        if (sprint !== undefined && typeof sprint !== 'string') {
+            throw invalidRequest('Give one sprint name.');
+        }
         const board = await guarded(() => agile.board(sprint === '' ? undefined : sprint));
         if (board === null) throw notFound('No sprint has this name.');
         return { board };

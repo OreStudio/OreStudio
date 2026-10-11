@@ -90,7 +90,10 @@ export const sprintInfoSchema = z.object({
     title: z.string(),
     startDate: z.string(),
     endDate: z.string(),
-    /** Zero or negative before the sprint starts, and past the total after it ends. */
+    /**
+     * Zero or negative before the sprint starts, and past the total after it
+     * ends. Null when the sprint doc has no valid start date.
+     */
     dayOfSprint: z.number().nullable(),
     totalDays: z.number().nullable(),
     path: z.string(),

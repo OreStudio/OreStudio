@@ -13,9 +13,9 @@
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader records a new deal: its trade type, its party and counterparty, its book, and its instrument terms.
 
 A user journey describes what one person is trying to do, before anything is
-built. It is a design document that outlives any sprint, so it names the
-screens, the entity fields each screen shows, and the operations and messages
-each step needs.
+built. It is a design document that outlives any sprint. These trade journeys are
+use cases, so they name the operations and messages each step needs and leave the
+screens to the UX standards.
 
 * Goal
 
@@ -57,7 +57,7 @@ a trade type and ends when the trade is booked, saved as a draft, or refused.
    is not allowed, and a field that fails the trade type's checks. The system keeps what
    the person entered and says what was refused.
 
-* Screens and wireframes
+* Screens
 
 This journey is a use case. It has no screen of its own. Booking starts from the trade
 list and opens a new trade page, which is the page of one trade in the
@@ -68,8 +68,8 @@ makes booking easier or quicker. A prototype decides that. The prototype must al
 the trade as the subject: the person must be able to leave the sequence and land on the
 same trade page.
 
-No wireframe is drawn here. The prototype story draws the screens, from the user
-interface standards and from this use case.
+No wireframe is drawn here. The prototype story draws the screens, from the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed
 
@@ -92,7 +92,9 @@ interface standards and from this use case.
 | Confirm | Write the instrument and its child rows | =trading.v1.<instrument>s.put=, then each child table's =put_many= | partial |
 
 Status is one of =exists=, =partial=, or =missing=. A subject that contains
-=<instrument>= stands for the one instrument table the trade type routes to.
+=<instrument>= stands for the one instrument table the trade type routes to. The plural
+is written with a plain =s=. A table whose plural is irregular, such as
+=trade_activities=, has its own subject: check the protocol header, not the pattern.
 
 * What is missing
 
@@ -104,7 +106,7 @@ Status is one of =exists=, =partial=, or =missing=. A subject that contains
 - The web app and the BFF have no trading route. Nothing here is reachable from a browser
   yet.
 - The four-eyes rule for a trade, if any, is not stated for booking. The activity types
-  carry a =requires_confirmation= flag, and no journey says who confirms.
+  carry a =requires_confirmation= flag, and no journey says who confirms. The story [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] owns the approval rule.
 
 * Related journeys
 

@@ -13,9 +13,9 @@
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An operations user writes a set of trades out as the ORE portfolio the engine reads.
 
 A user journey describes what one person is trying to do, before anything is
-built. It is a design document that outlives any sprint, so it names the
-screens, the entity fields each screen shows, and the operations and messages
-each step needs.
+built. It is a design document that outlives any sprint. These trade journeys are
+use cases, so they name the operations and messages each step needs and leave the
+screens to the UX standards.
 
 * Goal
 
@@ -37,13 +37,13 @@ a storage reference.
 4. *Read the result.* The system reports the number of trades and the location of the
    file.
 
-* Screens and wireframes
+* Screens
 
 This journey is a use case. It is the Export action in the Workflows menu of the trade
 list. It also serves the compute journeys, which need a portfolio in storage.
 
-No wireframe is drawn here. The prototype story draws the screens, from the user
-interface standards and from this use case.
+No wireframe is drawn here. The prototype story draws the screens, from the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed
 
@@ -58,7 +58,9 @@ This journey adds no entity of its own. It reads and writes the trade and the re
 | Export | Export the trades to storage | =trading.v1.ops.export_trades_to_storage= | exists |
 
 Status is one of =exists=, =partial=, or =missing=. A subject that contains
-=<instrument>= stands for the one instrument table the trade type routes to.
+=<instrument>= stands for the one instrument table the trade type routes to. The plural
+is written with a plain =s=. A table whose plural is irregular, such as
+=trade_activities=, has its own subject: check the protocol header, not the pattern.
 
 * What is missing
 

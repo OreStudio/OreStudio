@@ -13,9 +13,9 @@
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An operations user brings the trades of an ORE portfolio file into a book, and can roll the import back.
 
 A user journey describes what one person is trying to do, before anything is
-built. It is a design document that outlives any sprint, so it names the
-screens, the entity fields each screen shows, and the operations and messages
-each step needs.
+built. It is a design document that outlives any sprint. These trade journeys are
+use cases, so they name the operations and messages each step needs and leave the
+screens to the UX standards.
 
 * Goal
 
@@ -46,14 +46,14 @@ confirmed, rolled back or refused.
 6. *Roll back.* The person may roll the import back. The system removes what the import
    created.
 
-* Screens and wireframes
+* Screens
 
 This journey is a use case. The workflow is the Import action in the Workflows menu of the
 trade list, as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] places workflows. It opens a dialog or a short sequence.
 The result is the trade list filtered to the trades the import created.
 
-No wireframe is drawn here. The prototype story draws the screens, from the user
-interface standards and from this use case.
+No wireframe is drawn here. The prototype story draws the screens, from the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed
 
@@ -70,7 +70,9 @@ This journey adds no entity of its own. It reads and writes the trade and the re
 | Choose the book | Offer the books | =refdata.v1.books.list= | exists |
 
 Status is one of =exists=, =partial=, or =missing=. A subject that contains
-=<instrument>= stands for the one instrument table the trade type routes to.
+=<instrument>= stands for the one instrument table the trade type routes to. The plural
+is written with a plain =s=. A table whose plural is irregular, such as
+=trade_activities=, has its own subject: check the protocol header, not the pattern.
 
 * What is missing
 

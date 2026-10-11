@@ -13,9 +13,9 @@
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or an operations user reads a trade, its instrument, its parties and how it came to be in its present form.
 
 A user journey describes what one person is trying to do, before anything is
-built. It is a design document that outlives any sprint, so it names the
-screens, the entity fields each screen shows, and the operations and messages
-each step needs.
+built. It is a design document that outlives any sprint. These trade journeys are
+use cases, so they name the operations and messages each step needs and leave the
+screens to the UX standards.
 
 * Goal
 
@@ -46,15 +46,15 @@ leaves the trade.
 5. *Follow a link.* The person goes to the counterparty, the book, a structure the trade
    belongs to, or a linked trade.
 
-* Screens and wireframes
+* Screens
 
 This journey is a use case. The standard screens serve it: the trade list, the trade page
 with a tab for each aspect, and the History timeline, all as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] and the
 [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] describe. The Qt client had a detail dialog and a history dialog. They become
 a page and a tab, and the person reads one subject on one page.
 
-No wireframe is drawn here. The prototype story draws the screens, from the user
-interface standards and from this use case.
+No wireframe is drawn here. The prototype story draws the screens, from the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed
 
@@ -77,7 +77,9 @@ interface standards and from this use case.
 | As of | Read the trade and its parts as of a date | the =as_of= field of the list requests (checked on trades, trade states and the bond instrument) | exists |
 
 Status is one of =exists=, =partial=, or =missing=. A subject that contains
-=<instrument>= stands for the one instrument table the trade type routes to.
+=<instrument>= stands for the one instrument table the trade type routes to. The plural
+is written with a plain =s=. A table whose plural is irregular, such as
+=trade_activities=, has its own subject: check the protocol header, not the pattern.
 
 * What is missing
 

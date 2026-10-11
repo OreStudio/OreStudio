@@ -42,6 +42,16 @@ journeys to decide the cards and the workflows on the page.
 - No operation writes an activity together with the versions it causes, except booking.
 - The economic digest leaves out the option exercise prices and a composite trade's legs.
 
+* How the operations were checked
+
+Every full subject (for example =trading.v1.trade_types.list=) was checked by script
+against the protocol headers: 33 of 33 exist. A row that names a pattern, such as
+=trading.v1.<instrument>s.put=, or a short form, such as =trade_states.list=, was read
+by hand in the headers and cannot be checked by script. The filters, the =as_of= field
+and the by-trade reads were read in the protocol headers of =trade=, =trade_state=,
+=trade_activity=, =trade_identifier= and =bond_leg=. They were not read for every
+child table.
+
 * Related
 
 - [[id:A08424B7-E6D7-4993-955C-53AEC241ABA5][Books and portfolios]] — the books trades are booked into

@@ -13,9 +13,9 @@
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An operations user records an exercise, a termination, a novation or another event that changes a live trade.
 
 A user journey describes what one person is trying to do, before anything is
-built. It is a design document that outlives any sprint, so it names the
-screens, the entity fields each screen shows, and the operations and messages
-each step needs.
+built. It is a design document that outlives any sprint. These trade journeys are
+use cases, so they name the operations and messages each step needs and leave the
+screens to the UX standards.
 
 * Goal
 
@@ -42,15 +42,15 @@ awaiting confirmation, or refused.
 5. *Record.* The system writes the activity and the versions in one transaction.
 6. *Confirm, if needed.* When the event requires confirmation, it waits for it.
 
-* Screens and wireframes
+* Screens
 
 This journey is a use case. The Workflows menu of the trade page carries the event
 actions, and the activity shows in the History timeline. The Qt event window maintained the
 lookup of event types, which is reference data. This journey records an event on one
 trade.
 
-No wireframe is drawn here. The prototype story draws the screens, from the user
-interface standards and from this use case.
+No wireframe is drawn here. The prototype story draws the screens, from the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed
 
@@ -70,7 +70,9 @@ interface standards and from this use case.
 | Record | Write the activity | =trading.v1.trade_activities.put= | exists |
 
 Status is one of =exists=, =partial=, or =missing=. A subject that contains
-=<instrument>= stands for the one instrument table the trade type routes to.
+=<instrument>= stands for the one instrument table the trade type routes to. The plural
+is written with a plain =s=. A table whose plural is irregular, such as
+=trade_activities=, has its own subject: check the protocol header, not the pattern.
 
 * What is missing
 

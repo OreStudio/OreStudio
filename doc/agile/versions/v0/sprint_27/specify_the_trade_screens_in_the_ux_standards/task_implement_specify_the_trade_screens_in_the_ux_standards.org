@@ -8,7 +8,7 @@
 #+filetags: :specify_the_trade_screens_in_the_ux_standards:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-specify-the-trade-screens-in-the-ux-standards
-#+pr:
+#+pr: 3137
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3137][#3137]] | [agile] Specify the trade screens in the UX standards |
 
 * Review
 

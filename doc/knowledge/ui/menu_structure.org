@@ -153,6 +153,7 @@ The test for a screen is one question: which topic would a person look in?
 |-------+------------------------------|
 | Reference data | What are the things the work is made of? |
 | Organisation | Who is here, and what may they do? |
+| Trades | What does the tenant hold, and what happens to it? |
 | Requests | What is waiting for an answer? |
 | Operations | How is the installation running, and who has signed in? |
 | Tenants | Which tenants does this installation hold? |
@@ -160,7 +161,7 @@ The test for a screen is one question: which topic would a person look in?
 ** The areas
 
 #+begin_src text
-  Home   Reference data   Organisation   Market data   Requests   Operations   Tenants
+  Home   Reference data   Organisation   Market data   Trades   Requests   Operations   Tenants
 #+end_src
 
 | Area | Screens | Drawn when the person holds the read of |
@@ -169,6 +170,7 @@ The test for a screen is one question: which topic would a person look in?
 | Reference data | The cards below | Always |
 | Organisation | People (Staff for a member), Hierarchy, Roles and Rescue access | Any one of those screens |
 | Market data | The prices and curves the platform receives or generates: the FX price feeds and the curve evolution | Any one of those screens |
+| Trades | Trades, and Structures and packages, with the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Services, the compute grid, the message queue, telemetry, versions, the database and Sign-ins | Any one of those screens |
 | Tenants | The tenants, their parties and people, and onboarding | Any tenant screen |
@@ -203,6 +205,26 @@ build they use. So the Operations area is drawn for every person. A later screen
 that serves only some people is added to Operations and guarded by its read. It
 does not get an area of its own.
 
+*** Trades
+
+| Cards | Journeys |
+|-------+----------|
+| Trades, with the Book a trade button, and the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]] |
+| Structures and packages | [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]], and [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
+
+A trade is an entity, so it has a list and a page of its own and is not a card
+of Reference data. Trades is its own area because the question a person asks of
+it differs from the question they ask of reference data: reference data is what
+the work is made of, and a trade is what the tenant holds. A structure is the
+tree of a deal, and a package is a structure of kind Package, so one screen
+serves both. The Trade entry prototype named its subject a structure and sat
+under Books and portfolios. It now sits with the other prototypes of this area:
+see the [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]].
+
+*Book a trade* is the Add of the trade list: a button in the list header that
+opens the new-trade page. It is not a workflow, because the page has no step
+rail. It is one page in tabs, and the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] says how.
+
 ** The account menu
 
 The account menu stands in the header with the notification bell. It holds My
@@ -223,6 +245,8 @@ areas. A person reaches each in one place, as the entity specification says.
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
 | FX price feeds | Market data | A feed generates the prices that market data holds |
+| Trades, Book a trade, Import a portfolio from ORE, Export a portfolio to ORE | Trades | A trade is held by the tenant and is not a shared list |
+| Structures and packages, Group trades | Trades | A structure is the tree of a deal made of trades |
 | Tenants | Tenants | The roster of the installation |
 
 ** Addresses
@@ -244,6 +268,14 @@ the same thing. A screen has one address.
 | Roles | =/organisation/roles= |
 | Rescue access | =/organisation/rescue= |
 | Sign-ins | =/operations/sign-ins= |
+| Trades | =/trades= |
+| Book a trade | =/trades/new= |
+| A trade's page | =/trades/:id= |
+| Import a portfolio from ORE | =/trades/import= |
+| Export a portfolio to ORE | =/trades/export= |
+| Structures and packages | =/trades/structures= |
+| A structure's or package's page | =/trades/structures/:id= |
+| Group trades | =/trades/structures/new= |
 
 The earlier addresses (=/parties=, =/people=, =/hierarchy=, =/staff=, =/roles=,
 =/rescue=, =/audit=, =/classifications=, =/reporting-lines=) redirect to the new
@@ -268,6 +300,9 @@ page. One difference is left.
 - Whether Rescue access belongs in Organisation, because it acts on a person, or
   in Operations with Sign-ins, because it answers a problem with signing in.
   This page puts it in Organisation.
+- The Trades area has journeys and prototypes and no web screens yet. The BFF has
+  no trading route, and the trade list can filter only by trade id until the
+  model declares the columns a person searches by.
 - Market data (curves, surfaces and their feeds) has journeys and no web
   screens yet. When it has screens it may need an area of its own, because it is
   data that changes by the minute and not a list that changes by the month.

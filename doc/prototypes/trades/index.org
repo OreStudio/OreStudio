@@ -23,7 +23,7 @@ What a person does with a trade: book it, amend it, read it, bring it in from OR
 | Prototype | What it argues | Open it | Review |
 |-----------+----------------+---------+--------|
 | [[file:trade-page.org][The trade list and page]] | A trade is an entity. One page with a tab for each aspect serves review, amendment and lifecycle events. Edit asks for the kind of change first, and the kind bounds the fields. A save does not reload the page. The list is the request. | [[file:trade-page/][prototype]] | none |
-| [[file:book-a-trade.org][Book a trade]] | Booking is one page of cards, or a guided sequence. The entity specification allows the sequence only if it is quicker. The trade type comes first because it decides which instrument card appears. | [[file:book-a-trade/][prototype]] | none |
+| [[file:book-a-trade.org][Book a trade]] | Booking is one page in tabs. The trade type is a combo box, and it decides which parts the Instrument tab has, one tab for each. | [[file:book-a-trade/][prototype]] | none |
 | [[file:ore-portfolio.org][ORE import and export]] | Import is a workflow because the person must see the plan before it is written and must be able to undo it. Export checks the trades before it makes the file. | [[file:ore-portfolio/][prototype]] | none |
 | [[file:structure-page.org][A structure or a package]] | A package is a kind of structure, so one screen serves every kind and its words follow the kind. It opens on the list of strategies, typed structures, dynamic structures and packages. A structure is one deal, confirmed as one document and priced as a whole. A package confirms trade by trade and is priced leg by leg. | [[file:structure-page/][prototype]] | none |
 | [[file:trade-entry.org][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. It was the first prototype of this work, built before the entity screen specification. It moved here from the Books and portfolios group, and now sits on the group's shell. | [[file:trade-entry/][prototype]] | none |
@@ -40,17 +40,19 @@ What a person does with a trade: book it, amend it, read it, bring it in from OR
 | A save does not reload the page. Refresh turns gold and the person presses it | trade page: save an edit, then Refresh |
 | History is a chart over a rail of one-line entries, with details on demand | trade page: History tab |
 | A reference is a link to its record. A person is drawn with a photo or initials | every list and card |
-| A workflow is in the Workflows menu of the screen it acts on, in the workflow hue | trade list and page: Workflows |
+| A workflow is in the Workflows menu of the screen it acts on, in the workflow hue. Add is a button | trade list: Book a trade is the Add button, and Workflows holds Import, Export and Group trades |
+| A list is the standard list: a page, a stated order and a filter record, and a combo box offers only values that exist | trade list: the request line, and the filter combo boxes |
 | A fixed field says why | trade page: Identity card |
 | Loading, empty, error and refused states are in place | trade list: the states in the bar |
 
-* Decisions the prototypes need from the owner
+* Decisions taken
 
-- *A Trades area.* The [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] page names five areas and none holds trades. The prototypes put the trade list in a new area, Trades, which is the name of the journey group. The page must change if this holds.
-- *The kind of change comes first.* The prototypes follow [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]]: the person chooses the activity and the activity bounds the fields. A form that offers every field and asks the reason afterwards is the opposite. Say if the owner wants the second.
-- *Booking: page or sequence.* The prototype shows both. A decision should follow a trial by a trader.
-- *The page header.* The entity specification puts only the identifier under the title and the version on each card. The trade page also draws the state, the authorisation and both versions under the title, because the two-version rule is what a person reads a trade for. The specification should say so for a trade, or the prototype should move them to the cards.
-- *Authorisation.* The state machine has operational authorisation, and no journey covers it. The trade page draws an Authorise button so that the machine reads whole. It is filed as a capture.
+- *A Trades area.* The [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] page now names the Trades area, its screens and its addresses.
+- *The page header.* The [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] now makes the trade the one exception to the identifier-only header: it also carries the state and both versions.
+- *The kind of change comes first.* The entity specification now states it for the trade page: the kind of change bounds the fields of the Edit dialog.
+- *Booking.* One page in tabs, with the trade type in a combo box and a tab for each part of the instrument. Booking is the Add of the trade list, and the sequence is dropped.
+- *The standard entity protocol.* The trade screens read and write through the standard entity operations. What a screen needs and the protocol lacks is a change to the model.
+- *Authorisation.* Out of scope for now. The prototypes draw no authorisation. A capture is filed and waits.
 
 * What is not drawn
 

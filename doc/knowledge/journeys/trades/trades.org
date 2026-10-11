@@ -39,6 +39,10 @@ journeys to decide the cards and the workflows on the page.
 
 The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] serve these journeys. Review, amendment and lifecycle events are one trade page. Booking, ORE import and export, and grouping are workflows reached from the trade list.
 
+* How the screens reach the server
+
+The trade screens use the standard entity operations of the [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]]: =list= with a page, an order and a filter record, =get=, =put= with a precondition and a change intent, and the versions of an entity. Booking and the ORE operations are domain operations in the =ops= namespace, and each is a gap to review.
+
 * What blocks all of them
 
 - The BFF and the web app have no trading route.

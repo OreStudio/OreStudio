@@ -25,8 +25,11 @@
 #include "ores.eventing.core/export.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/domain/headers.hpp"
+#include <optional>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 
 namespace ores::eventing::service {
 
@@ -45,6 +48,24 @@ ORES_EVENTING_CORE_EXPORT void
 publish_entity_event(ores::nats::service::client& nats,
                      const std::string& subject,
                      const domain::entity_change_event& notification);
+
+/**
+ * @brief The envelope headers an entity event is published with.
+ *
+ * The tenant is always present; the party only when the row has one. An event
+ * without the party header concerns the whole tenant. A tenant that is unknown
+ * is left out rather than sent empty, because a subscriber treats a missing
+ * tenant as an event it cannot show to anyone.
+ */
+[[nodiscard]] inline std::unordered_map<std::string, std::string>
+entity_event_headers(const std::string& tenant_id, const std::optional<std::string>& party_id) {
+    std::unordered_map<std::string, std::string> headers;
+    if (!tenant_id.empty())
+        headers.emplace(std::string(ores::nats::headers::x_tenant_id), tenant_id);
+    if (party_id && !party_id->empty())
+        headers.emplace(std::string(ores::nats::headers::x_party_id), *party_id);
+    return headers;
+}
 
 /**
  * @brief Publishes a canonical entity event to NATS on the given subject.
@@ -70,6 +91,32 @@ void publish_entity_event(ores::nats::service::client& nats,
                           const Event& event) {
     try {
         nats.publish(subject, ores::nats::default_wire_codec().encode(event), {});
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Failed to publish to NATS subject '" + subject +
+                                 "': " + e.what());
+    }
+}
+
+/**
+ * @brief Publishes a canonical entity event with its tenancy in the headers.
+ *
+ * The payload is the event alone. The subject is the one the event's traits
+ * state, and the tenant and the party travel as @c X-Tenant-Id and
+ * @c X-Party-Id, so a subscriber that serves people can pass the event on only
+ * to a reader who may hear it.
+ *
+ * @param nats The client to publish with.
+ * @param subject The event subject, from @ref event_subject.
+ * @param published The event and the tenancy the store reported for it.
+ */
+template <typename Event>
+void publish_entity_event(ores::nats::service::client& nats,
+                          const std::string& subject,
+                          const domain::published_entity_event<Event>& published) {
+    try {
+        nats.publish(subject,
+                     ores::nats::default_wire_codec().encode(published.event),
+                     entity_event_headers(published.tenant_id, published.party_id));
     } catch (const std::exception& e) {
         throw std::runtime_error("Failed to publish to NATS subject '" + subject +
                                  "': " + e.what());

@@ -81,7 +81,7 @@ struct credit_instrument final {
     /**
      * @brief Credit spread in basis points (e.g. 100.0 for 100 bps).
      */
-    double spread = 0.0;
+    ores::utility::decimal::decimal spread = ores::utility::decimal::decimal{};
 
     /**
      * @brief Recovery rate as a decimal (e.g. 0.4 for 40%).
@@ -172,7 +172,7 @@ struct credit_instrument final {
     /**
      * @brief Option strike spread in bps for CDS options. Null when not set.
      */
-    std::optional<double> option_strike;
+    std::optional<ores::utility::decimal::decimal> option_strike;
 
     /**
      * @brief Reference asset code for CreditLinkedSwap. Empty otherwise.

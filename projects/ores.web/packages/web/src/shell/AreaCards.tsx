@@ -21,7 +21,7 @@
 
 import type { ReactNode } from 'react';
 import type { SessionMode } from '@ores/wire-protocol/browser';
-import { useHolds } from '../access/holds.js';
+import { useHeld } from '../access/holds.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Tiles, type Tile } from '../ui/Tiles.js';
 import { MENU, offered } from './areas.js';
@@ -30,7 +30,7 @@ import { ACCOUNT_CARDS, AREA_CARDS, FOLDERS, cardOf, type CardArea, type CardId 
 /** The cards of one list that this person is offered, named and worded in their language. */
 function useTiles(ids: readonly CardId[], mode: SessionMode): readonly Tile[] {
     const { t } = useTranslation();
-    const holds = useHolds();
+    const holds = useHeld();
     return ids
         .map(cardOf)
         .filter((card) => offered(card, holds, mode))
@@ -66,7 +66,7 @@ export function AreaCards({
  */
 export function ActiveCards({ mode }: { readonly mode: SessionMode }): ReactNode {
     const { t } = useTranslation();
-    const holds = useHolds();
+    const holds = useHeld();
     const folders: Tile[] = FOLDERS.flatMap((folder) => {
         const entry = MENU.find((item) => item.to === folder.to);
         return entry !== undefined && offered(entry, holds, mode)

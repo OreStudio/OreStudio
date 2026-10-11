@@ -52,3 +52,7 @@ if ! grep -q '#include "ores.ore.core/export.hpp"' "$DOMAIN_HPP"; then
     sed -i '/#include "domain_xsd.hpp"/a #include "ores.ore.core/export.hpp"' "$DOMAIN_HPP"
 fi
 python3 "${GIT_ROOT}/scripts/reapply_export_macros.py" "$PRE_REGEN_DOMAIN_HPP" "$DOMAIN_HPP"
+
+echo ""
+echo "Reapplying the ORE lexical-form hand-patch onto regenerated domain_xsd.hpp and domain.cpp..."
+python3 "${GIT_ROOT}/scripts/reapply_ore_lexical_form.py"

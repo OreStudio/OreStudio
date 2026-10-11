@@ -693,7 +693,7 @@ describe("the tenant administrator's home", () => {
             'tenant-administration',
             undefined,
             undefined,
-            seedTenant(),
+            seedTenant({ mayAnswer: false }),
             '/?tab=upcoming',
         );
 
@@ -702,6 +702,27 @@ describe("the tenant administrator's home", () => {
         }
         expect(html).toContain('Coming later');
         expect(html).not.toContain('href=');
+    });
+
+    it('opens the market data screen for a person who may read curves, and no longer marks it as coming', () => {
+        const active = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant(),
+            '/?tab=active',
+        );
+        expect(active).toContain('href="/market-data/evolution"');
+
+        const upcoming = home(
+            'tenant-administration',
+            undefined,
+            undefined,
+            seedTenant(),
+            '/?tab=upcoming',
+        );
+        expect(upcoming).not.toContain('Market data');
+        expect(upcoming).toContain('Trading');
     });
 
     it('shows words and never a translation key on any tab', () => {

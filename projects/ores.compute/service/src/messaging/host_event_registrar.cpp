@@ -48,12 +48,16 @@ register_host_event_mapping(ev::service::postgres_event_source& event_source,
     event_source.register_entity_event_mapping<compute::messaging::host_event>(
         "ores_compute_hosts");
 
-    return event_bus.subscribe<compute::messaging::host_event>(
-        [&nats](const compute::messaging::host_event& e) {
+    return event_bus.subscribe<ev::domain::published_entity_event<compute::messaging::host_event>>(
+        [&nats](
+            const ev::domain::published_entity_event<compute::messaging::host_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
-                nats, ev::domain::event_subject<compute::messaging::host_event>(e.action), e);
+                nats,
+                ev::domain::event_subject<compute::messaging::host_event>(published.event.action),
+                published);
         });
 }
 

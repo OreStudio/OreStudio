@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 30FDE60C-DBDB-47DA-9C9D-D4262A948AC4
+:END:
+#+title: Task: Declare the economic fields
+#+description: The model states which fields are economic and which components make up an instrument's shape.
+#+type: task
+#+level: s1
+#+filetags: :exact_numbers_and_economic_change:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Which fields a customer agreed to, and which rows make up an instrument, are model declarations rather than code knowledge.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The codegen reads both declarations.
+- A field added later is economic or not by declaration, not by default.
+
+* Plan
+
+*Not started.* The digest task ships without this one, using a name-based rule
+in =ores.trading.api/domain/economic_digest.hpp=: a fixed list of identity and
+audit names, an =_id= suffix rule, and a small allow-list of =*_id= names that
+are external identifiers rather than foreign keys. That rule lives in code, so
+it is the very thing this task exists to replace.
+
+Two things the code rule cannot do, with a worked reason for each:
+
+- It cannot tell a money field from a continuous one that shares a name shape.
+  A field called =amount= is economic, and a field called =accrual_amount= is
+  too, but the rule sees only the token.
+- It cannot tell an external identifier from a foreign key when neither is in
+  the allow-list. =security_id= is in it today because a trade re-pointed at a
+  different security is a change the customer agreed to; the next such field
+  needs another line of C++.
+
+What the task adds, in order:
+
+1. A =:economic:= knob on a column in the entity model, and a way to state the
+   components that make up a shape.
+2. Codegen that emits the declaration — a per-entity list of economic field
+   names the digest can consume.
+3. The models declare it, so =economic_digest= stops consulting a name list.
+
+The knob is also where a per-field =economic= marking closes the gap recorded
+in =doc/knowledge/architecture/exact_numbers_and_economic_change.org=, if the
+two turn out to be the same declaration.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

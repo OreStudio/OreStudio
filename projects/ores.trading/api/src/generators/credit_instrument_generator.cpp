@@ -52,7 +52,7 @@ generate_synthetic_credit_instrument(utility::generation::generation_context& ct
     r.reference_entity = std::string("ACME Corp");
     r.currency = std::string("USD");
     r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
-    r.spread = 100.0;
+    r.spread = ores::utility::decimal::decimal::from_string("100.0").value();
     r.recovery_rate = 0.4;
     r.tenor = std::string("5Y");
     r.start_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
@@ -60,6 +60,9 @@ generate_synthetic_credit_instrument(utility::generation::generation_context& ct
     r.day_count_fraction_code = std::string("Actual365Fixed");
     r.payment_frequency_code = std::string("Quarterly");
     r.option_expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
+    r.option_strike = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

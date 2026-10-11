@@ -51,10 +51,13 @@ generate_synthetic_fx_accumulator_instrument(utility::generation::generation_con
     r.identity.trade_activity_id = ctx.generate_uuid();
     r.currency = std::string("USD");
     r.fixing_amount = ores::utility::decimal::decimal::from_string("100000").value();
-    r.strike = 1.10;
+    r.strike = ores::utility::decimal::decimal::from_string("1.10").value();
     r.underlying_code = std::string("TR20H-EUR-JPY");
     r.long_short = std::string("Long");
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 6 / 15};
+    r.knock_out_barrier = ores::utility::decimal::decimal::from_string(
+                              std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                              .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

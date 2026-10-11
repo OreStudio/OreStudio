@@ -115,15 +115,15 @@ common case.
 
 ** value
 :PROPERTIES:
-:type:          numeric(18, 10)
-:cpp_type:      double
+:type:          numeric(38, 12)
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :END:
 
 The rate or the spread, as a decimal: 0.05 is five per cent.
 
 #+begin_src cpp :name generator
-0.05
+ores::utility::decimal::decimal::from_string("0.05").value()
 #+end_src
 
 * Foreign keys

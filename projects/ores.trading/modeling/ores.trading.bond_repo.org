@@ -74,16 +74,16 @@ std::string("Fixed")
 
 ** repo_rate
 :PROPERTIES:
-:type:     numeric(28, 10)
-:cpp_type: double
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
-:default_value: 0.0
+:default_value: std::nullopt
 :END:
 
 Rate of the repo leg, when the leg is fixed.
 
 #+begin_src cpp :name generator
-0.045
+ ores::utility::decimal::decimal::from_string("0.045").value()
 #+end_src
 
 ** repo_index

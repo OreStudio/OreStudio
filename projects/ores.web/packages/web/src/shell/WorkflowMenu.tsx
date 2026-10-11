@@ -21,7 +21,7 @@
 
 import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { useHolds } from '../access/holds.js';
+import { useHeld } from '../access/holds.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button } from '../ui/Primitives.js';
 import { useDismiss } from '../ui/useDismiss.js';
@@ -38,7 +38,7 @@ import { cardOf, workflowsOn, type CardId } from './cards.js';
  */
 export function WorkflowMenu({ on }: { readonly on: CardId }): ReactNode {
     const { t } = useTranslation();
-    const holds = useHolds();
+    const holds = useHeld();
     const [open, setOpen] = useState(false);
     const root = useRef<HTMLDivElement>(null);
     const close = useCallback(() => setOpen(false), []);

@@ -133,6 +133,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/messaging/apply_step_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/messaging/approval_decision_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/messaging/approval_decision_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.core/messaging/approval_decision_registrar.hpp"

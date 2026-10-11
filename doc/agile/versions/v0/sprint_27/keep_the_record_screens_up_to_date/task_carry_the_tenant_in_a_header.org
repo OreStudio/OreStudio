@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 7B502802-07D4-4A32-9EE4-88AE093318B6
+:END:
+#+title: Task: Carry the tenant in a header on every entity event
+#+description: Task for: Keep the record screens up to date
+#+type: task
+#+level: s1
+#+filetags: :keep_the_record_screens_up_to_date:sprint_27:v0:
+#+owner: marco
+#+branch: feature/keep-the-record-screens-up-to-date
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An entity event names the tenant of its row in the =X-Tenant-Id= header, so a subscriber that serves people can pass it on only to a reader of that tenant. The notification already holds the tenant. The typed event and the registrars drop it. The protocol specification (Events, Tenancy of an event) defines the header and keeps the subject grammar as it is.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:4DE7AFB9-A06A-4844-8B11-C26A05B334E8][Keep the record screens up to date]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-10                               |
+
+* Acceptance
+
+- The protocol specification defines =X-Tenant-Id= and =X-Party-Id= on events.
+- Every generated registrar publishes with =X-Tenant-Id= set from the row's tenant.
+- A unit test shows the header is set and that the payload and the subject are unchanged.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Built. Not run against NATS yet.
+
+- The protocol specification defines =X-Tenant-Id= and =X-Party-Id= (Events,
+  Tenancy of an event, and the header registry).
+- =entity_event_notification= gains =party_id=. =published_entity_event<Event>=
+  carries the typed event with the tenant and party the store reported.
+  =postgres_event_source= publishes it beside the typed event.
+- =publish_entity_event= has an overload that sets the headers
+  (=entity_event_headers=). The payload and the subject are unchanged.
+- The registrar, cache registrar and integration test templates are changed and
+  regenerated for every component (346 registrars, 270 integration tests).
+- The cache registrar used to decode the tenant from the payload, which carries
+  none, so it could never reload a partition. It reads the header now.
+- Checked: =clang -fsyntax-only= on a registrar, an integration test, the cache
+  registrar and the publisher tests; the codegen tests (114) and
+  =check_subject_conformance.py= pass. The C++ tests need a build to run.

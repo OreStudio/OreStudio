@@ -53,7 +53,7 @@ struct fx_asian_forward_instrument_write {
     std::string currency;
     std::optional<ores::utility::decimal::decimal> fixing_amount;
     std::optional<ores::utility::decimal::decimal> target_amount;
-    std::optional<double> strike;
+    std::optional<ores::utility::decimal::decimal> strike;
     std::string description;
 };
 

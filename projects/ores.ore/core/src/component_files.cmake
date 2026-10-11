@@ -75,6 +75,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/equity_instrument_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/fx_instrument_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/netting_set_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/ore_boundary_decimal.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/ore_code_tables.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/payment_frequency_conversion.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/pricing_engine_mapper.hpp"

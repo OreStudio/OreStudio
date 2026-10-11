@@ -58,6 +58,11 @@ export const MENU: readonly MenuItem[] = [
             'iam::accounts:lock',
         ],
     },
+    {
+        nameKey: 'shell.menu.marketdata',
+        to: '/market-data/evolution',
+        permission: 'marketdata::curve_snapshots:read',
+    },
     { nameKey: 'shell.menu.requests', to: '/requests' },
     { nameKey: 'shell.menu.operations', to: PATHS.operations },
     { nameKey: 'shell.menu.development', to: '/development' },

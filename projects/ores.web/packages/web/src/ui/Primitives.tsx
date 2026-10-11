@@ -20,6 +20,9 @@
  */
 
 import { Icon, type IconName } from './Icon.js';
+import { trail } from '../log/clientLog.js';
+import { LoadedAt } from './LoadedAt.js';
+import { useEffect } from 'react';
 import type {
     ButtonHTMLAttributes,
     InputHTMLAttributes,
@@ -351,20 +354,36 @@ export function Detail({
     );
 }
 
+const forms = trail('form');
+
 /** A modal, for the editor and the unlock prompt. */
 export function Dialog({
     title,
+    name,
     onClose,
     children,
     footer,
     wide = false,
+    loadedAt,
 }: {
     readonly title: string;
+    /** The form's stable name in the log; the title is its fallback. */
+    readonly name?: string;
+    /**
+     * When the record the dialog shows was loaded, in milliseconds. A dialog
+     * over a record states it under the title; a dialog over none leaves it out.
+     */
+    readonly loadedAt?: number | undefined;
     readonly onClose: () => void;
     readonly children: ReactNode;
     readonly footer?: ReactNode;
     readonly wide?: boolean;
 }): ReactNode {
+    const form = name ?? title;
+    useEffect(() => {
+        forms.info('form opened', { form });
+        return () => forms.info('form closed', { form });
+    }, [form]);
     return (
         <div
             className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/60 p-4 py-10 backdrop-blur-sm"
@@ -378,7 +397,10 @@ export function Dialog({
                 onClick={(event) => event.stopPropagation()}
             >
                 <div className="flex items-center justify-between border-b border-line px-5 py-3">
-                    <h2 className="text-sm font-semibold">{title}</h2>
+                    <div className="space-y-1">
+                        <h2 className="text-sm font-semibold">{title}</h2>
+                        <LoadedAt at={loadedAt} />
+                    </div>
                     <Button
                         variant="ghost"
                         size="sm"

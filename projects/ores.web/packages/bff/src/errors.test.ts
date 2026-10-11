@@ -81,6 +81,17 @@ describe('toHttpFailure', () => {
         expect(failure.body.message).not.toContain('internal detail');
     });
 
+    it('maps a body past a route limit to 413, and not to an internal fault', () => {
+        const tooLarge = Object.assign(new Error('Request body is too large'), {
+            code: 'FST_ERR_CTP_BODY_TOO_LARGE',
+            statusCode: 413,
+        });
+        const failure = toHttpFailure(tooLarge);
+        expect(failure.status).toBe(413);
+        expect(failure.body.code).toBe('invalid-request');
+        expect(failure.body.message).not.toContain('Request body');
+    });
+
     it('passes an existing failure through unchanged', () => {
         const original = invalidCredentials('nope');
         expect(toHttpFailure(original)).toBe(original);

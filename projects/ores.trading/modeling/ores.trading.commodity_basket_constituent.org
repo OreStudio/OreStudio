@@ -87,8 +87,8 @@ refuses an empty name.
 
 ** weight
 :PROPERTIES:
-:type:     numeric(28, 10)
-:cpp_type: std::optional<ores::utility::decimal::decimal>
+:type:          double precision
+:cpp_type:      std::optional<double>
 :nullable: true
 :END:
 

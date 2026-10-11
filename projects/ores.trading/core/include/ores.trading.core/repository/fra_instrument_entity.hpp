@@ -49,7 +49,7 @@ struct fra_instrument_entity {
     std::string currency;
     std::string rate_index;
     std::string long_short;
-    double strike = 0.0;
+    std::string strike;
     std::string notional;
     std::string modified_by;
     std::string performed_by;

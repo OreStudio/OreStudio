@@ -41,6 +41,59 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- Party visibility of accounts (RESTRICTIVE, reads only). HAND-WRITTEN
+-- EXCEPTION to the party-isolation shape, which keys on a party_id column and
+-- on the session's visible party set.
+--
+-- An account has no party_id column, because a person works in several
+-- parties; its parties are the links in ores_iam_account_parties_tbl. And the
+-- scope is the parties the caller's account works in, not the party the session
+-- acts for, so a head of group linked to several parties still sees all of them.
+-- A session sees an account that works in any party the caller's own account
+-- works in. A session with no actor (a service acting as itself, or the sign-in
+-- lookup before a session exists) is not restricted, as with the visible-party
+-- passthrough on party-owned tables. The caller always sees their own account.
+--
+-- An actor whose account has no party links gets no party set, and sees only its
+-- own account. A tenant administrator sees the tenant because its account is
+-- linked to every party of the tenant, and not because the policy names it.
+--
+-- The function calls are wrapped in a select, so the planner runs each once per
+-- query and not once per row.
+--
+-- Security definer, so that reading the caller's own account to find its links
+-- does not apply this policy to itself.
+create or replace function ores_iam_actor_party_ids_fn()
+returns uuid[] as $$
+    select array_agg(ap.party_id)
+    from ores_iam_accounts_tbl a
+    join ores_iam_account_parties_tbl ap
+      on ap.tenant_id = a.tenant_id
+     and ap.account_id = a.id
+     and ap.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.username = ores_iam_current_actor_fn()
+      and a.tenant_id = ores_iam_current_tenant_id_fn()
+      and a.valid_to = ores_utility_infinity_timestamp_fn();
+$$ language sql stable security definer set search_path = public, pg_temp;
+
+drop policy if exists accounts_party_visibility_policy
+    on ores_iam_accounts_tbl;
+
+create policy accounts_party_visibility_policy on ores_iam_accounts_tbl
+as restrictive
+for select using (
+    (select ores_iam_current_actor_fn()) is null
+    or username = (select ores_iam_current_actor_fn())
+    or exists (
+        select 1
+        from ores_iam_account_parties_tbl ap
+        where ap.tenant_id = ores_iam_accounts_tbl.tenant_id
+          and ap.account_id = ores_iam_accounts_tbl.id
+          and ap.valid_to = ores_utility_infinity_timestamp_fn()
+          and ap.party_id = any((select ores_iam_actor_party_ids_fn())::uuid[])
+    )
+);
+
 -- -----------------------------------------------------------------------------
 -- Account Credentials
 -- -----------------------------------------------------------------------------

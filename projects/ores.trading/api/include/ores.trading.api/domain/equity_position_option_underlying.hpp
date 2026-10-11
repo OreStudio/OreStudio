@@ -116,7 +116,7 @@ struct equity_position_option_underlying final {
      * The ORE Underlying/Weight element is optional, and a weight is a money-role value per D11, so
      * the column is an exact numeric and a document that states no weight leaves it null.
      */
-    std::optional<ores::utility::decimal::decimal> weight;
+    std::optional<double> weight;
 
     /**
      * @brief Position direction of this entry's option: Long or Short.

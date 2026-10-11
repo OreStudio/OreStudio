@@ -20,7 +20,12 @@
  */
 
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import { runRequestSchema } from '@ores/contracts';
+import {
+    IMAGE_MEDIA_TYPES,
+    MAX_IMAGE_BYTES,
+    imageUploadRequestSchema,
+    runRequestSchema,
+} from '@ores/contracts';
 import { HttpFailure, invalidRequest, notFound } from './errors.js';
 import {
     AmbiguousStepError,
@@ -30,7 +35,9 @@ import {
 } from './scenarios/scenario-doc.js';
 import {
     InvalidDocIdError,
+    InvalidImageError,
     ScenarioNotFoundError,
+    StepNumberError,
     type ScenarioStore,
 } from './scenarios/scenario-store.js';
 import type { LiveSession } from './sessions.js';
@@ -79,6 +86,12 @@ function isFileError(error: unknown): boolean {
 function failure(error: unknown): unknown {
     if (error instanceof InvalidDocIdError) return invalidRequest(error.message);
     if (error instanceof ScenarioNotFoundError) return notFound(error.message);
+    if (error instanceof InvalidImageError) {
+        const status =
+            error.reason === 'not-image' ? 415 : error.reason === 'too-large' ? 413 : 400;
+        return new HttpFailure(status, { code: 'invalid-request', message: error.message });
+    }
+    if (error instanceof StepNumberError) return invalidRequest(error.message);
     if (
         error instanceof UnknownStepError ||
         error instanceof AmbiguousStepError ||
@@ -105,6 +118,16 @@ async function guarded<T>(work: () => Promise<T>): Promise<T> {
         throw failure(error);
     }
 }
+
+/**
+ * The most bytes a request body may hold for a screenshot. The image travels in
+ * base64, which is four bytes for every three, with a little JSON around it.
+ */
+const IMAGE_BODY_BYTES = Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 4096;
+
+const MEDIA_TYPES: ReadonlySet<string> = new Set(IMAGE_MEDIA_TYPES);
+
+const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
 
 /** The time of a save, to the second, as the Results table shows it. */
 function stamp(now: Date): string {
@@ -165,4 +188,33 @@ export function registerQaRoutes(
             changed: recorded.changed,
         };
     });
+
+    server.post(
+        '/api/qa/scenarios/:id/steps/:step/images',
+        {
+            bodyLimit: IMAGE_BODY_BYTES,
+            // The session is checked before Fastify reads the body, so a caller
+            // with none cannot make the server buffer a large upload.
+            onRequest: async (request) => {
+                requireSession(request);
+            },
+        },
+        async (request) => {
+            const scenarios = open(request);
+            const parsed = imageUploadRequestSchema.safeParse(request.body);
+            if (!parsed.success)
+                throw invalidRequest('An image upload needs a media type and data.');
+            const { mediaType, data } = parsed.data;
+            if (!MEDIA_TYPES.has(mediaType.toLowerCase()) || !BASE64.test(data)) {
+                throw new HttpFailure(415, {
+                    code: 'invalid-request',
+                    message: 'Only PNG, JPEG, GIF and WebP images are accepted.',
+                });
+            }
+            const step = Number((request.params as { step: string }).step);
+            return guarded(() =>
+                scenarios.saveImage(idOf(request), step, Buffer.from(data, 'base64')),
+            );
+        },
+    );
 }

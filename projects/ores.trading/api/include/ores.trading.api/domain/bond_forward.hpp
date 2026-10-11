@@ -111,7 +111,7 @@ struct bond_forward final {
     /**
      * @brief Rate the forward's value is locked at.
      */
-    std::optional<double> lock_rate;
+    std::optional<ores::utility::decimal::decimal> lock_rate;
 
     /**
      * @brief Sensitivity the document states alongside the lock rate.

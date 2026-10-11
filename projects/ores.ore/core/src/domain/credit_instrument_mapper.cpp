@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/credit_instrument_mapper.hpp"
+#include "ores.ore.core/domain/ore_boundary_decimal.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <chrono>
@@ -82,14 +83,12 @@ void credit_instrument_mapper::map_cds_leg(const legData& ld, credit_instrument&
     if (ld.Currency)
         instr.currency = std::string(*ld.Currency);
     if (ld.Notionals && !ld.Notionals->Notional.empty())
-        instr.notional = ores::utility::decimal::decimal::from_double(
-                             static_cast<double>(ld.Notionals->Notional.front()))
-                             .value();
+        instr.notional = exact_decimal(ld.Notionals->Notional.front());
     if (ld.DayCounter)
         instr.day_count_fraction_code = to_string(*ld.DayCounter);
     if (ld.legDataType && ld.legDataType->FixedLegData &&
         !ld.legDataType->FixedLegData->Rates.Rate.empty())
-        instr.spread = static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.front());
+        instr.spread = exact_decimal(ld.legDataType->FixedLegData->Rates.Rate.front());
     if (!ld.ScheduleData || ld.ScheduleData->Rules.empty())
         return;
     const auto& rule = ld.ScheduleData->Rules.front();
@@ -116,10 +115,10 @@ legData credit_instrument_mapper::reverse_cds_leg(const credit_instrument& instr
         n.Notional.push_back(nv);
         ld.Notionals = std::move(n);
     }
-    if (instr.spread != 0.0) {
+    if (instr.spread != ores::utility::decimal::decimal{}) {
         _FixedLegData_t fld;
         _FixedLegData_t_Rates_t_Rate_t rate;
-        static_cast<float&>(rate) = static_cast<float>(instr.spread);
+        static_cast<float&>(rate) = static_cast<float>(instr.spread.to_double());
         fld.Rates.Rate.push_back(rate);
         legDataType_group_t ldt;
         ldt.FixedLegData = std::move(fld);
@@ -195,7 +194,7 @@ credit_instrument_mapper::forward_index_cds_option(const trade& t) {
     result.reference_entity = std::string(d.IndexCreditDefaultSwapData.CreditCurveId);
     result.index_name = std::string(d.IndexCreditDefaultSwapData.CreditCurveId);
     if (d.Strike)
-        result.option_strike = static_cast<double>(*d.Strike);
+        result.option_strike = exact_decimal(*d.Strike);
     result.option_expiry_date = first_exercise_date(d.OptionData);
     map_cds_leg(d.IndexCreditDefaultSwapData.LegData, result);
     return result;
@@ -311,7 +310,7 @@ trade credit_instrument_mapper::reverse_index_cds_option(const credit_instrument
     static_cast<std::string&>(d.IndexCreditDefaultSwapData.CreditCurveId) = instr.reference_entity;
     d.IndexCreditDefaultSwapData.LegData = reverse_cds_leg(instr);
     if (instr.option_strike)
-        d.Strike = static_cast<float>(*instr.option_strike);
+        d.Strike = static_cast<float>(instr.option_strike->to_double());
     if (instr.option_expiry_date) {
         _ExerciseDates_t exd;
         date ed;

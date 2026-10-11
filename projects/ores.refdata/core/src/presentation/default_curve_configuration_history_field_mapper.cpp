@@ -63,9 +63,8 @@ render_default_curve_configuration_fields(const domain::default_curve_configurat
     fields.push_back({.name = "Calendar", .value = v.calendar.value_or(std::string{})});
     fields.push_back({.name = "Conventions", .value = v.conventions.value_or(std::string{})});
     fields.push_back({.name = "Extrapolation", .value = v.extrapolation.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Running Spread",
-         .value = v.running_spread ? std::to_string(*v.running_spread) : std::string{}});
+    fields.push_back({.name = "Running Spread",
+                      .value = v.running_spread ? v.running_spread->to_string() : std::string{}});
     fields.push_back({.name = "Index Term", .value = v.index_term.value_or(std::string{})});
     fields.push_back({.name = "Imply Default From Market",
                       .value = v.imply_default_from_market.value_or(std::string{})});

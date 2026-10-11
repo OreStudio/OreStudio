@@ -25,7 +25,7 @@ import { SignInFacts } from '../access/SignInFacts.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Detail, Field, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
-import { RefreshButton } from '../ui/RefreshButton.js';
+import { RefreshNow } from '../ui/RefreshButton.js';
 import { RelativeTime } from '../ui/Time.js';
 import type { LoginInfo, PasswordPolicy, Session, SessionView } from '@ores/wire-protocol/browser';
 
@@ -122,7 +122,7 @@ function SessionsPanel({
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-medium">{t('security.sessions.title')}</h2>
-                <RefreshButton onClick={() => void onReload()} />
+                <RefreshNow onClick={() => void onReload()} />
             </header>
 
             <Notice tone="warn">{t('security.sessions.caveat')}</Notice>

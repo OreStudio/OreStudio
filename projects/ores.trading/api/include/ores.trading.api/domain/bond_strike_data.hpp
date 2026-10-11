@@ -43,7 +43,7 @@ struct bond_strike_data {
     /**
      * @brief The strike as a price, when the document states one.
      */
-    std::optional<double> price_value;
+    std::optional<ores::utility::decimal::decimal> price_value;
 
     /**
      * @brief The currency the price strike is stated in.
@@ -53,7 +53,7 @@ struct bond_strike_data {
     /**
      * @brief The strike as a yield, when the document states one.
      */
-    std::optional<double> yield_value;
+    std::optional<ores::utility::decimal::decimal> yield_value;
 
     /**
      * @brief The compounding the yield strike is stated under.

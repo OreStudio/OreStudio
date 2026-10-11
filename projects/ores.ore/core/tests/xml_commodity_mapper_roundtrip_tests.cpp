@@ -267,11 +267,11 @@ TEST_CASE("commodity_mapper_basket_option_carries_constituents", tags) {
     CHECK(data->constituents[0].sequence_number == 1);
     CHECK(data->constituents[0].underlying_code == "NYMEX:CL");
     REQUIRE(data->constituents[0].weight.has_value());
-    CHECK(data->constituents[0].weight->to_double() == Approx(0.6));
+    CHECK(*data->constituents[0].weight == Approx(0.6));
     CHECK(data->constituents[1].sequence_number == 2);
     CHECK(data->constituents[1].underlying_code == "NYMEX:NG");
     REQUIRE(data->constituents[1].weight.has_value());
-    CHECK(data->constituents[1].weight->to_double() == Approx(0.4));
+    CHECK(*data->constituents[1].weight == Approx(0.4));
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_basket_option(
         data->instrument, data->constituents);

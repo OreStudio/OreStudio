@@ -93,7 +93,7 @@ struct fx_digital_option_instrument final {
     /**
      * @brief Strike level. Absent for touch options.
      */
-    std::optional<double> strike;
+    std::optional<ores::utility::decimal::decimal> strike;
 
     /**
      * @brief Barrier type (e.g. DownAndIn, DownAndOut, KnockIn, KnockOut). Absent for plain digital
@@ -107,12 +107,12 @@ struct fx_digital_option_instrument final {
     /**
      * @brief Primary barrier level. Absent for plain digital options.
      */
-    std::optional<double> lower_barrier;
+    std::optional<ores::utility::decimal::decimal> lower_barrier;
 
     /**
      * @brief Second barrier level for FxDoubleTouchOption.
      */
-    std::optional<double> upper_barrier;
+    std::optional<ores::utility::decimal::decimal> upper_barrier;
 
     /**
      * @brief Optional free-text description.

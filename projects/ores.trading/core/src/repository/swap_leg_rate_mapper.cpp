@@ -29,6 +29,7 @@
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include "ores.trading.api/domain/swap_leg_rate_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/swap_leg_rate_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -58,7 +59,7 @@ domain::swap_leg_rate swap_leg_rate_mapper::map(const swap_leg_rate_entity& v) {
         v.start_date.has_value() ?
             std::optional(ores::platform::time::datetime::from_iso8601_date(*v.start_date)) :
             std::nullopt;
-    r.value = v.value;
+    r.value = ores::utility::decimal::decimal::from_string(v.value).value();
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -84,7 +85,7 @@ swap_leg_rate_entity swap_leg_rate_mapper::map(const domain::swap_leg_rate& v) {
         v.start_date.has_value() ?
             std::optional(ores::platform::time::datetime::to_iso8601_date(*v.start_date)) :
             std::nullopt;
-    r.value = v.value;
+    r.value = v.value.to_string();
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

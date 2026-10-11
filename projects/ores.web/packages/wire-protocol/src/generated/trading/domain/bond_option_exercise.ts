@@ -30,5 +30,5 @@
  */
 export interface BondOptionExercise {
     date: string;
-    price: number | null;
+    price: string | null;
 }

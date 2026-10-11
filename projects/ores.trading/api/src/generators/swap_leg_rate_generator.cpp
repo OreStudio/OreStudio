@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/swap_leg_rate_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -51,7 +52,7 @@ generate_synthetic_swap_leg_rate(utility::generation::generation_context& ctx) {
     r.trade_activity_id = ctx.generate_uuid();
     r.start_date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
-    r.value = 0.05;
+    r.value = ores::utility::decimal::decimal::from_string("0.05").value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

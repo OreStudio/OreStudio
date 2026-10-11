@@ -153,6 +153,7 @@ describe('GET /api/refdata', () => {
             writable: true,
             search: false,
             sortable: [],
+            events: { component: 'refdata', entity: 'currency_countries' },
             writePermission: 'refdata::currency_countries:write',
             deletePermission: 'refdata::currency_countries:delete',
         });

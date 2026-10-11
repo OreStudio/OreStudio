@@ -24,6 +24,7 @@ import { ActiveCards } from '../shell/AreaCards.js';
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useHolds } from '../access/holds.js';
+import { PERMISSION, type Permission } from '../access/permissions.js';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { readTime } from '../operations/ServicesPage.js';
@@ -59,20 +60,6 @@ import {
 /** What the translation hook answers, passed to the pure status functions. */
 type Translator = ReturnType<typeof useTranslation>;
 
-/** The permissions that decide what the home shows. */
-const PERMISSION = {
-    accountsRead: 'iam::accounts:read',
-    organisationRead: 'iam::organisation:read',
-    loginInfoRead: 'iam::login_info:read',
-    sessionsRead: 'iam::sessions:read',
-    rolesAssign: 'iam::roles:assign',
-    rolesRead: 'iam::roles:read',
-    accountsLock: 'iam::accounts:lock',
-    partiesRead: 'refdata::parties:read',
-    partiesWrite: 'refdata::parties:write',
-    counterpartiesWrite: 'refdata::counterparties:write',
-} as const;
-
 /** Which panels this person may see, from the permissions they hold. */
 interface Visible {
     readonly people: boolean;
@@ -81,7 +68,7 @@ interface Visible {
     readonly parties: boolean;
 }
 
-function visiblePanels(holds: (code: string) => boolean): Visible {
+function visiblePanels(holds: (code: Permission) => boolean): Visible {
     const people = holds(PERMISSION.loginInfoRead) && holds(PERMISSION.accountsRead);
     const signIns = holds(PERMISSION.loginInfoRead) && holds(PERMISSION.sessionsRead);
     const requests = holds(PERMISSION.rolesAssign);
@@ -267,7 +254,7 @@ export function ApplicationHome({
                 <Dashboard data={data} translator={translator} visible={visible} />
             )}
             {tab === 'active' && <ActiveModules />}
-            {tab === 'upcoming' && <UpcomingModules />}
+            {tab === 'upcoming' && <UpcomingModules holds={holds} />}
         </div>
     );
 }
@@ -447,10 +434,14 @@ function ActiveModules(): ReactNode {
     return <ActiveCards mode="application" />;
 }
 
-function UpcomingModules(): ReactNode {
+function UpcomingModules({ holds }: { readonly holds: (code: Permission) => boolean }): ReactNode {
     const { t } = useTranslation();
     const icons = { marketdata: 'chart', trading: 'trend', reporting: 'document' } as const;
-    const coming: Tile[] = (['marketdata', 'trading', 'reporting'] as const).map((area) => ({
+    // Market data is active for a person who may read it, so it is not also upcoming.
+    const areas = (['marketdata', 'trading', 'reporting'] as const).filter(
+        (area) => area !== 'marketdata' || !holds(PERMISSION.curveSnapshotsRead),
+    );
+    const coming: Tile[] = areas.map((area) => ({
         title: t(`home.party.${area}`),
         body: t(`home.party.${area}Body`),
         icon: icons[area],

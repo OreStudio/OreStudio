@@ -61,10 +61,18 @@ fx_digital_option_instrument_mapper::map(const fx_digital_option_instrument_enti
     r.option_type = v.option_type.value_or("");
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.long_short = v.long_short;
-    r.strike = v.strike;
+    r.strike = v.strike.has_value() ?
+                   std::optional(ores::utility::decimal::decimal::from_string(*v.strike).value()) :
+                   std::nullopt;
     r.barrier_type = v.barrier_type.value_or("");
-    r.lower_barrier = v.lower_barrier;
-    r.upper_barrier = v.upper_barrier;
+    r.lower_barrier =
+        v.lower_barrier.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.lower_barrier).value()) :
+            std::nullopt;
+    r.upper_barrier =
+        v.upper_barrier.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.upper_barrier).value()) :
+            std::nullopt;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -94,10 +102,12 @@ fx_digital_option_instrument_mapper::map(const domain::fx_digital_option_instrum
     r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
     r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.long_short = v.long_short;
-    r.strike = v.strike;
+    r.strike = v.strike.has_value() ? std::optional(v.strike->to_string()) : std::nullopt;
     r.barrier_type = v.barrier_type.empty() ? std::nullopt : std::optional(v.barrier_type);
-    r.lower_barrier = v.lower_barrier;
-    r.upper_barrier = v.upper_barrier;
+    r.lower_barrier =
+        v.lower_barrier.has_value() ? std::optional(v.lower_barrier->to_string()) : std::nullopt;
+    r.upper_barrier =
+        v.upper_barrier.has_value() ? std::optional(v.upper_barrier->to_string()) : std::nullopt;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

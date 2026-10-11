@@ -45,7 +45,7 @@ create table if not exists "ores_trading_instrument_option_premiums_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_activity_id" uuid not null,
-    "amount" numeric(28, 10) not null,
+    "amount" numeric(38, 12) not null,
     "currency" text not null,
     "pay_date" date not null,
     "has_settlement" boolean not null,

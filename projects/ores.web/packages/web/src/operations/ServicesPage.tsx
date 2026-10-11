@@ -59,7 +59,7 @@ import {
 } from './InstallationHealth.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { RefreshButton } from '../ui/RefreshButton.js';
+import { RefreshNow } from '../ui/RefreshButton.js';
 
 /** The ranges the error and warning counts can be read over, as the logs screen offers them. */
 const HEALTH_RANGES: readonly LogsRange[] = ['15m', '1h', '6h', '24h'];
@@ -224,7 +224,7 @@ export function ServicesPage(): ReactNode {
                                     at: readTime(roster.dataUpdatedAt),
                                 })}
                             </span>
-                            <RefreshButton
+                            <RefreshNow
                                 onClick={() => void roster.refetch()}
                                 pending={roster.isFetching}
                             />

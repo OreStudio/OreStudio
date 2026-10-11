@@ -44,7 +44,7 @@ struct instrument_strike_write {
     boost::uuids::uuid trade_activity_id;
     std::optional<ores::utility::decimal::decimal> price_value;
     std::optional<std::string> price_currency;
-    std::optional<double> yield_value;
+    std::optional<ores::utility::decimal::decimal> yield_value;
     std::optional<std::string> yield_compounding;
     std::optional<ores::utility::decimal::decimal> bare_value;
     std::optional<std::string> bare_currency;

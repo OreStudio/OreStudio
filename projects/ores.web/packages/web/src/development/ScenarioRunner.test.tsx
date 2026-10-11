@@ -57,6 +57,8 @@ function screen(
         readonly outcome?: Outcome | null;
         readonly confirmingRetest?: boolean;
         readonly saving?: boolean;
+        readonly imageBusy?: boolean;
+        readonly imageError?: string | null;
     } = {},
 ): string {
     return renderToStaticMarkup(
@@ -69,6 +71,9 @@ function screen(
                     onSave={() => undefined}
                     saving={options.saving ?? false}
                     outcome={options.outcome ?? null}
+                    onImages={() => undefined}
+                    imageBusy={options.imageBusy ?? false}
+                    imageError={options.imageError ?? null}
                     confirmingRetest={options.confirmingRetest ?? false}
                     onAskRetest={() => undefined}
                     onConfirmRetest={() => undefined}
@@ -177,6 +182,43 @@ describe('a scenario being run', () => {
         const html = screen(openRunner(hostile), { scenario: hostile });
         expect(html).not.toContain('<script>');
         expect(html).not.toContain('href="javascript:');
+    });
+});
+
+describe('a screenshot for a step', () => {
+    it('invites a paste or a drop on a step that can be edited', () => {
+        expect(screen(fresh())).toContain('Paste or drop a screenshot here');
+    });
+
+    it('says the image is being saved', () => {
+        const html = screen(fresh(), { imageBusy: true });
+        expect(html).toContain('Saving the image...');
+        expect(html).not.toContain('Paste or drop a screenshot here');
+    });
+
+    it('holds Save while an image is uploading, so the link is in the note when it goes', () => {
+        const busy = screen(fresh(), { imageBusy: true });
+        expect(busy).toMatch(/<button[^>]*disabled=""[^>]*>Save</);
+        const idle = screen(fresh());
+        expect(idle).not.toMatch(/<button[^>]*disabled=""[^>]*>Save</);
+    });
+
+    it('shows why an image was refused, as an alert', () => {
+        const html = screen(fresh(), {
+            imageError: 'The file is not a PNG, JPEG, GIF or WebP image.',
+        });
+        expect(html).toContain('role="alert"');
+        expect(html).toContain('not a PNG, JPEG, GIF or WebP');
+    });
+
+    it('shows the link in the note after an attach', () => {
+        const runner = run(fresh(), { type: 'attach', index: 0, name: 'a_step1.png' });
+        expect(screen(runner)).toContain('[[file:a_step1.png]]');
+    });
+
+    it('draws no invitation on a closed scenario, which cannot take an image', () => {
+        const closed = openRunner(scenario(['PASS'], { state: 'PASSED' }));
+        expect(screen(closed)).not.toContain('Paste or drop a screenshot here');
     });
 });
 

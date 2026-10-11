@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <string>
 #include <string_view>
@@ -76,7 +77,7 @@ struct rpa_instrument final {
      *
      * Expressed as a decimal fraction. Must be non-negative if set.
      */
-    std::optional<double> protection_fee = std::nullopt;
+    ores::utility::decimal::decimal protection_fee = ores::utility::decimal::decimal{};
 
     /**
      * @brief Optional free-text description.

@@ -20,6 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import type { ComponentProps } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
@@ -39,6 +40,8 @@ import {
     AUDIT_SESSIONS_QUERY_KEY,
     AUDIT_STATISTICS_QUERY_KEY,
     AuditPage,
+    FailuresPanel,
+    failureTone,
     eventTone,
     formatReadAt,
     isZeroAddress,
@@ -175,6 +178,31 @@ function render(
     );
 }
 
+function renderFailures(rows: readonly LoginInfo[], hideNeverSignedInAtStart: boolean): string {
+    const client = new QueryClient();
+    client.setQueryData([AUDIT_ACCOUNTS_QUERY_KEY], { accounts: [account()], totalCount: 1 });
+    const query = {
+        isPending: false,
+        isError: false,
+        data: { loginInfo: rows, totalCount: rows.length },
+    };
+    return renderToStaticMarkup(
+        <QueryClientProvider client={client}>
+            <TranslationProvider>
+                <MemoryRouter>
+                    <FailuresPanel
+                        query={query as ComponentProps<typeof FailuresPanel>['query']}
+                        accountNames={
+                            new Map([[ACCOUNT_ID, { username: USERNAME, imageId: null }]])
+                        }
+                        hideNeverSignedInAtStart={hideNeverSignedInAtStart}
+                    />
+                </MemoryRouter>
+            </TranslationProvider>
+        </QueryClientProvider>,
+    );
+}
+
 describe('the audit sign-ins screen', () => {
     it('opens on the active sessions, and offers to end one', () => {
         const html = render();
@@ -240,7 +268,7 @@ describe('the audit sign-ins screen', () => {
             lastLogin: '1970-01-01 00:00:00Z',
             lastAttemptIp: '0.0.0.0',
         });
-        const html = render('/audit?tab=failures', [never]);
+        const html = renderFailures([never], false);
 
         expect(html).toContain(ACCOUNT_ID);
         expect(html).toContain('>Never signed in<');
@@ -249,6 +277,23 @@ describe('the audit sign-ins screen', () => {
         expect(html).not.toContain('0.0.0.0');
     });
 
+    it('hides the accounts that never signed in until the button is released', () => {
+        const never = loginInfo({ lastLogin: '1970-01-01 00:00:00Z' });
+
+        expect(renderFailures([never], true)).not.toContain(ACCOUNT_ID);
+        expect(renderFailures([never], true)).toContain('Every record is hidden');
+        expect(renderFailures([never], true)).toContain('aria-pressed="true"');
+        expect(renderFailures([never], false)).toContain(ACCOUNT_ID);
+    });
+
+    it('draws a count above two in the warning colour and above five in red', () => {
+        expect(failureTone(2)).toBe('plain');
+        expect(failureTone(3)).toBe('warn');
+        expect(failureTone(5)).toBe('warn');
+        expect(failureTone(6)).toBe('down');
+        expect(renderFailures([loginInfo({ failedLogins: 4 })], true)).toContain('text-warn');
+        expect(renderFailures([loginInfo({ failedLogins: 7 })], true)).toContain('text-down');
+    });
     it('links the account name to the page of the person', () => {
         const html = render('/audit?tab=failures');
 
@@ -273,11 +318,11 @@ describe('the audit sign-ins screen', () => {
         expect(html).toContain('>AO<');
     });
 
-    it('offers to hide the accounts that never signed in', () => {
+    it('offers the signed-in filter as a button that is pressed to start with', () => {
         const html = render('/audit?tab=failures');
 
-        expect(html).toContain('Hide accounts that never signed in');
-        expect(html).not.toContain('checked=""');
+        expect(html).toContain('>Signed in only<');
+        expect(html).toContain('aria-pressed="true"');
     });
 
     it('reads the authentication event log, newest first', () => {

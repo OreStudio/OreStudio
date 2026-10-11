@@ -466,7 +466,7 @@ const fr: SourceCatalogue = {
             lastSignIn: 'Dernière connexion',
             never: 'Jamais',
             neverSignedIn: 'Jamais connecté',
-            hideNeverSignedIn: 'Masquer les comptes jamais connectés',
+            hideNeverSignedIn: 'Déjà connectés',
             allHidden: 'Tous les enregistrements sont masqués. Décochez le filtre pour les voir.',
         },
         events: {

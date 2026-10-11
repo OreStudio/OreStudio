@@ -469,7 +469,7 @@ export const en: SourceCatalogue = {
             lastSignIn: 'Last sign-in',
             never: 'Never',
             neverSignedIn: 'Never signed in',
-            hideNeverSignedIn: 'Hide accounts that never signed in',
+            hideNeverSignedIn: 'Signed in only',
             allHidden: 'Every record is hidden. Clear the filter to see them.',
         },
         events: {

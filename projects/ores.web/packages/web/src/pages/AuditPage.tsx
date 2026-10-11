@@ -36,7 +36,7 @@ import { actorPathFor } from '../access/PeoplePage.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { AccountLockBadge } from '../ui/AccountLockBadge.js';
-import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
+import { Button, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { isZeroTimestamp } from '../ui/Time.js';
 
@@ -576,6 +576,19 @@ function StatisticsPanel({
     );
 }
 
+const FAILURE_TEXT = { plain: '', warn: 'text-warn', down: 'text-down' } as const;
+
+/**
+ * The tone a count of failed attempts is drawn in: plain up to two, warning
+ * above two and alarm above five.
+ */
+export function failureTone(failed: number): 'plain' | 'warn' | 'down' {
+    if (failed > 5) {
+        return 'down';
+    }
+    return failed > 2 ? 'warn' : 'plain';
+}
+
 /** The login records of accounts that have signed in at least once. */
 export function withoutNeverSignedIn(rows: readonly LoginInfo[]): readonly LoginInfo[] {
     return rows.filter((row) => !isZeroTimestamp(row.lastLogin));
@@ -587,32 +600,34 @@ export function withoutNeverSignedIn(rows: readonly LoginInfo[]): readonly Login
  * A locked account explains a support call and a run of attempts explains an
  * incident, so the count and the state travel together.
  */
-function FailuresPanel({
+export function FailuresPanel({
     query,
     accountNames,
+    hideNeverSignedInAtStart = true,
 }: {
     readonly query: UseQueryResult<{
         readonly loginInfo: readonly LoginInfo[];
         readonly totalCount: number;
     }>;
     readonly accountNames: ReadonlyMap<string, AuditPerson>;
+    readonly hideNeverSignedInAtStart?: boolean;
 }): ReactNode {
     const { t } = useTranslation();
-    const [hideNeverSignedIn, setHideNeverSignedIn] = useState(false);
+    const [hideNeverSignedIn, setHideNeverSignedIn] = useState(hideNeverSignedInAtStart);
     const records = query.data?.loginInfo ?? [];
     const ordered = orderLoginRecords(hideNeverSignedIn ? withoutNeverSignedIn(records) : records);
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-medium">{t('auditSignIns.failures.title')}</h2>
-                <label className="flex items-center gap-2 text-xs text-ink-muted">
-                    <input
-                        type="checkbox"
-                        checked={hideNeverSignedIn}
-                        onChange={(event) => setHideNeverSignedIn(event.target.checked)}
-                    />
+                <Button
+                    size="sm"
+                    variant={hideNeverSignedIn ? 'primary' : 'secondary'}
+                    aria-pressed={hideNeverSignedIn}
+                    onClick={() => setHideNeverSignedIn(!hideNeverSignedIn)}
+                >
                     {t('auditSignIns.failures.hideNeverSignedIn')}
-                </label>
+                </Button>
                 {query.data !== undefined && (
                     <span className="text-xs text-ink-faint">
                         {t('auditSignIns.failures.count', {
@@ -657,7 +672,14 @@ function FailuresPanel({
                                 <td className="py-2">
                                     <AccountCell accountId={row.accountId} nameOf={accountNames} />
                                 </td>
-                                <td className="py-2 tabular-nums">{row.failedLogins}</td>
+                                <td
+                                    className={cx(
+                                        'py-2 tabular-nums',
+                                        FAILURE_TEXT[failureTone(row.failedLogins)],
+                                    )}
+                                >
+                                    {row.failedLogins}
+                                </td>
                                 <td className="py-2">
                                     {isZeroAddress(row.lastAttemptIp) ? (
                                         <span className="text-xs text-ink-faint">

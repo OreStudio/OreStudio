@@ -465,7 +465,7 @@ const pt: SourceCatalogue = {
             lastSignIn: 'Último início de sessão',
             never: 'Nunca',
             neverSignedIn: 'Nunca iniciou sessão',
-            hideNeverSignedIn: 'Ocultar contas que nunca entraram',
+            hideNeverSignedIn: 'Já entraram',
             allHidden: 'Todos os registos estão ocultos. Desmarque o filtro para os ver.',
         },
         events: {

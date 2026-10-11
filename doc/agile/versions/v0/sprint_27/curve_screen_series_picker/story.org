@@ -46,6 +46,15 @@ A person opens the curve evolution screen and chooses the curve or surface from 
 
 * Decisions
 
+* Risks
+
+- *An empty picker with no error.* Market series that provisioning seeds have no identity rows until
+  =marketdata backfill-identity= runs for the party, so a fresh Acme environment lists nothing for a
+  party. The picker says the list is empty and why a list can be empty. The fix is the capture
+  =provisioning_projects_seeded_series_identities=.
+- *A cut list read as a complete one.* The list holds at most 5000 series. The picker must show the
+  =truncated= flag and say to narrow by party.
+
 * Out of scope
 
 - Searching or filtering the list beyond what a short list needs.

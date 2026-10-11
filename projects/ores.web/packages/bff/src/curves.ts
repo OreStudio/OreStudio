@@ -29,7 +29,8 @@ import type { LiveSession } from './sessions.js';
 
 /**
  * The reads of a composite object: the series an identity names, the series a party
- * can see, the object at one instant, one slice of it over time, and its evolution over a range.
+ * can see, the object at one instant, one slice of it over time, and its evolution
+ * over a range.
  *
  * Each route forwards the typed request to the server's subject and returns the
  * reply without its success and message fields. The server checks the

@@ -89,7 +89,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The docblock runs past the line width | curves.ts | Accept | Re-wrapped. |
+| 2 | An explicit empty party is not pinned by a test | curves.test.ts | Accept | A test sends =party_id: ''= outright. |
+| 3 | The UI must show =truncated= | picker task | Accept | Recorded in the story's risks. |
+| 4 | The empty picker for a fresh party needs a note | story | Accept | Recorded in the story's risks. |
+| - | The records.test.ts failures are unverified | wire-protocol | No change | The branch changes nothing in that package, so main fails the same way. |
 
 * Result
 

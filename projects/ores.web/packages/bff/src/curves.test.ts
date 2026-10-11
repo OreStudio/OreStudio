@@ -219,6 +219,22 @@ describe('the curve read routes', () => {
         expect(calls[1]?.body).toEqual({ party_id: party });
     });
 
+    it('accepts an empty party named outright, as the same as no party', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.list_series_identities': {
+                success: true,
+                message: '',
+                truncated: false,
+                series: [],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-list', {
+            party_id: '',
+        });
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({ party_id: '' });
+    });
+
     it('refuses a party that is no UUID, without asking the server', async () => {
         const { server, sessionId, calls } = buildTestServer({});
         const response = await send(server, sessionId, 'POST', '/api/curves/series-list', {

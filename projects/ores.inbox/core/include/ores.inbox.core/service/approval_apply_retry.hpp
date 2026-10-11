@@ -58,6 +58,13 @@ public:
      */
     virtual ores::workflow::messaging::retry_workflow_instance_response
     retry(const std::string& workflow_instance_id) = 0;
+
+    /**
+     * @brief The run's status as the engine names it (in_progress, completed,
+     * failed, compensating or compensated), or empty when the engine holds no
+     * such run.
+     */
+    virtual std::string run_status(const std::string& workflow_instance_id) = 0;
 };
 
 /**
@@ -79,8 +86,10 @@ inline constexpr const char* could_not_apply = "could not apply";
  *
  * An approved request whose kind names an apply workflow stays approved until
  * the workflow applies it. For each such request this either ends it, when the
- * kind's window has ended, or starts its run again and asks the engine to resume
- * it. Both engine calls are safe to repeat: a start that names a run the engine
+ * kind's window has ended and no run is still working on it, or starts its run
+ * again and asks the engine to resume it. A run that is still working past the
+ * window is left alone: ending its request would tell the person it failed
+ * while the run may yet apply it. Both engine calls are safe to repeat: a start that names a run the engine
  * holds changes nothing, and a resume of a run that has not stopped is refused.
  *
  * A run that stopped on a refusal is never retried, because the refusal moves

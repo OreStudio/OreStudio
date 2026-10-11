@@ -64,6 +64,7 @@ struct recording_engine final : ores::inbox::service::apply_engine {
     std::vector<std::string> retried;
     bool resumes = true;
     bool fails = false;
+    std::string status = "failed";
 
     void start(const ores::workflow::messaging::start_workflow_message& start) override {
         if (fails)
@@ -80,6 +81,10 @@ struct recording_engine final : ores::inbox::service::apply_engine {
         answer.workflow_instance_id = workflow_instance_id;
         answer.step_name = "apply_book_changes";
         return answer;
+    }
+
+    std::string run_status(const std::string&) override {
+        return status;
     }
 
     bool started_for(const std::string& request_id) const {
@@ -210,4 +215,29 @@ TEST_CASE("an_engine_that_is_down_does_not_stop_the_pass", tags) {
 
     CHECK_FALSE(contains(done.resumed, id));
     CHECK(approval_lifecycle(acting(h)).request(id)->state_code == "approved");
+}
+
+TEST_CASE("a_run_still_working_past_the_window_keeps_its_request_approved", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto id = approved_book_change(h);
+    recording_engine engine;
+    engine.status = "in_progress";
+
+    const auto done = approval_apply_retry(sweeping(h), engine).run(after_the_window());
+
+    CHECK_FALSE(contains(done.gave_up, id));
+    CHECK_FALSE(engine.started_for(id));
+    CHECK(approval_lifecycle(acting(h)).request(id)->state_code == "approved");
+}
+
+TEST_CASE("a_request_with_no_run_past_the_window_is_given_up", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto id = approved_book_change(h);
+    recording_engine engine;
+    engine.status = "";
+
+    const auto done = approval_apply_retry(sweeping(h), engine).run(after_the_window());
+
+    CHECK(contains(done.gave_up, id));
+    CHECK(approval_lifecycle(acting(h)).request(id)->state_code == "apply_failed");
 }

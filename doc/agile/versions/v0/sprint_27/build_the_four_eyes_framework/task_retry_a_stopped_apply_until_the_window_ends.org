@@ -100,7 +100,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A request past its window is ended even while its first apply still runs | approval_apply_retry.cpp | Accept | Real defect. The sweep now asks the engine for the run's status and ends the request only when the run failed or does not exist. A run still working is left alone. Two new cases cover it. |
+| 2 | The window clock restarts if a later write rewrites an approved request | stalled applies function | Accept | Nothing writes to an approved request except the move to apply_failed, so the clock does not restart. No change. |
+| 3 | No engine test that a repeated start changes nothing | workflow_engine_tests.cpp | Accept | Added: a second start of the same run dispatches nothing and stores no second step. |
+| 4 | A row with the wrong column count is skipped silently | approval_lifecycle.cpp | Accept | It now logs a warning. |
+| 5 | The as-of moment goes through a double | approval_lifecycle.cpp | Accept | Comment added. |
+| 6 | Check which system-tenant roles hold the retry permission | iam_roles_populate.sql | Accept | SuperAdmin, WorkflowService and OreService already hold it in the system tenant, and the inbox service now does. A platform operator reaching any tenant's run is intended. |
+| 7 | Confirm the 4 failing cases also fail on main | PR description | Decline | I did not run a clean main. The cause is read from the policy and the error text, as the PR says. |
 
 * Result
 

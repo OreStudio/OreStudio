@@ -428,6 +428,8 @@ std::vector<expired_request> approval_lifecycle::expire_overdue() {
 
 std::vector<stalled_apply>
 approval_lifecycle::stalled_applies(std::chrono::system_clock::time_point as_of) {
+    // Seconds as a double hold a moment to well under a millisecond, which is
+    // far finer than a window counted in hours.
     const auto epoch_seconds =
         std::chrono::duration<double>(as_of.time_since_epoch()).count();
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
@@ -442,8 +444,11 @@ approval_lifecycle::stalled_applies(std::chrono::system_clock::time_point as_of)
     std::vector<stalled_apply> stalled;
     stalled.reserve(rows.size());
     for (const auto& row : rows) {
-        if (row.size() != 7)
+        if (row.size() != 7) {
+            BOOST_LOG_SEV(lg(), warn) << "A stalled apply came back with " << row.size()
+                                      << " columns instead of 7, so it was skipped.";
             continue;
+        }
         stalled.push_back(stalled_apply{.request_id = row[0].value_or(""),
                                         .tenant_id = row[1].value_or(""),
                                         .kind_code = row[2].value_or(""),

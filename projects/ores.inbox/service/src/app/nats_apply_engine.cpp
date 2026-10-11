@@ -54,4 +54,20 @@ nats_apply_engine::retry(const std::string& workflow_instance_id) {
     return *answer;
 }
 
+std::string nats_apply_engine::run_status(const std::string& workflow_instance_id) {
+    ores::workflow::messaging::get_workflow_steps_request request;
+    request.workflow_instance_id = workflow_instance_id;
+
+    const auto& codec = ores::nats::default_wire_codec();
+    const auto reply = svc_nats_.authenticated_request(request.nats_subject, codec.encode(request));
+    if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
+        it != reply.headers.end())
+        throw std::runtime_error("the engine refused the call: " + it->second);
+
+    auto answer = codec.decode<ores::workflow::messaging::get_workflow_steps_response>(reply.data);
+    if (!answer)
+        throw std::runtime_error("the engine's answer could not be read");
+    return answer->success ? answer->status : std::string{};
+}
+
 }

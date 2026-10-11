@@ -43,6 +43,8 @@ public:
     ores::workflow::messaging::retry_workflow_instance_response
     retry(const std::string& workflow_instance_id) override;
 
+    std::string run_status(const std::string& workflow_instance_id) override;
+
 private:
     ores::nats::service::client& nats_;
     ores::nats::service::nats_client svc_nats_;

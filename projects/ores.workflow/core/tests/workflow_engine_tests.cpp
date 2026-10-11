@@ -876,6 +876,28 @@ TEST_CASE("a retry is confined to the caller's own tenant", tags) {
     BOOST_LOG_SEV(lg, debug) << "Retry confined to the caller's tenant.";
 }
 
+TEST_CASE("a start that names a run the engine holds changes nothing", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_repeated_start_workflow", {"one", "two"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_repeated_start_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    // The scheduled retry of an apply starts the same run on every pass.
+    f.engine->on_start_workflow(
+        as_message(start_for("test_repeated_start_workflow", f.tenant(), instance_id)));
+    CHECK(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(1)).size() == 1);
+
+    workflow_step_repository steps;
+    CHECK(steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100).size() == 1);
+    BOOST_LOG_SEV(lg, debug) << "A repeated start dispatched nothing and stored nothing.";
+}
+
 TEST_CASE("a retry from the system tenant reaches a run of any tenant", tags) {
     auto lg(make_logger(test_suite));
 

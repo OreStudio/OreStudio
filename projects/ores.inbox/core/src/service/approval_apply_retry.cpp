@@ -51,15 +51,24 @@ apply_retry_outcome approval_apply_retry::run(std::chrono::system_clock::time_po
                 continue;
             }
 
-            if (stalled.over_window) {
-                give_up(lifecycle, ctx, *kind, *request);
-                outcome.gave_up.push_back(stalled.request_id);
-                continue;
-            }
-
             const auto start = apply_start_of(*kind, *request, "");
             if (!start)
                 continue;
+
+            if (stalled.over_window) {
+                // Only a run that stopped, or that never existed, is given up.
+                // A run still working may yet apply the request.
+                const auto status = engine_.run_status(start->instance_id);
+                if (status.empty() || status == "failed") {
+                    give_up(lifecycle, ctx, *kind, *request);
+                    outcome.gave_up.push_back(stalled.request_id);
+                } else {
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Request " << stalled.request_id << " is past its window, but its run is "
+                        << status << ", so it was left alone.";
+                }
+                continue;
+            }
 
             // The start repairs a request whose start was lost. When the run
             // exists the engine leaves it alone, so the resume below is what

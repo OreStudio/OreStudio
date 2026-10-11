@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 7F209F21-DA6C-4565-BBD3-21D17D083B5F
+:END:
+#+title: Task: Fix the snapshot warning type
+#+description: The snapshot reply carries warning as a boolean and the contract said string, so the Now panel failed to read a real snapshot. Fix the contract and show the warning in words.
+#+type: task
+#+level: s1
+#+filetags: :show-a-curve-evolving-in-ores-web:sprint_27:v0:
+#+owner: marco
+#+branch: feature/fix-the-snapshot-warning-type
+#+pr: 3104
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AD390F50-FE3D-47E5-BA8C-58F8C0D5FB02][Show a curve evolving in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Now panel reads a real snapshot and tells the person when the values mix several market states.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AD390F50-FE3D-47E5-BA8C-58F8C0D5FB02][Show a curve evolving in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- The contract types warning as a boolean, as the wire does.
+- The panel shows a warning in words when the flag is set, and nothing when it is not.
+- A test uses a boolean warning, and the screen reads a snapshot from the running stack.
+
+* Plan
+
+Change the contract's =warning= to a boolean, as the wire types it. Show the warning in
+words when the flag is set, built from the oldest age and the spread, in three languages.
+Change the canned test data to a boolean so the tests would have failed on the old schema.
+Prove the fix by parsing real replies from the running stack with the contract schemas.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Wire type of =warning= | boolean | =sed -n '/export interface GetCurveSnapshotResponse/,/^}/p' operations_protocol.ts= | 731b0c667d |
+| Real snapshot reply, EUR/USD vol surface | 45 nodes, =warning= false, parsed by =curveSnapshotSchema= | =curl= on =/api/curves/snapshot= through the BFF, then =node= with =@ores/contracts= | 731b0c667d plus the uncommitted change |
+| Real evolution reply, same object | 45 nodes, 4 instants, parsed by =curveEvolutionSchema= | same, on =/api/curves/evolution= | 731b0c667d plus the uncommitted change |
+| Web suite | 78 files, 851 tests, pass | =npx vitest run= in =packages/web= | 731b0c667d plus the uncommitted change |
+| BFF suite | 53 files, 526 tests, pass | =npx vitest run= in =packages/bff= | 731b0c667d plus the uncommitted change |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3104][#3104]] | [web] Fix the snapshot warning type |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Now panel reads a real snapshot. The contract typed =warning= as a string and the
+server sends a boolean, so the panel's parse of a real reply would have failed and shown an
+error. Canned test data used an empty string, which hid it. A run against the stack with the
+real ORE FX volatility data found it.
+
+=warning= is now a boolean in the contract. When it is set, the panel shows a notice in words:
+the values come from several market states, with the oldest age and the spread. When it is
+not set, the panel shows nothing extra. The messages exist in English, French and Portuguese.
+The canned data in the tests now uses a boolean, and a test pins both cases.
+
+Real replies for the EUR/USD surface (45 nodes) now parse with both contract schemas.
+
+*What this does not prove.* It does not show the page in a browser. The data was the real
+ORE example file for 2016-02-05 plus three generated dates, so the ages are about ten years.
+
+*A second finding, from the first look in a browser.* The tenant administrator chooses a
+party at sign-in, and a party reads only its own series. The demo data was imported under
+the System Party, so the default party, Acme Corporation Plc, saw nothing. The screen then
+said "The object declares no node", which is wrong: a series with no axes is refused with a
+reason, so an empty answer means no visible series carries the identity. The message now says
+that, in three languages. To see the demo data, sign in and choose the System Party.

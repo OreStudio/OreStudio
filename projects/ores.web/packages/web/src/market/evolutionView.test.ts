@@ -164,7 +164,7 @@ describe('nowRowsOf', () => {
         provenance: [],
         oldest_age_seconds: 10800,
         spread_seconds: 0,
-        warning: '',
+        warning: false,
     };
 
     it('ages a value from its record time to the snapshot instant', () => {

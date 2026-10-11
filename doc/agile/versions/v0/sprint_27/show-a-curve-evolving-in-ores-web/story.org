@@ -23,9 +23,9 @@ A person opens ores.web, names a curve or a surface, and watches it evolve as an
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Both tasks are done. The screen is tested with rendered markup, and nobody has seen it in a running stack. |
+| Now           | All tasks are done. The routes and the contract were read against the running stack with real ORE data. Nobody has looked at the page in a browser. |
 | Waiting on    | Nothing.                               |
-| Next          | Look at the screen in a running stack, then close the story. |
+| Next          | Open the page in a browser, then close the story. |
 | Last touched  | 2026-10-10                               |
 
 * Acceptance
@@ -42,6 +42,7 @@ A person opens ores.web, names a curve or a surface, and watches it evolve as an
 | [[id:D0BC3754-FF8F-4150-BF08-60C1BE4F0064][Scaffold story: Show a curve evolving in ores.web]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:9BD6425D-8655-45C8-8AA8-9A6B73B47FAA][Give the BFF the curve read routes]] | DONE | 2026-10-10 | 2026-10-10 | Route each curve read through the BFF. |
 | [[id:AE07523A-A702-43C2-AD16-544FEB4264AE][Build the watch a curve or surface evolve screen]] | DONE | 2026-10-11 | 2026-10-11 | Build the screen of the journey: name an object, pick a range or a set of instants, read the aligned matrix with each node's change, age and provenance. |
+| [[id:7F209F21-DA6C-4565-BBD3-21D17D083B5F][Fix the snapshot warning type]] | DONE | 2026-10-11 | 2026-10-11 | The snapshot reply carries warning as a boolean and the contract said string, so the Now panel failed to read a real snapshot. Fix the contract and show the warning in words. |
 
 * Decisions
 

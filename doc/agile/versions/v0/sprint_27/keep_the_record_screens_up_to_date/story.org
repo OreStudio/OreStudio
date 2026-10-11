@@ -55,6 +55,7 @@ The web screens read once and never learn that a record changed elsewhere. Add l
 | [[id:0BFCA44C-59DC-4D79-AB16-EC186C717C87][Listen by tenant and party in the BFF]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
 | [[id:8D03C5D3-6C63-4334-96B7-9AF57D7B44FB][Listen by tenant in ores.qt]] | BACKLOG | | | Task for: Keep the record screens up to date |
 | [[id:01886727-C01E-4460-AEC6-A2FCC31996CC][Document the tenant isolation of events]] | STARTED | 2026-10-10 | | Task for: Keep the record screens up to date |
+| [[id:C62FBCB2-DE3A-4F05-972B-2B59F4B5372D][Show when a dialog's record was loaded, everywhere]] | BACKLOG | | | Task for: Keep the record screens up to date |
 
 * Decisions
 
@@ -86,6 +87,8 @@ Decided by the product owner:
 Known limit, found in task 1:
 
 - A published entity event used to name no tenant, and ores.qt ignores the tenant it logs. The product owner found this unacceptable: a session may listen only to the tenants and parties it may see. The analysis found no rule for events in the NATS entity protocol, so the protocol now defines one: the tenant and the party travel in the =X-Tenant-Id= and =X-Party-Id= headers, the subject grammar is unchanged, and the subscriber enforces. The web BFF passes an event to a session only when it may hear it. ores.qt is outside this repository and still hears every tenant.
+
+Known limit, found in the live test: a change event names no record, so a record page goes stale for another person's change. The story [[id:7F612088-182C-415D-8B47-00D3C66B7A38][Name the record in a change event]] carries the key of the changed row and makes a record page stale only for its own record.
 
 Open decisions for the product owner:
 

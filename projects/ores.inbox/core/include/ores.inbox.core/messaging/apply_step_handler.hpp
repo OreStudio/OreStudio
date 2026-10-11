@@ -107,11 +107,16 @@ public:
             }
             const auto kind = lifecycle.kind(request->kind_code);
             if (kind) {
+                // The announcer logs a failure to tell and never throws.
                 service::approval_announcer(ctx).tell_asker(
                     *kind,
                     *request,
                     apply_result_state(request->state_code),
                     request->change_commentary);
+            } else {
+                BOOST_LOG_SEV(lg(), ores::logging::warn)
+                    << "Request " << command->request_id << " has the unknown kind "
+                    << request->kind_code << ", so the person who asked was not told.";
             }
             wf->complete("{}");
         } catch (const std::exception& e) {

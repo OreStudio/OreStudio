@@ -74,6 +74,7 @@ task and name that file in the Command column.
 - No NATS test of the step handlers exists, as no other handler has one. The definition, the step mapping, the party function and the notice have tests.
 - The party function reads past the party policy. A workflow has no party, and the books and the lines are party-scoped, so the apply could not otherwise find either.
 - The notice reuses the decided notice with the state "applied" or "apply_failed". The web may need words for those two states.
+- *Known gap.* The raise and the apply write inbox tables and read accounts, and they run under the refdata service's database user. The tests run under the read-write role, which has every right, so they do not show whether that user may do it. The registry grants the refdata service no inbox rights today. The task "Grant the refdata service the inbox access it needs" closes this, and it proves the fix by running the raise and the apply as that user.
 
 * Test Scenarios
 
@@ -96,7 +97,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The asker is not told when the re-check refuses | book_apply_step_handler.hpp | Accept | The run stops, so the tell step never runs. The re-check and the apply now tell the asker of a refusal themselves. A transient failure tells nobody, because the request stays approved. |
+| 1a | A resumed re-check on an ended request | book_apply_step_handler.hpp | Accept | The re-check fails its step at once when the request is not approved, and changes nothing. |
+| 2 | context_of: constant, include, const | book_apply_step_handler.hpp | Accept | Marked const, includes stdexcept, and a comment says why the actor is empty. |
+| 3 | The party function is executable by PUBLIC | parties_fn_create.sql | Accept | Execute is revoked from PUBLIC and granted to the read-write role and to the refdata service through the registry. The search path now ends in pg_temp. |
+| 4 | tell swallows a missing kind | apply_step_handler.hpp | Accept | A warning is logged. The comment says the announcer catches a failure to tell. |
+| 5 | A bad start builds no steps | book_apply_workflow.hpp | Decline | The engine logs the refusal and creates no instance. A comment says so. |
+| 6 | No test of the party function | tests | Accept | A test shows another tenant is told no parties for a request it does not own. |
+| 7 | Review found no test of context_of | tests | Decline | It needs NATS, as no other handler test does. |
 
 * Result
 

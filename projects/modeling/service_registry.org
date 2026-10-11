@@ -89,6 +89,12 @@
 
 - ores_refdata_publish_
 
+# The book apply workflow runs for the tenant, which has no party, and a book
+# belongs to a party. This security-definer function answers the parties of one
+# request's lines so the apply can scope itself to them and to no others (see
+# refdata_book_change_parties_fn_create.sql).
+- ores_refdata_book_change_parties_
+
 # The LEI party publish copies the system tenant's template logo onto a
 # known-LEI counterparty, and reads it through the same security-definer
 # accessor the Acme provisioner uses (see refdata_publish_from_dq_create.sql).

@@ -179,6 +179,7 @@ select _ores_grant_dml_fn('ores_refdata_', :'refdata_service_user');
 select _ores_grant_select_fn('ores_variability_', :'refdata_service_user');
 select _ores_grant_select_fn('ores_assets_', :'refdata_service_user');
 select _ores_grant_execute_fn('ores_refdata_publish_', :'refdata_service_user');
+select _ores_grant_execute_fn('ores_refdata_book_change_parties_', :'refdata_service_user');
 select _ores_grant_execute_fn('ores_assets_get_template_image_', :'refdata_service_user');
 
 -- ---------------------------------------------------------------------------
@@ -272,9 +273,8 @@ select _ores_grant_dml_fn('ores_analytics_', :'analytics_service_user');
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_inbox_', :'inbox_service_user');
 select _ores_grant_select_fn('ores_iam_', :'inbox_service_user');
--- The expiry sweep reads every tenant to close what nobody answered, so it is
--- a security-definer function and this is what lets the inbox service run it.
 select _ores_grant_execute_fn('ores_inbox_expire_approval_requests_', :'inbox_service_user');
+select _ores_grant_execute_fn('ores_inbox_remind_expiring_approval_requests_', :'inbox_service_user');
 
 -- ---------------------------------------------------------------------------
 -- Clean up helper functions

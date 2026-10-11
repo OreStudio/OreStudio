@@ -39,4 +39,11 @@ returns setof uuid as $$
       and c.tenant_id = ores_iam_current_tenant_id_fn()
       and c.valid_to = ores_utility_infinity_timestamp_fn()
     order by c.party_id;
-$$ language sql stable security definer set search_path = public;
+$$ language sql stable security definer set search_path = public, pg_temp;
+
+-- The function reads past the party policy, so PostgreSQL's default grant to
+-- PUBLIC is revoked. The refdata service runs the apply and is the only service
+-- granted it (Execute prefixes in service_registry.org). The read-write role the
+-- test suites sign in under keeps it, so it can be tested.
+revoke execute on function ores_refdata_book_change_parties_fn(uuid) from public;
+grant execute on function ores_refdata_book_change_parties_fn(uuid) to :rw_role;

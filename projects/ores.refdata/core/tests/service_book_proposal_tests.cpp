@@ -32,6 +32,7 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.refdata.core/service/book_service.hpp"
 #include "ores.refdata.service/service/book_proposal.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -642,4 +643,24 @@ TEST_CASE("the_parties_of_a_request_are_found_without_a_party_scope", tags) {
         ores::refdata::repository::book_change_repository{}.read_latest_by_request_id(
             tenant_only, id, 0, 10);
     CHECK(visible.empty());
+}
+
+TEST_CASE("another_tenant_is_told_no_parties_for_a_request_it_does_not_own", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto proposal = svc.raise({new_book_line(h, w)}, "Open the desk");
+    REQUIRE(proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+
+    auto lg = ores::logging::make_logger("ores.refdata.tests");
+    const auto other = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        other,
+        "select p::text from ores_refdata_book_change_parties_fn($1::uuid) as p",
+        {id},
+        lg,
+        "Reading the parties of another tenant's request");
+
+    CHECK(rows.empty());
 }

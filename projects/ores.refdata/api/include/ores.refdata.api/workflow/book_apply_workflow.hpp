@@ -75,6 +75,8 @@ inline void register_book_apply_workflow(ores::workflow::service::workflow_regis
     def.build_steps = [](const std::string& request_json,
                          const std::string& /*tenant_id*/,
                          const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
+        // A start that names no request has no steps. The engine logs that and
+        // creates no instance, which is the refusal a caller needs.
         const auto parsed = rfl::json::read<book_apply_workflow_request>(request_json);
         if (!parsed || parsed->request_id.empty())
             return {};

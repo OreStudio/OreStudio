@@ -24,6 +24,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
 import type { Account, HeldRole, TimelineEvent } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { PATHS } from '../shell/paths.js';
 import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
@@ -34,8 +35,14 @@ import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { ContactTab, IdentityTab, useAccountWrites } from './PersonForms.js';
 import { ACCOUNT_ENTITY, PersonRevertDialog, isRevertable, latestVersion } from './PersonRevert.js';
-import { Timeline } from '../timeline/Timeline.js';
-import { useHolds } from './holds.js';
+import { Timeline, timelineEntryKey } from '../timeline/Timeline.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { useLoadState } from '../events/useLoadState.js';
+import { useChangedRows } from '../refdata/changedRows.js';
+import { RefreshButton } from '../ui/RefreshButton.js';
+import { useHolds, usePermissions } from './holds.js';
+import { PERMISSION } from './permissions.js';
+import { tabsFor } from './screens.js';
 import { actorPathFor } from './PeoplePage.js';
 import { useActorPictures } from './PersonRef.js';
 import { RecordHeader } from '../refdata/records.js';
@@ -73,6 +80,26 @@ export function PersonPage({ me }: { readonly me: string }): ReactNode {
     return <Person account={account.data} self={account.data.username === me} />;
 }
 
+/** What a person's page shows: the account, the contact record, the roles, the sign-ins and the history. */
+const PERSON_WATCHES = [
+    { component: 'iam', entity: 'accounts' },
+    { component: 'iam', entity: 'account_contact_informations' },
+    { component: 'iam', entity: 'roles' },
+    { component: 'iam', entity: 'login_info' },
+    { component: 'iam', entity: 'sessions' },
+] as const;
+
+/** The reads that make up a person's page, named by the start of their keys. */
+function personQueries(account: Account): readonly (readonly string[])[] {
+    return [
+        ['account', account.username],
+        ['contact-information'],
+        ['account-access', account.id],
+        ['account-sign-ins', account.username],
+        ['timeline', 'person', account.username],
+    ];
+}
+
 function Person({
     account,
     self,
@@ -96,16 +123,14 @@ function Person({
      * is broken.
      */
     const holds = useHolds();
+    const { can } = usePermissions();
     const mayReadRoles = holds('iam::roles:read');
-    const mayReadContact = holds('iam::account_contact_informations:read');
-    const mayReadSignIns = holds('iam::sessions:read');
     /*
      * Your own contact record is read and written through the session, not
      * through your account id, so it needs no permission at all: a person who
      * may read no colleague's address still owns their own, and an empty record
      * is a form waiting to be filled rather than an absence.
      */
-    const maySeeContact = mayReadContact || self;
     const access = useQuery({
         queryKey: ['account-access', account.id],
         queryFn: () => api.accountAccess(account.id),
@@ -117,6 +142,23 @@ function Person({
         queryFn: () => api.timeline('person', account.username),
     });
     const name = displayName(account, account.username);
+    /*
+     * The page never reloads by itself. A change to anything it shows makes
+     * Refresh stale, and one Refresh reads the cards and the history again.
+     */
+    const load = useLoadState(personQueries(account));
+    const news = useEntityChanges(PERSON_WATCHES, load);
+    const newEntries = useChangedRows(
+        'person-history',
+        story.data?.events ?? [],
+        (event) => timelineEntryKey(event),
+        { dataUpdatedAt: story.dataUpdatedAt, isPlaceholder: story.isPlaceholderData },
+    );
+    const refreshPage = (): void => {
+        for (const key of personQueries(account)) {
+            void queries.invalidateQueries({ queryKey: key });
+        }
+    };
     const refresh = () => {
         void queries.invalidateQueries({ queryKey: ['account-access', account.id] });
         /*
@@ -128,13 +170,16 @@ function Person({
 
     const { tab, bar } = useTabs({
         label: name,
-        tabs: [
-            'details',
-            ...(maySeeContact ? ['contact'] : []),
-            ...(mayReadRoles ? ['roles'] : []),
-            ...(mayReadSignIns ? ['signIns'] : []),
-            'timeline',
-        ],
+        tabs: tabsFor(
+            [
+                { name: 'details' },
+                { name: 'contact', needs: self ? {} : { all: [PERMISSION.contactsRead] } },
+                { name: 'roles', needs: { all: [PERMISSION.rolesRead] } },
+                { name: 'signIns', needs: { all: [PERMISSION.sessionsRead] } },
+                { name: 'timeline' },
+            ],
+            can,
+        ),
         titleOf: (part) => t(`access.person.tabs.${part}`),
     });
     const roles = access.data?.roles ?? [];
@@ -144,8 +189,8 @@ function Person({
             <RecordHeader
                 crumbs={[
                     { label: t('shell.menu.home'), to: '/' },
-                    { label: t('access.hub.title'), to: '/organisation' },
-                    { label: t('access.people.title'), to: '/staff' },
+                    { label: t('access.hub.title'), to: PATHS.organisation },
+                    { label: t('access.people.title'), to: PATHS.people },
                     { label: name },
                 ]}
                 title={name}
@@ -153,6 +198,7 @@ function Person({
                 version={null}
                 subdued
                 access={null}
+                own={<RefreshButton onClick={refreshPage} load={load} news={news} />}
                 mark={
                     <Avatar
                         name={name}
@@ -185,6 +231,7 @@ function Person({
                             timeline={story.data}
                             actorPath={actorPathFor(holds('iam::accounts:read'))}
                             actorPicture={actorPicture}
+                            marked={newEntries}
                             /*
                              * Two entries can be acted on. A grant is taken
                              * away, which closes it and is the write the roles

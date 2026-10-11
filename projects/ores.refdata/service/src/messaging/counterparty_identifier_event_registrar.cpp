@@ -48,15 +48,18 @@ register_counterparty_identifier_event_mapping(ev::service::postgres_event_sourc
     event_source.register_entity_event_mapping<refdata::messaging::counterparty_identifier_event>(
         "ores_refdata_counterparty_identifiers");
 
-    return event_bus.subscribe<refdata::messaging::counterparty_identifier_event>(
-        [&nats](const refdata::messaging::counterparty_identifier_event& e) {
+    return event_bus.subscribe<
+        ev::domain::published_entity_event<refdata::messaging::counterparty_identifier_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                refdata::messaging::counterparty_identifier_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
                 ev::domain::event_subject<refdata::messaging::counterparty_identifier_event>(
-                    e.action),
-                e);
+                    published.event.action),
+                published);
         });
 }
 

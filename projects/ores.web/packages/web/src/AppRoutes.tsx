@@ -20,11 +20,14 @@
  */
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router';
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router';
+import { CardScreen } from './shell/CardScreen.js';
+import { MOVED, PATHS } from './shell/paths.js';
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api/client.js';
 import { useTranslation } from './i18n/Provider.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
+import { EntityEventsProvider } from './events/EntityEvents.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
 import { useSite } from './session/SiteProvider.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
@@ -65,7 +68,12 @@ import { MyAccessPage } from './access/MyAccessPage.js';
 import { WhereIWorkPage } from './membership/WhereIWorkPage.js';
 import { ReportingLinesPage } from './membership/ReportingLinesPage.js';
 import { OrganisationPage } from './access/OrganisationPage.js';
+import { RouteTrail } from './log/RouteTrail.js';
 import { PeoplePage } from './access/PeoplePage.js';
+import { FirstAvailable, Requires } from './access/Requires.js';
+import { RefusalGuard } from './access/RefusalGuard.js';
+import { NEEDS } from './access/screens.js';
+import { StaffOfMyParties } from './membership/StaffOfMyParties.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
@@ -420,7 +428,7 @@ export function AppRoutes({
              * own.
              */}
             <Route
-                path="/rescue"
+                path={PATHS.rescue}
                 element={signedIn(gate.version, session, shell, () => (
                     <RescuePage />
                 ))}
@@ -432,7 +440,7 @@ export function AppRoutes({
              * the tenant and not the member.
              */}
             <Route
-                path="/audit"
+                path={PATHS.signIns}
                 element={signedIn(gate.version, session, shell, () => (
                     <AuditPage />
                 ))}
@@ -598,7 +606,7 @@ export function AppRoutes({
                 ))}
             />
             <Route
-                path="/parties"
+                path={PATHS.parties}
                 element={signedIn(
                     gate.version,
                     session,
@@ -636,24 +644,13 @@ export function AppRoutes({
                     />
                 ))}
             />
-            <Route path="/reporting-lines" element={<Navigate to="/hierarchy" replace />} />
             <Route
-                path="/hierarchy"
+                path={PATHS.hierarchy}
                 element={signedIn(gate.version, session, shell, (view) => (
-                    <ReportingLinesPage me={view.username} />
+                    <Requires needs={NEEDS.hierarchy} screen={t('access.hub.hierarchy')}>
+                        <ReportingLinesPage me={view.username} />
+                    </Requires>
                 ))}
-            />
-            <Route
-                path="/staff"
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    (view) => (
-                        <PeoplePage mode={view.mode} />
-                    ),
-                    'workspace',
-                )}
             />
             <Route
                 path="/organisation"
@@ -661,29 +658,32 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    () => (
-                        <OrganisationPage />
+                    (view) => (
+                        <OrganisationPage mode={view.mode} />
                     ),
                     'workspace',
                 )}
             />
             <Route
-                path="/people"
+                path={PATHS.people}
                 element={signedIn(
                     gate.version,
                     session,
                     shell,
-                    (view) =>
-                        view.mode === 'system-administration' ? (
-                            <PeoplePage mode={view.mode} />
-                        ) : (
-                            <Navigate to="/organisation" replace />
-                        ),
+                    (view) => (
+                        <FirstAvailable
+                            screen={t('access.hub.staff')}
+                            variants={[
+                                { needs: NEEDS.people, screen: <PeoplePage mode={view.mode} /> },
+                                { needs: NEEDS.staffOfMyParties, screen: <StaffOfMyParties /> },
+                            ]}
+                        />
+                    ),
                     'workspace',
                 )}
             />
             <Route
-                path="/people/:username"
+                path={`${PATHS.people}/:username`}
                 element={signedIn(
                     gate.version,
                     session,
@@ -700,8 +700,8 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    () => (
-                        <RefdataPage />
+                    (view) => (
+                        <RefdataPage mode={view.mode} />
                     ),
                     'workspace',
                 )}
@@ -844,25 +844,29 @@ export function AppRoutes({
             />
             <Route path="/classifications/:list" element={<ClassificationsRedirect />} />
             <Route
-                path="/roles"
+                path={PATHS.roles}
                 element={signedIn(
                     gate.version,
                     session,
                     shell,
                     () => (
-                        <RolesPage />
+                        <Requires needs={NEEDS.roles} screen={t('shell.menu.roles')}>
+                            <RolesPage />
+                        </Requires>
                     ),
                     'workspace',
                 )}
             />
             <Route
-                path="/roles/:roleId"
+                path={`${PATHS.roles}/:roleId`}
                 element={signedIn(
                     gate.version,
                     session,
                     shell,
                     () => (
-                        <RolePage />
+                        <Requires needs={NEEDS.roles} screen={t('shell.menu.roles')}>
+                            <RolePage />
+                        </Requires>
                     ),
                     'workspace',
                 )}
@@ -902,32 +906,45 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    (view) => (
-                        <RequestStoryPage me={view.username} />
+                    () => (
+                        <RequestStoryPage />
                     ),
                     'workspace',
                 )}
             />
             <Route
-                path="/parties/new"
-                element={signedIn(gate.version, session, shell, () => newPartyJourney)}
+                path={PATHS.newParty}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="newParty">{newPartyJourney}</CardScreen>
+                ))}
             />
             <Route
-                path="/counterparties/onboard"
-                element={signedIn(gate.version, session, shell, () => counterpartyJourney)}
+                path={PATHS.onboardCounterparty}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="onboardCounterparty">{counterpartyJourney}</CardScreen>
+                ))}
             />
             <Route
-                path="/parties/details"
-                element={signedIn(gate.version, session, shell, () => partyDetailsJourney)}
+                path={PATHS.partyDetails}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="partyDetails">{partyDetailsJourney}</CardScreen>
+                ))}
             />
             <Route
-                path="/books/structure"
-                element={signedIn(gate.version, session, shell, () => bookStructureJourney)}
+                path={PATHS.bookStructure}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="bookStructure">{bookStructureJourney}</CardScreen>
+                ))}
             />
             <Route
-                path="/conventions"
-                element={signedIn(gate.version, session, shell, () => conventionJourney)}
+                path={PATHS.conventions}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="conventions">{conventionJourney}</CardScreen>
+                ))}
             />
+            {MOVED.map(([from, to]) => (
+                <Route key={from} path={from} element={<Moved to={to} />} />
+            ))}
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
@@ -1170,19 +1187,22 @@ function signedIn(
      */
     const version = view.version !== '' ? view.version : serverVersion;
     return (
-        <AppShell
-            username={view.username}
-            tenantName={view.tenantName}
-            partyName={view.party.name}
-            mode={view.mode}
-            width={width}
-            serverVersion={version}
-            environment={shell.environment}
-            onSignOut={shell.onSignOut}
-            self={shell.self}
-        >
-            {screen(view, version)}
-        </AppShell>
+        <EntityEventsProvider>
+            <RouteTrail />
+            <AppShell
+                username={view.username}
+                tenantName={view.tenantName}
+                partyName={view.party.name}
+                mode={view.mode}
+                width={width}
+                serverVersion={version}
+                environment={shell.environment}
+                onSignOut={shell.onSignOut}
+                self={shell.self}
+            >
+                <RefusalGuard>{screen(view, version)}</RefusalGuard>
+            </AppShell>
+        </EntityEventsProvider>
     );
 }
 
@@ -1191,6 +1211,16 @@ function Centred({ children }: { readonly children: ReactNode }): ReactNode {
 }
 
 /** The first build's address for one list, kept so a saved link still opens it. */
+/** An address a screen had before it moved under its area: go to the new one, keeping what followed it. */
+function Moved({ to }: { readonly to: string }): ReactNode {
+    const params = useParams();
+    const { search } = useLocation();
+    const target = to.replace(/:(\w+)/g, (_, name: string) =>
+        encodeURIComponent(params[name] ?? ''),
+    );
+    return <Navigate to={`${target}${search}`} replace />;
+}
+
 function ClassificationsRedirect(): ReactNode {
     const { list } = useParams();
     return <Navigate to={`/refdata/classifications/${encodeURIComponent(list ?? '')}`} replace />;

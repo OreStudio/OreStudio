@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:security:iam:authorisation:
 #+created: 2026-09-30
-#+updated: 2026-10-10
+#+updated: 2026-10-11
 
 * Summary
 
@@ -219,41 +219,55 @@ person deciding what to ask for reads what the role grants. The tenant's roles
 are listable by any member for the same reason, so gating the bundle would hide
 the half of the answer that makes the ask informed. Both are on the allow-list.
 
-** The organisation read
+** The account read and the organisation read
 
-What a person may see of the people they work with is a different subject from
-account data, and it has a code of its own: =iam::organisation:read=. It is held
-by Member. It is a guarded read, not an open one, so it is not on the allow-list
-above: it is not a self read, because it answers other people, and the reasons
-the allow-list gives do not apply to it. Account data is not screen furniture,
-so Member holds no account code; a narrower code is what lets every person see
-their organisation without it.
+A person needs to know the people they work with: who they are, what they do,
+and who they report to. Every member holds =iam::accounts:read= for this. The
+read is not a read of the tenant, because *accounts are a special case: row-level
+security limits an account read to the accounts that work in a party the
+caller's own account works in.* The policy, the function it uses and the
+reasons it is hand-written are in
+[[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]], under
+"The accounts exception". No other table has this policy.
 
-The read is =iam.v1.ops.get_reporting_tree=. Its scope follows what the caller
-holds, and the handler decides it before any work is done:
+So the account code answers a member with the people of their parties, and it
+answers a tenant administrator with the whole tenant, because the
+administrator's account is linked to every party. The code is the permission to
+read an account. The policy is which accounts.
+
+An account is not credentials. The password hash, the contact record, the
+sign-ins and the sessions are other tables. Each has its own permission code,
+and Member holds none of them. A member reads a colleague's account (name,
+email, job title, picture, status, parties) and nothing that signs in as them.
+
+The organisation read has a code of its own: =iam::organisation:read=. It is
+held by Member. It is a guarded read, not an open one, so it is not on the
+allow-list above: it answers other people, and the reasons the allow-list gives
+do not apply to it. The read is =iam.v1.ops.get_reporting_tree=. The handler
+decides its scope before any work is done:
 
 | Caller holds | Answer |
 |--------------+--------|
-| =iam::accounts:read= | the tenant's whole shape |
+| =iam::accounts:read= | the people the account policy admits: those who work in a party the caller's own account works in |
 | =iam::organisation:read= and not that code | the people who work in any party the caller's own account works in, and everyone who reports to the caller, directly or indirectly |
 | neither | refused |
 
-The rule is the caller's own parties and the caller's own reports, because a
-person belongs to many parties and an account can work in several: the head of a
-holding group, linked to each of its parties, sees everyone in them and
-everyone below them. It is not the party the session is acting for, which would
-hide a head of group's other parties from them.
+The party rule is the caller's own parties, because a person belongs to many
+parties and an account can work in several: the head of a holding group, linked
+to each of its parties, sees everyone in them. It is not the party the session
+is acting for, which would hide a head of group's other parties from them.
 
 A node carries a name, a job title, a picture id, the manager, and the parties
-the person works in. It carries no email and no contact detail, which is what
-makes the narrower code safe to give every member. A manager the caller may not
-see is not named: the node says =reports_outside_scope=, so a person who has a
-manager is never drawn as one who has none. The parties are named from IAM's
-party cache, and a party's parent is stated only when that parent is in the
-answer too.
+the person works in. It carries no email and no contact detail. A manager the
+caller may not see is not named: the node says =reports_outside_scope=, so a
+person who has a manager is never drawn as one who has none. The parties are
+named from IAM's party cache, and a party's parent is stated only when that
+parent is in the answer too.
 
-The screens that read the organisation open a person's page only for a caller
-who also holds =iam::accounts:read=, because the page is an account read.
+The screens that read the organisation open a person's page for a caller who
+holds =iam::accounts:read=, because the page is an account read. Member holds
+it, so a member opens the page of a colleague in their parties. The page shows
+the tabs whose reads the member holds and no others.
 
 ** The divergence this page does not settle
 

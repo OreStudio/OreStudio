@@ -174,7 +174,7 @@ describe('the audit sign-ins screen', () => {
     it('opens on the active sessions, and offers to end one', () => {
         const html = render();
 
-        expect(html).toContain('Audit: sign-ins');
+        expect(html).toContain('Sign-ins');
         expect(html).toContain('Active sessions');
         expect(html).toContain('ores.web');
         expect(html).toContain('203.0.113.44');

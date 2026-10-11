@@ -18,6 +18,7 @@
  *
  */
 
+import { ActiveCards } from '../shell/AreaCards.js';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
@@ -591,35 +592,7 @@ function TenantTable({
 }
 
 function ActiveModules(): ReactNode {
-    const { t } = useTranslation();
-    const active: Tile[] = [
-        {
-            title: t('home.system.tenants'),
-            body: t('home.system.tenantsLead'),
-            to: '/tenants',
-            icon: 'party',
-        },
-        {
-            title: t('shell.menu.accounts'),
-            body: t('home.system.accountsBody'),
-            to: '/people',
-            icon: 'people',
-        },
-        {
-            title: t('shell.menu.operations'),
-            body: t('operations.hub.description'),
-            to: '/operations',
-            icon: 'server',
-        },
-        {
-            title: t('home.tenant.security'),
-            body: t('home.tenant.securityBody'),
-            to: '/security',
-            icon: 'locked',
-        },
-    ];
-
-    return <Tiles tiles={active} />;
+    return <ActiveCards mode="system-administration" />;
 }
 
 function UpcomingModules(): ReactNode {

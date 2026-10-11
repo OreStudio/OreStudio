@@ -22,6 +22,8 @@
 import type { ReactNode } from 'react';
 import type { TenantParty } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
+import { useAreaParts } from '../shell/AreaTrail.js';
+import { WorkflowMenu } from '../shell/WorkflowMenu.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { FlaggedCode } from '../images/flags.js';
 import { RecordList, type ListColumn, type ListSource } from '../refdata/RecordList.js';
@@ -50,6 +52,7 @@ const PARTIES: ListSource<TenantParty> = {
         'business_center_code',
     ],
     mayAdd: false,
+    watches: [{ component: 'refdata', entity: 'parties' }],
 };
 
 /**
@@ -122,8 +125,9 @@ export function PartiesPage(): ReactNode {
             source={PARTIES}
             title={t('parties.title')}
             lead={t('parties.description')}
-            crumbs={[{ label: t('shell.menu.home'), to: '/' }, { label: t('parties.title') }]}
+            crumbs={useAreaParts('refdata', t('parties.title'))}
             keyOf={(party) => party.id}
+            actions={<WorkflowMenu on="parties" />}
             columns={partyColumns(t)}
         />
     );

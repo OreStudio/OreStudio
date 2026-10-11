@@ -131,20 +131,22 @@ struct fixture {
         // run's rows are this case's own, in the test tenant.
         const auto engine_context = [&] {
             switch (where) {
+            case engine_tenant::run:
+                return h.context();
             case engine_tenant::service:
                 return service_context();
             case engine_tenant::workflow_service:
                 return as_workflow_service();
-            default:
-                return h.context();
             }
+            throw std::logic_error("unknown engine tenant");
         }();
-        instance_states = load_fsm_states(
-            where == engine_tenant::workflow_service ? engine_context : service_context(),
-            "workflow_instance");
-        step_states = load_fsm_states(
-            where == engine_tenant::workflow_service ? engine_context : service_context(),
-            "workflow_step");
+        // The states are read through the engine's own context for the service
+        // user, which proves it may read dq's state machines, and through the
+        // read-write role for every other arrangement.
+        const auto states_context =
+            where == engine_tenant::workflow_service ? engine_context : service_context();
+        instance_states = load_fsm_states(states_context, "workflow_instance");
+        step_states = load_fsm_states(states_context, "workflow_step");
         engine = std::make_shared<workflow_engine>(
             nats,
             engine_context,
@@ -937,6 +939,8 @@ TEST_CASE("the workflow service user starts and advances a three step apply run"
         as_message(start_for("test_apply_shaped_workflow", run_tenant, instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
+    // The engine wrote these rows as the workflow service user. They are read
+    // back through the read-write role, which is only the check.
     workflow_step_repository steps;
     workflow_instance_repository instances;
     const auto service_ctx = f.service_context();

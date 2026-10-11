@@ -20,6 +20,7 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
@@ -111,14 +112,50 @@ TEST_CASE("the_inbox_service_user_reads_a_request_and_tells_the_person_who_asked
                               [&](const auto& n) { return n.link_id == id; }));
 }
 
-TEST_CASE("the_inbox_service_user_runs_the_three_sweeps", tags) {
+TEST_CASE("the_inbox_service_user_closes_an_overdue_request_in_the_expiry_sweep", tags) {
     ores::testing::scoped_database_helper h;
-    const auto service = as_inbox_service(h);
-    approval_lifecycle as_service(service);
+    const auto asker = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+    const auto raised = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Please", asker.id);
+    const auto id = boost::uuids::to_string(raised.id);
 
-    CHECK_NOTHROW(as_service.expire_overdue());
-    CHECK_NOTHROW(as_service.remind_expiring(std::chrono::hours(48)));
-    CHECK_NOTHROW(as_service.stalled_applies(std::chrono::system_clock::now()));
+    // Move the deadline behind us, which is what waiting out the window comes to.
+    auto lapsed = *lifecycle.request(id);
+    lapsed.expires_at = std::chrono::system_clock::now() - std::chrono::hours(1);
+    lapsed.change_reason_code = "system.test";
+    ores::inbox::repository::approval_request_repository repo;
+    repo.write(acting(h), lapsed);
+
+    const auto closed = approval_lifecycle(as_inbox_service(h)).expire_overdue();
+
+    CHECK(std::ranges::any_of(closed, [&](const auto& e) { return e.request_id == id; }));
+    CHECK(lifecycle.request(id)->state_code == "expired");
+}
+
+TEST_CASE("the_inbox_service_user_lists_an_approved_request_whose_apply_has_not_finished", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto decider = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+    const auto raised = lifecycle.raise(*lifecycle.kind("refdata.book_change"), "Please", asker.id);
+    const auto id = boost::uuids::to_string(raised.id);
+    REQUIRE(lifecycle.decide(id, raised.version, "approve", decider.id, "").state_code ==
+            "approved");
+
+    const auto stalled =
+        approval_lifecycle(as_inbox_service(h)).stalled_applies(std::chrono::system_clock::now());
+
+    CHECK(std::ranges::any_of(stalled, [&](const auto& s) { return s.request_id == id; }));
+}
+
+TEST_CASE("the_inbox_service_user_runs_the_reminder_sweep", tags) {
+    ores::testing::scoped_database_helper h;
+
+    // The reminder reads across tenants and raises a notice only for a request
+    // close to its deadline. An error from the database is thrown and not
+    // swallowed, so a missing right fails the call.
+    CHECK_NOTHROW(
+        approval_lifecycle(as_inbox_service(h)).remind_expiring(std::chrono::hours(48)));
 }
 
 TEST_CASE("the_inbox_service_user_reads_who_holds_a_permission", tags) {

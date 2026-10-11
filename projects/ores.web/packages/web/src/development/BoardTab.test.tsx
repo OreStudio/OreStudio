@@ -81,6 +81,7 @@ describe('the Board tab', () => {
         expect(markup).toContain('<option value="sprint_2"');
         expect(markup).toContain('Day 3 of 14');
         expect(markup).toContain('2 stories');
+        expect(screen(board([started]))).toContain('1 story');
     });
 
     it('draws a column for each state and a card in the column of its state', () => {
@@ -89,7 +90,11 @@ describe('the Board tab', () => {
         }
         expect(markup).toContain('Draw the board');
         expect(markup).toContain('Ship the store');
-        expect(markup).toContain('1 done'.replace('1 done', '2 tasks, 1 done'));
+        expect(markup).toContain('2 tasks, 1 done');
+        expect(markup).toContain('0 tasks, 0 done');
+        expect(screen(board([story({ progress: { done: 1, total: 1, abandoned: 0 } })]))).toContain(
+            '1 task, 1 done',
+        );
     });
 
     it('draws the epic filters from the board', () => {
@@ -112,6 +117,13 @@ describe('the Board tab', () => {
         expect(screen(undefined, 'No sprint has this name.')).toContain('No sprint has this name.');
     });
 
+    it('keeps the sprint picker and names each column when the board fails', () => {
+        const failed = screen(undefined, 'No sprint has this name.');
+        expect(failed).toContain('aria-label="Sprint"');
+        expect(markup).toContain('aria-label="Started"');
+        expect(markup).not.toContain('aria-label="STARTED"');
+    });
+
     it('shows loading before the board arrives', () => {
         expect(screen(undefined)).toContain('Loading');
     });
@@ -132,6 +144,7 @@ describe('the story detail', () => {
                         tasks: [
                             { id: 'T1', title: 'Build the cards', state: 'DONE', pr: '3130' },
                             { id: 'T2', title: 'Build the detail', state: 'BLOCKED', pr: 'later' },
+                            { id: 'T3', title: 'Odd pr', state: 'DONE', pr: '1e3' },
                         ],
                     })}
                 />
@@ -149,6 +162,7 @@ describe('the story detail', () => {
     it('links a pull request by number and ignores a pr that is prose', () => {
         expect(detail).toContain('href="https://github.com/OreStudio/OreStudio/pull/3130"');
         expect(detail).not.toContain('pull/NaN');
+        expect(detail).not.toContain('pull/1000');
     });
 
     it('lists each task with its state', () => {

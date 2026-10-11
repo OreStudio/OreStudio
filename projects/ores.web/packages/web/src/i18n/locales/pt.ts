@@ -1237,7 +1237,7 @@ const pt: SourceCatalogue = {
             nothing: 'Nada aqui',
             sprintLabel: 'Sprint',
             day: 'Dia {day} de {total}',
-            storyCount: '{count} histórias',
+            storyCount: { one: '{count} história', other: '{count} histórias' },
             refresh: 'Atualizar',
             tiles: {
                 stories: 'Histórias',
@@ -1245,7 +1245,10 @@ const pt: SourceCatalogue = {
                 blocked: 'Bloqueadas',
                 tasksDone: 'Tarefas feitas',
             },
-            taskProgress: '{total} tarefas, {done} feitas',
+            taskProgress: {
+                one: '{total} tarefa, {done} feita',
+                other: '{total} tarefas, {done} feitas',
+            },
             detail: 'Detalhe da história',
             close: 'Fechar',
             none: 'Nenhum',

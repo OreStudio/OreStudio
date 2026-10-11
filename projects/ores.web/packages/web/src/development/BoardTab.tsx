@@ -65,7 +65,29 @@ export function BoardTab(): ReactNode {
     const [epic, setEpic] = useState<string | null>(null);
     const [openId, setOpenId] = useState<string | null>(null);
 
-    if (board.isError) return <Notice tone="error">{board.error.message}</Notice>;
+    const pickSprint = (name: string): void => {
+        setOpenId(null);
+        setText('');
+        setEpic(null);
+        setSearch(
+            (previous) => {
+                const next = new URLSearchParams(previous);
+                next.set('sprint', name);
+                return next;
+            },
+            { replace: true },
+        );
+    };
+    const names = sprints.data?.map((ref) => ref.name);
+
+    if (board.isError) {
+        return (
+            <div className="space-y-4">
+                <SprintPicker names={names ?? []} value={sprint} onPick={pickSprint} />
+                <Notice tone="error">{board.error.message}</Notice>
+            </div>
+        );
+    }
     if (board.isPending) return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
 
     const data = board.data;
@@ -77,18 +99,8 @@ export function BoardTab(): ReactNode {
         <div className="space-y-4">
             <SprintLine
                 board={data}
-                names={sprints.data?.map((ref) => ref.name) ?? [data.sprint.name]}
-                onSprint={(name) => {
-                    setOpenId(null);
-                    setSearch(
-                        (previous) => {
-                            const next = new URLSearchParams(previous);
-                            next.set('sprint', name);
-                            return next;
-                        },
-                        { replace: true },
-                    );
-                }}
+                names={names ?? [data.sprint.name]}
+                onSprint={pickSprint}
                 onRefresh={() => void board.refetch()}
             />
             <Tiles board={data} />
@@ -136,7 +148,11 @@ export function BoardTab(): ReactNode {
                     {columnsOf(data).map((column) => {
                         const cards = stories.filter((story) => columnOf(story.state) === column);
                         return (
-                            <section key={column} className="space-y-2" aria-label={column}>
+                            <section
+                                key={column}
+                                className="space-y-2"
+                                aria-label={t(`development.board.states.${column}`)}
+                            >
                                 <header className="flex items-center gap-2">
                                     <StateTag state={column} />
                                     <span className="text-xs text-ink-faint">{cards.length}</span>
@@ -165,6 +181,36 @@ export function BoardTab(): ReactNode {
     );
 }
 
+function SprintPicker({
+    names,
+    value,
+    onPick,
+}: {
+    readonly names: readonly string[];
+    readonly value: string | undefined;
+    readonly onPick: (name: string) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <Select
+            className="max-w-[10rem]"
+            value={value ?? ''}
+            aria-label={t('development.board.sprintLabel')}
+            onChange={(event) => onPick(event.target.value)}
+        >
+            {value === undefined && <option value="" />}
+            {names.map((name) => (
+                <option key={name} value={name}>
+                    {name}
+                </option>
+            ))}
+            {value !== undefined && !names.includes(value) && (
+                <option value={value}>{value}</option>
+            )}
+        </Select>
+    );
+}
+
 function SprintLine({
     board,
     names,
@@ -176,23 +222,12 @@ function SprintLine({
     readonly onSprint: (name: string) => void;
     readonly onRefresh: () => void;
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, plural } = useTranslation();
     const { sprint } = board;
     const day = shownDay(sprint.dayOfSprint, sprint.totalDays);
     return (
         <div className="flex flex-wrap items-center gap-3">
-            <Select
-                className="max-w-[10rem]"
-                value={sprint.name}
-                aria-label={t('development.board.sprintLabel')}
-                onChange={(event) => onSprint(event.target.value)}
-            >
-                {names.map((name) => (
-                    <option key={name} value={name}>
-                        {name}
-                    </option>
-                ))}
-            </Select>
+            <SprintPicker names={names} value={sprint.name} onPick={onSprint} />
             <h2 className="text-lg font-semibold text-ink">{sprint.title}</h2>
             {day !== null && sprint.totalDays !== null && (
                 <span className="text-sm text-ink-muted">
@@ -200,7 +235,7 @@ function SprintLine({
                 </span>
             )}
             <span className="text-sm text-ink-muted">
-                {t('development.board.storyCount', { count: board.counts.stories })}
+                {plural('development.board.storyCount', board.counts.stories)}
             </span>
             <span className="ml-auto">
                 <Button type="button" size="sm" variant="ghost" onClick={onRefresh}>
@@ -243,7 +278,7 @@ function StoryCard({
     readonly selected: boolean;
     readonly onOpen: () => void;
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, plural } = useTranslation();
     return (
         <button
             type="button"
@@ -267,7 +302,7 @@ function StoryCard({
                 />
             </span>
             <span className="block text-xs text-ink-muted">
-                {t('development.board.taskProgress', {
+                {plural('development.board.taskProgress', story.progress.total, {
                     total: story.progress.total,
                     done: story.progress.done,
                 })}
@@ -355,7 +390,7 @@ function TaskRow({ task }: { readonly task: AgileTask }): ReactNode {
     const { t } = useTranslation();
     const [expanded, setExpanded] = useState(false);
     const none = t('development.board.none');
-    const pr = Number(task.pr.replace(/^#/, ''));
+    const pr = Number(/^#?(\d+)$/.exec(task.pr.trim())?.[1]);
     return (
         <li className="rounded-md border border-line-subtle p-2">
             <button

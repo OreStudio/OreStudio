@@ -1234,7 +1234,7 @@ export const en: SourceCatalogue = {
             nothing: 'Nothing here',
             sprintLabel: 'Sprint',
             day: 'Day {day} of {total}',
-            storyCount: '{count} stories',
+            storyCount: { one: '{count} story', other: '{count} stories' },
             refresh: 'Refresh',
             tiles: {
                 stories: 'Stories',
@@ -1242,7 +1242,7 @@ export const en: SourceCatalogue = {
                 blocked: 'Blocked',
                 tasksDone: 'Tasks done',
             },
-            taskProgress: '{total} tasks, {done} done',
+            taskProgress: { one: '{total} task, {done} done', other: '{total} tasks, {done} done' },
             detail: 'Story detail',
             close: 'Close',
             none: 'None',

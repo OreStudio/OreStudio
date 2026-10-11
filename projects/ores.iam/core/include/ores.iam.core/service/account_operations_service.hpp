@@ -214,10 +214,16 @@ public:
      * This method sets the account's locked status to true, preventing
      * the user from logging in until the account is unlocked.
      *
+     * An account that was not locked is recorded as an account_locked
+     * authentication event, so the log of events shows where a run of failed
+     * attempts ended.
+     *
      * @param account_id The ID of the account to lock
+     * @param detail Why the account was locked, for the event: who locked it,
+     *               or the failed attempts that did
      * @return true if the account was locked successfully, false otherwise
      */
-    bool lock_account(const boost::uuids::uuid& account_id);
+    bool lock_account(const boost::uuids::uuid& account_id, const std::string& detail = "");
 
     /**
      * @brief Unlocks an account that has been locked due to failed login
@@ -226,10 +232,15 @@ public:
      * This method resets the account's locked status and clears the failed
      * login counter, allowing the user to attempt to login again.
      *
+     * An account that was locked is recorded as an account_unlocked
+     * authentication event. Unlocking an account that is not locked writes
+     * nothing and records nothing.
+     *
      * @param account_id The ID of the account to unlock
+     * @param detail Who unlocked the account, for the event
      * @return true if the account was unlocked successfully, false otherwise
      */
-    bool unlock_account(const boost::uuids::uuid& account_id);
+    bool unlock_account(const boost::uuids::uuid& account_id, const std::string& detail = "");
 
     /**
      * @brief Logs out a user by setting their online status to false.
@@ -533,6 +544,16 @@ public:
                                                                  const std::string& password);
 
 private:
+    /**
+     * @brief Records that an account was locked or unlocked.
+     *
+     * A failure to record is logged and swallowed: the lock or the unlock has
+     * been written, and the event is the trail of it, not part of it.
+     */
+    void record_lock_event(bool locked,
+                           const domain::account& account,
+                           const std::string& detail);
+
     /**
      * @brief Reads the open credential row of an account, if it has one.
      */

@@ -371,8 +371,6 @@ export const en: SourceCatalogue = {
         never: 'Never',
         failed: 'Failed attempts',
         state: 'State',
-        locked: 'Locked',
-        notLocked: 'Not locked',
         passwordDue: 'Password change due',
         noSessions: 'No sessions are recorded for this account.',
         started: 'Started',
@@ -414,6 +412,8 @@ export const en: SourceCatalogue = {
             login_failure: 'login failed',
             logout: 'logout',
             token_refresh: 'token refresh',
+            account_locked: 'account locked',
+            account_unlocked: 'account unlocked',
         },
         column: {
             started: 'Started',
@@ -470,10 +470,10 @@ export const en: SourceCatalogue = {
             failed: 'Failed',
             lastAddress: 'Last address',
             lastSignIn: 'Last sign-in',
-            locked: 'Locked',
-            notLocked: 'Not locked',
             never: 'Never',
             neverSignedIn: 'Never signed in',
+            hideNeverSignedIn: 'Signed in only',
+            allHidden: 'Every record is hidden. Clear the filter to see them.',
         },
         events: {
             title: 'Authentication events',
@@ -1334,6 +1334,9 @@ export const en: SourceCatalogue = {
             },
         },
         screens: {
+            signIns: 'Sign-ins',
+            signInsBody:
+                'Who is signed in now, the sign-ins that failed, and the events behind them.',
             versions: 'Versions and the database',
             versionsBody:
                 'The client build, the deployment build, and the fingerprint of the database.',
@@ -1901,6 +1904,8 @@ export const en: SourceCatalogue = {
             signed_in: 'Signed in',
             sign_in_failed: 'Sign-in refused',
             signed_out: 'Signed out',
+            locked: 'Account locked',
+            unlocked: 'Account unlocked',
             refreshed: 'Session renewed',
             noticed: 'Recorded',
         },
@@ -3200,6 +3205,8 @@ export const en: SourceCatalogue = {
     },
 
     common: {
+        locked: 'Locked',
+        unlocked: 'Unlocked',
         loading: 'Loading...',
         notAvailable: 'This is not available to you.',
         clear: 'Clear',

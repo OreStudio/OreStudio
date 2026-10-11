@@ -114,7 +114,7 @@ describe('RescueView', () => {
 
         expect(markup).toContain('has never signed in');
         expect(markup).toContain('This account has no sign-in record yet.');
-        expect(markup).toContain('Not locked');
+        expect(markup).toContain('Unlocked');
     });
 
     it('says an account that never signed in has no last sign-in time', () => {

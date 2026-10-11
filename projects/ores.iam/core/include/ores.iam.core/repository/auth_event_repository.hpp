@@ -159,6 +159,32 @@ public:
                             const std::string& party_id);
 
     /**
+     * @brief Record that an account was locked.
+     *
+     * @param account_id   The account that was locked
+     * @param username     Username of that account
+     * @param error_detail Why: who locked it, or the failed attempts that did
+     */
+    void record_account_locked(const std::chrono::system_clock::time_point& event_time,
+                               const std::string& tenant_id,
+                               const std::string& account_id,
+                               const std::string& username,
+                               const std::string& error_detail);
+
+    /**
+     * @brief Record that an account was unlocked.
+     *
+     * @param account_id   The account that was unlocked
+     * @param username     Username of that account
+     * @param error_detail Who unlocked it
+     */
+    void record_account_unlocked(const std::chrono::system_clock::time_point& event_time,
+                                 const std::string& tenant_id,
+                                 const std::string& account_id,
+                                 const std::string& username,
+                                 const std::string& error_detail);
+
+    /**
      * @brief Record a signup success event.
      *
      * @param event_time  Timestamp of the event

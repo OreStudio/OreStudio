@@ -367,8 +367,6 @@ const pt: SourceCatalogue = {
         never: 'Nunca',
         failed: 'Tentativas falhadas',
         state: 'Estado',
-        locked: 'Bloqueada',
-        notLocked: 'Não bloqueada',
         passwordDue: 'Mudança de palavra-passe pendente',
         noSessions: 'Não há sessões registadas para esta conta.',
         started: 'Início',
@@ -410,6 +408,8 @@ const pt: SourceCatalogue = {
             login_failure: 'início de sessão falhado',
             logout: 'fim de sessão',
             token_refresh: 'renovação do token',
+            account_locked: 'conta bloqueada',
+            account_unlocked: 'conta desbloqueada',
         },
         column: {
             started: 'Início',
@@ -466,10 +466,10 @@ const pt: SourceCatalogue = {
             failed: 'Falhas',
             lastAddress: 'Último endereço',
             lastSignIn: 'Último início de sessão',
-            locked: 'Bloqueada',
-            notLocked: 'Não bloqueada',
             never: 'Nunca',
             neverSignedIn: 'Nunca iniciou sessão',
+            hideNeverSignedIn: 'Já entraram',
+            allHidden: 'Todos os registos estão ocultos. Desmarque o filtro para os ver.',
         },
         events: {
             title: 'Eventos de autenticação',
@@ -1339,6 +1339,9 @@ const pt: SourceCatalogue = {
             },
         },
         screens: {
+            signIns: 'Entradas',
+            signInsBody:
+                'Quem está ligado agora, as entradas que falharam e os eventos por trás delas.',
             versions: 'Versões e base de dados',
             versionsBody:
                 'A versão do cliente, a versão da instalação e a impressão digital da base de dados.',
@@ -1916,6 +1919,8 @@ const pt: SourceCatalogue = {
             signed_in: 'Sessão iniciada',
             sign_in_failed: 'Sessão recusada',
             signed_out: 'Sessão terminada',
+            locked: 'Conta bloqueada',
+            unlocked: 'Conta desbloqueada',
             refreshed: 'Sessão renovada',
             noticed: 'Registado',
         },
@@ -3223,6 +3228,8 @@ const pt: SourceCatalogue = {
     },
 
     common: {
+        locked: 'Bloqueada',
+        unlocked: 'Desbloqueada',
         loading: 'A carregar...',
         notAvailable: 'Esta página não está disponível para si.',
         clear: 'Limpar',

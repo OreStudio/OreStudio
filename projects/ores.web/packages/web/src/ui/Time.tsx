@@ -32,9 +32,15 @@ const STEPS: readonly (readonly [Intl.RelativeTimeFormatUnit, number])[] = [
     ['year', Number.POSITIVE_INFINITY],
 ];
 
-/** A server timestamp, such as "2026-10-04 22:48:27Z", as a date; invalid when it is not one. */
+/**
+ * A server timestamp, such as "2026-10-04 22:48:27Z", as a date; invalid when it is not one.
+ *
+ * The database states an offset as whole hours, such as "2026-10-04 22:48:27+00",
+ * which a date does not read, so the minutes are added to it.
+ */
 export function parseTimestamp(at: string): Date {
-    return new Date(at.includes('T') ? at : at.replace(' ', 'T'));
+    const spaced = at.includes('T') ? at : at.replace(' ', 'T');
+    return new Date(spaced.replace(/(\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?)([+-]\d{2})$/, '$1$2:00'));
 }
 
 /**

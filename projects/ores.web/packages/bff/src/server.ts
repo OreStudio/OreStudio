@@ -589,17 +589,51 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         reply.header('x-request-id', request.id);
     });
 
+    /*
+     * A request without a body may still say it is JSON, as a browser does for a
+     * POST that names its subject in the path. The default parser refuses that
+     * as an error, so a lock or an unlock never reached the server. An empty
+     * body is read as no body, and anything else is parsed as it always was.
+     */
+    const parseJson = server.getDefaultJsonParser('error', 'error');
+    server.removeContentTypeParser('application/json');
+    server.addContentTypeParser(
+        'application/json',
+        { parseAs: 'string' },
+        (request, body, done) => {
+            const text = typeof body === 'string' ? body : body.toString('utf8');
+            if (text.trim() === '') {
+                done(null, undefined);
+                return;
+            }
+            parseJson(request, text, done);
+        },
+    );
+
+    /*
+     * Every failure is logged with the route it came from, so a refusal can be
+     * found from the screen that showed it. A 4xx is a warning with the reason
+     * the caller was given, which is a fixed sentence and never a quotation of
+     * the request, and with the framework's own error code, which names the cause
+     * without quoting it; a 5xx is an error with the stack. The credential and
+     * the body are never logged.
+     */
     server.setErrorHandler(async (error, request, reply) => {
         const failure = error instanceof HttpFailure ? error : toHttpFailure(error);
+        const context = {
+            status: failure.status,
+            code: failure.body.code,
+            method: request.method,
+            url: request.url,
+            route: request.routeOptions.url,
+            accountId: liveSession(request)?.accountId,
+            reason: failure.body.message,
+            cause: (error as { code?: unknown } | null)?.code,
+        };
         if (failure.status >= 500) {
-            request.log.error({ err: error }, 'request failed');
+            request.log.error({ err: error, ...context }, 'request failed');
         } else {
-            // A refusal is the answer working, but the reason it was given is what
-            // someone tracing a failed screen needs.
-            request.log.warn(
-                { status: failure.status, code: failure.body.code, reason: failure.body.message },
-                'request refused',
-            );
+            request.log.warn(context, 'request refused');
         }
         await reply.status(failure.status).send(failure.body);
     });

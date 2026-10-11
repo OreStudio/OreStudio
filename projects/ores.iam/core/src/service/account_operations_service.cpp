@@ -20,6 +20,7 @@
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.iam.core/repository/auth_event_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
@@ -392,7 +393,8 @@ authenticated_login account_operations_service::login(const std::string& usernam
 
         constexpr int max_failed_attempts = 5;
         if (login_info.failed_logins >= max_failed_attempts) {
-            lock_account(account.id);
+            lock_account(account.id,
+                         std::format("{} failed login attempts", login_info.failed_logins));
             BOOST_LOG_SEV(lg(), warn)
                 << "Account locked due to too many failed attempts: " << username;
         }
@@ -414,7 +416,28 @@ authenticated_login account_operations_service::login(const std::string& usernam
                                .password_reset_required = login_info.password_reset_required};
 }
 
-bool account_operations_service::lock_account(const boost::uuids::uuid& account_id) {
+void account_operations_service::record_lock_event(bool locked,
+                                                   const domain::account& account,
+                                                   const std::string& detail) {
+    try {
+        repository::auth_event_repository events(ctx_);
+        const auto now = std::chrono::system_clock::now();
+        const auto tenant = ctx_.tenant_id().to_string();
+        const auto id = boost::uuids::to_string(account.id);
+        if (locked) {
+            events.record_account_locked(now, tenant, id, account.username, detail);
+        } else {
+            events.record_account_unlocked(now, tenant, id, account.username, detail);
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to record the "
+                                  << (locked ? "account_locked" : "account_unlocked")
+                                  << " event for " << account.username << ": " << e.what();
+    }
+}
+
+bool account_operations_service::lock_account(const boost::uuids::uuid& account_id,
+                                              const std::string& detail) {
     BOOST_LOG_SEV(lg(), debug) << "Locking account: " << boost::uuids::to_string(account_id);
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
@@ -443,10 +466,12 @@ bool account_operations_service::lock_account(const boost::uuids::uuid& account_
     BOOST_LOG_SEV(lg(), info) << "Account locked: " << boost::uuids::to_string(account_id);
 
     login_info_repo_.write(ctx_, login_info);
+    record_lock_event(true, accounts.front(), detail);
     return true;
 }
 
-bool account_operations_service::unlock_account(const boost::uuids::uuid& account_id) {
+bool account_operations_service::unlock_account(const boost::uuids::uuid& account_id,
+                                                const std::string& detail) {
     BOOST_LOG_SEV(lg(), debug) << "Unlocking account: " << boost::uuids::to_string(account_id);
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
@@ -470,12 +495,18 @@ bool account_operations_service::unlock_account(const boost::uuids::uuid& accoun
         return true;
     }
 
+    const auto failed_before = login_info.failed_logins;
     login_info.locked = false;
     login_info.failed_logins = 0;
 
     BOOST_LOG_SEV(lg(), info) << "Account unlocked: " << boost::uuids::to_string(account_id);
 
     login_info_repo_.write(ctx_, login_info);
+    const auto cleared = failed_before == 0 ? std::string() : std::format(
+        "{} failed attempts cleared", failed_before);
+    const auto joined = detail.empty() || cleared.empty() ? detail + cleared
+                                                          : detail + "; " + cleared;
+    record_lock_event(false, accounts.front(), joined);
     return true;
 }
 

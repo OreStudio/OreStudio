@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { Timeline as Stream, TimelineEvent } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { Timeline } from './Timeline.js';
+import { Timeline, kindTone } from './Timeline.js';
 
 function event(over: Partial<TimelineEvent>): TimelineEvent {
     return {
@@ -249,5 +249,20 @@ describe('the timeline', () => {
         });
 
         expect(html.match(/uppercase/g)?.length).toBeGreaterThanOrEqual(2);
+    });
+});
+
+describe('kindTone', () => {
+    it('tints a refused sign-in red, a lock amber and an unlock green', () => {
+        expect(kindTone('sign_in_failed')).toBe('down');
+        expect(kindTone('locked')).toBe('warn');
+        expect(kindTone('unlocked')).toBe('up');
+    });
+
+    it('keeps the tints the other kinds had', () => {
+        expect(kindTone('granted')).toBe('up');
+        expect(kindTone('decided')).toBe('warn');
+        expect(kindTone('changed')).toBe('accent');
+        expect(kindTone('signed_in')).toBe('muted');
     });
 });

@@ -368,8 +368,6 @@ const fr: SourceCatalogue = {
         never: 'Jamais',
         failed: 'Tentatives échouées',
         state: 'État',
-        locked: 'Verrouillé',
-        notLocked: 'Non verrouillé',
         passwordDue: 'Changement de mot de passe requis',
         noSessions: 'Aucune session n’est enregistrée pour ce compte.',
         started: 'Début',
@@ -411,6 +409,8 @@ const fr: SourceCatalogue = {
             login_failure: 'connexion échouée',
             logout: 'déconnexion',
             token_refresh: 'renouvellement du jeton',
+            account_locked: 'compte verrouillé',
+            account_unlocked: 'compte déverrouillé',
         },
         column: {
             started: 'Début',
@@ -467,10 +467,10 @@ const fr: SourceCatalogue = {
             failed: 'Échecs',
             lastAddress: 'Dernière adresse',
             lastSignIn: 'Dernière connexion',
-            locked: 'Verrouillé',
-            notLocked: 'Non verrouillé',
             never: 'Jamais',
             neverSignedIn: 'Jamais connecté',
+            hideNeverSignedIn: 'Déjà connectés',
+            allHidden: 'Tous les enregistrements sont masqués. Décochez le filtre pour les voir.',
         },
         events: {
             title: 'Événements d’authentification',
@@ -1348,6 +1348,9 @@ const fr: SourceCatalogue = {
             },
         },
         screens: {
+            signIns: 'Connexions',
+            signInsBody:
+                'Qui est connecté, les connexions échouées et les événements qui les expliquent.',
             versions: 'Versions et base de données',
             versionsBody:
                 'La version du client, la version du déploiement et l’empreinte de la base de données.',
@@ -1925,6 +1928,8 @@ const fr: SourceCatalogue = {
             signed_in: 'Connexion',
             sign_in_failed: 'Connexion refusée',
             signed_out: 'Déconnexion',
+            locked: 'Compte verrouillé',
+            unlocked: 'Compte déverrouillé',
             refreshed: 'Session renouvelée',
             noticed: 'Enregistré',
         },
@@ -3247,6 +3252,8 @@ const fr: SourceCatalogue = {
     },
 
     common: {
+        locked: 'Verrouillé',
+        unlocked: 'Déverrouillé',
         loading: 'Chargement...',
         notAvailable: 'Cette page n’est pas disponible pour vous.',
         clear: 'Effacer',

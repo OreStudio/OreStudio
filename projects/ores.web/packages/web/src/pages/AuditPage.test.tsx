@@ -20,6 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import type { ComponentProps } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
@@ -32,6 +33,7 @@ import type {
 } from '@ores/wire-protocol/browser';
 import { uuid } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
+import { personPath, rescuePath } from '../shell/paths.js';
 import {
     AUDIT_ACCOUNTS_QUERY_KEY,
     AUDIT_EVENTS_QUERY_KEY,
@@ -39,10 +41,14 @@ import {
     AUDIT_SESSIONS_QUERY_KEY,
     AUDIT_STATISTICS_QUERY_KEY,
     AuditPage,
-    eventTone,
+    FailuresPanel,
+    failureTone,
+    authEventsAsStream,
+    eventKind,
     formatReadAt,
     isZeroAddress,
     orderLoginRecords,
+    withoutNeverSignedIn,
     withinPeriod,
 } from './AuditPage.js';
 
@@ -123,7 +129,7 @@ function authEvent(overrides: Partial<AuthEvent> = {}): AuthEvent {
         eventTime: '2026-10-01 22:14:00Z',
         accountId: ACCOUNT_ID,
         eventType: 'login_failure',
-        username: 'jonas.lindqvist',
+        username: USERNAME,
         sessionId: '',
         partyId: '',
         errorDetail: 'bad password',
@@ -146,24 +152,54 @@ function statisticsRow(overrides: Partial<SessionStatisticsRow> = {}): SessionSt
     };
 }
 
-function render(path = '/audit', loginRecords: readonly LoginInfo[] = [loginInfo()]): string {
+function render(
+    path = '/audit',
+    loginRecords: readonly LoginInfo[] = [loginInfo()],
+    people: readonly Account[] = [account()],
+    events: readonly AuthEvent[] = [authEvent()],
+): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData([AUDIT_SESSIONS_QUERY_KEY], [session()]);
     client.setQueryData([AUDIT_FAILURES_QUERY_KEY], {
         loginInfo: loginRecords,
         totalCount: 25,
     });
-    client.setQueryData([AUDIT_EVENTS_QUERY_KEY, 'day', ''], [authEvent()]);
+    client.setQueryData([AUDIT_EVENTS_QUERY_KEY, 'day', ''], events);
     client.setQueryData([AUDIT_STATISTICS_QUERY_KEY, 'day'], [statisticsRow()]);
     client.setQueryData([AUDIT_ACCOUNTS_QUERY_KEY], {
-        accounts: [account()],
-        totalCount: 1,
+        accounts: people,
+        totalCount: people.length,
     });
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter initialEntries={[path]}>
                     <AuditPage />
+                </MemoryRouter>
+            </TranslationProvider>
+        </QueryClientProvider>,
+    );
+}
+
+function renderFailures(rows: readonly LoginInfo[], hideNeverSignedInAtStart: boolean): string {
+    const client = new QueryClient();
+    client.setQueryData([AUDIT_ACCOUNTS_QUERY_KEY], { accounts: [account()], totalCount: 1 });
+    const query = {
+        isPending: false,
+        isError: false,
+        data: { loginInfo: rows, totalCount: rows.length },
+    };
+    return renderToStaticMarkup(
+        <QueryClientProvider client={client}>
+            <TranslationProvider>
+                <MemoryRouter>
+                    <FailuresPanel
+                        query={query as ComponentProps<typeof FailuresPanel>['query']}
+                        accountNames={
+                            new Map([[ACCOUNT_ID, { username: USERNAME, imageId: null }]])
+                        }
+                        hideNeverSignedInAtStart={hideNeverSignedInAtStart}
+                    />
                 </MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,
@@ -235,7 +271,7 @@ describe('the audit sign-ins screen', () => {
             lastLogin: '1970-01-01 00:00:00Z',
             lastAttemptIp: '0.0.0.0',
         });
-        const html = render('/audit?tab=failures', [never]);
+        const html = renderFailures([never], false);
 
         expect(html).toContain(ACCOUNT_ID);
         expect(html).toContain('>Never signed in<');
@@ -244,13 +280,76 @@ describe('the audit sign-ins screen', () => {
         expect(html).not.toContain('0.0.0.0');
     });
 
+    it('hides the accounts that never signed in until the button is released', () => {
+        const never = loginInfo({ lastLogin: '1970-01-01 00:00:00Z' });
+
+        expect(renderFailures([never], true)).not.toContain(ACCOUNT_ID);
+        expect(renderFailures([never], true)).toContain('Every record is hidden');
+        expect(renderFailures([never], true)).toContain('aria-pressed="true"');
+        expect(renderFailures([never], false)).toContain(ACCOUNT_ID);
+    });
+
+    it('draws a count above two in the warning colour and above five in red', () => {
+        expect(failureTone(2)).toBe('plain');
+        expect(failureTone(3)).toBe('warn');
+        expect(failureTone(5)).toBe('warn');
+        expect(failureTone(6)).toBe('down');
+        expect(renderFailures([loginInfo({ failedLogins: 4 })], true)).toContain('text-warn');
+        expect(renderFailures([loginInfo({ failedLogins: 7 })], true)).toContain('text-down');
+    });
+    it('links the account name to the page of the person', () => {
+        const html = render('/audit?tab=failures');
+
+        expect(html).toContain(`href="${personPath(USERNAME)}"`);
+    });
+
+    it('links a locked account to its rescue page, and an unlocked one to nothing', () => {
+        const locked = renderFailures([loginInfo({ locked: true })], false);
+        const open = renderFailures([loginInfo({ locked: false })], false);
+
+        expect(locked).toContain(`href="${rescuePath(USERNAME)}"`);
+        expect(locked).toMatch(
+            /<a [^>]*class="[^"]*border[^"]*"[^>]*href="\/organisation\/rescue\?username=/,
+        );
+        expect(locked).toContain('aria-label="Rescue access"');
+        expect(locked).toContain('title="Rescue access"');
+        expect(open).not.toContain('/organisation/rescue');
+    });
+
+    it('draws the photo of the account beside its name on every tab', () => {
+        const photo = '5b8e0a52-7c1d-4f43-9a6b-0d2f6e3a9c11';
+        const people = [account({ imageId: photo })];
+
+        for (const tab of ['sessions', 'statistics', 'failures', 'events']) {
+            expect(render(`/audit?tab=${tab}`, [loginInfo()], people)).toContain(
+                `/api/images/${photo}`,
+            );
+        }
+    });
+
+    it('draws the initials where the account has no photo', () => {
+        const html = render('/audit?tab=failures');
+
+        expect(html).not.toContain('<img');
+        expect(html).toContain('>AO<');
+    });
+
+    it('offers the signed-in filter as a button that is pressed to start with', () => {
+        const html = render('/audit?tab=failures');
+
+        expect(html).toContain('>Signed in only<');
+        expect(html).toContain('aria-pressed="true"');
+    });
+
     it('reads the authentication event log, newest first', () => {
         const html = render('/audit?tab=events');
 
         expect(html).toContain('Authentication events');
+        expect(html).toContain('Sign-in refused');
         expect(html).toContain('login_failure');
-        expect(html).toContain('jonas.lindqvist');
+        expect(html).toContain(USERNAME);
         expect(html).toContain('bad password');
+        expect(html).toContain('data-timeline');
     });
 
     it('opens the reading the query parameter names, and no other', () => {
@@ -282,6 +381,14 @@ describe('the audit helpers', () => {
         expect(isZeroAddress('198.51.100.7')).toBe(false);
     });
 
+    it('drops the accounts that never signed in, whether the time is empty or zero', () => {
+        const signedIn = loginInfo({ lastLogin: '2026-09-29 21:03:00Z' });
+        const never = loginInfo({ lastLogin: '1970-01-01 00:00:00Z' });
+
+        expect(withoutNeverSignedIn([signedIn, never])).toEqual([signedIn]);
+        expect(withoutNeverSignedIn([never])).toEqual([]);
+    });
+
     it('orders the most failed first, then the accounts that have signed in', () => {
         const accountA = loginInfo({ accountId: ACCOUNT_ID, failedLogins: 2, lastLogin: '' });
         const accountB = loginInfo({
@@ -300,10 +407,36 @@ describe('the audit helpers', () => {
         ).toEqual([accountB.accountId, accountC.accountId, accountA.accountId]);
     });
 
-    it('paints the event types the log stores', () => {
-        expect(eventTone('login_success')).toBe('up');
-        expect(eventTone('login_failure')).toBe('warn');
-        expect(eventTone('logout')).toBe('muted');
-        expect(eventTone('token_refresh')).toBe('neutral');
+    it('draws each event type the log stores as a kind of timeline entry', () => {
+        expect(eventKind('login_success')).toBe('signed_in');
+        expect(eventKind('login_failure')).toBe('sign_in_failed');
+        expect(eventKind('signup_failure')).toBe('sign_in_failed');
+        expect(eventKind('logout')).toBe('signed_out');
+        expect(eventKind('token_refresh')).toBe('refreshed');
+        expect(eventKind('account_locked')).toBe('locked');
+        expect(eventKind('account_unlocked')).toBe('unlocked');
+        expect(eventKind('select_party_only')).toBe('noticed');
+    });
+
+    it('links and pictures the person of an event that has no session', () => {
+        const photo = '5b8e0a52-7c1d-4f43-9a6b-0d2f6e3a9c11';
+        const html = render(
+            '/audit?tab=events',
+            [loginInfo()],
+            [account({ imageId: photo })],
+            [authEvent({ accountId: '', sessionId: '', username: USERNAME })],
+        );
+
+        expect(html).toContain(`href="${personPath(USERNAME)}"`);
+        expect(html).toContain(`/api/images/${photo}`);
+    });
+
+    it('names the person of an event that has no account or session by its username', () => {
+        const stream = authEventsAsStream(
+            [authEvent({ accountId: '', sessionId: '', username: 'diane.kay' })],
+            new Map(),
+        );
+
+        expect(stream.events[0]?.actor).toBe('diane.kay');
     });
 });

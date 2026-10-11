@@ -24,9 +24,13 @@ The rules in short:
   not drawn.
 - Every list pages on the server, and the pager on the screen is the request. No
   screen reads an entity whole.
+- Every reference to another record is a link to that record's page: a person,
+  a currency, a country, a calendar, a party. One system-wide mechanism draws
+  it, and a screen never builds the address itself.
 - Every mention of a person is a link to the person, with their photo where the
-  place has room for one. An email is a =mailto:= link and a web address an
-  =http= link.
+  place has room for one. A username is always drawn with the photo, on every
+  tab and in every panel. The one exception is the accounts dialog itself. An
+  email is a =mailto:= link and a web address an =http= link.
 - Every change is made in a dialog opened by an Edit button on the card it
   changes. The reason is asked in the dialog and nowhere else.
 - History is a chart of events over time above a rail of one-line headers with
@@ -231,6 +235,47 @@ The control is not drawn. A disabled button asks a question that a missing one
 does not. The server still decides every write; the screen hides only what the
 server would refuse.
 
+** References are links
+
+A value that names another record is a reference. It is a foreign key on the
+record that holds it: the currency of a trade, the country of an address, the
+calendar of a convention, the party of a book, the account of a sign-in. The rule
+is the same for every kind of record, and it is the rule for a person below.
+
+- A reference is a link to the page of the record it names. The text of the link
+  is the record's name, or its code where the record has no name, and the
+  record's flag or photo stands beside it where the record has one.
+- The link is the same on every screen, in every table, card, panel, history
+  entry and chart. It is not a choice of the screen.
+- The address comes from one place. A screen gives the kind of record and its key,
+  and the shared mechanism returns the address and says whether the reader may
+  open it. A screen never writes =/refdata/currencies/...= or any other record
+  address in its own code.
+- A reference is plain text, never a link that goes nowhere, in four cases: the
+  reader may not read the record, the kind of record has no page of its own, the
+  record does not exist, and the reference is to the record whose page is open.
+- A kind of record that is referenced but has no page yet is a gap in the product.
+  The reference is drawn as text with its flag, and the gap is filed as a story.
+  It is not hidden by writing the address anyway.
+- A new foreign key on a record is drawn as a reference from the day it is
+  added. A review of a screen checks every value that is a key.
+
+| Kind of record | Address | Beside the text |
+|----------------+---------+-----------------|
+| Person | =/people/:username= | The photo |
+| Currency | =/refdata/currencies/:code= | The flag |
+| Currency pair | =/refdata/currency-pairs/:code= | The two flags |
+| Calendar | =/refdata/calendars/:code= | The flag of its country |
+| Desk group | =/refdata/desk-groups/:code= | Nothing |
+| Classification value | =/refdata/classifications/:list/:code= | Nothing |
+| Country | No page yet | The flag |
+
+Today the shared mechanism does not exist. Each screen uses the address function
+of the kind it knows (=personPath=, =currencyPath=, =calendarPath=, =pairPath=,
+=deskGroupPath=, =classificationsPath=), and some references, such as a country
+code, are text. The story "Link every reference to its record" builds the
+mechanism and moves the screens onto it.
+
 ** Workflows on the entity screen
 
 The main screen of an entity contains the workflows that act on it. A person who
@@ -288,6 +333,16 @@ rule is the same in all of them.
   page header, a manager line, a card in a chart, a person in a picker and the
   history rail. Where a person has no photo, their initials stand in the same
   circle, so a list does not jump.
+- A username is never drawn without the photo. This holds on every screen and
+  on every tab of a screen, including the audit screens, where a username
+  names who signed in, who failed to sign in or who ended a session. The
+  photo stands at the left of the name, small in rows.
+- The one exception is the accounts dialog itself, where the account is the
+  subject of the dialog and its photo is already its own control.
+- A screen that reads accounts by identifier reads the image identifier with the
+  username, so that it can draw the photo. A reading that carries only the
+  username does not leave the photo out. The screen reads the account list once
+  and joins it.
 - A photo is fetched by its image identifier, which the read already carries. A
   screen never asks for a person's picture once per row by username. The image is
   cached by its identifier for a year.
@@ -713,6 +768,7 @@ is entered, and a screen the reader cannot use is not drawn.
 
 | Rule | Component | Status |
 |------+-----------+--------|
+| A reference to any record | The reference mechanism of the story "Link every reference to its record" | Planned; each screen builds its own address today |
 | A person named in text | =PersonRef= and =usePeopleDirectory= in =access/PersonRef.tsx= | Exists; the directory is read whole, see the deviations |
 | The author's picture | =useActorPictures= in =access/PersonRef.tsx=, =Avatar= in =ui/Images.tsx= | Exists |
 | A history author's link | =actorPathFor= in =access/PeoplePage.tsx= | Exists |

@@ -30,6 +30,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { RecordList } from '../refdata/RecordList.js';
 import { AreaTrail, useAreaParts } from '../shell/AreaTrail.js';
 import { PATHS, rescuePath } from '../shell/paths.js';
+import { AccountLockBadge } from '../ui/AccountLockBadge.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { Button, Dialog, LinkButton, Notice, PageHeader, Tag, cx } from '../ui/Primitives.js';
 
@@ -190,11 +191,7 @@ function AccountHeader({
                         {account.accountType}
                     </p>
                 </div>
-                <Tag tone={loginInfo?.locked === true ? 'warn' : 'muted'}>
-                    {loginInfo?.locked === true
-                        ? t('signInFacts.locked')
-                        : t('signInFacts.notLocked')}
-                </Tag>
+                <AccountLockBadge locked={loginInfo?.locked === true} />
             </header>
             <SignInFacts state={loginInfo} />
         </section>
@@ -299,13 +296,16 @@ function LockPanel({
                             'px-4 py-1.5 text-sm',
                             locked === side ? 'bg-accent text-ink-inverse' : 'text-ink-muted',
                         )}
-                        onClick={() => setConfirming(side)}
+                        onClick={() => {
+                            setOutcome(undefined);
+                            setConfirming(side);
+                        }}
                     >
                         {side ? t('rescue.lock.sideLocked') : t('rescue.lock.sideUnlocked')}
                     </button>
                 ))}
             </div>
-            {outcome !== undefined && (
+            {outcome !== undefined && confirming === undefined && (
                 <Notice tone={outcome.ok ? 'success' : 'error'}>{outcome.text}</Notice>
             )}
             {confirming !== undefined && (
@@ -336,6 +336,9 @@ function LockPanel({
                             username: account.username,
                         })}
                     </p>
+                    {outcome !== undefined && !outcome.ok && (
+                        <Notice tone="error">{outcome.text}</Notice>
+                    )}
                 </Dialog>
             )}
         </section>

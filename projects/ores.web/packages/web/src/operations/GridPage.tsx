@@ -344,7 +344,10 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
     const lost = nodes.filter((node) => node.state === 'lost');
     const missing = nodes.filter((node) => node.state === 'missing');
     const newestVersion = newestVersionOf(running);
-    const start = Math.min(offset, Math.max(0, Math.floor((nodes.length - 1) / pageSize) * pageSize));
+    const start = Math.min(
+        offset,
+        Math.max(0, Math.floor((nodes.length - 1) / pageSize) * pageSize),
+    );
     const page = nodes.slice(start, start + pageSize);
     const { first, last } = pageBounds(start, page.length);
     return (

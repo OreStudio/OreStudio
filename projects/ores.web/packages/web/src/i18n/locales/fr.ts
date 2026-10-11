@@ -1488,7 +1488,7 @@ const fr: SourceCatalogue = {
                 down: 'Arrêtée',
                 unnamed: 'Machine sans nom',
                 nodes: '{running} sur {total}',
-                hint: 'Les nœuds qui n\'indiquent aucune machine sont regroupés ici.',
+                hint: "Les nœuds qui n'indiquent aucune machine sont regroupés ici.",
             },
             nodes: {
                 title: 'Nœuds',

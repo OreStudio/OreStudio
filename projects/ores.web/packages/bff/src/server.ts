@@ -38,6 +38,9 @@ import { registerAuditRoutes } from './audit.js';
 import { registerTimelineRoutes } from './timeline.js';
 import { registerInboxRoutes } from './inbox.js';
 import { registerQaRoutes } from './qa.js';
+import { registerAgileRoutes } from './agile-routes.js';
+import { FileAgileStore } from './agile/file-agile-store.js';
+import type { AgileStore } from './agile/agile-store.js';
 import { FileScenarioStore } from './scenarios/file-scenario-store.js';
 import type { ScenarioStore } from './scenarios/scenario-store.js';
 import { startHeartbeat } from './heartbeat.js';
@@ -328,6 +331,12 @@ export interface ServerDependencies {
      * them from `config.docRoot`, and with no doc root the runner is off.
      */
     readonly scenarios?: ScenarioStore;
+    /**
+     * Where the agile browser reads the sprints, stories and backlog. Absent,
+     * the BFF reads them from `config.docRoot`, and with no doc root the
+     * browser is off.
+     */
+    readonly agile?: AgileStore;
 }
 
 export function buildServer(dependencies: ServerDependencies): FastifyInstance {
@@ -2640,11 +2649,16 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerCurveRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
-    registerQaRoutes(
+    const scenarioStore =
+        dependencies.scenarios ??
+        (config.docRoot === undefined ? undefined : new FileScenarioStore(config.docRoot));
+    registerQaRoutes(server, requireSession, scenarioStore);
+    registerAgileRoutes(
         server,
         requireSession,
-        dependencies.scenarios ??
-            (config.docRoot === undefined ? undefined : new FileScenarioStore(config.docRoot)),
+        dependencies.agile ??
+            (config.docRoot === undefined ? undefined : new FileAgileStore(config.docRoot)),
+        scenarioStore === undefined ? undefined : (id) => scenarioStore.readDoc(id),
     );
     registerAuditRoutes(server, requireSession);
     registerTimelineRoutes(server, requireSession);

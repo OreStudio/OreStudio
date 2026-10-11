@@ -8,12 +8,12 @@
 #+filetags: :browse_the_agile_tree_in_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/serve-the-agile-tree-from-the-bff
-#+pr:
+#+pr: 3125
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -75,12 +75,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3125][#3125]] | [web] Serve the agile tree from the BFF |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Two stores may read different roots | agile-routes.ts | Fix | A comment says the doc route and the file store share a root only while both come from the config. |
+| 2 | A repeated sprint parameter arrives as an array | agile-routes.ts | Fix | A non-string answers 400. A test covers it. |
+| 3 | The file error codes are hard coded | agile-routes.ts | Note | The qa routes keep the same list. A shared helper is a later clean-up. |
+| 4 | When dayOfSprint is null is not said | agile.ts | Fix | The comment says null means no valid start date. |
+| 5 | AGILE_DOC_TYPES sits at the bottom | agile.ts | Note | Style only. It stays beside the doc response that uses it. |
+| 6 | One scenario store is shared | server.ts | Note | Praise. No change. |
 
 * Result
+
+The BFF serves the agile tree behind the session check: =GET /api/agile/sprints=, =/api/agile/board= (newest sprint, or =?sprint=sprint_N=), =/api/agile/backlog= and =/api/agile/docs/:id=. The doc route serves sprints, stories, tasks and captures only, and reads through the scenario store's id index, so no id names a path. A sprint name that is not =sprint_N= answers 400. With no doc root the routes answer 404. The contracts package has the schemas, and 8 route tests parse every answer with them.

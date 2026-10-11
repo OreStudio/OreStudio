@@ -110,6 +110,18 @@ BFF, fixed in PR #3082.
 
 * Decisions
 
+- The lock and unlock events are written after the login record is written, in
+  the same service, and a failure to write an event is logged and swallowed.
+  This was chosen so a broken event log can never stop an administrator from
+  unlocking an account. The cost is a known limit: a lock or an unlock can
+  exist with no event. The audit trail can lose an entry. Writing the login
+  record and the event in one transaction would remove the limit, and it is
+  left to the part of this story that changes the login record.
+- The lock and unlock events are recorded in PR #3082: =account_locked= and
+  =account_unlocked=, with the account, and in the detail who acted or the failed
+  attempts that did. An unlock names the attempts it cleared, and leaves the
+  count out when it is 0.
+
 - Where it happens today: =account_operations_service.cpp= refuses a locked
   account before the password check, so it neither counts the attempt nor
   records its address. The refusal still reaches the authentication event log as

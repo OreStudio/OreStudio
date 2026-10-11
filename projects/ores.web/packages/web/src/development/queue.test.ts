@@ -20,7 +20,14 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { openFromRow, percentDone, queueOf, stateOf, stepsDone } from './queue.js';
+import {
+    openFromRow,
+    percentDone,
+    sprintGroups,
+    sprintNumber,
+    stateOf,
+    stepsDone,
+} from './queue.js';
 import { summary } from './testSummary.js';
 
 describe('the state of a scenario in the queue', () => {
@@ -51,52 +58,84 @@ describe('progress', () => {
     });
 });
 
-describe('ordering the queue', () => {
-    const idle = summary({ id: 'idle', title: 'Idle' });
-    const started = summary({
-        id: 'started',
-        title: 'Started',
-        steps: { total: 4, pending: 2, pass: 2, fail: 0, dropped: 0 },
-    });
-    const old = summary({
-        id: 'old',
-        phase: 'done',
-        state: 'PASSED',
-        completedAt: '2026-07-01T10:00:00Z',
-    });
-    const recent = summary({
-        id: 'recent',
-        phase: 'done',
-        state: 'FAILED',
-        completedAt: '2026-10-01T10:00:00Z',
-    });
-    const undated = summary({ id: 'undated', phase: 'done', state: 'PASSED' });
-
-    it('puts waiting scenarios apart from done ones', () => {
-        const queue = queueOf([old, idle, recent]);
-        expect(queue.waiting.map((s) => s.id)).toEqual(['idle']);
-        expect(queue.done.map((s) => s.id)).toEqual(['recent', 'old']);
+describe('the number of a sprint', () => {
+    it('is read from the folder name', () => {
+        expect(sprintNumber('sprint_27')).toBe(27);
+        expect(sprintNumber('sprint_3')).toBe(3);
     });
 
-    it('lists scenarios in progress before scenarios not started, keeping the server order within each', () => {
-        const other = summary({ id: 'other' });
-        expect(queueOf([idle, other, started]).waiting.map((s) => s.id)).toEqual([
-            'started',
-            'idle',
-            'other',
+    it('is null for no sprint and for a name that is not one', () => {
+        expect(sprintNumber(null)).toBeNull();
+        expect(sprintNumber('release_2')).toBeNull();
+        expect(sprintNumber('sprint_')).toBeNull();
+    });
+});
+
+describe('grouping the queue by sprint', () => {
+    const at = (id: string, sprint: string | null, created: string, extra = {}) =>
+        summary({ id, title: id, sprint, created, ...extra });
+
+    it('puts the newest sprint first and the scenarios outside any sprint last', () => {
+        const groups = sprintGroups(
+            [
+                at('a', 'sprint_9', '2026-01-01'),
+                at('b', null, '2026-05-01'),
+                at('c', 'sprint_27', '2026-10-01'),
+                at('d', 'sprint_23', '2026-07-01'),
+            ],
+            'waiting',
+        );
+        expect(groups.map((g) => g.sprint)).toEqual(['sprint_27', 'sprint_23', 'sprint_9', null]);
+    });
+
+    it('orders sprints by number, not by name', () => {
+        const groups = sprintGroups(
+            [at('a', 'sprint_9', ''), at('b', 'sprint_10', ''), at('c', 'sprint_2', '')],
+            'waiting',
+        );
+        expect(groups.map((g) => g.number)).toEqual([10, 9, 2]);
+    });
+
+    it('sorts a sprint by created date, newest first, with undated scenarios last, then by title', () => {
+        const groups = sprintGroups(
+            [
+                at('old', 'sprint_1', '2026-01-01'),
+                at('undated-b', 'sprint_1', ''),
+                at('new', 'sprint_1', '2026-09-30'),
+                at('undated-a', 'sprint_1', ''),
+                at('same-b', 'sprint_1', '2026-05-05'),
+                at('same-a', 'sprint_1', '2026-05-05'),
+            ],
+            'waiting',
+        );
+        expect(groups[0]?.scenarios.map((s) => s.id)).toEqual([
+            'new',
+            'same-a',
+            'same-b',
+            'old',
+            'undated-a',
+            'undated-b',
         ]);
     });
 
-    it('lists the done scenario with the newest completion first and undated ones last', () => {
-        expect(queueOf([undated, old, recent]).done.map((s) => s.id)).toEqual([
-            'recent',
-            'old',
-            'undated',
+    it('takes only the phase asked for, and drops a sprint that has none of it', () => {
+        const all = [
+            at('w1', 'sprint_27', '2026-10-01'),
+            at('d1', 'sprint_27', '2026-10-02', { phase: 'done', state: 'PASSED' }),
+            at('d2', 'sprint_22', '2026-06-02', { phase: 'done', state: 'FAILED' }),
+        ];
+        expect(sprintGroups(all, 'waiting').map((g) => [g.sprint, g.scenarios.length])).toEqual([
+            ['sprint_27', 1],
+        ]);
+        expect(sprintGroups(all, 'done').map((g) => [g.sprint, g.scenarios.length])).toEqual([
+            ['sprint_27', 1],
+            ['sprint_22', 1],
         ]);
     });
 
     it('is empty for no scenarios', () => {
-        expect(queueOf([])).toEqual({ waiting: [], done: [] });
+        expect(sprintGroups([], 'waiting')).toEqual([]);
+        expect(sprintGroups([], 'done')).toEqual([]);
     });
 });
 

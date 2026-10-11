@@ -26,7 +26,16 @@ import type { ScenarioSummary } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { Notice, Tag } from '../ui/Primitives.js';
 import { QA_SCENARIOS_KEY, qaQueries } from './queries.js';
-import { openFromRow, percentDone, queueOf, stateOf, stepsDone, type QueueState } from './queue.js';
+import {
+    openFromRow,
+    percentDone,
+    sprintGroups,
+    stateOf,
+    stepsDone,
+    type Phase,
+    type QueueState,
+    type SprintGroup,
+} from './queue.js';
 
 export { QA_SCENARIOS_KEY };
 
@@ -38,12 +47,22 @@ const TONES = {
 } as const satisfies Record<QueueState, 'neutral' | 'accent' | 'up' | 'down'>;
 
 /**
- * The scenarios a tester can run: those waiting for a tester first, and those
- * that are done second. A row opens the scenario's runner.
+ * The width of each column, so the tables of the sprints line up under one
+ * another. A date and a time stay on one line.
+ */
+const WAITING_WIDTHS = ['w-[38%]', 'w-[30%]', 'w-[14%]', 'w-[10%]', 'w-[8%]'] as const;
+const DONE_WIDTHS = ['w-[30%]', 'w-[25%]', 'w-[12%]', 'w-[9%]', 'w-[9%]', 'w-[15%]'] as const;
+
+/**
+ * The scenarios of one phase, grouped by sprint. The Tests tab shows the
+ * scenarios that wait for a tester, which is what a tester comes for. The Done
+ * tab shows the finished ones, which are rarely wanted, so only the newest
+ * sprint is open there. A sprint is a section that opens and closes, with the
+ * number of its scenarios in its heading. A row opens the scenario's runner.
  *
  * The tab names this screen, so it carries no heading of its own.
  */
-export function TestsQueue(): ReactNode {
+export function TestsQueue({ phase }: { readonly phase: Phase }): ReactNode {
     const { t } = useTranslation();
     const scenarios = useQuery(qaQueries.scenarios());
 
@@ -53,43 +72,58 @@ export function TestsQueue(): ReactNode {
     if (scenarios.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
-    const { waiting, done } = queueOf(scenarios.data);
+    const groups = sprintGroups(scenarios.data, phase);
+    if (groups.length === 0) {
+        return (
+            <p className="rounded-md border border-line bg-surface-raised px-4 py-3 text-sm text-ink-muted">
+                {phase === 'waiting'
+                    ? t('development.tests.nothingWaiting')
+                    : t('development.tests.nothingDone')}
+            </p>
+        );
+    }
     return (
-        <div className="space-y-6">
-            <Group
-                title={t('development.tests.waiting')}
-                rows={waiting}
-                empty={t('development.tests.nothingWaiting')}
-            />
-            <Group
-                title={t('development.tests.done')}
-                rows={done}
-                empty={t('development.tests.nothingDone')}
-            />
+        <div className="space-y-4">
+            {groups.map((group, index) => (
+                <Sprint
+                    key={group.sprint ?? 'none'}
+                    group={group}
+                    phase={phase}
+                    open={phase === 'waiting' || index === 0}
+                />
+            ))}
         </div>
     );
 }
 
-function Group({
-    title,
-    rows,
-    empty,
+function Sprint({
+    group,
+    phase,
+    open,
 }: {
-    readonly title: string;
-    readonly rows: readonly ScenarioSummary[];
-    readonly empty: string;
+    readonly group: SprintGroup;
+    readonly phase: Phase;
+    readonly open: boolean;
 }): ReactNode {
     const { t } = useTranslation();
+    const done = phase === 'done';
     return (
-        <section className="rounded-md border border-line bg-surface-raised">
-            <h2 className="flex items-center gap-2 px-4 pt-3 pb-2 text-sm font-medium text-ink">
-                {title}
-                <Tag small>{rows.length}</Tag>
-            </h2>
+        <details open={open} className="group rounded-md border border-line bg-surface-raised">
+            <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-medium text-ink">
+                {group.number === null
+                    ? t('development.tests.noSprint')
+                    : t('development.tests.sprint', { number: group.number })}
+                <Tag small>{group.scenarios.length}</Tag>
+            </summary>
             <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table className="w-full table-fixed text-left text-sm">
+                    <colgroup>
+                        {(done ? DONE_WIDTHS : WAITING_WIDTHS).map((width) => (
+                            <col key={width} className={width} />
+                        ))}
+                    </colgroup>
                     <thead>
-                        <tr className="border-b border-line text-xs text-ink-muted">
+                        <tr className="border-y border-line text-xs text-ink-muted">
                             <th className="px-4 py-2 font-medium">
                                 {t('development.tests.scenario')}
                             </th>
@@ -103,29 +137,33 @@ function Group({
                                 {t('development.tests.state')}
                             </th>
                             <th className="px-4 py-2 font-medium">
-                                {t('development.tests.completed')}
+                                {t('development.tests.created')}
                             </th>
+                            {done && (
+                                <th className="px-4 py-2 font-medium">
+                                    {t('development.tests.completed')}
+                                </th>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
-                        {rows.map((scenario) => (
-                            <Row key={scenario.id} scenario={scenario} />
+                        {group.scenarios.map((scenario) => (
+                            <Row key={scenario.id} scenario={scenario} done={done} />
                         ))}
-                        {rows.length === 0 && (
-                            <tr>
-                                <td colSpan={5} className="px-4 py-3 text-ink-muted">
-                                    {empty}
-                                </td>
-                            </tr>
-                        )}
                     </tbody>
                 </table>
             </div>
-        </section>
+        </details>
     );
 }
 
-function Row({ scenario }: { readonly scenario: ScenarioSummary }): ReactNode {
+function Row({
+    scenario,
+    done,
+}: {
+    readonly scenario: ScenarioSummary;
+    readonly done: boolean;
+}): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const state = stateOf(scenario);
@@ -175,7 +213,14 @@ function Row({ scenario }: { readonly scenario: ScenarioSummary }): ReactNode {
             <td className="px-4 py-2.5">
                 <Tag tone={TONES[state]}>{t(`development.tests.states.${state}`)}</Tag>
             </td>
-            <td className="px-4 py-2.5 text-xs text-ink-muted">{scenario.completedAt}</td>
+            <td className="px-4 py-2.5 text-xs whitespace-nowrap text-ink-muted">
+                {scenario.created}
+            </td>
+            {done && (
+                <td className="px-4 py-2.5 text-xs whitespace-nowrap text-ink-muted">
+                    {scenario.completedAt}
+                </td>
+            )}
         </tr>
     );
 }

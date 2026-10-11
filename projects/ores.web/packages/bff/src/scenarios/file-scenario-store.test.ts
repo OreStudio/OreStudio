@@ -34,7 +34,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { FileScenarioStore } from './file-scenario-store.js';
+import { FileScenarioStore, sprintOf } from './file-scenario-store.js';
 import { UnknownStepError, type RunInput, type StepOutcome } from './scenario-doc.js';
 import { MAX_IMAGE_BYTES } from '@ores/contracts';
 import {
@@ -115,6 +115,35 @@ describe('listing scenarios', () => {
         });
         expect(multi?.target).toContain('CounterpartyDetailDialog');
         expect(multi?.steps).toEqual({ total: 13, pending: 10, pass: 2, fail: 1, dropped: 0 });
+    });
+
+    it('gives each scenario its sprint from its path, and its created date', async () => {
+        put(
+            'agile/versions/v0/sprint_27/story/scenario_in_a_sprint.org',
+            fixture('single_client_scenario.org').replace(
+                SINGLE,
+                'C0000000-0000-4000-8000-0000000000AA',
+            ),
+        );
+        const list = await store().list();
+        const inSprint = list.find((s) => s.id === 'C0000000-0000-4000-8000-0000000000AA');
+        expect(inSprint?.sprint).toBe('sprint_27');
+        expect(list.find((s) => s.id === MULTI)?.sprint).toBe('sprint_23');
+        expect(list.find((s) => s.id === MULTI)?.created).toBe('2026-07-13');
+    });
+
+    it('leaves the sprint null for a scenario outside any sprint folder', async () => {
+        put(
+            'recipes/scenario_loose.org',
+            fixture('single_client_scenario.org').replace(
+                SINGLE,
+                'C0000000-0000-4000-8000-0000000000BB',
+            ),
+        );
+        const loose = (await store().list()).find(
+            (s) => s.id === 'C0000000-0000-4000-8000-0000000000BB',
+        );
+        expect(loose?.sprint).toBeNull();
     });
 
     it('tells a waiting scenario from a done one', async () => {
@@ -517,5 +546,20 @@ describe('keeping a screenshot of a step', () => {
         symlinkSync(target, join(dir(), 'scenario_multi.org'));
         await expect(s.saveImage(MULTI, 1, PNG)).rejects.toBeInstanceOf(PathEscapeError);
         expect(readdirSync(outside)).toEqual(['victim.org']);
+    });
+});
+
+describe('the sprint of a path', () => {
+    it('is the sprint folder, wherever it sits in the path', () => {
+        expect(sprintOf('agile/versions/v0/sprint_27/story/scenario_a.org')).toBe('sprint_27');
+        expect(sprintOf('sprint_3/scenario_a.org')).toBe('sprint_3');
+        expect(sprintOf('a/sprint_22/b/sprint_23/scenario_a.org')).toBe('sprint_22');
+    });
+
+    it('is null for a path with no sprint folder, and for a folder that only looks like one', () => {
+        expect(sprintOf('recipes/scenario_a.org')).toBeNull();
+        expect(sprintOf('sprint_/scenario_a.org')).toBeNull();
+        expect(sprintOf('my_sprint_27/scenario_a.org')).toBeNull();
+        expect(sprintOf('sprint_27.org')).toBeNull();
     });
 });

@@ -1122,10 +1122,12 @@ export const en: SourceCatalogue = {
         tabs: {
             label: 'Development areas',
             tests: 'Tests',
+            done: 'Done',
         },
         tests: {
-            waiting: 'Waiting',
-            done: 'Done',
+            sprint: 'Sprint {number}',
+            noSprint: 'No sprint',
+            created: 'Created',
             nothingWaiting: 'Nothing is waiting.',
             nothingDone: 'Nothing has been tested yet.',
             scenario: 'Scenario',

@@ -53,6 +53,10 @@ export interface ScenarioSummary {
     readonly title: string;
     readonly description: string;
     readonly path: string;
+    /** The sprint folder of the path, such as `sprint_27`, or null outside a sprint. */
+    readonly sprint: string | null;
+    /** The date of the doc's `#+created:` line, or empty. */
+    readonly created: string;
     readonly state: ScenarioState;
     /** A scenario waits for a tester until it is PASSED or FAILED. */
     readonly phase: 'waiting' | 'done';

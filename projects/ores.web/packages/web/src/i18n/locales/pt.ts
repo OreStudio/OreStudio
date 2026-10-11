@@ -1125,10 +1125,12 @@ const pt: SourceCatalogue = {
         tabs: {
             label: 'Áreas de desenvolvimento',
             tests: 'Testes',
+            done: 'Concluídos',
         },
         tests: {
-            waiting: 'Aguardando',
-            done: 'Concluídos',
+            sprint: 'Sprint {number}',
+            noSprint: 'Sem sprint',
+            created: 'Criado em',
             nothingWaiting: 'Nada está aguardando.',
             nothingDone: 'Nada foi testado ainda.',
             scenario: 'Cenário',

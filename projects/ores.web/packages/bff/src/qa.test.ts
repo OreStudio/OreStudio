@@ -123,6 +123,8 @@ class MemoryStore implements ScenarioStore {
                 title: s.title,
                 description: s.description,
                 path: docs.get(id)?.path ?? '',
+                sprint: null,
+                created: s.created,
                 state: s.state,
                 phase: s.state === 'PENDING' ? 'waiting' : 'done',
                 target: s.target,

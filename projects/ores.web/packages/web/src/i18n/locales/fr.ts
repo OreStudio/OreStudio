@@ -1133,10 +1133,12 @@ const fr: SourceCatalogue = {
         tabs: {
             label: 'Zones de développement',
             tests: 'Tests',
+            done: 'Terminés',
         },
         tests: {
-            waiting: 'En attente',
-            done: 'Terminés',
+            sprint: 'Sprint {number}',
+            noSprint: 'Sans sprint',
+            created: 'Créé le',
             nothingWaiting: "Rien n'est en attente.",
             nothingDone: "Rien n'a encore été testé.",
             scenario: 'Scénario',

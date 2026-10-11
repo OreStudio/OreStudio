@@ -69,6 +69,13 @@ export const scenarioSummarySchema = z.object({
     title: z.string(),
     description: z.string(),
     path: z.string(),
+    /**
+     * The sprint folder the scenario sits in, such as `sprint_27`, or null for
+     * a scenario outside any sprint folder.
+     */
+    sprint: z.string().nullable(),
+    /** The date from the doc's `#+created:` line, such as `2026-10-11`, or empty. */
+    created: z.string(),
     state: scenarioStateSchema,
     /** A scenario waits for a tester until it is PASSED or FAILED. */
     phase: z.enum(['waiting', 'done']),
@@ -96,6 +103,7 @@ export const scenarioSchema = z.object({
     id: z.string(),
     title: z.string(),
     description: z.string(),
+    created: z.string(),
     state: scenarioStateSchema,
     target: z.string(),
     story: docLinkSchema.nullable(),

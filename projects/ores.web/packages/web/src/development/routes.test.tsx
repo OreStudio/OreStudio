@@ -85,6 +85,7 @@ const scenario: Scenario = {
     id: ID,
     title: 'Retake the currency screenshots',
     description: 'Use the runner to retake four screenshots.',
+    created: '2026-10-11',
     state: 'PENDING',
     target: 'CurrencyDetailDialog',
     story: null,

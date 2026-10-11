@@ -26,6 +26,7 @@ import {
     AmbiguousStepError,
     DuplicateOutcomeError,
     parseScenario,
+    plainText,
     recordRun,
     ScenarioFormatError,
     UnknownStepError,
@@ -131,6 +132,24 @@ describe('reading a multi-client scenario', () => {
         const first = scenario.steps[0];
         expect(first?.instructions.join('\n')).toContain('tenant_admin@barclays_plc');
         expect(first?.instructions.join('\n')).not.toContain('Result');
+    });
+});
+
+describe('the date a scenario was created', () => {
+    it('is read from the #+created: line', () => {
+        expect(parseScenario(multi).created).toBe('2026-07-13');
+        expect(parseScenario(single).created).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it('is empty when the doc has no such line', () => {
+        const without = multi.replace(/^#\+created:.*\n/m, '');
+        expect(without).not.toBe(multi);
+        expect(parseScenario(without).created).toBe('');
+    });
+
+    it('is the date of the current template', () => {
+        if (!existsSync(template)) return;
+        expect(parseScenario(fromTemplate()).created).toBe('2026-10-11');
     });
 });
 
@@ -460,5 +479,34 @@ describe('every scenario doc in the repository', () => {
             ).toBe(true);
             expect(back.state, file).toBe('PASSED');
         }
+    });
+});
+
+describe('the target of a test as a person reads it', () => {
+    it('drops the org markup that wraps a word', () => {
+        expect(plainText('=CounterpartyDetailDialog= / =CounterpartyHistoryDialog=')).toBe(
+            'CounterpartyDetailDialog / CounterpartyHistoryDialog',
+        );
+        expect(plainText('The shell, then *My access* in =ores.web=.')).toBe(
+            'The shell, then My access in ores.web.',
+        );
+        expect(plainText('use ~git status~ here')).toBe('use git status here');
+    });
+
+    it('leaves plain text, a path and a lone marker as they are', () => {
+        expect(plainText('Menu: Reference Data > Counterparties')).toBe(
+            'Menu: Reference Data > Counterparties',
+        );
+        expect(plainText('a/b/c and 2 * 3')).toBe('a/b/c and 2 * 3');
+        expect(plainText('x = y')).toBe('x = y');
+        expect(plainText('')).toBe('');
+    });
+
+    it('is applied to the target a scenario reports', () => {
+        const text = multi.replace(
+            /\| Target dialog \|.*\n/,
+            '| Target dialog | =CounterpartyDetailDialog= / *History* |\n',
+        );
+        expect(parseScenario(text).target).toBe('CounterpartyDetailDialog / History');
     });
 });

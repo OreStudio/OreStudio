@@ -77,6 +77,8 @@ export interface Scenario {
     readonly id: string;
     readonly title: string;
     readonly description: string;
+    /** The date of the doc's `#+created:` line, or an empty string when it has none. */
+    readonly created: string;
     readonly state: ScenarioState;
     readonly target: string;
     readonly story: DocLink | null;
@@ -180,6 +182,18 @@ function closedState(raw: string): ScenarioState | null {
     return state === 'PENDING' ? null : state;
 }
 
+/**
+ * Text as a person reads it, without the org markup that wraps a word: =code=,
+ * ~code~ and *bold*. Old scenarios mark up the target of the test in these.
+ */
+export function plainText(raw: string): string {
+    return raw
+        .replace(/=([^=\n]+)=/g, '$1')
+        .replace(/~([^~\n]+)~/g, '$1')
+        .replace(/\*([^*\n]+)\*/g, '$1')
+        .trim();
+}
+
 function link(value: string | undefined): DocLink | null {
     if (value === undefined) return null;
     const id = idLink(value);
@@ -261,13 +275,15 @@ export function parseScenario(text: string): Scenario {
         id: doc.id,
         title,
         description: doc.keywords.get('description') ?? '',
+        created: (doc.keywords.get('created') ?? '').trim(),
         state:
             closedState(resultFields.get('status') ?? '') ??
             scenarioState(fields.get('state') ?? ''),
-        target:
+        target: plainText(
             linkText(fields.get('target screen') ?? '') ||
-            linkText(fields.get('target dialog') ?? '') ||
-            (doc.keywords.get('target_dialog') ?? ''),
+                linkText(fields.get('target dialog') ?? '') ||
+                (doc.keywords.get('target_dialog') ?? ''),
+        ),
         story: link(fields.get('parent story')),
         task: link(fields.get('verifies task')),
         clients,

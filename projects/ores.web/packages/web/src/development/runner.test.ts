@@ -38,6 +38,7 @@ function scenario(statuses: StepStatus[], overrides: Partial<Scenario> = {}): Sc
         id: '11111111-1111-4111-8111-111111111111',
         title: 'A scenario',
         description: '',
+        created: '',
         state: 'PENDING',
         target: 'Dialog',
         story: null,

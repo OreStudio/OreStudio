@@ -32,6 +32,7 @@ function scenario(statuses: StepStatus[], overrides: Partial<Scenario> = {}): Sc
         id: '11111111-1111-4111-8111-111111111111',
         title: 'Retake the currency screenshots',
         description: '',
+        created: '',
         state: 'PENDING',
         target: 'CurrencyDetailDialog',
         story: { id: 'S', title: 'Refresh the manual' },

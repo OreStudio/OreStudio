@@ -366,6 +366,11 @@ export class FileScenarioStore implements ScenarioStore {
     }
 }
 
+/** The sprint folder in a path under the doc root, such as `sprint_27`, or null. */
+export function sprintOf(path: string): string | null {
+    return path.split('/').find((segment) => /^sprint_\d+$/.test(segment)) ?? null;
+}
+
 function normalise(id: string): string {
     if (!DOC_ID.test(id)) throw new InvalidDocIdError(id);
     return id.toUpperCase();
@@ -378,6 +383,8 @@ function summarise(id: string, path: string, scenario: Scenario): ScenarioSummar
         title: scenario.title,
         description: scenario.description,
         path,
+        sprint: sprintOf(path),
+        created: scenario.created,
         state: scenario.state,
         phase: scenario.state === 'PENDING' ? 'waiting' : 'done',
         target: scenario.target,

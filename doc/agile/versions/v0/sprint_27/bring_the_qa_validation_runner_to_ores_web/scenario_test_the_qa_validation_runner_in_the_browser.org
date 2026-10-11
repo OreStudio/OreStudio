@@ -47,15 +47,17 @@ This scenario tests the runner by running in it. The scenario you are reading is
 ** Open Development from the menu
 
 - In the top menu, click *Development*. The entry is there for everybody. It needs no permission.
-- The page shows a path of Home, then Development, and one tab named *Tests*.
-- The tab has no heading of its own. There is no Board, Stories or Tasks tab.
-- The page shows two cards, *Waiting* and *Done*.
+- The page shows a path of Home, then Development, and two tabs, *Tests* and *Done*.
+- The tabs have no heading of their own. There is no Board, Stories or Tasks tab.
+- The *Tests* tab shows the scenarios that wait for a tester, grouped by sprint, the newest sprint first. Each sprint has a heading with its number and a count, and every sprint that has something waiting is open.
 
-** Find this scenario in Waiting
+** Find this scenario on the Tests tab
 
-- In the *Waiting* card, find the row *Test the QA validation runner in the browser*.
-- The row shows the story and the task of the scenario under the title, the target =Development > Tests, and the scenario runner=, a progress bar with *0 of 17 steps*, and the state *Pending*.
-- The *Done* card lists finished scenarios, the newest completion first. Each row shows *Passed* or *Failed* and a completion time.
+- In the *Sprint 27* section, find the row *Test the QA validation runner in the browser*.
+- The row shows the story and the task of the scenario under the title, the target =Development > Tests, and the scenario runner=, a progress bar with *0 of 17 steps*, the state *Pending*, and the date it was created, =2026-10-11=.
+- Inside a sprint the newest created date comes first, so this scenario is at the top of its sprint. The columns line up from one sprint to the next, and a date stays on one line.
+- Click the *Done* tab. It lists the finished scenarios the same way, by sprint, the newest sprint first. Only the newest sprint is open. Click the heading of an older sprint to open it, and click it again to close it. Each row shows *Passed* or *Failed*, the created date and a completion time.
+- Go back to the *Tests* tab.
 - Wait up to ten seconds for a first listing. It scans the whole =doc/= tree.
 
 ** Open this scenario from its row
@@ -148,14 +150,14 @@ This scenario tests the runner by running in it. The scenario you are reading is
 ** Reopen the scenario from the queue
 
 - Press *Save*. Then click *Back to the tests*. Nothing is asked.
-- This scenario is still in *Waiting*. Its state says *In progress*, and its progress says *14 of 17 steps*.
+- This scenario is still on the *Tests* tab, in its sprint. Its state says *In progress*, and its progress says *14 of 17 steps*.
 - Click it. The runner opens on the first step that is not marked, which is this one, step 15. The notes and marks you saved are back, and the links to the screenshots are in the notes of steps 13 and 14.
 - Reload the page with F5 first if the list looks out of date.
 - Press *Pass*.
 
 ** Read a finished scenario
 
-- Press *Save*. Then open the Tests queue and go to the *Done* card.
+- Press *Save*. Then open the Development menu entry and click the *Done* tab.
 - Open any finished scenario.
 - The runner shows the scenario's steps with their marks and notes. *Pass*, *Fail* and *Clear* are off, the *Note* box is off, and there is no *Save*.
 - *Retest* is there. Press it. A dialog asks if you want to start a retest, and says that a retest clears every step.
@@ -168,7 +170,7 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - The state tag shows *Passed*, or *Failed* if you marked any step Fail. The scenario is not closed yet.
 - Press *Save*. The page says that the scenario was saved and closed.
 - *Retest* replaces *Save*. *Pass*, *Fail*, *Clear* and the note are off.
-- Open the Tests queue. This scenario is now in *Done*, with its state and a completion time. Write what you saw in =* Notes=.
+- Open the Development menu entry. This scenario is gone from the *Tests* tab and is on the *Done* tab, in its sprint, with its state and a completion time. Write what you saw in =* Notes=.
 - If the scenario does not close, write that in =* Notes= too.
 
 * Results

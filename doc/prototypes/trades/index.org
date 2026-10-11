@@ -25,7 +25,7 @@ What a person does with a trade: book it, amend it, read it, bring it in from OR
 | [[file:trade-page.org][The trade list and page]] | A trade is an entity. One page with a tab for each aspect serves review, amendment and lifecycle events. Edit asks for the kind of change first, and the kind bounds the fields. A save does not reload the page. The list is the request. | [[file:trade-page/][prototype]] | none |
 | [[file:book-a-trade.org][Book a trade]] | Booking is one page of cards, or a guided sequence. The entity specification allows the sequence only if it is quicker. The trade type comes first because it decides which instrument card appears. | [[file:book-a-trade/][prototype]] | none |
 | [[file:ore-portfolio.org][ORE import and export]] | Import is a workflow because the person must see the plan before it is written and must be able to undo it. Export checks the trades before it makes the file. | [[file:ore-portfolio/][prototype]] | none |
-| [[file:structure-page.org][A structure]] | A structure is an entity whose identity is fixed and whose version is read from its legs. Grouping states the rule that all legs share a counterparty before the server refuses it. | [[file:structure-page/][prototype]] | none |
+| [[file:structure-page.org][A structure]] | A structure is an entity whose identity is fixed and whose version is read from its legs. A structure confirms and prices as one deal, and a package confirms trade by trade. Grouping states the rules before the server refuses them. | [[file:structure-page/][prototype]] | none |
 
 * How the prototypes follow the UX standards
 

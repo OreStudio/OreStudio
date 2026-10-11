@@ -141,11 +141,11 @@ const REASON_CODES = [
 /* Seven trades are written out by hand because the journeys walk through them.
  * The rest are generated so that the list has a size worth paging. */
 const FEATURED = [
-    { n: 1, type: 'Swap', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', auth: true, date: '2026-09-14', notional: 50000000, ccy: 'EUR', ext: 3, ver: 5 },
+    { n: 1, type: 'Swap', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', auth: true, date: '2026-09-14', notional: 50000000, ccy: 'EUR', ext: 3, ver: 5, structure: 'STR-0004' },
     { n: 2, type: 'FxOption', cp: 'MRDN', book: 'EMEA-FX', state: 'live', auth: false, date: '2026-10-08', notional: 10000000, ccy: 'EUR', ext: 1, ver: 2, structure: 'STR-0007' },
     { n: 3, type: 'Bond', cp: 'CSTL', book: 'EMEA-CREDIT', state: 'live', auth: true, date: '2026-08-02', notional: 25000000, ccy: 'EUR', ext: 1, ver: 1 },
     { n: 4, type: 'BondRepo', cp: 'MRDN', book: 'EMEA-CREDIT', state: 'live', auth: true, date: '2026-09-30', notional: 20000000, ccy: 'EUR', ext: 2, ver: 3 },
-    { n: 5, type: 'CompositeTrade', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', auth: false, date: '2026-10-05', notional: 30000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0004' },
+    { n: 5, type: 'CompositeTrade', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', auth: false, date: '2026-10-05', notional: 30000000, ccy: 'EUR', ext: 1, ver: 1 },
     { n: 6, type: 'Swap', cp: 'CSTL', book: 'VIRT-DRAFT', state: 'draft', auth: null, date: '2026-10-10', notional: 5000000, ccy: 'EUR', ext: 1, ver: 2, nature: 'Pre-agreement draft' },
     { n: 7, type: 'FxForward', cp: 'NWCAP', book: 'EMEA-FX', state: 'cancelled', auth: null, date: '2026-07-21', notional: 8000000, ccy: 'GBP', ext: 2, ver: 4, rebookedTo: 'ACME-100208' },
     { n: 8, type: 'FxForward', cp: 'MRDN', book: 'EMEA-FX', state: 'live', auth: false, date: '2026-10-09', notional: 8000000, ccy: 'GBP', ext: 1, ver: 1, rebookedFrom: 'ACME-100207' },

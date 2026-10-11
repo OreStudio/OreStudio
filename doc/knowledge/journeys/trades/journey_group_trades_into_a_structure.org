@@ -19,9 +19,10 @@ screens to the UX standards.
 
 * Goal
 
-"These trades are one deal, and I want the firm to hold them as one deal, so that they
-are read, confirmed and managed together." The journey is done when the trades belong to
-a structure of the right kind and the structure reads as one.
+"These trades are one deal, or one order, and I want the firm to hold them that way, so that they
+are read and managed together, and the customer gets the confirmation they expect." The journey
+is done when the trades belong to a structure or a package of the right kind, and it reads as
+one.
 
 * Actor and trigger
 
@@ -31,16 +32,27 @@ structure, and ends when the structure is saved.
 
 * Steps
 
-1. *Choose the trades.* The person chooses the trades that make the deal. All must
-   share the party and the counterparty.
-2. *Choose the kind.* The person chooses a structure kind or a template. The system
-   offers the roles the template defines.
-3. *Assign the roles.* The person assigns each trade to a role.
-4. *Save.* The system writes the structure and the links. A trade moves from one
+1. *Choose the trades.* The person chooses the trades that make the deal. All must share the
+   party and the counterparty, and none may belong to another structure.
+2. *Choose the kind.* The kind is a rung of the composition ladder, and it decides what the
+   customer sees. A strategy, a typed structure and a dynamic structure bind their legs
+   economically: the customer holds one deal, so it is confirmed as one document and priced as
+   a whole. A package binds nothing economic: the customer holds each trade under its own terms,
+   so each leg confirms on its own and the package is priced leg by leg. A strategy has one
+   product family. A strategy and a typed structure rest on a template. A package has none.
+   The test is how the customer holds the trades, not the size of the deal. See [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] and
+   [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]].
+3. *Assign the roles.* For a template, the person assigns each trade to a role, and the system
+   checks how many legs each role holds. For a package, any role is allowed and none is
+   required.
+4. *Save.* The system writes the structure, its members and the links. A trade moves from one
    structure to another without being rewritten.
-5. *Read the structure.* The system shows the structure with its legs, and the version it
-   reads from them.
-6. *Unlink.* The person may unlink a trade.
+5. *Read the structure.* The system shows the legs, and how the deal confirms and prices.
+   The internal version is read from the legs. The external version is the deal's for a
+   structure that confirms as a whole, and each trade's own for a package.
+6. *Unlink.* The person may unlink a trade. For a package the other legs are unaffected. For a
+   structure that confirms as a whole, unlinking changes the deal the customer holds, so a
+   partial close-out is a lifecycle event and not an unlink.
 
 * Screens
 
@@ -79,8 +91,19 @@ is written with a plain =s=. A table whose plural is irregular, such as
 - The rule that all members share the party and the counterparty is enforced by the
   database. The client gets an error and no check beforehand.
 - A structure nests one level at most. The client gets the error from the insert trigger.
-- The structure's version is read from its legs and is not stored. No operation returns
-  it. The structure page needs one.
+- The structure's internal version is read from its legs and is not stored. No operation
+  returns it. The structure page needs one.
+- A structure that confirms as a whole has an external version that lives on the structure,
+  and the =structure= table has no column for it. Only a package's legs carry their own.
+  Where the deal's external version is stored is not decided. It is filed as a capture.
+- The kind carries =confirms_as_whole=. Whether a dynamic structure confirms as a whole is
+  assumed from the ladder and is not stated in the model.
+- A strategy has one product family and a typed structure may mix them. The database does
+  not check the family. The screen checks it.
+- A composite trade is not a package. A composite trade is one trade that holds its own legs
+  (=composite_leg=). A package links separate trades with =structure_member=. The two overlap
+  today, and the data model note treats the composite trade as the untyped structure of the
+  present. A decision is needed on whether a composite trade becomes a package.
 - A composite trade's legs are not in the economic digest (capture linked in the amend
   journey).
 

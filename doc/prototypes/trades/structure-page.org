@@ -26,17 +26,37 @@ A structure is an entity: an immutable identity and legs that are trades. The pr
 #+ATTR_HTML: :class hug-leading
 | Query | What it shows |
 |-------+---------------|
-| =?structure=STR-0004= | A package of two trades |
+| =?structure=STR-0004= | A package of a swap and a cap |
 | =?structure=STR-0007= | A strategy, a risk reversal, with its template roles checked |
 | =?mode=group&trades=ACME-100202,ACME-100206= | The grouping workflow |
 | =?mode=group&trades=ACME-100201,ACME-100202= | The refusal: the trades have different counterparties |
 
+** Structure and package
+
+The two are different rungs of the composition ladder, and the page treats them differently. The test is how the customer holds the trades. See [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]].
+
+#+ATTR_HTML: :class hug-leading
+| | Strategy, typed, dynamic | Package |
+|-+--------------------------+---------|
+| The customer holds | One deal | Each trade under its own terms |
+| Confirmation | One document for the deal | Each leg confirms on its own |
+| Pricing | As a whole | Leg by leg: the price is the sum of the parts |
+| External version | Of the deal | Of each trade |
+| Template and roles | A template fixes them (strategy, typed). Dynamic reads them from data | None. Any role is allowed |
+| Product family | A strategy has one. Typed and dynamic may mix | Any mix |
+| Unlinking a leg | Changes the deal. A partial close-out is a lifecycle event | The other legs are unaffected |
+
+STR-0004 is a package of a swap and a cap. STR-0007 is a risk reversal, a strategy. The page shows the chips, the card "How it confirms and prices", and the members table differently for each. The Members tab of a package shows each leg's external version, because the customer quotes the one for the trade they hold. The trade page says which kind a trade's structure is, and the amend dialog says whose confirmation a change reaches.
+
+A composite trade is neither. It is one trade with its own legs, and it is not in a structure in these prototypes.
+
 ** What the prototype argues
 
-- The version is read from the legs and is never stored beside them. The page says so and lists the legs' external versions. The rule is the one the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] shows: a change to any component moves the structure, and authorisation does not.
-- The client states the rules the database enforces: every leg shares the party and the counterparty, and a structure nests one level at most. The person sees the check before the server refuses.
+- The version is read from the legs and is never stored beside them. The rule is the one the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] shows: a change to any component moves the structure, and authorisation does not.
+- The kind is chosen at grouping, with its consequences stated beside each choice, because it decides what the customer receives.
+- The client states the rules the database enforces: every leg shares the party and the counterparty, a structure nests one level at most, and a strategy has one product family. The person sees the check before the server refuses it.
 - A trade moves from one structure to another without being rewritten.
-- Pricing and composition stay in the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]]. The Workflows menu links to both.
+- Pricing and composition stay in the Trade Entry Prototype. The Workflows menu links to both.
 
 ** What is fake
 

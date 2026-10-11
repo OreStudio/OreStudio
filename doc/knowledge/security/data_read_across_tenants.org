@@ -48,7 +48,9 @@ The super admin is a =user= account, because humans sign in with it. It is share
 
 ** Who sees which account
 
-A person sees the accounts of the parties they have access to, the accounts of the system party, and the shared accounts. A tenant administrator sees the tenant, because the administrator is linked to every party. A service sees every account through the existence function and no account through the table.
+A person sees the accounts of the parties they have access to, the accounts of the system party of the tenant, and the shared accounts. A tenant administrator sees the tenant, because the administrator is linked to every party, the system party included. A service acting in a tenant works in no party, so the party rule passes it as a service actor and it reads the accounts of that tenant. The function =ores_iam_actor_is_service_fn()= decides this, and =ores_iam_system_party_id_fn()= names the system party. Both are security definer, because reading the actor's own account must not apply the policy to itself.
+
+The existence function stays. A record that names a person asks it for yes or no, so the service does not need to read the account to write the record.
 
 ** Checklist for a new shared table
 

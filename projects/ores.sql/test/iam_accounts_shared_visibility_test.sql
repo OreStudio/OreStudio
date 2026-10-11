@@ -37,7 +37,7 @@
 
 begin;
 
-select plan(13);
+select plan(15);
 
 create temporary table t_other on commit drop as
 select id from ores_iam_tenants_tbl
@@ -160,8 +160,8 @@ select case when not exists(select 1 from t_other)
             'a person of a tenant reads the shared accounts whatever their parties')
     end;
 
--- A service works in no party, so the party rule hides every person from it.
--- A record that names a person still finds the person through the existence
+-- A service works in no party, so the party rule passes it as a service actor.
+-- A record that names a person finds the person through the existence
 -- function. This is the inbox service writing a notice to a person.
 select set_config('app.current_actor',
     coalesce((select username from ores_iam_accounts_tbl
@@ -174,12 +174,35 @@ select set_config('app.current_actor',
 select case when not exists(select 1 from t_other)
     then skip('no other active tenant is provisioned', 2)
     else collect_tap(
-        is((select count(*)::int from ores_iam_accounts_tbl
-            where tenant_id = ores_iam_current_tenant_id_fn() and not shared),
-           0,
-           'a service acting in a tenant reads no person of the tenant'),
+        ok(exists(select 1 from ores_iam_accounts_tbl
+                  where tenant_id = ores_iam_current_tenant_id_fn() and not shared),
+           'a service acting in a tenant reads the people of the tenant'),
         ok(ores_iam_account_exists_fn((select id from t_person)),
            'a service acting in a tenant finds a person through the existence check'))
+    end;
+
+-- A person with no party sees only their own account, and the people of the
+-- system party of the tenant. A tenant administrator works in every party, the
+-- system party included.
+insert into ores_iam_accounts_tbl (
+    id, tenant_id, version, account_type, username, email, shared,
+    modified_by, performed_by, change_reason_code, change_commentary
+) select
+    'a0000000-0000-0000-0000-0000000000a3'::uuid, ores_iam_current_tenant_id_fn(), 0,
+    'user', 'party_less_probe', 'party_less@probe.ores', false,
+    current_user, current_user, 'system.test', 'Shared visibility probe'
+where exists (select 1 from t_other)
+  and ores_iam_current_actor_fn() is not null;
+
+select set_config('app.current_actor', 'party_less_probe', true);
+
+select case when not exists(select 1 from t_other)
+    then skip('no other active tenant is provisioned', 2)
+    else collect_tap(
+        ok(exists(select 1 from ores_iam_accounts_tbl where username = 'party_less_probe'),
+           'a person with no party reads their own account'),
+        ok(exists(select 1 from ores_iam_accounts_tbl where username = 'tenant_admin'),
+           'a person with no party reads the people of the system party'))
     end;
 
 select * from finish();

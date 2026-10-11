@@ -255,7 +255,8 @@ own-tenant policy, so tenant isolation does not change.
 
 | Session | Sees |
 |---------+------|
-| A person | The accounts linked to a party that the person's own account is linked to, the person's own account, and the shared accounts of the system tenant |
+| A person | The accounts linked to a party that the person's own account is linked to, the accounts linked to the system party of the tenant, the person's own account, and the shared accounts of the system tenant |
+| A service acting in a tenant | Every account of the tenant and the shared accounts of the system tenant, because a service works in no party |
 | A tenant administrator | Every account of the tenant, because its account is linked to every party of the tenant |
 | A session with no actor: a service acting as itself, or the sign-in lookup before a session exists | Every account of the tenant, as a session with no party set passes the party policy of other tables |
 

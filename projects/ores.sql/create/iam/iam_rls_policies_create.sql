@@ -90,7 +90,10 @@ for delete using (
 -- own account. A tenant administrator sees the tenant because its account is
 -- linked to every party of the tenant, and not because the policy names it.
 -- A shared account works in no party, so the party rule passes it and leaves
--- the decision to the select policy above.
+-- the decision to the select policy above. A service actor passes too, because
+-- a service works in no party and needs the people of the tenant. Everyone in
+-- the system party of the tenant is seen by every person, as the product owner
+-- decided.
 --
 -- The function calls are wrapped in a select, so the planner runs each once per
 -- query and not once per row.
@@ -110,6 +113,39 @@ returns uuid[] as $$
       and a.valid_to = ores_utility_infinity_timestamp_fn();
 $$ language sql stable security definer set search_path = public, pg_temp;
 
+-- Whether the session's actor is a service account: a shared one of the system
+-- tenant, or one of the session's own tenant. A service acting inside a tenant works in no party, and it needs the
+-- people of the tenant to do its work: the run grant exchange reads the
+-- grantor, the role grant applier reads the account it grants to. The party rule
+-- is a rule about people, so it passes a service actor.
+--
+-- Security definer, so that reading the actor's own account does not apply the
+-- policy to itself.
+create or replace function ores_iam_actor_is_service_fn()
+returns boolean as $$
+    select exists (
+        select 1
+        from ores_iam_accounts_tbl a
+        where a.username = ores_iam_current_actor_fn()
+          and a.account_type = 'service'
+          and (a.tenant_id = ores_iam_current_tenant_id_fn()
+               or (a.tenant_id = ores_utility_system_tenant_id_fn() and a.shared))
+          and a.valid_to = ores_utility_infinity_timestamp_fn()
+    );
+$$ language sql stable security definer set search_path = public, pg_temp;
+
+-- The system party of the session's tenant. Every person sees the people who
+-- work in it. The body is plpgsql, so the refdata function is bound when the
+-- policy runs and not when this file is loaded.
+create or replace function ores_iam_system_party_id_fn()
+returns uuid as $$
+begin
+    return (select id
+            from ores_refdata_read_system_party_fn(ores_iam_current_tenant_id_fn())
+            limit 1);
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
 drop policy if exists accounts_party_visibility_policy
     on ores_iam_accounts_tbl;
 
@@ -119,6 +155,15 @@ for select using (
     (select ores_iam_current_actor_fn()) is null
     or username = (select ores_iam_current_actor_fn())
     or (tenant_id = ores_utility_system_tenant_id_fn() and shared)
+    or (select ores_iam_actor_is_service_fn())
+    or exists (
+        select 1
+        from ores_iam_account_parties_tbl sp
+        where sp.tenant_id = ores_iam_accounts_tbl.tenant_id
+          and sp.account_id = ores_iam_accounts_tbl.id
+          and sp.valid_to = ores_utility_infinity_timestamp_fn()
+          and sp.party_id = (select ores_iam_system_party_id_fn())
+    )
     or exists (
         select 1
         from ores_iam_account_parties_tbl ap

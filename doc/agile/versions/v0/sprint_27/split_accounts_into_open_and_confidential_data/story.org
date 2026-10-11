@@ -23,17 +23,17 @@ Every tenant can read the open data of an account, such as the name, picture and
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Findings recorded. Design not started. |
-| Waiting on    | Nothing.                               |
+| Now           | Design in review (PR #3115).           |
+| Waiting on    | Review of the design.                  |
 | Next          | Design the split and the shared-read pattern. |
 | Last touched  | 2026-10-11                               |
 
 * Acceptance
 
-- One written standard names the building blocks for data that every tenant reads. Reference data and open account data use the same blocks.
-- The account is two tables. The open table holds the data a history needs to name an author. The confidential table holds the rest and is never shared.
+- One written standard names the building blocks for data that every tenant reads. Reference data and the shared rows of the open account table use the same blocks.
+- The account is two tables. The open table holds the data a history needs to name an author. Only its shared rows, the service accounts and the super admin, are read by every tenant. The confidential table holds the rest and is never shared.
 - A tenant administrator and a member see the name, picture and type of every service account in a history. The toggle that hides system activity works for them.
-- The party visibility rule no longer hides service accounts. Tenant setup completes the attach photos step.
+- The party visibility rule no longer hides service accounts. Tenant setup completes the attach photos step. A service writes a record that names a person.
 - The authorised-reads rules, the multi-tenancy page and the UX standards describe the new pattern.
 
 * Findings
@@ -58,6 +58,7 @@ A restrictive policy only narrows. Both the tenant policy and the party policy m
 
 - *The history toggle.* A tenant administrator gets a list with no service account. The web code cannot tell a service from a person, so the toggle hides nothing, and the service has no picture.
 - *Tenant setup.* A clean provision stops at the step =attach_photos= with "The picture was not attached to the account ... Account does not exist". The step lists the service accounts with no actor, then updates them under a super admin token. The update re-reads the account under the party policy and finds nothing. The tenant stays in bootstrap mode. This was reported from the environment =bright_faraday= against =3ed69ae75a=. That environment has a hotfix branch, =hotfix/attach-photos-analytics-service=, that writes the pictures with no actor.
+- *Reference checks.* A service that acts inside a tenant cannot write a record that names a person. The inbox service cannot write a notice to a person, and the refdata service cannot write a portfolio right. The soft-foreign-key trigger reads the accounts table under the party rule. The service is in no party, so it finds no account and the insert fails with "No account found with this id". The engine user passes because it acts with no actor. About twelve triggers read the accounts table this way: the inbox notices, deliveries, preferences, approval requests and decisions, and the refdata portfolio rights, sandboxes and sandbox members.
 - The development database of =festive_dijkstra= predates the party policy and does not have it. Only a recreated database shows the party wall.
 
 ** What already exists
@@ -78,15 +79,16 @@ A restrictive policy only narrows. Both the tenant policy and the party policy m
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:0909D030-82D9-4BD5-AE4B-DF800D6FA36A][Scaffold story: Split accounts into open and confidential data]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:BE455602-97EE-46BD-9F3A-808E9CA22647][Design the split of accounts and the shared-read pattern]] | BACKLOG | | | Initial task for: Split accounts into open and confidential data |
+| [[id:BE455602-97EE-46BD-9F3A-808E9CA22647][Design the split of accounts and the shared-read pattern]] | STARTED | 2026-10-11 | | Initial task for: Split accounts into open and confidential data |
 
 * Decisions
 
 - The split is by data domain, not by code path. Open data is what a reader needs to name and recognise an author. Confidential data is everything else. The columns of each table are decided in the design task.
 - The open table is a shared table. It follows the same building blocks as the shared reference tables, with no second mechanism. The confidential table is not shared and keeps the tenant policy and the party policy.
-- A shared table holds rows that every tenant reads. The people of a tenant are not rows that every tenant may read. The design task must state which rows of the open table are system-owned and shared, and which stay with their tenant. Until it does, the open table is shared for system-owned rows only.
+- A person sees everyone in the parties they have access to, and everyone in the system party. The super admin account stays a =user= account and every tenant may see it. The people of a tenant are not rows that every tenant may read; only system-owned rows are shared.
 - One standard covers all data read across tenants. Accounts do not get a second exception.
-- The party-policy fix for provisioning may land earlier than this story. Either way, it must not widen what a member reads of people.
+- A soft foreign key checks that an account exists. It does not read the account. A security definer function that answers yes or no serves it, and the party rule does not apply.
+- The existence function, the table split, the standard and the documents ship in one change.
 
 * Out of scope
 

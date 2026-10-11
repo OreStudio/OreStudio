@@ -23,9 +23,9 @@ Three machines on the local network, goedel (192.168.1.199), newton (192.168.1.2
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | goedel runs a compute node and has executed work from the serving environment. The deploy skips a host that is down. |
-| Waiting on    | The laptop needs podman installed (see Hosts and packages). Newton is switched off. |
-| Next          | Install the laptop's packages and deploy it. Deploy newton when it is up. Make the nodes survive a reboot. |
+| Now           | All three hosts run compute nodes and have executed work from the serving environment. The grid screen shows every node, grouped by machine. On goedel the nodes survive a crash and a reboot. |
+| Waiting on    | Review of the pull request. |
+| Next          | Prove the reboot on newton and the laptop. Close the stale capture on the ORE package. |
 | Last touched  | 2026-10-11                               |
 
 * Acceptance
@@ -45,33 +45,115 @@ Three machines on the local network, goedel (192.168.1.199), newton (192.168.1.2
 
 * Results, 2026-10-11
 
-** goedel
+** The hosts
 
-=compass env deploy goedel --role compute= deployed the node. It connected over
-mutual TLS to the serving NATS, fetched the signing key, subscribed to the
-compute JetStream consumer and registered itself in the host table as
-=plucky-orca-96115e17= (host id =13834e76-9611-5e17-a655-eccc393c5149=, the
-UUID v5 of =goedel:1=).
+| Host | Address | Wrappers | Rule |
+|------+---------+----------+------|
+| goedel | 192.168.1.199 | 3 | 4 cores, one wrapper per core but one |
+| laptop | 192.168.1.11 | 7 | 8 cores, one wrapper per core but one |
+| newton | 192.168.1.22 | 11 | one wrapper per core but one |
+| wiener | 192.168.1.172 | 5 | the serving machine, unchanged |
 
-A batch of 18 ORE jobs (the TA002 interest rate swap) was dispatched from the
-shell. All 18 results finished with outcome Success, spread over the six
-nodes of the grid. goedel executed 2 of them. The vendored 1.8.17.0 package
-ran inside the container with its bundled libraries.
+The grid shows 26 running wrappers. Podman was present on the laptop and
+newton was up at the second deploy, after the first one stopped on both. The
+deploy then needed no further step on either host. This story installed
+nothing.
 
-** Deploying to all hosts
+Each wrapper registers itself in the host table on its first heartbeat. Its
+host id is the UUID v5 of =hostname:replica=, as for the local wrappers, so
+goedel:1 keeps the id it had.
 
-=compass env deploy all= deployed goedel, refused the laptop because podman is
-missing (before any transfer, so the laptop holds no leftover files), and
-reported newton as down. It then printed a summary and exited with status 1.
+** What ran
 
-** Defect found and fixed
+Eight batches of the TA002 interest rate swap (18, 90, 300, 120, 120, 60, 120
+and 120 jobs) were dispatched from the shell. The first batch finished 18 of
+18 with outcome Success. Later batches were counted from the node logs, not
+from the result table, and only the ones that matter are recorded here.
 
-The remote run script passed =--log-directory= without =--log-filename=. The
-logging options validator was tightened after sprint 25, so the node exited at
-start with "Output directory supplied without a file name". The script now
-passes a file name and also logs to the console, so =podman logs= works. The
-runtime role's service loop had the same line, and it is fixed the same way.
-The runtime role was not deployed here, so that half is untested.
+- Batch 4 failed on every remote host. See "Download of the engine package".
+- After the fix, the node logs of batch 5 show goedel with 18 jobs done, the
+  laptop with 31 and newton with 48, and no failure after the redeploy. Two
+  earlier connection resets on goedel came from containers replaced during the
+  deploy.
+
+The batches were not all counted to the end, so no total is claimed.
+
+** The deploy
+
+=compass env deploy all= deploys every profile that has compute settings. It
+probes each host over ssh first and checks for podman on the remote before it
+transfers the image, so a host that is down or lacks podman is reported and
+the others carry on. A run that skipped a host exits with status 1.
+
+** Defects found and fixed
+
+- The remote run script passed =--log-directory= without =--log-filename=.
+  The logging options validator has refused that since sprint 25, so a node
+  exited at start. The script now passes a file name and logs to the console.
+  The runtime role's loop had the same line and is fixed the same way. The
+  runtime role was not deployed here, so that half is untested.
+- The services roster capped the compute wrappers at the five replicas in the
+  registry. Wrappers past the fifth showed as missing while their heartbeat was
+  current. The roster now gives each host its own slot and drops an older
+  instance on the same host as a restart's leftover.
+- The idle heartbeat did not tell the stats reporter, so "since heartbeat"
+  counted from the last heartbeat sent during a job and grew while a node sat
+  idle. It now counts from the last heartbeat of any kind.
+- ORE sends six memory-use lines per run through its WARNING channel. All 2670
+  stored ORE warnings were those lines, so the Logs screen showed nothing else
+  as a warning. The parser stores a WARNING line that ends with the memory
+  report suffix as debug. Every other WARNING stays a warning. The stored rows
+  were corrected.
+- ORE writes its log lines in the local time of the machine, and the parser
+  reads them as UTC. The five wrappers on the serving machine stored their
+  lines an hour late. The wrapper now starts the engine with =TZ=UTC=. The
+  147294 rows of 362 earlier local jobs were moved back one hour. Rows of jobs
+  whose directory was already cleaned up could not be identified and were left.
+- Giving each wrapper its own work directory left it with no engine package, so
+  21 remote wrappers downloaded the package at once, the HTTP server timed the
+  transfers out and every job failed with a partial message. See below.
+
+** Download of the engine package
+
+The wrappers on a host share one package cache, set with the new
+=--package-dir= option. A lock file per package lets one wrapper download while
+the others wait. A failed transfer is retried up to four times, with a pause
+that grows by five seconds each time, and the partial file is removed between
+attempts. A SHA256 mismatch still fails at once.
+
+Tested on goedel (3 wrappers) and newton (11 wrappers) with the shared cache
+moved aside. Each host created one lock file and one archive of 58946608 bytes,
+finished within about 15 seconds of the first request, and then ran jobs with
+no failure and no retry. The download count was not measured directly, because
+the wrapper logs the download at debug level. A host with no cache is still
+the case that decides this, and the laptop was not tested empty.
+
+** The grid screen
+
+- The nodes table pages with the standard pager. The grid read returns the
+  whole fleet in one reply, so the pages are cut in the browser. Only the host
+  list message pages on the server.
+- A node sample now carries the name of the computer the wrapper runs on. The
+  Machines table above the nodes groups the nodes by it, with one row per
+  computer, a status of Up when any of its nodes runs, and the count of nodes
+  that run. The new column was added to the live database by hand and to the
+  create script.
+- An earlier row for newton, from the first deploy, reported no machine name and
+  showed as a computer that was down. Its 20 samples were deleted and its host
+  row closed.
+
+** Nodes that survive a crash and a reboot
+
+Each wrapper runs as a systemd user service built from a Quadlet file, with
+=Restart=always=, and starts at boot while the user has lingering on. The
+deploy replaces the units and the containers of an earlier deploy, and fails
+with a message when the user manager is down or podman is older than 4.4.
+
+Tested on goedel. A =podman kill= of one wrapper was followed by a restart
+within 20 seconds. After =sudo reboot= the three containers were running when
+the machine had been up for 0 minutes, healthy a minute later, and their node
+samples were arriving. The laptop and newton still run the plain containers
+from the earlier deploy and move to units on their next deploy.
 
 * Hosts and packages
 
@@ -82,10 +164,10 @@ prefix =ores.dev.solid_dirac=. Its NATS server certificate carries the LAN
 address 192.168.1.172 as an IP SAN, so a remote node can verify it. Both
 reachable hosts open TCP to ports 21005 and 21000 on the serving host.
 
-| Host | Address | State on 2026-10-11 | System | Resources |
-|------+---------+---------------------+--------+-----------|
+| Host | Address | Survey on 2026-10-11 | System | Resources |
+|------+---------+----------------------+--------+-----------|
 | goedel | 192.168.1.199 | up | Debian forky, native, GNOME desktop, glibc 2.43 | 4 cores, 7 GiB, 20 GiB free |
-| newton | 192.168.1.22 | down: no route to host | WSL2 host used in sprint 25 | not surveyed |
+| newton | 192.168.1.22 | down at the survey, up later | WSL2 host used in sprint 25 | podman 5.8.3 |
 | laptop | 192.168.1.11 | up | Debian forky in WSL2, mirrored network, systemd on, glibc 2.43 | 8 cores, 2.7 GiB, 956 GiB free |
 
 ** goedel
@@ -96,7 +178,9 @@ ranges, user linger on and a user D-Bus. netavark is absent, which does not
 matter for host networking. It already runs its own Postgres on
 127.0.0.1:5432 and a NATS on 127.0.0.1:4222, and holds a repository checkout
 under =~/Development/OreStudio=. The compute container uses host networking
-and only connects outward, so it does not touch any of these.
+and only connects outward, so it does not touch any of these. Its user
+systemd reports "degraded", which means some other user unit has failed. It
+was not looked at.
 
 Packages to install: none.
 
@@ -105,32 +189,33 @@ installed by this story.
 
 ** laptop (192.168.1.11, WSL2)
 
-Missing the whole rootless container stack. =sudo= asks for a password, so
-nothing was installed.
+Missing the whole rootless container stack at the survey. =sudo= asks for a
+password, so nothing was installed by this story. Podman 5.8.6 was present at
+the second deploy, so the user installed it. Whether =curl=, =rsync= and =jq=
+were installed was not checked.
 
-Packages to install, as root:
+Packages the host needed, as root:
 
 - =podman= (Debian candidate 5.8.6), which brings in =conmon=, =crun=,
   =uidmap= (for =newuidmap= and =newgidmap=), =passt= and =fuse-overlayfs= as
-  dependencies. Install them explicitly if the dependencies are not pulled.
+  dependencies.
 - =curl=, =rsync= and =jq=, which are not needed by the deploy but are used to
   check a node by hand.
 
-Then, as the user:
+Then, as the user, =loginctl enable-linger marco=. Linger is on, and the user
+manager runs.
 
-- =loginctl enable-linger marco= so the node survives logout.
-- =systemctl --user start dbus.socket=, which =compass env deploy laptop
-  --setup-host= does.
-
-WSL settings to review: the distribution has 2.7 GiB of memory. The ORE engine
-runs one process per work unit, so raise =memory= in =.wslconfig= if jobs are
-to run there.
+WSL settings to review: the distribution has 2.7 GiB of memory and now runs 7
+wrappers. The ORE engine runs one process per work unit, so raise =memory= in
+=.wslconfig=, or set =ORES_COMPUTE_REPLICAS= for the host, if jobs are to run
+there at the same time. A Windows reboot does not start the wrappers until the
+distribution itself is running, and Quadlet cannot change that.
 
 ** newton (192.168.1.22)
 
-Down on 2026-10-11, so it was not surveyed. It was the host of the sprint 25
-proof, so it is expected to have podman. Survey it when it is up, with the
-commands in the survey task.
+Down at the survey. When it was up, it had podman 5.8.3 with lingering on and
+a running user manager, and the deploy needed no step on the host. It reports
+the machine name =Newton=.
 
 * Findings in the backlog
 
@@ -146,22 +231,41 @@ commands in the survey task.
   for other tenants waits for those.
 - The compute image stages 1.2 GiB of libraries because the build is a debug
   build, which makes the transfer to each host heavy.
+- New capture: turn ORE's memory reports into node memory samples, so the grid
+  screen can chart the memory each node uses.
+- The ORE log parser drops ORE's =DEBUG= lines, about half of every log, because
+  it has no mapping for them. Keeping them would roughly double the log volume,
+  so they were left out. This is a decision for the owner of the Logs screen.
+- The database has no migration path for the new column and the changed roster
+  function. They were applied by hand to the live database, and the create
+  scripts carry them, so a recreated database is correct. The services warn that
+  the schema fingerprint of the live database does not match this checkout.
 
 * Decisions
 
 - The nodes join the system tenant and register themselves on their first
   heartbeat, as the sprint 25 proof did. No host row is created by hand. The
-  host id of a node is the UUID v5 of =hostname:1=, which is how the local
-  wrappers get theirs.
+  host id of a wrapper is the UUID v5 of =hostname:replica=, which is how the
+  local wrappers get theirs.
+- A host runs one wrapper per core but one, so it stays responsive.
+  =ORES_COMPUTE_REPLICAS= in the host profile overrides the count.
+  =ORES_COMPUTE_HOST_ID= is gone.
 - =compass env deploy all= probes each host with a 5 second ssh timeout before it
   deploys, and it checks for podman on the remote before it transfers the
   image. A host that fails either check is reported and the run carries on.
-- Nothing was installed on any host. The packages the laptop needs are a list
-  in this story for review.
-- The node runs with =--rm= and no restart policy, so it does not come back
-  after a reboot of the host. Making nodes permanent (a Quadlet or a user
-  systemd unit) is left as follow-up work.
+- Nothing was installed on any host by this story. The packages the laptop
+  needed were a list in this story for review.
+- The grid screen decides that a computer is up when one of its nodes is
+  running, which is the runner state the nodes table already shows. No other
+  threshold was added.
+- A node sample carries the machine name rather than the screen guessing it from
+  the host name. A node that reports none is shown under "Unnamed machine".
+- The engine runs with =TZ=UTC= on every node, so the parser's assumption that
+  ORE writes UTC becomes true. The alternative, reading local time in the
+  parser, would be wrong for the UTC containers.
 
 * Out of scope
 
--
+- Reboot proof on newton and the laptop. Only goedel was rebooted.
+- Parsing the memory lines into samples (the new capture owns it).
+- Keeping ORE's =DEBUG= lines in the telemetry logs.

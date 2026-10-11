@@ -19,7 +19,8 @@
  *
  */
 
-import { lstat, readdir, readFile } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { open, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseOrg } from '@ores/org';
 import { buildBoard, type Board, type StoryFiles } from './agile-model.js';
@@ -41,7 +42,13 @@ const SPRINT_NAME = /^sprint_\d+$/;
 const VERSION_NAME = /^v\d+$/;
 const TASK_FILE = /^task_(.+)\.org$/;
 
-/** A sort key that puts `sprint_9` before `sprint_10`. */
+/** The cache holds this many files at most, so deleted files cannot pile up. */
+const MAX_CACHED = 5000;
+
+/**
+ * A sort key that puts `sprint_9` before `sprint_10`. It drops every non-digit,
+ * which is right only while the name patterns above stay strict.
+ */
 function numberOf(name: string): number {
     return Number(name.replace(/\D+/g, ''));
 }
@@ -73,16 +80,26 @@ export class FileAgileStore implements AgileStore {
 
     async sprints(): Promise<SprintRef[]> {
         const base = join(this.root, 'agile', 'versions');
-        const out: SprintRef[] = [];
+        const found: { version: string; name: string }[] = [];
         for (const version of await this.directories(base, VERSION_NAME)) {
             for (const name of await this.directories(join(base, version), SPRINT_NAME)) {
-                const path = `agile/versions/${version}/${name}/sprint.org`;
-                const text = await this.readText(join(base, version, name, 'sprint.org'));
-                if (text === null) continue;
-                const title = parseOrg(text).keywords.get('title') ?? name;
-                out.push({ version, name, title, path });
+                found.push({ version, name });
             }
         }
+        const refs = await Promise.all(
+            found.map(async ({ version, name }): Promise<SprintRef | null> => {
+                const text = await this.readText(join(base, version, name, 'sprint.org'));
+                if (text === null) return null;
+                const title = parseOrg(text).keywords.get('title') ?? name;
+                return {
+                    version,
+                    name,
+                    title,
+                    path: `agile/versions/${version}/${name}/sprint.org`,
+                };
+            }),
+        );
+        const out = refs.filter((ref): ref is SprintRef => ref !== null);
         return out.sort(
             (a, b) =>
                 numberOf(b.version) - numberOf(a.version) || numberOf(b.name) - numberOf(a.name),
@@ -146,7 +163,7 @@ export class FileAgileStore implements AgileStore {
             items.sort(
                 (a, b) =>
                     (a.created < b.created ? 1 : a.created > b.created ? -1 : 0) ||
-                    a.title.localeCompare(b.title),
+                    (a.title < b.title ? -1 : a.title > b.title ? 1 : 0),
             );
             buckets.push({ id, items });
         }
@@ -172,7 +189,7 @@ export class FileAgileStore implements AgileStore {
         try {
             entries = await readdir(dir, { withFileTypes: true });
         } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+            if (isAbsent(error)) return [];
             throw error;
         }
         return entries
@@ -186,22 +203,39 @@ export class FileAgileStore implements AgileStore {
             .sort();
     }
 
-    /** The text of a regular file, or null when there is none. A link is not a file. */
+    /**
+     * The text of a regular file, or null when there is none or it cannot be
+     * read. A link is not a file: the open fails on one, and the handle that
+     * was opened is the one that is checked and read. One bad file drops out of
+     * the board and does not fail it.
+     */
     private async readText(file: string): Promise<string | null> {
-        let info;
+        let handle;
         try {
-            info = await lstat(file);
+            handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW);
         } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+            if (isAbsent(error) || (error as NodeJS.ErrnoException).code === 'ELOOP') return null;
             throw error;
         }
-        if (!info.isFile()) return null;
-        const cached = this.texts.get(file);
-        if (cached?.mtimeMs === info.mtimeMs && cached.size === info.size) return cached.text;
-        const text = await readFile(file, 'utf8');
-        this.texts.set(file, { mtimeMs: info.mtimeMs, size: info.size, text });
-        return text;
+        try {
+            const info = await handle.stat();
+            if (!info.isFile()) return null;
+            const cached = this.texts.get(file);
+            if (cached?.mtimeMs === info.mtimeMs && cached.size === info.size) return cached.text;
+            const text = await handle.readFile('utf8');
+            if (this.texts.size >= MAX_CACHED) this.texts.clear();
+            this.texts.set(file, { mtimeMs: info.mtimeMs, size: info.size, text });
+            return text;
+        } finally {
+            await handle.close();
+        }
     }
+}
+
+/** A missing path, a path under a file, or a file that may not be read. */
+function isAbsent(error: unknown): boolean {
+    const code = (error as NodeJS.ErrnoException).code;
+    return code === 'ENOENT' || code === 'ENOTDIR' || code === 'EACCES';
 }
 
 function summarise(

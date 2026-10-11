@@ -104,7 +104,7 @@ export interface SprintInfo {
     readonly title: string;
     readonly startDate: string;
     readonly endDate: string;
-    /** Today minus the start date, plus one, with no upper limit, or null. */
+    /** Today minus the start date, plus one, or null. It has no upper limit and is zero or negative before the sprint starts; a client clamps it. */
     readonly dayOfSprint: number | null;
     readonly totalDays: number | null;
     readonly path: string;
@@ -274,7 +274,7 @@ function unique(values: readonly string[]): string[] {
     return [...new Set(values.filter((value) => value !== ''))].sort();
 }
 
-/** The five canonical columns always exist, so the board does not rearrange as cards move. */
+/** The canonical columns always exist (BACKLOG with DISCOVERED, STARTED, BLOCKED, DONE and ABANDONED), so the board does not rearrange as cards move. */
 function buildColumns(stories: readonly AgileStory[]): BoardColumn[] {
     const counts = new Map<string, number>();
     for (const story of stories) {

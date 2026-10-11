@@ -19,6 +19,7 @@
  *
  */
 
+import type { Charts } from './agile-charts.js';
 import type { Board } from './agile-model.js';
 
 /**
@@ -68,6 +69,11 @@ export interface AgileStore {
      * the newest sprint answers, and null means there is none.
      */
     board(sprint?: string): Promise<Board | null>;
+    /**
+     * The chart series of one sprint, or null when no sprint has the name. The
+     * velocity runs over every sprint. With no name the newest sprint answers.
+     */
+    charts(sprint?: string): Promise<Charts | null>;
     /** The four backlog buckets, each newest first. */
     backlog(): Promise<Backlog>;
 }

@@ -1227,6 +1227,7 @@ export const en: SourceCatalogue = {
             tests: 'Tests',
             board: 'Board',
             backlog: 'Backlog',
+            charts: 'Charts',
         },
         backlog: {
             buckets: {
@@ -1241,6 +1242,19 @@ export const en: SourceCatalogue = {
             created: 'Created',
             capture: 'Capture',
             story: { one: 'Story, {count} task', other: 'Story, {count} tasks' },
+        },
+        charts: {
+            velocity: 'Velocity',
+            velocityNote: 'Stories done in each sprint.',
+            burnup: 'Burn-up',
+            burnupNote:
+                'Tasks done, added up by the day each was finished. The dashed line is every task of the sprint.',
+            perDay: 'Tasks done each day',
+            perDayNote: 'Tasks done on each day of the sprint. Days after today are faint.',
+            byState: 'Tasks by state',
+            byStateNote: 'Every task of the sprint, by its state.',
+            noDates: 'This sprint has no start date.',
+            noDone: 'No task has a finish date yet.',
         },
         board: {
             search: 'Search stories, tasks, environments',

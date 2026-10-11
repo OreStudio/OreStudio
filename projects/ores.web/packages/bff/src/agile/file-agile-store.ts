@@ -23,7 +23,8 @@ import { constants } from 'node:fs';
 import { open, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseOrg } from '@ores/org';
-import { buildBoard, type Board, type StoryFiles } from './agile-model.js';
+import { buildCharts, type Charts, type VelocityPoint } from './agile-charts.js';
+import { buildBoard, parseStory, type Board, type StoryFiles } from './agile-model.js';
 import {
     BACKLOG_BUCKETS,
     InvalidSprintNameError,
@@ -116,29 +117,39 @@ export class FileAgileStore implements AgileStore {
         const dir = join(this.root, 'agile', 'versions', found.version, found.name);
         const sprintText = await this.readText(join(dir, 'sprint.org'));
         if (sprintText === null) return null;
-        const stories: StoryFiles[] = [];
-        for (const slug of await this.directories(dir)) {
-            const story = await this.readText(join(dir, slug, 'story.org'));
-            if (story === null) continue;
-            const tasks: { slug: string; text: string }[] = [];
-            for (const file of await this.files(join(dir, slug), TASK_FILE)) {
-                const text = await this.readText(join(dir, slug, file));
-                const taskSlug = TASK_FILE.exec(file)?.[1];
-                if (text !== null && taskSlug !== undefined) tasks.push({ slug: taskSlug, text });
-            }
-            stories.push({
-                slug,
-                dirPath: `agile/versions/${found.version}/${found.name}/${slug}/`,
-                story,
-                tasks,
-            });
-        }
+        const stories = await this.stories(found.version, found.name);
         return buildBoard({
             version: found.version,
             name: found.name,
             path: found.path,
             sprint: sprintText,
             stories,
+            today: this.now().toISOString().slice(0, 10),
+        });
+    }
+
+    async charts(sprint?: string): Promise<Charts | null> {
+        if (sprint !== undefined && !SPRINT_NAME.test(sprint)) {
+            throw new InvalidSprintNameError(sprint);
+        }
+        const all = await this.sprints();
+        const found = sprint === undefined ? all[0] : all.find((ref) => ref.name === sprint);
+        if (found === undefined) return null;
+        const dir = join(this.root, 'agile', 'versions', found.version, found.name);
+        const sprintText = await this.readText(join(dir, 'sprint.org'));
+        if (sprintText === null) return null;
+        const velocity: VelocityPoint[] = [];
+        for (const ref of [...all].reverse()) {
+            let done = 0;
+            for (const story of await this.stories(ref.version, ref.name)) {
+                if (parseStory(story.story).state === 'DONE') done += 1;
+            }
+            velocity.push({ sprint: ref.name, done });
+        }
+        return buildCharts({
+            sprint: sprintText,
+            stories: await this.stories(found.version, found.name),
+            velocity,
             today: this.now().toISOString().slice(0, 10),
         });
     }
@@ -168,6 +179,29 @@ export class FileAgileStore implements AgileStore {
             buckets.push({ id, items });
         }
         return { buckets };
+    }
+
+    /** The stories of a sprint with their task docs, in folder order. */
+    private async stories(version: string, name: string): Promise<StoryFiles[]> {
+        const dir = join(this.root, 'agile', 'versions', version, name);
+        const stories: StoryFiles[] = [];
+        for (const slug of await this.directories(dir)) {
+            const story = await this.readText(join(dir, slug, 'story.org'));
+            if (story === null) continue;
+            const tasks: { slug: string; text: string }[] = [];
+            for (const file of await this.files(join(dir, slug), TASK_FILE)) {
+                const text = await this.readText(join(dir, slug, file));
+                const taskSlug = TASK_FILE.exec(file)?.[1];
+                if (text !== null && taskSlug !== undefined) tasks.push({ slug: taskSlug, text });
+            }
+            stories.push({
+                slug,
+                dirPath: `agile/versions/${version}/${name}/${slug}/`,
+                story,
+                tasks,
+            });
+        }
+        return stories;
     }
 
     /** The real directories in a folder, by name, and those that match the pattern when one is given. */

@@ -28,6 +28,7 @@ import {
     agileDocResponseSchema,
     backlogSchema,
     boardResponseSchema,
+    chartsResponseSchema,
     sprintListSchema,
 } from '@ores/contracts';
 import type { OresClient } from '@ores/wire-protocol';
@@ -173,6 +174,7 @@ describe('the agile routes', () => {
         for (const url of [
             '/api/agile/sprints',
             '/api/agile/board',
+            '/api/agile/charts',
             '/api/agile/backlog',
             `/api/agile/docs/${STORY}`,
         ]) {
@@ -221,6 +223,26 @@ describe('the agile routes', () => {
         expect(twice.statusCode).toBe(400);
         const missing = await send(server, sessionId, '/api/agile/board?sprint=sprint_99');
         expect(missing.statusCode).toBe(404);
+    });
+
+    it('serve the charts of the newest sprint, and refuse a bad sprint name', async () => {
+        const { server, sessionId } = buildTestServer({ docRoot: tree() });
+        const response = await send(server, sessionId, '/api/agile/charts');
+        expect(response.statusCode).toBe(200);
+        const { charts } = chartsResponseSchema.parse(response.json());
+        expect(charts.velocity.map((point) => point.sprint)).toEqual(['sprint_1']);
+        expect(
+            (await send(server, sessionId, '/api/agile/charts?sprint=..%2Fetc')).statusCode,
+        ).toBe(400);
+        expect(
+            (await send(server, sessionId, '/api/agile/charts?sprint=sprint_9')).statusCode,
+        ).toBe(404);
+        const twice = await send(
+            server,
+            sessionId,
+            '/api/agile/charts?sprint=sprint_1&sprint=sprint_2',
+        );
+        expect(twice.statusCode).toBe(400);
     });
 
     it('serve the backlog buckets', async () => {

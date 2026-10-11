@@ -45,7 +45,7 @@ Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the bac
 | [[id:C84DB54C-6712-44E9-900F-B776C4F8B21B][Serve the agile tree from the BFF]] | DONE | 2026-10-11 | 2026-10-11 | Add BFF routes for the sprints, one sprint's board, the backlog buckets and any doc by id, behind the session check. |
 | [[id:C425A6C4-CE11-4917-89D5-AA11038A6E7E][Build the sprint board]] | DONE | 2026-10-11 | 2026-10-11 | Add the Board tab to the Development area: the sprint line, tiles, epic and text filters, columns, cards with progress, and the card detail panel. |
 | [[id:A95170DE-F7B5-4E35-9C80-91F2EF5779E1][Browse the backlog and any doc by link]] | DONE | 2026-10-11 | 2026-10-11 | Add the backlog buckets to the Development area and let a link open any agile doc in the tab, as the Story and Task tabs already do for their docs. |
-| [[id:C91906B9-C267-4CF8-8B18-6ED2DAC7D755][Show the sprint charts]] | BACKLOG | | | Port the velocity, burn-up and stacked charts of ores.org-js to the board. |
+| [[id:C91906B9-C267-4CF8-8B18-6ED2DAC7D755][Show the sprint charts]] | DONE | 2026-10-11 | 2026-10-11 | Port the velocity, burn-up and stacked charts of ores.org-js to the board. |
 | [[id:30EFEC78-5E6C-4A0C-BCAD-6C5B91C03DC5][Show the work trees on the board]] | BACKLOG | | | Port the read-only fleet strip: every work tree of the repository and the work item it is on, and mark the story this work tree is on as current. |
 | [[id:4D6995D6-1443-4618-AE25-1469A1C3AAA7][Retire ores.dsh_kanban and ores.org-js]] | BACKLOG | | | Remove both projects and their publishing, exclude patterns and pages, and check that no site page links to the old agile view. |
 
@@ -69,6 +69,7 @@ Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the bac
 - The browser never names a path. A doc is read by id.
 - Parity means the board, the card detail, the backlog, the charts and the work tree strip. The task that retires the two projects waits for all of them.
 - The prototype comes first, and the person accepts it before the board is built.
+- The stacked timeline chart of =ores.org-js= is not ported. It reads HTML snapshots that exist only for sprints 20 and 21. The charts tab draws velocity, burn-up, tasks by day and tasks by state. This is a listed and accepted gap in parity.
 
 * Out of scope
 

@@ -181,7 +181,7 @@ export function BoardTab(): ReactNode {
     );
 }
 
-function SprintPicker({
+export function SprintPicker({
     names,
     value,
     onPick,

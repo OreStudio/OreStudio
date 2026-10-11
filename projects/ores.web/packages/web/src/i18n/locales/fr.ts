@@ -1240,6 +1240,7 @@ const fr: SourceCatalogue = {
             tests: 'Tests',
             board: 'Tableau',
             backlog: 'Backlog',
+            charts: 'Graphiques',
         },
         backlog: {
             buckets: {
@@ -1254,6 +1255,20 @@ const fr: SourceCatalogue = {
             created: 'Créé',
             capture: 'Capture',
             story: { one: 'Récit, {count} tâche', other: 'Récit, {count} tâches' },
+        },
+        charts: {
+            velocity: 'Vélocité',
+            velocityNote: 'Récits terminés dans chaque sprint.',
+            burnup: 'Burn-up',
+            burnupNote:
+                'Tâches terminées, cumulées selon le jour de fin. La ligne en pointillés compte toutes les tâches du sprint.',
+            perDay: 'Tâches terminées par jour',
+            perDayNote:
+                "Tâches terminées chaque jour du sprint. Les jours après aujourd'hui sont pâles.",
+            byState: 'Tâches par état',
+            byStateNote: 'Toutes les tâches du sprint, selon leur état.',
+            noDates: "Ce sprint n'a pas de date de début.",
+            noDone: "Aucune tâche n'a encore de date de fin.",
         },
         board: {
             search: 'Chercher des récits, tâches, environnements',

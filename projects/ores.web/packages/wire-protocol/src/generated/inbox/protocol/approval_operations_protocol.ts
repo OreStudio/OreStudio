@@ -251,6 +251,41 @@ export interface RemindExpiringApprovalsResponse {
 }
 
 /**
+ * @brief Resumes the applies that stopped, and ends the ones that ran out of
+ * time.
+ *
+ * An approved request whose kind names an apply workflow stays approved until
+ * the workflow applies it. When the run stopped on a failure that can pass, or
+ * the start was lost, nothing moves it on. This finds those requests, starts
+ * the run again (a repeated start names the same run, so it changes nothing when
+ * the run exists) and asks the engine to resume a stopped run. A run that
+ * stopped on a refusal never reaches here: the refusal moves its request to
+ * apply_failed.
+ *
+ * When the kind's window ends, the request moves to apply_failed with the
+ * reason "could not apply", and the person who asked is told, so a request never
+ * retries forever.
+ *
+ * A scheduler firing is a plain publish with no token, so this carries no
+ * session: it takes no input, and it only acts on requests that are already
+ * approved.
+ */
+export interface RetryStalledAppliesRequest {}
+
+export interface RetryStalledAppliesResponse {
+    result: Result;
+    /**
+     * @brief The requests whose stopped run the engine resumed, as UUID strings.
+     */
+    resumed: string[];
+    /**
+     * @brief The requests that moved to apply_failed because the window ended, as
+     * UUID strings.
+     */
+    gave_up: string[];
+}
+
+/**
  * @brief One field of a request at one version, as a screen names and draws it.
  *
  * The value is text whatever its type: the renderer that fills this in is the
@@ -318,6 +353,7 @@ export const subjects = {
     get_approval_request: 'inbox.v1.ops.get_approval',
     expire_overdue_approvals_request: 'inbox.v1.ops.expire_overdue_approvals',
     remind_expiring_approvals_request: 'inbox.v1.ops.remind_expiring_approvals',
+    retry_stalled_applies_request: 'inbox.v1.ops.retry_stalled_applies',
     get_approval_history_request: 'inbox.v1.ops.get_approval_history',
 } as const;
 /**
@@ -334,5 +370,6 @@ export const requiresSession = {
     get_approval_request: true,
     expire_overdue_approvals_request: false,
     remind_expiring_approvals_request: false,
+    retry_stalled_applies_request: false,
     get_approval_history_request: true,
 } as const;

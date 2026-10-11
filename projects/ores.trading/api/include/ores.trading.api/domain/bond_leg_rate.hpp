@@ -30,8 +30,10 @@
 #include <chrono>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -290,6 +292,52 @@ struct bond_leg_rate final {
      */
     friend bool operator==(const bond_leg_rate&, const bond_leg_rate&) = default;
 };
+
+/**
+ * @brief The members of bond_leg_rate the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view bond_leg_rate_economic_fields[] = {
+    "leg_role",
+    "leg_number",
+    "rate_kind",
+    "index",
+    "is_in_arrears",
+    "fixing_days",
+    "fixing_calendar",
+    "last_recent_period",
+    "last_recent_period_calendar",
+    "lookback",
+    "rate_cutoff",
+    "is_averaged",
+    "has_sub_periods",
+    "include_spread",
+    "is_not_resetting_xccy",
+    "naked_option",
+    "local_cap_floor",
+    "stub_use_original_curve",
+    "observation_shift",
+    "front_stub_short_index",
+    "front_stub_long_index",
+    "front_stub_rounding_type",
+    "front_stub_rounding_precision",
+    "back_stub_short_index",
+    "back_stub_long_index",
+    "back_stub_rounding_type",
+    "back_stub_rounding_precision",
+};
+
+/**
+ * @brief Names the members of bond_leg_rate that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<bond_leg_rate>) {
+    return bond_leg_rate_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for bond_leg_rate, e.g. for the

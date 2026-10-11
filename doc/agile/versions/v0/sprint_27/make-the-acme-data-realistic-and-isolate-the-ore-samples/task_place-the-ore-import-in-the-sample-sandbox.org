@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/place-the-ore-import-in-the-sample-sandbox
+#+pr: 3101
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A sample import lands in the party's sample sandbox. The importer creates its po
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -41,9 +41,10 @@ A sample import lands in the party's sample sandbox. The importer creates its po
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add a =sandbox_id= choice to the import. The planner puts every portfolio it
+   creates in that sandbox and makes every book a virtual book.
+2. Run a sample import into a party's sandbox. Fix what blocks it.
+3. Check the official tree is unchanged.
 
 * Measurements
 
@@ -57,9 +58,35 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Official portfolios of Plc before and after an import into its sandbox | 20 and 20 | =compass sql -f v12.sql= (count with =sandbox_id is null=) | fe53d292ec |
+| Official books of Plc before and after | 22 and 22 | same | 6576b339f9 |
+| Sandbox portfolios the import added | 2 (one root, one child) | same | 6576b339f9 |
+| Virtual books the import added | 1, purpose =Test=, ledger feed =None= | same | 6576b339f9 |
+| Trades saved | 2, booking nature =test=, netting set =ORE-SAMPLE-NS-JPMC-MAIN-01= of Plc | same | 6576b339f9 |
+| ORE core tests | 635 cases pass | =ores.ore.core.tests= | 6576b339f9 |
+| Reporting, analytics, iam, variability core tests | all pass | the four binaries | 6576b339f9 |
+| Refdata core tests | 329 of 335 cases pass; 6 fail on =Invalid modified_by= at INSERT | =ores.refdata.core.tests= | 6576b339f9 |
+| Marketdata core tests | 164 of 165 pass; 1 counts leftover observations | =ores.marketdata.core.tests= | 6576b339f9 |
 
 * Notes
+
+*What the proof found, 2026-10-11.* The first imports failed in three places. Each
+was a real defect, and each was fixed:
+
+- *The key lookups ignored the party.* Netting sets, portfolios, books and the
+  rest belong to a party, and their names are unique per party. The generated
+  key finders read by tenant only. A tenant administrator sees every party, so
+  the import resolved the sample netting set =NS= to another party's set, and
+  the trade booking refused it. The repository template now keeps the rows of
+  the session's party when it has one. 32 repositories were regenerated.
+- *The import ran in the session's party, whatever =--party-id= said.* Writes
+  take the party from the validated session. The shell now refuses a party that
+  differs from the session's.
+- *A virtual book holds only drafts, tests and hypotheticals.* The importer booked
+  every trade as actual. A sandbox import now books them as =test=.
+
+A stale =ores.shell= binary also dropped the new choice: only a full build avoids
+that.
 
 * Test Scenarios
 
@@ -76,12 +103,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3101][#3101]] | [ore,codegen,shell] Land an ORE sample import in the party's sandbox |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Shell party check compares text | ore_commands.cpp | Accepted | Compared as UUIDs now. |
+| 2 | Filter in C++, not SQL; no filter without a session party | repository template | Declined | The party is optional at run time, and a SQL clause needs two query shapes. A service context with no party still reads every party; callers that take front() there were not audited. |
+| 3 | Conflicting filter on party_contact_information | repository template | Accepted | A finder with a parent column is pinned to its parent's party and keeps no party filter. |
+| 4 | Sandbox rules in the comment not enforced | import_choices.hpp | Accepted | Reworded: the database enforces the shared sandbox; the choice does not apply to an existing target book. |
+| 5 | No default outside the choices file | task | Accepted | New backlog task: Default the import wizard and web to the sample sandbox. |
+| 6 | Test coverage | tests | Declined | No unit test for the key finder or the test booking; the sandbox import is their test. Whether CI has the ORE examples was not checked. |
+| 7 | Repeated comment in generated files | template | Declined | Generated code. |
 
 * Result
+
+An ORE sample import with a =sandbox_id= lands in the party's sample sandbox.
+Verified on a clean provision of the final code: Plc's import created its portfolios and one
+virtual book in the sandbox and saved two test trades against Plc's own sample
+netting set. Plc's official tree did not change (20 portfolios, 22 books).
+
+*Not met.*
+
+- Importing into two parties was not run. The lookups now take the session's
+  party, so another party needs a session in that party. The shell has no
+  command to choose one, and the staff accounts' passwords were not tried.
+- No wizard or web default: the sandbox is chosen through the choices file
+  (=sandbox_id=). A caller that gives none still imports into the official tree.
+- The key-finder change has no dedicated unit test; the import is its test.
+- Six refdata and one marketdata test fail on the provisioned database. They fail
+  on INSERT validation and on leftover rows; the change does not touch either.
+  Not shown to fail on main.

@@ -96,6 +96,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ORE equity Name identifier.
@@ -109,6 +110,7 @@ std::string("RIC:.SPX")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ISO 4217 currency code.
@@ -124,6 +126,7 @@ std::string("USD")
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Contract quantity / notional. Must be positive.
@@ -137,6 +140,7 @@ ores::utility::decimal::decimal::from_string("1000").value()
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Call or Put.
@@ -152,6 +156,7 @@ std::string("Call")
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Strike price. Non-negative.
@@ -165,6 +170,7 @@ ores::utility::decimal::decimal::from_string("3200").value()
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 Expiry date (ISO 8601 date string).
@@ -178,6 +184,7 @@ std::chrono::year_month_day{std::chrono::year{2026}/8/15}
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 European, American, or Bermudan.
@@ -193,6 +200,7 @@ std::string("European")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Position direction: Long or Short.
@@ -206,6 +214,7 @@ std::string("Long")
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Lower / single barrier level.
@@ -219,6 +228,7 @@ ores::utility::decimal::decimal::from_string("3500").value()
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 UpIn, UpOut, DownIn, DownOut.
@@ -234,6 +244,7 @@ std::string("UpAndOut")
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Double-barrier only: upper barrier level.
@@ -243,6 +254,7 @@ Double-barrier only: upper barrier level.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Type for upper barrier; empty for single barrier.
@@ -254,6 +266,7 @@ Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrier
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Optional rebate paid when the barrier is breached.
@@ -263,6 +276,7 @@ Optional rebate paid when the barrier is breached.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

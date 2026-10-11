@@ -36,6 +36,7 @@ list lives here. The ordinal preserves the document's order.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :supplied_by:  user
+:economic:    false
 :END:
 
 The trade whose option block stated this payment date.
@@ -45,6 +46,7 @@ The trade whose option block stated this payment date.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -54,6 +56,7 @@ The activity that wrote this version.
 :type:        integer
 :cpp_type:    int
 :primary_key: true
+:economic:    true
 :END:
 
 Ordinal of this payment date within the option block's list.
@@ -63,6 +66,7 @@ Ordinal of this payment date within the option block's list.
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 The payment date.

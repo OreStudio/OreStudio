@@ -47,6 +47,7 @@ without a table of its own.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :supplied_by:  user
+:economic:    false
 :END:
 
 The trade whose owner states the owning schedule.
@@ -58,6 +59,7 @@ The trade row carries the party. The date rows are family-owned and ride the tra
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -67,6 +69,7 @@ The activity that wrote this version.
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:economic:    true
 :END:
 
 Which list of the instrument states the owning schedule: =trs_funding=,
@@ -77,6 +80,7 @@ Which list of the instrument states the owning schedule: =trs_funding=,
 :type:        integer
 :cpp_type:    int
 :primary_key: true
+:economic:    true
 :END:
 
 Ordinal of the owner within its list, counting from one.
@@ -86,6 +90,7 @@ Ordinal of the owner within its list, counting from one.
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:economic:    true
 :END:
 
 Which of the owner's schedules the owning row is.
@@ -95,6 +100,7 @@ Which of the owner's schedules the owning row is.
 :type:        integer
 :cpp_type:    int
 :primary_key: true
+:economic:    true
 :END:
 
 Ordinal of the owning schedule entry within its owner's list for that
@@ -109,6 +115,7 @@ several entries under one role.
 :type:        integer
 :cpp_type:    int
 :primary_key: true
+:economic:    true
 :END:
 
 Ordinal of this date within the schedule's list.
@@ -122,6 +129,7 @@ the dates as the document held them.
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 The date (ISO 8601 date string).

@@ -102,6 +102,9 @@ public:
      *                 upload with no portfolio directory above its books
      *                 needs a name here, because a book cannot stand
      *                 without a portfolio.
+     * @param official Import into the official portfolio tree. Without
+     *                 it, an import that names no sandbox lands in the
+     *                 party's sample sandbox.
      */
     static void process_import(std::ostream& out,
                                ores::nats::service::nats_client& session,
@@ -109,6 +112,7 @@ public:
                                const std::string& party_id,
                                const std::string& choices_file,
                                const std::string& parent_portfolio_name,
+                               bool official,
                                std::chrono::seconds timeout);
 
     /**

@@ -2449,6 +2449,10 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
                 entry["description"] = description
             fields.append(entry)
     fg["fields"] = fields
+    declared, economic = economic_declaration(Path(path).name, fields, [])
+    fg["has_economic_declaration"] = declared
+    fg["economic_fields"] = economic
+    fg["has_economic_fields"] = bool(economic)
 
     return {"field_group": fg}
 
@@ -5492,6 +5496,92 @@ def entity_domain_ts_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
     return fields
 
 
+def entity_struct_member_columns(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """The model columns that reach the entity's flat domain struct, in
+    template order, each paired with the key that names it.
+
+    A grouped entity has none: its body is its ``domain_groups`` members, and
+    each group declares its own fields. The primary key and the natural keys
+    are members unless the identity group carries them. A ``sql_only`` column
+    and an identity-group column reach no flat member.
+    """
+    if entity.get("has_domain_groups"):
+        return []
+    members: list[dict[str, Any]] = []
+    if not entity.get("has_identity_group"):
+        for column in (entity.get("primary_key") or {}).get("columns") or []:
+            members.append(column)
+        for column in entity.get("natural_keys") or []:
+            members.append(column)
+    for column in entity.get("columns") or []:
+        if column.get("is_identity_group_column") or column.get("sql_only"):
+            continue
+        members.append(column)
+    return members
+
+
+def _member_name(column: dict[str, Any]) -> str:
+    return column.get("name") or column.get("column") or ""
+
+
+def economic_declaration(
+    owner: str, members: list[dict[str, Any]], carried: list[dict[str, Any]]
+) -> tuple[bool, list[str]]:
+    """Whether a struct declares which of its members are economic, and which.
+
+    ``members`` are the fields the struct carries as flat members. ``carried``
+    are model fields that do not reach it, which must not declare, because
+    the declaration lives where the member is. A struct declares all of its
+    members or none of them: a half-declared struct would leave a field
+    economic or not by default, which is what the declaration exists to end.
+    """
+    stray = sorted(_member_name(c) for c in carried if "economic" in c)
+    if stray:
+        raise ValueError(
+            f"{owner}: {stray} declare ':economic:' but reach no flat member "
+            f"of the struct. An identity-group column is declared on the "
+            f"group's own model, and a sql_only column is not a member."
+        )
+    declared = [c for c in members if "economic" in c]
+    if not declared:
+        return False, []
+    for column in declared:
+        if not isinstance(column["economic"], bool):
+            raise ValueError(
+                f"{owner}: column '{_member_name(column)}' sets ':economic:' "
+                f"to {column['economic']!r}. Write true or false."
+            )
+    missing = sorted(_member_name(c) for c in members if "economic" not in c)
+    if missing:
+        raise ValueError(
+            f"{owner}: declares ':economic:' on some columns but not on "
+            f"{missing}. Declare every member, so that none is economic by "
+            f"default."
+        )
+    return True, [_member_name(c) for c in members if c["economic"]]
+
+
+def entity_economic_declaration(
+    path: Path | str, entity: dict[str, Any]
+) -> tuple[bool, list[str]]:
+    """The entity's economic declaration; see :func:`economic_declaration`.
+
+    A grouped entity declares an empty list of its own, because every field it
+    carries sits in a group that declares itself. An empty list is also what a
+    struct whose members are all ``:economic: false`` declares, and the digest
+    treats both the same: nothing of the struct's own is rendered.
+    """
+    owner = Path(path).name
+    if entity.get("has_domain_groups"):
+        return True, []
+    members = entity_struct_member_columns(entity)
+    carried = [
+        c for c in entity.get("columns") or []
+        if c.get("is_identity_group_column") or c.get("sql_only")
+    ]
+    return economic_declaration(owner, members, carried)
+
+
 def _entity_domain_ts_member(
     field: dict[str, Any], name_key: str
 ) -> dict[str, Any]:
@@ -6079,18 +6169,155 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
     routes = [row for row in rows if row["instrument"]]
 
     batch = _trade_type_batch(path, doc, instruments, known_entities, plural_of)
+    org_of = {
+        info["entity_singular"]: info["org"]
+        for info in entities_by_table.values()
+    }
+    digest, digest_shared = _trade_type_digest(
+        path, doc, instruments, known_entities, org_of)
 
     catalogue: dict[str, Any] = {
         key: fm[key] for key in ("component", "brief") if key in fm}
     catalogue["rows"] = rows
     catalogue["instruments"] = instruments
     catalogue["batch"] = batch
+    catalogue["digest"] = digest
+    catalogue["digest_shared"] = digest_shared
     catalogue["common_dates"] = _trade_type_common_dates(
         path, doc, catalogue.get("component", ""), instruments,
         entities_by_table)
     catalogue["routes"] = [
         {"code": row["code"], "instrument": row["instrument"]} for row in routes]
     return {"trade_type_catalogue": catalogue}
+
+
+def _trade_type_digest(
+    path: Path,
+    doc: Any,
+    instruments: list[dict[str, Any]],
+    known_entities: set[str],
+    org_of: dict[str, Path],
+) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    """The rows each routed instrument's economic digest folds, in order, and
+    the shared rows every instrument's digest folds after them.
+
+    ``* Digest/Instrument components`` lists, per routed instrument, the
+    entities whose latest row for the trade is part of its economic shape.
+    Every routed instrument must be listed, and nothing else may be, so the
+    reader generated from this cannot miss a family or read one that is not
+    routed. Each component must be an entity some model declares and must
+    declare ``:economic:`` on its columns, because a row that names no
+    economic field cannot be digested.
+
+    ``* Digest/Shared components`` lists the entities whose rows are part of
+    every instrument's shape, each with the ``reader`` function that reads its
+    rows by trade id. They obey the same rule: a known entity that declares
+    ``:economic:``.
+
+    A catalogue with no ``* Digest`` section declares no digest and returns
+    empty lists: the digest reader is what the archetype reads, and a
+    catalogue that drives only routing has nothing for it to emit.
+    """
+    section = _section(doc.root, "Digest")
+    if not section:
+        return [], []
+    components_section = _section(section, "Instrument components")
+    if not components_section or not components_section.tables:
+        raise ValueError(f"{path.name}: * Digest has no Instrument components table.")
+
+    by_instrument: dict[str, list[str]] = {}
+    for r in _parse_org_table_rows(components_section):
+        instrument = (r.get("instrument") or "").strip()
+        component = (r.get("component") or "").strip()
+        if not instrument and not component:
+            continue
+        if not instrument or not component:
+            raise ValueError(
+                f"{path.name}: a * Digest/Instrument components row states "
+                f"{instrument!r} and {component!r}; both are required.")
+        _require_economic_component(
+            path, "Instrument components", component, known_entities, org_of)
+        listed = by_instrument.setdefault(instrument, [])
+        if component in listed:
+            raise ValueError(
+                f"{path.name}: {component} is listed twice under {instrument}.")
+        listed.append(component)
+
+    routed = [entry["name"] for entry in instruments]
+    stray = sorted(set(by_instrument) - set(routed))
+    if stray:
+        raise ValueError(
+            f"{path.name}: * Digest/Instrument components lists "
+            f"{', '.join(stray)}, which no routed trade type names.")
+    missing = sorted(set(routed) - set(by_instrument))
+    if missing:
+        raise ValueError(
+            f"{path.name}: * Digest/Instrument components omits the routed "
+            f"instrument(s) {', '.join(missing)}. Every routed instrument "
+            "states the rows its digest folds.")
+
+    digest: list[dict[str, Any]] = []
+    for instrument in routed:
+        digest.append({
+            "instrument": instrument,
+            "components": [{"entity": c} for c in by_instrument[instrument]],
+        })
+
+    shared: list[dict[str, str]] = []
+    shared_section = _section(section, "Shared components")
+    if shared_section:
+        for r in _parse_org_table_rows(shared_section):
+            component = (r.get("component") or "").strip()
+            reader = (r.get("reader") or "").strip()
+            if not component and not reader:
+                continue
+            if not component or not reader:
+                raise ValueError(
+                    f"{path.name}: a * Digest/Shared components row states "
+                    f"{component!r} and {reader!r}; both are required.")
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", reader):
+                raise ValueError(
+                    f"{path.name}: * Digest/Shared components reader "
+                    f"{reader!r} is not a function name.")
+            _require_economic_component(
+                path, "Shared components", component, known_entities, org_of)
+            if any(entry["entity"] == component for entry in shared):
+                raise ValueError(
+                    f"{path.name}: {component} is listed twice under "
+                    "* Digest/Shared components.")
+            shared.append({"entity": component, "reader": reader})
+    return digest, shared
+
+
+def _require_economic_component(
+    path: Path,
+    where: str,
+    component: str,
+    known_entities: set[str],
+    org_of: dict[str, Path],
+) -> None:
+    """Refuse a digest component that is unknown or declares nothing."""
+    if component not in known_entities:
+        raise ValueError(
+            f"{path.name}: * Digest/{where} names {component}, which no "
+            "entity model declares.")
+    text = org_of[component].read_text(encoding="utf-8")
+    # The text is searched, not the parsed model, because whether a column
+    # reaches the struct depends on flags that only the generation pipeline
+    # computes. A component whose columns are all false is accepted: it is
+    # listed and digests to nothing of its own. composite_instrument is such a
+    # component today, because its economics sit in legs the digest does not
+    # read. Refusing it would change what the digest covers, which is a
+    # decision of its own.
+    declares = re.search(r"^:economic:\s+(true|false)\s*$", text, re.M)
+    # A grouped entity carries every field in a group, and the group's own
+    # model declares them.
+    grouped = re.search(r"^\*+ Domain groups\s*$", text, re.M)
+    if not (declares or grouped):
+        raise ValueError(
+            f"{path.name}: * Digest/{where} names {component}, whose model "
+            "declares no ':economic:' on any column. Declare it, or leave the "
+            "component out.")
 
 
 def _entity_columns(org: Path) -> dict[str, dict[str, str]]:

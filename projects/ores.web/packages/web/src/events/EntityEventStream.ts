@@ -19,17 +19,24 @@
  *
  */
 
+import type { RecordKey } from './recordKey.js';
+
 /** What the stream needs of the browser's EventSource, so a test can stand in. */
 export interface EventSourceLike {
     addEventListener(type: string, listener: (event: { readonly data?: string }) => void): void;
     close(): void;
 }
 
-/** A change to an entity: when it happened, and nothing about which records. */
+/**
+ * A change to an entity: when it happened, and which records when the server
+ * could name them. Left out, `keys` means many records, or records the server
+ * could not name, and a reader treats every record as changed.
+ */
 export interface EntityChange {
     readonly component: string;
     readonly entity: string;
     readonly at: string;
+    readonly keys?: readonly RecordKey[];
 }
 
 export type ChangeListener = (change: EntityChange) => void;
@@ -137,15 +144,33 @@ function split(key: string): { component: string; entity: string } {
     return { component, entity };
 }
 
+/** Whether a value is a list of keys, each a plain object of text; anything else names no record. */
+function isKeyList(value: unknown): value is readonly RecordKey[] {
+    return (
+        Array.isArray(value) &&
+        value.every(
+            (key) =>
+                typeof key === 'object' &&
+                key !== null &&
+                !Array.isArray(key) &&
+                Object.values(key).every((column) => typeof column === 'string'),
+        )
+    );
+}
+
 function parse(data: string | undefined): EntityChange | undefined {
     if (data === undefined) return undefined;
     try {
         const value = JSON.parse(data) as Partial<EntityChange>;
-        return typeof value.component === 'string' &&
-            typeof value.entity === 'string' &&
-            typeof value.at === 'string'
-            ? { component: value.component, entity: value.entity, at: value.at }
-            : undefined;
+        if (
+            typeof value.component !== 'string' ||
+            typeof value.entity !== 'string' ||
+            typeof value.at !== 'string'
+        ) {
+            return undefined;
+        }
+        const change = { component: value.component, entity: value.entity, at: value.at };
+        return isKeyList(value.keys) ? { ...change, keys: value.keys } : change;
     } catch {
         return undefined;
     }

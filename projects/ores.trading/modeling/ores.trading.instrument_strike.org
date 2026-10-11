@@ -39,6 +39,7 @@ row and the other four are null.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :supplied_by:  user
+:economic:    false
 :END:
 
 The trade whose document stated this strike.
@@ -48,6 +49,7 @@ The trade whose document stated this strike.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -57,6 +59,7 @@ The activity that wrote this version.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 The strike stated as a price.
@@ -66,6 +69,7 @@ The strike stated as a price.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Currency the price strike is stated in.
@@ -75,6 +79,7 @@ Currency the price strike is stated in.
 :type:          numeric(38, 12)
 :cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic:      true
 :END:
 
 The strike stated as a yield.
@@ -84,6 +89,7 @@ The strike stated as a yield.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Compounding the yield strike is stated under.
@@ -93,6 +99,7 @@ Compounding the yield strike is stated under.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 The strike stated as a bare number, when it did not reach the option
@@ -103,6 +110,7 @@ fact row.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Currency the bare strike is stated in.

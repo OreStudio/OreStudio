@@ -20,6 +20,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
+import { constants } from 'node:fs';
 import {
     chmod,
     open,
@@ -35,7 +36,7 @@ import { basename, dirname, join, sep } from 'node:path';
 import { MAX_IMAGE_BYTES } from '@ores/contracts';
 import { parseOrg } from '@ores/org';
 import { parseScenario, recordRun, type RunInput, type Scenario } from './scenario-doc.js';
-import { detectImage } from './image.js';
+import { detectImage, isImageName } from './image.js';
 import {
     InvalidDocIdError,
     InvalidImageError,
@@ -43,6 +44,7 @@ import {
     ScenarioNotFoundError,
     StepNumberError,
     type DocText,
+    type ImageFile,
     type RecordResult,
     type SavedImage,
     type ScenarioStore,
@@ -64,6 +66,8 @@ interface IndexEntry {
     readonly size: number;
 }
 
+/** The largest image file the store serves. A screenshot of a whole screen is a few megabytes. */
+const MAX_SERVED_IMAGE_BYTES = 16 * 1024 * 1024;
 const HEAD_BYTES = 4096;
 const MAX_HEAD_BYTES = 65_536;
 const SCAN_BATCH = 64;
@@ -229,6 +233,35 @@ export class FileScenarioStore implements ScenarioStore {
         throw new Error('No free name for the image.');
     }
 
+    async readImage(id: string, name: string): Promise<ImageFile | null> {
+        const key = normalise(id);
+        const found = await this.resolve(key);
+        if (found === null || found.entry.type !== 'test_scenario' || !isImageName(name)) {
+            return null;
+        }
+        const doc = await this.absolute(found.entry.path);
+        const file = join(dirname(doc), name);
+        // The file is opened once, and what is checked is the open file, so it
+        // cannot change between the check and the read. O_NOFOLLOW makes a link
+        // fail to open, so a link cannot lead out of the folder.
+        const handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW).catch(
+            (error: NodeJS.ErrnoException) => {
+                if (error.code === 'ENOENT' || error.code === 'ELOOP') return null;
+                throw error;
+            },
+        );
+        if (handle === null) return null;
+        try {
+            const info = await handle.stat();
+            if (!info.isFile() || info.size > MAX_SERVED_IMAGE_BYTES) return null;
+            const bytes = await handle.readFile();
+            const kind = detectImage(bytes);
+            return kind === null ? null : { bytes, kind };
+        } finally {
+            await handle.close();
+        }
+    }
+
     private async write(key: string, input: RunInput): Promise<RecordResult> {
         const found = await this.resolve(key);
         if (found === null || found.entry.type !== 'test_scenario') {
@@ -366,6 +399,15 @@ export class FileScenarioStore implements ScenarioStore {
     }
 }
 
+/**
+ * The sprint folder in a path under the doc root, such as `sprint_27`, or null.
+ * The first such folder wins, so a scenario kept under a second sprint folder
+ * inside the first belongs to the outer sprint.
+ */
+export function sprintOf(path: string): string | null {
+    return path.split('/').find((segment) => /^sprint_\d+$/.test(segment)) ?? null;
+}
+
 function normalise(id: string): string {
     if (!DOC_ID.test(id)) throw new InvalidDocIdError(id);
     return id.toUpperCase();
@@ -378,8 +420,15 @@ function summarise(id: string, path: string, scenario: Scenario): ScenarioSummar
         title: scenario.title,
         description: scenario.description,
         path,
+        sprint: sprintOf(path),
+        created: scenario.created,
         state: scenario.state,
-        phase: scenario.state === 'PENDING' ? 'waiting' : 'done',
+        phase:
+            scenario.state === 'PENDING'
+                ? 'waiting'
+                : scenario.state === 'ABANDONED'
+                  ? 'abandoned'
+                  : 'done',
         target: scenario.target,
         story: scenario.story,
         task: scenario.task,

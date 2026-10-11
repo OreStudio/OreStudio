@@ -161,6 +161,7 @@ ore_import_plan ore_import_planner::plan() {
         parent_p.purpose_type = choices_.purpose_type;
         parent_p.status = "Active";
         parent_p.is_virtual = false;
+        parent_p.sandbox_id = choices_.sandbox_id;
         parent_p.change_reason_code = std::string(reason::codes::new_record);
         parent_p.change_commentary = "Imported from ORE directory";
         result.portfolios.push_back(std::move(parent_p));
@@ -181,6 +182,7 @@ ore_import_plan ore_import_planner::plan() {
         p.purpose_type = choices_.purpose_type;
         p.status = "Active";
         p.is_virtual = false;
+        p.sandbox_id = choices_.sandbox_id;
         p.change_reason_code = std::string(reason::codes::new_record);
         p.change_commentary = "Imported from ORE directory";
 
@@ -224,6 +226,13 @@ ore_import_plan ore_import_planner::plan() {
         b.functional_currency = choices_.functional_currency;
         b.book_status = std::string(book_status_constants::codes::active);
         b.regulatory_book_type = std::string(regulatory_book_type_constants::codes::trading);
+        if (choices_.sandbox_id) {
+            // A virtual book: it sits in the sandbox, is never mapped to the
+            // ledger and holds no position of the firm.
+            b.sandbox_id = choices_.sandbox_id;
+            b.book_purpose_type = "Test";
+            b.ledger_feed_type = "None";
+        }
         b.change_reason_code = std::string(reason::codes::new_record);
         b.change_commentary = "Imported from ORE directory";
 

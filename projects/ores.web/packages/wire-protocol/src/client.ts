@@ -990,6 +990,7 @@ export class OresClient {
             readonly at: string;
             readonly tenantId: string | undefined;
             readonly partyId: string | undefined;
+            readonly key: RecordKey;
         }) => void,
     ): () => void {
         const subscribe = this.#transport.subscribe;
@@ -1003,6 +1004,7 @@ export class OresClient {
                     at: decoded.occurred_at,
                     tenantId: envelope.tenantId,
                     partyId: envelope.partyId,
+                    key: recordKeyOf(decoded.key),
                 });
             } catch {
                 // An event this build does not understand is one it cannot act on.
@@ -1378,7 +1380,28 @@ export class OresClient {
  */
 const changeEventSchema = z.object({
     occurred_at: z.string().default(''),
+    key: z.record(z.string(), z.unknown()).default({}),
 });
+
+/**
+ * The key of the record an event is about: each column of the entity's declared
+ * key, by its name, as text.
+ *
+ * An empty key names no record. A reader of the event treats it as a change to
+ * records it cannot name, which is the safe direction.
+ */
+export type RecordKey = Readonly<Record<string, string>>;
+
+/** The key columns that are plain values, as text; a column that is not one is left out. */
+function recordKeyOf(raw: Readonly<Record<string, unknown>>): RecordKey {
+    const key: Record<string, string> = {};
+    for (const [column, value] of Object.entries(raw)) {
+        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+            key[column] = String(value);
+        }
+    }
+    return key;
+}
 
 /**
  * The failure a server error code means.

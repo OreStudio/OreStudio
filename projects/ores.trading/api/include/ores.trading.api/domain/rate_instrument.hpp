@@ -29,8 +29,10 @@
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -109,6 +111,27 @@ struct rate_instrument final {
      */
     friend bool operator==(const rate_instrument&, const rate_instrument&) = default;
 };
+
+/**
+ * @brief The members of rate_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view rate_instrument_economic_fields[] = {
+    "start_date",
+    "maturity_date",
+};
+
+/**
+ * @brief Names the members of rate_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<rate_instrument>) {
+    return rate_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for rate_instrument, e.g. for the

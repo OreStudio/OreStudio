@@ -1338,6 +1338,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/repository/inflation_swap_instrument_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/repository/inflation_swap_instrument_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/repository/instrument_economic_shape.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/repository/instrument_option_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/repository/instrument_option_exercise_fee_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/repository/instrument_option_exercise_fee_mapper.hpp"

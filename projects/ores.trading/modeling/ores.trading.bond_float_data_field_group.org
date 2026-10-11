@@ -31,6 +31,7 @@ unengaged start date is the only presence question here.
 :PROPERTIES:
 :cpp_type: double
 :default_value: {}
+:economic: true
 :END:
 
 The number the document states.
@@ -38,6 +39,7 @@ The number the document states.
 ** start_date
 :PROPERTIES:
 :cpp_type: std::optional<std::string>
+:economic: true
 :END:
 
 The date the number applies from, when the document states one.

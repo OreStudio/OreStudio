@@ -149,7 +149,7 @@ const SNAPSHOT = {
     provenance: [],
     oldest_age_seconds: 10,
     spread_seconds: 0,
-    warning: '',
+    warning: false,
 };
 
 const EVOLUTION = {

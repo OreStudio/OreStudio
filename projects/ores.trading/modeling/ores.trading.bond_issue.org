@@ -55,6 +55,7 @@ row, so leaving the two out would drop them from the round trip.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:economic:    false
 :END:
 
 UUID uniquely identifying this bond issue.
@@ -68,6 +69,7 @@ against it are amended.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ISIN or other security identifier of the issue.
@@ -85,6 +87,7 @@ std::string("US9128283M42")
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Issuer of the bond.
@@ -98,6 +101,7 @@ std::string("US Treasury")
 :type:          numeric(38, 12)
 :cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable:      true
+:economic:      true
 :END:
 
 Face value per unit of the bond.
@@ -111,6 +115,7 @@ ores::utility::decimal::decimal::from_string("1000").value()
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Issue date of the bond (ISO 8601 date string).
@@ -125,6 +130,7 @@ std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 :cpp_type:      int
 :nullable:      true
 :default_value: 0
+:economic:      true
 :END:
 
 Settlement days of the bond, a market convention of the issue.
@@ -138,6 +144,7 @@ Settlement days of the bond, a market convention of the issue.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Calendar the issue's dates are adjusted against, when the document
@@ -148,6 +155,7 @@ states one at the bond level rather than on a leg.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Credit curve the document names for the issue.
@@ -157,6 +165,7 @@ Credit curve the document names for the issue.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Reference curve the document names for the issue.
@@ -166,6 +175,7 @@ Reference curve the document names for the issue.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Income curve the document names for the issue.
@@ -175,6 +185,7 @@ Income curve the document names for the issue.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Credit group the document names for the issue.
@@ -184,6 +195,7 @@ Credit group the document names for the issue.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Volatility curve the document names for the issue.
@@ -193,6 +205,7 @@ Volatility curve the document names for the issue.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Price quote method the document states for the issue.
@@ -202,6 +215,7 @@ Price quote method the document states for the issue.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Price quote base value the document states for the issue.
@@ -211,6 +225,7 @@ Price quote base value the document states for the issue.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Bond sub-type the document states for the issue.
@@ -220,6 +235,7 @@ Bond sub-type the document states for the issue.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The price type the document states.
@@ -231,6 +247,7 @@ Soft FK to ores_trading_price_types_tbl: the values are the closed ORE bondPrice
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The payer the document states for the bond itself, when it states one.
@@ -245,6 +262,7 @@ which the issue otherwise models, states neither.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The credit-risk flag the document states for the issue, when it states one.

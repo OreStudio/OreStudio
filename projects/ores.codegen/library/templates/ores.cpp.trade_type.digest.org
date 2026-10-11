@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: f18107c9-baeb-4aa5-b1f9-2478831d3cf8
+:END:
+#+title: ores.cpp.trade_type.digest
+#+description: The reader of the rows an instrument's economic digest folds, generated from the trade-type catalogue.
+#+type: archetype
+#+output: projects/ores.trading/core/include/ores.trading.core/repository/instrument_economic_shape.hpp
+#+facet: ores.cpp.trade_type
+#+model_types: trade_type_catalogue
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+The C++ projection of the catalogue's digest section. =read_instrument_components=
+hands the append callback every row of the trade's instrument that makes up its
+economic shape, in the order the catalogue lists them, and
+=read_shared_components= hands it the rows every instrument shares. The switch has one case
+per routed instrument table and no default, so a table the catalogue routes and
+does not list fails the build rather than reading as empty.
+
+* Template
+
+#+begin_src mustache :tangle cpp_trade_type_digest.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.trade_type.digest.org. Edit the org source. }}
+{{{cpp_license}}}
+#ifndef ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_ECONOMIC_SHAPE_HPP
+#define ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_ECONOMIC_SHAPE_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.trading.api/domain/trade_type_routing.hpp"
+#include "ores.trading.core/repository/parent_scoped_queries.hpp"
+{{#trade_type_catalogue}}
+{{#digest}}
+{{#components}}
+#include "ores.trading.core/repository/{{entity}}_repository.hpp"
+{{/components}}
+{{/digest}}
+{{/trade_type_catalogue}}
+#include <string>
+#include <vector>
+
+namespace ores::trading::repository {
+
+/**
+ * @brief Hands @p append the latest rows of the instrument components of a
+ * trade.
+ *
+ * Generated from the digest section of ores.trading.trade_type_catalogue. A
+ * component with no row for the trade appends an empty result.
+ */
+template <typename Append>
+void read_instrument_components(ores::database::context ctx,
+                                const std::string& trade_id,
+                                domain::instrument_table table,
+                                Append&& append) {
+    switch (table) {
+{{#trade_type_catalogue}}
+{{#digest}}
+    case domain::instrument_table::{{instrument}}:
+{{#components}}
+        append({{entity}}_repository{}.read_latest(ctx, trade_id));
+{{/components}}
+        break;
+{{/digest}}
+{{/trade_type_catalogue}}
+    }
+}
+
+/**
+ * @brief Hands @p append the rows every instrument shares: the legs, the
+ * strikes and the option and schedule blocks.
+ *
+ * Generated from the digest section of ores.trading.trade_type_catalogue.
+ */
+template <typename Append>
+void read_shared_components(ores::database::context ctx,
+                            const std::string& trade_id,
+                            Append&& append) {
+    const auto ids = std::vector<std::string>{trade_id};
+{{#trade_type_catalogue}}
+{{#digest_shared}}
+    append({{reader}}(ctx, ids));
+{{/digest_shared}}
+{{/trade_type_catalogue}}
+}
+
+}
+
+#endif
+#+end_src
+
+* See also
+
+- Parent facet: [[id:2d187ab0-0676-45aa-9e0f-aca18580d3e0][ores.cpp.trade_type]]

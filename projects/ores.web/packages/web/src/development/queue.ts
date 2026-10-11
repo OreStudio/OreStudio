@@ -27,7 +27,7 @@ import type { ScenarioSummary } from '@ores/contracts';
  * A scenario waits until it is PASSED or FAILED. A waiting scenario with some
  * steps done is in progress, so a tester sees which ones were started.
  */
-export type QueueState = 'pending' | 'inProgress' | 'passed' | 'failed';
+export type QueueState = 'pending' | 'inProgress' | 'passed' | 'failed' | 'abandoned';
 
 /** The steps with an outcome: passed, failed or dropped. */
 export function stepsDone(scenario: ScenarioSummary): number {
@@ -37,6 +37,7 @@ export function stepsDone(scenario: ScenarioSummary): number {
 export function stateOf(scenario: ScenarioSummary): QueueState {
     if (scenario.state === 'PASSED') return 'passed';
     if (scenario.state === 'FAILED') return 'failed';
+    if (scenario.state === 'ABANDONED') return 'abandoned';
     return stepsDone(scenario) > 0 ? 'inProgress' : 'pending';
 }
 
@@ -56,28 +57,63 @@ export function openFromRow(event: { readonly defaultPrevented: boolean }, open:
     if (!event.defaultPrevented) open();
 }
 
-export interface Queue {
-    readonly waiting: readonly ScenarioSummary[];
+/**
+ * The scenarios of one sprint, or of no sprint when `sprint` is null, in three
+ * buckets: the active ones that wait for a tester, the done ones, and the
+ * abandoned ones.
+ */
+export interface SprintBuckets {
+    readonly sprint: string | null;
+    readonly number: number | null;
+    readonly active: readonly ScenarioSummary[];
     readonly done: readonly ScenarioSummary[];
+    readonly abandoned: readonly ScenarioSummary[];
+}
+
+/** The number in a sprint folder name such as `sprint_27`, or null. */
+export function sprintNumber(sprint: string | null): number | null {
+    const match = sprint === null ? null : /^sprint_(\d+)$/.exec(sprint);
+    return match?.[1] === undefined ? null : Number(match[1]);
 }
 
 /**
- * Waiting scenarios first, with the ones in progress ahead of the ones not
- * started, and done scenarios second, newest completion first. Within a group
- * the server's order stands. The completion times are ISO-8601 strings in one
- * format, so a text comparison orders them by time.
+ * The scenarios grouped by sprint, newest sprint first, with the scenarios
+ * outside any sprint last. In each sprint they fall in three buckets, and each
+ * bucket runs from the newest created date to the oldest, with a scenario that
+ * has no date last, then by title. The created dates are ISO dates, so a text
+ * comparison orders them.
  */
-export function queueOf(scenarios: readonly ScenarioSummary[]): Queue {
-    const waiting = scenarios.filter((s) => s.phase === 'waiting');
-    const started = waiting.filter((s) => stepsDone(s) > 0);
-    const notStarted = waiting.filter((s) => stepsDone(s) === 0);
-    const done = scenarios
-        .filter((s) => s.phase === 'done')
-        .map((scenario, index) => ({ scenario, index }))
-        .sort(
-            (a, b) =>
-                b.scenario.completedAt.localeCompare(a.scenario.completedAt) || a.index - b.index,
-        )
-        .map(({ scenario }) => scenario);
-    return { waiting: [...started, ...notStarted], done };
+export function sprintBuckets(scenarios: readonly ScenarioSummary[]): readonly SprintBuckets[] {
+    const bySprint = new Map<string | null, ScenarioSummary[]>();
+    for (const scenario of scenarios) {
+        const group = bySprint.get(scenario.sprint) ?? [];
+        group.push(scenario);
+        bySprint.set(scenario.sprint, group);
+    }
+    const newestFirst = (a: ScenarioSummary, b: ScenarioSummary): number => {
+        if (a.created === '' || b.created === '') {
+            return a.created === b.created
+                ? a.title.localeCompare(b.title)
+                : a.created === ''
+                  ? 1
+                  : -1;
+        }
+        return b.created.localeCompare(a.created) || a.title.localeCompare(b.title);
+    };
+    const bucket = (group: readonly ScenarioSummary[], phase: ScenarioSummary['phase']) =>
+        group.filter((s) => s.phase === phase).sort(newestFirst);
+    return [...bySprint]
+        .map(([sprint, group]) => ({
+            sprint,
+            number: sprintNumber(sprint),
+            active: bucket(group, 'waiting'),
+            done: bucket(group, 'done'),
+            abandoned: bucket(group, 'abandoned'),
+        }))
+        .sort((a, b) => {
+            if (a.number === null || b.number === null) {
+                return a.number === b.number ? 0 : a.number === null ? 1 : -1;
+            }
+            return b.number - a.number;
+        });
 }

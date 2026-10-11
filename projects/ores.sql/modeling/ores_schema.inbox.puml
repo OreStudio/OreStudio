@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T17:26:00.098536Z
+' Generated: 2026-10-11T10:09:54.355611Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -125,6 +125,8 @@ package "inbox" #FCE4EC {
         * allows_hold : boolean
         * comment_on_approve : boolean
           expires_after_days : integer
+          apply_workflow_type : text
+          apply_window_hours : integer
         * approvals_required : integer
         * display_order : integer
         * modified_by : text

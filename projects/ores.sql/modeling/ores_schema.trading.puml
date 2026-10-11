@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T18:43:39.230749Z
+' Generated: 2026-10-11T02:26:09.491000Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -340,9 +340,9 @@ package "trading" #E8F5E9 {
           forward_maturity_date : text
           forward_settlement_date : text
           settlement : text
-          amount : numeric(28, 10)
-          lock_rate : numeric(28, 10)
-          dv01 : numeric(28, 10)
+          amount : numeric(38, 12)
+          lock_rate : numeric(38, 12)
+          dv01 : numeric(38, 12)
           lock_rate_day_counter : text
           settlement_dirty : text
           premium_amount : text
@@ -378,7 +378,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * contract_name : text
-        * contract_notional : numeric(28, 10)
+        * contract_notional : numeric(38, 12)
         * long_short : text
           apply_conversion_factor : boolean
           use_future_price : boolean
@@ -428,7 +428,7 @@ package "trading" #E8F5E9 {
         * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
         * issue_id : uuid <<FK>>
-          notional : numeric(28, 10)
+          notional : numeric(38, 12)
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -503,7 +503,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * underlying_id : text <<FK>>
-        * conversion_ratio : numeric(28, 10)
+        * conversion_ratio : double
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -535,7 +535,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * amortization_type : text
-          value : numeric(28, 10)
+          value : numeric(38, 12)
           start_date : text
           end_date : text
           frequency : text
@@ -572,7 +572,7 @@ package "trading" #E8F5E9 {
         * sequence_number : integer <<PK>>
         --
         * version : integer
-        * value : numeric(28, 10)
+        * value : numeric(38, 12)
           start_date : text
         * modified_by : text
         * performed_by : text
@@ -834,7 +834,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * security_id : text <<FK>>
           issuer : text
-          face_value : numeric(28, 10)
+          face_value : numeric(38, 12)
           issue_date : date
           settlement_days : integer
           calendar : text
@@ -896,7 +896,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * amortization_type : text
-          value : numeric(28, 10)
+          value : numeric(38, 12)
           start_date : text
           end_date : text
           frequency : text
@@ -935,7 +935,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
-        * value : numeric(28, 10)
+        * value : numeric(38, 12)
           start_date : text
         * modified_by : text
         * performed_by : text
@@ -1093,7 +1093,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * option_type : text
-        * option_strike : numeric(28, 10)
+        * option_strike : numeric(38, 12)
           redemption : text
           price_type : text
           knocks_out : text
@@ -1132,7 +1132,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * repo_type : text
-          repo_rate : numeric(28, 10)
+          repo_rate : numeric(38, 12)
           repo_index : text
         * modified_by : text
         * performed_by : text
@@ -1166,11 +1166,11 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * return_type : text
         * funding_leg_type : text
-          funding_rate : numeric(28, 10)
+          funding_rate : numeric(38, 12)
           funding_index : text
           payer : text
           price_type : text
-          initial_price : numeric(28, 10)
+          initial_price : numeric(38, 12)
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1339,7 +1339,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * underlying_code : text
-          weight : numeric(28, 10)
+          weight : double
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1376,26 +1376,26 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * commodity_code : text
         * currency : text
-        * quantity : numeric(28, 10)
+        * quantity : double
         * unit : text
           start_date : date
           maturity_date : date
-          fixed_price : numeric(28, 10)
+          fixed_price : numeric(38, 12)
           option_type : text
-          strike_price : numeric(28, 10)
+          strike_price : numeric(38, 12)
           exercise_type : text
           average_type : text
           averaging_start_date : date
           averaging_end_date : date
           spread_commodity_code : text
-          spread_amount : numeric(28, 10)
+          spread_amount : numeric(38, 12)
           strip_frequency_code : text
-          variance_strike : numeric(28, 10)
-          accumulation_amount : numeric(28, 10)
-          knock_out_barrier : numeric(28, 10)
+          variance_strike : double
+          accumulation_amount : numeric(38, 12)
+          knock_out_barrier : numeric(38, 12)
           barrier_type : text
-          lower_barrier : numeric(28, 10)
-          upper_barrier : numeric(28, 10)
+          lower_barrier : numeric(38, 12)
+          upper_barrier : numeric(38, 12)
           day_count_fraction_code : text
           payment_frequency_code : text
           swaption_expiry_date : date
@@ -1534,9 +1534,9 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * reference_entity : text
         * currency : text
-        * notional : numeric(28, 10)
-        * spread : numeric(28, 10)
-        * recovery_rate : numeric(28, 10)
+        * notional : numeric(38, 12)
+        * spread : numeric(38, 12)
+        * recovery_rate : double
         * tenor : text
         * start_date : date
         * maturity_date : date
@@ -1549,10 +1549,10 @@ package "trading" #E8F5E9 {
           description : text
           option_type : text
           option_expiry_date : date
-          option_strike : numeric(28, 10)
+          option_strike : numeric(38, 12)
           linked_asset_code : text
-          tranche_attachment : numeric(28, 10)
-          tranche_detachment : numeric(28, 10)
+          tranche_attachment : numeric(38, 12)
+          tranche_detachment : numeric(38, 12)
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1624,14 +1624,14 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
-        * strike : numeric(28, 10)
-        * fixing_amount : numeric(28, 10)
+        * strike : numeric(38, 12)
+        * fixing_amount : numeric(38, 12)
         * start_date : date
         * expiry_date : date
         * fixing_frequency : text
         * long_short : text
-          knock_out_level : numeric(28, 10)
-          target_amount : numeric(28, 10)
+          knock_out_level : numeric(38, 12)
+          target_amount : numeric(38, 12)
           target_type : text
         * payoff_type : text
           description : text
@@ -1667,9 +1667,9 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
-        * notional : numeric(28, 10)
+        * notional : numeric(38, 12)
         * option_type : text
-        * strike : numeric(28, 10)
+        * strike : numeric(38, 12)
         * expiry_date : date
         * exercise_type : text
         * long_short : text
@@ -1708,17 +1708,17 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
-        * notional : numeric(28, 10)
+        * notional : numeric(38, 12)
         * option_type : text
-        * strike : numeric(28, 10)
+        * strike : numeric(38, 12)
         * expiry_date : date
         * exercise_type : text
         * long_short : text
-        * lower_barrier : numeric(28, 10)
+        * lower_barrier : numeric(38, 12)
         * lower_barrier_type : text
-          upper_barrier : numeric(28, 10)
+          upper_barrier : numeric(38, 12)
           upper_barrier_type : text
-          rebate : numeric(28, 10)
+          rebate : numeric(38, 12)
           description : text
         * modified_by : text
         * performed_by : text
@@ -1753,14 +1753,14 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
-        * notional : numeric(28, 10)
+        * notional : numeric(38, 12)
           option_type : text
-          strike : numeric(28, 10)
-          barrier_level : numeric(28, 10)
+          strike : numeric(38, 12)
+          barrier_level : numeric(38, 12)
           barrier_type : text
         * expiry_date : date
         * long_short : text
-          payout_amount : numeric(28, 10)
+          payout_amount : numeric(38, 12)
           description : text
         * modified_by : text
         * performed_by : text
@@ -1793,8 +1793,8 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
-        * quantity : numeric(28, 10)
-          forward_price : numeric(28, 10)
+        * quantity : double
+          forward_price : numeric(38, 12)
         * expiry_date : date
         * long_short : text
           settlement_type : text
@@ -1825,9 +1825,9 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
-        * notional : numeric(28, 10)
+        * notional : numeric(38, 12)
         * option_type : text
-        * strike : numeric(28, 10)
+        * strike : numeric(38, 12)
         * expiry_date : date
         * exercise_type : text
         * long_short : text
@@ -1865,8 +1865,8 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
-        * quantity : numeric(28, 10)
-          price : numeric(28, 10)
+        * quantity : double
+          price : numeric(38, 12)
           description : text
         * modified_by : text
         * performed_by : text
@@ -1900,8 +1900,8 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * underlying_name : text
-        * strike : numeric(28, 10)
-          weight : numeric(28, 10)
+        * strike : numeric(38, 12)
+          weight : double
         * long_short : text
           option_type : text
           exercise_type : text
@@ -1953,7 +1953,7 @@ package "trading" #E8F5E9 {
           underlying_name : text
           basket_json : text
         * currency : text
-        * notional : numeric(28, 10)
+        * notional : numeric(38, 12)
         * return_type : text
         * start_date : date
         * maturity_date : date
@@ -1988,8 +1988,8 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
-        * notional : numeric(28, 10)
-        * variance_strike : numeric(28, 10)
+        * notional : numeric(38, 12)
+        * variance_strike : double
         * start_date : date
         * maturity_date : date
         * long_short : text
@@ -2138,8 +2138,8 @@ package "trading" #E8F5E9 {
         * currency : text
         * rate_index : text
         * long_short : text
-        * strike : numeric(18, 10)
-        * notional : numeric(28, 10)
+        * strike : numeric(38, 12)
+        * notional : numeric(38, 12)
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2170,12 +2170,12 @@ package "trading" #E8F5E9 {
         * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
         * currency : text
-        * fixing_amount : numeric(28, 10)
-        * strike : numeric(28, 10)
+        * fixing_amount : numeric(38, 12)
+        * strike : numeric(38, 12)
         * underlying_code : text
         * long_short : text
         * start_date : date
-          knock_out_barrier : numeric(28, 10)
+          knock_out_barrier : numeric(38, 12)
           description : text
         * modified_by : text
         * performed_by : text
@@ -2205,15 +2205,15 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * fx_index : text
           reference_currency : text
-          reference_notional : numeric(28, 10)
+          reference_notional : numeric(38, 12)
           settlement_currency : text
-          settlement_notional : numeric(28, 10)
+          settlement_notional : numeric(38, 12)
           payment_date : date
           long_short : text
           currency : text
-          fixing_amount : numeric(28, 10)
-          target_amount : numeric(28, 10)
-          strike : numeric(28, 10)
+          fixing_amount : numeric(38, 12)
+          target_amount : numeric(38, 12)
+          strike : numeric(38, 12)
           description : text
         * modified_by : text
         * performed_by : text
@@ -2247,15 +2247,15 @@ package "trading" #E8F5E9 {
         * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
         * bought_currency : text
-        * bought_amount : numeric(28, 10)
+        * bought_amount : numeric(38, 12)
         * sold_currency : text
-        * sold_amount : numeric(28, 10)
+        * sold_amount : numeric(38, 12)
           option_type : text
         * expiry_date : date
           settlement : text
         * barrier_type : text
-        * lower_barrier : numeric(28, 10)
-          upper_barrier : numeric(28, 10)
+        * lower_barrier : numeric(38, 12)
+          upper_barrier : numeric(38, 12)
           underlying_code : text
           description : text
         * modified_by : text
@@ -2287,14 +2287,14 @@ package "trading" #E8F5E9 {
         * foreign_currency : text
         * domestic_currency : text
         * payoff_currency : text
-        * payoff_amount : numeric(28, 10)
+        * payoff_amount : numeric(38, 12)
           option_type : text
         * expiry_date : date
         * long_short : text
-          strike : numeric(28, 10)
+          strike : numeric(38, 12)
           barrier_type : text
-          lower_barrier : numeric(28, 10)
-          upper_barrier : numeric(28, 10)
+          lower_barrier : numeric(38, 12)
+          upper_barrier : numeric(38, 12)
           description : text
         * modified_by : text
         * performed_by : text
@@ -2326,9 +2326,9 @@ package "trading" #E8F5E9 {
         * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
         * bought_currency : text
-        * bought_amount : numeric(28, 10)
+        * bought_amount : numeric(38, 12)
         * sold_currency : text
-        * sold_amount : numeric(28, 10)
+        * sold_amount : numeric(38, 12)
         * value_date : date
           settlement : text
           description : text
@@ -2359,9 +2359,9 @@ package "trading" #E8F5E9 {
         * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
         * bought_currency : text
-        * bought_amount : numeric(28, 10)
+        * bought_amount : numeric(38, 12)
         * sold_currency : text
-        * sold_amount : numeric(28, 10)
+        * sold_amount : numeric(38, 12)
         * option_type : text
         * expiry_date : date
         * exercise_style : text
@@ -2397,8 +2397,8 @@ package "trading" #E8F5E9 {
         * currency : text
         * underlying_code : text
         * long_short : text
-        * strike : numeric(28, 10)
-        * notional : numeric(28, 10)
+        * strike : numeric(38, 12)
+        * notional : numeric(38, 12)
         * moment_type : text
           description : text
         * modified_by : text
@@ -2425,7 +2425,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * inflation_index_code : text
-          base_cpi : numeric(18, 10)
+          base_cpi : double
           lag_convention : text
         * modified_by : text
         * performed_by : text
@@ -2455,7 +2455,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
-        * amount : numeric(28, 10)
+        * amount : numeric(38, 12)
           type : text
           start_date : date
           currency : text
@@ -2547,7 +2547,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
-        * amount : numeric(28, 10)
+        * amount : numeric(38, 12)
         * currency : text
         * pay_date : date
         * has_settlement : boolean
@@ -2607,7 +2607,7 @@ package "trading" #E8F5E9 {
           automatic_exercise : text
         * has_exercise_data : boolean
           exercise_date : date
-          exercise_price : numeric(28, 10)
+          exercise_price : numeric(38, 12)
         * has_payment_data : boolean
           payment_lag : integer
           payment_calendar : text
@@ -2769,11 +2769,11 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
-          price_value : numeric(28, 10)
+          price_value : numeric(38, 12)
           price_currency : text
-          yield_value : numeric(28, 10)
+          yield_value : numeric(38, 12)
           yield_compounding : text
-          bare_value : numeric(28, 10)
+          bare_value : numeric(38, 12)
           bare_currency : text
         * modified_by : text
         * performed_by : text
@@ -2805,7 +2805,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * barrier_start_date : date
-        * barrier_level : numeric(18, 10)
+        * barrier_level : numeric(38, 12)
         * barrier_type : text
         * modified_by : text
         * performed_by : text
@@ -3138,7 +3138,7 @@ package "trading" #E8F5E9 {
         * maturity_date : date
         * reference_counterparty : text
         * participation_rate : double
-        * protection_fee : double
+        * protection_fee : numeric(38, 12)
           description : text
         * modified_by : text
         * performed_by : text
@@ -3396,7 +3396,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
           start_date : date
-        * amount : numeric(28, 10)
+        * amount : numeric(38, 12)
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3433,7 +3433,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
           start_date : date
-        * value : numeric(18, 10)
+        * value : numeric(38, 12)
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3890,6 +3890,8 @@ package "trading" #E8F5E9 {
         * counterparty_scope : text <<FK>>
         * booking_nature : text <<FK>>
         * entry_channel : text <<FK>>
+        * external_version : integer
+          economic_digest : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

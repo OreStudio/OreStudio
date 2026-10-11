@@ -47,6 +47,8 @@ struct approval_kind_write {
     bool allows_hold;
     bool comment_on_approve;
     std::optional<int> expires_after_days;
+    std::optional<std::string> apply_workflow_type;
+    std::optional<int> apply_window_hours;
     int approvals_required;
     int display_order;
 };

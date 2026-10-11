@@ -43,6 +43,7 @@ document stated the block at all.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :supplied_by:  user
+:economic:    false
 :END:
 
 The trade whose option block stated this premium.
@@ -52,6 +53,7 @@ The trade whose option block stated this premium.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -61,6 +63,7 @@ The activity that wrote this version.
 :type:        integer
 :cpp_type:    int
 :primary_key: true
+:economic:    true
 :END:
 
 Ordinal of this premium within the option block's list.
@@ -70,6 +73,7 @@ Ordinal of this premium within the option block's list.
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Amount of the premium.
@@ -83,6 +87,7 @@ ores::utility::decimal::decimal::from_string("1000").value()
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Currency the premium pays in.
@@ -98,6 +103,7 @@ std::string("USD")
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 Date the premium pays on.
@@ -115,6 +121,7 @@ std::chrono::year_month_day{std::chrono::year{2026}/1/15}
 :type:     boolean
 :cpp_type: bool
 :nullable: false
+:economic: true
 :END:
 
 True when the premium states a settlement block.
@@ -128,6 +135,7 @@ true
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Currency the premium's settlement block pays in.
@@ -137,6 +145,7 @@ Currency the premium's settlement block pays in.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 FX index the premium's settlement block fixes against.
@@ -146,6 +155,7 @@ FX index the premium's settlement block fixes against.
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Date the premium's settlement block fixes on.

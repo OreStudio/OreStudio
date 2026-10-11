@@ -252,6 +252,87 @@ shape whichever family states the rows.
 | swaption_instrument               |
 | vanilla_swap_instrument           |
 
+* Digest
+
+A trade's economic digest folds the digests of the rows that make up its
+instrument. This section declares which rows those are, so the code that reads
+them is generated and a family cannot gain or lose a component without the
+model saying so.
+
+** Instrument components
+
+The entities whose latest row for the trade is part of the instrument's
+economic shape, grouped by the routed instrument table. A routed instrument
+that appears here has its components read in the order listed. Each component
+must declare =:economic:= on its columns, because a row that names no economic
+field cannot be digested.
+
+The rates family routes to its header, which is a component of its own shape
+beside the product fact table the trade type selects; the other fact tables
+hold no row for the trade and read as empty.
+
+| instrument                       | component                          |
+|----------------------------------+------------------------------------|
+| bond_instrument                  | bond_instrument                    |
+| commodity_instrument             | commodity_instrument               |
+| composite_instrument             | composite_instrument               |
+| credit_instrument                | credit_instrument                  |
+| equity_accumulator_instrument    | equity_accumulator_instrument      |
+| equity_asian_option_instrument   | equity_asian_option_instrument     |
+| equity_barrier_option_instrument | equity_barrier_option_instrument   |
+| equity_digital_option_instrument | equity_digital_option_instrument   |
+| equity_forward_instrument        | equity_forward_instrument          |
+| equity_option_instrument         | equity_option_instrument           |
+| equity_position_instrument       | equity_position_instrument         |
+| equity_swap_instrument           | equity_swap_instrument             |
+| equity_variance_swap_instrument  | equity_variance_swap_instrument    |
+| fx_accumulator_instrument        | fx_accumulator_instrument          |
+| fx_asian_forward_instrument      | fx_asian_forward_instrument        |
+| fx_barrier_option_instrument     | fx_barrier_option_instrument       |
+| fx_digital_option_instrument     | fx_digital_option_instrument       |
+| fx_forward_instrument            | fx_forward_instrument              |
+| fx_vanilla_option_instrument     | fx_vanilla_option_instrument       |
+| fx_variance_swap_instrument      | fx_variance_swap_instrument        |
+| rate_instrument                  | rate_instrument                    |
+| rate_instrument                  | balance_guaranteed_swap_instrument |
+| rate_instrument                  | callable_swap_instrument           |
+| rate_instrument                  | cap_floor_instrument               |
+| rate_instrument                  | fra_instrument                     |
+| rate_instrument                  | inflation_swap_instrument          |
+| rate_instrument                  | knock_out_swap_instrument          |
+| rate_instrument                  | swaption_instrument                |
+| rate_instrument                  | vanilla_swap_instrument            |
+| scripted_instrument              | scripted_instrument                |
+
+** Shared components
+
+The entities whose rows for the trade are part of every instrument's economic
+shape, whatever table the trade type routes to: the legs and their amounts,
+rates and amortizations, the forwards, the strikes, and the option, schedule
+and date blocks. The bond pilot built these shapes and the other families
+write to them, so one reader serves the whole catalogue. =reader= is the
+function that reads an entity's rows by trade id.
+
+The option's exercise prices are an economic table that is not listed here:
+the digest has never read them. Listing them is a change to what the digest
+covers, so it is a decision of its own and not a side effect of declaring the
+shape.
+
+| component                       | reader                                |
+|---------------------------------+---------------------------------------|
+| bond_leg                        | read_legs_by_trade_ids                |
+| bond_leg_amount                 | read_leg_amounts_by_trade_ids         |
+| bond_leg_rate                   | read_leg_rates_by_trade_ids           |
+| bond_leg_amortization           | read_leg_amortizations_by_trade_ids   |
+| bond_forward                    | read_forwards_by_trade_ids            |
+| instrument_strike               | read_strikes_by_trade_ids             |
+| instrument_option               | read_options_by_trade_ids             |
+| instrument_option_exercise_fee  | read_option_exercise_fees_by_trade_ids |
+| instrument_option_payment_date  | read_option_payment_dates_by_trade_ids |
+| instrument_option_premium       | read_option_premiums_by_trade_ids     |
+| instrument_schedule             | read_schedules_by_trade_ids           |
+| instrument_schedule_date        | read_schedule_dates_by_trade_ids      |
+
 * See also
 
 - [[id:2BB5F81F-836F-4A10-AF9F-E202777B880A][ores.trading.trade_type]] — the entity the seed populates.

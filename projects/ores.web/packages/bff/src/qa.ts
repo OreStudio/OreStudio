@@ -27,6 +27,7 @@ import {
     runRequestSchema,
 } from '@ores/contracts';
 import { HttpFailure, invalidRequest, notFound } from './errors.js';
+import { mediaTypeOf } from './scenarios/image.js';
 import {
     AmbiguousStepError,
     DuplicateOutcomeError,
@@ -217,4 +218,22 @@ export function registerQaRoutes(
             );
         },
     );
+
+    /**
+     * An image kept beside a scenario doc, for the thumbnails under a step's
+     * note. Only a PNG, JPEG, GIF or WebP file is served, by what its bytes are.
+     * The headers keep a browser from reading it as anything else.
+     */
+    server.get('/api/qa/scenarios/:id/files/:name', async (request, reply) => {
+        const scenarios = open(request);
+        const name = (request.params as { name: string }).name;
+        const image = await guarded(() => scenarios.readImage(idOf(request), name));
+        if (image === null) throw notFound('No image has this name beside the scenario.');
+        return reply
+            .header('Content-Type', mediaTypeOf(image.kind))
+            .header('Cache-Control', 'private, max-age=300')
+            .header('X-Content-Type-Options', 'nosniff')
+            .header('Content-Security-Policy', "default-src 'none'; sandbox")
+            .send(Buffer.from(image.bytes));
+    });
 }

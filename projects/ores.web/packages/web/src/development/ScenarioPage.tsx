@@ -29,25 +29,32 @@ import { Crumbs } from '../refdata/shared.js';
 import { Notice } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { DocPanel } from './DocPanel.js';
-import { MAX_IMAGE_MEGABYTES, imageProblem } from './images.js';
-import { openRunner, outcomeOf, reduce, saveRequest, type Action, type Outcome } from './runner.js';
+import { closeDoc, openDoc, shownDoc } from './docStack.js';
+import { ScenarioReport } from './ScenarioReport.js';
+import { UnsavedGuard } from './UnsavedGuard.js';
+import {
+    ClipboardProblem,
+    MAX_IMAGE_MEGABYTES,
+    imageProblem,
+    imagesFromClipboard,
+} from './images.js';
+import {
+    isDirty,
+    openRunner,
+    outcomeOf,
+    reduce,
+    saveRequest,
+    type Action,
+    type Outcome,
+} from './runner.js';
 import { ScenarioRunner } from './ScenarioRunner.js';
-import { QA_SCENARIOS_KEY } from './TestsQueue.js';
+import { QA_SCENARIOS_KEY, qaQueries, scenarioKey } from './queries.js';
 
 /** The page a queue row opens: the scenario, loaded, and its runner. */
 export function ScenarioPage(): ReactNode {
     const { t } = useTranslation();
     const { id = '' } = useParams();
-    // The runner works on a snapshot taken when the page opens, so the query is
-    // never kept for a later visit and never refetched behind the tester's
-    // back. A save replaces the snapshot with the server's answer.
-    const scenario = useQuery({
-        queryKey: ['qa-scenario', id],
-        queryFn: () => qa.scenario(id),
-        gcTime: 0,
-        refetchOnWindowFocus: false,
-        refetchOnReconnect: false,
-    });
+    const scenario = useQuery(qaQueries.scenario(id));
 
     return (
         <div className="space-y-4">
@@ -65,7 +72,14 @@ export function ScenarioPage(): ReactNode {
     );
 }
 
-const TABS = ['steps', 'story', 'task'] as const;
+/**
+ * The tabs of a scenario. A scenario that is open opens on its steps, which is
+ * where a tester works. A scenario that is closed opens on its report, which is
+ * what a reviewer reads. The order is fixed when the page opens, so saving a
+ * scenario shut does not move the tester to another tab.
+ */
+const OPEN_TABS = ['steps', 'report', 'story', 'task'] as const;
+const CLOSED_TABS = ['report', 'steps', 'story', 'task'] as const;
 
 /**
  * A loaded scenario: its runner, and the story and task it belongs to.
@@ -75,9 +89,10 @@ const TABS = ['steps', 'story', 'task'] as const;
  */
 function Loaded({ id, scenario }: { readonly id: string; readonly scenario: Scenario }): ReactNode {
     const { t } = useTranslation();
+    const [closedAtOpen] = useState(scenario.state !== 'PENDING');
     const { tab, bar } = useTabs({
         label: t('development.scenario.tabsLabel'),
-        tabs: TABS,
+        tabs: closedAtOpen ? CLOSED_TABS : OPEN_TABS,
         titleOf: (candidate) => t(`development.scenario.tabs.${candidate}`),
     });
     return (
@@ -86,6 +101,7 @@ function Loaded({ id, scenario }: { readonly id: string; readonly scenario: Scen
             <div hidden={tab !== 'steps'}>
                 <Run id={id} scenario={scenario} />
             </div>
+            {tab === 'report' && <ScenarioReport scenario={scenario} />}
             {tab === 'story' && (
                 <Context link={scenario.story} none={t('development.scenario.noStory')} />
             )}
@@ -96,7 +112,11 @@ function Loaded({ id, scenario }: { readonly id: string; readonly scenario: Scen
     );
 }
 
-/** The doc a scenario names, or a plain message when it names none. */
+/**
+ * The doc a scenario names, or a plain message when it names none. A link in
+ * the doc opens the linked doc in this tab, with a Back button, so the tester
+ * never leaves the runner page and loses nothing that is not saved.
+ */
 function Context({
     link,
     none,
@@ -104,10 +124,15 @@ function Context({
     readonly link: Scenario['story'];
     readonly none: string;
 }): ReactNode {
-    return link === null ? (
-        <p className="text-sm text-ink-muted">{none}</p>
-    ) : (
-        <DocPanel id={link.id} />
+    const [stack, setStack] = useState<readonly string[]>(link === null ? [] : [link.id]);
+    if (link === null) return <p className="text-sm text-ink-muted">{none}</p>;
+    return (
+        <DocPanel
+            key={shownDoc(stack, link.id)}
+            id={shownDoc(stack, link.id)}
+            onDocLink={(id) => setStack(openDoc(stack, id))}
+            {...(stack.length > 1 ? { onBack: () => setStack(closeDoc(stack)) } : {})}
+        />
     );
 }
 
@@ -125,7 +150,7 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
     const save = useMutation({
         mutationFn: () => qa.record(id, saveRequest(runner)),
         onSuccess: (saved) => {
-            client.setQueryData(['qa-scenario', id], saved.scenario);
+            client.setQueryData(scenarioKey(id), saved.scenario);
             void client.invalidateQueries({ queryKey: QA_SCENARIOS_KEY });
             dispatch({ type: 'saved', scenario: saved.scenario });
             setOutcome(outcomeOf(saved));
@@ -174,24 +199,45 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
         }
     };
 
+    // The button reads the clipboard, where Ctrl+V needs a field with the focus.
+    // The browser asks the tester for leave the first time.
+    const onClipboard = async (): Promise<void> => {
+        if (uploading.current || save.isPending || runner.closed) return;
+        try {
+            await onImages(await imagesFromClipboard(navigator.clipboard));
+        } catch (error) {
+            setImageError(
+                error instanceof ClipboardProblem
+                    ? t(`development.runner.clipboard.${error.reason}`)
+                    : error instanceof Error
+                      ? error.message
+                      : String(error),
+            );
+        }
+    };
+
     return (
-        <ScenarioRunner
-            scenario={scenario}
-            runner={runner}
-            dispatch={act}
-            onSave={() => save.mutate()}
-            saving={save.isPending}
-            outcome={outcome}
-            onImages={(files) => void onImages(files)}
-            imageBusy={imageBusy}
-            imageError={imageError}
-            confirmingRetest={confirmingRetest}
-            onAskRetest={() => setConfirmingRetest(true)}
-            onConfirmRetest={() => {
-                setConfirmingRetest(false);
-                act({ type: 'retest' });
-            }}
-            onCancelRetest={() => setConfirmingRetest(false)}
-        />
+        <>
+            <UnsavedGuard dirty={isDirty(runner, scenario)} />
+            <ScenarioRunner
+                scenario={scenario}
+                runner={runner}
+                dispatch={act}
+                onSave={() => save.mutate()}
+                saving={save.isPending}
+                outcome={outcome}
+                onImages={(files) => void onImages(files)}
+                imageBusy={imageBusy}
+                imageError={imageError}
+                onClipboard={() => void onClipboard()}
+                confirmingRetest={confirmingRetest}
+                onAskRetest={() => setConfirmingRetest(true)}
+                onConfirmRetest={() => {
+                    setConfirmingRetest(false);
+                    act({ type: 'retest' });
+                }}
+                onCancelRetest={() => setConfirmingRetest(false)}
+            />
+        </>
     );
 }

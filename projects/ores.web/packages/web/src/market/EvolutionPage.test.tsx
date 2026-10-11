@@ -92,7 +92,7 @@ const snapshot: CurveSnapshot = {
     ],
     oldest_age_seconds: 10800,
     spread_seconds: 0,
-    warning: '',
+    warning: false,
 };
 
 describe('MatrixPanel', () => {
@@ -128,7 +128,7 @@ describe('MatrixPanel', () => {
     it('says so when the object declares no node or holds no instant', () => {
         expect(
             render(<MatrixPanel evolution={{ ...evolution, nodes: [], instants: [] }} />),
-        ).toContain('The object declares no node.');
+        ).toContain('No series with this identity is visible in the party you work for.');
         expect(render(<MatrixPanel evolution={{ ...evolution, instants: [] }} />)).toContain(
             'The object holds no instant in this range.',
         );
@@ -151,14 +151,14 @@ describe('NowPanel', () => {
         expect(asked).toContain('12345678 v3');
     });
 
-    it('shows the warning the server states', () => {
+    it('says in words when the values mix several market states, and says nothing otherwise', () => {
         const html = render(
-            <NowPanel
-                snapshot={{ ...snapshot, warning: 'The values span two days.' }}
-                provenance={false}
-            />,
+            <NowPanel snapshot={{ ...snapshot, warning: true }} provenance={false} />,
         );
-        expect(html).toContain('The values span two days.');
+        expect(html).toContain('These values come from several market states.');
+        expect(html).toContain('The oldest is 3h old');
+        const quiet = render(<NowPanel snapshot={snapshot} provenance={false} />);
+        expect(quiet).not.toContain('several market states');
     });
 });
 

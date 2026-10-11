@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 09ACD454-F923-46B8-9A23-96C226295CEA
+:END:
+#+title: Give the curve screen a series list route and a picker. The …
+#+description: Give the curve screen a series list route and a picker. The evolution screen makes the person type the identity of the object. Add a BFF route for the series list, limited to what the party can see, and a picker on the screen. It came from the story Show a curve evolving in ores.web.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

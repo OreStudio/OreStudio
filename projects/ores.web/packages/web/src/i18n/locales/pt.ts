@@ -1230,10 +1230,16 @@ const pt: SourceCatalogue = {
             tests: 'Testes',
         },
         tests: {
-            waiting: 'Aguardando',
+            sprint: 'Sprint {number}',
+            noSprint: 'Sem sprint',
+            created: 'Criado em',
+            empty: 'Não há cenários de teste.',
+            active: 'Ativos',
             done: 'Concluídos',
-            nothingWaiting: 'Nada está aguardando.',
-            nothingDone: 'Nada foi testado ainda.',
+            abandoned: 'Abandonados',
+            activeCount: '{count} ativos',
+            doneCount: '{count} concluídos',
+            abandonedCount: '{count} abandonados',
             scenario: 'Cenário',
             target: 'Alvo',
             progress: 'Progresso',
@@ -1245,20 +1251,37 @@ const pt: SourceCatalogue = {
                 inProgress: 'Em andamento',
                 passed: 'Aprovado',
                 failed: 'Reprovado',
+                abandoned: 'Abandonado',
             },
         },
         scenario: {
             tabsLabel: 'Visões do cenário',
             tabs: {
                 steps: 'Passos',
+                report: 'Relatório',
                 story: 'História',
                 task: 'Tarefa',
             },
             noStory: 'Este cenário não cita nenhuma história.',
             noTask: 'Este cenário não cita nenhuma tarefa.',
         },
+        leave: {
+            title: 'Sair sem gravar?',
+            body: 'Há marcas ou notas que não foram gravadas. Sair as descarta.',
+            stay: 'Ficar',
+            leave: 'Sair',
+        },
+        report: {
+            instructions: 'Instruções',
+            notMarked: 'Não marcado.',
+            noSteps: 'Este cenário não tem passos.',
+            build: 'Versão',
+            glance: 'Os passos de relance',
+            count: '{count} {status}',
+        },
         docs: {
             title: 'Documento',
+            back: 'Voltar',
             unresolved:
                 'Nenhuma história, tarefa ou cenário tem o id {id}. O link pode apontar para um documento que o executor não mostra.',
         },
@@ -1267,6 +1290,7 @@ const pt: SourceCatalogue = {
                 PENDING: 'Pendente',
                 PASSED: 'Aprovado',
                 FAILED: 'Reprovado',
+                ABANDONED: 'Abandonado',
             },
             stepStates: {
                 PENDING: 'Pendente',
@@ -1280,6 +1304,8 @@ const pt: SourceCatalogue = {
             lastSaved: 'Última gravação',
             retest: 'Retestar',
             closedHelp: 'Este cenário está fechado. Um reteste limpa cada passo e recomeça.',
+            abandonedHelp:
+                'Este cenário foi abandonado e não será executado. Um reteste limpa cada passo e o traz de volta.',
             save: 'Gravar',
             saveHelp:
                 'Gravar escreve o resultado de cada passo e o estado geral no documento do cenário.',
@@ -1301,6 +1327,13 @@ const pt: SourceCatalogue = {
             imageSaving: 'Gravando a imagem...',
             imageNotImage: 'Só imagens PNG, JPEG, GIF e WebP podem ser anexadas.',
             imageTooLarge: 'Essa imagem passa de {limit} MB.',
+            pasteButton: 'Colar da área de transferência',
+            clipboard: {
+                unavailable:
+                    'Este navegador não pode ler a área de transferência desta página. Cole com Ctrl+V.',
+                denied: 'O navegador não permitiu que esta página lesse a área de transferência. Permita na barra de endereços, ou cole com Ctrl+V.',
+                empty: 'A área de transferência não tem imagem. Faça antes uma captura de tela para a área de transferência.',
+            },
             savedClosed: 'Gravado e fechado como {state}.',
             savedOpen:
                 'Gravado. {pending} passos ainda precisam ser marcados. O cenário continua aberto.',
@@ -1718,7 +1751,8 @@ const pt: SourceCatalogue = {
                 node: 'Nó',
                 status: 'Mudança',
                 hole: 'Sem ponto',
-                noNodes: 'O objeto não declara nenhum nó.',
+                noNodes:
+                    'Nenhuma série com esta identidade é visível na parte para a qual trabalha. Verifique a identidade ou mude de parte.',
                 noInstants: 'O objeto não tem nenhum instante neste período.',
                 neverQuoted: '{count} nós não têm valor em nenhum instante deste período.',
             },
@@ -1735,6 +1769,7 @@ const pt: SourceCatalogue = {
                 age: 'Idade',
                 source: 'Origem',
                 detail: 'Detalhe',
+                mixed: 'Estes valores vêm de vários estados de mercado. O mais antigo tem {oldest}, e abrangem {spread}.',
                 summary: 'O valor mais antigo tem {oldest}. Os valores abrangem {spread}.',
             },
             source: {
@@ -3237,6 +3272,7 @@ const pt: SourceCatalogue = {
         notAvailable: 'Esta página não está disponível para si.',
         clear: 'Limpar',
         refresh: 'Atualizar',
+        changedElsewhere: 'Algo mudou que esta página não pode mostrar. Atualize para ver.',
         refreshStale: 'Os dados mudaram no servidor. Atualize para os ver.',
         refreshStaleAt: 'Os dados mudaram no servidor às {time}. Atualize para os ver.',
         loadedAt: 'Carregado: {time}',

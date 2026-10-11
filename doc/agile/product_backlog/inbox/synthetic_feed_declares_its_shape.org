@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 3C41F41E-1FC6-43E4-80AC-737BF2B487F5
+:END:
+#+title: Declare a shape when a synthetic feed starts. Feed ticks nev…
+#+description: Declare a shape when a synthetic feed starts. Feed ticks never declare axes, so a synthetic IR curve has points and no grid, and the curve evolution screen cannot show it. Make the feed declare its tenor ladder with the same shape writer the import uses. It touches marketdata and synthetic and crosses into the synthetic implementation story, owned by another environment.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

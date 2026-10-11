@@ -67,6 +67,7 @@ cannot hold stays distinguishable from one the document omits.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :supplied_by:  user
+:economic:    false
 :END:
 
 The trade whose owner states this schedule.
@@ -78,6 +79,7 @@ The trade row carries the party. The schedule rows are family-owned and ride the
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -87,6 +89,7 @@ The activity that wrote this version.
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:economic:    true
 :END:
 
 Which list of the instrument states this schedule: =tranches=, =trs_funding=,
@@ -102,6 +105,7 @@ than a leg.
 :type:        integer
 :cpp_type:    int
 :primary_key: true
+:economic:    true
 :END:
 
 Ordinal of the owner within its list, counting from one.
@@ -117,6 +121,7 @@ the number one.
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:economic:    true
 :END:
 
 Which of the owner's schedules this row is.
@@ -130,6 +135,7 @@ two sit on the leg, the last two on its floating rate block.
 :type:        integer
 :cpp_type:    int
 :primary_key: true
+:economic:    true
 :END:
 
 Ordinal of this entry within its owner's list for the schedule's role,
@@ -146,6 +152,7 @@ stated.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Which arm of the schema's choice the document stated: =rules= or
@@ -165,6 +172,7 @@ std::string("rules")
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 First date of the rule block.
@@ -182,6 +190,7 @@ std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Last date of the rule block, when the document states one.
@@ -195,6 +204,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The document's spelling of the flag that pulls the end date back to
@@ -210,6 +220,7 @@ re-emits the same text.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Tenor the rule block expands, or the date list's own tenor.
@@ -222,6 +233,7 @@ alone, so one nullable column serves both.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Calendar the schedule's dates are adjusted against.
@@ -233,6 +245,7 @@ Both arms state this member.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Business day convention the schedule's dates are adjusted by.
@@ -244,6 +257,7 @@ Both arms state this member.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Business day convention applied to the rule block's final date.
@@ -253,6 +267,7 @@ Business day convention applied to the rule block's final date.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The rule block's date generation rule.
@@ -262,6 +277,7 @@ The rule block's date generation rule.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The document's spelling of the flag that keeps generated dates at
@@ -276,6 +292,7 @@ spelling.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Business day convention applied when the end-of-month flag is on.
@@ -285,6 +302,7 @@ Business day convention applied when the end-of-month flag is on.
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 First date of the rule block, stated outright.
@@ -298,6 +316,7 @@ std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Last date of the rule block, stated outright.
@@ -311,6 +330,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the rule block drops its first date.
@@ -323,6 +343,7 @@ so the column is a real boolean and carries no spelling.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the rule block drops its last date.
@@ -332,6 +353,7 @@ True when the rule block drops its last date.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The document's spelling of the flag that keeps repeated dates in the

@@ -41,6 +41,7 @@
 #include <fstream>
 #include <iterator>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <system_error>
 
@@ -100,6 +101,7 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                              {{.name = "party-id", .requires_value = true},
                               {.name = "choices-file", .requires_value = true},
                               {.name = "parent-portfolio-name", .requires_value = true},
+                              {.name = "official"},
                               {.name = "timeout",
                                .requires_value = true,
                                .default_value = std::to_string(default_import_timeout.count())}});
@@ -111,7 +113,7 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                              fail(out)
                                  << "Usage: ore import <request_id> [--party-id <uuid>] "
                                     "[--parent-portfolio-name <name>] [--choices-file <path>] "
-                                    "[--timeout <seconds>]"
+                                    "[--official] [--timeout <seconds>]"
                                  << std::endl;
                              return;
                          }
@@ -129,11 +131,12 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                                         parsed->flag("party-id"),
                                         parsed->flag("choices-file"),
                                         parsed->flag("parent-portfolio-name"),
+                                        parsed->flag_set("official"),
                                         *timeout);
                      },
                      "Import an uploaded ORE tarball and wait for the workflow to finish",
                      {"request_id [--party-id <uuid>] [--parent-portfolio-name <name>] "
-                      "[--choices-file <path>] [--timeout <seconds>]"});
+                      "[--choices-file <path>] [--official] [--timeout <seconds>]"});
 
     ore_menu->Insert(
         "export",
@@ -256,6 +259,7 @@ void ore_commands::process_import(std::ostream& out,
                                   const std::string& party_id,
                                   const std::string& choices_file,
                                   const std::string& parent_portfolio_name,
+                                  bool official,
                                   std::chrono::seconds timeout) {
     ores::ore::planner::import_choices choices;
 
@@ -282,6 +286,9 @@ void ore_commands::process_import(std::ostream& out,
         choices.create_parent_portfolio = true;
     }
 
+    if (official)
+        choices.official = true;
+
     const auto& party_ref = party_id.empty() ? session.auth().default_party_id : party_id;
     if (party_ref.empty()) {
         fail(out) << "No default party on this account and no --party-id given." << std::endl;
@@ -290,6 +297,21 @@ void ore_commands::process_import(std::ostream& out,
     auto party_uuid = parse_uuid(out, party_ref, "party ID");
     if (!party_uuid)
         return;
+    // The platform scopes every read and write to the session's party and
+    // ignores a party a caller names. An import for another party would land
+    // in the session's party, so refuse it here. The two are compared as
+    // UUIDs, so the spelling of the text does not matter.
+    if (!session.auth().default_party_id.empty()) {
+        std::ostringstream ignored;
+        const auto session_uuid =
+            parse_uuid(ignored, session.auth().default_party_id, "session party");
+        if (session_uuid && *session_uuid != *party_uuid) {
+            fail(out) << "The import runs in the session's party ("
+                      << session.auth().default_party_id << "), not " << party_ref
+                      << ". Log in to that party first." << std::endl;
+            return;
+        }
+    }
     choices.party_id = *party_uuid;
 
     ores::ore::messaging::ore_import_request req;

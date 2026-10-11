@@ -93,6 +93,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ORE equity Name identifier.
@@ -106,6 +107,7 @@ std::string("RIC:.SPX")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ISO 4217 currency code.
@@ -121,6 +123,7 @@ std::string("USD")
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Payoff notional / contract size. Must be positive.
@@ -134,6 +137,7 @@ ores::utility::decimal::decimal::from_string("1000").value()
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Call or Put; empty for touch options.
@@ -149,6 +153,7 @@ std::string("Call")
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Digital only; absent for touch.
@@ -162,6 +167,7 @@ std::make_optional(ores::utility::decimal::decimal::from_string("3300").value())
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Touch only; absent for digital.
@@ -175,6 +181,7 @@ std::nullopt
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 e.g. UpIn, DownOut; empty for digital.
@@ -186,6 +193,7 @@ Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrier
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 ISO 8601 date string.
@@ -199,6 +207,7 @@ std::chrono::year_month_day{std::chrono::year{2026}/7/17}
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Long or Short.
@@ -212,6 +221,7 @@ std::string("Long")
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Digital payout; absent when not specified.
@@ -221,6 +231,7 @@ Digital payout; absent when not specified.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

@@ -29,7 +29,9 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -134,6 +136,27 @@ struct balance_guaranteed_swap_instrument final {
     friend bool operator==(const balance_guaranteed_swap_instrument&,
                            const balance_guaranteed_swap_instrument&) = default;
 };
+
+/**
+ * @brief The members of balance_guaranteed_swap_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view balance_guaranteed_swap_instrument_economic_fields[] = {
+    "reference_security",
+    "lockout_days",
+};
+
+/**
+ * @brief Names the members of balance_guaranteed_swap_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<balance_guaranteed_swap_instrument>) {
+    return balance_guaranteed_swap_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for balance_guaranteed_swap_instrument, e.g. for the

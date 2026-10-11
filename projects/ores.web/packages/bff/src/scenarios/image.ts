@@ -50,3 +50,10 @@ export function detectImage(bytes: Uint8Array): ImageKind | null {
     if (startsWith(bytes, RIFF) && startsWith(bytes, WEBP, 8)) return 'webp';
     return null;
 }
+
+export { isImageName } from '@ores/contracts';
+
+/** The media type to serve for a kind of image. */
+export function mediaTypeOf(kind: ImageKind): string {
+    return { png: 'image/png', jpg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp' }[kind];
+}

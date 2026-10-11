@@ -26,6 +26,9 @@
 #define ORES_TRADING_API_DOMAIN_BOND_FIXED_LEG_DATA_HPP
 
 #include "ores.trading.api/domain/bond_float_data.hpp"
+#include <span>
+#include <string_view>
+#include <type_traits>
 #include <vector>
 
 namespace ores::trading::domain {
@@ -50,6 +53,24 @@ struct bond_fixed_leg_data {
      */
     friend bool operator==(const bond_fixed_leg_data&, const bond_fixed_leg_data&) = default;
 };
+
+/**
+ * @brief The members of bond_fixed_leg_data the customer agreed to.
+ */
+inline constexpr std::string_view bond_fixed_leg_data_economic_fields[] = {
+    "rates",
+};
+
+/**
+ * @brief Names the members of bond_fixed_leg_data that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<bond_fixed_leg_data>) {
+    return bond_fixed_leg_data_economic_fields;
+}
 
 }
 

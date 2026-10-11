@@ -44,7 +44,7 @@ import {
  */
 
 export type StepStatus = 'PENDING' | 'PASS' | 'FAIL' | 'DROPPED';
-export type ScenarioState = 'PENDING' | 'PASSED' | 'FAILED';
+export type ScenarioState = 'PENDING' | 'PASSED' | 'FAILED' | 'ABANDONED';
 
 /** Names one step. A single-client scenario has a null client. */
 export interface StepRef {
@@ -77,6 +77,8 @@ export interface Scenario {
     readonly id: string;
     readonly title: string;
     readonly description: string;
+    /** The date of the doc's `#+created:` line, or an empty string when it has none. */
+    readonly created: string;
     readonly state: ScenarioState;
     readonly target: string;
     readonly story: DocLink | null;
@@ -167,7 +169,7 @@ function stepStatus(raw: string): StepStatus {
 
 function scenarioState(raw: string): ScenarioState {
     const word = raw.trim().split(/\s+/)[0]?.toUpperCase() ?? '';
-    if (word === 'PASSED' || word === 'FAILED') return word;
+    if (word === 'PASSED' || word === 'FAILED' || word === 'ABANDONED') return word;
     return 'PENDING';
 }
 
@@ -178,6 +180,29 @@ function scenarioState(raw: string): ScenarioState {
 function closedState(raw: string): ScenarioState | null {
     const state = scenarioState(raw);
     return state === 'PENDING' ? null : state;
+}
+
+/**
+ * The state of a scenario from its State row and its Results status. A person
+ * who writes ABANDONED in the State row has the last word. Otherwise a closed
+ * Results status outranks the State row, because the Qt runner wrote only the
+ * Results table.
+ */
+function stateOf(stateRow: string, resultsStatus: string): ScenarioState {
+    const row = scenarioState(stateRow);
+    return row === 'ABANDONED' ? row : (closedState(resultsStatus) ?? row);
+}
+
+/**
+ * Text as a person reads it, without the org markup that wraps a word: =code=,
+ * ~code~ and *bold*. Old scenarios mark up the target of the test in these.
+ */
+export function plainText(raw: string): string {
+    return raw
+        .replace(/=([^=\n]+)=/g, '$1')
+        .replace(/~([^~\n]+)~/g, '$1')
+        .replace(/\*([^*\n]+)\*/g, '$1')
+        .trim();
 }
 
 function link(value: string | undefined): DocLink | null {
@@ -261,13 +286,13 @@ export function parseScenario(text: string): Scenario {
         id: doc.id,
         title,
         description: doc.keywords.get('description') ?? '',
-        state:
-            closedState(resultFields.get('status') ?? '') ??
-            scenarioState(fields.get('state') ?? ''),
-        target:
+        created: (doc.keywords.get('created') ?? '').trim(),
+        state: stateOf(fields.get('state') ?? '', resultFields.get('status') ?? ''),
+        target: plainText(
             linkText(fields.get('target screen') ?? '') ||
-            linkText(fields.get('target dialog') ?? '') ||
-            (doc.keywords.get('target_dialog') ?? ''),
+                linkText(fields.get('target dialog') ?? '') ||
+                (doc.keywords.get('target_dialog') ?? ''),
+        ),
         story: link(fields.get('parent story')),
         task: link(fields.get('verifies task')),
         clients,

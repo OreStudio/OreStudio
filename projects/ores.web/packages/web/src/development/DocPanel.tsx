@@ -22,20 +22,18 @@
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { qa } from '../api/qa.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Notice } from '../ui/Primitives.js';
+import { Button, Notice } from '../ui/Primitives.js';
 import { OrgText } from './OrgText.js';
+import { docKey, qaQueries } from './queries.js';
 
 /** The route that shows a doc, by its id. The id is encoded, as the read of the doc encodes it. */
 export function docRoute(id: string): string {
     return `/development/docs/${encodeURIComponent(id)}`;
 }
 
-export function docKey(id: string): readonly [string, string] {
-    return ['qa-doc', id];
-}
+export { docKey };
 
 /**
  * A story, a task or a scenario, drawn from its org doc.
@@ -45,17 +43,37 @@ export function docKey(id: string): readonly [string, string] {
  * and for a doc of a kind it does not serve, and the tester cannot tell the two
  * apart and need not.
  */
-export function DocPanel({ id }: { readonly id: string }): ReactNode {
+export function DocPanel({
+    id,
+    onDocLink,
+    onBack,
+}: {
+    readonly id: string;
+    /** Where an id link goes. By default the app opens the doc on its own page. */
+    readonly onDocLink?: (id: string) => void;
+    /** Closes this doc and shows the one it was reached from. Absent for the first doc. */
+    readonly onBack?: () => void;
+}): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const doc = useQuery({ queryKey: docKey(id), queryFn: () => qa.doc(id) });
+    const doc = useQuery(qaQueries.doc(id));
+    const follow = onDocLink ?? ((target: string) => void navigate(docRoute(target)));
+    const back =
+        onBack === undefined ? null : (
+            <Button type="button" size="sm" variant="ghost" onClick={onBack}>
+                {t('development.docs.back')}
+            </Button>
+        );
 
     if (doc.isError) {
         const unresolved = doc.error instanceof ApiFailure && doc.error.code === 'not-found';
         return (
-            <Notice tone={unresolved ? 'warn' : 'error'}>
-                {unresolved ? t('development.docs.unresolved', { id }) : doc.error.message}
-            </Notice>
+            <div className="space-y-3">
+                {back}
+                <Notice tone={unresolved ? 'warn' : 'error'}>
+                    {unresolved ? t('development.docs.unresolved', { id }) : doc.error.message}
+                </Notice>
+            </div>
         );
     }
     if (doc.isPending) {
@@ -63,15 +81,12 @@ export function DocPanel({ id }: { readonly id: string }): ReactNode {
     }
     return (
         <section className="card space-y-3 p-4">
+            {back}
             <div>
                 <h2 className="text-base font-semibold text-ink">{doc.data.title}</h2>
                 <p className="font-mono text-xs text-ink-faint">{doc.data.path}</p>
             </div>
-            <OrgText
-                source={doc.data.text}
-                docHref={docRoute}
-                onDocLink={(target) => void navigate(docRoute(target))}
-            />
+            <OrgText source={doc.data.text} docHref={docRoute} onDocLink={follow} />
         </section>
     );
 }

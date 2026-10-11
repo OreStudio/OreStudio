@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D56E081D-D745-46FD-B665-29C29630B46D
+:END:
+#+title: Key and clear a manual curve point from the web. The reposit…
+#+description: Key and clear a manual curve point from the web. The repository can write and clear a manual point and no wire operation reaches it. Add the operation and the adjust a curve or surface by hand screen. It came from the story Show a curve evolving in ores.web.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

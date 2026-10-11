@@ -21,12 +21,12 @@ A person opens ores.web, names a curve or a surface, and watches it evolve as an
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Both tasks are done. The screen is tested with rendered markup, and nobody has seen it in a running stack. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Look at the screen in a running stack, then close the story. |
-| Last touched  | 2026-10-10                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-11                               |
 
 * Acceptance
 
@@ -42,8 +42,38 @@ A person opens ores.web, names a curve or a surface, and watches it evolve as an
 | [[id:D0BC3754-FF8F-4150-BF08-60C1BE4F0064][Scaffold story: Show a curve evolving in ores.web]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:9BD6425D-8655-45C8-8AA8-9A6B73B47FAA][Give the BFF the curve read routes]] | DONE | 2026-10-10 | 2026-10-10 | Route each curve read through the BFF. |
 | [[id:AE07523A-A702-43C2-AD16-544FEB4264AE][Build the watch a curve or surface evolve screen]] | DONE | 2026-10-11 | 2026-10-11 | Build the screen of the journey: name an object, pick a range or a set of instants, read the aligned matrix with each node's change, age and provenance. |
+| [[id:7F209F21-DA6C-4565-BBD3-21D17D083B5F][Fix the snapshot warning type]] | DONE | 2026-10-11 | 2026-10-11 | The snapshot reply carries warning as a boolean and the contract said string, so the Now panel failed to read a real snapshot. Fix the contract and show the warning in words. |
 
 * Decisions
+
+- *One module, four POST routes.* The BFF reads a composite object through
+  =/api/curves/= series, snapshot, slice and evolution. Each is a POST because the
+  identity is a structure. The routes check structure only. The server keeps the
+  permission and the shape rules, and a refused read reaches the person as the
+  server's reason.
+- *The screen is the evolution matrix plus the object now.* Nodes are rows and
+  instants are columns. Each node states its change over the range. A missing value is
+  a hole and never a zero. The Now table gives the age of each value and, when asked,
+  its source.
+- *Curve data is visible to the party that owns it.* The first look in a browser showed
+  an empty page, because the demo data belonged to the System Party and the person had
+  signed in as another party. The screen now says so instead of saying the object has
+  no node. The story does not change the rule.
+- *Real data found what canned data hid.* The contract typed the snapshot's =warning= as
+  a string and the server sends a boolean. Tests built on invented replies passed. A run
+  against the running stack with ORE's own FX volatility data found it. Contract tests
+  for a wire shape should use a reply the server sent.
+
+*Left for later, none of it in this story.*
+
+- A series list route and a picker, so the object is chosen and not typed. It should list
+  only the series the party can see. Capture =curve_screen_series_picker=.
+- A shape declared when a synthetic feed starts. Feed ticks never declare axes, so a
+  synthetic curve has points and cannot be shown. It crosses into the synthetic story,
+  which another environment owns. Capture =synthetic_feed_declares_its_shape=.
+- A wire operation to key and clear a manual point, and the adjust-by-hand screen.
+  Capture =key_a_manual_point_from_the_web=.
+- The approval chain and the publication record. Capture =curve_publication_and_approval=.
 
 * Out of scope
 

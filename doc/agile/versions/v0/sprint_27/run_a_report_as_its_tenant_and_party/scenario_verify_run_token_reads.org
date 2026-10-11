@@ -8,9 +8,9 @@
 #+filetags: :run_a_report_as_its_tenant_and_party:sprint_27:v0:
 #+target_dialog:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-11
 #+environment:
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 #+startup: inlineimages
 
 This page documents a test scenario verifying [[id:FAAE99F3-0C98-4265-BFD6-4BD8A052B2F2][Cache run tokens in the step services]] in [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
@@ -52,7 +52,7 @@ This page documents a test scenario verifying [[id:FAAE99F3-0C98-4265-BFD6-4BD8A
 | Parent story  | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]]   |
 | Target screen | (UI screen under test, if any.)         |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Steps
 
@@ -109,3 +109,6 @@ a =*** Result= child heading directly under it.
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: it will not be run. A retest brings it back.
+

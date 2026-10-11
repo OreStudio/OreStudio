@@ -24,6 +24,7 @@ import { Link } from 'react-router';
 import type { Scenario, ScenarioState } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Field, Notice, Tag } from '../ui/Primitives.js';
+import { AttachedImages } from './AttachedImages.js';
 import { carriesFiles, filesOf } from './images.js';
 import { OrgText } from './OrgText.js';
 import {
@@ -40,7 +41,8 @@ const STATE_TONES = {
     PENDING: 'neutral',
     PASSED: 'up',
     FAILED: 'down',
-} as const satisfies Record<ScenarioState, 'neutral' | 'up' | 'down'>;
+    ABANDONED: 'muted',
+} as const satisfies Record<ScenarioState, 'neutral' | 'up' | 'down' | 'muted'>;
 
 const STEP_TONES = {
     PENDING: 'muted',
@@ -60,6 +62,8 @@ export interface ScenarioRunnerProps {
     readonly onImages: (files: File[]) => void;
     readonly imageBusy: boolean;
     readonly imageError: string | null;
+    /** Reads an image from the clipboard and sends it to the step on show. */
+    readonly onClipboard: () => void;
     readonly confirmingRetest: boolean;
     readonly onAskRetest: () => void;
     readonly onConfirmRetest: () => void;
@@ -75,7 +79,10 @@ export interface ScenarioRunnerProps {
 export function ScenarioRunner(props: ScenarioRunnerProps): ReactNode {
     const { scenario, runner } = props;
     const { t } = useTranslation();
-    const state = stateNow(runner);
+    // An abandoned scenario shows as that until a retest brings it back, and the
+    // steps say nothing about it.
+    const abandoned = runner.closed && scenario.state === 'ABANDONED';
+    const state: ScenarioState = abandoned ? 'ABANDONED' : stateNow(runner);
     const context = [scenario.story?.title, scenario.task?.title].filter(Boolean).join(' · ');
     return (
         <div className="space-y-4">
@@ -118,48 +125,17 @@ export function ScenarioRunner(props: ScenarioRunnerProps): ReactNode {
                 </dl>
             </section>
 
-            {runner.steps.length > 0 && (
-                <div className="mx-auto w-full max-w-xl space-y-4">
-                    <Progress {...props} />
-                    <StepCard {...props} />
-                </div>
-            )}
-
-            {props.outcome !== null && <OutcomeNotice outcome={props.outcome} />}
-
-            <section className="card flex flex-wrap items-center gap-3 p-4">
-                {runner.closed ? (
-                    <>
-                        <Button type="button" onClick={props.onAskRetest}>
-                            {t('development.runner.retest')}
-                        </Button>
-                        <span className="text-xs text-ink-muted">
-                            {t('development.runner.closedHelp')}
-                        </span>
-                    </>
+            <div className="mx-auto w-full max-w-xl space-y-4">
+                {runner.steps.length > 0 ? (
+                    <Progress {...props} abandoned={abandoned} />
                 ) : (
-                    <>
-                        <Button
-                            type="button"
-                            variant="primary"
-                            pending={props.saving}
-                            // A save while a file is uploading would replace the working
-                            // copy before the link for that file is in it.
-                            disabled={props.imageBusy}
-                            onClick={props.onSave}
-                        >
-                            {t('development.runner.save')}
-                        </Button>
-                        <span className="text-xs text-ink-muted">
-                            {t('development.runner.saveHelp')}
-                        </span>
-                    </>
+                    <section className="card p-4">
+                        <Actions {...props} abandoned={abandoned} />
+                    </section>
                 )}
-                <span className="flex-1" />
-                <Link to="/development" className="text-sm text-accent hover:text-accent-bright">
-                    {t('development.runner.back')}
-                </Link>
-            </section>
+                {props.outcome !== null && <OutcomeNotice outcome={props.outcome} />}
+                {runner.steps.length > 0 && <StepCard {...props} />}
+            </div>
 
             {props.confirmingRetest && (
                 <Dialog
@@ -198,7 +174,53 @@ function Fact({
     );
 }
 
-function Progress({ runner, dispatch }: ScenarioRunnerProps): ReactNode {
+/**
+ * Save, or Retest for a closed scenario, with what it does and the way back to
+ * the tests. It sits above the step, beside the step navigation, so a tester
+ * sees it without scrolling to the end of a long step.
+ */
+function Actions(props: ScenarioRunnerProps & { readonly abandoned: boolean }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-wrap items-center gap-3">
+            {props.runner.closed ? (
+                <>
+                    <Button type="button" onClick={props.onAskRetest}>
+                        {t('development.runner.retest')}
+                    </Button>
+                    <span className="min-w-0 flex-1 text-xs text-ink-muted">
+                        {props.abandoned
+                            ? t('development.runner.abandonedHelp')
+                            : t('development.runner.closedHelp')}
+                    </span>
+                </>
+            ) : (
+                <>
+                    <Button
+                        type="button"
+                        variant="primary"
+                        pending={props.saving}
+                        // A save while a file is uploading would replace the working
+                        // copy before the link for that file is in it.
+                        disabled={props.imageBusy}
+                        onClick={props.onSave}
+                    >
+                        {t('development.runner.save')}
+                    </Button>
+                    <span className="min-w-0 flex-1 text-xs text-ink-muted">
+                        {t('development.runner.saveHelp')}
+                    </span>
+                </>
+            )}
+            <Link to="/development" className="text-sm text-accent hover:text-accent-bright">
+                {t('development.runner.back')}
+            </Link>
+        </div>
+    );
+}
+
+function Progress(props: ScenarioRunnerProps & { readonly abandoned: boolean }): ReactNode {
+    const { runner, dispatch } = props;
     const { t } = useTranslation();
     const failed = stateNow(runner) === 'FAILED';
     return (
@@ -239,6 +261,9 @@ function Progress({ runner, dispatch }: ScenarioRunnerProps): ReactNode {
                     {t('development.runner.skip')}
                 </Button>
             </div>
+            <div className="border-t border-line pt-3">
+                <Actions {...props} />
+            </div>
         </section>
     );
 }
@@ -250,6 +275,8 @@ function StepCard({
     onImages,
     imageBusy,
     imageError,
+    onClipboard,
+    scenario,
 }: ScenarioRunnerProps): ReactNode {
     const { t } = useTranslation();
     const step: DraftStep | undefined = runner.steps[runner.index];
@@ -338,13 +365,19 @@ function StepCard({
                 />
             </Field>
             {!readOnly && (
-                <p className="rounded-md border border-dashed border-line px-3 py-2 text-xs text-ink-muted">
-                    {imageBusy
-                        ? t('development.runner.imageSaving')
-                        : t('development.runner.imageHint')}
-                </p>
+                <div className="flex flex-wrap items-center gap-3 rounded-md border border-dashed border-line px-3 py-2">
+                    <Button type="button" size="sm" disabled={imageBusy} onClick={onClipboard}>
+                        {t('development.runner.pasteButton')}
+                    </Button>
+                    <p className="flex-1 text-xs text-ink-muted">
+                        {imageBusy
+                            ? t('development.runner.imageSaving')
+                            : t('development.runner.imageHint')}
+                    </p>
+                </div>
             )}
             {imageError !== null && <Notice tone="error">{imageError}</Notice>}
+            <AttachedImages scenarioId={scenario.id} notes={step.notes} />
         </section>
     );
 }

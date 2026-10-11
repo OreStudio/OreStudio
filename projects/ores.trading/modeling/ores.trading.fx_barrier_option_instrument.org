@@ -91,6 +91,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Currency being bought.
@@ -104,6 +105,7 @@ std::string("EUR")
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Amount being bought. Must be positive.
@@ -117,6 +119,7 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Currency being sold.
@@ -130,6 +133,7 @@ std::string("USD")
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Amount being sold. Must be positive.
@@ -143,6 +147,7 @@ ores::utility::decimal::decimal::from_string("1100000").value()
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Option type (e.g. Call or Put).
@@ -158,6 +163,7 @@ std::string("Call")
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 Option expiry date (ISO 8601 date string).
@@ -171,6 +177,7 @@ std::chrono::year_month_day{std::chrono::year{2033}/2/20}
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Optional settlement instructions.
@@ -180,6 +187,7 @@ Optional settlement instructions.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Barrier style (e.g. UpAndIn, DownAndOut).
@@ -196,6 +204,7 @@ std::string("UpAndIn")
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :default_value: ores::utility::decimal::decimal{}
+:economic:      true
 :END:
 
 Lower barrier level. Must be positive.
@@ -209,6 +218,7 @@ Lower barrier level. Must be positive.
 :type:          numeric(38, 12)
 :cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic:      true
 :END:
 
 Upper barrier level (double-barrier products only; NULL otherwise).
@@ -218,6 +228,7 @@ Upper barrier level (double-barrier products only; NULL otherwise).
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Optional underlying identifier.
@@ -227,6 +238,7 @@ Optional underlying identifier.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

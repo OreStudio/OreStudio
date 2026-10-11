@@ -33,6 +33,7 @@ decomposition section of doc/knowledge/architecture/data_oriented_design.org.
 ** modified_by
 :PROPERTIES:
 :cpp_type: std::string
+:economic: false
 :END:
 
 Username of the system actor that wrote this record.
@@ -40,6 +41,7 @@ Username of the system actor that wrote this record.
 ** performed_by
 :PROPERTIES:
 :cpp_type: std::string
+:economic: false
 :END:
 
 Username of the business user on whose behalf the change was made.
@@ -47,6 +49,7 @@ Username of the business user on whose behalf the change was made.
 ** change_reason_code
 :PROPERTIES:
 :cpp_type: std::string
+:economic: false
 :END:
 
 Structured reason code for the change (vocabulary owned by dq change_reason).
@@ -54,6 +57,7 @@ Structured reason code for the change (vocabulary owned by dq change_reason).
 ** change_commentary
 :PROPERTIES:
 :cpp_type: std::string
+:economic: false
 :END:
 
 Free-text commentary describing the reason for the change.
@@ -61,6 +65,7 @@ Free-text commentary describing the reason for the change.
 ** recorded_at
 :PROPERTIES:
 :cpp_type: std::chrono::system_clock::time_point
+:economic: false
 :END:
 
 Wall-clock timestamp at which this version of the record was persisted.

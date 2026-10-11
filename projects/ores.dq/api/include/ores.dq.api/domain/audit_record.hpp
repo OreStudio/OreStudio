@@ -26,7 +26,10 @@
 #define ORES_DQ_API_DOMAIN_AUDIT_RECORD_HPP
 
 #include <chrono>
+#include <span>
 #include <string>
+#include <string_view>
+#include <type_traits>
 
 namespace ores::dq::domain {
 
@@ -76,6 +79,17 @@ struct audit_record {
      */
     friend bool operator==(const audit_record&, const audit_record&) = default;
 };
+
+/**
+ * @brief Names the members of audit_record that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<audit_record>) {
+    return {};
+}
 
 }
 

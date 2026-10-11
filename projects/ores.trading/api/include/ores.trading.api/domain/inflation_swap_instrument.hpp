@@ -29,8 +29,10 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -137,6 +139,28 @@ struct inflation_swap_instrument final {
     friend bool operator==(const inflation_swap_instrument&,
                            const inflation_swap_instrument&) = default;
 };
+
+/**
+ * @brief The members of inflation_swap_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view inflation_swap_instrument_economic_fields[] = {
+    "inflation_index_code",
+    "base_cpi",
+    "lag_convention",
+};
+
+/**
+ * @brief Names the members of inflation_swap_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<inflation_swap_instrument>) {
+    return inflation_swap_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for inflation_swap_instrument, e.g. for the

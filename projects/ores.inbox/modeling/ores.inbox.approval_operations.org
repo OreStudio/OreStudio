@@ -518,6 +518,68 @@ end.
  */
 #+end_src
 
+** retry_stalled_applies_request
+:PROPERTIES:
+:subject:  inbox.v1.ops.retry_stalled_applies
+:response: retry_stalled_applies_response
+:auth:     none
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Resumes the applies that stopped, and ends the ones that ran out of
+ * time.
+ *
+ * An approved request whose kind names an apply workflow stays approved until
+ * the workflow applies it. When the run stopped on a failure that can pass, or
+ * the start was lost, nothing moves it on. This finds those requests, starts
+ * the run again (a repeated start names the same run, so it changes nothing when
+ * the run exists) and asks the engine to resume a stopped run. A run that
+ * stopped on a refusal never reaches here: the refusal moves its request to
+ * apply_failed.
+ *
+ * When the kind's window ends, the request moves to apply_failed with the
+ * reason "could not apply", and the person who asked is told, so a request never
+ * retries forever.
+ *
+ * A scheduler firing is a plain publish with no token, so this carries no
+ * session: it takes no input, and it only acts on requests that are already
+ * approved.
+ */
+#+end_src
+
+** retry_stalled_applies_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** resumed
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The requests whose stopped run the engine resumed, as UUID strings.
+ */
+#+end_src
+
+*** gave_up
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The requests that moved to apply_failed because the window ended, as
+ * UUID strings.
+ */
+#+end_src
+
 ** approval_request_field
 
 #+begin_src cpp :name comment

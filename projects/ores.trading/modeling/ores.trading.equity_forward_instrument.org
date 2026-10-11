@@ -88,6 +88,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ORE equity Name identifier.
@@ -101,6 +102,7 @@ std::string("ACME Corp")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ISO 4217 currency code.
@@ -117,6 +119,7 @@ std::string("USD")
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
+:economic:      true
 :END:
 
 Number of shares / contracts. Must be positive.
@@ -130,6 +133,7 @@ Number of shares / contracts. Must be positive.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Fixed delivery price; absent for at-market forwards.
@@ -139,6 +143,7 @@ Fixed delivery price; absent for at-market forwards.
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 ISO 8601 date string.
@@ -152,6 +157,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Long or Short.
@@ -165,6 +171,7 @@ std::string("Long")
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Cash or Physical; empty when not specified.
@@ -176,6 +183,7 @@ Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE sett
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

@@ -42,6 +42,7 @@ the party or counterparty that issued the value, when it is known.
 :primary_key: true
 :parent_entity: trade
 :bump_parent_version: true
+:economic:    false
 :END:
 
 The trade this identifier belongs to.
@@ -55,6 +56,7 @@ ctx.generate_uuid()
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -64,6 +66,7 @@ The activity that wrote this version.
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:economic:    true
 :END:
 
 The scheme the value belongs to (e.g. UTI, USI, Internal, ORE).
@@ -77,6 +80,7 @@ std::string("Internal")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 The identifier value under the scheme.
@@ -90,6 +94,7 @@ std::string("ID-") + std::string(faker::string::alphanumeric(10))
 :type:     uuid
 :cpp_type: std::optional<boost::uuids::uuid>
 :nullable: true
+:economic: false
 :END:
 
 The party or counterparty that issued the value. Absent when the issuer

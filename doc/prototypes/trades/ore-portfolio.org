@@ -23,7 +23,7 @@
 
 ** Import
 
-Five steps: directory, choices, preview, confirm, result. The first step finds every portfolio file in the directory and below it, lists them, and lets the person choose which to bring in. Folders named in the skip list are not searched, and the step says how many files that skipped. Each file shows the book it becomes, because the import builds portfolios and books from the folders and the person no longer picks one book.
+Five steps: directory, choices, preview, confirm, result. The first step finds every portfolio file in the directory and below it, lists them, and lets the person choose which to bring in. Folders named in the skip list are not searched, and the step says how many files that skipped. Files are found by content, not by name. A file is a portfolio when its root element is =Portfolio=, so =swaps_book.xml= is listed and a file called =portfolio_notes.xml= with another root element is not. A file the name would not reveal carries a chip, found by content, and a fold-out lists the XML files that are not portfolios, with the reason. The browser cannot do this itself and should not guess from names, so the list is the result of a server scan: the scanner exists, and no operation returns its result. Each file shows the book it becomes, because the import builds portfolios and books from the folders and the person no longer picks one book.
 
 The real import has no choice of files. It brings in every file the scan finds, and takes only the folders to skip, the parent portfolio, the re-import mode and the trade defaults. The file list is the change this prototype argues for. The journey lists it as missing, with the missing operation that lists the files.
 

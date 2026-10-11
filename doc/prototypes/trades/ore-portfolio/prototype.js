@@ -24,18 +24,18 @@ const guard = ok => ok ? null : h('div', { class: 'notice warn' }, h('b', null, 
  * re-import mode and the trade defaults. It has no choice of files. The
  * file list below is the change this prototype argues for. */
 const SCAN = {
-    '/data/ore/Examples': { scanned: 142, files: [
+    '/data/ore/Examples': { scanned: 142, ignored: [['Example_1/Input/ore.xml', 'ORE run configuration'], ['Example_1/Input/todaysmarket.xml', 'Market configuration'], ['Example_1/Input/currencies.xml', 'Currency configuration'], ['Example_2/Input/portfolio_notes.xml', 'Root element is Notes, not Portfolio'], ['Example_3/Input/simulation.xml', 'Simulation configuration']], files: [
         { path: 'Example_1/Input/portfolio.xml', size: '38 KB', rows: [
             ['Trade_0001', 'Swap', 'NWCAP'], ['Trade_0002', 'Swap', 'NWCAP'], ['Trade_0003', 'Swap', 'MRDN'], ['Trade_0004', 'CrossCurrencySwap', 'MRDN'],
             ['Trade_0005', 'FxOption', 'CSTL'], ['Trade_0006', 'FxOption', 'CSTL'], ['Trade_0007', 'Bond', 'MRDN'], ['Trade_0008', 'ForwardBond', 'MRDN'],
             ['Trade_0009', 'EquityOption', 'NWCAP'], ['Trade_0010', 'CreditDefaultSwap', 'CSTL'], ['Trade_0011', 'Swap', 'ACME_BANK_PLACEHOLDER'], ['Trade_0012', 'FxAsianOption', 'NWCAP']] },
-        { path: 'Example_2/Input/portfolio_swaps.xml', size: '14 KB', rows: [['Swap_A', 'Swap', 'NWCAP'], ['Swap_B', 'Swap', 'MRDN'], ['Swap_C', 'CapFloor', 'MRDN'], ['Swap_D', 'Swaption', 'CSTL']] },
-        { path: 'Example_3/Input/portfolio_fx.xml', size: '9 KB', rows: [['Fx_1', 'FxForward', 'NWCAP'], ['Fx_2', 'FxOption', 'CSTL'], ['Fx_3', 'FxBarrierOption', 'MRDN']] },
-        { path: 'Example_Trades/bond_portfolio.xml', size: '11 KB', rows: [['Bond_1', 'Bond', 'MRDN'], ['Bond_2', 'BondRepo', 'MRDN'], ['Bond_3', 'CallableBond', 'CSTL']] },
-        { path: 'Example_5/Output/portfolio_result.xml', size: '6 KB', rows: [['Out_1', 'Swap', 'NWCAP'], ['Out_2', 'Swap', 'NWCAP']] },
-        { path: 'Example_6/Input/empty_portfolio.xml', size: '1 KB', rows: [] }] },
-    '/data/ore/Examples/Example_1': { scanned: 31, files: [{ path: 'Input/portfolio.xml', size: '38 KB', rows: [['Trade_0001', 'Swap', 'NWCAP'], ['Trade_0002', 'Swap', 'NWCAP']] }] },
-    '/data/ore/Empty': { scanned: 9, files: [] }
+        { path: 'Example_2/Input/swaps_book.xml', size: '14 KB', rows: [['Swap_A', 'Swap', 'NWCAP'], ['Swap_B', 'Swap', 'MRDN'], ['Swap_C', 'CapFloor', 'MRDN'], ['Swap_D', 'Swaption', 'CSTL']] },
+        { path: 'Example_3/Input/fx_trades.xml', size: '9 KB', rows: [['Fx_1', 'FxForward', 'NWCAP'], ['Fx_2', 'FxOption', 'CSTL'], ['Fx_3', 'FxBarrierOption', 'MRDN']] },
+        { path: 'Example_Trades/bonds.xml', size: '11 KB', rows: [['Bond_1', 'Bond', 'MRDN'], ['Bond_2', 'BondRepo', 'MRDN'], ['Bond_3', 'CallableBond', 'CSTL']] },
+        { path: 'Example_5/Output/result_trades.xml', size: '6 KB', rows: [['Out_1', 'Swap', 'NWCAP'], ['Out_2', 'Swap', 'NWCAP']] },
+        { path: 'Example_6/Input/empty_book.xml', size: '1 KB', rows: [] }] },
+    '/data/ore/Examples/Example_1': { scanned: 31, ignored: [['Input/ore.xml', 'ORE run configuration']], files: [{ path: 'Input/portfolio.xml', size: '38 KB', rows: [['Trade_0001', 'Swap', 'NWCAP'], ['Trade_0002', 'Swap', 'NWCAP']] }] },
+    '/data/ore/Empty': { scanned: 9, ignored: [], files: [] }
 };
 let I = { dir: '/data/ore/Examples', scanned: false, exclude: ['Output'], sel: new Set(), step: 0, imported: null, rolledBack: false, parent: 'ORE examples', reimport: 'add_trades_only', defCp: '', activity: 'new_booking' };
 const stripInput = p => p.split('/').slice(0, -1).filter(s => s !== 'Input').join(' / ') || '(top)';
@@ -69,13 +69,14 @@ function renderImport() {
                     field('Directories to skip', h('div', { class: 'filters', style: 'margin:0' }, I.exclude.map(x => h('span', { class: 'chip' }, x, ' ', h('a', { href: '#', 'data-no': 1, onclick: e => { e.preventDefault(); I.exclude = I.exclude.filter(y => y !== x); I.scanned = false; renderImport(); } }, '×'))),
                         h('input', { class: 'field-input', placeholder: 'Add a name', style: 'width:9rem', onkeydown: e => { if (e.key === 'Enter' && e.target.value) { I.exclude.push(e.target.value); I.scanned = false; renderImport(); } } })), 'Folders with these names are not searched.')),
                 h('div', { class: 'filters', style: 'margin:0' }, h('button', { class: 'btn primary', disabled: !!g, onclick: () => { I.scanned = true; I.sel = new Set(matches().map(f => f.path)); renderImport(); } }, 'Find portfolio files'),
-                    I.scanned ? h('span', { class: 'muted small' }, SCAN[I.dir].scanned + ' files searched, ' + found.length + ' match' + (excludedFiles().length ? ', ' + excludedFiles().length + ' skipped in excluded folders' : '') + '.') : null))),
+                    I.scanned ? h('span', { class: 'muted small' }, SCAN[I.dir].scanned + ' files searched, ' + found.length + ' are portfolios' + (excludedFiles().length ? ', ' + excludedFiles().length + ' skipped in excluded folders' : '') + '. A file is a portfolio when its root element is Portfolio, whatever its name.') : null))),
             I.scanned ? h('section', { class: 'card' }, h('header', null, h('h2', null, 'Portfolio files'), chip(sel.length + ' of ' + found.length + ' chosen', 'v'), h('span', { class: 'sp' }),
                 h('button', { class: 'btn small', onclick: () => { I.sel = new Set(found.map(f => f.path)); renderImport(); } }, 'Choose all'), h('button', { class: 'btn small', onclick: () => { I.sel = new Set(); renderImport(); } }, 'Choose none')),
                 h('div', { class: 'body' }, found.length ? h('table', { class: 'grid' }, h('thead', null, h('tr', null, [h('th', { class: 'sel' }), 'File', 'Becomes book', 'Trades', 'Size'].map(c => c.nodeType ? c : h('th', null, c)))),
                     h('tbody', null, found.map(f => h('tr', null, h('td', { class: 'sel' }, h('input', { type: 'checkbox', checked: I.sel.has(f.path), 'aria-label': 'Choose ' + f.path, onchange: e => { e.target.checked ? I.sel.add(f.path) : I.sel.delete(f.path); renderImport(); } })),
-                        h('td', { class: 'mono small' }, f.path), h('td', null, stripInput(f.path)), h('td', { class: 'num' }, f.rows.length || h('span', { class: 'muted' }, 'none')), h('td', { class: 'num muted' }, f.size)))))
-                    : h('span', { class: 'muted' }, 'No portfolio file matches in this directory. Check the folder names to skip.'))) : null);
+                        h('td', { class: 'mono small' }, f.path, f.path.toLowerCase().includes('portfolio') ? null : h('span', { class: 'chip', style: 'margin-left:.4rem', title: 'The name does not say portfolio. The root element does.' }, 'found by content')), h('td', null, stripInput(f.path)), h('td', { class: 'num' }, f.rows.length || h('span', { class: 'muted' }, 'none')), h('td', { class: 'num muted' }, f.size)))))
+                    : h('span', { class: 'muted' }, 'No portfolio file matches in this directory. Check the folder names to skip.'),
+                    SCAN[I.dir].ignored.length ? h('details', { class: 'det' }, h('summary', null, SCAN[I.dir].ignored.length + ' other XML files are not portfolios'), h('table', { class: 'grid' }, h('tbody', null, SCAN[I.dir].ignored.map(([p, why]) => h('tr', null, h('td', { class: 'mono small' }, p), h('td', { class: 'muted' }, why)))))) : null)) : null);
         nav = [h('button', { class: 'btn primary', disabled: !I.scanned || !sel.length, onclick: () => { I.step = 1; renderImport(); } }, 'Continue with ' + sel.length + ' file' + (sel.length === 1 ? '' : 's'))];
     } else if (I.step === 1) {
         pane = h('section', { class: 'card' }, h('header', null, h('h2', null, 'Choices')), h('div', { class: 'body', style: 'display:grid;gap:.8rem' }, h('div', { class: 'grid2' },

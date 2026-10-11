@@ -34,8 +34,11 @@ confirmed, rolled back or refused.
 
 1. *Choose the directory.* The person chooses an ORE directory. The browser packs it and
    uploads it to storage. The person may name folders to skip, such as =Output=.
-2. *Find the files.* The system searches the directory and every folder below it. It lists
-   every portfolio file that matches, with the book each one becomes, its trade count and
+2. *Find the files.* The system searches the directory and every folder below it. It opens
+   each XML file and reads its root element: a file is a portfolio when the root element is
+   =Portfolio=. The name of the file does not decide, because few portfolio files are named
+   =portfolio=. A client must not guess from names, so the list comes from the system. It lists
+   every portfolio file it finds, with the book each one becomes, its trade count and
    its size. It says how many files it searched and how many it skipped in excluded
    folders. The person chooses the files to bring in. All are chosen at first, and the
    person may choose all or none.
@@ -73,7 +76,7 @@ This journey adds no entity of its own. It reads and writes the trade and the re
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Choose the directory | Upload the packed directory to storage | the platform bucket =ores= at =ore/imports/{request_id}.tar.gz= | exists |
-| Find the files | List the portfolio files of an uploaded directory, with the folders to skip | none | missing |
+| Find the files | List the portfolio files of an uploaded directory, found by root element, with the folders to skip and the files that are not portfolios | none; =ore_directory_scanner= does it inside the import | missing |
 | Choose how to import | Choose the files to import | no field in =import_choices= | missing |
 | Choose how to import | Set the parent portfolio, the re-import mode, the default counterparty and the activity | =import_choices_json= | partial |
 | Read the plan | Plan the import | =workflow.v1.ops.ore_import= | exists |
@@ -85,7 +88,8 @@ Status is one of =exists=, =partial=, or =missing=.
 * What is missing
 
 - The server finds the portfolio files only inside the import, and the person cannot see them
-  first. A step that lists every matching file of an uploaded directory is needed.
+  first. The scanner already classifies by the root element (=Portfolio=, =CurrencyConfig=), and
+  puts every other file in =ignored_files=. The new operation returns that result. A step that lists every matching file of an uploaded directory is needed.
 - =import_choices= has no list of files. Its choices are the folders to skip, the parent
   portfolio, the re-import mode and the trade defaults. The import brings in every file the
   scan finds. A list of chosen files is a change to the choices and to the scan.

@@ -94,7 +94,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The start split the =if / else if= chain, so =tell_open_parts= bound to the approved check | approval_operations_handler.hpp | Accept | Real regression. The chain is restored and the start is a separate =if= after it. |
+| 2 | Forward the incoming correlation id to the start | approval_operations_handler.hpp | Decline | The message carries no correlation id the handler can read. The forwarded caller headers carry the caller's context, and the engine sets the run's correlation id. |
+| 3 | Add a test for the part-approval notice path | approval_operations_handler.hpp | Decline | The handler has no NATS test harness in this component, as the task notes record. The restored chain is the original code unchanged. |
 
 * Result
 

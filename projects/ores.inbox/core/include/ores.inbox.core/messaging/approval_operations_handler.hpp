@@ -377,10 +377,10 @@ public:
             const auto after = lifecycle.request(req->request_id).value_or(*current);
             if (after.state_code != current->state_code)
                 tell_asker(*ctx, *kind, after, req->comment);
-            if (after.state_code == "approved" && current->state_code != "approved")
-                start_apply(msg, *kind, after);
             else if (answers_for_part && r.outcome == "ok" && req->decision_code == "approve")
                 tell_open_parts(*ctx, lifecycle, *kind, after);
+            if (after.state_code == "approved" && current->state_code != "approved")
+                start_apply(msg, *kind, after);
             reply(nats_,
                   msg,
                   decide_approval_request_response{.result = decision_reply(r), .request = after});

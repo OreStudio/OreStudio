@@ -8,7 +8,7 @@
 #+filetags: :hide_system_actions_in_history:sprint_27:v0:
 #+owner: marco
 #+branch: feature/hide-system-actions-in-history
-#+pr:
+#+pr: 3103
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3103][#3103]] | [agile] Scaffold story: Hide what system accounts did in a history |
 
 * Review
 

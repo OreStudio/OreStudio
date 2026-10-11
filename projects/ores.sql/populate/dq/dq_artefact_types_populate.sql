@@ -232,6 +232,15 @@ values
      'dq_average_ois_conventions_artefact_tbl, dq_bma_basis_swap_conventions_artefact_tbl, dq_bond_yield_conventions_artefact_tbl, dq_cds_conventions_artefact_tbl, dq_cms_spread_option_conventions_artefact_tbl, dq_commodity_forward_conventions_artefact_tbl, dq_commodity_future_conventions_artefact_tbl, dq_cross_currency_basis_conventions_artefact_tbl, dq_cross_currency_fix_float_conventions_artefact_tbl, dq_deposit_conventions_artefact_tbl, dq_fra_conventions_artefact_tbl, dq_future_conventions_artefact_tbl, dq_fx_option_conventions_artefact_tbl, dq_ibor_index_conventions_artefact_tbl, dq_inflation_swap_conventions_artefact_tbl, dq_intraday_power_load_conventions_artefact_tbl, dq_ois_conventions_artefact_tbl, dq_overnight_index_conventions_artefact_tbl, dq_swap_conventions_artefact_tbl, dq_swap_index_conventions_artefact_tbl, dq_tenor_basis_swap_conventions_artefact_tbl, dq_tenor_basis_two_swap_conventions_artefact_tbl, dq_zero_conventions_artefact_tbl, dq_zero_inflation_index_conventions_artefact_tbl',
      'refdata_average_ois_conventions_tbl, refdata_bma_basis_swap_conventions_tbl, refdata_bond_yield_conventions_tbl, refdata_cds_conventions_tbl, refdata_cms_spread_option_conventions_tbl, refdata_commodity_forward_conventions_tbl, refdata_commodity_future_conventions_tbl, refdata_cross_currency_basis_conventions_tbl, refdata_cross_currency_fix_float_conventions_tbl, refdata_deposit_conventions_tbl, refdata_fra_conventions_tbl, refdata_future_conventions_tbl, refdata_fx_option_conventions_tbl, refdata_ibor_index_conventions_tbl, refdata_inflation_swap_conventions_tbl, refdata_intraday_power_load_conventions_tbl, refdata_ois_conventions_tbl, refdata_overnight_index_conventions_tbl, refdata_swap_conventions_tbl, refdata_swap_index_conventions_tbl, refdata_tenor_basis_swap_conventions_tbl, refdata_tenor_basis_two_swap_conventions_tbl, refdata_zero_conventions_tbl, refdata_zero_inflation_index_conventions_tbl',
      'refdata.v1.ops.publish_conventions_from_dq', 70,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    -- A configuration document is a header and the child rows that reference it,
+    -- staged in one artefact table per live table. The shared document publish
+    -- walks the table list in order, so the lists here are documentation; the
+    -- graph only needs target_subject.
+    (ores_utility_system_tenant_id_fn(), 'pricing_engines', 0, 'Pricing Engines Document', 'An ORE pricing engines document: the pricing model configuration, its products and their parameters, published to the party a publish names with its reporting configuration',
+     'dq_pricing_model_configs_artefact_tbl, dq_pricing_model_products_artefact_tbl, dq_pricing_model_product_parameters_artefact_tbl',
+     'analytics_pricing_model_configs_tbl, analytics_pricing_model_products_tbl, analytics_pricing_model_product_parameters_tbl',
+     'analytics.v1.ops.publish_pricing_engines_from_dq', 74,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

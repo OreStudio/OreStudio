@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 044AB81F-3FEF-4AAC-96FB-D9226B009C62
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.analytics.pricing_model_config
 #+description: Codegen entity model for the analytics =pricing_model_config= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

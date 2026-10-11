@@ -196,3 +196,8 @@
 \ir ./dq_change_reasons_drop.sql
 \ir ./dq_change_reason_categories_notify_trigger_drop.sql
 \ir ./dq_change_reason_categories_drop.sql
+
+-- Report configuration documents: staging tables
+\ir ./dq_pricing_model_configs_artefact_drop.sql
+\ir ./dq_pricing_model_products_artefact_drop.sql
+\ir ./dq_pricing_model_product_parameters_artefact_drop.sql

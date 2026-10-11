@@ -206,6 +206,12 @@
 \ir ./dq_publications_create.sql
 \ir ./dq_publications_notify_trigger_create.sql
 \ir ./dq_bundle_publication_create.sql
+\ir ./dq_publish_configuration_document_create.sql
 
 -- FSM Framework (finite state machine infrastructure, part of DQ metadata layer)
 \ir ./dq_fsm_create.sql
+
+-- Report configuration documents: staging tables
+\ir ./dq_pricing_model_configs_artefact_create.sql
+\ir ./dq_pricing_model_products_artefact_create.sql
+\ir ./dq_pricing_model_product_parameters_artefact_create.sql

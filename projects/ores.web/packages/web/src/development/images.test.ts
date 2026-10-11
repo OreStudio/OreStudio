@@ -222,13 +222,24 @@ describe('the images on the clipboard', () => {
         expect(await problem(imagesFromClipboard(denied))).toBe('denied');
     });
 
-    it('says the clipboard holds no image when the read fails for another reason', async () => {
+    it('says the clipboard holds no image when the browser says it held no usable data', async () => {
         const broken: ClipboardLike = {
             read: async () => {
                 throw Object.assign(new Error('no data'), { name: 'DataError' });
             },
         };
         expect(await problem(imagesFromClipboard(broken))).toBe('empty');
+    });
+
+    it('says the clipboard cannot be read when the read fails for a fault of the browser or the page', async () => {
+        for (const name of ['TypeError', 'AbortError', 'Error']) {
+            const broken: ClipboardLike = {
+                read: async () => {
+                    throw Object.assign(new Error('broke'), { name });
+                },
+            };
+            expect(await problem(imagesFromClipboard(broken)), name).toBe('unavailable');
+        }
     });
 
     it('says the clipboard cannot be read when the browser has none', async () => {

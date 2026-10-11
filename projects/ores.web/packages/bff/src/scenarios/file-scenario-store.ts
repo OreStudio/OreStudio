@@ -20,9 +20,9 @@
  */
 
 import { randomUUID } from 'node:crypto';
+import { constants } from 'node:fs';
 import {
     chmod,
-    lstat,
     open,
     readdir,
     readFile,
@@ -241,15 +241,25 @@ export class FileScenarioStore implements ScenarioStore {
         }
         const doc = await this.absolute(found.entry.path);
         const file = join(dirname(doc), name);
-        const info = await lstat(file).catch((error: NodeJS.ErrnoException) => {
-            if (error.code === 'ENOENT') return null;
-            throw error;
-        });
-        // A link is not a regular file here, so a link cannot lead out of the folder.
-        if (info === null || !info.isFile() || info.size > MAX_SERVED_IMAGE_BYTES) return null;
-        const bytes = await readFile(file);
-        const kind = detectImage(bytes);
-        return kind === null ? null : { bytes, kind };
+        // The file is opened once, and what is checked is the open file, so it
+        // cannot change between the check and the read. O_NOFOLLOW makes a link
+        // fail to open, so a link cannot lead out of the folder.
+        const handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW).catch(
+            (error: NodeJS.ErrnoException) => {
+                if (error.code === 'ENOENT' || error.code === 'ELOOP') return null;
+                throw error;
+            },
+        );
+        if (handle === null) return null;
+        try {
+            const info = await handle.stat();
+            if (!info.isFile() || info.size > MAX_SERVED_IMAGE_BYTES) return null;
+            const bytes = await handle.readFile();
+            const kind = detectImage(bytes);
+            return kind === null ? null : { bytes, kind };
+        } finally {
+            await handle.close();
+        }
     }
 
     private async write(key: string, input: RunInput): Promise<RecordResult> {
@@ -389,7 +399,11 @@ export class FileScenarioStore implements ScenarioStore {
     }
 }
 
-/** The sprint folder in a path under the doc root, such as `sprint_27`, or null. */
+/**
+ * The sprint folder in a path under the doc root, such as `sprint_27`, or null.
+ * The first such folder wins, so a scenario kept under a second sprint folder
+ * inside the first belongs to the outer sprint.
+ */
 export function sprintOf(path: string): string | null {
     return path.split('/').find((segment) => /^sprint_\d+$/.test(segment)) ?? null;
 }

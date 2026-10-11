@@ -26,11 +26,11 @@ A tester never loses a mark or a note by leaving the runner page without meaning
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -117,5 +117,14 @@ via its "Verifies task" field.
 | 4 | leavesPage ignores the query | UnsavedGuard.tsx | Fix | The comment says the rule looks at the path only, and what to do if the runner keeps state in the query. |
 | 5 | The French and Portuguese text needs a read | locales | Note | My translation, as the pull request says. It needs a speaker before a release. |
 | 6 | The inbox entry removed with the capture | inbox.org | Confirm | The capture was promoted to this task, which removes its file and its row. |
+| 7 | A clipboard error other than a refusal shows as an empty clipboard | images.ts | Fix | A DataError or NotFoundError says the clipboard was empty. Any other error says the clipboard cannot be read. A test covers three error names. |
+| 8 | The image read checks the file, then reads it | file-scenario-store.ts | Fix | The file is opened once with O_NOFOLLOW, and the open handle is checked and read. A link fails to open. |
+| 9 | sprintOf takes the first sprint folder | file-scenario-store.ts | Fix | The comment says so. |
+| 10 | The image cache can show an old picture | qa.ts | Fix | The cache lifetime is now 300 seconds, not 3600. |
+| 11 | The marker scroll ignores reduced motion | ScenarioReport.tsx | Fix | A tester who asks for less motion jumps at once. A test covers the rule. |
+| 12 | Compass and the template do not know ABANDONED | compass | Note | A follow-up. The state is set by hand in the doc for now. |
+| 13 | The French and Portuguese text needs a speaker | locales | Note | Same as item 5. |
 
 * Result
+
+The scenario runner asks before it drops unsaved marks. Fixes found while running the QA scenario are on the same branch: the tests queue by sprint with Active and Done buckets, the ABANDONED state, the clipboard button, images served and shown, the report view, and the double paste fix. Two Claude reviews are addressed. The suites pass: web 944, BFF 561, contracts 10.

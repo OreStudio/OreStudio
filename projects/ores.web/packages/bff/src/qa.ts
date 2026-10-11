@@ -231,7 +231,7 @@ export function registerQaRoutes(
         if (image === null) throw notFound('No image has this name beside the scenario.');
         return reply
             .header('Content-Type', mediaTypeOf(image.kind))
-            .header('Cache-Control', 'private, max-age=3600')
+            .header('Cache-Control', 'private, max-age=300')
             .header('X-Content-Type-Options', 'nosniff')
             .header('Content-Security-Policy', "default-src 'none'; sandbox")
             .send(Buffer.from(image.bytes));

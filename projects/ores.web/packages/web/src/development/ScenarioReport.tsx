@@ -55,10 +55,16 @@ export function countStatuses(scenario: Scenario): Readonly<Record<StepStatus, n
     return counts;
 }
 
+/** The scroll a marker makes. A tester who asks for less motion jumps at once. */
+export function scrollBehavior(reduced: boolean): ScrollBehavior {
+    return reduced ? 'auto' : 'smooth';
+}
+
 function jumpTo(index: number): void {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     document
         .getElementById(`step-${index + 1}`)
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        ?.scrollIntoView({ behavior: scrollBehavior(reduced), block: 'start' });
 }
 
 /**

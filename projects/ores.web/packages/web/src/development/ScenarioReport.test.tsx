@@ -24,7 +24,7 @@ import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import type { Scenario } from '@ores/contracts';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { ScenarioReport, countStatuses } from './ScenarioReport.js';
+import { ScenarioReport, countStatuses, scrollBehavior } from './ScenarioReport.js';
 
 const ID = '11111111-1111-4111-8111-111111111111';
 
@@ -224,5 +224,12 @@ describe('a scenario read as a report', () => {
         expect(html).not.toContain('<script>');
         expect(html).not.toContain('<img src="x"');
         expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    });
+});
+
+describe('the scroll of a step marker', () => {
+    it('is smooth, and at once for a tester who asks for less motion', () => {
+        expect(scrollBehavior(false)).toBe('smooth');
+        expect(scrollBehavior(true)).toBe('auto');
     });
 });

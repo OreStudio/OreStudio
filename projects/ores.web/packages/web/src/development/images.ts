@@ -145,8 +145,15 @@ export async function imagesFromClipboard(clipboard: ClipboardLike | undefined):
         items = await clipboard.read();
     } catch (error) {
         const name = (error as { name?: unknown } | null)?.name;
+        // A refusal is the tester's or the browser's. An error that says the
+        // clipboard held nothing usable means there was no image. Any other
+        // error is a fault in the browser or the page, and says so.
         throw new ClipboardProblem(
-            name === 'NotAllowedError' || name === 'SecurityError' ? 'denied' : 'empty',
+            name === 'NotAllowedError' || name === 'SecurityError'
+                ? 'denied'
+                : name === 'DataError' || name === 'NotFoundError'
+                  ? 'empty'
+                  : 'unavailable',
         );
     }
     const files: File[] = [];

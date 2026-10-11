@@ -8,7 +8,7 @@
 #+filetags: :curve_screen_series_picker:sprint_27:v0:
 #+owner: marco
 #+branch: feature/pick-the-curve-on-the-evolution-screen
-#+pr:
+#+pr: 3138
 #+blocked_on: Route the series list through the BFF
 #+blocked_since:
 #+created: 2026-10-11
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3138][#3138]] | [web] Pick the curve on the evolution screen |
 
 * Review
 

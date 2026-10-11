@@ -202,7 +202,7 @@ describe('synthetic resource routes', () => {
             offset: 15,
             limit: 15,
             order: { field: 'source_name', descending: true },
-            filter: { search: 'eur' },
+            filter: { id_one_of: null, search: 'eur' },
             as_of: null,
         });
     });
@@ -238,7 +238,9 @@ describe('synthetic resource routes', () => {
         );
         expect(response.statusCode).toBe(200);
         expect(response.json().rows).toEqual([COMPONENT]);
-        expect(calls[0]?.body).toMatchObject({ filter: { fx_spot_config_id: OTHER } });
+        expect(calls[0]?.body).toMatchObject({
+            filter: { fx_spot_config_id: OTHER, id_one_of: null, fx_spot_config_id_one_of: null },
+        });
     });
 
     it('answers 404 for a parent read of a resource that has no parent', async () => {
@@ -270,6 +272,22 @@ describe('synthetic resource routes', () => {
         );
         expect(response.json().row.name).toBe('Vasicek');
         expect(calls[0]?.body).toMatchObject({ filter: { code_one_of: ['vasicek'] }, limit: 1 });
+        expect(Object.keys((calls[0]?.body as { filter: object }).filter)).toEqual(['code_one_of']);
+    });
+
+    it('reads one feed with every member of its filter, because the server refuses a missing one', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [{ id: ID }],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', `/api/synthetic/fx-feeds/key/${ID}`);
+        expect(response.statusCode).toBe(200);
+        expect((calls[0]?.body as { filter: unknown }).filter).toEqual({
+            id_one_of: [ID],
+            search: null,
+        });
     });
 
     it('reads a parameter definition by its id, never by the name types share', async () => {

@@ -23,34 +23,49 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { SYSTEM_TENANT_ID } from '@ores/wire-protocol';
 import { subjects as feedSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_config_protocol';
-import { subjects as folderSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/folder_protocol';
+import {
+    subjects as folderSubjects,
+    type FoldersFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/folder_protocol';
 import {
     subjects as fxFeedSubjects,
     type FxSpotGenerationConfigWrite,
+    type FxSpotGenerationConfigsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/fx_spot_generation_config_protocol';
 import {
     subjects as gmmSubjects,
     type GmmComponentWrite,
+    type GmmComponentsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/gmm_component_protocol';
 import {
     subjects as irFeedSubjects,
     type IrCurveGenerationConfigWrite,
+    type IrCurveGenerationConfigsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_generation_config_protocol';
 import { subjects as irOperationSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_operations_protocol';
 import {
     subjects as parameterValueSubjects,
     type IrCurveGenerationConfigProcessParameterValueWrite,
+    type IrCurveGenerationConfigProcessParameterValuesFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_generation_config_process_parameter_value_protocol';
 import {
     subjects as templateEntrySubjects,
     type IrCurveTemplateEntryWrite,
+    type IrCurveTemplateEntriesFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_template_entry_protocol';
-import { subjects as collectionSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/market_data_generation_config_protocol';
+import {
+    subjects as collectionSubjects,
+    type MarketDataGenerationConfigsFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/market_data_generation_config_protocol';
 import { subjects as fxSimulateSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/simulate_fx_spot_paths_protocol';
-import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/yield_curve_process_parameter_definition_protocol';
+import {
+    subjects as definitionSubjects,
+    type YieldCurveProcessParameterDefinitionsFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/yield_curve_process_parameter_definition_protocol';
 import {
     subjects as processTypeSubjects,
     type YieldCurveProcessTypeWrite,
+    type YieldCurveProcessTypesFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/yield_curve_process_type_protocol';
 import { subjects as marketdataOperationSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
@@ -88,6 +103,10 @@ const text = z.string().max(2000);
  * reads and writes it in the system tenant, so a write from a tenant session
  * would change every tenant's catalogue; only a system session writes it.
  *
+ * `filter` is the list filter with every member empty. The server refuses a
+ * filter that leaves a member out, so every filtered read starts from it, and
+ * the generated filter type makes the compiler refuse one that misses a member.
+ *
  * `search` and `sortable` say what the model made searchable and sortable, so
  * a page asks the server only for what it can answer. `parentField` names the
  * filter that reads the rows of one parent, such as one feed's mixture.
@@ -98,6 +117,7 @@ interface SyntheticResource {
     readonly keyField: 'id' | 'code';
     readonly oneOf: 'id_one_of' | 'code_one_of';
     readonly rows: string;
+    readonly filter: Readonly<Record<string, null>>;
     readonly subjects: {
         readonly list: string;
         readonly putMany: string;
@@ -127,6 +147,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'folders',
+        filter: { id_one_of: null } satisfies FoldersFilter,
         subjects: {
             list: folderSubjects.list_folders_request,
             putMany: folderSubjects.put_many_folders_request,
@@ -141,6 +162,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'market_data_generation_configs',
+        filter: { id_one_of: null } satisfies MarketDataGenerationConfigsFilter,
         subjects: {
             list: collectionSubjects.list_market_data_generation_configs_request,
             putMany: collectionSubjects.put_many_market_data_generation_configs_request,
@@ -155,6 +177,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'fx_spot_generation_configs',
+        filter: { id_one_of: null, search: null } satisfies FxSpotGenerationConfigsFilter,
         search: true,
         sortable: [
             'base_currency_code',
@@ -193,6 +216,11 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'gmm_components',
+        filter: {
+            fx_spot_config_id: null,
+            id_one_of: null,
+            fx_spot_config_id_one_of: null,
+        } satisfies GmmComponentsFilter,
         parentField: 'fx_spot_config_id',
         subjects: {
             list: gmmSubjects.list_gmm_components_request,
@@ -216,6 +244,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'ir_curve_generation_configs',
+        filter: { id_one_of: null } satisfies IrCurveGenerationConfigsFilter,
         subjects: {
             list: irFeedSubjects.list_ir_curve_generation_configs_request,
             putMany: irFeedSubjects.put_many_ir_curve_generation_configs_request,
@@ -249,6 +278,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'process_parameter_values',
+        filter: { id_one_of: null } satisfies IrCurveGenerationConfigProcessParameterValuesFilter,
         subjects: {
             list: parameterValueSubjects.list_ir_curve_generation_config_process_parameter_values_request,
             putMany:
@@ -270,6 +300,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'ir_curve_template_entries',
+        filter: { id_one_of: null } satisfies IrCurveTemplateEntriesFilter,
         subjects: {
             list: templateEntrySubjects.list_ir_curve_template_entries_request,
             putMany: templateEntrySubjects.put_many_ir_curve_template_entries_request,
@@ -292,6 +323,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'code',
         oneOf: 'code_one_of',
         rows: 'process_types',
+        filter: { code_one_of: null } satisfies YieldCurveProcessTypesFilter,
         subjects: {
             list: processTypeSubjects.list_yield_curve_process_types_request,
             putMany: processTypeSubjects.put_many_yield_curve_process_types_request,
@@ -311,6 +343,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'parameter_definitions',
+        filter: { id_one_of: null } satisfies YieldCurveProcessParameterDefinitionsFilter,
         subjects: {
             list: definitionSubjects.list_yield_curve_process_parameter_definitions_request,
             putMany: definitionSubjects.put_many_yield_curve_process_parameter_definitions_request,
@@ -604,7 +637,7 @@ export function registerSyntheticRoutes(
                 offset: page.offset,
                 limit: page.limit,
                 order: { field: page.sort, descending: page.descending },
-                filter: page.search === '' ? null : { search: page.search },
+                filter: page.search === '' ? null : { ...resource.filter, search: page.search },
                 as_of: null,
             },
             z.looseObject({ result: resultSchema, total: z.int().nonnegative().default(0) }),
@@ -625,7 +658,7 @@ export function registerSyntheticRoutes(
         const parent = input(idSchema, (request.params as { parent: string }).parent);
         return {
             rows: await readAll(session, resource.subjects.list, resource.rows, {
-                filter: { [resource.parentField]: parent },
+                filter: { ...resource.filter, [resource.parentField]: parent },
                 as_of: null,
             }),
         };
@@ -641,7 +674,7 @@ export function registerSyntheticRoutes(
                 offset: 0,
                 limit: 1,
                 order: NO_ORDER,
-                filter: { [resource.oneOf]: [key] },
+                filter: { ...resource.filter, [resource.oneOf]: [key] },
                 as_of: null,
             },
             z.looseObject({ result: resultSchema }),

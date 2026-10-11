@@ -37,6 +37,7 @@ Today every feed belongs to a party, under that party's one Synthetic folder, an
 - Market data has one feed browser: a tree of System feeds by provider and My test feeds, run status rolled up at every node (running, partial, stopped), start and stop at any node by the folder cascade, and the kind's list and feed page for the node chosen.
 - Every read scales: the tree loads one level at a time with counts from the server, every list is paged, searched and sorted on the server, and no screen reads all feeds; the design is checked against tens of thousands of feeds.
 - The feed screen standard states the browser, the two scopes and the subscription, and the FX price feed screen conforms.
+- Every path a feed is known by marks it as synthetic: its source name, its tick subject, its folder path and the provider name a screen shows.
 
 * Tasks
 
@@ -85,9 +86,16 @@ Today every feed belongs to a party, under that party's one Synthetic folder, an
   is paged, searched and sorted on the server; start and stop act on a node
   through the folder cascade the service already has; the running read and
   the tick buffers are checked at that size. No screen reads all feeds.
-- *Source names carry the provider.* A system feed's source is qualified by
-  its provider, such as =bloomberg.fx.eurusd=, and a test feed's by its
-  party, so two scopes never claim one source.
+- *Every path says the feed is synthetic.* A simulated Bloomberg feed must
+  never be read as Bloomberg. Every name a feed is known by starts with the
+  synthetic mark: the source name (=synthetic.bloomberg.fx.eurusd=), the tick
+  subject (=synthetic.v1.ops.tick.synthetic.bloomberg.fx.eurusd=), the folder
+  path (/Synthetic feeds › Bloomberg › FX spot/), and the provider as a
+  screen names it (/Bloomberg (synthetic)/). A real provider connection added
+  later uses its own namespace and cannot collide.
+- *Source names carry the provider.* After the synthetic mark, a system feed's
+  source is qualified by its provider and a test feed's by its party, so two
+  scopes never claim one source.
 
 * Open questions
 

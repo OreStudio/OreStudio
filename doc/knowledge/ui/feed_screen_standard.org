@@ -335,6 +335,8 @@ store.
 
 * See also
 
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — everything a feed screen shares with a record screen
 - [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the timeline the History tab draws
 - [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]] — the Qt screens these replace

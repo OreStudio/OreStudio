@@ -21,12 +21,12 @@ Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types t
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Units 1-3 of the design's staging are merged: the routing repairs, the legs, and the family header with the eight fact tables. Units 4-8 are tasks now, all BACKLOG. |
+| Now           | All thirteen tasks are merged or closed. The rates family sits on its header and fact tables, and the corpus round-trips with equal family rows. |
 | Waiting on    | Nothing.                               |
-| Next          | The shared children, then the anchor key, the round trip, the blotter's date view and the corpus proof. |
-| Last touched  | 2026-10-09                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-11                               |
 
 * Acceptance
 
@@ -52,7 +52,7 @@ Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types t
 | [[id:A1319B90-C06B-4220-A3BA-7471F75F4BB8][Pin the rates instruments to the anchor's key]] | DONE | | 2026-10-10 | Add the trade anchor's unique index and pin every rates instrument row to it with the composite foreign key on the party and the trade type. The one unit that changes the trade model. (Staging unit 5; finding R7.) |
 | [[id:1E1BA14F-E8A2-4DD4-B538-DA125EC7B7A1][Close the rates round trip]] | DONE | | 2026-10-10 | Add the missing reverse mappers for InflationSwap, BalanceGuaranteedSwap and FlexiSwap, and decide the hand-written rates carrier's and codec's disposition: replace them with the generated per-entity protocols, or record why the carrier must stay hand-written. (Staging unit 6; findings R10, R13.) |
 | [[id:4A53F30C-42AB-41D1-9C3C-55321FC38920][Generate the blotter's common-date view]] | DONE | | 2026-10-10 | Finding R9: each product states its dates under its own name - start_date, maturity_date, expiry_date, end_date - so a deal grid cannot read one date column across the family. The view maps each product's dates to one set of names, and it is generated because the mapping is a property of the models. This first family creates the view; each later family adds its mapping. (Staging unit 7; finding R9.) |
-| [[id:1EFA46D4-8562-4C63-A1D3-4CF33551BEB2][Prove the rates round trip over the corpus]] | STARTED | 2026-10-10 | | Run the ORE round trip over the family's corpus at the new shape, and add the repository, service and eventing coverage the family has none of. (Staging unit 8; findings R9, R14.) |
+| [[id:1EFA46D4-8562-4C63-A1D3-4CF33551BEB2][Prove the rates round trip over the corpus]] | DONE | 2026-10-10 | 2026-10-11 | Run the ORE round trip over the family's corpus at the new shape, and add the repository, service and eventing coverage the family has none of. (Staging unit 8; findings R9, R14.) |
 | [[id:E5BD501A-CB63-465A-9F5A-02F62A417F9A][Carry the FlexiSwap and BalanceGuaranteedSwap fields]] | DONE | 2026-10-10 | 2026-10-10 | Add the fields the model lacks for these two products, so the export writes the elements the ORE schema requires. |
 
 * Decisions
@@ -61,6 +61,17 @@ Distilled from =design.org=, which carries the argument and the
 evidence. The design stays in this folder as the record of why these
 decisions are what they are.
 
+
+- *The round trip is proved by comparing stored rows over the corpus.*
+  The test imports each rates trade, exports it alone, imports it again and
+  compares the rows the family stores, with a closed set of known
+  differences that is empty. Reason: a document-level comparison hides a field
+  the mapper drops, and the corpus is the only set of real products.
+
+- *The family's eventing tests are generated and cover the service.*
+  Each model sets the eventing flag, and the fact tables set
+  =party_scoped_writes=. Reason: the generated test writes, reads and updates
+  a row through the service, so no hand-written repository case is needed.
 
 - *A product's list fields are child rows and its schedule is a shared row.*
   FlexiSwap and BalanceGuaranteedSwap carry their bounds, tranches and
@@ -170,6 +181,6 @@ The acceptance against the tree as unit 3 left it:
 | Each product fact table checks its own | not expressible: the catalogue states one routing per trade type, so the header carries the family's check and the facts carry none, as the bond pilot does |
 | Every instrument row is keyed by its trade and pinned to the anchor's trade type and party by a composite foreign key | met in a weaker form: the header is pinned by an insert-trigger check, because the anchor is versioned and no database key can name it; the fact tables carry neither column and join through the header |
 | The family's trade types route through the catalogue, not hand-written code | met |
-| The ORE round trip stays lossless across the family's corpus | open and unproven: =Move the rates family's shared children onto the bond shapes=, =Close the rates round trip= and =Prove the rates round trip over the corpus= |
+| The ORE round trip stays lossless across the family's corpus | met: all 47 rates documents (70 trades) of the corpus return the same family rows after an import, an export and a second import; =Prove the rates round trip over the corpus= holds the measurements |
 | The blotter's common-date view is generated | met: =ores_trading_rate_instruments_common_dates_vw=, generated from the =:common_date:= declarations |
 

@@ -26,12 +26,12 @@ The family is proved at its new shape: the corpus round-trips with equal family 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
 
 * Acceptance
 
@@ -47,8 +47,10 @@ The family is proved at its new shape: the corpus round-trips with equal family 
    produce. Record the document and trade counts with the command.
 2. *The eventing test.* Generate the rates instruments' eventing integration
    test as the other entities' are generated.
-3. *The coverage gap.* Add the repository and service cases the family has
-   none of, guided by what the round trip exercises.
+3. *The coverage gap.* Check the repository and service cases the family has.
+   The generated eventing test of each table also writes a row, reads it
+   through the service and updates it, so the ten tables have that coverage
+   once the eventing tests exist. No further case was needed.
 4. *Measurements.* The corpus counts go in this
    page's Measurements table with their commands, as the header task's did.
 
@@ -64,7 +66,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Rates documents in the corpus | 47 | =ores.ore.core.tests "every rates trade in the corpus comes back as the same family rows"= | b50b0acba4 |
+| Rates trades in those documents | 70 | same | b50b0acba4 |
+| Documents whose family rows change on the round trip | 0 | same; the known-differences set is empty | b50b0acba4 |
+| ORE core suite | 634 cases, 482,910 assertions, all pass | =ores.ore.core.tests= | b50b0acba4 |
+| Trading core suite | 152 cases, 1,026 assertions, all pass | =ores.trading.core.tests= | b50b0acba4 |
+| Rates eventing tests | 10 added; 54 eventing cases pass in all | =ores.trading.core.tests "[eventing]"= | b50b0acba4 |
 
 * Notes
 
@@ -96,6 +103,28 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The round trip dropped the leg day count and payment convention | swap_instrument_mapper.cpp | accept | Fixed in the reverse leg and the cap/floor reverse; found by the corpus test. |
+| 2 | The nine fact-table eventing tests wrote with no session party | the nine fact models | accept | Each model declares =party_scoped_writes=; the tests are regenerated. |
+| 3 | The rate instrument generator drew start and maturity independently | ores.trading.rate_instruments.org | accept | =generator_expr= makes the maturity the start plus 365 days. |
+| 4 | The flexi header declared an unused =<optional>= | ores.trading.flexi_swap_instrument.org | accept | Removed from the model; the header is regenerated. |
 
 * Result
+
+The rates family round-trips over the whole ORE corpus. All 47 rates
+documents (70 trades) come back as the same family rows after an import, an
+export of the trade on its own and a second import. The comparison is of the
+rows the family stores, so a field the mapper drops shows as a difference. It
+found two losses, the leg day count and payment convention, and the mapper now
+carries both. The set of known differences is empty.
+
+The ten rates tables have a generated eventing integration test. Each also
+writes, reads and updates a row through its service, which closes the
+repository and service gap. The generated tests exposed two defects, now
+fixed in the models: the fact tables lacked the session party, and the header
+generator could draw a maturity before the start.
+
+No migration is written, by the project rule that a schema change recreates
+the database.
+
+Acceptance met: the corpus round trip is equivalent, there is no migration,
+the eventing tests are generated, and the measurements carry their commands.

@@ -3222,6 +3222,7 @@ const fr: SourceCatalogue = {
         refresh: 'Actualiser',
         refreshStale: 'Les données ont changé sur le serveur. Actualisez pour les voir.',
         refreshStaleAt: 'Les données ont changé sur le serveur à {time}. Actualisez pour les voir.',
+        loadedAt: 'Chargé : {time}',
         all: 'Tous',
         close: 'Fermer',
         open: 'Ouvrir',

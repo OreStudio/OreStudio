@@ -24,8 +24,14 @@ import { useEntityChangeEvents, type WatchedEntity } from './EntityEvents.js';
 
 /** The part of a query the hook needs to know when the screen last loaded. */
 export interface LoadState {
-    /** When the data on screen arrived, in milliseconds. */
+    /** When the newest of the data on screen arrived, in milliseconds. */
     readonly dataUpdatedAt: number;
+    /**
+     * When the oldest of the data on screen arrived. A page made of several
+     * reads is as fresh as its oldest, which is what the load label states. A
+     * screen of one read leaves it out, and the newest is then the only one.
+     */
+    readonly oldestUpdatedAt?: number;
     /** Whether a load is in flight. */
     readonly isFetching: boolean;
 }

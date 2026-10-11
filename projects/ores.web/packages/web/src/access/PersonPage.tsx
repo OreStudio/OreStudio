@@ -197,14 +197,7 @@ function Person({
                 version={null}
                 subdued
                 access={null}
-                own={
-                    <RefreshButton
-                        onClick={refreshPage}
-                        pending={load.isFetching}
-                        stale={news.stale}
-                        changedAt={news.changedAt}
-                    />
-                }
+                own={<RefreshButton onClick={refreshPage} load={load} news={news} />}
                 mark={
                     <Avatar
                         name={name}

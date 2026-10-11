@@ -71,9 +71,8 @@ export function StaffOfMyParties(): ReactNode {
                     actions={
                         <RefreshButton
                             onClick={() => void tree.refetch()}
-                            pending={tree.isFetching}
-                            stale={news.stale}
-                            changedAt={news.changedAt}
+                            load={tree}
+                            news={news}
                         />
                     }
                 />

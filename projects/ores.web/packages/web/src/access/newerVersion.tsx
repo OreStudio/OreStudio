@@ -55,20 +55,28 @@ export function fieldChanges<T>(
  * The person then chooses: keep the edit, which takes the newest version as its
  * base and so replaces it knowingly, or take the new values and drop the edit.
  * The form is never reloaded under the person.
+ *
+ * `liveAt` is when the live record arrived, and `loadedAt` is when the edit's
+ * base did: the same moment at first, and the later one once the person takes
+ * the newer version or keeps their edit on top of it.
  */
 export function useNewerVersion<T extends { readonly version: number }>(
     live: T | null | undefined,
     fields: Readonly<Record<string, (record: T) => string>>,
     onTake: () => void,
+    liveAt?: number,
 ): {
     /** The version the edit started from, which a save claims. */
     readonly expectedVersion: number | null;
     /** The newest record and what moved, when it is newer than the edit's base. */
     readonly newer: { readonly record: T; readonly changes: readonly FieldChange[] } | undefined;
+    /** When the record the edit started from was loaded, in milliseconds. */
+    readonly loadedAt: number | undefined;
     readonly keepMine: () => void;
     readonly takeTheirs: () => void;
 } {
     const [basis, setBasis] = useState<T | null | undefined>(live);
+    const [basisAt, setBasisAt] = useState<number | undefined>(liveAt);
     const newer =
         live !== null &&
         live !== undefined &&
@@ -80,9 +88,14 @@ export function useNewerVersion<T extends { readonly version: number }>(
     return {
         expectedVersion: basis?.version ?? null,
         newer,
-        keepMine: () => setBasis(live),
+        loadedAt: basisAt,
+        keepMine: () => {
+            setBasis(live);
+            setBasisAt(liveAt);
+        },
         takeTheirs: () => {
             setBasis(live);
+            setBasisAt(liveAt);
             onTake();
         },
     };

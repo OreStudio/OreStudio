@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :web:ux:standards:entities:
 #+created: 2026-10-10
-#+updated: 2026-10-10
+#+updated: 2026-10-11
 
 * Summary
 
@@ -554,6 +554,28 @@ lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notific
 - The page does not reload by itself. A list does not, a record page does not,
   and the history does not.
 
+*** When the data was loaded
+
+- Under the Refresh button the screen says when it loaded, as an ISO 8601
+  timestamp in the reader's zone, such as =2026-10-11T02:13:10+01:00=. It is
+  small, monospaced and faint (half opacity), and it has no label. The tooltip
+  says "Loaded" and repeats the timestamp. The text is the same in every
+  language.
+- The timestamp is part of =RefreshButton=, which takes the screen's load state
+  and the news about it, so a screen cannot show the button without it
+  (=LoadedAt=).
+- The time is the browser's clock at the moment the data arrived. It is the clock
+  the stale logic compares, so the two never disagree. It is not the server's
+  =as_of=, which is a field a caller sends to read the data as it was at an
+  instant. A read response carries no read time.
+- A screen made of several reads states the /oldest/ of the reads on screen,
+  because the screen is only as fresh as its oldest part. The stale logic uses the
+  newest, which is a different question. Only the reads the screen is showing
+  count: a page of a list that was read earlier stays in the cache and does not
+  age the screen.
+- The time stays while a reload runs or fails, because the old data is still on
+  screen. Before the first load nothing is drawn.
+
 *** Rows and entries that changed
 
 - After a reload, a row that was not on the page before, or whose content is
@@ -574,6 +596,10 @@ lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notific
   version is refused with a clear message, and the edit stays in the form.
 - Keep my edit makes the newest version the base, so the save replaces it
   knowingly.
+- A dialog over a record says under its title when the record it started from was
+  loaded (=Dialog='s =loadedAt=). The time moves when the person takes the newer
+  version or keeps their edit on top of it, because the base has changed. A
+  dialog over no record leaves it out.
 
 *** What is not heard yet
 

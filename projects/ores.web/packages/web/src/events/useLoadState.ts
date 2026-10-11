@@ -28,7 +28,8 @@ function startsWith(key: QueryKey, prefix: QueryKey): boolean {
 }
 
 /**
- * When the data of several queries last arrived and whether any is loading.
+ * When the data of several queries last arrived, when the oldest of it did, and
+ * whether any is loading.
  *
  * A page made of many reads is stale when any of what it shows was loaded before
  * a change, so the newest arrival of the group is the page's load. The queries
@@ -38,12 +39,17 @@ export function useLoadState(prefixes: readonly QueryKey[]): LoadState {
     const queries = useQueryClient();
     const matches = (key: QueryKey): boolean => prefixes.some((prefix) => startsWith(key, prefix));
     const isFetching = useIsFetching({ predicate: (query) => matches(query.queryKey) }) > 0;
-    const dataUpdatedAt = Math.max(
-        0,
-        ...queries
-            .getQueryCache()
-            .findAll({ predicate: (query) => matches(query.queryKey) })
-            .map((query) => query.state.dataUpdatedAt),
-    );
-    return { dataUpdatedAt, isFetching };
+    // Only the reads a screen is showing count. A page of a list that was read
+    // earlier and is no longer on screen stays in the cache, and its age says
+    // nothing about the data in front of the reader.
+    const arrivals = queries
+        .getQueryCache()
+        .findAll({ type: 'active', predicate: (query) => matches(query.queryKey) })
+        .map((query) => query.state.dataUpdatedAt)
+        .filter((arrived) => arrived > 0);
+    return {
+        dataUpdatedAt: Math.max(0, ...arrivals),
+        oldestUpdatedAt: arrivals.length === 0 ? 0 : Math.min(...arrivals),
+        isFetching,
+    };
 }

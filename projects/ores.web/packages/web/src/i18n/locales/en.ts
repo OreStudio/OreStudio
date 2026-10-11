@@ -3177,6 +3177,7 @@ export const en: SourceCatalogue = {
         refresh: 'Refresh',
         refreshStale: 'The data changed on the server. Refresh to see it.',
         refreshStaleAt: 'The data changed on the server at {time}. Refresh to see it.',
+        loadedAt: 'Loaded {time}',
         all: 'All',
         close: 'Close',
         open: 'Open',

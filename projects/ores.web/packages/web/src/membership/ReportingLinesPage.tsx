@@ -281,14 +281,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                 <PageHeader
                     title={t('access.hub.hierarchy')}
                     description={t('membership.reporting.lead')}
-                    actions={
-                        <RefreshButton
-                            onClick={refresh}
-                            pending={tree.isFetching}
-                            stale={news.stale}
-                            changedAt={news.changedAt}
-                        />
-                    }
+                    actions={<RefreshButton onClick={refresh} load={tree} news={news} />}
                 />
             </div>
 

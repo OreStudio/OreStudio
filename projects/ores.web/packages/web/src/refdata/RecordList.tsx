@@ -19,7 +19,7 @@
  *
  */
 
-import { keepPreviousData, useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     useEffect,
     useRef,
@@ -35,6 +35,7 @@ import { FlagOf, type FlagSource } from '../images/flags.js';
 import { type WatchedEntity } from '../events/EntityEvents.js';
 import { useChangedRows } from './changedRows.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
+import { useLoadState } from '../events/useLoadState.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Icon } from '../ui/Icon.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
@@ -317,20 +318,9 @@ export function RecordList<Row>({
     const { t } = useTranslation();
     const queries = useQueryClient();
     const state = useListState(source.filters);
-    const fetching = useIsFetching({ queryKey: ['records', source.key] }) > 0;
-    // When the newest page on screen arrived, read from the cache because the pages
-    // are read by the table below.
-    const loadedAt = Math.max(
-        0,
-        ...queries
-            .getQueryCache()
-            .findAll({ queryKey: ['records', source.key] })
-            .map((query) => query.state.dataUpdatedAt),
-    );
-    const news = useEntityChanges(source.watches ?? [], {
-        dataUpdatedAt: loadedAt,
-        isFetching: fetching,
-    });
+    // The pages are read by the table below, so the load is read from the cache.
+    const load = useLoadState([['records', source.key]]);
+    const news = useEntityChanges(source.watches ?? [], load);
     const add =
         source.mayAdd && onAdd !== undefined && addLabel !== undefined
             ? { label: addLabel, onAdd }
@@ -350,12 +340,7 @@ export function RecordList<Row>({
                     description={lead}
                     actions={
                         <div className="flex gap-2">
-                            <RefreshButton
-                                onClick={refresh}
-                                pending={fetching}
-                                stale={news.stale}
-                                changedAt={news.changedAt}
-                            />
+                            <RefreshButton onClick={refresh} load={load} news={news} />
                             {actions}
                             {add !== undefined && (
                                 <Button variant="primary" icon="add" onClick={add.onAdd}>

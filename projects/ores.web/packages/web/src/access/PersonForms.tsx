@@ -482,6 +482,7 @@ function IdentityDialog({
             [t('profile.identity.choosePhoto')]: (record) => record.imageId ?? '',
         },
         () => setEdits({}),
+        queries.getQueryState(['account', username])?.dataUpdatedAt,
     );
     const expectedVersion = news.expectedVersion === null ? '' : String(news.expectedVersion);
     const [commentary, setCommentary] = useState('');
@@ -537,6 +538,7 @@ function IdentityDialog({
         <Dialog
             title={t('profile.identity.editTitle')}
             name="person.identity"
+            loadedAt={news.loadedAt}
             onClose={onClose}
             wide
             footer={
@@ -669,6 +671,7 @@ export function ReportingLineDialog({
                 nameOfManager(record.reportsToAccountId),
         },
         () => setManagerId(undefined),
+        queries.getQueryState(['account', account.username])?.dataUpdatedAt,
     );
     const chosenManager = managerId ?? account.reportsToAccountId ?? '';
     const changed = chosenManager !== (account.reportsToAccountId ?? '');
@@ -697,6 +700,7 @@ export function ReportingLineDialog({
         <Dialog
             title={t('profile.identity.changeLine')}
             name="person.reporting_line"
+            loadedAt={news.loadedAt}
             onClose={onClose}
             footer={
                 <>
@@ -1128,6 +1132,7 @@ function ContactDialog({
             [t('profile.contact.webPage')]: (record) => record.webPage,
         },
         () => setEdits({}),
+        queries.getQueryState(['contact-information', me ? 'me' : accountId])?.dataUpdatedAt,
     );
     const [commentary, setCommentary] = useState('');
     const { busy, outcome } = edit;
@@ -1191,6 +1196,7 @@ function ContactDialog({
         <Dialog
             title={t('profile.contact.editTitle')}
             name="person.contact"
+            loadedAt={news.loadedAt}
             onClose={onClose}
             wide
             footer={

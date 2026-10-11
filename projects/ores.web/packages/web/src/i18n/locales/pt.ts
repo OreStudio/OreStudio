@@ -3199,6 +3199,7 @@ const pt: SourceCatalogue = {
         refresh: 'Atualizar',
         refreshStale: 'Os dados mudaram no servidor. Atualize para os ver.',
         refreshStaleAt: 'Os dados mudaram no servidor às {time}. Atualize para os ver.',
+        loadedAt: 'Carregado: {time}',
         all: 'Todos',
         close: 'Fechar',
         open: 'Abrir',

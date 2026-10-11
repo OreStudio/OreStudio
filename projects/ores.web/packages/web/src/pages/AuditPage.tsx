@@ -38,7 +38,7 @@ import { Timeline, kindTone } from '../timeline/Timeline.js';
 import type { Timeline as TimelineStream } from '@ores/wire-protocol/browser';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { AccountLockBadge } from '../ui/AccountLockBadge.js';
-import { Button, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
+import { Button, LinkButton, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { isZeroTimestamp } from '../ui/Time.js';
 
@@ -177,12 +177,9 @@ function RescueLink({ username }: { readonly username: string | undefined }): Re
         return null;
     }
     return (
-        <Link
-            className="text-xs text-accent-bright hover:underline"
-            to={`/rescue?username=${encodeURIComponent(username)}`}
-        >
+        <LinkButton size="sm" to={`/rescue?username=${encodeURIComponent(username)}`}>
             {t('shell.menu.rescue')}
-        </Link>
+        </LinkButton>
     );
 }
 

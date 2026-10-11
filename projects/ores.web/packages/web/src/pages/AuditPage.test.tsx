@@ -307,6 +307,7 @@ describe('the audit sign-ins screen', () => {
         const open = renderFailures([loginInfo({ locked: false })], false);
 
         expect(locked).toContain(`href="/rescue?username=${USERNAME}"`);
+        expect(locked).toMatch(/<a class="[^"]*border[^"]*" href="\/rescue\?username=/);
         expect(open).not.toContain('/rescue');
     });
 

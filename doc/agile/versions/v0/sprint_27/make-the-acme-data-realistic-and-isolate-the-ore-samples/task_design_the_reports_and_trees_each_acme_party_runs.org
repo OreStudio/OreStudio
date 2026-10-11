@@ -8,7 +8,7 @@
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
 #+branch: feature/design-the-reports-and-trees-each-acme-party-runs
-#+pr:
+#+pr: 3128
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -151,7 +151,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3128][#3128]] | [sql,doc] Give each ACME party the reports it would run |
 
 * Review
 

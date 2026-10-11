@@ -63,6 +63,16 @@ task and name that file in the Command column.
 
 * Notes
 
+- A related capture in the inbox: [[id:78F38558-7F15-47BF-BF57-F2C04B41C4F5][A feed binding's existence claim is keyed on the ORE key alone]].
+  The binding is the feed's consumer side and keys on the same ORE key, so
+  work the two together.
+- The FX feed screen and its standard are in place (PR of
+  [[id:6E54699C-427C-471A-AA70-FCCCD27ABC85][Build the FX price feed screen]]);
+  the screen derives the ORE key from the pair in =completeFeed= and shows it
+  on Details, which this task replaces with the oresmd identity.
+- The Ticks tab reads the BFF's tick buffer until the feed holds its series
+  identity; with it, the tab can read the stored observations.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

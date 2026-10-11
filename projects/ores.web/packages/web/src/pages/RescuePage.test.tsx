@@ -23,10 +23,10 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
+import { TranslationProvider } from '../i18n/Provider.js';
 import type { Account, LoginInfo } from '@ores/wire-protocol/browser';
 import { uuid } from '@ores/wire-protocol/browser';
-import { TranslationProvider } from '../i18n/Provider.js';
-import { RescueView, findAccounts } from './RescuePage.js';
+import { RescueView } from './RescuePage.js';
 
 /**
  * Rescue access, as a reader sees it.
@@ -94,70 +94,32 @@ describe('RescueView', () => {
 
         expect(markup).toContain('Jane Doe');
         expect(markup).toContain('jdoe');
-        expect(markup).toContain('jane.doe@example.com');
+        expect(markup).toContain('href="mailto:jane.doe@example.com"');
         expect(markup).toContain('Locked');
         expect(markup).toContain('7 failed attempts');
         expect(markup).toContain('203.0.113.44');
     });
 
-    it('says a lock leaves open sessions open', () => {
+    it('offers the lock and the unlock, and nothing the server cannot do', () => {
         const markup = render(account(), loginInfo());
 
-        expect(markup).toContain('A lock leaves open sessions open');
-    });
-
-    it('offers the recovery link and says it cannot be sent', () => {
-        const markup = render(account(), loginInfo());
-
-        expect(markup).toContain('Send the recovery link');
-        expect(markup).toContain('disabled');
-        expect(markup).toContain('no subject requests a reset');
-    });
-
-    it('offers no password the administrator could type', () => {
-        const markup = render(account(), loginInfo());
-
+        expect(markup).toContain('Unlocked');
+        expect(markup).not.toContain('recovery link');
+        expect(markup).not.toContain('Not available in this build');
         expect(markup).not.toContain('type="password"');
-        expect(markup).toContain('the screen does not offer it');
     });
 
-    it('states that an account with no login record has never signed in', () => {
+    it('says an account with no sign-in record has never signed in', () => {
         const markup = render(account(), null);
 
         expect(markup).toContain('has never signed in');
+        expect(markup).toContain('This account has no sign-in record yet.');
         expect(markup).toContain('Unlocked');
     });
 
-    it('lists the operations the server does not have', () => {
-        const markup = render(account(), loginInfo());
+    it('says an account that never signed in has no last sign-in time', () => {
+        const markup = render(account(), loginInfo({ lastLogin: '1970-01-01 00:00:00Z' }));
 
-        expect(markup).toContain('Activate or deactivate an account');
-        expect(markup).toContain('Self-service recovery');
-    });
-});
-
-describe('findAccounts', () => {
-    const locked = account();
-    const open = account({
-        id: uuid('99999999-9999-9999-9999-999999999999'),
-        username: 'open.one',
-    });
-    const ids = new Set([locked.id]);
-
-    it('lists only the locked accounts while the filter is on', () => {
-        expect(findAccounts([locked, open], '', true, ids)).toEqual([locked]);
-    });
-
-    it('lists every account once the filter is released', () => {
-        expect(findAccounts([locked, open], '', false, ids)).toEqual([locked, open]);
-    });
-
-    it('hides nothing while the locked accounts are not known', () => {
-        expect(findAccounts([locked, open], '', true, null)).toEqual([locked, open]);
-    });
-
-    it('applies the typed text on top of the filter', () => {
-        expect(findAccounts([locked, open], 'open', false, ids)).toEqual([open]);
-        expect(findAccounts([locked, open], 'open', true, ids)).toEqual([]);
+        expect(markup).toContain('Never signed in');
     });
 });

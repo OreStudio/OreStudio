@@ -51,7 +51,7 @@ function render(permissionCodes: readonly string[]): string {
         <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter>
-                    <OrganisationPage />
+                    <OrganisationPage mode="application" />
                 </MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,
@@ -61,19 +61,25 @@ function render(permissionCodes: readonly string[]): string {
 describe('the organisation area', () => {
     it('draws only the screens the person may read', () => {
         const none = render([]);
-        expect(none).not.toContain('href="/roles"');
-        expect(none).not.toContain('href="/rescue"');
-        expect(none).toContain('href="/hierarchy"');
+        expect(none).not.toContain('href="/organisation/roles"');
+        expect(none).not.toContain('href="/organisation/rescue"');
+        expect(none).not.toContain('href="/organisation/hierarchy"');
 
-        const some = render(['iam::roles:read']);
-        expect(some).toContain('href="/roles"');
-        expect(some).not.toContain('href="/rescue"');
+        const some = render(['iam::roles:read', 'iam::organisation:read']);
+        expect(some).toContain('href="/organisation/roles"');
+        expect(some).toContain('href="/organisation/hierarchy"');
+        expect(some).not.toContain('href="/organisation/rescue"');
     });
 
     it('draws Staff, Roles and Rescue access for a person who holds every read', () => {
         const all = render(['*']);
 
-        for (const href of ['/staff', '/hierarchy', '/roles', '/rescue']) {
+        for (const href of [
+            '/organisation/people',
+            '/organisation/hierarchy',
+            '/organisation/roles',
+            '/organisation/rescue',
+        ]) {
             expect(all).toContain(`href="${href}"`);
         }
     });

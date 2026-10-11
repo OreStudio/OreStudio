@@ -24,6 +24,7 @@ import { useNavigate, useParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { useAreaRoot } from '../shell/AreaTrail.js';
 import { currencyPath } from './currencies.js';
 import { HistoryPanel } from './HistoryPanel.js';
 import { RecordList, useRecordSource } from './RecordList.js';
@@ -70,10 +71,7 @@ export function DeskGroupsPage(): ReactNode {
                 source={source}
                 title={t('refdata.deskGroups.title')}
                 lead={t('refdata.deskGroups.lead')}
-                crumbs={[
-                    { label: t('refdata.area.title'), to: '/refdata' },
-                    { label: t('refdata.deskGroups.title') },
-                ]}
+                crumbs={[...useAreaRoot('refdata'), { label: t('refdata.deskGroups.title') }]}
                 pathOf={(row) => deskGroupPath(show(row['code']))}
                 addLabel={t('refdata.deskGroups.add')}
                 onAdd={() => setAdding(true)}
@@ -147,7 +145,7 @@ function DeskGroupBody({ row }: { readonly row: RecordRow }): ReactNode {
         <div className="space-y-4">
             <RecordHeader
                 crumbs={[
-                    { label: t('refdata.area.title'), to: '/refdata' },
+                    ...useAreaRoot('refdata'),
                     { label: t('refdata.deskGroups.title'), to: deskGroupPath() },
                     { label: code },
                 ]}

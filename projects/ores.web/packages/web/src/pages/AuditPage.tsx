@@ -38,7 +38,9 @@ import { Avatar, imageUrl } from '../ui/Images.js';
 import { Timeline, kindTone } from '../timeline/Timeline.js';
 import type { Timeline as TimelineStream } from '@ores/wire-protocol/browser';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { rescuePath } from '../shell/paths.js';
 import { AccountLockBadge } from '../ui/AccountLockBadge.js';
+import { RefreshNow } from '../ui/RefreshButton.js';
 import { Button, LinkButton, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { isZeroTimestamp } from '../ui/Time.js';
@@ -183,7 +185,7 @@ function RescueLink({ username }: { readonly username: string | undefined }): Re
         <LinkButton
             size="sm"
             className="w-8 px-0!"
-            to={`/rescue?username=${encodeURIComponent(username)}`}
+            to={rescuePath(username)}
             title={t('shell.menu.rescue')}
             aria-label={t('shell.menu.rescue')}
         >
@@ -981,9 +983,7 @@ export function AuditPage(): ReactNode {
                                 {t('auditSignIns.readAt', { at: readAt })}
                             </span>
                         )}
-                        <Button variant="secondary" onClick={refresh}>
-                            {t('auditSignIns.refresh')}
-                        </Button>
+                        <RefreshNow onClick={refresh} />
                     </div>
                 }
             />

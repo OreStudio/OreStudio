@@ -20,6 +20,7 @@
  */
 
 import type { SessionMode } from '@ores/wire-protocol/browser';
+import { PATHS } from './paths.js';
 
 /** One entry of the shell's menu: an area, named for what a person does there. */
 export interface MenuItem {
@@ -46,11 +47,10 @@ export interface MenuItem {
  */
 export const MENU: readonly MenuItem[] = [
     { nameKey: 'shell.menu.home', to: '/' },
-    { nameKey: 'shell.menu.tenants', to: '/tenants', scope: 'installation' },
-    { nameKey: 'shell.menu.parties', to: '/parties', permission: 'refdata::parties:read' },
+    { nameKey: 'shell.menu.refdata', to: PATHS.refdata },
     {
         nameKey: 'shell.menu.organisation',
-        to: '/organisation',
+        to: PATHS.organisation,
         permission: [
             'iam::accounts:read',
             'iam::organisation:read',
@@ -58,10 +58,15 @@ export const MENU: readonly MenuItem[] = [
             'iam::accounts:lock',
         ],
     },
+    {
+        nameKey: 'shell.menu.marketdata',
+        to: '/market-data/evolution',
+        permission: 'marketdata::curve_snapshots:read',
+    },
     { nameKey: 'shell.menu.requests', to: '/requests' },
-    { nameKey: 'shell.menu.refdata', to: '/refdata' },
-    { nameKey: 'shell.menu.operations', to: '/operations' },
+    { nameKey: 'shell.menu.operations', to: PATHS.operations },
     { nameKey: 'shell.menu.development', to: '/development' },
+    { nameKey: 'shell.menu.tenants', to: '/tenants', scope: 'installation' },
 ];
 
 export function modeKey(mode: SessionMode): string {

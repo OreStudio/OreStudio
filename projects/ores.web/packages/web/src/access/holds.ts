@@ -63,3 +63,26 @@ export function useHeld(): (code: string) => boolean {
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
     return holdsFrom(new Set((access.data?.roles ?? []).flatMap((role) => role.permissionCodes)));
 }
+
+/** How the read of the person's permissions stands, for the screen that must say so. */
+export type AccessState =
+    | { readonly kind: 'ready' }
+    | { readonly kind: 'slow' }
+    | { readonly kind: 'failed'; readonly message: string; readonly retry: () => void };
+
+/**
+ * Whether the permissions were read. While they are not, `useHolds` answers
+ * that the person holds nothing, which is indistinguishable from a person who
+ * may do nothing; this is how a screen tells the two apart.
+ */
+export function useAccessState(): AccessState {
+    const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
+    if (access.isError) {
+        return {
+            kind: 'failed',
+            message: access.error.message,
+            retry: () => void access.refetch(),
+        };
+    }
+    return access.isPending && access.failureCount > 0 ? { kind: 'slow' } : { kind: 'ready' };
+}

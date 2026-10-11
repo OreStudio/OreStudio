@@ -20,82 +20,27 @@
  */
 
 import type { ReactNode } from 'react';
+import type { SessionMode } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { AreaCards } from '../shell/AreaCards.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
 import { PageHeader } from '../ui/Primitives.js';
-import { Tiles, type Tile } from '../ui/Tiles.js';
-import { Crumbs } from '../refdata/shared.js';
-import { useHolds } from './holds.js';
-import { meets } from './permissions.js';
-import { NEEDS } from './screens.js';
-
-/** Where the organisation area lives. */
-export const ORGANISATION_PATH = '/organisation';
-
-/** Where the staff list lives. */
-export const STAFF_PATH = '/staff';
-
-/** Where the reporting hierarchy lives. */
-export const HIERARCHY_PATH = '/hierarchy';
 
 /**
- * Organisation, the area: the staff of the tenant and the hierarchy they report in.
- * Each is a tile, the same tile the landing page draws.
+ * Organisation, the area: the people of the tenant, who they report to, what
+ * they may do, and getting one back in. The cards come from the one registry
+ * that every area and Home draw from, and each is drawn for the person who
+ * holds the read of its screen.
  */
-export function OrganisationPage(): ReactNode {
+export function OrganisationPage({ mode }: { readonly mode: SessionMode }): ReactNode {
     const { t } = useTranslation();
-    const holds = useHolds();
-    // A member does not read accounts, so their staff list is the people of
-    // their parties, which the organisation read answers.
-    const tiles: readonly Tile[] = [
-        ...(meets(holds, NEEDS.staff)
-            ? ([
-                  {
-                      title: t('access.hub.staff'),
-                      body: t('access.hub.staffBody'),
-                      to: STAFF_PATH,
-                      icon: 'person',
-                  },
-              ] satisfies Tile[])
-            : []),
-        {
-            title: t('access.hub.hierarchy'),
-            body: t('access.hub.hierarchyBody'),
-            to: HIERARCHY_PATH,
-            icon: 'people',
-        },
-        ...(holds('iam::roles:read')
-            ? ([
-                  {
-                      title: t('home.tenant.roles'),
-                      body: t('home.tenant.rolesBody'),
-                      to: '/roles',
-                      icon: 'access',
-                  },
-              ] satisfies Tile[])
-            : []),
-        ...(holds('iam::accounts:lock')
-            ? ([
-                  {
-                      title: t('home.tenant.rescue'),
-                      body: t('home.tenant.rescueBody'),
-                      to: '/rescue',
-                      icon: 'unlock',
-                  },
-              ] satisfies Tile[])
-            : []),
-    ];
     return (
         <div className="space-y-6">
             <div>
-                <Crumbs
-                    parts={[
-                        { label: t('shell.menu.home'), to: '/' },
-                        { label: t('access.hub.title') },
-                    ]}
-                />
+                <AreaTrail area="organisation" />
                 <PageHeader title={t('access.hub.title')} description={t('access.hub.lead')} />
             </div>
-            <Tiles tiles={tiles} />
+            <AreaCards area="organisation" mode={mode} />
         </div>
     );
 }

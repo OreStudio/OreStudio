@@ -208,8 +208,8 @@ describe('Roles', () => {
                     ['roles-page', '', '', false, 0, 15],
                     rolesPage([roleRow(TRADING, 'Trading', 3)], 1, 1),
                 ),
-            '/roles',
-            <Route path="/roles" element={<RolesPage />} />,
+            '/organisation/roles',
+            <Route path="/organisation/roles" element={<RolesPage />} />,
         );
 
         expect(html).toContain('Trading');
@@ -230,8 +230,8 @@ describe('Roles', () => {
                         31,
                     ),
                 ),
-            '/roles',
-            <Route path="/roles" element={<RolesPage />} />,
+            '/organisation/roles',
+            <Route path="/organisation/roles" element={<RolesPage />} />,
         );
 
         expect(html).toContain('type="search"');
@@ -287,7 +287,7 @@ describe('Roles', () => {
         );
 
         expect(html).toContain('Daniel Okafor');
-        expect(html).toContain('href="/people/daniel"');
+        expect(html).toContain('href="/organisation/people/daniel"');
         expect(html).toContain('Showing 1–1 of 31 people');
         // A role somebody holds cannot be deleted.
         expect(html).toMatch(/<button[^>]*disabled=""[^>]*>(?:(?!<\/button>)[\s\S])*Delete/);
@@ -335,7 +335,7 @@ describe('Roles', () => {
 });
 
 describe('A person', () => {
-    function person(me: string, path = '/people/daniel?tab=roles'): string {
+    function person(me: string, path = '/organisation/people/daniel?tab=roles'): string {
         return render(
             (client) => {
                 client.setQueryData(['account', 'daniel'], daniel);
@@ -347,7 +347,7 @@ describe('A person', () => {
                 });
             },
             path,
-            <Route path="/people/:username" element={<PersonPage me={me} />} />,
+            <Route path="/organisation/people/:username" element={<PersonPage me={me} />} />,
         );
     }
 
@@ -357,7 +357,7 @@ describe('A person', () => {
      * because each of those reads is a permission they do not hold and a tab
      * that answers with a refusal is worse than an absent tab.
      */
-    function member(me: string, path = '/people/daniel'): string {
+    function member(me: string, path = '/organisation/people/daniel'): string {
         return render(
             (client) => {
                 client.setQueryData(['account', 'daniel'], daniel);
@@ -366,7 +366,7 @@ describe('A person', () => {
                 });
             },
             path,
-            <Route path="/people/:username" element={<PersonPage me={me} />} />,
+            <Route path="/organisation/people/:username" element={<PersonPage me={me} />} />,
         );
     }
 
@@ -387,19 +387,19 @@ describe('A person', () => {
      * they can put their own address.
      */
     it('offers a member their own contact record', () => {
-        const html = member('daniel', '/people/daniel');
+        const html = member('daniel', '/organisation/people/daniel');
 
         expect(html).toContain('>Contact<');
     });
 
     it('marks their details read only for a viewer who may not change them', () => {
-        const html = member('priya', '/people/daniel');
+        const html = member('priya', '/organisation/people/daniel');
         expect(html).toContain('Read only');
         expect(html).not.toContain('iam::');
     });
 
     it('opens on their details, with their contact, roles and sign-ins as tabs', () => {
-        const html = person('priya', '/people/daniel');
+        const html = person('priya', '/organisation/people/daniel');
 
         expect(html).toContain('>Details<');
         expect(html).toContain('>Contact<');
@@ -407,13 +407,13 @@ describe('A person', () => {
         expect(html).toContain('>Sign-ins<');
         // The trail back is Organisation, then Staff.
         expect(html).toContain('href="/organisation"');
-        expect(html).toContain('href="/staff"');
+        expect(html).toContain('href="/organisation/people"');
         expect(html).not.toMatch(/Take away/);
     });
 
     it('offers a person the doors to their own password and access, and nobody else’s', () => {
-        const own = person('daniel', '/people/daniel');
-        const colleague = person('priya', '/people/daniel');
+        const own = person('daniel', '/organisation/people/daniel');
+        const colleague = person('priya', '/organisation/people/daniel');
 
         expect(own).toContain('Protect my account');
         expect(own).toContain('href="/security"');

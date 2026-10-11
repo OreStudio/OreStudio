@@ -19,6 +19,7 @@
  *
  */
 
+import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type { LoadState } from '../events/useEntityChanges.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -77,5 +78,48 @@ export function RefreshButton({
             </Button>
             <LoadedAt at={load.oldestUpdatedAt ?? load.dataUpdatedAt} />
         </div>
+    );
+}
+
+/**
+ * Refresh for a screen that is not told when its data changes: it reads again
+ * and shows that it is reading. It has no stale state, because nothing says
+ * the data went stale.
+ */
+export function RefreshNow({
+    onClick,
+    pending = false,
+}: {
+    readonly onClick: () => void;
+    readonly pending?: boolean;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <Button icon="refresh" onClick={onClick} pending={pending}>
+            {t('common.refresh')}
+        </Button>
+    );
+}
+
+/**
+ * Refresh for a screen whose rows come from queries: it reads again every query
+ * that starts with one of the given keys, and shows that it is reading.
+ */
+export function RefreshQueries({
+    keys,
+}: {
+    readonly keys: readonly (readonly unknown[])[];
+}): ReactNode {
+    const client = useQueryClient();
+    const reading = keys.some((queryKey) => client.isFetching({ queryKey }) > 0);
+    return (
+        <RefreshNow
+            pending={reading}
+            onClick={() => {
+                for (const queryKey of keys) {
+                    void client.invalidateQueries({ queryKey });
+                }
+            }}
+        />
     );
 }

@@ -32,6 +32,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
+import { PATHS } from '../shell/paths.js';
 import { Tag } from '../ui/Primitives.js';
 
 export interface JourneyTarget {
@@ -85,7 +86,7 @@ export const JOURNEY_TARGETS: Readonly<Record<JourneyId, JourneyTarget>> = {
     // Audit sign-ins.
     '22AC8DD8-A440-4330-9992-47A5E9985473': {
         titleKey: 'operations.journeys.audit',
-        to: '/audit',
+        to: PATHS.signIns,
     },
 };
 

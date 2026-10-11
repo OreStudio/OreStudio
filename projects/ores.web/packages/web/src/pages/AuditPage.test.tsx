@@ -33,6 +33,7 @@ import type {
 } from '@ores/wire-protocol/browser';
 import { uuid } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
+import { personPath, rescuePath } from '../shell/paths.js';
 import {
     AUDIT_ACCOUNTS_QUERY_KEY,
     AUDIT_EVENTS_QUERY_KEY,
@@ -209,7 +210,7 @@ describe('the audit sign-ins screen', () => {
     it('opens on the active sessions, and offers to end one', () => {
         const html = render();
 
-        expect(html).toContain('Audit: sign-ins');
+        expect(html).toContain('Sign-ins');
         expect(html).toContain('Active sessions');
         expect(html).toContain('ores.web');
         expect(html).toContain('203.0.113.44');
@@ -299,18 +300,20 @@ describe('the audit sign-ins screen', () => {
     it('links the account name to the page of the person', () => {
         const html = render('/audit?tab=failures');
 
-        expect(html).toContain(`href="/people/${USERNAME}"`);
+        expect(html).toContain(`href="${personPath(USERNAME)}"`);
     });
 
     it('links a locked account to its rescue page, and an unlocked one to nothing', () => {
         const locked = renderFailures([loginInfo({ locked: true })], false);
         const open = renderFailures([loginInfo({ locked: false })], false);
 
-        expect(locked).toContain(`href="/rescue?username=${USERNAME}"`);
-        expect(locked).toMatch(/<a [^>]*class="[^"]*border[^"]*"[^>]*href="\/rescue\?username=/);
+        expect(locked).toContain(`href="${rescuePath(USERNAME)}"`);
+        expect(locked).toMatch(
+            /<a [^>]*class="[^"]*border[^"]*"[^>]*href="\/organisation\/rescue\?username=/,
+        );
         expect(locked).toContain('aria-label="Rescue access"');
         expect(locked).toContain('title="Rescue access"');
-        expect(open).not.toContain('/rescue');
+        expect(open).not.toContain('/organisation/rescue');
     });
 
     it('draws the photo of the account beside its name on every tab', () => {
@@ -424,7 +427,7 @@ describe('the audit helpers', () => {
             [authEvent({ accountId: '', sessionId: '', username: USERNAME })],
         );
 
-        expect(html).toContain(`href="/people/${USERNAME}"`);
+        expect(html).toContain(`href="${personPath(USERNAME)}"`);
         expect(html).toContain(`/api/images/${photo}`);
     });
 

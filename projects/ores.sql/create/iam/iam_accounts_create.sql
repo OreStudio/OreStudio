@@ -228,6 +228,7 @@ begin
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
     -- Validate image_id (optional soft FK to ores_assets_images_tbl)
+    if NEW.image_id is not null then
         if not exists (
             select 1 from ores_assets_images_tbl
             where tenant_id = NEW.tenant_id
@@ -240,6 +241,7 @@ begin
     end if;
 
     -- Validate reports_to_account_id (optional soft FK to ores_iam_accounts_tbl)
+    if NEW.reports_to_account_id is not null then
         if not ores_iam_account_exists_fn(NEW.reports_to_account_id) then
             raise exception 'Invalid reports_to_account_id: %. Account must exist.', NEW.reports_to_account_id
                 using errcode = '23503';

@@ -512,6 +512,7 @@ begin
 {{/nullable}}
 {{#nullable}}
     -- Validate {{column}} (optional soft FK to {{table}})
+    if NEW.{{column}} is not null then
 {{#exists_function}}
         if not {{exists_function}}(NEW.{{column}}) then
             raise exception '{{error_message}}', NEW.{{column}}

@@ -179,6 +179,7 @@ begin
 {{#junction.foreign_keys}}
 {{#nullable}}
     -- Validate {{column}} (optional soft FK to {{table}})
+    if new.{{column}} is not null then
 {{#exists_function}}
         if not {{exists_function}}(new.{{column}}) then
             raise exception '{{error_message}}', new.{{column}}

@@ -116,6 +116,7 @@ begin
     end if;
 
     -- Validate part_code (optional soft FK to ores_inbox_approval_parts_tbl)
+    if NEW.part_code is not null then
         if not exists (
             select 1 from ores_inbox_approval_parts_tbl
             where tenant_id = ores_utility_system_tenant_id_fn()

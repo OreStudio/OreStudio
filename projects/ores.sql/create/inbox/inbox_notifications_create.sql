@@ -104,6 +104,7 @@ begin
     end if;
 
     -- Validate audience_permission_code (optional soft FK to ores_iam_permissions_tbl)
+    if NEW.audience_permission_code is not null then
         if not exists (
             select 1 from ores_iam_permissions_tbl
             where tenant_id = ores_utility_system_tenant_id_fn()

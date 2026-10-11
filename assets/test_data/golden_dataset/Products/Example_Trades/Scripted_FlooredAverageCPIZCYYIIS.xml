@@ -13,7 +13,7 @@
       <Notional type="number">10000000</Notional>
       <PayCurrency type="currency">EUR</PayCurrency>
       <FixedDayCounter type="dayCounter">Year</FixedDayCounter>
-      <FixedRate type="number">0.0239799991</FixedRate>
+      <FixedRate type="number">0.02398</FixedRate>
       <FixedLegSchedule type="event">
         <ScheduleData>
           <Rules>
@@ -41,8 +41,8 @@
           </Rules>
         </ScheduleData>
       </FloatLegSchedule>
-      <Floor type="number">0</Floor>
-      <BaseCPI type="number">89.9899979</BaseCPI>
+      <Floor type="number">0.0</Floor>
+      <BaseCPI type="number">89.99</BaseCPI>
       <ObservationSchedule type="event">
         <ScheduleData>
           <Rules>

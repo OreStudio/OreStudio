@@ -40,7 +40,7 @@
         </Indexings>
         <FixedLegData>
           <Rates>
-            <Rate>0.0302000009</Rate>
+            <Rate>0.030200</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -76,7 +76,7 @@
           <IsInArrears>false</IsInArrears>
           <IncludeSpread>true</IncludeSpread>
           <Spreads>
-            <Spread>0.0149999997</Spread>
+            <Spread>0.015</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

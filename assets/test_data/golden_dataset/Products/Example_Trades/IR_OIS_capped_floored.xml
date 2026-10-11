@@ -36,10 +36,10 @@
           <RateCutoff>2</RateCutoff>
           <IncludeSpread>false</IncludeSpread>
           <Spreads>
-            <Spread>0.00999999978</Spread>
+            <Spread>0.01</Spread>
           </Spreads>
           <Floors>
-            <Floor>0</Floor>
+            <Floor>0.0</Floor>
           </Floors>
           <NakedOption>false</NakedOption>
           <LocalCapFloor>false</LocalCapFloor>
@@ -84,10 +84,10 @@
           <RateCutoff>2</RateCutoff>
           <IncludeSpread>true</IncludeSpread>
           <Spreads>
-            <Spread>0.00999999978</Spread>
+            <Spread>0.01</Spread>
           </Spreads>
           <Floors>
-            <Floor>0</Floor>
+            <Floor>0.0</Floor>
           </Floors>
           <NakedOption>false</NakedOption>
           <LocalCapFloor>false</LocalCapFloor>
@@ -132,10 +132,10 @@
           <RateCutoff>2</RateCutoff>
           <IncludeSpread>false</IncludeSpread>
           <Spreads>
-            <Spread>0.00999999978</Spread>
+            <Spread>0.01</Spread>
           </Spreads>
           <Floors>
-            <Floor>0</Floor>
+            <Floor>0.0</Floor>
           </Floors>
           <NakedOption>false</NakedOption>
           <LocalCapFloor>true</LocalCapFloor>
@@ -180,10 +180,10 @@
           <RateCutoff>2</RateCutoff>
           <IncludeSpread>true</IncludeSpread>
           <Spreads>
-            <Spread>0.00999999978</Spread>
+            <Spread>0.01</Spread>
           </Spreads>
           <Floors>
-            <Floor>0</Floor>
+            <Floor>0.0</Floor>
           </Floors>
           <NakedOption>false</NakedOption>
           <LocalCapFloor>true</LocalCapFloor>

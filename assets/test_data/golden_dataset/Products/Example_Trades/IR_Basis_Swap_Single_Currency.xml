@@ -17,7 +17,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>ACT</DayCounter>
         <Notionals>
-          <Notional>15000000</Notional>
+          <Notional>15000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -34,7 +34,7 @@
           <IsInArrears>true</IsInArrears>
           <FixingDays>0</FixingDays>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.000000</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -45,7 +45,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>12084375</Notional>
+          <Notional>12084375.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -62,7 +62,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.000000</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

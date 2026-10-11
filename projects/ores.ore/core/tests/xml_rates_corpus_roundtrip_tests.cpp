@@ -163,9 +163,9 @@ std::string first_difference(const std::string& a, const std::string& b) {
         std::size_t i = 0;
         while (i < la.size() && i < lb.size() && la[i] == lb[i])
             ++i;
-        const auto from = i > 60 ? i - 60 : 0;
-        return la.substr(0, la.find(' ')) + " differs near: first=..." + la.substr(from, 160) +
-               " second=..." + lb.substr(from, 160);
+        const auto from = i > 40 ? i - 40 : 0;
+        return la.substr(0, la.find(' ')) + " differs near: first=..." + la.substr(from, 90) +
+               " second=..." + lb.substr(from, 90);
     }
     return "the renderings differ in length";
 }

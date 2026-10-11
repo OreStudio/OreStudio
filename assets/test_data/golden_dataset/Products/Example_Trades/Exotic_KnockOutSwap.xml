@@ -24,7 +24,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>100000000</Notional>
+          <Notional>100000000.00</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -47,7 +47,7 @@
         <PaymentConvention>Following</PaymentConvention>
         <DayCounter>ACT/ACT</DayCounter>
         <Notionals>
-          <Notional>100000000</Notional>
+          <Notional>100000000.00</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -61,7 +61,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0500000007</Rate>
+            <Rate>0.05</Rate>
           </Rates>
         </FixedLegData>
       </LegData>

@@ -20,7 +20,7 @@
           <Currency>USD</Currency>
           <CashflowData>
             <Cashflow>
-              <Amount date="2022-06-17">1000</Amount>
+              <Amount date="2022-06-17">1000.0</Amount>
             </Cashflow>
           </CashflowData>
         </LegData>
@@ -47,7 +47,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0659999996</Rate>
+              <Rate>0.066</Rate>
             </Rates>
           </FixedLegData>
         </LegData>
@@ -70,7 +70,7 @@
           <Currency>USD</Currency>
           <CashflowData>
             <Cashflow>
-              <Amount date="2022-12-16">0</Amount>
+              <Amount date="2022-12-16">0.0</Amount>
               <Amount date="2023-06-17">502755</Amount>
               <Amount date="2023-12-16">1005510</Amount>
               <Amount date="2024-06-16">1508265</Amount>

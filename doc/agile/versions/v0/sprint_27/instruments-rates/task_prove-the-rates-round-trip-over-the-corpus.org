@@ -69,9 +69,10 @@ task and name that file in the Command column.
 | Rates documents in the corpus | 47 | =ores.ore.core.tests "every rates trade in the corpus comes back as the same family rows"= | b50b0acba4 |
 | Rates trades in those documents | 70 | same | b50b0acba4 |
 | Documents whose family rows change on the round trip | 0 | same; the known-differences set is empty | b50b0acba4 |
-| ORE core suite | 634 cases, 482,910 assertions, all pass | =ores.ore.core.tests= | b50b0acba4 |
-| Trading core suite | 152 cases, 1,026 assertions, all pass | =ores.trading.core.tests= | b50b0acba4 |
-| Rates eventing tests | 10 added; 54 eventing cases pass in all | =ores.trading.core.tests "[eventing]"= | b50b0acba4 |
+| ORE core suite | 640 cases, 482,938 assertions, all pass | =ores.ore.core.tests= | the PR head |
+| Trading core suite | 152 cases, 1,080 assertions, all pass | =ores.trading.core.tests= | c82f06be8a |
+| Rates eventing tests | 10 added; 54 eventing cases pass in all | =ores.trading.core.tests "[eventing]"= | c82f06be8a |
+| Golden files regenerated for the digits change | 73 of 132 | =ORES_BOOTSTRAP_GOLDENS=1 ores.ore.core.tests every_example_trade_round_trips_through_a_golden= | the PR head |
 
 * Notes
 
@@ -112,6 +113,7 @@ via its "Verifies task" field.
 | 7 | =parse_code= falls back silently on an unknown code | swap_instrument_mapper.cpp | decline | The pattern existed before this task; the corpus test catches a document that hits it. |
 | 8 | =REQUIRE= in the loop leaves the scratch directory on failure | xml_rates_corpus_roundtrip_tests.cpp | decline | The next run clears the directory first. |
 | 9 | Confirm CI initialises =external/ore= | xml_rates_corpus_roundtrip_tests.cpp | decline | The path is vendored in the repository, and CI does not run the tests. |
+| 10 | After the rebase the swap leg rates differed on the round trip (0.0065 came back as 0.00650000013) | domain.cpp, swap_instrument_mapper.cpp | accept | Main made the rate an exact decimal. The writer printed a float with nine digits. The writer now prints a leaf's own digits, the reverse mapper and the stress mapper hand them over, and the goldens are regenerated. |
 
 * Result
 
@@ -133,3 +135,12 @@ the database.
 
 Acceptance met: the corpus round trip is equivalent, there is no migration,
 the eventing tests are generated, and the measurements carry their commands.
+
+After the rebase onto main, which holds money as an exact decimal, the proof
+failed on 20 documents: the exporter wrote a rate as a nine-digit float, so
+0.0065 came back as 0.00650000013. The exporter now writes the digits a leaf
+carries. The reapply script patches the generated writer, the rates and
+stress test reverse mappers set the digits on the leaves, and 73 golden files
+now hold the document's own digits. The FRA's notional and strike are bare
+floats in the ORE binding, so they carry no digits and are not covered. That
+is a separate defect, noted for a follow-up task.

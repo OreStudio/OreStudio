@@ -65,7 +65,7 @@
             <IsInArrears>false</IsInArrears>
             <FixingDays>2</FixingDays>
             <Spreads>
-              <Spread>0.00999999978</Spread>
+              <Spread>0.01</Spread>
             </Spreads>
           </FloatingLegData>
         </LegData>

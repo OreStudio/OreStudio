@@ -33,12 +33,12 @@
         <CMSLegData>
           <Index>USD-CMS-30Y</Index>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.000000</Spread>
           </Spreads>
         </CMSLegData>
       </LegData>
       <Caps>
-        <Cap>0.00150000001</Cap>
+        <Cap>0.0015</Cap>
       </Caps>
     </CapFloorData>
   </Trade>

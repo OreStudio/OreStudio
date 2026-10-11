@@ -39,7 +39,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.000000</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -79,7 +79,7 @@
           <IsInArrears>false</IsInArrears>
           <IncludeSpread>true</IncludeSpread>
           <Spreads>
-            <Spread>0.0149999997</Spread>
+            <Spread>0.015</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -125,7 +125,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.000000</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -165,7 +165,7 @@
           <IsInArrears>false</IsInArrears>
           <IncludeSpread>true</IncludeSpread>
           <Spreads>
-            <Spread>0.0149999997</Spread>
+            <Spread>0.015</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

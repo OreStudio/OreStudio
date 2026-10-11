@@ -40,7 +40,7 @@
           <PaymentConvention>ModifiedFollowing</PaymentConvention>
           <DayCounter>A360</DayCounter>
           <Notionals>
-            <Notional>1000000</Notional>
+            <Notional>1000000.00</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -55,7 +55,7 @@
           <FloatingLegData>
             <Index>EUR-EURIBOR-3M</Index>
             <Spreads>
-              <Spread>0.0199999996</Spread>
+              <Spread>0.02</Spread>
             </Spreads>
           </FloatingLegData>
         </LegData>
@@ -97,7 +97,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>ACT/ACT</DayCounter>
         <Notionals>
-          <Notional>1000000</Notional>
+          <Notional>1000000.00</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -114,7 +114,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0.0250000004</Spread>
+            <Spread>0.025</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -125,7 +125,7 @@
         <PaymentConvention>ModifiedFollowing</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>1000000</Notional>
+          <Notional>1000000.00</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -140,7 +140,7 @@
         <FloatingLegData>
           <Index>EUR-EURIBOR-3M</Index>
           <Spreads>
-            <Spread>0.0199999996</Spread>
+            <Spread>0.02</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

@@ -45,7 +45,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0399999991</Rate>
+            <Rate>0.04</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -102,68 +102,68 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>0</FixingDays>
           <Spreads>
-            <Spread>0.00400000019</Spread>
-            <Spread>0.00400000019</Spread>
-            <Spread>0.00400000019</Spread>
-            <Spread>0.00400000019</Spread>
-            <Spread>0.00400000019</Spread>
-            <Spread>0.00400000019</Spread>
-            <Spread>0.00400000019</Spread>
-            <Spread>0.00400000019</Spread>
-            <Spread>0.00400000019</Spread>
-            <Spread>0.00400000019</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
+            <Spread>0.004</Spread>
+            <Spread>0.004</Spread>
+            <Spread>0.004</Spread>
+            <Spread>0.004</Spread>
+            <Spread>0.004</Spread>
+            <Spread>0.004</Spread>
+            <Spread>0.004</Spread>
+            <Spread>0.004</Spread>
+            <Spread>0.004</Spread>
+            <Spread>0.004</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
           </Spreads>
           <Caps>
-            <Cap>0.0250000004</Cap>
-            <Cap>0.0250000004</Cap>
-            <Cap>0.0250000004</Cap>
-            <Cap>0.0250000004</Cap>
-            <Cap>0.0250000004</Cap>
-            <Cap>0.0250000004</Cap>
-            <Cap>0.0250000004</Cap>
-            <Cap>0.0250000004</Cap>
-            <Cap>0.0250000004</Cap>
-            <Cap>0.0250000004</Cap>
-            <Cap>0.0299999993</Cap>
-            <Cap>0.0299999993</Cap>
-            <Cap>0.0299999993</Cap>
-            <Cap>0.0299999993</Cap>
-            <Cap>0.0299999993</Cap>
-            <Cap>0.0299999993</Cap>
-            <Cap>0.0299999993</Cap>
-            <Cap>0.0299999993</Cap>
-            <Cap>0.0299999993</Cap>
-            <Cap>0.0299999993</Cap>
-            <Cap>0.0450000018</Cap>
-            <Cap>0.0450000018</Cap>
-            <Cap>0.0450000018</Cap>
-            <Cap>0.0450000018</Cap>
-            <Cap>0.0450000018</Cap>
-            <Cap>0.0450000018</Cap>
-            <Cap>0.0450000018</Cap>
-            <Cap>0.0450000018</Cap>
-            <Cap>0.0450000018</Cap>
-            <Cap>0.0450000018</Cap>
+            <Cap>0.025</Cap>
+            <Cap>0.025</Cap>
+            <Cap>0.025</Cap>
+            <Cap>0.025</Cap>
+            <Cap>0.025</Cap>
+            <Cap>0.025</Cap>
+            <Cap>0.025</Cap>
+            <Cap>0.025</Cap>
+            <Cap>0.025</Cap>
+            <Cap>0.025</Cap>
+            <Cap>0.030</Cap>
+            <Cap>0.030</Cap>
+            <Cap>0.030</Cap>
+            <Cap>0.030</Cap>
+            <Cap>0.030</Cap>
+            <Cap>0.030</Cap>
+            <Cap>0.030</Cap>
+            <Cap>0.030</Cap>
+            <Cap>0.030</Cap>
+            <Cap>0.030</Cap>
+            <Cap>0.045</Cap>
+            <Cap>0.045</Cap>
+            <Cap>0.045</Cap>
+            <Cap>0.045</Cap>
+            <Cap>0.045</Cap>
+            <Cap>0.045</Cap>
+            <Cap>0.045</Cap>
+            <Cap>0.045</Cap>
+            <Cap>0.045</Cap>
+            <Cap>0.045</Cap>
           </Caps>
           <Gearings>
             <Gearing>1.5</Gearing>

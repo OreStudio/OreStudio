@@ -13,7 +13,7 @@
       <Notional type="number">10000000</Notional>
       <PayCurrency type="currency">EUR</PayCurrency>
       <IborLegDayCounter type="dayCounter">ACT/360</IborLegDayCounter>
-      <IborSpread type="number">0.00700000022</IborSpread>
+      <IborSpread type="number">0.0070</IborSpread>
       <IborIndex type="index">EUR-EURIBOR-6M</IborIndex>
       <PayIborLeg type="bool">false</PayIborLeg>
       <IborLegSchedule type="event">
@@ -58,9 +58,9 @@
           <Convention>ModifiedFollowing</Convention>
         </DerivedSchedule>
       </InflationLeg1_FixingSchedule>
-      <InflationLeg1_Gearing type="number">0.00124999997</InflationLeg1_Gearing>
+      <InflationLeg1_Gearing type="number">0.00125</InflationLeg1_Gearing>
       <InflationLeg1_Floor type="number">1</InflationLeg1_Floor>
-      <InflationLeg1_InitialCPI type="number">105.099998</InflationLeg1_InitialCPI>
+      <InflationLeg1_InitialCPI type="number">105.1</InflationLeg1_InitialCPI>
       <InflationLeg1_SubtractNotional type="bool">false</InflationLeg1_SubtractNotional>
       <InflationLeg2_DayCounter type="dayCounter">1/1</InflationLeg2_DayCounter>
       <InflationLeg2_CPI type="index">EUHICPXT</InflationLeg2_CPI>
@@ -86,7 +86,7 @@
       </InflationLeg2_FixingSchedule>
       <InflationLeg2_Gearing type="number">1</InflationLeg2_Gearing>
       <InflationLeg2_Floor type="number">0</InflationLeg2_Floor>
-      <InflationLeg2_InitialCPI type="number">105.099998</InflationLeg2_InitialCPI>
+      <InflationLeg2_InitialCPI type="number">105.1</InflationLeg2_InitialCPI>
       <InflationLeg2_SubtractNotional type="bool">true</InflationLeg2_SubtractNotional>
     </MovingMaxYYIISData>
   </Trade>

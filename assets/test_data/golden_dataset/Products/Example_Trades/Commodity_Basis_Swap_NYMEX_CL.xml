@@ -47,7 +47,7 @@
             <Quantity>75000</Quantity>
           </Quantities>
           <Prices>
-            <Price>0.284999996</Price>
+            <Price>0.285</Price>
           </Prices>
         </CommodityFixedLegData>
       </LegData>
@@ -90,7 +90,7 @@
             <Quantity>75000</Quantity>
           </Quantities>
           <Gearings>
-            <Gearing>0.666700006</Gearing>
+            <Gearing>0.6667</Gearing>
           </Gearings>
           <IsAveraged>true</IsAveraged>
           <FutureMonthOffset>0</FutureMonthOffset>
@@ -135,7 +135,7 @@
             <Quantity>75000</Quantity>
           </Quantities>
           <Gearings>
-            <Gearing>-0.666700006</Gearing>
+            <Gearing>-0.6667</Gearing>
           </Gearings>
           <IsAveraged>true</IsAveraged>
           <FutureMonthOffset>1</FutureMonthOffset>
@@ -180,7 +180,7 @@
             <Quantity>75000</Quantity>
           </Quantities>
           <Gearings>
-            <Gearing>0.333299994</Gearing>
+            <Gearing>0.3333</Gearing>
           </Gearings>
           <IsAveraged>true</IsAveraged>
           <FutureMonthOffset>0</FutureMonthOffset>
@@ -225,7 +225,7 @@
             <Quantity>75000</Quantity>
           </Quantities>
           <Gearings>
-            <Gearing>-0.333299994</Gearing>
+            <Gearing>-0.3333</Gearing>
           </Gearings>
           <IsAveraged>true</IsAveraged>
           <FutureMonthOffset>2</FutureMonthOffset>

@@ -26,7 +26,7 @@ A person opens ores.web, names a curve or a surface, and watches it evolve as an
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
-| Last touched  | 2026-10-10                               |
+| Last touched  | 2026-10-11                               |
 
 * Acceptance
 
@@ -67,12 +67,13 @@ A person opens ores.web, names a curve or a surface, and watches it evolve as an
 *Left for later, none of it in this story.*
 
 - A series list route and a picker, so the object is chosen and not typed. It should list
-  only the series the party can see.
+  only the series the party can see. Capture =curve_screen_series_picker=.
 - A shape declared when a synthetic feed starts. Feed ticks never declare axes, so a
   synthetic curve has points and cannot be shown. It crosses into the synthetic story,
-  which another environment owns.
+  which another environment owns. Capture =synthetic_feed_declares_its_shape=.
 - A wire operation to key and clear a manual point, and the adjust-by-hand screen.
-- The approval chain and the publication record.
+  Capture =key_a_manual_point_from_the_web=.
+- The approval chain and the publication record. Capture =curve_publication_and_approval=.
 
 * Out of scope
 

@@ -8,7 +8,7 @@
 #+filetags: :show-a-curve-evolving-in-ores-web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/fix-the-snapshot-warning-type
-#+pr: 3107
+#+pr: 3104
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11

@@ -60,7 +60,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Market tests and the catalogue | 86 pass in 5 files | =npx vitest run src/market src/i18n= in =packages/web= | f2f3c5b0cc plus the change |
+| Market tests and the catalogue | 88 pass in 5 files | =npx vitest run src/market src/i18n= in =packages/web= | f2f3c5b0cc plus the change |
 | Whole web suite | 104 files, 1153 tests, pass | =npx vitest run= in =packages/web= | f2f3c5b0cc plus the change |
 | Real list as System Party, parsed by =curveSeriesListSchema= | 6 series, 6 can be shown | =POST /api/curves/series-list= after choosing the party, then =node= with =@ores/contracts= | f2f3c5b0cc plus the change |
 | Real list as Acme Corporation Plc, parsed by the same schema | 13 series, 0 can be shown | same | f2f3c5b0cc plus the change |
@@ -88,7 +88,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The series list is cached without the party | EvolutionPage.tsx | Accept | A real bug. =switchParty= does not clear the cache; only sign-out does. The key now carries the party, which the route passes in. A test shows party A's cached list is not shown for party B. |
+| 2 | Fields round-trip through text | evolutionView.ts | Accept in part | A test round-trips a value holding an equals sign. A field name cannot hold one. A value holding a newline is not a value a series URI carries, so it is not handled. |
+| 3 | The error text may be the raw message | EvolutionPage.tsx | No change | It uses the same =Notice= and the same =error.message= as the evolution and snapshot errors. |
+| - | A retry action | EvolutionPage.tsx | Decline | Submitting the form reads again, and a reload rereads the list. A retry button is more than this task. |
+| - | The placeholder option leaves the form | EvolutionPage.tsx | Accept | A comment says so. |
 
 * Result
 

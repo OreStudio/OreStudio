@@ -338,7 +338,14 @@ export function SeriesPicker({
     );
 }
 
-export function EvolutionPage(): ReactNode {
+/**
+ * The evolution screen.
+ *
+ * The party is the one the session works in. A switch of party does not clear the cache, so
+ * the series list is keyed by it: the list of the party left behind is never shown for the
+ * party switched to.
+ */
+export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactNode {
     const { t } = useTranslation();
     const [form, setForm] = useState<IdentityForm>({
         asset: '',
@@ -358,12 +365,13 @@ export function EvolutionPage(): ReactNode {
     const [reads, setReads] = useState(0);
 
     const series = useQuery({
-        queryKey: ['market-series-list'],
+        queryKey: ['market-series-list', partyId],
         queryFn: () => curves.seriesList(),
         retry: false,
     });
 
     const pick = (seriesId: string): void => {
+        // Choosing the placeholder clears the pick and leaves the form as it stands.
         setPicked(seriesId);
         const listed = series.data?.series.find((candidate) => candidate.series_id === seriesId);
         if (listed !== undefined && canBeShown(listed)) {

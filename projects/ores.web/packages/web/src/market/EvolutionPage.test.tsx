@@ -241,9 +241,34 @@ describe('SeriesPicker', () => {
     });
 });
 
+const PARTY_A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const PARTY_B = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+
+function renderWith(client: QueryClient, node: React.ReactNode): string {
+    return renderToStaticMarkup(
+        <QueryClientProvider client={client}>
+            <TranslationProvider>
+                <MemoryRouter>{node}</MemoryRouter>
+            </TranslationProvider>
+        </QueryClientProvider>,
+    );
+}
+
 describe('EvolutionPage', () => {
+    it('never shows the list of the party the session has left', () => {
+        // A switch of party leaves the cache as it was, so party A's list is still there.
+        const client = new QueryClient();
+        client.setQueryData(['market-series-list', PARTY_A], LIST);
+
+        const asA = renderWith(client, <EvolutionPage partyId={PARTY_A} />);
+        expect(asA).toContain('fx / EUR / fx_option / rate_lnvol · ccy=USD');
+
+        const asB = renderWith(client, <EvolutionPage partyId={PARTY_B} />);
+        expect(asB).not.toContain('fx / EUR / fx_option / rate_lnvol · ccy=USD');
+    });
+
     it('opens on its form and reads nothing', () => {
-        const html = render(<EvolutionPage />);
+        const html = render(<EvolutionPage partyId={PARTY_A} />);
         expect(html).toContain('Watch a curve or surface evolve');
         expect(html).toContain('Asset class');
         expect(html).toContain('Show where each value came from');

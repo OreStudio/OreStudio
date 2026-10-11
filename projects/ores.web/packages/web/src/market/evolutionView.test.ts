@@ -118,6 +118,15 @@ describe('the series picker helpers', () => {
         expect(identity.ok && identity.identity).toEqual(LISTED.identity);
     });
 
+    it('round-trips a series whose field value holds an equals sign', () => {
+        const tricky: ListedSeries = {
+            ...LISTED,
+            identity: { ...LISTED.identity, fields: [{ name: 'curve_id', text: 'A=B' }] },
+        };
+        const identity = identityOf(formFrom(tricky));
+        expect(identity.ok && identity.identity).toEqual(tricky.identity);
+    });
+
     it('states no party for an identity the person typed', () => {
         const identity = identityOf(FORM);
         expect(identity.ok && identity.identity.party_id).toBe('');

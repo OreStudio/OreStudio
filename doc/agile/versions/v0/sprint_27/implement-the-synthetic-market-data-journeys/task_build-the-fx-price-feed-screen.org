@@ -8,7 +8,7 @@
 #+filetags: :implement-the-synthetic-market-data-journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-fx-price-feed-screen
-#+pr:
+#+pr: 3121
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -143,7 +143,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3121][#3121]] | [web] Build the FX price feed screen and the feed screen standard |
 
 * Review
 

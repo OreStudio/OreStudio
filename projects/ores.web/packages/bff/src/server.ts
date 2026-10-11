@@ -961,9 +961,17 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
     });
 
-    server.get('/api/session', async (request) =>
-        sessionResponse(await refreshTenantBootstrapping(requireSession(request))),
-    );
+    /*
+     * A login that still waits on a party has no session to show yet. The
+     * browser that reloads in that state signs in again and is asked again.
+     */
+    server.get('/api/session', async (request) => {
+        const session = requireSession(request);
+        if (session.party === undefined) {
+            throw notAuthenticated();
+        }
+        return sessionResponse(await refreshTenantBootstrapping(session));
+    });
 
     server.delete('/api/session', async (request, reply) => {
         const id = readSessionId(request);

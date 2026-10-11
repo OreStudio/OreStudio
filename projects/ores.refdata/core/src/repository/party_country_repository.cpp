@@ -354,16 +354,19 @@ party_country_repository::read_all_by_party(const boost::uuids::uuid& party_id) 
             rows.reserve(entities.size());
             for (const auto& entity : entities) {
                 party_country_history_row row;
-                static_cast<domain::party_country&>(row) = party_country_mapper::map(entity);
+                row.link = party_country_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
                 // A version ends when a later version replaces it, which is not
                 // a closing, or when the link is closed. The rows of one link run
                 // newest first, so the row before this one, when it is the same
                 // link, is the next newer version, and it replaced this one only
                 // if it carries the next version number. A link opened again
                 // after a closing starts its numbering over.
-                const bool replaced = !rows.empty() &&
-                                      rows.back().country_alpha2_code == row.country_alpha2_code &&
-                                      rows.back().version == row.version + 1;
+                const bool replaced =
+                    !rows.empty() &&
+                    rows.back().link.country_alpha2_code == row.link.country_alpha2_code &&
+                    rows.back().link.version == row.link.version + 1;
                 if (entity.valid_to.value() != max.value() && !replaced)
                     row.closed_at = timestamp_to_timepoint(entity.valid_to);
                 rows.push_back(std::move(row));

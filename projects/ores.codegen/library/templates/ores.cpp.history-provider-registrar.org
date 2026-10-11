@@ -60,7 +60,7 @@ because a provider nothing wires into its component's registrar is dead code.
   =:list_by:=, the left when both or neither does) and answers every version of
   every link of that parent, closed links included. The facet adds the repository
   read =read_all_by_<parent>=, which returns a =<junction>_history_row=.
-- The history row is the domain type plus =closed_at=. A link is closed by
+- The history row holds the domain type beside =closed_at=, and the actor and the time flat, which is what the history builder reads. The domain type is final, so the row composes it. A link is closed by
   ending its validity, not by writing a version, so a version that ended because
   the link was closed carries =closed_at=, and a version that a later version
   replaced does not. The store records when a link ended and not who ended it,

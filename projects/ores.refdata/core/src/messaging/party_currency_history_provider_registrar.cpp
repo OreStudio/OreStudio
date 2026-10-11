@@ -51,7 +51,7 @@ void register_party_currency_history_provider(ores::history::service::dispatch_r
             std::vector<ores::history::messaging::entity_history_version> versions;
             for (auto first = rows.begin(); first != rows.end();) {
                 const auto last = std::find_if(first, rows.end(), [&](const auto& row) {
-                    return row.currency_iso_code != first->currency_iso_code;
+                    return row.link.currency_iso_code != first->link.currency_iso_code;
                 });
                 const std::vector<repository::party_currency_history_row> link(first, last);
                 auto own = ores::history::service::build_entity_history_versions(

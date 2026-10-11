@@ -313,13 +313,13 @@ TEST_CASE("a_closed_party_country_is_in_its_history_with_the_time_it_ended", tag
     const auto history = repo.read_all_by_party(party_id);
 
     const auto closed = std::ranges::find_if(history, [&](const auto& row) {
-        return row.country_alpha2_code == all[8].alpha2_code;
+        return row.link.country_alpha2_code == all[8].alpha2_code;
     });
     REQUIRE(closed != history.end());
     CHECK(closed->closed_at.has_value());
 
     const auto open = std::ranges::find_if(history, [&](const auto& row) {
-        return row.country_alpha2_code == all[9].alpha2_code;
+        return row.link.country_alpha2_code == all[9].alpha2_code;
     });
     REQUIRE(open != history.end());
     CHECK_FALSE(open->closed_at.has_value());

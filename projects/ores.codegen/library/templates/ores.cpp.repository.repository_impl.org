@@ -1570,7 +1570,9 @@ std::vector<{{name_singular}}_history_row>
             rows.reserve(entities.size());
             for (const auto& entity : entities) {
                 {{name_singular}}_history_row row;
-                static_cast<domain::{{name_singular}}&>(row) = {{name_singular}}_mapper::map(entity);
+                row.link = {{name_singular}}_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
                 // A version ends when a later version replaces it, which is not
                 // a closing, or when the link is closed. The rows of one link run
                 // newest first, so the row before this one, when it is the same
@@ -1578,8 +1580,9 @@ std::vector<{{name_singular}}_history_row>
                 // if it carries the next version number. A link opened again
                 // after a closing starts its numbering over.
                 const bool replaced =
-                    !rows.empty() && rows.back().{{history_child.column}} == row.{{history_child.column}} &&
-                    rows.back().version == row.version + 1;
+                    !rows.empty() &&
+                    rows.back().link.{{history_child.column}} == row.link.{{history_child.column}} &&
+                    rows.back().link.version == row.link.version + 1;
                 if (entity.valid_to.value() != max.value() && !replaced)
                     row.closed_at = timestamp_to_timepoint(entity.valid_to);
                 rows.push_back(std::move(row));

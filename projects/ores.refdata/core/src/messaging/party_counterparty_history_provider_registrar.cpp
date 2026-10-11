@@ -52,7 +52,7 @@ void register_party_counterparty_history_provider(
             std::vector<ores::history::messaging::entity_history_version> versions;
             for (auto first = rows.begin(); first != rows.end();) {
                 const auto last = std::find_if(first, rows.end(), [&](const auto& row) {
-                    return row.counterparty_id != first->counterparty_id;
+                    return row.link.counterparty_id != first->link.counterparty_id;
                 });
                 const std::vector<repository::party_counterparty_history_row> link(first, last);
                 auto own = ores::history::service::build_entity_history_versions(

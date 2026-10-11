@@ -1454,12 +1454,12 @@ def derive_junction_history(junction):
         f"{junction.get('component', '')}::{junction.get('name', '')}:read")
     for side in (left, right):
         side['history_value'] = history_value_expression(
-            side.get('cpp_type'), f"v.{side.get('column', '')}", owner)
+            side.get('cpp_type'), f"v.link.{side.get('column', '')}", owner)
     for column in junction.get('columns') or []:
         name = column.get('name', '')
         column['history_title'] = name.replace('_', ' ').title()
         column['history_value'] = history_value_expression(
-            column.get('cpp_type'), f'v.{name}', owner)
+            column.get('cpp_type'), f'v.link.{name}', owner)
     return junction
 
 

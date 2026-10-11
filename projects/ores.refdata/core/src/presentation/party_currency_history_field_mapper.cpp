@@ -40,19 +40,21 @@ render_party_currency_fields(const repository::party_currency_history_row& v) {
     // The link's id is both keys, parent first, so a stream of many links can
     // tell one link's versions from another's.
     fields.push_back(
-        {.name = "ID", .value = boost::uuids::to_string(v.party_id) + "/" + v.currency_iso_code});
-    fields.push_back({.name = "Party", .value = boost::uuids::to_string(v.party_id)});
-    fields.push_back({.name = "Currency", .value = v.currency_iso_code});
+        {.name = "ID",
+         .value = boost::uuids::to_string(v.link.party_id) + "/" + v.link.currency_iso_code});
+    fields.push_back({.name = "Party", .value = boost::uuids::to_string(v.link.party_id)});
+    fields.push_back({.name = "Currency", .value = v.link.currency_iso_code});
     fields.push_back({.name = "Closed At",
                       .value = v.closed_at ?
                                    ores::platform::time::datetime::to_iso8601_utc(*v.closed_at) :
                                    std::string()});
     using ores::history::domain::provenance_fields;
-    fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
-    fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});
+    fields.push_back({.name = provenance_fields::modified_by, .value = v.link.modified_by});
+    fields.push_back({.name = provenance_fields::performed_by, .value = v.link.performed_by});
     fields.push_back(
-        {.name = provenance_fields::change_reason_code, .value = v.change_reason_code});
-    fields.push_back({.name = provenance_fields::change_commentary, .value = v.change_commentary});
+        {.name = provenance_fields::change_reason_code, .value = v.link.change_reason_code});
+    fields.push_back(
+        {.name = provenance_fields::change_commentary, .value = v.link.change_commentary});
     fields.push_back({.name = provenance_fields::recorded_at,
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
 

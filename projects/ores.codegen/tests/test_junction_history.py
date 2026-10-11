@@ -127,7 +127,8 @@ def test_the_repository_reads_every_version_of_every_link_of_the_parent(tmp_path
     header = render(tmp_path, "cpp_domain_type_repository.hpp.mustache", HISTORY)
     source = render(tmp_path, "cpp_domain_type_repository.cpp.mustache", HISTORY)
 
-    assert "struct test_link_history_row : domain::test_link" in header
+    assert "struct test_link_history_row {" in header
+    assert "domain::test_link link;" in header
     assert "std::optional<std::chrono::system_clock::time_point> closed_at;" in header
     assert "read_all_by_owner(const boost::uuids::uuid& owner_id)" in header
     # Grouped by link, newest first within a link, and with no filter on the
@@ -144,8 +145,8 @@ def test_a_version_a_later_version_replaced_is_not_a_closing(tmp_path):
     # The row before this one in the group is the next newer version. It
     # replaced this one only if it carries the next version number, so a link
     # closed and opened again, which numbers from one, ends the first run.
-    assert "rows.back().item_code == row.item_code" in source
-    assert "rows.back().version == row.version + 1" in source
+    assert "rows.back().link.item_code == row.link.item_code" in source
+    assert "rows.back().link.version == row.link.version + 1" in source
     assert "row.closed_at = timestamp_to_timepoint(entity.valid_to);" in source
 
 
@@ -153,10 +154,10 @@ def test_the_link_is_named_by_both_keys_and_says_when_it_ended(tmp_path):
     source = render(tmp_path, "cpp_history_field_mapper.cpp.mustache", HISTORY, WEIGHT)
 
     assert (
-        'boost::uuids::to_string(v.owner_id) + "/" + v.item_code' in source
+        'boost::uuids::to_string(v.link.owner_id) + "/" + v.link.item_code' in source
     )
     assert '{.name = "Owner"' in source and '{.name = "Item"' in source
-    assert '{.name = "Weight", .value = std::to_string(v.weight)}' in source
+    assert '{.name = "Weight", .value = std::to_string(v.link.weight)}' in source
     assert '"Closed At"' in source
     assert "provenance_fields::recorded_at" in source
 
@@ -169,7 +170,7 @@ def test_the_provider_reads_by_the_parent_and_numbers_each_link_on_its_own(tmp_p
     assert "boost::lexical_cast<boost::uuids::uuid>(entity_id)" in source
     assert "repo.read_all_by_owner(" in source
     # One call per link, so a version number is a link's and not the parent's.
-    assert "row.item_code != first->item_code" in source
+    assert "row.link.item_code != first->link.item_code" in source
     assert "build_entity_history_versions(" in source
 
 

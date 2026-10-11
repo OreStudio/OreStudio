@@ -51,7 +51,7 @@ void register_party_country_history_provider(ores::history::service::dispatch_re
             std::vector<ores::history::messaging::entity_history_version> versions;
             for (auto first = rows.begin(); first != rows.end();) {
                 const auto last = std::find_if(first, rows.end(), [&](const auto& row) {
-                    return row.country_alpha2_code != first->country_alpha2_code;
+                    return row.link.country_alpha2_code != first->link.country_alpha2_code;
                 });
                 const std::vector<repository::party_country_history_row> link(first, last);
                 auto own = ores::history::service::build_entity_history_versions(

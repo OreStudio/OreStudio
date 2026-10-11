@@ -351,15 +351,18 @@ account_party_repository::read_all_by_account(const boost::uuids::uuid& account_
             rows.reserve(entities.size());
             for (const auto& entity : entities) {
                 account_party_history_row row;
-                static_cast<domain::account_party&>(row) = account_party_mapper::map(entity);
+                row.link = account_party_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
                 // A version ends when a later version replaces it, which is not
                 // a closing, or when the link is closed. The rows of one link run
                 // newest first, so the row before this one, when it is the same
                 // link, is the next newer version, and it replaced this one only
                 // if it carries the next version number. A link opened again
                 // after a closing starts its numbering over.
-                const bool replaced = !rows.empty() && rows.back().party_id == row.party_id &&
-                                      rows.back().version == row.version + 1;
+                const bool replaced = !rows.empty() &&
+                                      rows.back().link.party_id == row.link.party_id &&
+                                      rows.back().link.version == row.link.version + 1;
                 if (entity.valid_to.value() != max.value() && !replaced)
                     row.closed_at = timestamp_to_timepoint(entity.valid_to);
                 rows.push_back(std::move(row));

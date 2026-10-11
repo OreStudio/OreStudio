@@ -51,7 +51,7 @@ void register_account_party_history_provider(ores::history::service::dispatch_re
             std::vector<ores::history::messaging::entity_history_version> versions;
             for (auto first = rows.begin(); first != rows.end();) {
                 const auto last = std::find_if(first, rows.end(), [&](const auto& row) {
-                    return row.party_id != first->party_id;
+                    return row.link.party_id != first->link.party_id;
                 });
                 const std::vector<repository::account_party_history_row> link(first, last);
                 auto own = ores::history::service::build_entity_history_versions(

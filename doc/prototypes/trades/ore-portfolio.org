@@ -23,7 +23,11 @@
 
 ** Import
 
-Four steps: file and book, preview, confirm, result. The preview is the plan. It lists every trade of the file with what will happen to it, and says which counterparty names match no alias and which trade types have no instrument table. The result says what was refused and why, and offers the rollback. A rollback removes the trades the import created, and the prototype keeps them in the browser so that they appear on the trade list.
+Five steps: directory, choices, preview, confirm, result. The first step finds every portfolio file in the directory and below it, lists them, and lets the person choose which to bring in. Folders named in the skip list are not searched, and the step says how many files that skipped. Each file shows the book it becomes, because the import builds portfolios and books from the folders and the person no longer picks one book.
+
+The real import has no choice of files. It brings in every file the scan finds, and takes only the folders to skip, the parent portfolio, the re-import mode and the trade defaults. The file list is the change this prototype argues for. The journey lists it as missing, with the missing operation that lists the files.
+
+The preview is the plan. It lists every trade of the chosen files, says which counterparty names match no alias and which trade types have no instrument table, and offers a default counterparty as the way out. The result says what was refused and why, and offers the rollback. A rollback removes the trades the import created, and the prototype keeps them in the browser so that they appear on the trade list.
 
 ** Export
 

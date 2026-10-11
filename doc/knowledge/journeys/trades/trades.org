@@ -30,7 +30,7 @@ journeys to decide the cards and the workflows on the page.
 | [[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][Book a trade]] | trader | Record a new deal, live or as a draft, with its instrument terms |
 | [[id:93F08DE9-0843-40D8-8EE9-313A18AC581E][Amend a trade's economics]] | trader | Change the agreed terms, give the reason, and move the external version |
 | [[id:9E66EB4C-D456-41DB-AC46-8936B61FD80F][Review a trade and its history]] | trader, operations | Read a trade, its parts, and every version and activity |
-| [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] | operations | Bring an ORE portfolio file into a book, and roll it back |
+| [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] | operations | Bring an ORE directory's portfolio files, chosen from a list, and roll the import back |
 | [[id:65B02BD9-4633-490C-B8A3-F5680067054B][Export a portfolio to ORE]] | operations | Write trades out as the portfolio the engine reads |
 | [[id:D763A432-443A-4CE1-BC00-75D4A9970EDF][Record a lifecycle event on a trade]] | operations | Record an exercise, a termination or a novation |
 | [[id:3899F17C-232B-408C-B667-FA5C630BB71B][Group trades into a structure]] | trader | Hold several trades as one deal |

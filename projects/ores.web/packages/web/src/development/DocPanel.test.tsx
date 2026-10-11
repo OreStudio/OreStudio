@@ -48,7 +48,7 @@ const doc: QaDoc = {
     ].join('\n'),
 };
 
-function panel(setup: (client: QueryClient) => void): string {
+function panel(setup: (client: QueryClient) => void, onBack?: () => void): string {
     const client = new QueryClient({
         defaultOptions: { queries: { retry: false, retryOnMount: false } },
     });
@@ -57,7 +57,7 @@ function panel(setup: (client: QueryClient) => void): string {
         <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter>
-                    <DocPanel id={ID} />
+                    <DocPanel id={ID} {...(onBack === undefined ? {} : { onBack })} />
                 </MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,
@@ -126,6 +126,26 @@ describe('a doc beside the steps', () => {
         expect(html).toContain('role="alert"');
         expect(html).toContain('The scenario files cannot be read now.');
         expect(html).not.toContain('has the id');
+    });
+
+    it('offers Back to the doc it was reached from, with the doc and with a dead link', () => {
+        const back = () => undefined;
+        expect(panel((client) => client.setQueryData(docKey(ID), doc), back)).toContain(
+            '>Back</button>',
+        );
+        const dead = panel(
+            (client) =>
+                failWith(client, new ApiFailure(404, { code: 'not-found', message: 'No.' })),
+            back,
+        );
+        expect(dead).toContain('>Back</button>');
+        expect(dead).toContain('has the id');
+    });
+
+    it('offers no Back for the first doc', () => {
+        expect(panel((client) => client.setQueryData(docKey(ID), doc))).not.toContain(
+            '>Back</button>',
+        );
     });
 
     it('says it is loading before the first answer', () => {

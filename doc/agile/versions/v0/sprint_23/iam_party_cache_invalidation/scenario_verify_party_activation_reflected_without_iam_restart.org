@@ -8,9 +8,9 @@
 #+filetags: :iam_party_cache_invalidation:sprint_23:v0:
 #+target_dialog:
 #+created: 2026-07-14
-#+updated: 2026-07-14
+#+updated: 2026-10-11
 #+environment:
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 #+startup: inlineimages
 
 This page documents a test scenario verifying [[id:70C81DFD-E94E-4F3B-A35B-CE14A4F6A82B][Test party_cache reload-on-notification]] in [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
@@ -23,7 +23,7 @@ This page documents a test scenario verifying [[id:70C81DFD-E94E-4F3B-A35B-CE14A
 | Parent story  | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]]   |
 | Target dialog | LoginDialog / PartyProvisioningWizard   |
 | Clients       | (single client)                         |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Steps
 
@@ -69,3 +69,5 @@ restarting =ores.iam.service= at any point across all three logins.
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: a legacy scenario for the Qt client, which is no longer used. It is kept for the record and will not be run. A retest brings it back.

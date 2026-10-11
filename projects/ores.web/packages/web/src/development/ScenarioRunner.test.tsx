@@ -32,6 +32,7 @@ function scenario(statuses: StepStatus[], overrides: Partial<Scenario> = {}): Sc
         id: '11111111-1111-4111-8111-111111111111',
         title: 'Retake the currency screenshots',
         description: '',
+        created: '',
         state: 'PENDING',
         target: 'CurrencyDetailDialog',
         story: { id: 'S', title: 'Refresh the manual' },
@@ -72,6 +73,7 @@ function screen(
                     saving={options.saving ?? false}
                     outcome={options.outcome ?? null}
                     onImages={() => undefined}
+                    onClipboard={() => undefined}
                     imageBusy={options.imageBusy ?? false}
                     imageError={options.imageError ?? null}
                     confirmingRetest={options.confirmingRetest ?? false}
@@ -203,6 +205,63 @@ describe('a screenshot for a step', () => {
         expect(idle).not.toMatch(/<button[^>]*disabled=""[^>]*>Save</);
     });
 
+    it('offers a button that reads the clipboard, next to the invitation', () => {
+        const html = screen(fresh());
+        expect(html).toContain('>Paste from clipboard</button>');
+        expect(html).toContain('Paste or drop a screenshot here');
+    });
+
+    it('holds the clipboard button while an image uploads', () => {
+        expect(screen(fresh(), { imageBusy: true })).toMatch(
+            /<button[^>]*disabled=""[^>]*>Paste from clipboard</,
+        );
+    });
+
+    it('draws no clipboard button on a closed scenario', () => {
+        const closed = openRunner(scenario(['PASS'], { state: 'PASSED' }));
+        expect(screen(closed)).not.toContain('Paste from clipboard');
+    });
+
+    it('shows the images a note links as thumbnails that open the picture', () => {
+        const runner = run(
+            fresh(),
+            { type: 'attach', index: 0, name: 'scenario_a_step1_20261011_014118.png' },
+            { type: 'attach', index: 0, name: 'scenario_a_step1_20261011_014118_2.png' },
+        );
+        const html = screen(runner);
+        const base = '/api/qa/scenarios/11111111-1111-4111-8111-111111111111/files/';
+        expect(html).toContain(`<img src="${base}scenario_a_step1_20261011_014118.png"`);
+        expect(html).toContain(`<img src="${base}scenario_a_step1_20261011_014118_2.png"`);
+        expect(html).toContain(`href="${base}scenario_a_step1_20261011_014118.png"`);
+        expect(html).toContain('target="_blank"');
+        expect(html).toContain('rel="noopener noreferrer"');
+        expect(html.match(/<img /g)?.length).toBe(2);
+    });
+
+    it('shows no thumbnail for a note with no image link, or a link to something else', () => {
+        const runner = run(fresh(), {
+            type: 'note',
+            notes: 'see [[file:notes.txt]] and [[id:X][a doc]]',
+        });
+        expect(screen(runner)).not.toContain('<img ');
+    });
+
+    it('shows the thumbnails of a closed scenario, so a finished run reads with its screenshots', () => {
+        const done = scenario(['PASS'], { state: 'PASSED' });
+        const withLink: Scenario = {
+            ...done,
+            steps: done.steps.map((step) => ({ ...step, notes: '[[file:finished_step1.png]]' })),
+        };
+        const html = screen(openRunner(withLink), { scenario: withLink });
+        expect(html).toContain('/files/finished_step1.png');
+        expect(html).toContain('<img ');
+    });
+
+    it('encodes a name in the address, so it cannot leave the folder', () => {
+        const runner = run(fresh(), { type: 'note', notes: '[[file:a.png]]' });
+        expect(screen(runner)).not.toContain('..');
+    });
+
     it('shows why an image was refused, as an alert', () => {
         const html = screen(fresh(), {
             imageError: 'The file is not a PNG, JPEG, GIF or WebP image.',
@@ -219,6 +278,44 @@ describe('a screenshot for a step', () => {
     it('draws no invitation on a closed scenario, which cannot take an image', () => {
         const closed = openRunner(scenario(['PASS'], { state: 'PASSED' }));
         expect(screen(closed)).not.toContain('Paste or drop a screenshot here');
+    });
+});
+
+describe('where the actions are', () => {
+    it('puts Save above the step, beside the step navigation', () => {
+        const html = screen(fresh());
+        const save = html.indexOf('>Save</button>');
+        expect(save).toBeGreaterThan(-1);
+        expect(save).toBeLessThan(html.indexOf('Open tab 1'));
+        expect(save).toBeGreaterThan(html.indexOf('>Skip</button>') - 2500);
+        expect(save).toBeGreaterThan(html.indexOf('role="progressbar"'));
+    });
+
+    it('puts the way back to the tests with Save, and not at the end of the page', () => {
+        const html = screen(fresh());
+        const back = html.indexOf('Back to the tests');
+        expect(back).toBeGreaterThan(-1);
+        expect(back).toBeLessThan(html.indexOf('Open tab 1'));
+    });
+
+    it('puts Retest above the step for a closed scenario', () => {
+        const done = scenario(['PASS', 'FAIL'], { state: 'FAILED' });
+        const html = screen(openRunner(done), { scenario: done });
+        expect(html.indexOf('>Retest</button>')).toBeLessThan(html.indexOf('Open tab 1'));
+    });
+
+    it('puts the message about a save under Save and above the step', () => {
+        const html = screen(fresh(), { outcome: { kind: 'open', pending: 2 } });
+        const message = html.indexOf('Saved. 2 steps are still to mark.');
+        expect(message).toBeGreaterThan(html.indexOf('>Save</button>'));
+        expect(message).toBeLessThan(html.indexOf('Open tab 1'));
+    });
+
+    it('shows the actions for a scenario with no steps', () => {
+        const none = scenario([]);
+        const html = screen(openRunner(none), { scenario: none });
+        expect(html).toContain('>Save</button>');
+        expect(html).toContain('Back to the tests');
     });
 });
 
@@ -289,5 +386,28 @@ describe('a closed scenario', () => {
         expect(html).not.toContain('>Retest</button>');
         expect(html).toContain('0 of 2 steps marked');
         expect(html).toContain('Step 1 of 2');
+    });
+});
+
+describe('an abandoned scenario', () => {
+    const gone = scenario(['PENDING', 'PENDING'], { state: 'ABANDONED' });
+
+    it('opens read-only and says it is abandoned, whatever its steps say', () => {
+        const html = screen(openRunner(gone), { scenario: gone });
+        expect(html).toContain('>Abandoned</span>');
+        expect(html).toContain('abandoned and will not be run');
+        expect(html).not.toContain('>Save</button>');
+        for (const label of ['Pass', 'Fail', 'Clear']) {
+            expect(html).toMatch(new RegExp(`<button[^>]*disabled=""[^>]*>${label}<`));
+        }
+    });
+
+    it('offers a retest, which brings it back', () => {
+        const html = screen(openRunner(gone), { scenario: gone });
+        expect(html).toContain('>Retest</button>');
+        const again = run(openRunner(gone), { type: 'retest' });
+        const reopened = screen(again, { scenario: gone });
+        expect(reopened).toContain('>Save</button>');
+        expect(reopened).not.toContain('>Abandoned</span>');
     });
 });

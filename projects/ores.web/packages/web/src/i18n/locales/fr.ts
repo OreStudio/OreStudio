@@ -1240,10 +1240,16 @@ const fr: SourceCatalogue = {
             tests: 'Tests',
         },
         tests: {
-            waiting: 'En attente',
+            sprint: 'Sprint {number}',
+            noSprint: 'Sans sprint',
+            created: 'Créé le',
+            empty: "Il n'y a aucun scénario de test.",
+            active: 'Actifs',
             done: 'Terminés',
-            nothingWaiting: "Rien n'est en attente.",
-            nothingDone: "Rien n'a encore été testé.",
+            abandoned: 'Abandonnés',
+            activeCount: '{count} actifs',
+            doneCount: '{count} terminés',
+            abandonedCount: '{count} abandonnés',
             scenario: 'Scénario',
             target: 'Cible',
             progress: 'Avancement',
@@ -1255,20 +1261,37 @@ const fr: SourceCatalogue = {
                 inProgress: 'En cours',
                 passed: 'Réussi',
                 failed: 'Échoué',
+                abandoned: 'Abandonné',
             },
         },
         scenario: {
             tabsLabel: 'Vues du scénario',
             tabs: {
                 steps: 'Étapes',
+                report: 'Rapport',
                 story: 'Récit',
                 task: 'Tâche',
             },
             noStory: 'Ce scénario ne nomme aucun récit.',
             noTask: 'Ce scénario ne nomme aucune tâche.',
         },
+        leave: {
+            title: 'Quitter sans enregistrer ?',
+            body: 'Des marques ou des notes ne sont pas enregistrées. En partant, vous les perdez.',
+            stay: 'Rester',
+            leave: 'Quitter',
+        },
+        report: {
+            instructions: 'Instructions',
+            notMarked: 'Non marquée.',
+            noSteps: "Ce scénario n'a aucune étape.",
+            build: 'Version',
+            glance: "Les étapes en un coup d'œil",
+            count: '{count} {status}',
+        },
         docs: {
             title: 'Document',
+            back: 'Retour',
             unresolved:
                 "Aucun récit, aucune tâche ni aucun scénario n'a l'identifiant {id}. Le lien peut pointer vers un document que l'exécuteur n'affiche pas.",
         },
@@ -1277,6 +1300,7 @@ const fr: SourceCatalogue = {
                 PENDING: 'En attente',
                 PASSED: 'Réussi',
                 FAILED: 'Échoué',
+                ABANDONED: 'Abandonné',
             },
             stepStates: {
                 PENDING: 'En attente',
@@ -1290,6 +1314,8 @@ const fr: SourceCatalogue = {
             lastSaved: 'Dernier enregistrement',
             retest: 'Retester',
             closedHelp: 'Ce scénario est clos. Un nouveau test efface chaque étape et recommence.',
+            abandonedHelp:
+                'Ce scénario est abandonné et ne sera pas exécuté. Un nouveau test efface chaque étape et le remet en jeu.',
             save: 'Enregistrer',
             saveHelp:
                 "L'enregistrement écrit le résultat de chaque étape et l'état global dans le document du scénario.",
@@ -1311,6 +1337,13 @@ const fr: SourceCatalogue = {
             imageSaving: "Enregistrement de l'image...",
             imageNotImage: 'Seules les images PNG, JPEG, GIF et WebP peuvent être jointes.',
             imageTooLarge: 'Cette image dépasse {limit} Mo.',
+            pasteButton: 'Coller depuis le presse-papiers',
+            clipboard: {
+                unavailable:
+                    'Ce navigateur ne peut pas lire le presse-papiers depuis cette page. Collez avec Ctrl+V.',
+                denied: "Le navigateur n'a pas permis à cette page de lire le presse-papiers. Autorisez-le dans la barre d'adresse, ou collez avec Ctrl+V.",
+                empty: "Le presse-papiers ne contient aucune image. Faites d'abord une capture d'écran vers le presse-papiers.",
+            },
             savedClosed: 'Enregistré et clos comme {state}.',
             savedOpen: 'Enregistré. {pending} étapes restent à marquer. Le scénario reste ouvert.',
         },

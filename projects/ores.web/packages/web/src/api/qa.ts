@@ -40,6 +40,11 @@ import { request } from './transport.js';
  * The shapes are the BFF's own contract, so the browser parses what the server
  * serialised with the schema the server serialised it from.
  */
+/** The address that serves an image kept beside a scenario doc. */
+export function qaImageUrl(id: string, name: string): string {
+    return `/api/qa/scenarios/${encodeURIComponent(id)}/files/${encodeURIComponent(name)}`;
+}
+
 export const qa = {
     /** Every scenario under the doc root, waiting and done. */
     async scenarios(): Promise<readonly ScenarioSummary[]> {

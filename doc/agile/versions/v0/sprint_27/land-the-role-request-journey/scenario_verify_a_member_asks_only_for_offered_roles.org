@@ -8,9 +8,9 @@
 #+filetags: :land-the-role-request-journey:sprint_27:v0:
 #+target_dialog:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-11
 #+environment: eager_maxwell
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 #+startup: inlineimages
 
 This page documents a test scenario verifying [[id:2055AA2D-81DE-4C4B-A4F6-B849F16A271F][Say which roles may be asked for]] in [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
@@ -39,7 +39,7 @@ This page documents a test scenario verifying [[id:2055AA2D-81DE-4C4B-A4F6-B849F
 | Parent story  | [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]]   |
 | Target screen | The shell, then *My access* in =ores.web=. |
 | Clients       |                                          |
-| State         | BACKLOG                               |
+| State         | ABANDONED                             |
 
 * Steps
 
@@ -96,6 +96,8 @@ This page documents a test scenario verifying [[id:2055AA2D-81DE-4C4B-A4F6-B849F
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: it will not be run. A retest brings it back.
 
 The same walk was run as evidence at commit =36f1396b9d= and recorded in
 =evidence/requestable_ask.txt= and =evidence/requestable_roles.txt=.

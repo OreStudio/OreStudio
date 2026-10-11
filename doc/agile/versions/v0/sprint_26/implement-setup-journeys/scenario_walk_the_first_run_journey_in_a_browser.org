@@ -8,9 +8,9 @@
 #+filetags: :web:ux:journeys:setup:iam:implement-setup-journeys:sprint_26:v0:
 #+target_dialog:
 #+created: 2026-09-29
-#+updated: 2026-09-29
+#+updated: 2026-10-11
 #+environment: eager_maxwell
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 #+startup: inlineimages
 
 This page documents a test scenario verifying [[id:68113CC3-55C1-4EDE-AEFF-CEE043A9431C][Build the First run journey]] in [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
@@ -38,7 +38,7 @@ This page documents a test scenario verifying [[id:68113CC3-55C1-4EDE-AEFF-CEE04
 | Parent story  | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]]   |
 | Target screen | =ores.web= first run journey (http://127.0.0.1:21402/) |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Steps
 
@@ -133,6 +133,8 @@ This page documents a test scenario verifying [[id:68113CC3-55C1-4EDE-AEFF-CEE04
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: it will not be run. A retest brings it back.
 
 - The walk was last performed on 2026-09-29 against =eager_maxwell= with the
   driver in =build/evidence/drive_journey.mjs=, which photographs every step

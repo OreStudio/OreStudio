@@ -8,9 +8,9 @@
 #+filetags: :entity-classification-drift-dq:sprint_25:v0:
 #+target_dialog:
 #+created: 2026-08-08
-#+updated: 2026-08-08
+#+updated: 2026-10-11
 #+environment:
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 #+startup: inlineimages
 
 This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D9B46108][Task: Bind ores.dq entities to profiles; verify zero-diff regen]] in [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Story: Entity classification and drift baseline: ores.dq]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
@@ -35,7 +35,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 | Parent story  | [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Story: Entity classification and drift baseline: ores.dq]]   |
 | Target dialog | =DataDomainDetailDialog= / =SubjectAreaDetailDialog= / =CodingSchemeDetailDialog= / =MethodologyDetailDialog= / =BadgeDefinitionDetailDialog= and 6 siblings (Data Quality > Data Catalogue / Classifications / Badges) |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Steps
 
@@ -114,3 +114,5 @@ never close the original, leaving both visible as "current").
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: a legacy scenario for the Qt client, which is no longer used. It is kept for the record and will not be run. A retest brings it back.

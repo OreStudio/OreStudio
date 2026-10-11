@@ -19,7 +19,7 @@
  *
  */
 
-import { IMAGE_MEDIA_TYPES, MAX_IMAGE_BYTES } from '@ores/contracts';
+import { IMAGE_MEDIA_TYPES, MAX_IMAGE_BYTES, isImageName } from '@ores/contracts';
 
 /**
  * What the runner does with a pasted or dropped file before the server sees
@@ -42,18 +42,21 @@ export interface Transfer {
  * The files a paste or a drop carries, whatever they are. Pasted text carries
  * none, so the note keeps it. A file that is not an image is still handed on,
  * so the tester is told it was refused and is not left wondering.
+ *
+ * The items and the files of a transfer are two views of the same data, and a
+ * browser gives a new File object each time it is asked, so a file seen through
+ * both is not the same object. The items are read first, and the files only when
+ * the items gave none, so a pasted screenshot is one file and not two.
  */
 export function filesOf(transfer: Transfer | null | undefined): File[] {
     if (transfer === null || transfer === undefined) return [];
-    const found: File[] = [];
-    const take = (file: File | null): void => {
-        if (file !== null && !found.includes(file)) found.push(file);
-    };
+    const fromItems: File[] = [];
     for (const item of Array.from(transfer.items ?? [])) {
-        if (item.kind === 'file') take(item.getAsFile());
+        if (item.kind !== 'file') continue;
+        const file = item.getAsFile();
+        if (file !== null) fromItems.push(file);
     }
-    for (const file of Array.from(transfer.files ?? [])) take(file);
-    return found;
+    return fromItems.length > 0 ? fromItems : Array.from(transfer.files ?? []);
 }
 
 /** Whether a drag carries files, which is all a drag can say before the drop. */
@@ -78,3 +81,106 @@ export function imageProblem(file: {
 
 /** The limit in whole megabytes, for a message. */
 export const MAX_IMAGE_MEGABYTES = MAX_IMAGE_BYTES / (1024 * 1024);
+
+/**
+ * The names of the images a note links, in the order it links them, each once.
+ * A tester or the old Qt tool writes a link as `[[file:name.png]]`. Only a link
+ * whose name is that of an image file counts, so a link to a text file or to
+ * another doc shows no thumbnail.
+ */
+export function attachedImages(notes: string): readonly string[] {
+    const names: string[] = [];
+    for (const match of notes.matchAll(/\[\[file:([^\]]+)\]\]/g)) {
+        const name = match[1] ?? '';
+        if (isImageName(name) && !names.includes(name)) names.push(name);
+    }
+    return names;
+}
+
+/** Why the clipboard gave no image. */
+export type ClipboardReason = 'unavailable' | 'denied' | 'empty';
+
+export class ClipboardProblem extends Error {
+    readonly reason: ClipboardReason;
+
+    constructor(reason: ClipboardReason) {
+        super(`The clipboard gave no image: ${reason}.`);
+        this.name = 'ClipboardProblem';
+        this.reason = reason;
+    }
+}
+
+/** The part of the browser's clipboard that the runner reads. */
+export interface ClipboardLike {
+    read(): Promise<
+        ArrayLike<{
+            readonly types: readonly string[];
+            getType(type: string): Promise<Blob>;
+        }>
+    >;
+}
+
+const EXTENSIONS: Readonly<Record<string, string>> = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/gif': 'gif',
+    'image/webp': 'webp',
+};
+
+/**
+ * The images on the clipboard, as files. A screenshot taken to the clipboard,
+ * such as one from GNOME, is a PNG there, and a paste with Ctrl+V reaches the
+ * page only when a field has the focus. Reading the clipboard from a button
+ * needs the browser's leave, which it asks the tester for once.
+ *
+ * It throws a ClipboardProblem when the browser has no clipboard to read, when
+ * the tester or the browser refuses it, or when the clipboard holds no image.
+ */
+export async function imagesFromClipboard(clipboard: ClipboardLike | undefined): Promise<File[]> {
+    if (clipboard === undefined || typeof clipboard.read !== 'function') {
+        throw new ClipboardProblem('unavailable');
+    }
+    let items: Awaited<ReturnType<ClipboardLike['read']>>;
+    try {
+        items = await clipboard.read();
+    } catch (error) {
+        const name = (error as { name?: unknown } | null)?.name;
+        // A refusal is the tester's or the browser's. An error that says the
+        // clipboard held nothing usable means there was no image. Any other
+        // error is a fault in the browser or the page, and says so.
+        throw new ClipboardProblem(
+            name === 'NotAllowedError' || name === 'SecurityError'
+                ? 'denied'
+                : name === 'DataError' || name === 'NotFoundError'
+                  ? 'empty'
+                  : 'unavailable',
+        );
+    }
+    const files: File[] = [];
+    for (const item of Array.from(items)) {
+        const type = item.types.find((candidate) => candidate.startsWith('image/'));
+        if (type === undefined) continue;
+        const blob = await item.getType(type);
+        const kind = blob.type === '' ? type : blob.type;
+        files.push(new File([blob], `clipboard.${EXTENSIONS[kind] ?? 'png'}`, { type: kind }));
+    }
+    if (files.length === 0) throw new ClipboardProblem('empty');
+    return files;
+}
+
+/**
+ * The words of a note without the links to its images. A note keeps a line end
+ * as "; " in the table cell of the doc, so a note that is only image links
+ * leaves nothing, and a note with words and links leaves the words without the
+ * separators that held the links.
+ */
+export function plainNote(notes: string): string {
+    return notes
+        .replace(/\[\[file:([^\]]+)\]\]/g, (link, name: string) =>
+            isImageName(name) ? '\u0000' : link,
+        )
+        .split('\u0000')
+        .map((part) => part.replace(/^[;\s]+|[;\s]+$/g, ''))
+        .filter((part) => part !== '')
+        .join('; ');
+}

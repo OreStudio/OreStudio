@@ -158,6 +158,23 @@ export function percentMarked(runner: Runner): number {
 }
 
 /**
+ * Whether the working copy differs from the scenario as the server last
+ * answered it, in the status or the note of any step. A tester who has marked
+ * or written something that is not saved leaves it behind by leaving the page.
+ */
+export function isDirty(runner: Runner, scenario: Scenario): boolean {
+    return (
+        runner.steps.length !== scenario.steps.length ||
+        runner.steps.some((step, at) => {
+            const saved = scenario.steps[at];
+            return (
+                saved === undefined || step.status !== saved.status || step.notes !== saved.notes
+            );
+        })
+    );
+}
+
+/**
  * What a save sends: every step the tester can mark. A dropped step is left
  * out, because a save never writes one. It names no build, so the doc keeps the
  * build of the last run.

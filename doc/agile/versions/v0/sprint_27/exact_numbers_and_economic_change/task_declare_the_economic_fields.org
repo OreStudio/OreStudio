@@ -143,6 +143,13 @@ via its "Verifies task" field.
 | 2 | Minor: the digest never reads an option's exercise prices, so a change to one leaves the digest alone. | =ores.trading.trade_type_catalogue.org= | Declined | Listing them changes what the digest covers. Filed as capture =the-option-exercise-prices-are-not-in-the-digest=. |
 | 3 | Minor: the lever and the parity script carry the old rule, which is now documentation only. | =scripts/declare_economic_fields.py= | Declined | The lever still proposes a declaration for a model that gains columns, and the parity script is the evidence for the measurement. |
 | 4 | Misspell check over the files this change writes. | n/a | None found | =misspell-fixer= exit 0. |
+| 5 | PR review 1: the capture file kept template placeholders. | =the-option-exercise-prices-are-not-in-the-digest.org= | Accepted | Body rewritten. |
+| 6 | PR review 2: the exercise-prices gap ships unfixed and sits in the inbox. | same | Accepted | Filed to next with links to the story and task. The check that was asked for found a second gap, composite legs, filed the same way. |
+| 7 | PR review 3: the component check is textual and one declaration satisfies it. | =org_loader.py= | Partly accepted | Tightening it to require a true column fails on =composite_instrument=, a real component, so the case is documented and tested instead. A parse is not possible without the generation pipeline's flags. |
+| 8 | PR review 4: say that an empty declaration is valid. | =org_loader.py= | Accepted | Docstring updated. |
+| 9 | PR review 5: compile-time cost of the linear find. | =economic_digest.hpp= | Noted | Nothing to change now. |
+| 10 | PR review 6: run the red suites on a clean =origin/main=. | n/a | Done in part | The two codegen tests, the ores.sql physical inventory, the entity-writes ratchet and the recipe inventory are red on a clean =origin/main=. The five C++ suites were not run there: main's own CI stops at Validate SQL Schema. |
+| 11 | PR review 7: build the CSA step and the web bundle. | n/a | Declined | The full build, which includes every component that reads these headers, passed. The CSA web step reads none of them. |
 
 Verdict: ready to merge. Five ctest suites and one codegen test are red on this
 branch for reasons outside it; see Measurements.

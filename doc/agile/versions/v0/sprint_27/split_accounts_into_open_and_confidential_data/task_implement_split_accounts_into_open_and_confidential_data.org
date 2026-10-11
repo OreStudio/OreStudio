@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :split_accounts_into_open_and_confidential_data:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-split-accounts-into-open-and-confidential-data
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:ABA133C1-B8F3-4B13-999F-4C03400A8BCB][Split accounts into open and confidential data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Every tenant can read the open data of an account, such as the name, picture and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:ABA133C1-B8F3-4B13-999F-4C03400A8BCB][Split accounts into open and confidential data]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -62,6 +62,76 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Use cases the design must serve
+
+Each row is a reader or an actor, what it needs, and what happens today.
+
+| # | Who | Needs | Today |
+|---+-----+-------+-------|
+| 1 | Any reader of any tenant, on a history | The name, picture and type of the author of an entry. The author may be a service of the system tenant. | Hidden by the tenant wall and the C++ tenant filter. The toggle hides nothing and the service has no picture. |
+| 2 | A service acting inside a tenant, such as the inbox service or the refdata service | To know that the account named by a soft foreign key exists in the tenant: the notice recipient, the portfolio right, the sandbox owner and members, the approval requester and decider, the delivery and the preference. | The check reads the accounts table under the actor's party rule. The service is in no party, so it finds no account and the insert fails. The engine user passes because it has no actor. |
+| 3 | A super admin acting in the system tenant, during tenant setup | To update the service accounts, for example to attach their pictures. | The party rule hides the service accounts, so the update says "Account does not exist" and the tenant stays in bootstrap mode. |
+| 4 | A member | The people of the parties the member works in. | Works. The party rule limits the read. |
+| 5 | A tenant administrator | Every person of the tenant. | Works, because the administrator is linked to every party. |
+| 6 | The sign-in lookup, and a session with no actor | The account by username, before a session exists. | Works. A session with no actor is not restricted. |
+| 7 | Any tenant | To write its own accounts. No tenant writes a system account. | Works. No change wanted. |
+
+Use cases 1 to 3 are the failures. Use cases 4 to 7 must keep working.
+
+** What the failures share
+
+The accounts table answers three different questions with one rule.
+
+- *Who is this?* A reader names an author. The answer is a name, a picture and a type.
+- *Does this exist?* An insert checks a reference. The answer is yes or no.
+- *What do we know about this person?* A reader opens a profile. The answer is private data.
+
+The party rule is right for the third question. It is wrong for the first two. The tenant rule is right for the third question and for people. It is wrong for the services of the system tenant in the first.
+
+** The design
+
+Group the data by who may read it and why, not by the entity.
+
+*** Two tables
+
+- *Open table.* The data that names and recognises an account: id, tenant, version, username, account type, status, full name, picture and picture code. It holds no contact data and no private data.
+- *Confidential table.* The rest: email, default party, job title, reports-to link. It keeps the tenant rule, the party rule and its read codes.
+- Both carry the same id and the same audit columns. A write goes to both in one transaction.
+- The columns of each table are settled in the review of this design. Job title and reports-to may move to the open table if the organisation read needs them.
+
+*** One standard for data read across tenants
+
+The standard has six building blocks. Reference data already uses blocks 1 to 3.
+
+1. *Owner.* A shared row has =tenant_id = system=.
+2. *Policy.* A permissive, select-only policy admits =tenant_id = current tenant or tenant_id = system=. A write stays inside the tenant.
+3. *Read.* The generated read declares =:tenant_read_scope: shared= and states no tenant predicate. The policy decides.
+4. *Guard.* The read has a =:read= code, or an allow-list row with a reason, as the authorised-reads rules require.
+5. *Existence check.* A reference to a row that other tenants own, or that the party rule hides, is checked by a security definer function that returns only yes or no. It names no column, so it leaks no data.
+6. *Page.* One page states the blocks, and the checklist for a new shared table.
+
+*** What each use case gets
+
+| # | Answer |
+|---+--------|
+| 1 | The open table. The services are system-owned rows. They are admitted by block 2 and read with block 3, so every tenant sees them. |
+| 2 | Block 5. =ores_iam_account_exists_fn(tenant, id)= replaces the =exists (select ... from ores_iam_accounts_tbl)= in every soft-foreign-key trigger. The party rule no longer matters for a reference check. |
+| 3 | The open table has no party rule, and a service account has no party. The update of a service account no longer depends on the actor's parties. |
+| 4, 5 | The people of a tenant stay tenant-owned. The party rule keeps applying to them in the confidential table. |
+| 6 | No change. |
+| 7 | No change. Block 2 is select-only. |
+
+** Decisions for the review
+
+- Are the people of a tenant visible by name and picture to every member of that tenant, or only to the members of their parties? The first is simple. The second keeps the party rule in force and means the open table has two row classes. This design assumes the second until the review settles it.
+- The shared rows of the system tenant also include the super admin account, which is a =user=. A history already names it when it acts in a tenant. The design admits the system tenant's rows whole, as the shared-reference tables do. The review confirms this, or limits the policy to non-=user= types.
+- Which soft-foreign-key checks use block 5? The generated triggers come from models, so the change is in the template and every generated trigger changes with it.
+
+** Out of this design
+
+The inbox and the refdata services fail today for use case 2. Block 5 fixes them, and it does not need the table split. It may ship first, as its own change, once the review agrees the function.
+
 
 * Test Scenarios
 

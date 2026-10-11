@@ -8,12 +8,12 @@
 #+filetags: :browse_the_agile_tree_in_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-sprint-board
-#+pr:
+#+pr: 3127
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -74,12 +74,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3127][#3127]] | [web] Build the sprint board |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed board hides the sprint picker | BoardTab.tsx | Fix | The picker stays above the error, so a bad sprint can be left. A test covers it. |
+| 2 | Filters carry over when the sprint changes | BoardTab.tsx | Fix | A sprint change clears the text, the epic and the open story. |
+| 3 | 1 stories | locales | Fix | The story count and the task count use plural forms in all three languages. Tests cover one and many. |
+| 4 | The column label is the raw state | BoardTab.tsx | Fix | The label is translated. A test covers it. |
+| 5 | The task PR parse is lenient | BoardTab.tsx | Fix | Only digits with an optional # make a link. A test covers 1e3. |
+| 6 | Filters are not in the address | BoardTab.tsx | Note | Intended. Only the sprint is shared. |
+| 7 | No test clicks a card or a chip | BoardTab.test.tsx | Note | A follow-up. The suite renders markup. |
 
 * Result
+
+The Development area has a Board tab, built to the accepted variant A. It shows the sprint line with a sprint picker held in the address (=?sprint=sprint_N=), the day of the sprint clamped to the sprint, four tiles, a search box and epic filters, a column for each state with a card for each story, and the story detail with its fields, pull request links and expandable tasks. A link in the detail opens the story or task doc on the existing doc page. The board reads =/api/agile/board= and =/api/agile/sprints=. The English, French and Portuguese text is in the catalogue, and the French and Portuguese is my translation, which needs a speaker. The tests cover the filter, column and day rules, the tab and the detail as markup. I did not drive the tab in a browser, and the current-story mark waits for the work tree task.

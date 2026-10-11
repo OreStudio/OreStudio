@@ -20,28 +20,41 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A provider is system reference data, seeded with the main vendors,
+exchanges, a broker and a generic provider, and published through DQ. A
+collection has a scope and may name its provider, every feed carries the
+synthetic mark, and the ACME reports' FX and IR currencies have feeds from
+one provider.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
 
--
+- The provider catalogue is generated across every layer and published into
+  the system tenant from the =system_core= bundle.
+- A collection's scope ties its tenant and party: a system collection is the
+  system tenant's and its system party's; row-level security lets every
+  tenant read it.
+- Every feed's source name starts =synthetic.=, and the feed tables check it.
+- The ACME reports' FX spots and IR curves have feeds, set up by one synthetic
+  feeds dataset that names its provider.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Model the provider catalogue in =ores.synthetic= and publish it through DQ;
+tie scope to tenant and party on the collection and widen row-level security
+for system collections; mark every feed synthetic; then replace the 2026
+Realistic dataset with a Bloomberg feeds dataset that covers the ACME
+currencies, published the one way synthetic feeds are published.
 
 * Measurements
 
@@ -105,3 +118,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped:
+
+- =market_data_provider= in =ores.synthetic=, generated across every layer,
+  with eight providers published from DQ into the system tenant.
+- Collection scope tied to tenant and party, the conflict guard kept, row-level
+  security widened for system collections, and the synthetic mark checked on
+  the FX and IR feed tables.
+- The "synthetic theme" renamed to the synthetic feeds dataset, the one way to
+  set up feeds; a feed row may name its provider.
+- =synthetic.feeds.bloomberg= replaces the 2026 Realistic dataset: 26 USD
+  spots and 28 overnight-benchmark curves plus the USD FOMC short end, with
+  eight new IR index families and their conventions.
+
+Not met: a system collection is readable in SQL but not through the
+services, because the generated repositories read the caller's own tenant
+alone, so no dataset publishes one yet. Tenants consume the Bloomberg feeds
+from their own party collection.
+[[id:CDA9C6C5-3D37-4736-8C1F-2DE8918696E4][Subscribe a tenant to provider feeds]]
+takes up system feeds a tenant subscribes to. The provider catalogue's DQ
+artefact follows a legacy pattern;
+[[id:A8771DA0-5F59-494F-AE03-3D52B7356587][Bring every DQ artefact table onto the canonical model]]
+moves it.

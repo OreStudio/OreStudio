@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: CA0876A0-B417-4BDB-9C93-FC7B770E55F8
+:END:
+#+title: Investigation: Link tables without history
+#+description: What a link table records, what it lacks to show a history, and how a party or person timeline could draw it. Covers all 21 junction models.
+#+type: investigation
+#+level: s1
+#+filetags: :codegen:refdata:iam:history:show_the_whole_history_of_a_party:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into What a link table records, what it lacks to show a history, and how a party or person timeline could draw it. Covers all 21 junction models..
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The party timeline states three gaps: the countries it works in, the currencies it works in and the counterparties it may trade with. The person timeline states two: the parties a person works in, and the grants taken away. The text of the first three says the junction "keeps no versions". The question was whether that is true, and what a link needs to have a history.
+
+* Methodology
+
+Read-only. All counts are from the tree at =0956bd1dd2= and the live =festive_dijkstra= database, after the accounts work.
+
+- Listed every junction model: =grep -l "^#+type: ores.codegen.junction" projects/*/modeling/*.org=. There are 21.
+- For each, looked for a history provider registrar, a history field mapper, a change event and a notify trigger in the tree.
+- Read the SQL each junction generates, and the live rows of =ores_refdata_party_countries_tbl=.
+- Read what a junction generates (=compass codegen entity show party_country_junction=) against what a versioned entity generates (=party_contact_information=).
+- Read the history dispatch (=ores.history.api/messaging/history_protocol.hpp=) and the timeline composer (=wire-protocol/src/timeline.ts=).
+
+* Paths taken
+
+- Looked first at whether the data exists. It does, see the first conclusion.
+- Looked at whether a link could reuse the existing provider. It cannot: a provider is registered per entity type and read by =entity_id=, a single string, and a link has two keys.
+- Did not change any code. This record is the investigation only.
+
+* Conclusions
+
+*The data is there. The reads are not.*
+
+1. All 21 junction tables are stored with history. Each has =version=, the four audit columns (=modified_by=, =performed_by=, =change_reason_code=, =change_commentary=) and =valid_from= / =valid_to= with a GiST exclusion on the pair of keys. The generated delete rule does not delete: it closes the row by setting =valid_to=. So every opening and every closing of a link is already recorded, with who and why. The live table =ores_refdata_party_countries_tbl= holds 34 rows, 2 of them closed (both from pgTAP tests).
+2. None of the 21 generates what a history needs. No junction has a history provider registrar, a history field mapper, a versions read or a change event. A junction model generates only the domain type, the protocol, the handler, the registrar, the repository, the service, the shell command, the SQL and the TypeScript types.
+3. The repository reads only the live rows. =party_country_repository= has =read_latest= variants, =read_latest_by_party= and =read_latest_by_country=, and =remove=. It has no read of all versions and no read that includes closed rows. A closed link is therefore not returned by any read, which is why the person timeline says "no read returns a closed grant".
+4. A junction has no change event and no notify trigger, in any of the 21. A screen that watches =refdata party_countries= therefore never hears that a link changed. The "news" on the Refresh button is blind to links for the same reason.
+5. The facets are not selected for a junction by design. =generate.py= lists the messaging facets a junction gets (=_JUNCTION_MESSAGING_FACETS=) and gives it no history, presentation or eventing facet. The history facets assume one id per entity.
+6. The key is the real obstacle. =get_entity_history_request= carries =entity_type= and =entity_id=, "the entity's own primary key rendered as a string". A link's key is a pair. No composite rendering is defined, and the entities that already have a composite key (a contact is party and type; an identifier is party and value) show the cost: their provider reads by the first column only, and the timeline filters the answer by row id and states a gap when another party's row came back. That is the first task of the story, and links need the same answer.
+7. A closed link is not discoverable even if its versions could be read. The timeline lists the live links of a party (=listRecords=), then reads each one's versions. A link that was closed is not in that list, so it would never be asked about. The read has to be by the parent and has to include closed rows.
+
+* Recommendations
+
+1. *Define a composite entity id once.* Render a pair as =left/right= (UUID, then code), parse it in one place, and state it in the history protocol. The story's first task (key every history by the row) then covers contacts, identifiers and links with one rule.
+2. *Read links by their parent, closed rows included.* A history provider for a junction takes the parent id as its =entity_id= and returns every version of every link of that parent, oldest first. Each version carries its other key and a composite =ID= field, so the timeline pairs the versions of one link and diffs them. This needs no per-link request and finds closed links.
+3. *Generate it for all 21 junctions from the template, not by hand.* Add to the junction archetype: a repository read of all versions by parent, a service method, a history provider registrar, a field mapper, and a test. A junction with =:list_by:= on a side gets the provider for that side. Opt out with a model flag where a junction has no reader (=image_tag=, =notification_argument=).
+4. *Give a junction a notify trigger and a change event* in the same change, so a link change reaches watchers. This is a separate facet and can follow, but without it the party page cannot refresh after a link is added.
+5. *Draw them in the timelines.* The party timeline replaces its three gaps with the provider reads. The person timeline does the same for =ores.iam.account_party=. The grants taken away (=ores.iam.account_role=) is a related gap with the same cause: a read that omits closed rows. It is the second case of recommendation 3 for a junction-like table.
+6. *Build in order:* the composite id, then the template change with the first junction (=party_country=) as the reference, then the other twenty by regeneration, then the timelines.
+
+Risks:
+
+- The template change regenerates 21 junctions across the C++ and TypeScript layers, and the repository rebuild is long. The accounts work showed that a generated change can also leave the generated files out of date for unrelated entities: =compass codegen entity show= marks nearly every file of both a junction and an entity as drifted. Check what that warning means before a regeneration, so the diff holds only the change.
+- A provider that returns every link of a parent can be large for a party with many counterparties. The timeline already pages nothing, so state a limit.
+
+* See also
+
+- [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Story: Show the whole history of a party]]: the tasks that follow from this.
+- [[id:BF980373-5DD4-4E51-BED3-C1152A47F515][Task: Give link tables a history]]
+- [[id:E88492E7-B8A2-4AD9-B145-2C30F7B7FC69][Task: Key every history by the row it belongs to]]
+- =projects/ores.web/packages/wire-protocol/src/timeline.ts=: where the gaps are stated.
+- =projects/ores.codegen/src/codegen/generate.py=: the facets a junction gets.

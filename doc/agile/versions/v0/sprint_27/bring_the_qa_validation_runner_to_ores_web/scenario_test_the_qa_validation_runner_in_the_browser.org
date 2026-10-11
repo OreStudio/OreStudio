@@ -34,7 +34,7 @@ This scenario tests the runner by running in it. The scenario you are reading is
 | Parent story  | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]]   |
 | Target screen | Development > Tests, and the scenario runner |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PASSED |
 
 * Steps
 
@@ -44,12 +44,24 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - Chrome opens on the sign-in page with the form filled in as =tenant_admin@acme_corporation=.
 - Press *Sign in*. The home page loads and shows the Acme Corporation tenant.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open Development from the menu
 
 - In the top menu, click *Development*. The entry is there for everybody. It needs no permission.
 - The page shows a path of Home, then Development, and two tabs, *Tests* and *Done*.
 - The tabs have no heading of their own. There is no Board, Stories or Tasks tab.
 - The *Tests* tab shows the scenarios that wait for a tester, grouped by sprint, the newest sprint first. Each sprint has a heading with its number and a count, and every sprint that has something waiting is open.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Find this scenario on the Tests tab
 
@@ -60,12 +72,24 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - Go back to the *Tests* tab.
 - Wait up to ten seconds for a first listing. It scans the whole =doc/= tree.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open this scenario from its row
 
 - Click the title of the row, or anywhere else on it. The runner opens on the first step that is not marked.
 - The address now ends in =/development/tests/= and the scenario's id.
 - The tabs *Steps*, *Story* and *Task* sit above the runner.
 - Press *Back* until you reach step 1. Mark steps 1 to 4 with *Pass*. Each Pass moves to the next step. Press *Skip* to come back to this step.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Check the header and the progress bar
 
@@ -74,12 +98,24 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - The line under the state tag counts the steps you have marked. It says *4 of 17 steps marked* before you mark this one.
 - *Back* is on when you are past step 1, and *Skip* is off on the last step.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Pass moves to the next step
 
 - On this step, press *Pass*.
 - The runner moves to *Step 7 of 17*, the next step, by itself.
 - The line under the state tag now says *6 of 17 steps marked*, and the progress bar is longer.
 - The state tag still says *Pending*. Marking steps never closes the scenario.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Fail stays on the step
 
@@ -89,12 +125,25 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - The note stays in the box and the box stays editable.
 - Press *Pass* to record the real result of this step. The runner moves on to step 8.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | A Fail stays on its step. |
+
 ** Read the story and the task
 
 - Type =kept= in the *Note* box of this step.
 - Click the *Story* tab. The story of this scenario shows as a page, with its title, its path and its text. The file header lines do not show.
 - Click the *Task* tab. The task *Build the scenario runner* shows the same way.
 - Click the *Steps* tab. You are on step 8 with =kept= still in the note, and the steps you marked are still marked.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Save part of the run
 
@@ -104,12 +153,24 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - In a terminal, run =git status --short doc/agile/versions/v0/sprint_27/bring_the_qa_validation_runner_to_ores_web=. This scenario's file is changed.
 - In =* Results= of this doc, *Status* says =PENDING= and *Completed at* is empty. The steps you marked have a *Result* table, with the note on step 7.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Follow a link inside a doc
 
 - Click the *Task* tab. Find the link *Bring the QA validation runner to ores.web* in the first paragraph.
 - Click it. The story opens inside the same tab, with a *Back* button above it. The page does not change, the browser does not reload, and no question is asked.
 - Click *Back*. The task shows again. Click the *Steps* tab. This step is on show with your marks and notes.
 - Press *Pass* on this step.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Get asked before leaving with unsaved marks
 
@@ -121,12 +182,24 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - Press *Pass* on this step, then press *Save*. Click *Back to the tests*. This time nothing is asked.
 - Click this scenario's row. The runner opens on step 12, with the marks you saved.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Follow a link that does not resolve
 
 - In the address bar, add =/development/docs/DDDDDDDD-DDDD-4DDD-8DDD-DDDDDDDDDDDD= to the site address and press Enter. Nothing is unsaved, so nothing is asked. Sign in again if you are asked.
 - The page says that no story, task or scenario has that id, and that the link may point at a doc the runner does not show. It does not show an error.
 - Now use =/development/docs/0A22B752-D5CF-4B36-8429-2950130AAABD=, which is a recipe. It gives the same message.
 - Open the Development menu entry and this scenario's row. The runner opens on this step. Press *Pass*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Attach a screenshot by pasting
 
@@ -138,6 +211,13 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - Text you paste into the note, such as =hello=, goes in as text and starts no upload.
 - Press *Pass*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_test_the_qa_validation_runner_in_the_browser_step13_20261011_014838.png]]; |
+
 ** Refuse a file that is no image
 
 - Drag a text file from your file manager onto this step.
@@ -147,6 +227,12 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - In a terminal, run =ls doc/agile/versions/v0/sprint_27/bring_the_qa_validation_runner_to_ores_web/*.png=. The screenshots from steps 13 and 14 are there, each named with the scenario, its step and a time.
 - Press *Pass*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Reopen the scenario from the queue
 
 - Press *Save*. Then click *Back to the tests*. Nothing is asked.
@@ -154,6 +240,12 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - Click it. The runner opens on the first step that is not marked, which is this one, step 15. The notes and marks you saved are back, and the links to the screenshots are in the notes of steps 13 and 14.
 - Reload the page with F5 first if the list looks out of date.
 - Press *Pass*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Read a finished scenario
 
@@ -164,6 +256,12 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - Press *Cancel*. Nothing is cleared. Do not confirm the retest on this scenario.
 - Go back to this scenario from the Tests queue. The runner opens on this step. Press *Pass*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Save the finished run
 
 - Press *Pass* on this step. Step 17 is the last step, so the runner stays here.
@@ -173,12 +271,18 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - Open the Development menu entry. This scenario is gone from the *Tests* tab and is on the *Done* tab, in its sprint, with its state and a completion time. Write what you saw in =* Notes=.
 - If the scenario does not close, write that in =* Notes= too.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PASSED |
+| Completed at  | 2026-10-11T01:50:09Z |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

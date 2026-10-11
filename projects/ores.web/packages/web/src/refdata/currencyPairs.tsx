@@ -237,6 +237,7 @@ function PairDialog({
         onSettled: async () => {
             await queries.invalidateQueries({ queryKey: ['records'] });
             await queries.invalidateQueries({ queryKey: ['history'] });
+            await queries.invalidateQueries({ queryKey: ['timeline'] });
         },
         onSuccess: () => {
             onSaved?.(code);

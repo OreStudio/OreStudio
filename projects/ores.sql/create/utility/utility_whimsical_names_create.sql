@@ -56,23 +56,38 @@ returns text[] as $$
     ];
 $$ language sql immutable;
 
--- Encodes a positive integer as a lowercase base-26 string (a=1, b=2, ..., z=26,
--- aa=27, ...).  Used to create letter-only unique suffixes for codenames.
--- The output satisfies the codename regex constraint (^[a-z][a-z_]+$).
-create or replace function ores_utility_to_base26_fn(n bigint)
+-- Maps a positive integer to a whimsical codename with a four-digit number,
+-- such as "silent_meadow_4217".  Different integers give different codenames,
+-- for as many integers as there are combinations (adjectives x nouns x 9000),
+-- so a caller that draws its integers from a sequence gets codenames that are
+-- unique by construction, even across the rows of one multi-row insert.
+--
+-- The integer is scrambled first, by a prime multiplier (Knuth's) that shares no
+-- factor with the count of combinations, and an offset, so that consecutive
+-- integers do not give consecutive names or numbers.  The product stays below
+-- 10^18, so it fits a bigint.
+-- The output satisfies the codename constraint (^[a-z][a-z_]+_[0-9]{4}$).
+create or replace function ores_utility_whimsical_codename_fn(n bigint)
 returns text as $$
 declare
-    result text := '';
-    alphabet constant text := 'abcdefghijklmnopqrstuvwxyz';
+    adjectives constant text[] := ores_utility_whimsical_adjectives_fn();
+    nouns constant text[] := ores_utility_whimsical_nouns_fn();
+    adjective_count constant int := array_length(adjectives, 1);
+    noun_count constant int := array_length(nouns, 1);
+    combinations constant bigint := adjective_count::bigint * noun_count * 9000;
+    multiplier constant bigint := 2654435761;
+    shift constant bigint := 4217313;
+    scrambled bigint;
+    pair bigint;
 begin
     if n <= 0 then
-        raise exception 'Input to ores_utility_to_base26_fn must be a positive integer, but was %', n;
+        raise exception 'Input to ores_utility_whimsical_codename_fn must be a positive integer, but was %', n;
     end if;
-    while n > 0 loop
-        result := substr(alphabet, ((n - 1) % 26)::int + 1, 1) || result;
-        n := (n - 1) / 26;
-    end loop;
-    return result;
+    scrambled := (((n - 1) % combinations) * multiplier + shift) % combinations;
+    pair := scrambled / 9000;
+    return adjectives[1 + (pair % adjective_count)::int]
+        || '_' || nouns[1 + (pair / adjective_count)::int]
+        || '_' || (1000 + scrambled % 9000)::text;
 end;
 $$ language plpgsql immutable;
 

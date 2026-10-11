@@ -42,6 +42,7 @@ import { NewerVersionNotice, useNewerVersion } from './newerVersion.js';
 import { useRecordEdit, type EditOutcome } from './useRecordEdit.js';
 import { displayName } from './names.js';
 import { personPath } from '../shell/paths.js';
+import { mailtoLink, webLink } from '../ui/links.js';
 import { useHolds, usePermissions } from './holds.js';
 import { PERMISSION } from './permissions.js';
 /**
@@ -101,30 +102,6 @@ export function useReasonChoice(
 
 /** What a panel's last save decided, as the panel draws it. */
 type PanelOutcome = EditOutcome;
-
-/** The link that sends mail to an address, present only when there is an address to send to. */
-function mailto(address: string): { readonly href?: string } {
-    const trimmed = address.trim();
-    return trimmed === '' ? {} : { href: `mailto:${trimmed}` };
-}
-
-/**
- * The link that opens a web page, present only when the value is an http or
- * https address. A value that is not one, such as free text, stays text rather
- * than a link that goes nowhere. It opens in a new tab and keeps the opener
- * out of the page it opens.
- */
-function webLink(address: string): { readonly href?: string; readonly external?: boolean } {
-    const trimmed = address.trim();
-    try {
-        const url = new URL(trimmed);
-        return url.protocol === 'http:' || url.protocol === 'https:'
-            ? { href: url.href, external: true }
-            : {};
-    } catch {
-        return {};
-    }
-}
 
 /** The wire's field name as the panel's own, so a failure lands under its input. */
 function camel(name: string): string {
@@ -1049,7 +1026,7 @@ export function ContactPanel({
                     <Detail
                         label={t('profile.contact.email')}
                         value={shown(contact?.email)}
-                        {...mailto(contact?.email ?? '')}
+                        {...mailtoLink(contact?.email ?? '')}
                     />
                     <p className="mt-1 text-xs text-ink-faint">
                         {accountRead && signInEmail !== ''

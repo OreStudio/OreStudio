@@ -181,6 +181,12 @@
 \ir ./dq_csas_artefact_create.sql
 \ir ./dq_netting_set_aliases_artefact_create.sql
 
+-- Party child artefact tables (an office, the countries and currencies a party works in, the counterparties it may trade with)
+\ir ./dq_party_contact_informations_artefact_create.sql
+\ir ./dq_party_countries_artefact_create.sql
+\ir ./dq_party_currencies_artefact_create.sql
+\ir ./dq_party_counterparties_artefact_create.sql
+
 \ir ./dq_lei_bic_artefact_create.sql
 \ir ./dq_lei_entities_query_functions_create.sql
 

@@ -127,6 +127,15 @@ Finance and Market Risk, and the Acme dataset holds no Finance account; the task
 
 * Screens and wireframes
 
+The screens that serve this journey are the standard party screens, and not the
+walk drawn below. The Parties list opens the page of one party. The page has a
+tab for the details, the identifiers, the contacts, the memberships, the
+structure and the history, and each card or table on it is changed in a dialog,
+as a currency is. The walk in the wireframe was the first design of this
+journey, and the user experience no longer follows it step by step. See
+[[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]], which says that a journey is a design document and
+not a screen.
+
 One screen, ten states. The first state is the party list, which the person
 starts from and returns to. The other nine are the walk: a flat left rail with
 eight steps, plus the history and the refusal as side states. Each step draws

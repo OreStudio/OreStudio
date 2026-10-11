@@ -105,8 +105,8 @@ describe('the workflows on the Parties screen', () => {
         const words = textOf(html);
 
         expect(words).toContain('Onboard a party');
-        expect(words).toContain("Correct a party's details");
         expect(words).toContain('Onboard a counterparty');
+        expect(words).not.toContain("Correct a party's details");
         expect(html).toContain('href="/refdata/parties/new"');
     });
 

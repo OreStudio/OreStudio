@@ -31,7 +31,6 @@ export const PATHS = {
     refdata: '/refdata',
     parties: '/refdata/parties',
     newParty: '/refdata/parties/new',
-    partyDetails: '/refdata/parties/details',
     onboardCounterparty: '/refdata/counterparties/onboard',
     bookStructure: '/refdata/books/structure',
     conventions: '/refdata/conventions',
@@ -68,7 +67,6 @@ export function rescuePath(username: string): string {
 export const MOVED: readonly (readonly [from: string, to: string])[] = [
     ['/parties', PATHS.parties],
     ['/parties/new', PATHS.newParty],
-    ['/parties/details', PATHS.partyDetails],
     ['/counterparties/onboard', PATHS.onboardCounterparty],
     ['/books/structure', PATHS.bookStructure],
     ['/conventions', PATHS.conventions],

@@ -8,7 +8,7 @@
 #+filetags: :name_every_synthetic_feed_by_oresmd_uri:sprint_27:v0:
 #+owner: marco
 #+branch: feature/name-every-synthetic-feed-by-oresmd-uri
-#+pr:
+#+pr: 3152
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3152][#3152]] | [synthetic,web] Name every synthetic feed by its oresmd series, and draw the IR curve feeds |
 
 * Review
 

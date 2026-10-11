@@ -3311,6 +3311,10 @@ export const en: SourceCatalogue = {
                 'Give every parameter a value, and add a tenor entry on the Curve template tab, to see the curve.',
             previewNote:
                 'The server prices these from the values on the screen, with the {engine} engine. Nothing is saved.',
+            marks: {
+                added: 'New',
+                changed: 'Changed',
+            },
             lead: 'The short-rate engine the curve is drawn from and the parameters it reads. Change the values and save them together with the engine.',
             engine: 'Engine',
             parameter: 'Parameter',
@@ -3335,6 +3339,20 @@ export const en: SourceCatalogue = {
             runningNote: 'The feed is running on the old parameters.',
             restart: 'Restart it to apply',
             stoppedNote: 'The feed is stopped. It applies on start.',
+        },
+        irTicks: {
+            lead: 'The last curves the feed made, newest over the ones before it, and one tenor over time. The web server keeps the last 500 ticks of each running feed from when it began to listen, and a curve is a tick for each tenor entry, so a feed with many entries shows fewer curves.',
+            curves: 'Curves shown',
+            tenor: 'Tenor',
+            at: 'Time',
+            short: 'Short end ({tenor})',
+            long: 'Long end ({tenor})',
+            slope: 'Slope (bp)',
+            curveChart: 'The last curves of the feed',
+            pillarChart: 'The {tenor} rate over time',
+            waiting: 'The feed runs. The plot shows when a whole curve has arrived.',
+            noTemplate:
+                'The curve has no tenor entries, so its ticks cannot be told apart. Add them on the Curve template tab.',
         },
         irTemplate: {
             lead: 'The tenor entries the curve is priced at: where each starts and ends, and the instrument that prices it. Add at least one before the feed starts.',

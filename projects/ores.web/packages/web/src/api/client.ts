@@ -1265,12 +1265,18 @@ export const api = {
         limit: number,
     ): Promise<{
         readonly sourceName: string;
-        readonly ticks: readonly { readonly at: string; readonly value: number }[];
+        readonly ticks: readonly {
+            readonly at: string;
+            readonly value: number;
+            readonly uri: string;
+        }[];
     }> {
         return z
             .object({
                 sourceName: z.string(),
-                ticks: z.array(z.object({ at: z.string(), value: z.number() })),
+                ticks: z.array(
+                    z.object({ at: z.string(), value: z.number(), uri: z.string().default('') }),
+                ),
             })
             .parse(
                 await request(

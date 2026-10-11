@@ -291,6 +291,80 @@ describe('the IR curve feed screens', () => {
         expect(html).toContain('Instrument');
     });
 
+    it('plots the last curves of a running feed, one tick for each tenor entry', () => {
+        const entry = (id: string, index: number, end: string) => ({
+            id,
+            version: 1,
+            ir_curve_config_id: FEED_ID,
+            sequence_index: index,
+            start_tenor_code: 'SPOT',
+            end_tenor_code: end,
+            instrument_code: 'IRS',
+        });
+        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=ticks`, (client) => {
+            client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['records', 'ir-parameter-values', FEED_ID], []);
+            client.setQueryData(
+                ['records', 'ir-template-entries', FEED_ID],
+                [entry('e1', 0, '3M'), entry('e2', 1, '5Y')],
+            );
+            client.setQueryData(['records', 'parameter-definitions'], DEFINITIONS);
+            client.setQueryData(['synthetic-running'], ['synthetic.eureuribor6m']);
+            client.setQueryData(['feed-ticks', FEED_ID, 12], {
+                sourceName: 'synthetic.eureuribor6m',
+                ticks: [
+                    { at: '2026-10-11T09:00:00Z', value: 0.02, uri: 'a' },
+                    { at: '2026-10-11T09:00:00Z', value: 0.03, uri: 'b' },
+                    { at: '2026-10-11T09:00:30Z', value: 0.021, uri: 'a' },
+                    { at: '2026-10-11T09:00:30Z', value: 0.032, uri: 'b' },
+                ],
+            });
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('The last curves of the feed');
+        expect(html).toContain('The 3M rate over time');
+        expect(html).toContain('Short end (3M)');
+        expect(html).toContain('Long end (5Y)');
+        expect(html).toContain('Slope (bp)');
+        expect(html).toContain('2.100%');
+        expect(html).toContain('Mean reversion speed');
+    });
+
+    it('says a curve with no tenor entries cannot show its ticks', () => {
+        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=ticks`, (client) => {
+            client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['records', 'ir-parameter-values', FEED_ID], []);
+            client.setQueryData(['records', 'ir-template-entries', FEED_ID], []);
+            client.setQueryData(['records', 'parameter-definitions'], DEFINITIONS);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('The curve has no tenor entries');
+    });
+
+    it('says a stopped feed must be started to show curves', () => {
+        const html = render(`/market-data/ir-feeds/${FEED_ID}?tab=ticks`, (client) => {
+            client.setQueryData(['records', 'ir-curve-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['records', 'ir-parameter-values', FEED_ID], []);
+            client.setQueryData(
+                ['records', 'ir-template-entries', FEED_ID],
+                [
+                    {
+                        id: 'e1',
+                        version: 1,
+                        ir_curve_config_id: FEED_ID,
+                        sequence_index: 0,
+                        start_tenor_code: 'SPOT',
+                        end_tenor_code: '3M',
+                        instrument_code: 'DEPO',
+                    },
+                ],
+            );
+            client.setQueryData(['records', 'parameter-definitions'], DEFINITIONS);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('The feed is not running');
+    });
+
     it('draws the curve and its parameters and entries as one history', () => {
         const version = (n: number, at: string) => ({
             version: n,

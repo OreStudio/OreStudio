@@ -427,13 +427,13 @@ function resourceName(resource: SyntheticResource): string {
 }
 
 /** The FX feeds resource, which the tick read reads a feed through. */
-const FX_FEEDS = ((): SyntheticResource => {
-    const found = SYNTHETIC_RECORDS.find((candidate) => candidate.key === 'fx-feeds');
+const FEED_RESOURCES = ['fx-feeds', 'ir-curve-feeds'].map((key): SyntheticResource => {
+    const found = SYNTHETIC_RECORDS.find((candidate) => candidate.key === key);
     if (found === undefined) {
-        throw new Error('The synthetic resources have no fx-feeds.');
+        throw new Error(`The synthetic resources have no ${key}.`);
     }
     return found;
-})();
+});
 
 function resourceFor(request: FastifyRequest): SyntheticResource {
     const { resource } = request.params as { resource: string };
@@ -722,7 +722,7 @@ export function registerSyntheticRoutes(
     });
 
     /**
-     * The newest ticks of one FX feed's current run, oldest first. The feed is
+     * The newest ticks of one feed's current run, of any asset class, oldest first. The feed is
      * read as the session first, so a feed the session cannot see has no ticks
      * to show. Reading starts no listening: what runs is learnt from the
      * running read, which every feed screen makes.
@@ -733,7 +733,21 @@ export function registerSyntheticRoutes(
             z.object({ limit: z.coerce.number().int().min(1).max(TICK_CAPACITY).default(200) }),
             request.query,
         );
-        const feed = await readByKey(session, FX_FEEDS, paramId(request));
+        const id = paramId(request);
+        let feed: Record<string, unknown> | undefined;
+        for (const resource of FEED_RESOURCES) {
+            try {
+                feed = await readByKey(session, resource, id);
+                break;
+            } catch (error) {
+                if (!(error instanceof HttpFailure) || error.status !== 404) {
+                    throw error;
+                }
+            }
+        }
+        if (feed === undefined) {
+            throw notFound(`There is no feed ${id}.`);
+        }
         const sourceName = z.string().parse(feed['source_name']);
         return { sourceName, ticks: ticks.ticks(sourceName, limit) };
     });

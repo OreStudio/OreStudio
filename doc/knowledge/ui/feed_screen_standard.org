@@ -264,6 +264,26 @@ meaning of the saved process, so the screen converts the draft with it:
   ticks of each running feed from when it began to listen, and forgets a run
   when the feed stops, so the lead says so.
 
+** The Ticks tab of a curve feed
+
+A tick of a curve feed is one pillar of a curve. The feed publishes a curve as
+one tick for each tenor entry of the template, in template order, all with the
+time of the batch, so the ticks that share a time are one curve. The web server
+keeps the oresmd URI of each tick, and the screen groups by time (=irTicks.ts=). A
+batch with a pillar missing, which the server heard in part, is not a curve and
+is not drawn.
+
+- The strip shows the curves shown, the tenor of the second chart, the time of the
+  newest curve, its short end and long end, and the slope between them in basis
+  points, green or red.
+- The first chart overlays the newest curve over the ones before it, rate against
+  tenor. The second plots one tenor over time. The person chooses how many curves
+  and which tenor.
+- *Export CSV* hands the curves shown to the browser, one row for each curve and one
+  column for each pillar.
+- A column beside the plots shows the process that made the curves: the engine, the
+  rate and each parameter with its saved value.
+
 ** History
 
 The History tab is one stream of the feed and every part it holds, drawn as
@@ -308,7 +328,8 @@ calibration. The screen draws what the server answers.
 | The save dialog | =marketdata/SavePartsDialog.tsx= | The reason, the order of writes, the restart, in the words of the kind |
 | The process rules | =marketdata/mixture.ts=, =marketdata/processHelp.ts= | Draft, save plan, changes, shares, profiles |
 | Charts | =marketdata/LineChart.tsx= | Lines, the price chart, measured width |
-| Ticks | =marketdata/TicksPanel.tsx=, =marketdata/ticks.ts=, =bff/src/feed-ticks.ts= | The strip, the chart, the EMA, the CSV, the BFF buffer |
+| Ticks, FX | =marketdata/TicksPanel.tsx=, =marketdata/ticks.ts=, =bff/src/feed-ticks.ts= | The strip, the chart, the EMA, the CSV, the BFF buffer |
+| Ticks, IR | =marketdata/IrTicksPanel.tsx=, =marketdata/irTicks.ts= | The curves, the slope, the tenor over time, the CSV |
 | History | =marketdata/FeedHistory.tsx= with =Timeline= | One stream of the feed and every kind of part it owns |
 | Conversion | =ores.synthetic.api/feeds/fx_mixture_conversion.hpp= | The engine change, on the server |
 
@@ -322,7 +343,7 @@ of its own, and a kind with a mixture-like process would share the FX one.
 | Screen | Conformance |
 |--------+-------------|
 | FX price feeds | Conforms. It is the screen this standard was taken from |
-| IR curve feeds | Conforms, with the process tab, the curve template and the history. It lacks the Ticks tab and the part dialog: see Gaps. The task [[id:1E325838-917A-4F74-B880-15DEF844CD90][Build the IR curve feed screen]] states the aim |
+| IR curve feeds | Conforms: the list, the page with Details, Process, Curve template, Ticks and History, the previews and the unsaved marks. The Ticks tab draws curves, see below. The task [[id:1E325838-917A-4F74-B880-15DEF844CD90][Build the IR curve feed screen]] states the aim |
 
 ** Building a feed screen for a new asset class
 
@@ -340,12 +361,6 @@ of its own, and a kind with a mixture-like process would share the FX one.
 
 ** Gaps
 
-- The IR curve feed screen has no Ticks tab. A tick of a curve feed is a batch
-  of pillars, one value for each tenor entry, so the plot is a curve over time and
-  not a price path. It needs its own panel.
-- The IR curve feed screen edits a template entry and a parameter through the
-  parts dialog of the record standard, and not through a part dialog with the
-  engine's help.
 - The Ticks tab shows only what the web server heard. The stored observations
   need the feed's series identity, which
   [[id:3CD588CB-1B74-40BA-896F-75CFF8157EAF][Name a feed by its oresmd URI]]

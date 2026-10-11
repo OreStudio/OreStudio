@@ -623,8 +623,8 @@ describe('synthetic operations', () => {
         expect(response.json()).toEqual({
             sourceName: 'live.eurusd',
             ticks: [
-                { at: '2026-10-11 09:01:00Z', value: 1.2 },
-                { at: '2026-10-11 09:02:00Z', value: 1.3 },
+                { at: '2026-10-11 09:01:00Z', value: 1.2, uri: '' },
+                { at: '2026-10-11 09:02:00Z', value: 1.3, uri: '' },
             ],
         });
     });
@@ -658,7 +658,7 @@ describe('synthetic operations', () => {
         await send(server, sessionId, 'GET', '/api/synthetic/running');
         publish(subject, { value: '1.5', observation_time: '2026-10-11 09:04:00Z' });
         const again = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
-        expect(again.json().ticks).toEqual([{ at: '2026-10-11 09:04:00Z', value: 1.5 }]);
+        expect(again.json().ticks).toEqual([{ at: '2026-10-11 09:04:00Z', value: 1.5, uri: '' }]);
     });
 
     it('starts no listening when a feed that is not running is read', async () => {
@@ -683,9 +683,53 @@ describe('synthetic operations', () => {
                 result: ok,
                 fx_spot_generation_configs: [],
             },
+            'synthetic.v1.ir_curve_generation_configs.list': {
+                result: ok,
+                ir_curve_generation_configs: [],
+            },
         });
         const response = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
         expect(response.statusCode).toBe(404);
+    });
+
+    it('serves the ticks of an IR curve feed with the pillar each one is a value of', async () => {
+        const replies: Record<string, unknown> = {
+            'synthetic.v1.feed_configs.list': {
+                success: true,
+                running_source_names: ['live.usdsofr'],
+            },
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [],
+            },
+            'synthetic.v1.ir_curve_generation_configs.list': {
+                result: ok,
+                ir_curve_generation_configs: [{ id: ID, source_name: 'live.usdsofr' }],
+            },
+        };
+        const { server, sessionId, publish } = buildTestServer(replies);
+        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        const pillar = (end: string): string =>
+            `oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=${end}`;
+
+        const subject = 'synthetic.v1.ops.tick.live.usdsofr';
+        publish(subject, {
+            value: '0.04',
+            observation_time: '2026-10-11 09:00:00Z',
+            oresmd_uri: pillar('30D'),
+        });
+        publish(subject, {
+            value: '0.045',
+            observation_time: '2026-10-11 09:00:00Z',
+            oresmd_uri: pillar('1826D'),
+        });
+
+        const response = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        expect(response.statusCode).toBe(200);
+        expect(response.json().ticks).toEqual([
+            { at: '2026-10-11 09:00:00Z', value: 0.04, uri: pillar('30D') },
+            { at: '2026-10-11 09:00:00Z', value: 0.045, uri: pillar('1826D') },
+        ]);
     });
 
     it('answers 409 with the server words when a feed start is refused', async () => {

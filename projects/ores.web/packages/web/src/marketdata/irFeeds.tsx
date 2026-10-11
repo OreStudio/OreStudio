@@ -31,7 +31,7 @@ import {
     type FieldValues,
 } from '../refdata/records.js';
 import { syntheticStore } from '../refdata/store.js';
-import { Button, Field, Input, Notice } from '../ui/Primitives.js';
+import { Button, Field, Input, Notice, Tag } from '../ui/Primitives.js';
 import { FeedPage, FeedsPage } from './FeedScreens.js';
 import { feedPath, type FeedKind } from './feedKind.js';
 import {
@@ -47,6 +47,7 @@ import {
 } from './irCurve.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
 import { useSettled } from './MixturePanel.js';
+import { IrTicksPanel, savedParameters } from './IrTicksPanel.js';
 import { SavePartsDialog, type SaveEngine } from './SavePartsDialog.js';
 
 const FEEDS = 'ir-curve-feeds';
@@ -445,6 +446,12 @@ function IrProcessPanel({
                             const id = show(line.definition['id']);
                             const value = typed[id] ?? line.value;
                             const problem = parameterError(line.definition, value);
+                            const mark =
+                                line.saved === undefined
+                                    ? ('added' as const)
+                                    : Number(value) === Number(line.saved['parameter_value'])
+                                      ? undefined
+                                      : ('changed' as const);
                             return (
                                 <tr
                                     key={id}
@@ -459,6 +466,11 @@ function IrProcessPanel({
                                             <span className="ml-2 text-ink-muted">
                                                 ({show(line.definition['symbol'])})
                                             </span>
+                                        )}
+                                        {mark !== undefined && (
+                                            <Tag tone={mark === 'added' ? 'accent' : 'warn'} small>
+                                                {t(`marketdata.irProcess.marks.${mark}`)}
+                                            </Tag>
                                         )}
                                     </td>
                                     <td className="px-4 py-1.5">
@@ -742,6 +754,33 @@ function IrTemplatePanel({
     );
 }
 
+/** The Ticks tab: the last curves of the feed, with the saved process beside them. */
+function IrTicksTab({
+    feed,
+    running,
+    values,
+    entries,
+}: {
+    readonly feed: RecordRow;
+    readonly running: boolean | undefined;
+    readonly values: readonly RecordRow[];
+    readonly entries: readonly RecordRow[];
+}): ReactNode {
+    const definitions = useRecords('parameter-definitions');
+    return (
+        <IrTicksPanel
+            feed={feed}
+            running={running}
+            entries={entries}
+            parameters={savedParameters(
+                definitions.data ?? NO_ROWS,
+                values,
+                show(feed['process_type']),
+            )}
+        />
+    );
+}
+
 /** The IR curve feeds, as the shared feed screens draw them. */
 const IR_FEED_KIND: FeedKind = {
     resource: FEEDS,
@@ -824,6 +863,17 @@ const IR_FEED_KIND: FeedKind = {
             name: 'template',
             render: ({ feed, parts }) => (
                 <IrTemplatePanel feed={feed} entries={parts[1] ?? NO_ROWS} />
+            ),
+        },
+        {
+            name: 'ticks',
+            render: ({ feed, running, parts }) => (
+                <IrTicksTab
+                    feed={feed}
+                    running={running}
+                    values={parts[0] ?? NO_ROWS}
+                    entries={parts[1] ?? NO_ROWS}
+                />
             ),
         },
     ],

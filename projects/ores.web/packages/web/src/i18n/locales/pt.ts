@@ -3334,6 +3334,10 @@ const pt: SourceCatalogue = {
                 'Dê um valor a cada parâmetro e adicione uma entrada de prazo no separador Modelo da curva para ver a curva.',
             previewNote:
                 'O servidor calcula estes valores a partir do ecrã, com o motor {engine}. Nada é guardado.',
+            marks: {
+                added: 'Novo',
+                changed: 'Alterado',
+            },
             lead: 'O motor de taxa curta de que a curva é tirada e os parâmetros que lê. Mude os valores e guarde-os com o motor.',
             engine: 'Motor',
             parameter: 'Parâmetro',
@@ -3358,6 +3362,20 @@ const pt: SourceCatalogue = {
             runningNote: 'O fluxo corre com os parâmetros antigos.',
             restart: 'Reiniciar para aplicar',
             stoppedNote: 'O fluxo está parado. Aplica ao iniciar.',
+        },
+        irTicks: {
+            lead: 'As últimas curvas que o fluxo fez, a mais recente sobre as anteriores, e um prazo ao longo do tempo. O servidor web guarda os últimos 500 ticks de cada fluxo em curso desde que começou a ouvir, e uma curva é um tick por entrada de prazo: um fluxo com muitas entradas mostra menos curvas.',
+            curves: 'Curvas mostradas',
+            tenor: 'Prazo',
+            at: 'Hora',
+            short: 'Curto prazo ({tenor})',
+            long: 'Longo prazo ({tenor})',
+            slope: 'Inclinação (pb)',
+            curveChart: 'As últimas curvas do fluxo',
+            pillarChart: 'A taxa {tenor} ao longo do tempo',
+            waiting: 'O fluxo corre. O gráfico aparece quando chega uma curva inteira.',
+            noTemplate:
+                'A curva não tem entradas de prazo, por isso os seus ticks não se distinguem. Adicione-as no separador Modelo da curva.',
         },
         irTemplate: {
             lead: 'As entradas de prazo a que a curva é avaliada: onde cada uma começa e acaba, e o instrumento que a avalia. Adicione pelo menos uma antes de iniciar o fluxo.',

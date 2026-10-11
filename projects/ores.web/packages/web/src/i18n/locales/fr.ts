@@ -3361,6 +3361,10 @@ const fr: SourceCatalogue = {
                 "Donnez une valeur à chaque paramètre et ajoutez une entrée de durée dans l'onglet Modèle de courbe pour voir la courbe.",
             previewNote:
                 "Le serveur calcule ces valeurs à partir de l'écran, avec le moteur {engine}. Rien n'est enregistré.",
+            marks: {
+                added: 'Nouveau',
+                changed: 'Modifié',
+            },
             lead: "Le moteur de taux court dont la courbe est tirée et les paramètres qu'il lit. Changez les valeurs et enregistrez-les avec le moteur.",
             engine: 'Moteur',
             parameter: 'Paramètre',
@@ -3385,6 +3389,20 @@ const fr: SourceCatalogue = {
             runningNote: 'Le flux tourne avec les anciens paramètres.',
             restart: 'Redémarrer pour appliquer',
             stoppedNote: 'Le flux est arrêté. Il applique au démarrage.',
+        },
+        irTicks: {
+            lead: "Les dernières courbes produites par le flux, la plus récente sur les précédentes, et une durée dans le temps. Le serveur web garde les 500 derniers ticks de chaque flux en cours depuis qu'il écoute, et une courbe est un tick par entrée de durée : un flux à nombreuses entrées montre moins de courbes.",
+            curves: 'Courbes affichées',
+            tenor: 'Durée',
+            at: 'Heure',
+            short: 'Court terme ({tenor})',
+            long: 'Long terme ({tenor})',
+            slope: 'Pente (pb)',
+            curveChart: 'Les dernières courbes du flux',
+            pillarChart: 'Le taux {tenor} dans le temps',
+            waiting: 'Le flux tourne. Le graphique apparaît quand une courbe entière est arrivée.',
+            noTemplate:
+                "La courbe n'a pas d'entrée de durée : ses ticks ne se distinguent pas. Ajoutez-en dans l'onglet Modèle de courbe.",
         },
         irTemplate: {
             lead: "Les entrées de durée auxquelles la courbe est évaluée : où chacune commence et finit, et l'instrument qui la valorise. Ajoutez-en au moins une avant de démarrer le flux.",

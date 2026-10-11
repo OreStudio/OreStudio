@@ -34,7 +34,7 @@ import { qa } from '../api/qa.js';
 export const QA_SCENARIOS_KEY = ['qa-scenarios'] as const;
 
 export function docKey(id: string): readonly [string, string] {
-    return ['qa-doc', id];
+    return ['agile-doc', id];
 }
 
 export function scenarioKey(id: string): readonly [string, string] {
@@ -66,7 +66,10 @@ export const qaQueries = {
             refetchOnReconnect: false,
         }),
 
-    /** Any agile doc by id, from the agile route. A scenario's story and task, and a backlog link, read through it. */
+    /**
+     * Any agile doc by id, from the agile route. A scenario's story and task,
+     * and a backlog link, read through it.
+     */
     doc: (id: string) =>
         queryOptions({
             queryKey: docKey(id),

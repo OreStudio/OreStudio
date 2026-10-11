@@ -33,8 +33,8 @@ import type { LiveSession } from './sessions.js';
  * A route never touches a file. It asks the agile store, so a database store
  * can replace the files. With no store the browser is off and every route
  * answers not found. Every route needs a signed-in session. The doc route
- * serves sprints, stories, tasks, captures and test scenarios only, so the rest of the doc
- * root stays unread.
+ * serves sprints, stories, tasks, captures and test scenarios only, so the
+ * rest of the doc root stays unread.
  */
 
 const SERVED_TYPES: ReadonlySet<string> = new Set(AGILE_DOC_TYPES);

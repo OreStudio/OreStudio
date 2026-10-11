@@ -96,7 +96,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_barrier_option", tags) {
     CHECK(!instr.sold_currency.empty());
     CHECK(instr.bought_amount.to_double() > 0.0);
     CHECK(!instr.barrier_type.empty());
-    CHECK(instr.lower_barrier > 0.0);
+    CHECK(instr.lower_barrier.to_double() > 0.0);
 
     const auto rt = fx_instrument_mapper::reverse_fx_barrier_option(instr);
     const bool has_data = rt.FxBarrierOptionData.operator bool();
@@ -114,7 +114,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_option", tags) {
     CHECK(!instr.foreign_currency.empty());
     CHECK(!instr.domestic_currency.empty());
     REQUIRE(instr.strike.has_value());
-    CHECK(*instr.strike > 0.0);
+    CHECK(instr.strike->to_double() > 0.0);
     CHECK(instr.payoff_amount.to_double() > 0.0);
     CHECK(!instr.option_type.empty());
 
@@ -134,10 +134,10 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_barrier_option", tags) {
     CHECK(!instr.foreign_currency.empty());
     CHECK(!instr.domestic_currency.empty());
     REQUIRE(instr.strike.has_value());
-    CHECK(*instr.strike > 0.0);
+    CHECK(instr.strike->to_double() > 0.0);
     CHECK(!instr.barrier_type.empty());
     REQUIRE(instr.lower_barrier.has_value());
-    CHECK(*instr.lower_barrier > 0.0);
+    CHECK(instr.lower_barrier->to_double() > 0.0);
 
     const auto rt = fx_instrument_mapper::reverse_fx_digital_barrier_option(instr);
     const bool has_data = rt.FxDigitalBarrierOptionData.operator bool();
@@ -157,7 +157,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_touch_option", tags) {
     CHECK(instr.payoff_amount.to_double() > 0.0);
     CHECK(!instr.barrier_type.empty());
     REQUIRE(instr.lower_barrier.has_value());
-    CHECK(*instr.lower_barrier > 0.0);
+    CHECK(instr.lower_barrier->to_double() > 0.0);
 
     const auto rt = fx_instrument_mapper::reverse_fx_touch_option(instr);
     const bool has_data = rt.FxTouchOptionData.operator bool();
@@ -250,7 +250,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
     REQUIRE(instr.fixing_amount.has_value());
     CHECK(instr.fixing_amount->to_double() > 0.0);
     REQUIRE(instr.strike.has_value());
-    CHECK(*instr.strike > 0.0);
+    CHECK(instr.strike->to_double() > 0.0);
     REQUIRE(instr.target_amount.has_value());
     CHECK(instr.target_amount->to_double() > 0.0);
 

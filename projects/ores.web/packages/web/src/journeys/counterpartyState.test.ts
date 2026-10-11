@@ -206,7 +206,7 @@ describe('the one request the confirm sends', () => {
 
         const request = compositeRequest(withTerms, 'p-ores', INTENT);
 
-        expect(request.csas[0]?.threshold_pay).toBe(250000);
+        expect(request.csas[0]?.threshold_pay).toBe('250000');
         expect(request.csas[0]?.threshold_receive).toBeNull();
     });
 

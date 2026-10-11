@@ -50,6 +50,9 @@ generate_synthetic_instrument_strike(utility::generation::generation_context& ct
     r.price_value = ores::utility::decimal::decimal::from_string(
                         std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                         .value();
+    r.yield_value = ores::utility::decimal::decimal::from_string(
+                        std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                        .value();
     r.bare_value = ores::utility::decimal::decimal::from_string(
                        std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                        .value();

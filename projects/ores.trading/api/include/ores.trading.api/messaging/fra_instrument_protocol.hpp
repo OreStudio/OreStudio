@@ -45,7 +45,7 @@ struct fra_instrument_write {
     std::string currency;
     std::string rate_index;
     std::string long_short;
-    double strike;
+    ores::utility::decimal::decimal strike;
     ores::utility::decimal::decimal notional;
 };
 

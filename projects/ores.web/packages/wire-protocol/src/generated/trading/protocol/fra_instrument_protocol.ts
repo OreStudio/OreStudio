@@ -38,7 +38,7 @@ export interface FraInstrumentWrite {
     currency: string;
     rate_index: string;
     long_short: string;
-    strike: number;
+    strike: string;
     notional: string;
 }
 

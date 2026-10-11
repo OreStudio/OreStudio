@@ -8,12 +8,12 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-the-story-and-the-task-beside-the-steps
-#+pr:
+#+pr: 3093
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The tester recovers the context of a scenario without leaving the runner.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -42,9 +42,14 @@ The tester recovers the context of a scenario without leaving the runner.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The runner page gets three tabs through =useTabs=: Steps, Story and Task. The page needs no new BFF route, because task 3 serves a story, a task or a scenario by :ID: at =GET /api/qa/docs/:id=.
+
+- =DocPanel= reads a doc by id and draws its title, its path and its text through =renderOrgHtml=. The renderer strips the file header, shows raw HTML as text and removes unsafe links. An id link in the text points at =/development/docs/:id=.
+- =OrgText= follows an id link inside the app. A click on a link that carries =data-org-id= goes to the handler, so the app navigates without a page load. A click with a modifier key, or on any other link, behaves as the browser makes it.
+- =DocPage= is the route an id link opens, so a link in the story reaches the task, and a link in the task reaches the story or any other doc.
+- A doc the server cannot find answers not found, and the panel says that no story, task or scenario has the id and that the link may point at a doc the runner does not show. The server answers the same for an id no doc has and for a doc of a kind it does not serve, so the panel does not tell the two apart.
+- A scenario that names no story or task shows a plain message on that tab. It is not an error.
+- The runner stays mounted but hidden on the other tabs, so the marks and notes of a tester survive a look at the story.
 
 * Measurements
 
@@ -62,6 +67,9 @@ task and name that file in the Command column.
 
 * Notes
 
+- A link to a file, such as a =file:= link, is rewritten to a relative address by the renderer and is not followed by the app. Following those is not part of this task.
+- The tests render the panels as markup with a seeded cache. A throwaway harness, not committed, mounted the real page against an in-memory fake of the endpoints and drove it in headless Chrome: 9 checks covered the Story tab, the hidden runner, marks and a Fail surviving a tab switch, an id link opening its doc without a page load (a marker set on the window survived), a link inside that doc, and a dead link saying so. All 9 passed with no script errors.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -77,12 +85,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3093][#3093]] | [web] Show the story and the task beside the steps |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | docRoute does not encode the id | DocPanel.tsx | Fix | The route encodes the id, as the read of the doc does. A test covers an id with a slash, a question mark and a hash, and fails without the encoding. |
+| 2 | DocPage falls back to an empty id | DocPage.tsx | Decline | The route cannot match without an id. The typed hook returns an optional value, so the page needs the fallback to type check. |
+| 3 | Tab state resets when the scenario reloads | ScenarioPage.tsx | Confirm | The page keeps the scenario query out of refetch on focus and reconnect, and a background refetch leaves isSuccess true, so the runner stays mounted. The browser run showed one fetch. |
+| 4 | The dead-link message cannot tell a missing id from a kind not served | DocPanel.tsx | Accept | The message says the link may point at a doc the runner does not show. |
+| 5 | onDocLink without docHref gives a fragment link | OrgText.tsx | Document | The comment says to pass both. |
+| 6 | The French and Portuguese text needs a read | locales | Note | My translation, as the pull request says. |
+| 7 | Show the doc title in the crumb of the doc page | DocPage.tsx | Decline | Optional. The panel under the crumb shows the title. |
+| 8 | Floating promise lint on void navigate | DocPanel.tsx | Confirm | The local gate passes. |
 
 * Result
+
+The runner page has three tabs: Steps, Story and Task. The Story and Task tabs read the doc of the scenario's story or task from the doc route of task 3 and draw its title, its path and its text through the org renderer. An id link in a doc opens the doc it names on a new page, /development/docs/:id, and the app navigates without a page load. A link that does not resolve says that no story, task or scenario has the id, and that the link may point at a doc the runner does not show. A scenario that names no story or task shows a plain message. The runner stays mounted but hidden on the other tabs, so the marks and notes of a tester survive a look at the story.
+
+The web suite passes with 797 tests. Removing the hidden runner, unmounting it, dropping the dead-link message, dropping the link routing or dropping the id encoding each fails its own tests. A throwaway harness drove the real page in headless Chrome: 9 checks passed with no script errors, including an id link that opened its doc while a marker on the window survived, so there was no page load. The review found one real fault, an id that the doc route did not encode, and it is fixed.
+
+The app does not follow a file link inside a doc. The server answers not found for an id no doc has and for a doc kind it does not serve, so the dead-link message cannot tell the two apart. The French and Portuguese text is my translation and needs a read by a speaker. Task 7 takes pasted images for a step.

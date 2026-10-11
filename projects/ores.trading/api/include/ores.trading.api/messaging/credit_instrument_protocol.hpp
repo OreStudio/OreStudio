@@ -46,7 +46,7 @@ struct credit_instrument_write {
     std::string reference_entity;
     std::string currency;
     ores::utility::decimal::decimal notional;
-    double spread;
+    ores::utility::decimal::decimal spread;
     double recovery_rate;
     std::string tenor;
     std::chrono::year_month_day start_date;
@@ -60,7 +60,7 @@ struct credit_instrument_write {
     std::string description;
     std::string option_type;
     std::optional<std::chrono::year_month_day> option_expiry_date;
-    std::optional<double> option_strike;
+    std::optional<ores::utility::decimal::decimal> option_strike;
     std::string linked_asset_code;
     std::optional<double> tranche_attachment;
     std::optional<double> tranche_detachment;

@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_FORWARD_SETTLEMENT_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_FORWARD_SETTLEMENT_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 
@@ -56,12 +57,12 @@ struct bond_forward_settlement {
     /**
      * @brief The amount the forward settles for, when the document states one.
      */
-    std::optional<double> amount;
+    std::optional<ores::utility::decimal::decimal> amount;
 
     /**
      * @brief The rate the forward locks, when the document states one.
      */
-    std::optional<double> lock_rate;
+    std::optional<ores::utility::decimal::decimal> lock_rate;
 
     /**
      * @brief The position's sensitivity to a basis point, when the document states one.

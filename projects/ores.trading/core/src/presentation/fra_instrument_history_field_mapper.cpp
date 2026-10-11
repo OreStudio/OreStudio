@@ -28,7 +28,6 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -44,7 +43,7 @@ render_fra_instrument_fields(const domain::fra_instrument& v) {
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Rate Index", .value = v.rate_index});
     fields.push_back({.name = "Long Short", .value = v.long_short});
-    fields.push_back({.name = "Strike", .value = std::to_string(v.strike)});
+    fields.push_back({.name = "Strike", .value = v.strike.to_string()});
     fields.push_back({.name = "Notional", .value = v.notional.to_string()});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

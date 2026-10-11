@@ -136,9 +136,9 @@ cross join (values
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
     ('acme_demo', 'load_staff', 40, '{"parties": [
         {"name": "Acme Corporation Plc", "bundles": ["acme_group", "ore_samples"], "default": true},
-        {"name": "ACME Corporation UK plc", "bundles": ["acme_uk"]},
-        {"name": "ACME Corporation US Inc", "bundles": ["acme_us"]},
-        {"name": "ACME Corporation HK Ltd", "bundles": ["acme_hk"]}
+        {"name": "ACME Corporation UK plc", "bundles": ["acme_uk", "ore_samples"]},
+        {"name": "ACME Corporation US Inc", "bundles": ["acme_us", "ore_samples"]},
+        {"name": "ACME Corporation HK Ltd", "bundles": ["acme_hk", "ore_samples"]}
     ]}'::jsonb),
     ('acme_demo', 'attach_photos', 50, '{"party_logo": "acme_party_logo", "parties": [
         {"name": "Acme Corporation Plc", "dataset": "acme.acme_group.accounts"},

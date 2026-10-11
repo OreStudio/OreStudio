@@ -65,6 +65,54 @@ TEST_CASE("puts_and_deletes_can_be_proposed", tags) {
     CHECK(ores::refdata::messaging::invalid_lines({line("put"), line("delete")}).empty());
 }
 
+TEST_CASE("a_recheck_with_no_refusal_completes_its_step", tags) {
+    ores::refdata::service::book_preview preview;
+    preview.lines.push_back({.line_no = 1, .operation = "put", .entity_id = {}, .columns = {}, .refusal = ""});
+
+    CHECK(ores::refdata::messaging::recheck_step_result(preview).completed);
+}
+
+TEST_CASE("a_recheck_fails_its_step_with_the_first_refused_line", tags) {
+    ores::refdata::service::book_preview preview;
+    preview.lines.push_back({.line_no = 1, .operation = "put", .entity_id = {}, .columns = {}, .refusal = ""});
+    preview.lines.push_back({.line_no = 2, .operation = "put", .entity_id = {}, .columns = {}, .refusal = "stale"});
+    preview.lines.push_back({.line_no = 3, .operation = "put", .entity_id = {}, .columns = {}, .refusal = "other"});
+
+    const auto result = ores::refdata::messaging::recheck_step_result(preview);
+
+    CHECK_FALSE(result.completed);
+    CHECK(result.error == "Line 2: stale");
+}
+
+TEST_CASE("an_applied_request_completes_its_step", tags) {
+    ores::refdata::service::book_apply applied;
+    applied.applied = true;
+    CHECK(ores::refdata::messaging::apply_step_result(applied).completed);
+}
+
+TEST_CASE("a_refused_apply_fails_its_step_with_the_line_and_the_reason", tags) {
+    ores::refdata::service::book_apply applied;
+    applied.failed_line = 3;
+    applied.refusal = "The book changed since it was read";
+
+    const auto result = ores::refdata::messaging::apply_step_result(applied);
+
+    CHECK_FALSE(result.completed);
+    CHECK(result.error == "Line 3: The book changed since it was read");
+}
+
+TEST_CASE("a_transient_apply_fails_its_step_and_says_it_may_run_again", tags) {
+    ores::refdata::service::book_apply applied;
+    applied.transient = true;
+    applied.refusal = "server closed the connection unexpectedly";
+
+    const auto result = ores::refdata::messaging::apply_step_result(applied);
+
+    CHECK_FALSE(result.completed);
+    CHECK(result.error.find("may run again") != std::string::npos);
+    CHECK(result.error.find("server closed") != std::string::npos);
+}
+
 TEST_CASE("the_outcomes_carry_each_line_as_the_service_found_it", tags) {
     ores::refdata::service::book_preview preview;
     preview.lines.push_back({.line_no = 1,

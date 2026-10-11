@@ -38,7 +38,7 @@ export interface EquityPositionOptionUnderlying {
     trade_activity_id: string;
     underlying_name: string;
     strike: string;
-    weight: string | null;
+    weight: number | null;
     long_short: string;
     option_type: string;
     exercise_type: string;

@@ -25,6 +25,7 @@
 #ifndef ORES_REFDATA_API_DOMAIN_DEFAULT_CURVE_CONFIGURATION_HPP
 #define ORES_REFDATA_API_DOMAIN_DEFAULT_CURVE_CONFIGURATION_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -164,7 +165,7 @@ struct default_curve_configuration final {
     /**
      * @brief The running spread of an upfront quoted curve.
      */
-    std::optional<double> running_spread;
+    std::optional<ores::utility::decimal::decimal> running_spread;
 
     /**
      * @brief The term of the credit index the curve is built from.

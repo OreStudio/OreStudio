@@ -58,7 +58,7 @@ struct default_curve_configuration_write {
     std::optional<std::string> calendar;
     std::optional<std::string> conventions;
     std::optional<std::string> extrapolation;
-    std::optional<double> running_spread;
+    std::optional<ores::utility::decimal::decimal> running_spread;
     std::optional<std::string> index_term;
     std::optional<std::string> imply_default_from_market;
     std::optional<std::string> allow_negative_rates;

@@ -22,6 +22,8 @@
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
+#include "ores.inbox.api/workflow/apply_step_command.hpp"
+#include "ores.inbox.core/messaging/apply_step_handler.hpp"
 #include "ores.inbox.core/messaging/approval_decision_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_decision_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_decision_type_history_provider_registrar.hpp"
@@ -109,6 +111,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     add(register_notification_recipient_handlers(nats, ctx, verifier));
     add(register_notification_delivery_handlers(nats, ctx, verifier));
     add(register_notification_preference_handlers(nats, ctx, verifier));
+
+    // The apply workflow's last step tells the person who asked how it ended.
+    // The engine has proved the command, so the handler takes no verifier.
+    {
+        auto steps = std::make_shared<apply_step_handler>(nats, ctx);
+        subs.push_back(nats.queue_subscribe(
+            std::string(ores::inbox::workflow::tell_apply_result_subject),
+            queue_group,
+            [steps](ores::nats::message msg) { steps->tell(std::move(msg)); }));
+    }
 
     // The approval lifecycle is operations rather than entity verbs: raising,
     // withdrawing and deciding apply the lifecycle rules, and the queue and

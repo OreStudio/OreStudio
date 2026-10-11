@@ -106,6 +106,29 @@ struct trade final {
         ores::trading::domain::entry_channel::manual;
 
     /**
+     * @brief The version the customer's records match. It moves when the economics the trade holds
+     * change, and never for an internal reason: a null amend, an operational authorisation or any
+     * other change the customer did not agree to leaves it alone.
+     *
+     * It is not the version every entity carries. That one is the audit trail and moves on every
+     * recorded change; this one is the commercial record. See
+     * [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]].
+     */
+    int external_version = 0;
+
+    /**
+     * @brief The SHA-256 of the economics the trade holds, folded from its own economic fields and
+     * from every component's, in hex. Stored rather than recomputed on read, so a change is one
+     * comparison rather than a walk of the whole shape.
+     *
+     * A null amend leaves it unchanged, which is what makes the external version rule enforceable
+     * at all. A change to a field the customer did not agree to leaves it unchanged too, because
+     * the digest covers declared economic fields and nothing else. See
+     * [[id:B9DAC38A-BEB1-4658-87BC-DFF901033E84][Exact Numbers and Economic Change]].
+     */
+    std::string economic_digest;
+
+    /**
      * @brief Username of the person who last modified this trade.
      */
     std::string modified_by;

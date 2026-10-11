@@ -81,6 +81,11 @@ struct book_change final {
     int base_version = 0;
 
     /**
+     * @brief Whether the apply has written this line. A line is applied once.
+     */
+    bool applied = false;
+
+    /**
      * @brief UUID uniquely identifying this book.
      *
      * Surrogate key for the book record.

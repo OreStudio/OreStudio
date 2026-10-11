@@ -1,0 +1,556 @@
+:PROPERTIES:
+:ID: B9DAC38A-BEB1-4658-87BC-DFF901033E84
+:END:
+#+title: Exact Numbers and Economic Change
+#+description: How a money quantity is held exactly, where the ORE boundary loses it, and how an economic change is detected and propagated to the trade's external version.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:architecture:modeling:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+* Summary
+
+A money quantity is held exactly: an exact decimal in the domain type and
+in the column, and the two agree. A continuous quantity stays binary
+floating point. The two never mix, and the conversion between them runs one
+way, at the numerical kernel seam.
+
+The ORE boundary is where the rule is broken today. The document states the
+amount as text, and the XML binding parses it into a C++ =float= before any
+mapper sees it, so the text is gone and no exact parse is possible. The
+binding has to carry the text, not the mapper.
+
+An economic change is detected by a digest over the fields the model
+declares economic, folded from every component up to the trade. That fold is
+what moves the trade's external version, and it is what makes the null-amend
+rule in [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] enforceable.
+
+* The numeric rule
+
+The Regime 2 checklist of
+=doc/knowledge/architecture/data_oriented_design.org= is where this rule is
+enforced: the system of record holds what the document stated.
+
+| Class | Examples | Held as |
+|-------+----------+---------|
+| Money | rate, spread, notional, amount, price, strike, fee, premium, margin, face value | exact decimal |
+| Continuous | volatility, correlation, weight, probability, recovery rate, tranche fraction, day-count fraction, unit quantity | binary float |
+
+Conversion runs from decimal to =double= at the numerical kernel seam, and
+only there. A =double= never enters the persisted domain.
+
+=ores::utility::decimal::decimal= wraps
+=boost::multiprecision::cpp_dec_float_50= and offers parse, format and
+compare, with no arithmetic. That is not a gap: it is the boundary stating
+itself. A caller that must compute converts to =double= and computes in
+Regime 1.
+
+The criteria this rule adds are in the Regime 2 checklist of
+=doc/knowledge/architecture/data_oriented_design.org=: /Exact money at rest/
+and /One-way numeric conversion/.
+
+The rule is also enforced by the build, not only by review.
+=build/scripts/check_money_decimal_columns.py= runs as the
+=money-decimal-columns= check from =build/scripts/local_checks.py=. It reads
+the models, classifies each column by name, and checks both halves of the
+rule: a money column fails when its SQL type is floating point, or when its
+SQL type is exact with a =double= in the domain; a continuous column fails
+when its SQL type is exact. The second direction is not empty — ten columns
+are in it, four of them a =double= over a =numeric=, which is the shape that
+is exact at rest and lossy in the domain. Each direction has a baseline of
+the offenders that existed when the rule was written, so the debt is visible
+and cannot grow. The baselines are the authoritative inventory for the work
+that pays it down; do not restate them in prose, because a second copy drifts
+and it is the copy that goes stale.
+
+* Where the ORE boundary loses the amount
+
+The document's text reaches the generated binding intact, and dies there.
+
+#+begin_src cpp
+// domain.cpp:9583 — the generated setter for a fixed leg's Rate.
+void _set__FixedLegData_t_Rates_t_Rate_t(..., std::string&& val) {
+    float& base = *obj;
+    xsdcpp::set_float(&base, pos, std::move(val));   // the text is here…
+}
+
+// domain.cpp:770 — and is discarded here.
+void set_float(float* obj, const Position& pos, std::string&& val) {
+    std::stringstream ss(val);
+    if (!(ss >> *obj)) throw VerificationException(pos, "…");
+}
+#+end_src
+
+The leaf is =_FixedLegData_t_Rates_t_Rate_t : xsd::base<float>=, and
+=xsd::base<T>= holds only =T _value=, so the lexical form is not retained
+anywhere. By the time a mapper converts with =from_double=, as 84 call sites
+do, there is no string left to parse exactly.
+
+The size of this patch, measured rather than assumed: =domain.cpp= is
+108,648 lines before the patch and 108,625 after it, and holds 1147 =_set_=
+functions either way, but only **37** of them are bindings that call
+=xsdcpp::set_float= or =set_double= (35 and 2). Those are the numeric leaves
+that lose the document's text. So the decision is not "patch a generated
+108k-line file"; it is "patch 37 generated functions, re-applied by a script
+in the shape of =reapply_export_macros.py=". The measurement is what makes the
+option reasonable to choose. The list is verified and not inferred: it holds
+the money leaves by name — =_set__FixedLegData_t_Rates_t_Rate_t=,
+=_set_legData_Notionals_t_Notional_t=, =_set_pricesType_Price_t=,
+=_set__CashflowData_t_Cashflow_t_Amount_t=, =_set_floatWithAttribute= — and
+the continuous ones the schema also types as =xs:float=, such as shifts,
+load factors and conversion ratios. The full list is beside this page in
+=ore_numeric_leaf_setters.txt=.
+
+*Decision.* The binding carries the lexical form. =xsd::base<T>= gains it,
+and the generated money-leaf setters stash it before converting, so the
+mapper reads the document's own digits with a decimal parse.
+
+The binding is emitted by xsdcpp, an external tool, so this is a patch to
+generated code. That is established practice here:
+=xsdcpp_generate_ore.sh= already re-applies =reapply_export_macros.py= to
+=domain.hpp= because "regeneration silently drops" the hand-patch. The
+lexical-form patch rides the same mechanism, and carries the same hazard: a
+patch not re-applied is a patch silently lost.
+
+** What the patch does not change
+
+The write side out of the domain still renders through ORE's =float=, because
+the schema's leaf is =xs:float= and there is nowhere else to put the value. So
+the patch changes what the system of record holds, not what ORE is handed back.
+The round trip is unaffected, and the reason is worth writing down because the
+opposite is the obvious guess:
+
+    before:  lexical → float → from_double → decimal → to_double → float
+    after:   lexical → float → decimal(lexical) → to_double → float
+
+Both end at =float(float32(lexical))=, so the exported text is the same before
+and after. The patch moves the *stored* value from the float's expansion to the
+document's own digits and changes nothing on the wire.
+
+Measured over ORE's own example trades rather than argued: 132 XML files and
+1639 numeric leaf texts, of which 21 are not what a nine-significant-digit
+render of their float produces — and most of those are dates caught by the same
+scan or trailing zeros such as =3200.00=. The genuine cases, =2147.56= whose
+float is =2147.56006= and =27807597.777444= whose float is =27807598=, already
+exported differently *before* this change. So the patch neither introduces nor
+removes a round-trip difference; it only stops the column from disagreeing with
+the document.
+
+What does change is the digest: it is computed over the stored decimal, so two
+documents that differ in a digit a float cannot hold are now distinguished.
+They were not before.
+
+* Detecting an economic change
+
+[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] classifies an
+amendment on four orthogonal axes and notes that classification is "a lookup
+on the reason rather than a field-by-field diff of the trade". A reason
+states what the user intended to change; it cannot state whether the value
+actually changed. The same page then requires that a /null amend/ "must not
+move the external version", which a reason lookup cannot guarantee.
+
+A digest over the instrument's economic fields supplies the missing diff. It
+is computed where the whole shape exists at once — the ORE import client,
+which issues every child write for one instrument, or the composite reader
+that reassembles it. It is stored as plain =text=, following the =sha256=
+precedent on =ores.compute.app_version_platform_junction=.
+
+The digest covers /declared economic fields only/. A digest over the whole
+shape would fire on a description or a comment and move the external
+version for a change the customer never agreed to, which is the failure the
+two-version rule exists to prevent. Which fields are economic is therefore a
+model declaration, not a code decision.
+
+** A field name is part of the canonical form
+
+=canonical_struct= writes each included field's *name* before its value, as
+=name=value;=, so two fields that hold the same value do not cancel and a
+value cannot be read as a neighbour's. That is the safe direction, and it has
+a consequence worth stating: renaming a C++ member changes every digest that
+covers it. The next write of each affected trade would then bump its external
+version for a customer-facing change that never happened, spread over whatever
+time those writes take.
+
+A rename is rare and is a schema change that needs a migration anyway, so this
+is a property to know rather than a defect to fix. The two ways to answer it if
+it ever bites: drop the name from the canonical form, which stays unambiguous
+because the fields are framed and ordered, or migrate the stored digests in the
+same change as the rename.
+
+Two placements were weighed. A column on each instrument table is atomic
+with its row but cannot be computed by a trigger, because children arrive in
+later transactions and a parent trigger cannot see them. A side table
+generic to every family costs a lifecycle but needs no per-family change and
+covers the families that =instrument_batch= omits. The side table is the
+choice for the generic capability; a column on =bond_issue= carries the
+bond-identity case that prompted it.
+
+The digest does not need the code generation extended to iterate a type's
+fields. =rfl::to_view(v).apply(...)= already walks a value generically and is
+in use at =ores.database/domain/party_scope.hpp:60= and
+=ores.service/messaging/handler_helpers.hpp:197=, and the domain instrument
+types carry reflectors because their JSON codecs are built on them. So a
+digest can be written as one function that walks the fields, skips the ones
+named identity or audit, renders each remaining field canonically and hashes
+the result — no per-family code, and no generator change.
+
+What the generator cannot express is a per-field =economic= marking, so the
+first version has to decide inclusion by name. That is weaker than a
+declaration and it is the reason the =declare the economic fields= task
+exists; it is not, as this page first implied, a blocker for the digest.
+
+** What was built
+
+=projects/ores.trading.api/domain/economic_digest.hpp= holds
+=economic_digest(const T&)= for any reflected domain type: it walks the fields
+with =rfl::to_view=, skips the excluded ones at compile time through
+=field_type::name()=, renders each remaining field into a canonical text and
+returns =sha256::hex_digest= of it. Values are length-prefixed, so no value
+can run into the next and no two different values frame to the same text.
+
+The exclusion is an exact list — identity, audit and the trade's own
+classification — plus every name ending in =_id=, plus an allow-list of five
+names that survive that suffix because they are external identity rather than
+foreign keys: =security_id=, =credit_curve_id=, =reference_curve_id=,
+=income_curve_id=, =volatility_curve_id=.
+
+** What was built, part two: the trade's digest
+
+=trade_economic_digest(trade, component_digests)= composes the trade's own
+digest with one digest per component. Every value in the stream is framed by
+length — the trade digest, the component count, and each component digest —
+and the component list is wrapped in braces, so the list's boundary is stated
+rather than inferred from the count. Framing the count is the point: an
+unframed count is terminated only by the next length prefix, which makes the
+stream's safety depend on the digest being a fixed 64 characters, and the
+framing exists precisely so that nothing depends on that.
+
+Nine cases, database-free: stable; moves when a component moves; moves when
+components are reordered; moves when one is added or removed; an empty list
+differs from a one-element list; the trade's audit tail is ignored; a trade
+classification moves it; and it does not collide on ambiguous concatenation.
+
+** The limit, in one example
+
+=security_id= is the ISIN: external identity, and economic. =issue_id= is a
+surrogate key: identity, and not. Both end in =_id=, so no suffix rule can
+separate them and the allow-list is a list of exceptions rather than a rule.
+That is the concrete case for declaring the fields instead of naming them.
+
+The suite that proves it uses the real =bond_issue=: changing =security_id=
+moves the digest, changing =issue_id= does not.
+
+** Why the test is believable
+
+Nine cases, none touching a database. The load-bearing one asserts that
+changing =modified_by=, =version= or =tenant_id= leaves the digest alone,
+because a digest that moved on audit noise would move the customer's version
+for no reason. It was proved by mutation rather than asserted: removing
+=modified_by= from the exclusion list makes the case fail with two different
+digests, and restoring it makes the suite green. A test that has never been
+seen to fail is a test that may not be testing anything.
+
+* Propagating it up to the trade
+
+The skeleton already exists. The trade's seven children carry
+=:parent_entity: trade= and =:bump_parent_version: true=, added so that a
+component write moves the trade, and
+=ores_trading_structure_version_fn= folds a structure's legs the same way.
+That moves the /internal/ version, which must move on every recorded change.
+
+The external version moves on a different condition: the economic digest
+changed. So a component write recomputes the parent's digest and bumps the
+external version only when it differs. Same fold, conditional outcome.
+
+** What the trade's digest is made of
+
+It is not a digest of the trade row alone, because a trade's economics are
+mostly in its instruments. It is a digest of the trade's own economic fields
+together with every component's digest, folded in a fixed order and framed so
+that no component can be confused for another or for a field.
+
+It is stored, not derived on read. The comparison that decides whether to
+bump needs the trade's /previous/ digest; a value computed on demand cannot
+say what it used to be. That is why =economic_digest= is a column and not a
+function like =ores_trading_structure_version_fn=, which can be a read
+because a version is only ever observed, never compared to its own past.
+
+The cost is that the stored digest can go stale if a component is written
+without the fold running. The fold therefore belongs in the same transaction
+as the component write, not in a later sweep — the same reason
+=:bump_parent_version:= is set on the children rather than reconciled
+afterwards.
+
+Computing the new digest needs the whole shape, and a parent's insert trigger
+cannot see children that arrive later. So the fold runs where the shape is
+known: after a component write, read the trade's components back and fold
+them. That is the same read the composite readers will need, which is why the
+generic case is gated on them.
+
+** The economic component set is not the internal-version component set
+
+This is the mistake the first implementation made, and it is easy to make
+because the two sets look alike. The *internal* version already folds a set of
+children: the seven that carry =:parent_entity: trade= and
+=:bump_parent_version: true= — state, booking, identifier, additional field,
+portfolio, party role and structure member. They are the right set for a
+version that must move on every recorded change. They are the wrong set for a
+digest that must move only when the customer's terms change, in both
+directions:
+
+- **Instruments are missing from it.** A trade's economics are mostly in its
+  instruments, and no instrument carries the =parent_entity= knob, so folding
+  the seven moves the external version for a state change and leaves it still
+  for a strike change. This is the failure that matters most: it is exactly
+  backwards.
+- **Comments and lifecycle are in it.** An additional field is free text and a
+  state or booking is lifecycle or organisational, so folding them moves the
+  external version for a change the customer never agreed to.
+
+The rule to apply is the same one the digest already applies per field, raised
+to components: a component drives the digest when its fields state terms the
+customer agreed to. That selects the instruments and their legs and amounts,
+and excludes the seven.
+
+** Once per operation, not once per row
+
+One import is one customer-facing event. A fold that runs after each component
+row increments the external version once per row, so a trade with seven
+children lands at version eight and a customer whose records say one is out of
+step from the first import. The digest must be refreshed once per *outer*
+operation — at the end of the import or amend unit — not per row. This is a
+reason to prefer the composite writer over a per-entity observer, or to
+coalesce the refreshes inside the transaction.
+
+**There is no transaction boundary to discover.** Measured, not assumed: the
+importer writes each component as its own request and each request is handled
+in its own transaction. `ore_import_execute_handler.cpp` calls
+=`nats_call(nats, <put_..._request>, ...)` once per component —
+=`put_trade_identifier_request=, `delete_many_trade_bookings_request=, and the
+per-family instrument requests — and `ores.ore.service` does not link
+=`ores.trading.core` at all, so the fold cannot be called from the importer
+without a new dependency. An observer inside the trading service therefore
+cannot see the operation; it sees a message. The boundary has to be
+*expressed*, by a batch request carrying the whole shape or by an explicit
+finalise step, rather than found.
+
+**The digest is necessary but not sufficient.** "Digest differs → bump" is the
+right test for a null amend and the wrong test for a first import, because
+during an import the digest differs at every step and none of those steps is an
+agreement. What the versioning rule actually says is narrower than "the
+economics changed": /the terms the customer has agreed changed/. A trade still
+being imported has agreed nothing, which is why an unauthorised amendment
+"changes nothing but the version" while an authorised one returns the trade to
+unauthorised. So the condition is not one comparison but two — the digest
+differs, *and* the change crosses a customer-visible boundary — and the second
+half is what the authorisation state supplies. Whatever mechanism carries the
+fold must be able to ask that question, or the external version will count
+writes instead of agreements.
+
+**The interim rule, which is what shipped.**
+Every component row carries an audit tail, including `change_reason_code`, and
+the ORE importer writes `system.external_data_import` on everything it creates
+while an amendment carries a user reason. So "refresh the digest always, and
+bump only when the reason is not a system one" delivers the objective's
+behaviour — an instrument change moves the external version, an import does not
+— with no new operation and no protocol change.
+
+The irony is worth stating rather than hiding: this page argues that a reason
+cannot say whether a value changed, which is why the digest exists, and the
+interim rule then uses a reason to say whether a change was an import. Those
+are different questions, and a reason can answer the second one honestly even
+though it cannot answer the first. The weakness is that it trusts the writer to
+label its own writes, so a tool that amends a trade with a system reason would
+move no version, silently. It shipped as the interim rule and the
+shape-carrying request below remains the stronger design, because it does not
+depend on anyone's self-description.
+
+**The boundary is a request that carries the shape, and the idiom exists.**
+`book_trade_request` is not it: it carries the anchor, the booking and the
+activity, and no instrument. But `trading.v1.ops.put_composite_instrument_with_legs`
+is exactly the right shape — one request that writes an instrument together
+with its legs, so one message is one instrument's worth of economics. The
+follow-up should extend that idiom to the whole trade shape rather than invent
+a new one, and the refresh belongs at the end of that handler: recompute the
+digest, and if it differs from the stored one, store it and bump. Then an
+import's per-component writes only keep the digest fresh, and the shape-carrying
+request is what counts as an agreement.
+
+** Where the fold runs, and why not in SQL
+
+An earlier note on this page put the fold in a paste-block trigger. That does
+not work, and the reason matters: canonicalising a value is C++. A decimal
+renders through =to_string()=, a double through a fixed format, an optional
+through a distinction between absent and empty, and every value is framed by
+length. SQL cannot call that code. A trigger could hash the raw column values
+with a SQL expression of its own, but that is a *second* canonicalisation,
+which would disagree with the C++ one on exactly the things this page has
+spent its length fixing, and two implementations of one digest means two
+digests.
+
+So the fold is C++, in the trading service, and every writer of a component
+invokes it. The alternative is to give each component table a digest column
+of its own, so the fold has nothing to canonicalise and a trigger can simply
+concatenate stored digests in a fixed order. Two designs, and the choice is
+not obvious:
+
+| | Fold in C++ | Digest column per component |
+|---|---|---|
+| Cost | none beyond the service | a digest column on every instrument table |
+| Staleness | a writer that bypasses the service leaves it stale | the fold is at the database, so every writer gets it |
+| Canonicalisation | one implementation | one implementation, in C++, at write time |
+
+The C++ fold is smaller and keeps one implementation of the rule. The column
+per component is more robust, because it cannot be bypassed. This page does
+not choose between them yet; the trade digest and the external version both
+exist, so the decision is the next thing to make and not something to
+discover halfway through the trigger.
+
+** A third option, and the evidence for it
+
+Every write already passes one place.
+=ores.database/repository/bitemporal_operations.hpp= exposes
+=execute_write_query(ctx, entity, lg, desc)=, which forwards to
+=execute_write_op= and =sqlgen::insert=. It is the single choke point: one function, and no
+repository writes without it. Re-measured on this tree:
+=grep -rl 'execute_write_query(' projects --include=*.cpp | wc -l= gives **358**
+files, against the 359 recorded when this page was written — the count is of
+files, one call per repository, not of occurrences.
+
+It is templated on the entity type and knows nothing about what an entity
+means, so a trading fold cannot live inside it. But the template is the hook:
+a trait the trading component specialises, asked by an =if constexpr= in
+=execute_write_op=, keeps the mechanism generic and the policy in trading.
+
+That gives the automatic behaviour of the per-component column — no writer
+can forget the fold, and there are no 30 call sites to keep in step — while
+keeping canonicalisation in one C++ implementation. It costs a change to a
+helper that every repository shares, and the write of a child then reads and
+writes its parent inside the same transaction, so it is not free.
+
+Of the three, this is the one to try first: it is the only one that is both
+unbypassable and single-implementation. The per-component column remains the
+fallback if touching the shared helper proves too broad, and the plain C++
+fold if the fold turns out not to need to be automatic at all.
+
+** The trait has to be visible where the template is instantiated
+
+Measured, and it decides where the trading specialisation can live. The
+instantiation point is each *generated* `*_repository.cpp`, and the only
+hand-written trading header those files reach is
+=`ores.trading.core/export.hpp` — they include their own generated repository
+header, which includes =export.hpp=. A trait specialisation declared anywhere
+else is not visible at that point, and =if constexpr= then silently keeps the
+primary template, so the fold never runs and nothing complains. The
+specialisations therefore go into a hand-written
+=trade_write_observation.hpp= that =export.hpp= includes *after* the export
+macro, which needs no codegen at all.
+
+This is worth stating because the failure mode is silence. A trait-hook design
+that compiles, passes its own unit test and does nothing in production is the
+shape to watch for here, and the only proof is a DB-backed test that writes a
+child and reads the parent's digest back.
+
+** The stored digest is not customer-facing until the component set is settled
+
+A digest stored under a provisional definition is worse than no digest once
+anything acts on it. The first implementation folds the seven internal-version
+children and no instrument, so the value changes on a comment and holds still
+on a strike. While nothing moves the external version that is harmless. The day
+the authorisation-gated bump lands, the change that *fixes* the component set
+becomes indistinguishable from an economic change, and every trade bumps on its
+next write for a migration the customer never saw.
+
+So the ordering is fixed: settle the component set, then reset the stored
+digests in the same change, and only then enable the bump. Until then the
+column carries a value that is explicitly provisional.
+
+* The scale, and what the tolerance hides
+
+The corpus states up to 12 decimal places and 14 significant digits, against
+the =numeric(28, 10)= every decimal column carried when this was measured. The
+columns are =numeric(38, 12)= now, and the reason the first attempt at widening
+was to =numeric(28, 12)= and was wrong is in the task that paid the debt down:
+widening the scale without widening the precision narrows the integer part.
+Measured over the 132 example documents:
+
+| Decimal places | 12 | 11 | 10 | 9 | 8 |
+|----------------+----+----+----+---+---|
+| Values | 2 | 196 | 139 | 54 | 23 |
+
+The long spellings are not extra precision. They are ORE's own float
+round-trip spellings — =0.00650000013=, =0.00999999978=, =0.00120000006=,
+=0.00499999989= — the shortest decimal that reads back as the same =float=.
+The rate elements are typed =xs:float= (=instruments.xsd:542=), so this is
+what the document means.
+
+=numeric(28, 10)= rounds those spellings. =0.00999999978= is stored as
+=0.0099999998=, and the round-trip classifier then files the difference under
+/numeric/ and reports the document as round-tripping with nothing lost. So
+the gate's clean result on the bond corpus is partly tolerance and not
+fidelity, in the same family as a leg silently not written.
+
+*Decision.* The scale is =numeric(28, 12)=: it holds every spelling the
+corpus states, and still 16 integer digits. With the binding retaining the
+lexical form, these values round trip as text and the classifier's /numeric/
+bucket should fall to zero.
+
+** The classifier cannot see this loss, and a clean round trip is not the test
+
+That acceptance test is wrong, and the reason is worth recording. Measured on
+a recreated database with the bond corpus:
+
+| | |
+|---|---|
+| source | `<Spread>0.00999999978</Spread>` |
+| output | `<Spread>0.00999999978</Spread>` |
+| stored | `0.0099999998` |
+
+The database holds a value the document does not state, and the classifier
+reports /numeric 0, lost 0, unexplained 0/. The rounded digits are restored on
+the way out: the export renders the stored decimal through ORE's `float`, and
+a float's shortest round-tripping spelling of that number is
+`0.00999999978` — the very text that came in. The loss in and the recovery out
+cancel, so the gate sees an exact match.
+
+So a clean round trip proves nothing about precision here, and any test of the
+scale change has to compare against the **column**, not against the exported
+document. The corpus's eleven- and twelve-place values are real and one of
+them is in `Cash_Bonds.xml`; the bond round trip has been passing over a
+truncated spread for the whole of this work.
+
+* What verifying one of these costs
+
+Any change here changes the generated SQL, and the service refuses to start
+against a database built from different SQL. So the build proves the types
+compile and nothing more: the test of a column is a recreate, a re-provision
+and a run, which is around twenty minutes of environment.
+
+That is why the remaining money columns are changed as one batch and
+verified together, rather than column by column. It is also why the digest
+work is sequenced after them: each unit of it carries the same cost.
+
+* Where the external version lives
+
+It lives on the trade. That is recorded, not assumed.
+
+[[id:7817465D-5DD5-49D1-87AF-B02C4CF60A22][Read a structure's version from its legs]]
+says "the external version stays on the agreement, which the authorisation and
+agreement work owns". That is an intention, not a built thing: =external_version=
+appears in exactly one model, =ores.trading.trade=, and it is the one this work
+added. The only agreement entities are =ores.dq.netting_agreement= and
+=ores.refdata.netting_agreement= — netting agreements, not trade agreements —
+and neither carries it.
+
+So the trade is the first home for the external version, not a second one
+beside an existing column. If the authorisation and agreement work later
+introduces an agreement version, the trade's is the fold of it rather than a
+rival, and that is the point at which to revisit this.
+
+* See also
+
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — the two-version rule and the four axes.
+- [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the causes that move a version.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — what the external version is confirmed as of.
+- [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning]] — how the internal version is assigned.

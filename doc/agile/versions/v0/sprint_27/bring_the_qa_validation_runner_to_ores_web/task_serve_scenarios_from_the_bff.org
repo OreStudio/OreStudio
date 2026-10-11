@@ -8,12 +8,12 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/serve-scenarios-from-the-bff
-#+pr:
+#+pr: 3085
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The browser reads and saves scenarios through the BFF, which uses the scenario s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -42,9 +42,24 @@ The browser reads and saves scenarios through the BFF, which uses the scenario s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=registerQaRoutes= in =packages/bff/src/qa.ts= serves four routes, all behind =requireSession= and none behind a permission, because a trader may run scenarios.
+
+| Route | Answers |
+|-------+---------|
+| GET /api/qa/scenarios | the scenario summaries: state, waiting or done, target, story, task, step counts |
+| GET /api/qa/scenarios/:id | one scenario with its steps and the ids of its story and task |
+| GET /api/qa/docs/:id | a story, a task or a scenario by :ID:, as org text for the browser to render |
+| PUT /api/qa/scenarios/:id/run | a save, which returns the scenario, its new state and the steps it wrote |
+
+The shapes are zod schemas in =@ores/contracts= (=qa.ts=). The tests parse every response with them, so the browser can parse the same schemas.
+
+Decisions:
+
+- A save carries no overall state and no time. The server works out the state from the merged steps and stamps the time. A scenario closes when no step is pending, and then it is FAILED if a step failed, else PASSED. A save that leaves a step pending clears the completion time. The codec from task 2 changed for this: =RunInput= lost its =state=.
+- A save may mark a step PENDING, PASS or FAIL. DROPPED is read, never written.
+- The doc route serves stories, tasks and scenarios only. Another type answers not found, so the rest of the doc root stays unread.
+- The server takes its store from =dependencies.scenarios=, else it builds a file store from =ORES_WEB_DOC_ROOT=. With neither, every route answers not found and names the setting.
+- Errors: a bad id or save is 400, a missing scenario 404, a doc in the wrong format 422, a file error 503, and anything else 500 with no message.
 
 * Measurements
 
@@ -62,6 +77,8 @@ task and name that file in the Command column.
 
 * Notes
 
+- Any signed-in session reads every story, task and scenario under the doc root. That is open for production: the doc root should hold only what a tester may read.
+- The tests replace the store with an in-memory one that runs the real codec, and one test runs the file store through =ORES_WEB_DOC_ROOT=.
 - Map the store errors to statuses: =InvalidDocIdError= to 400, =ScenarioNotFoundError= to 404, =UnknownStepError=, =AmbiguousStepError= and =DuplicateOutcomeError= to 400, =ScenarioFormatError= to 422, =PathEscapeError= to 500 and a log line.
 - A scan can throw, for example on an unreadable folder. The route must answer 503 and not crash.
 
@@ -80,12 +97,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3085][#3085]] | [web] Serve scenarios from the BFF |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A scenario of dropped steps closes as PASSED | scenario-doc.ts | Fix | A scenario in which no step passed or failed stays PENDING. A test covers all-dropped, and mixed dropped and passed. Without the fix it fails. |
+| 2 | The cold-index queue key lets two saves run in parallel | file-scenario-store.ts | Fix | Every queue is keyed by id. A test starts one save on a cold index and one on a warm index. It failed three times out of three on the old code. |
+| 3 | The doc route trusts a type that can be a scan old | file-scenario-store.ts | Fix | The title and the type come from the text just read. A test changes the type after a scan. |
+| 4 | isFileError takes any E-code, so ERR_* codes become 503 | qa.ts | Fix | A list of nine file fault codes replaces the pattern. A test with ERR_INVALID_ARG_TYPE expects 500. |
+| 5 | Log a PathEscapeError | qa.ts | Decline | The server error handler already logs every 500 with the error. |
+| 6 | Any signed-in session reads every story, task and scenario | qa.ts | Note | Known and recorded in Notes. A permission is needed before production. |
 
 * Result
+
+The BFF serves four routes under /api/qa: a list of scenario summaries, one scenario with its steps and the ids of its story and task, a story, task or scenario by :ID: as org text, and a save of a run. Each needs a signed-in session and no permission. The shapes are zod schemas in @ores/contracts, and the tests parse every response with them. The server takes its store from the dependencies, else it builds the file store from ORES_WEB_DOC_ROOT. With neither, every route answers not found and names the setting.
+
+A save carries no overall state and no time. The server works out the state from the merged steps and stamps the time. A scenario closes when no step is pending and some step passed or failed. It is then FAILED if a step failed, else PASSED. A save that leaves a step pending clears the completion time. The doc route serves stories, tasks and scenarios only. A bad id or save is 400, a missing scenario 404, a doc in the wrong format 422, a file fault 503, and anything else 500 with no message.
+
+The BFF suite passes with 481 tests. Removing the session check, the doc whitelist, the 503 mapping or any of the four review fixes fails its own test. The review found four real faults, and all four are fixed. The PR also regenerates the inbox index, which main left stale: it kept the row of a capture that became a task and lacked the row of the csa_eligible_currencies capture. Any signed-in session still reads every story, task and scenario under the doc root. That needs a permission before production. Task 4 builds the Tests queue on these routes.

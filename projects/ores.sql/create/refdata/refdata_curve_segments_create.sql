@@ -70,7 +70,7 @@ create table if not exists "ores_refdata_curve_segments_tbl" (
     "ibor_index" text null,
     "rfr_curve" text null,
     "rfr_index" text null,
-    "spread" double precision null,
+    "spread" numeric(38, 12) null,
     "base_curve" text null,
     "base_curve_currency" text null,
     "numerator_curve" text null,

@@ -40,7 +40,7 @@ create table if not exists "ores_trading_bond_issue_conversion_targets_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "underlying_id" text not null,
-    "conversion_ratio" numeric(28, 10) not null,
+    "conversion_ratio" double precision not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

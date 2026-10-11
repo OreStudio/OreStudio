@@ -39,7 +39,7 @@ create table if not exists "ores_trading_rpa_instruments_tbl" (
     "maturity_date" date not null,
     "reference_counterparty" text not null,
     "participation_rate" double precision not null,
-    "protection_fee" double precision not null,
+    "protection_fee" numeric(38, 12) not null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,

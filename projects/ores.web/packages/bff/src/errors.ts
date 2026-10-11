@@ -227,6 +227,14 @@ export function toHttpFailure(error: unknown): HttpFailure {
             message: 'Cannot reach the message bus.',
         });
     }
+    // A body past a route's limit is the caller's fault, and Fastify says so
+    // with its own status. It is not an internal fault.
+    if ((error as { statusCode?: unknown } | null)?.statusCode === 413) {
+        return new HttpFailure(413, {
+            code: 'invalid-request',
+            message: 'The request is too large.',
+        });
+    }
     return new HttpFailure(500, {
         code: 'internal',
         message: 'Something went wrong.',

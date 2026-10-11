@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/curve_configuration_mapper.hpp"
+#include "ores.ore.core/domain/ore_boundary_decimal.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -178,6 +179,25 @@ void assign_optional_int(xsd::optional<T>& target, const std::optional<int>& val
         target = static_cast<T>(*value);
 }
 
+/*
+ * The decimal arms, beside their double counterparts. ORE states these
+ * amounts as xs:float; the curve's money columns are exact decimals, so the
+ * boundary converts here.
+ */
+template <typename T>
+std::optional<ores::utility::decimal::decimal> optional_decimal(const xsd::optional<T>& v) {
+    if (!v)
+        return std::nullopt;
+    return exact_decimal(*v);
+}
+
+template <typename T>
+void assign_optional_decimal(xsd::optional<T>& target,
+                             const std::optional<ores::utility::decimal::decimal>& value) {
+    if (value)
+        target = static_cast<T>(value->to_double());
+}
+
 template <typename T>
 std::optional<double> optional_double(const xsd::optional<T>& v) {
     if (!v)
@@ -214,8 +234,8 @@ struct section_access {
 
 template <typename Section, typename Entry>
 section_access make_section(std::string_view code,
-                            xsd::optional<Section> curveconfiguration::*member,
-                            xsd::vector<Entry> Section::*list) {
+                            xsd::optional<Section> curveconfiguration::* member,
+                            xsd::vector<Entry> Section::* list) {
     return {code,
             [member](const curveconfiguration& d) { return static_cast<bool>(d.*member); },
             [member, list](const curveconfiguration& d) -> std::size_t {
@@ -541,7 +561,7 @@ void import_segments(import_context& ctx, const segmentsType& v) {
         s.ibor_index = text(g.IborIndex);
         s.rfr_curve = text(g.RfrCurve);
         s.rfr_index = optional_text(g.RfrIndex);
-        s.spread = optional_double(g.Spread);
+        s.spread = optional_decimal(g.Spread);
     }
 }
 
@@ -732,7 +752,7 @@ void import_configuration_settings(refdata::domain::default_curve_configuration&
     r.calendar = optional_text(v.Calendar);
     r.conventions = optional_text(v.Conventions);
     r.extrapolation = optional_enum_text(v.Extrapolation);
-    r.running_spread = optional_double(v.RunningSpread);
+    r.running_spread = optional_decimal(v.RunningSpread);
     r.index_term = optional_text(v.IndexTerm);
     r.imply_default_from_market = optional_enum_text(v.ImplyDefaultFromMarket);
     r.allow_negative_rates = optional_enum_text(v.AllowNegativeRates);
@@ -2078,7 +2098,7 @@ void export_segment(segmentsType& out,
         assign_text(r.RfrCurve, require(s.rfr_curve, s, "risk free curve"));
         if (s.rfr_index)
             r.RfrIndex = *s.rfr_index;
-        assign_optional_double(r.Spread, s.spread);
+        assign_optional_decimal(r.Spread, s.spread);
         out.IborFallback.push_back(std::move(r));
     }
 }
@@ -2225,7 +2245,7 @@ void export_configuration_settings(Target& r,
         r.Calendar = *c.calendar;
     assign_optional_text(r.Conventions, c.conventions);
     assign_optional_enum(r.Extrapolation, c.extrapolation, "ORE boolean");
-    assign_optional_double(r.RunningSpread, c.running_spread);
+    assign_optional_decimal(r.RunningSpread, c.running_spread);
     assign_optional_text(r.IndexTerm, c.index_term);
     assign_optional_enum(r.ImplyDefaultFromMarket, c.imply_default_from_market, "ORE boolean");
     assign_optional_enum(r.AllowNegativeRates, c.allow_negative_rates, "ORE boolean");

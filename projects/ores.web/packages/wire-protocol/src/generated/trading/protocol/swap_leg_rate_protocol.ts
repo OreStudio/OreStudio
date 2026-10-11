@@ -42,7 +42,7 @@ export interface SwapLegRateWrite {
     sequence_number: number;
     trade_activity_id: string;
     start_date: string | null;
-    value: number;
+    value: string;
 }
 
 export interface SwapLegRateChange {

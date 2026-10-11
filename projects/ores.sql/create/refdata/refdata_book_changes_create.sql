@@ -36,6 +36,7 @@ create table if not exists "ores_refdata_book_changes_tbl" (
     "line_no" integer not null,
     "operation" text not null,
     "base_version" integer not null,
+    "applied" boolean not null,
     "entity_id" uuid not null,
     "party_id" uuid not null,
     "name" text not null,

@@ -50,7 +50,7 @@ generate_synthetic_fra_instrument(utility::generation::generation_context& ctx) 
     r.currency = std::string("USD");
     r.rate_index = std::string("SOFR");
     r.long_short = std::string("Long");
-    r.strike = 0.05;
+    r.strike = ores::utility::decimal::decimal::from_string("0.05").value();
     r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;

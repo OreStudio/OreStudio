@@ -51,7 +51,7 @@ domain::fra_instrument fra_instrument_mapper::map(const fra_instrument_entity& v
     r.currency = v.currency;
     r.rate_index = v.rate_index;
     r.long_short = v.long_short;
-    r.strike = v.strike;
+    r.strike = ores::utility::decimal::decimal::from_string(v.strike).value();
     r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -74,7 +74,7 @@ fra_instrument_entity fra_instrument_mapper::map(const domain::fra_instrument& v
     r.currency = v.currency;
     r.rate_index = v.rate_index;
     r.long_short = v.long_short;
-    r.strike = v.strike;
+    r.strike = v.strike.to_string();
     r.notional = v.notional.to_string();
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

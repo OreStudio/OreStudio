@@ -52,7 +52,7 @@ export interface DefaultCurveConfiguration {
     calendar: string | null;
     conventions: string | null;
     extrapolation: string | null;
-    running_spread: number | null;
+    running_spread: string | null;
     index_term: string | null;
     imply_default_from_market: string | null;
     allow_negative_rates: string | null;

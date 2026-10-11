@@ -50,7 +50,7 @@ struct swap_leg_rate_entity {
     int version = 0;
     std::string trade_activity_id;
     std::optional<std::string> start_date;
-    double value;
+    std::string value;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -48,6 +48,7 @@ domain::book_change generate_synthetic_book_change(utility::generation::generati
     r.line_no = 1;
     r.operation = std::string("put");
     r.base_version = 0;
+    r.applied = false;
     r.entity_id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.name = std::string("BOOK_") + std::to_string(faker::number::integer(1, 999));

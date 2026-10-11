@@ -49,7 +49,7 @@ struct swap_leg_rate_write {
     int sequence_number;
     boost::uuids::uuid trade_activity_id;
     std::optional<std::chrono::year_month_day> start_date;
-    double value;
+    ores::utility::decimal::decimal value;
 };
 
 struct swap_leg_rate_change {

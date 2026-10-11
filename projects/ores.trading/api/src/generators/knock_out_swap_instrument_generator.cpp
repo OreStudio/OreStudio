@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/knock_out_swap_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -47,7 +48,7 @@ generate_synthetic_knock_out_swap_instrument(utility::generation::generation_con
     r.trade_id = ctx.generate_uuid();
     r.trade_activity_id = ctx.generate_uuid();
     r.barrier_start_date = std::chrono::year_month_day{std::chrono::year{2027} / 5 / 3};
-    r.barrier_level = 0.05;
+    r.barrier_level = ores::utility::decimal::decimal::from_string("0.05").value();
     r.barrier_type = std::string("UpAndOut");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

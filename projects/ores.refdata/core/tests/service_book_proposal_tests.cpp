@@ -19,6 +19,7 @@
  */
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.inbox.core/repository/approval_policy_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.refdata.api/generators/book_change_generator.hpp"
@@ -31,6 +32,8 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.refdata.core/service/book_service.hpp"
 #include "ores.refdata.service/service/book_proposal.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include "book_proposal_fixtures.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -46,138 +49,8 @@ const std::string tags("[book_proposal]");
 
 using ores::refdata::domain::book_change;
 using ores::refdata::service::book_proposal_service;
+using namespace ores::refdata::tests;
 
-/**
- * @brief The rows a valid book points at, and the context that may write it.
- */
-struct world {
-    std::string currency;
-    boost::uuids::uuid party_id;
-    boost::uuids::uuid portfolio_id;
-    ores::database::context ctx;
-};
-
-world seed_world(ores::testing::scoped_database_helper& h) {
-    auto gctx = ores::testing::make_generation_context(h);
-    auto& base = h.context();
-
-    // The maker is an account of the tenant, and the context acts as it, so
-    // the raise finds the account it raises for.
-    auto maker = ores::iam::generators::generate_synthetic_account(gctx);
-    maker.change_reason_code = "system.test";
-    ores::iam::repository::account_repository{}.write(base, maker);
-
-    auto currency = ores::refdata::generators::generate_synthetic_currency(gctx);
-    currency.change_reason_code = "system.test";
-    ores::refdata::repository::currency_repository{}.write(base, currency);
-
-    auto sentinel = ores::refdata::generators::generate_synthetic_currency(gctx);
-    sentinel.iso_code = "X-0";
-    sentinel.change_reason_code = "system.test";
-    ores::refdata::repository::currency_repository{}.write(base, {sentinel});
-
-    auto attach_to_root = [&](auto& party) {
-        for (const auto& e : ores::refdata::repository::party_repository{}.read_latest(base)) {
-            if (e.tenant_id == party.tenant_id) {
-                party.parent_party_id = e.id;
-                break;
-            }
-        }
-    };
-    auto party = ores::refdata::generators::generate_synthetic_party(gctx);
-    party.change_reason_code = "system.test";
-    attach_to_root(party);
-    ores::refdata::repository::party_repository{}.write(base, party);
-
-    auto portfolio_party = ores::refdata::generators::generate_synthetic_party(gctx);
-    portfolio_party.change_reason_code = "system.test";
-    attach_to_root(portfolio_party);
-    ores::refdata::repository::party_repository{}.write(base, portfolio_party);
-
-    auto portfolio = ores::refdata::generators::generate_synthetic_portfolio(gctx);
-    portfolio.party_id = portfolio_party.id;
-    portfolio.change_reason_code = "system.test";
-    ores::refdata::repository::portfolio_repository{}.write(base, portfolio);
-
-    return {.currency = currency.iso_code,
-            .party_id = party.id,
-            .portfolio_id = portfolio.id,
-            .ctx = base.with_party(base.tenant_id(), party.id, {party.id}, maker.username)};
-}
-
-/**
- * @brief A line that creates a valid book.
- */
-book_change new_book_line(ores::testing::scoped_database_helper& h, const world& w) {
-    static boost::uuids::random_generator gen;
-    auto gctx = ores::testing::make_generation_context(h);
-    auto line = ores::refdata::generators::generate_synthetic_book_change(gctx);
-    line.entity_id = gen();
-    line.party_id = w.party_id;
-    line.parent_portfolio_id = w.portfolio_id;
-    line.functional_currency = w.currency;
-    line.owner_unit_id = std::nullopt;
-    line.sandbox_id = std::nullopt;
-    line.operation = "put";
-    line.base_version = 0;
-    line.change_reason_code = "system.test";
-    return line;
-}
-
-/**
- * @brief The line that rewrites a live book as it stands, for the maker to
- * edit one column of.
- */
-book_change edit_line(const ores::refdata::domain::book& live, book_change like) {
-    like.entity_id = live.id;
-    like.party_id = live.party_id;
-    like.name = live.name;
-    like.description = live.description;
-    like.parent_portfolio_id = live.parent_portfolio_id;
-    like.owner_unit_id = live.owner_unit_id;
-    like.functional_currency = live.functional_currency;
-    like.gl_account_ref = live.gl_account_ref;
-    like.cost_center = live.cost_center;
-    like.book_status = live.book_status;
-    like.regulatory_book_type = live.regulatory_book_type;
-    like.book_purpose_type = live.book_purpose_type;
-    like.ledger_feed_type = live.ledger_feed_type;
-    like.is_sweepable = live.is_sweepable;
-    like.rates_centre_code = live.rates_centre_code;
-    like.sandbox_id = live.sandbox_id;
-    like.operation = "put";
-    like.base_version = live.version;
-    return like;
-}
-
-/**
- * @brief Writes the line's book to the live table, as an unapproved write would.
- */
-ores::refdata::domain::book make_live(const world& w, const book_change& line) {
-    ores::refdata::service::book_service svc(w.ctx);
-    ores::refdata::domain::book b;
-    b.id = line.entity_id;
-    b.party_id = line.party_id;
-    b.name = line.name;
-    b.description = line.description;
-    b.parent_portfolio_id = line.parent_portfolio_id;
-    b.functional_currency = line.functional_currency;
-    b.gl_account_ref = line.gl_account_ref;
-    b.cost_center = line.cost_center;
-    b.book_status = line.book_status;
-    b.regulatory_book_type = line.regulatory_book_type;
-    b.book_purpose_type = line.book_purpose_type;
-    b.ledger_feed_type = line.ledger_feed_type;
-    b.is_sweepable = line.is_sweepable;
-    b.rates_centre_code = line.rates_centre_code;
-    b.change_reason_code = "system.test";
-    svc.save_book(b);
-    return *svc.get_book(b.id);
-}
-
-std::size_t pending_count(const world& w) {
-    return ores::refdata::repository::book_change_repository{}.read_latest(w.ctx).size();
-}
 
 }
 
@@ -251,11 +124,12 @@ TEST_CASE("a_change_to_one_column_names_only_the_part_of_that_column", tags) {
     const auto live = make_live(w, created);
 
     auto edit = edit_line(live, created);
-    edit.book_status = live.book_status == "Active" ? "Inactive" : "Active";
+    edit.book_status = live.book_status == "Active" ? "Frozen" : "Active";
 
     const auto preview = svc.preview({edit});
 
     REQUIRE(preview.lines.size() == 1);
+    CHECK(preview.lines[0].refusal.empty());
     CHECK(preview.lines[0].columns == std::vector<std::string>{"book_status"});
     CHECK(preview.part_codes == std::vector<std::string>{"operations"});
 }
@@ -422,4 +296,210 @@ TEST_CASE("a_part_a_tenant_adds_to_an_act_is_named_with_the_system_parts", tags)
     const auto preview = book_proposal_service(w.ctx).preview({edit});
 
     CHECK(preview.part_codes == std::vector<std::string>{"controller"});
+}
+
+
+TEST_CASE("an_apply_writes_every_line_once_and_marks_each_applied", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto line = new_book_line(h, w);
+    const auto proposal = svc.raise({line}, "Open the desk");
+    REQUIRE(proposal.request);
+    approve_every_part(w, h, *proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+
+    const auto first = svc.apply(id);
+
+    CHECK(first.applied);
+    CHECK(first.lines_applied == 1);
+    ores::refdata::service::book_service books(w.ctx);
+    const auto written = books.get_book(line.entity_id);
+    REQUIRE(written.has_value());
+    CHECK(written->name == line.name);
+    const auto rows = ores::refdata::repository::book_change_repository{}.read_latest_by_request_id(
+        w.ctx, id, 0, 10);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().applied);
+
+    const auto again = svc.apply(id);
+    CHECK(again.applied);
+    CHECK(again.lines_applied == 0);
+    CHECK(books.get_book(line.entity_id)->version == written->version);
+}
+
+TEST_CASE("a_refused_line_rolls_the_whole_apply_back_and_fails_the_request", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+
+    const auto existing = new_book_line(h, w);
+    const auto live = make_live(w, existing);
+    auto edit = edit_line(live, existing);
+    edit.description = "Reworded";
+    edit.book_status = live.book_status == "Active" ? "Frozen" : "Active";
+    const auto added = new_book_line(h, w);
+
+    const auto proposal = svc.raise({added, edit}, "Open one desk, change another");
+    REQUIRE(proposal.request);
+    approve_every_part(w, h, *proposal.request);
+
+    // Someone else changes the book between the raise and the apply, so the
+    // second line now claims a version that is no longer current.
+    ores::refdata::service::book_service books(w.ctx);
+    auto moved = *books.get_book(live.id);
+    moved.description = "Changed by someone else";
+    moved.change_reason_code = "system.test";
+    books.save_book(moved);
+
+    const auto id = boost::uuids::to_string(proposal.request->id);
+    const auto result = svc.apply(id);
+
+    CHECK_FALSE(result.applied);
+    CHECK_FALSE(result.transient);
+    CHECK(result.failed_line == 2);
+    CHECK_FALSE(result.refusal.empty());
+    CHECK_FALSE(books.get_book(added.entity_id).has_value());
+    const auto rows = ores::refdata::repository::book_change_repository{}.read_latest_by_request_id(
+        w.ctx, id, 0, 10);
+    CHECK(std::ranges::none_of(rows, [](const auto& r) { return r.applied; }));
+    ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
+    const auto failed = lifecycle.request(id);
+    CHECK(failed->state_code == "apply_failed");
+    CHECK(failed->change_commentary.starts_with("Line 2:"));
+}
+
+TEST_CASE("a_request_that_is_not_approved_is_not_applied", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto line = new_book_line(h, w);
+    const auto proposal = svc.raise({line}, "Open the desk");
+    REQUIRE(proposal.request);
+
+    const auto result = svc.apply(boost::uuids::to_string(proposal.request->id));
+
+    CHECK_FALSE(result.applied);
+    CHECK_FALSE(result.refusal.empty());
+    ores::refdata::service::book_service books(w.ctx);
+    CHECK_FALSE(books.get_book(line.entity_id).has_value());
+    ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
+    CHECK(lifecycle.request(boost::uuids::to_string(proposal.request->id))->state_code ==
+          "waiting");
+}
+
+TEST_CASE("a_request_that_failed_to_apply_is_not_applied_again", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto line = new_book_line(h, w);
+    const auto proposal = svc.raise({line}, "Open the desk");
+    REQUIRE(proposal.request);
+    approve_every_part(w, h, *proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+    ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
+    REQUIRE(lifecycle.fail_apply(id, "Could not apply").outcome == "ok");
+
+    const auto result = svc.apply(id);
+
+    CHECK_FALSE(result.applied);
+    CHECK_FALSE(result.transient);
+    ores::refdata::service::book_service books(w.ctx);
+    CHECK_FALSE(books.get_book(line.entity_id).has_value());
+}
+
+TEST_CASE("a_request_over_the_line_limit_is_not_raised", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    std::vector<book_change> lines;
+    for (std::size_t i = 0; i <= book_proposal_service::max_lines; ++i)
+        lines.push_back(new_book_line(h, w));
+
+    const auto proposal = svc.raise(lines, "Too many");
+
+    CHECK_FALSE(proposal.request.has_value());
+    CHECK_FALSE(proposal.message.empty());
+}
+
+TEST_CASE("a_recheck_reads_the_stored_lines_against_the_live_book", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto existing = new_book_line(h, w);
+    const auto live = make_live(w, existing);
+    auto edit = edit_line(live, existing);
+    edit.book_status = live.book_status == "Active" ? "Frozen" : "Active";
+    const auto proposal = svc.raise({edit}, "Change the status");
+    REQUIRE(proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+    CHECK_FALSE(svc.recheck(id).refused());
+
+    ores::refdata::service::book_service books(w.ctx);
+    auto moved = *books.get_book(live.id);
+    moved.description = "Changed by someone else";
+    moved.change_reason_code = "system.test";
+    books.save_book(moved);
+
+    CHECK(svc.recheck(id).refused());
+}
+
+TEST_CASE("only_the_database_refusing_a_write_is_a_refusal_and_not_the_infrastructure", tags) {
+    using ores::refdata::service::is_infrastructure_failure;
+    // The client cannot reach the server: no label from the server at all.
+    CHECK(is_infrastructure_failure("server closed the connection unexpectedly"));
+    CHECK(is_infrastructure_failure("Cannot commit the transaction"));
+    // The server ends the connection.
+    CHECK(is_infrastructure_failure("FATAL:  terminating connection due to administrator command"));
+    // The server answers, so it is a refusal, whatever the text goes on to say.
+    CHECK_FALSE(is_infrastructure_failure("Executing INSERT failed: ERROR:  Invalid currency: QQQ"));
+    CHECK_FALSE(is_infrastructure_failure(
+        "Executing INSERT failed: ERROR:  Invalid name: lost connection timed out"));
+}
+
+TEST_CASE("the_parties_of_a_request_are_found_without_a_party_scope", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto proposal = svc.raise({new_book_line(h, w)}, "Open the desk");
+    REQUIRE(proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+
+    // The apply workflow runs for the tenant and has no party, so it cannot read
+    // the lines. The function reads past the party policy for the parties alone.
+    const auto tenant_only = h.context().with_tenant(h.tenant_id(), "");
+    auto lg = ores::logging::make_logger("ores.refdata.tests");
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        tenant_only,
+        "select p::text from ores_refdata_book_change_parties_fn($1::uuid) as p",
+        {id},
+        lg,
+        "Reading the parties of a request");
+
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().front() == boost::uuids::to_string(w.party_id));
+    const auto visible =
+        ores::refdata::repository::book_change_repository{}.read_latest_by_request_id(
+            tenant_only, id, 0, 10);
+    CHECK(visible.empty());
+}
+
+TEST_CASE("another_tenant_is_told_no_parties_for_a_request_it_does_not_own", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    const auto proposal = svc.raise({new_book_line(h, w)}, "Open the desk");
+    REQUIRE(proposal.request);
+    const auto id = boost::uuids::to_string(proposal.request->id);
+
+    auto lg = ores::logging::make_logger("ores.refdata.tests");
+    const auto other = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        other,
+        "select p::text from ores_refdata_book_change_parties_fn($1::uuid) as p",
+        {id},
+        lg,
+        "Reading the parties of another tenant's request");
+
+    CHECK(rows.empty());
 }

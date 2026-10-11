@@ -46,7 +46,7 @@ struct equity_position_option_underlying_write {
     boost::uuids::uuid trade_activity_id;
     std::string underlying_name;
     ores::utility::decimal::decimal strike;
-    std::optional<ores::utility::decimal::decimal> weight;
+    std::optional<double> weight;
     std::string long_short;
     std::string option_type;
     std::string exercise_type;

@@ -358,7 +358,7 @@ select results_eq(
 -- it is filed as its own defect rather than asserted away.
 
 select results_eq(
-    $$select action, record_count from ores_refdata_publish_named_portfolios_from_dq_fn(
+    $$select action, record_count from ores_refdata_publish_sandbox_portfolios_from_dq_fn(
         (select id from ores_dq_datasets_tbl where code = 'ore.sample_portfolios'
            and valid_to = ores_utility_infinity_timestamp_fn()),
         ores_utility_system_tenant_id_fn())$$,

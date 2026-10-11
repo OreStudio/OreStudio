@@ -175,6 +175,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/bma_basis_swap_convention_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/bond_future_volatility_config_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/bond_yield_convention_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/book_apply_step_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/book_change_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/book_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/book_proposal_handler.hpp"

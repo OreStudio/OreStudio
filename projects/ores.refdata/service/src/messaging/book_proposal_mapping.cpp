@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.service/messaging/book_proposal_mapping.hpp"
 #include <algorithm>
+#include <string>
 
 namespace ores::refdata::messaging {
 
@@ -44,6 +45,27 @@ std::vector<std::string> required_permissions(const std::vector<domain::book_cha
     if (deletes)
         needed.push_back("refdata::books:delete");
     return needed;
+}
+
+step_result recheck_step_result(const service::book_preview& preview) {
+    for (const auto& l : preview.lines) {
+        if (!l.refusal.empty())
+            return {.completed = false,
+                    .error = "Line " + std::to_string(l.line_no) + ": " + l.refusal};
+    }
+    return {.completed = true, .error = {}};
+}
+
+step_result apply_step_result(const service::book_apply& applied) {
+    if (applied.applied)
+        return {.completed = true, .error = {}};
+    if (applied.transient)
+        return {.completed = false,
+                .error = "Could not apply now, and the apply may run again: " + applied.refusal};
+    if (applied.failed_line > 0)
+        return {.completed = false,
+                .error = "Line " + std::to_string(applied.failed_line) + ": " + applied.refusal};
+    return {.completed = false, .error = applied.refusal};
 }
 
 std::vector<book_line_outcome> to_outcomes(const service::book_preview& preview) {

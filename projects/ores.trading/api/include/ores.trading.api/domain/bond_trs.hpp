@@ -104,7 +104,7 @@ struct bond_trs final {
     /**
      * @brief Fixed rate of the funding leg, when the leg is fixed.
      */
-    double funding_rate = 0.0;
+    std::optional<ores::utility::decimal::decimal> funding_rate = std::nullopt;
 
     /**
      * @brief Index code of the funding leg, when the leg is floating.

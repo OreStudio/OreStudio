@@ -27,6 +27,7 @@
 #include "ores.ore.api/workflow/run_configuration_import_workflow.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
+#include "ores.refdata.api/workflow/book_apply_workflow.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.api/workflow/identity_workflow.hpp"
@@ -107,6 +108,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     ore::workflow::register_run_configuration_import_workflow(*registry);
     reporting::workflow::register_report_execution_workflow(*registry);
     dq::workflow::register_bundle_publish_workflow(*registry);
+    ores::refdata::workflow::register_book_apply_workflow(*registry);
     ores::iam::workflow::register_provision_tenant_workflow(*registry);
     ores::iam::workflow::register_tenant_setup_workflow(*registry);
     ores::iam::workflow::register_provision_party_workflow(*registry);

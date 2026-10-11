@@ -46,6 +46,8 @@ struct trade_write {
     ores::trading::domain::counterparty_scope counterparty_scope;
     ores::trading::domain::booking_nature booking_nature;
     ores::trading::domain::entry_channel entry_channel;
+    int external_version;
+    std::string economic_digest;
 };
 
 struct trade_change {

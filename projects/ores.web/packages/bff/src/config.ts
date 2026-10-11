@@ -96,7 +96,7 @@ export interface Config {
     };
     readonly allowedOrigins: readonly string[];
     readonly loginAttemptsPerMinute: number;
-    readonly docRoot: string | undefined;
+    readonly docRoot?: string | undefined;
 }
 
 /** Builds a configuration from already-validated values, for tests. */

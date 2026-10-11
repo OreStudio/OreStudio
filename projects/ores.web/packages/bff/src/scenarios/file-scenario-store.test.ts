@@ -36,7 +36,14 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { FileScenarioStore } from './file-scenario-store.js';
 import { UnknownStepError, type RunInput, type StepOutcome } from './scenario-doc.js';
-import { InvalidDocIdError, PathEscapeError } from './scenario-store.js';
+import { MAX_IMAGE_BYTES } from '@ores/contracts';
+import {
+    InvalidDocIdError,
+    InvalidImageError,
+    PathEscapeError,
+    ScenarioNotFoundError,
+    StepNumberError,
+} from './scenario-store.js';
 
 const fixture = (name: string): string =>
     readFileSync(new URL(`../../../org/src/fixtures/${name}`, import.meta.url), 'utf8');
@@ -56,9 +63,8 @@ const storyDoc = `:PROPERTIES:
 A story.
 `;
 
-function input(steps: StepOutcome[], state: RunInput['state'] = 'FAILED'): RunInput {
+function input(steps: StepOutcome[]): RunInput {
     return {
-        state,
         steps,
         completedAt: '2026-10-11T09:00:00Z',
         branch: 'feature/x',
@@ -251,6 +257,14 @@ describe('scanning', () => {
         expect((await store().list()).map((x) => x.id)).toContain(id);
     });
 
+    it('reads the type and title of a doc from its text, not from the index', async () => {
+        const s = new FileScenarioStore(root, { rescanAfterMs: 600_000 });
+        await s.list();
+        const file = join(root, 'sprint_23/story/story.org');
+        writeFileSync(file, readFileSync(file, 'utf8').replace('#+type: story', '#+type: recipe'));
+        expect((await s.readDoc(STORY))?.type).toBe('recipe');
+    });
+
     it('skips a file that vanishes during the walk', async () => {
         const s = store();
         rmSync(join(root, 'sprint_23/story/notes.txt'));
@@ -288,7 +302,7 @@ describe('recording a run', () => {
         expect(before.find((x) => x.id === MULTI)?.steps.pass).toBe(2);
         await s.record(
             MULTI,
-            input([{ client: 'blue', title: 'Read', status: 'PASS', notes: '' }], 'PENDING'),
+            input([{ client: 'blue', title: 'Read', status: 'PASS', notes: '' }]),
         );
         const after = await s.list();
         expect(after.find((x) => x.id === MULTI)?.steps.pass).toBe(3);
@@ -350,6 +364,29 @@ describe('recording a run', () => {
         expect(back?.steps.find((x) => x.title === 'Update')?.notes).toBe('only first');
     });
 
+    it('serialises saves that start on a cold index and a warm one', async () => {
+        const s = store();
+        const first = s.record(
+            MULTI,
+            input([
+                { client: 'blue', title: 'Read', status: 'PASS', notes: 'first' },
+                { client: 'blue', title: 'Update', status: 'PASS', notes: 'only first' },
+            ]),
+        );
+        await s.read(MULTI);
+        const second = s.record(
+            MULTI,
+            input([{ client: 'blue', title: 'Read', status: 'FAIL', notes: 'second' }]),
+        );
+        await Promise.all([first, second]);
+        const back = await s.read(MULTI);
+        expect(back?.steps.find((x) => x.title === 'Read')).toMatchObject({
+            status: 'FAIL',
+            notes: 'second',
+        });
+        expect(back?.steps.find((x) => x.title === 'Update')?.notes).toBe('only first');
+    });
+
     it('does not write through a file that now points outside the root', async () => {
         const s = store();
         await s.list();
@@ -363,5 +400,122 @@ describe('recording a run', () => {
         ).rejects.toBeInstanceOf(PathEscapeError);
         expect(readFileSync(target, 'utf8')).toBe(before);
         await expect(s.readDoc(MULTI)).rejects.toBeInstanceOf(PathEscapeError);
+    });
+});
+
+const PNG = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3, 4]);
+const JPEG = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 1, 2]);
+const GIF = Uint8Array.from([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 1, 2]);
+const WEBP = Uint8Array.from([0x52, 0x49, 0x46, 0x46, 1, 2, 3, 4, 0x57, 0x45, 0x42, 0x50, 9]);
+const NOON = () => new Date('2026-10-11T09:30:15.123Z');
+
+describe('keeping a screenshot of a step', () => {
+    const dir = () => join(root, 'sprint_23/story');
+    const timed = () => new FileScenarioStore(root, { rescanAfterMs: 0, now: NOON });
+
+    it('saves it beside the scenario doc, under a name from the scenario and the step', async () => {
+        const saved = await timed().saveImage(MULTI, 3, PNG);
+        expect(saved.name).toBe('scenario_multi_step3_20261011_093015.png');
+        expect(readdirSync(dir())).toContain(saved.name);
+        expect(readFileSync(join(dir(), saved.name))).toEqual(Buffer.from(PNG));
+    });
+
+    it('names the file by what the bytes are, not by what the caller says', async () => {
+        const s = timed();
+        expect((await s.saveImage(MULTI, 1, JPEG)).name).toMatch(/_step1_\d{8}_\d{6}\.jpg$/);
+        expect((await s.saveImage(MULTI, 2, GIF)).name).toMatch(/_step2_\d{8}_\d{6}\.gif$/);
+        expect((await s.saveImage(MULTI, 3, WEBP)).name).toMatch(/_step3_\d{8}_\d{6}\.webp$/);
+    });
+
+    it('gives two screenshots of one step in one second two names', async () => {
+        const s = timed();
+        const first = await s.saveImage(MULTI, 1, PNG);
+        const second = await s.saveImage(MULTI, 1, PNG);
+        const third = await s.saveImage(MULTI, 1, PNG);
+        expect(new Set([first.name, second.name, third.name]).size).toBe(3);
+        expect(second.name).toBe('scenario_multi_step1_20261011_093015_2.png');
+    });
+
+    it('builds a safe name from a doc whose file name is not', async () => {
+        put(
+            'sprint_24/scenario with spaces & marks.org',
+            fixture('single_client_scenario.org').replace(
+                SINGLE,
+                'F0000000-0000-4000-8000-000000000009',
+            ),
+        );
+        const saved = await timed().saveImage('F0000000-0000-4000-8000-000000000009', 1, PNG);
+        expect(saved.name).toMatch(/^[A-Za-z0-9._-]+$/);
+        expect(readdirSync(join(root, 'sprint_24'))).toContain(saved.name);
+    });
+
+    it('refuses bytes that are not an image, and writes nothing', async () => {
+        const before = readdirSync(dir());
+        for (const text of [
+            'hello',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<script>1</script>',
+        ]) {
+            await expect(
+                timed().saveImage(MULTI, 1, new TextEncoder().encode(text)),
+            ).rejects.toMatchObject({ reason: 'not-image' });
+        }
+        expect(readdirSync(dir())).toEqual(before);
+    });
+
+    it('refuses an empty file and a file over the limit, and writes nothing', async () => {
+        const before = readdirSync(dir());
+        await expect(timed().saveImage(MULTI, 1, new Uint8Array())).rejects.toMatchObject({
+            reason: 'empty',
+        });
+        const big = new Uint8Array(MAX_IMAGE_BYTES + 1);
+        big.set(PNG);
+        await expect(timed().saveImage(MULTI, 1, big)).rejects.toBeInstanceOf(InvalidImageError);
+        await expect(timed().saveImage(MULTI, 1, big)).rejects.toMatchObject({
+            reason: 'too-large',
+        });
+        expect(readdirSync(dir())).toEqual(before);
+    });
+
+    it('takes an image of exactly the limit', async () => {
+        const edge = new Uint8Array(MAX_IMAGE_BYTES);
+        edge.set(PNG);
+        expect((await timed().saveImage(MULTI, 1, edge)).name).toMatch(/\.png$/);
+    });
+
+    it('refuses a step that the scenario does not have', async () => {
+        const before = readdirSync(dir());
+        for (const step of [0, -1, 14, 1.5, Number.NaN]) {
+            await expect(timed().saveImage(MULTI, step, PNG)).rejects.toBeInstanceOf(
+                StepNumberError,
+            );
+        }
+        expect(readdirSync(dir())).toEqual(before);
+    });
+
+    it('answers not found for an id no scenario has, and for a story', async () => {
+        await expect(
+            timed().saveImage('E0000000-0000-4000-8000-000000000003', 1, PNG),
+        ).rejects.toBeInstanceOf(ScenarioNotFoundError);
+        await expect(timed().saveImage(STORY, 1, PNG)).rejects.toBeInstanceOf(
+            ScenarioNotFoundError,
+        );
+    });
+
+    it('refuses an id that is not a document id', async () => {
+        await expect(timed().saveImage('../../etc', 1, PNG)).rejects.toBeInstanceOf(
+            InvalidDocIdError,
+        );
+    });
+
+    it('does not write beside a doc that now points outside the root', async () => {
+        const s = timed();
+        await s.list();
+        const target = join(outside, 'victim.org');
+        writeFileSync(target, fixture('multi_client_scenario.org'));
+        rmSync(join(dir(), 'scenario_multi.org'));
+        symlinkSync(target, join(dir(), 'scenario_multi.org'));
+        await expect(s.saveImage(MULTI, 1, PNG)).rejects.toBeInstanceOf(PathEscapeError);
+        expect(readdirSync(outside)).toEqual(['victim.org']);
     });
 });

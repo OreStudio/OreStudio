@@ -202,4 +202,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.api/messaging/notification_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.api/messaging/notification_recipient_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.api/ores.inbox.api.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.api/workflow/apply_step_command.hpp"
 )

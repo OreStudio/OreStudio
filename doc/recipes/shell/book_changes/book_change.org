@@ -75,6 +75,27 @@ It is addressed at =refdata.v1.book_changes.get_many=.
 book_changes get-many 00000000-0000-0000-0000-000000000000
 #+end_src
 
+** =by-request-id=
+:PROPERTIES:
+:ID: E4C44714-6F32-518B-B1DD-86A395602D8C
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_changes by-request-id <request_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.book_changes.list_by_request_id=.
+
+#+name: book_changes-by-request-id
+#+begin_src ores-shell :tangle book_changes-by-request-id.ores :exports none
+book_changes by-request-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
 ** =versions=
 :PROPERTIES:
 :ID: 4612D7C7-709F-5F76-8FC7-087D1D400A83

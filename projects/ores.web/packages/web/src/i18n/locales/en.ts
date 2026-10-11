@@ -75,10 +75,12 @@ export const en: SourceCatalogue = {
         },
         account: 'Your account',
         menu: {
+            marketdata: 'Market data',
             home: 'Home',
             accounts: 'Accounts',
             tenants: 'Tenants',
             operations: 'Operations',
+            development: 'Development',
             parties: 'Parties',
             rescue: 'Rescue access',
             audit: 'Sign-ins',
@@ -1213,6 +1215,86 @@ export const en: SourceCatalogue = {
      * doing. The versions screen belongs to every session, so it is offered
      * from Home as well as from this area's hub.
      */
+    development: {
+        tabs: {
+            label: 'Development areas',
+            tests: 'Tests',
+        },
+        tests: {
+            waiting: 'Waiting',
+            done: 'Done',
+            nothingWaiting: 'Nothing is waiting.',
+            nothingDone: 'Nothing has been tested yet.',
+            scenario: 'Scenario',
+            target: 'Target',
+            progress: 'Progress',
+            state: 'State',
+            completed: 'Completed',
+            stepsDone: '{done} of {total} steps',
+            states: {
+                pending: 'Pending',
+                inProgress: 'In progress',
+                passed: 'Passed',
+                failed: 'Failed',
+            },
+        },
+        scenario: {
+            tabsLabel: 'Scenario views',
+            tabs: {
+                steps: 'Steps',
+                story: 'Story',
+                task: 'Task',
+            },
+            noStory: 'This scenario names no story.',
+            noTask: 'This scenario names no task.',
+        },
+        docs: {
+            title: 'Doc',
+            unresolved:
+                'No story, task or scenario has the id {id}. The link may point at a doc the runner does not show.',
+        },
+        runner: {
+            states: {
+                PENDING: 'Pending',
+                PASSED: 'Passed',
+                FAILED: 'Failed',
+            },
+            stepStates: {
+                PENDING: 'Pending',
+                PASS: 'Passed',
+                FAIL: 'Failed',
+                DROPPED: 'Dropped',
+            },
+            marked: '{done} of {total} steps marked',
+            clients: 'Clients',
+            oneClient: 'One',
+            lastSaved: 'Last saved',
+            retest: 'Retest',
+            closedHelp: 'This scenario is closed. A retest clears every step and starts again.',
+            save: 'Save',
+            saveHelp: "Save writes each step's result and the overall state into the scenario doc.",
+            back: 'Back to the tests',
+            retestTitle: 'Start a retest?',
+            retestBody:
+                'A retest clears every step and its note. A save then overwrites the earlier result. Git keeps the history.',
+            retestConfirm: 'Retest',
+            cancel: 'Cancel',
+            previous: 'Back',
+            skip: 'Skip',
+            stepOf: 'Step {step} of {total}',
+            pass: 'Pass',
+            fail: 'Fail',
+            clear: 'Clear',
+            note: 'Note',
+            notePlaceholder: 'What did you see?',
+            imageHint: 'Paste or drop a screenshot here to attach it to this step.',
+            imageSaving: 'Saving the image...',
+            imageNotImage: 'Only PNG, JPEG, GIF and WebP images can be attached.',
+            imageTooLarge: 'That image is over {limit} MB.',
+            savedClosed: 'Saved and closed as {state}.',
+            savedOpen: 'Saved. {pending} steps are still to mark. The scenario stays open.',
+        },
+    },
     operations: {
         back: 'Back to operations',
         instance: {
@@ -1582,6 +1664,67 @@ export const en: SourceCatalogue = {
             bus: 'Watch the message bus',
             audit: 'Audit sign-ins',
             versions: 'Check the versions and the database',
+        },
+    },
+
+    market: {
+        area: 'Market data',
+        evolution: {
+            screen: 'Watch a curve evolve',
+            title: 'Watch a curve or surface evolve',
+            description:
+                'Name an object and a range. Read the instants by nodes over the range, and the object as it stands now.',
+            reading: 'Reading the object...',
+            form: {
+                title: 'The object',
+                asset: 'Asset class',
+                scope: 'Scope',
+                instrumentType: 'Instrument type',
+                quoteType: 'Quote type',
+                fields: 'Other identity fields',
+                fieldsHint: 'One name=value per line, such as ccy=PLN.',
+                from: 'From',
+                to: 'To',
+                provenance: 'Show where each value came from',
+                submit: 'Watch',
+            },
+            errors: {
+                missing:
+                    'State the asset class, the scope, the instrument type and the quote type.',
+                field: 'Write each other field as name=value.',
+                range: 'The range ends before it starts.',
+                day: 'Pick both days.',
+            },
+            matrix: {
+                title: 'Over the range',
+                node: 'Node',
+                status: 'Change',
+                hole: 'No point',
+                noNodes: 'The object declares no node.',
+                noInstants: 'The object holds no instant in this range.',
+                neverQuoted: '{count} nodes hold no value at any instant of this range.',
+            },
+            status: {
+                persistent: 'Persistent',
+                added: 'Added',
+                dropped: 'Dropped',
+                intermittent: 'Intermittent',
+                never_quoted: 'Never quoted',
+            },
+            now: {
+                title: 'Now',
+                value: 'Value',
+                age: 'Age',
+                source: 'Source',
+                detail: 'Detail',
+                summary: 'The oldest value is {oldest} old. The values span {spread}.',
+            },
+            source: {
+                quoted: 'Quoted',
+                derived: 'Derived',
+                manual: 'Manual',
+            },
+            gap: 'No list of series is read yet, so the object is named by its identity.',
         },
     },
 

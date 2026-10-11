@@ -39,6 +39,8 @@ export interface TradeWrite {
     counterparty_scope: string;
     booking_nature: string;
     entry_channel: string;
+    external_version: number;
+    economic_digest: string;
 }
 
 export interface TradeChange {

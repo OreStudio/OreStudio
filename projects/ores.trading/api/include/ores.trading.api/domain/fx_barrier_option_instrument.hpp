@@ -94,12 +94,12 @@ struct fx_barrier_option_instrument final {
     /**
      * @brief Lower barrier level. Must be positive.
      */
-    double lower_barrier = 0.0;
+    ores::utility::decimal::decimal lower_barrier = ores::utility::decimal::decimal{};
 
     /**
      * @brief Upper barrier level (double-barrier products only; NULL otherwise).
      */
-    std::optional<double> upper_barrier;
+    std::optional<ores::utility::decimal::decimal> upper_barrier;
 
     /**
      * @brief Optional underlying identifier.

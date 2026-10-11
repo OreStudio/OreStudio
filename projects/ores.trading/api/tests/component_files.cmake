@@ -21,9 +21,11 @@
 # To modify, update the template and regenerate.
 set(files
     "domain_activity_type_tests.cpp"
+    "domain_economic_digest_tests.cpp"
     "domain_fpml_event_type_tests.cpp"
     "domain_lifecycle_event_tests.cpp"
     "domain_party_role_type_tests.cpp"
+    "domain_trade_economic_digest_tests.cpp"
     "domain_trade_id_type_tests.cpp"
     "domain_trade_identifier_tests.cpp"
     "domain_trade_party_role_tests.cpp"

@@ -61,7 +61,7 @@ create table if not exists "ores_refdata_default_curve_configurations_tbl" (
     "calendar" text null,
     "conventions" text null,
     "extrapolation" text null,
-    "running_spread" double precision null,
+    "running_spread" numeric(38, 12) null,
     "index_term" text null,
     "imply_default_from_market" text null,
     "allow_negative_rates" text null,

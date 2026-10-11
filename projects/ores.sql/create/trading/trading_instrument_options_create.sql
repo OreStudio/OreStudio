@@ -73,7 +73,7 @@ create table if not exists "ores_trading_instrument_options_tbl" (
     "automatic_exercise" text null,
     "has_exercise_data" boolean not null,
     "exercise_date" date null,
-    "exercise_price" numeric(28, 10) null,
+    "exercise_price" numeric(38, 12) null,
     "has_payment_data" boolean not null,
     "payment_lag" integer null,
     "payment_calendar" text null,

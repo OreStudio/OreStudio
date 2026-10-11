@@ -19,6 +19,7 @@
  */
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <exception>
@@ -41,6 +42,47 @@ void approval_announcer::tell_open_parts(approval_lifecycle& lifecycle,
     }
     for (const auto& open : lifecycle.open_parts_of(id))
         tell_deciders(kind, raised, open.decide_permission_code);
+}
+
+void approval_announcer::tell_asker(const domain::approval_kind& kind,
+                                   const domain::approval_request& request,
+                                   const std::string& state,
+                                   const std::string& comment) {
+    try {
+        notification_center center(ctx_);
+        // A person who acts is an account of the tenant. The service that acts
+        // for a workflow acts as the service account, an account of the system tenant, so
+        // only then is the sender looked up there. A person missing from their
+        // own tenant is not looked for elsewhere.
+        auto sender = center.actor_account_id();
+        if (!sender && (ctx_.actor().empty() || ctx_.actor() == ctx_.service_account())) {
+            sender = notification_center(ctx_.with_tenant(ores::utility::uuid::tenant_id::system(),
+                                                          ctx_.service_account()))
+                         .actor_account_id();
+        }
+        if (!sender) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Request " << boost::uuids::to_string(request.id) << " is " << state
+                << ", but no account sends the notice, so the person who asked was not told.";
+            return;
+        }
+        messaging::raise_notification_request n{
+            .kind_code = "inbox.approval_decided",
+            .link_route = "requests",
+            .link_id = boost::uuids::to_string(request.id),
+            .arguments = {{.name = "kind", .value = kind.name},
+                          {.name = "state", .value = state},
+                          {.name = "decider", .value = ctx_.actor().empty() ? ctx_.service_account() :
+                                                                               ctx_.actor()},
+                          {.name = "comment", .value = comment}},
+            .account_ids = {boost::uuids::to_string(request.requested_by)},
+            .audience_permission_code = ""};
+        center.raise(n, n.account_ids, *sender);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Request " << boost::uuids::to_string(request.id) << " is "
+                                  << state << ", but the person who asked was not told: "
+                                  << e.what();
+    }
 }
 
 void approval_announcer::tell_deciders(const domain::approval_kind& kind,

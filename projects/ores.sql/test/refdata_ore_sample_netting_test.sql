@@ -176,7 +176,7 @@ select is(
       and c.valid_to = ores_utility_infinity_timestamp_fn()
      join ores_refdata_netting_sets_tbl ns
        on ns.id = c.netting_set_id
-      and ns.code like 'NS-%'
+      and ns.code like 'ORE-SAMPLE-NS-%'
       and ns.valid_to = ores_utility_infinity_timestamp_fn()
      where e.currency_code = 'EUR' and e.position = 0
        and e.valid_to = ores_utility_infinity_timestamp_fn()),
@@ -339,7 +339,7 @@ select is(
     (select count(*) from (
         select code from ores_refdata_netting_sets_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and code like 'NS-%'
+          and code like 'ORE-SAMPLE-NS-%'
           and valid_to = ores_utility_infinity_timestamp_fn()
         group by code having count(distinct party_id) = 2) held_by_both),
     19::bigint,
@@ -373,7 +373,7 @@ select lives_ok(
       from ores_refdata_netting_sets_tbl ns
       where ns.tenant_id = ores_utility_system_tenant_id_fn()
         and ns.party_id = '00000000-0000-0000-0000-0000000cf002'::uuid
-        and ns.code = 'NS-BARC-PRICING-01'
+        and ns.code = 'ORE-SAMPLE-NS-BARC-PRICING-01'
         and ns.valid_to = ores_utility_infinity_timestamp_fn()$$,
     'a CSA that names another party is written');
 
@@ -402,7 +402,7 @@ select throws_like(
       from ores_refdata_netting_sets_tbl
       where tenant_id = ores_utility_system_tenant_id_fn()
         and party_id = '00000000-0000-0000-0000-0000000cf002'::uuid
-        and code = 'NS-BARC-PRICING-01'
+        and code = 'ORE-SAMPLE-NS-BARC-PRICING-01'
         and valid_to = ores_utility_infinity_timestamp_fn()$$,
     '%party_id cannot change%',
     'a netting set cannot move to another party');

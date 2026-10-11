@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@ores/contracts": "*",
+    "@ores/org": "*",
     "@ores/wire-protocol": "*",
     "@tanstack/react-query": "5.103.1",
     "react": "19.3.0",

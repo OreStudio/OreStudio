@@ -31,15 +31,20 @@ import {
     unlink,
     writeFile,
 } from 'node:fs/promises';
-import { dirname, join, sep } from 'node:path';
+import { basename, dirname, join, sep } from 'node:path';
+import { MAX_IMAGE_BYTES } from '@ores/contracts';
 import { parseOrg } from '@ores/org';
 import { parseScenario, recordRun, type RunInput, type Scenario } from './scenario-doc.js';
+import { detectImage } from './image.js';
 import {
     InvalidDocIdError,
+    InvalidImageError,
     PathEscapeError,
     ScenarioNotFoundError,
+    StepNumberError,
     type DocText,
     type RecordResult,
+    type SavedImage,
     type ScenarioStore,
     type ScenarioSummary,
 } from './scenario-store.js';
@@ -47,6 +52,8 @@ import {
 export interface FileStoreOptions {
     /** The least time between two scans of the tree. Zero scans on every miss. */
     readonly rescanAfterMs?: number;
+    /** The clock that stamps an image name. Tests set it. */
+    readonly now?: () => Date;
 }
 
 interface IndexEntry {
@@ -106,6 +113,7 @@ async function readHead(file: string): Promise<string> {
 export class FileScenarioStore implements ScenarioStore {
     private readonly root: string;
     private readonly rescanAfterMs: number;
+    private readonly now: () => Date;
     private realRoot: string | undefined;
     private index = new Map<string, IndexEntry>();
     private lastScan = Number.NEGATIVE_INFINITY;
@@ -119,6 +127,7 @@ export class FileScenarioStore implements ScenarioStore {
     constructor(root: string, options: FileStoreOptions = {}) {
         this.root = root;
         this.rescanAfterMs = options.rescanAfterMs ?? 10_000;
+        this.now = options.now ?? (() => new Date());
     }
 
     async list(): Promise<ScenarioSummary[]> {
@@ -158,10 +167,13 @@ export class FileScenarioStore implements ScenarioStore {
         const key = normalise(id);
         const found = await this.resolve(key);
         if (found === null) return null;
+        // The title and the type come from the text just read, because the
+        // index can be a scan old.
+        const head = parseOrg(found.text);
         return {
             id: key,
-            title: found.entry.title,
-            type: found.entry.type,
+            title: head.keywords.get('title') ?? '',
+            type: head.keywords.get('type') ?? null,
             path: found.entry.path,
             text: found.text,
         };
@@ -169,10 +181,9 @@ export class FileScenarioStore implements ScenarioStore {
 
     async record(id: string, input: RunInput): Promise<RecordResult> {
         const key = normalise(id);
-        const entry = this.index.get(key);
-        // Saves to one doc share a queue. A cold index has no path yet, so the
-        // id stands in until the first save has filled the index.
-        const queueKey = entry?.path ?? key;
+        // Saves to one doc share a queue. An id names one indexed path, so the
+        // id is the key from the first save, on a cold index or a warm one.
+        const queueKey = key;
         const previous = this.queues.get(queueKey) ?? Promise.resolve();
         const next = previous.catch(() => undefined).then(() => this.write(key, input));
         this.queues.set(queueKey, next);
@@ -181,6 +192,41 @@ export class FileScenarioStore implements ScenarioStore {
         };
         next.then(clear, clear);
         return next;
+    }
+
+    async saveImage(id: string, step: number, bytes: Uint8Array): Promise<SavedImage> {
+        const key = normalise(id);
+        const found = await this.resolve(key);
+        if (found === null || found.entry.type !== 'test_scenario') {
+            throw new ScenarioNotFoundError(key);
+        }
+        if (bytes.length === 0) throw new InvalidImageError('empty');
+        if (bytes.length > MAX_IMAGE_BYTES) throw new InvalidImageError('too-large');
+        const kind = detectImage(bytes);
+        if (kind === null) throw new InvalidImageError('not-image');
+        const count = parseScenario(found.text).steps.length;
+        if (!Number.isInteger(step) || step < 1 || step > count) {
+            throw new StepNumberError(step, count);
+        }
+
+        const doc = await this.absolute(found.entry.path);
+        const base = basename(doc, '.org').replace(/[^A-Za-z0-9._-]/g, '_');
+        const stamp = this.now()
+            .toISOString()
+            .replace(/\.\d{3}Z$/, '')
+            .replace(/[-:]/g, '')
+            .replace('T', '_');
+        for (let attempt = 0; attempt < 100; attempt += 1) {
+            const suffix = attempt === 0 ? '' : `_${attempt + 1}`;
+            const name = `${base}_step${step}_${stamp}${suffix}.${kind}`;
+            try {
+                await writeFile(join(dirname(doc), name), bytes, { flag: 'wx', mode: 0o644 });
+                return { name };
+            } catch (error) {
+                if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+            }
+        }
+        throw new Error('No free name for the image.');
     }
 
     private async write(key: string, input: RunInput): Promise<RecordResult> {

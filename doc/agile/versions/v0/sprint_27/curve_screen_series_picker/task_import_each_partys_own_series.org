@@ -8,7 +8,7 @@
 #+filetags: :curve_screen_series_picker:sprint_27:v0:
 #+owner: marco
 #+branch: feature/import-each-partys-own-series
-#+pr:
+#+pr: 3149
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3149][#3149]] | [marketdata] Import each party's own series |
 
 * Review
 

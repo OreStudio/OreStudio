@@ -2114,6 +2114,11 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * session already open in it. The system tenant holds the deployment
      * itself, so it is refused here with a reason, and the database refuses it
      * too.
+     *
+     * The deployment read says the caller acts on the deployment; it is not
+     * the permission to remove a tenant. The tenant service checks
+     * `iam::tenants:delete` of its own, so a caller who holds the read and not
+     * that permission is refused there.
      */
     server.delete('/api/tenants/:code', async (request, reply) => {
         const session = requireSession(request);

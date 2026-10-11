@@ -72,3 +72,11 @@ describe('what a screen needs', () => {
         expect(tabsFor(tabs, (needs) => meets(nobody, needs))).toEqual(['details']);
     });
 });
+
+describe('what everything holds', () => {
+    it('does not include the read of the deployment', () => {
+        expect(everything(PERMISSION.partiesRead)).toBe(true);
+        expect(everything(PERMISSION.deploymentRead)).toBe(false);
+        expect(holdsFrom(new Set(['installation::*']))(PERMISSION.deploymentRead)).toBe(true);
+    });
+});

@@ -23,7 +23,7 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Done. Stories 2 and 3 of the arc are in the inbox. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Pull story 2 or story 3 into a sprint. |
 | Last touched  | 2026-10-11                               |

@@ -34,6 +34,10 @@ When an account is locked for too many failed attempts, the sign-in is refused b
 - The refusal is recorded as its own authentication event type, and the Events tab filters for it.
 - The Failed attempts tab shows a count above 5 for an account under attack, drawn in red.
 - The decision on checking the password of a locked account is recorded in the story, with the reason.
+- Every =login_failure= event carries the client address and the account identifier.
+- A lock and an unlock are each recorded as an event, with the account and the person who acted.
+- The history of failed attempts survives an unlock: after one, the Events tab still shows every attempt, and a reader can tell which attempts led to the lock.
+- The retention of raw events and of a per-account, per-address aggregate is decided and written in the story, with the reason.
 - Unit tests in ores.iam cover the count, the address and the event type for a locked account.
 
 * Tasks
@@ -41,6 +45,68 @@ When an account is locked for too many failed attempts, the sign-in is refused b
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 |      |       |       |     |             |
+
+* What happens to the failed-attempt data today
+
+Found while reviewing the Sign-ins screen. A tenant administrator unlocks an
+account in Rescue access, and the history of the attempts that locked it is
+then hard to study. The data lives in two places.
+
+** The login record: current state, no history
+
+=ores_iam_login_info_tbl= holds one row per account, keyed by =account_id=. It
+has no version, no =valid_from= or =valid_to= and no audit tail. Its header says
+so: it is a current-state table.
+
+| Column | What an unlock does to it |
+|--------+---------------------------|
+| =failed_logins= | Set to 0. The size of the run that locked the account is lost |
+| =locked= | Set to false |
+| =last_attempt_ip= | Not changed by the unlock. Each later attempt overwrites it, so only the newest address survives |
+
+Nothing records that the account was locked, when, by which run of attempts, or
+who unlocked it. The Failed attempts tab reads this table, so after an unlock it
+shows 0 and the attacker's last address.
+
+** The authentication event log: the only history
+
+=ores_iam_auth_events_tbl= keeps one row per event, and an unlock does not touch
+it. Each refused sign-in is a =login_failure= row, and a refusal on a locked
+account is one too. Four limits make it a poor base for studying patterns:
+
+- *No source address.* A =login_failure= row stores the time, the tenant, the
+  username and the message. It has no client address and no session. The
+  address of an attempt exists only in =last_attempt_ip=, and only the newest.
+- *No account identifier.* The row sets =account_id= to the empty string. The
+  Events tab joins on the username, which is not a key: a renamed or deleted
+  account, or a username that matches no account, cannot be tied to its history.
+- *A retention window.* On TimescaleDB with the Community licence, raw events
+  are dropped after 90 days. The hourly aggregate is dropped after 90 days and
+  the daily aggregate after 3 years. Under the Apache licence, no hypertable
+  policy or aggregate is created at all.
+- *Aggregates that cannot answer the question.* Both aggregates group by tenant
+  and event type only. They count events, and the daily one counts distinct
+  accounts. After 90 days nothing says which account or which address a failure
+  came from.
+
+** What follows
+
+A pattern such as many accounts tried from one address, one account tried
+slowly over weeks, or a lock that keeps coming back after each unlock cannot be
+found from this data. The fix has three parts, and they belong to this story
+because they share one cause with the locked-account counting.
+
+- Record the client address and the account identifier on every
+  =login_failure=, including a refusal on a locked account.
+- Record a lock and an unlock as events of their own, with who acted, so a run
+  of attempts reads as one episode between a lock and an unlock.
+- Decide how long the raw events and the per-account aggregates are kept, and
+  keep an aggregate per account and address for longer than the raw rows.
+
+A correction to an earlier statement: unlocking an account that is not locked
+does not fail. =unlock_account= returns success and writes nothing. The
+"Something went wrong." seen on that action was the empty-body defect in the
+BFF, fixed in PR #3082.
 
 * Decisions
 

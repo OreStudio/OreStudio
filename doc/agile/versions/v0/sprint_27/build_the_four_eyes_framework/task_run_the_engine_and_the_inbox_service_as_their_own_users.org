@@ -8,7 +8,7 @@
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
 #+branch: feature/run-the-engine-and-the-inbox-service-as-their-own-users
-#+pr:
+#+pr: 3140
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3140][#3140]] | [inbox] Test the inbox and workflow service users |
 
 * Review
 

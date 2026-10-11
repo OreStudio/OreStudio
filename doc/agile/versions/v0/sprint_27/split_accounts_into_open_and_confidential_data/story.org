@@ -79,7 +79,7 @@ A restrictive policy only narrows. Both the tenant policy and the party policy m
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:0909D030-82D9-4BD5-AE4B-DF800D6FA36A][Scaffold story: Split accounts into open and confidential data]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:BE455602-97EE-46BD-9F3A-808E9CA22647][Design the split of accounts and the shared-read pattern]] | STARTED | 2026-10-11 | | Initial task for: Split accounts into open and confidential data |
+| [[id:BE455602-97EE-46BD-9F3A-808E9CA22647][Design the split of accounts and the shared-read pattern]] | DONE | 2026-10-11 | 2026-10-11 | Initial task for: Split accounts into open and confidential data |
 
 * Decisions
 

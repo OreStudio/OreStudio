@@ -26,11 +26,11 @@ Every tenant can read the open data of an account, such as the name, picture and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:ABA133C1-B8F3-4B13-999F-4C03400A8BCB][Split accounts into open and confidential data]] |
-| Now          | Design in review (PR #3115).           |
+| Now          | Nothing. |
 | Waiting on   | Review of the design.                  |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance

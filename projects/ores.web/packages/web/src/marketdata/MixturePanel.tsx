@@ -218,7 +218,7 @@ function MixtureEditor({
                                         <td className="px-3 py-1.5">
                                             <Input
                                                 aria-label={t('refdata.fields.description')}
-                                                className="w-128 truncate"
+                                                className="max-w-128 min-w-128 truncate"
                                                 title={component.description}
                                                 value={component.description}
                                                 readOnly={!may.write}
@@ -231,7 +231,7 @@ function MixtureEditor({
                                         <td className="px-3 py-1.5">
                                             <Select
                                                 aria-label={t('marketdata.process.profile')}
-                                                className="w-32"
+                                                className="max-w-32 min-w-32"
                                                 value={profileOf(component.stdev)}
                                                 disabled={!may.write}
                                                 onChange={(event) => {
@@ -260,7 +260,7 @@ function MixtureEditor({
                                             <td key={field} className="px-3 py-1.5">
                                                 <Input
                                                     aria-label={t(`refdata.fields.${field}`)}
-                                                    className="w-24 text-right font-mono"
+                                                    className="max-w-28 min-w-28 text-right font-mono"
                                                     inputMode="decimal"
                                                     value={component[field]}
                                                     readOnly={!may.write}

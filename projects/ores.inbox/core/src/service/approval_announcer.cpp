@@ -51,13 +51,13 @@ void approval_announcer::tell_asker(const domain::approval_kind& kind,
     try {
         notification_center center(ctx_);
         // A person who acts is an account of the tenant. The service that acts
-        // for a workflow is an account of the system tenant, so the sender is
-        // looked up there when the tenant does not hold it.
+        // for a workflow acts as the service account, an account of the system tenant, so
+        // only then is the sender looked up there. A person missing from their
+        // own tenant is not looked for elsewhere.
         auto sender = center.actor_account_id();
-        if (!sender) {
-            const auto name = ctx_.actor().empty() ? ctx_.service_account() : ctx_.actor();
-            sender = notification_center(
-                         ctx_.with_tenant(ores::utility::uuid::tenant_id::system(), name))
+        if (!sender && (ctx_.actor().empty() || ctx_.actor() == ctx_.service_account())) {
+            sender = notification_center(ctx_.with_tenant(ores::utility::uuid::tenant_id::system(),
+                                                          ctx_.service_account()))
                          .actor_account_id();
         }
         if (!sender) {

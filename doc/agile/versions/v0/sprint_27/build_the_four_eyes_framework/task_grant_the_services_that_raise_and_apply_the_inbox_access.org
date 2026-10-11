@@ -93,7 +93,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The sender fallback also looks for a missing person in the system tenant | approval_announcer.cpp | Accept | The fallback applies only when the context acts as the service account. A person missing from their own tenant is not looked for elsewhere. |
+| 2 | The ores_inbox_approval_ select prefix is wide | service_registry.org | Decline | The triggers of the rows the service writes need the decision, state and policy tables. A table with sensitive content would be named in the registry when it is added. |
+| 3 | The engine and the inbox service users are not run as themselves | tests | Accept | A follow-up task, "Run the engine and the inbox service as their own database users", is filed. |
 
 * Result
 

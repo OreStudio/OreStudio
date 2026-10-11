@@ -44,6 +44,7 @@ domain::node_sample generate_synthetic_node_sample(utility::generation::generati
     r.id = ctx.generate_uuid();
     r.sampled_at = ctx.past_timepoint();
     r.host_id = ctx.generate_uuid();
+    r.machine = std::string(faker::word::noun());
     return r;
 }
 

@@ -73,6 +73,18 @@ When the sample was taken.
 
 The reporting node.
 
+** machine
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The computer the node runs on, by the name it knows itself by. Several nodes
+share one, so this is what tells a computer being down from one node being
+down. Empty when the node did not say.
+
 ** tasks_completed
 :PROPERTIES:
 :type:     integer

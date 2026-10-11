@@ -237,6 +237,105 @@ function RunnerInstance({ node }: { readonly node: GridNodeRow }): ReactNode {
     );
 }
 
+/** One computer: the nodes that report it, and whether any of them is running. */
+interface Machine {
+    readonly name: string;
+    readonly nodes: readonly GridNodeRow[];
+    readonly running: number;
+}
+
+/**
+ * The nodes grouped by the computer they say they run on, in name order.
+ *
+ * A computer is up when one of its nodes is running, which is the runner state
+ * the nodes table already shows. A node that names no machine is grouped under
+ * the empty name, which the panel labels.
+ */
+export function machinesOf(nodes: readonly GridNodeRow[]): readonly Machine[] {
+    const byName = new Map<string, GridNodeRow[]>();
+    for (const node of nodes) {
+        byName.set(node.machine, [...(byName.get(node.machine) ?? []), node]);
+    }
+    return [...byName.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([name, group]) => ({
+            name,
+            nodes: group,
+            running: group.filter((node) => node.state === 'running').length,
+        }));
+}
+
+/** One row per computer, so a computer that has gone down shows at a glance. */
+function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
+    const { t } = useTranslation();
+    const machines = machinesOf(nodes);
+    const up = machines.filter((machine) => machine.running > 0).length;
+    return (
+        <section className="card space-y-4 p-6">
+            <header className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="text-lg font-medium">{t('operations.grid.machines.title')}</h2>
+                <span className="text-xs text-ink-faint">
+                    {t('operations.grid.machines.summary', { up, total: machines.length })}
+                </span>
+            </header>
+            <table className="w-full text-sm">
+                <thead className="text-left text-xs text-ink-faint">
+                    <tr>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.machine')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.status')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.nodes')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.tasksCompleted')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.tasksFailed')}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-line-subtle">
+                    {machines.map((machine) => (
+                        <tr key={machine.name}>
+                            <td className="py-2 font-mono">
+                                {machine.name === ''
+                                    ? t('operations.grid.machines.unnamed')
+                                    : machine.name}
+                            </td>
+                            <td className="py-2">
+                                {machine.running > 0 ? (
+                                    <Tag tone="accent">{t('operations.grid.machines.up')}</Tag>
+                                ) : (
+                                    <Tag tone="warn">{t('operations.grid.machines.down')}</Tag>
+                                )}
+                            </td>
+                            <td className="py-2 font-mono">
+                                {t('operations.grid.machines.nodes', {
+                                    running: machine.running,
+                                    total: machine.nodes.length,
+                                })}
+                            </td>
+                            <td className="py-2 font-mono">
+                                {machine.nodes.reduce((sum, node) => sum + node.tasks_completed, 0)}
+                            </td>
+                            <td className="py-2 font-mono">
+                                {machine.nodes.reduce((sum, node) => sum + node.tasks_failed, 0)}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            {machines.some((machine) => machine.name === '') && (
+                <p className="text-xs text-ink-faint">{t('operations.grid.machines.hint')}</p>
+            )}
+        </section>
+    );
+}
+
 function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
     const { t } = useTranslation();
     const [offset, setOffset] = useState(0);
@@ -460,6 +559,7 @@ export function GridPage(): ReactNode {
                 </section>
             )}
 
+            <MachinesPanel nodes={view.nodes} />
             <NodesPanel nodes={view.nodes} />
 
             <GapPanel gaps={gaps} />

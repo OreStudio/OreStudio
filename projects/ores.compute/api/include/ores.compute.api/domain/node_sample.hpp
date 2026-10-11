@@ -77,6 +77,13 @@ struct node_sample final {
     boost::uuids::uuid host_id;
 
     /**
+     * @brief The computer the node runs on, by the name it knows itself by. Several nodes share
+     * one, so this is what tells a computer being down from one node being down. Empty when the
+     * node did not say.
+     */
+    std::string machine;
+
+    /**
      * @brief Tasks the node finished since its wrapper started.
      */
     int tasks_completed = 0;

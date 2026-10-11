@@ -1474,6 +1474,22 @@ const fr: SourceCatalogue = {
                 noSample:
                     'Aucun échantillon pour l’instant. Le déploiement ne stocke aucun résumé de grille, donc les compteurs ne peuvent pas être dessinés ; le tableau des nœuds ci-dessous tient seul.',
             },
+            machines: {
+                title: 'Machines',
+                summary: '{up} machines sur {total} en marche',
+                columns: {
+                    machine: 'Machine',
+                    status: 'État',
+                    nodes: 'Nœuds',
+                    tasksCompleted: 'Tâches terminées',
+                    tasksFailed: 'Échecs',
+                },
+                up: 'En marche',
+                down: 'Arrêtée',
+                unnamed: 'Machine sans nom',
+                nodes: '{running} sur {total}',
+                hint: 'Les nœuds qui n\'indiquent aucune machine sont regroupés ici.',
+            },
             nodes: {
                 title: 'Nœuds',
                 rows: '{count} lignes',

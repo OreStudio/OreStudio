@@ -238,6 +238,7 @@ function gridNode(overrides: Partial<GridNodeRow> = {}): GridNodeRow {
     return {
         host_id: '9e0f33aa-0000-4000-8000-000000000001',
         host: 'grid-01.example.com',
+        machine: 'rack-a',
         instance_id: '1a90fe12-5b3c-4d6e-8f70-91a2b3c4d5e6',
         state: 'running',
         version: 'v0.0.25',
@@ -844,6 +845,26 @@ describe('the compute grid screen', () => {
         // A node that went quiet keeps its row, and its age is the state.
         expect(html).toContain('grid-05.example.com');
         expect(html).toContain('3 h 12 m');
+    });
+
+    it('lists the computers and marks one down when none of its nodes runs', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/',
+            [],
+            gridView({
+                nodes: [
+                    gridNode({ host_id: 'a1', host: 'a-1', machine: 'rack-a' }),
+                    gridNode({ host_id: 'a2', host: 'a-2', machine: 'rack-a', state: 'lost' }),
+                    gridNode({ host_id: 'b1', host: 'b-1', machine: 'rack-b', state: 'lost' }),
+                ],
+            }),
+        );
+
+        expect(html).toContain('1 of 2 machines up');
+        expect(html).toContain('1 of 2');
+        expect(html).toContain('rack-b');
+        expect(html).toContain('Down');
     });
 
     it('pages the nodes and says how many there are in all', () => {

@@ -55,6 +55,7 @@
 #include <rfl/json.hpp>
 #include <sstream>
 #include <thread>
+#include <unistd.h>
 
 namespace ores::compute::wrapper::app {
 
@@ -69,6 +70,17 @@ constexpr std::string_view service_version = ORES_VERSION;
  */
 std::string to_iso8601(std::chrono::system_clock::time_point tp) {
     return std::format("{:%Y-%m-%dT%H:%M:%SZ}", tp);
+}
+
+/**
+ * @brief The name of the computer the wrapper runs on, empty if it cannot be read.
+ */
+std::string machine_name() {
+    char name[256] = {};
+    if (gethostname(name, sizeof(name) - 1) != 0) {
+        return {};
+    }
+    return name;
 }
 
 /**
@@ -88,6 +100,7 @@ public:
                         std::uint32_t interval_seconds)
         : nats_(nats)
         , host_id_(host_id)
+        , machine_(machine_name())
         , tenant_id_(tenant_id)
         , interval_(interval_seconds) {}
 
@@ -199,6 +212,7 @@ private:
         compute::messaging::node_sample_message msg;
         msg.tenant_id = tenant_id_;
         msg.host_id = host_id_;
+        msg.machine = machine_;
         msg.sampled_at = to_iso8601(std::chrono::system_clock::now());
         msg.tasks_completed = tasks_completed_.load();
         msg.tasks_failed = tasks_failed_.load();
@@ -223,6 +237,7 @@ private:
 
     ores::nats::service::client& nats_;
     std::string host_id_;
+    std::string machine_;
     std::string tenant_id_;
     std::uint32_t interval_;
     std::atomic<bool> stop_{false};
@@ -696,10 +711,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         throw;
     }
 
-    // Idle heartbeat — compute-domain signal; tells the compute service this
-    // worker is alive even when no job is running (subject: compute.v1.ops.heartbeat).
-    heartbeat_sender idle_hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, nullptr);
-
     // Node telemetry reporter — publishes per-node metrics to
     // compute.v1.ops.node_sample at the configured interval.
     std::unique_ptr<node_stats_reporter> reporter;
@@ -708,6 +719,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             nats, cfg.host_id, cfg.tenant_id, cfg.telemetry_interval_seconds);
     }
     node_stats_reporter* raw_reporter = reporter.get();
+
+    // Idle heartbeat — compute-domain signal; tells the compute service this
+    // worker is alive even when no job is running (subject: compute.v1.ops.heartbeat).
+    // It notifies the reporter too, so seconds_since_hb keeps counting from the
+    // last heartbeat of any kind and not from the last one sent during a job.
+    heartbeat_sender idle_hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, raw_reporter);
 
     // Subject routing is per-triplet: the compute orchestrator publishes each
     // assignment on compute.v1.ops.work_assignment.{tenant_id}.{platform_code}

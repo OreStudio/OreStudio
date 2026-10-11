@@ -80,6 +80,18 @@ the reply, so it would be a second command for one read.
  */
 #+end_src
 
+*** machine
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The computer the node runs on, empty when the node did not say.
+ */
+#+end_src
+
 *** tasks_completed
 :PROPERTIES:
 :cpp_type: int
@@ -425,6 +437,18 @@ the reply, so it would be a second command for one read.
 #+begin_src cpp :name comment
 /**
  * @brief The reporting node.
+ */
+#+end_src
+
+*** machine
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The computer the node runs on, empty when the node did not say.
  */
 #+end_src
 

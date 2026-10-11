@@ -1458,6 +1458,22 @@ export const en: SourceCatalogue = {
                 noSample:
                     'No sample yet. The deployment stores no grid summary, so the counters cannot be drawn; the node table below stands alone.',
             },
+            machines: {
+                title: 'Machines',
+                summary: '{up} of {total} machines up',
+                columns: {
+                    machine: 'Machine',
+                    status: 'Status',
+                    nodes: 'Nodes',
+                    tasksCompleted: 'Tasks done',
+                    tasksFailed: 'Failed',
+                },
+                up: 'Up',
+                down: 'Down',
+                unnamed: 'Unnamed machine',
+                nodes: '{running} of {total}',
+                hint: 'Nodes that report no machine are grouped here.',
+            },
             nodes: {
                 title: 'Nodes',
                 rows: '{count} rows',

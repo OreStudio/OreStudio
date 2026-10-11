@@ -233,8 +233,10 @@ TEST_CASE("every rates trade in the corpus comes back as the same family rows", 
     fs::remove_all(scratch);
 
     INFO("rates documents=" << documents << " trades=" << trades);
-    CHECK(documents > 0);
-    CHECK(trades >= documents);
+    // A document that stops importing drops out of the walk, so the corpus
+    // size is pinned: a change to it is a change to this proof.
+    CHECK(documents == 47);
+    CHECK(trades == 70);
     if (differing != known_row_differences())
         FAIL_CHECK("the rates documents whose family rows change on the round trip are not the known ones:" + detail);
 }

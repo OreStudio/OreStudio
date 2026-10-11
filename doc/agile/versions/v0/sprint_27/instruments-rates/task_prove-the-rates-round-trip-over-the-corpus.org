@@ -107,6 +107,11 @@ via its "Verifies task" field.
 | 2 | The nine fact-table eventing tests wrote with no session party | the nine fact models | accept | Each model declares =party_scoped_writes=; the tests are regenerated. |
 | 3 | The rate instrument generator drew start and maturity independently | ores.trading.rate_instruments.org | accept | =generator_expr= makes the maturity the start plus 365 days. |
 | 4 | The flexi header declared an unused =<optional>= | ores.trading.flexi_swap_instrument.org | accept | Removed from the model; the header is regenerated. |
+| 5 | A rates document that stops importing drops out of the walk unnoticed | xml_rates_corpus_roundtrip_tests.cpp | accept | The test pins 47 documents and 70 trades. |
+| 6 | =day_counter_count= is a magic number | swap_instrument_mapper.cpp | decline | It follows the neighbouring =*_count= constants, and the enum has no size sentinel. |
+| 7 | =parse_code= falls back silently on an unknown code | swap_instrument_mapper.cpp | decline | The pattern existed before this task; the corpus test catches a document that hits it. |
+| 8 | =REQUIRE= in the loop leaves the scratch directory on failure | xml_rates_corpus_roundtrip_tests.cpp | decline | The next run clears the directory first. |
+| 9 | Confirm CI initialises =external/ore= | xml_rates_corpus_roundtrip_tests.cpp | decline | The path is vendored in the repository, and CI does not run the tests. |
 
 * Result
 

@@ -115,8 +115,16 @@ export function eventSubject(component: string, entity: string): string {
     return `${component}.v1.${entity}_events.>`;
 }
 
+/** The part of a logger the registry writes through: a record of facts and a message. */
+export interface EventLog {
+    debug(fields: Record<string, unknown>, message: string): void;
+}
+
+const SILENT: EventLog = { debug: () => undefined };
+
 export class ChangeEventRegistry {
     readonly #client: OresClient;
+    readonly #log: EventLog;
     /** Entity to the sessions listening and the way to stop the subscription. */
     readonly #shared = new Map<
         string,
@@ -130,8 +138,9 @@ export class ChangeEventRegistry {
     /** How to reach a session, registered once when its stream opens. */
     readonly #listeners = new Map<string, ChangeListener>();
 
-    constructor(client: OresClient) {
+    constructor(client: OresClient, log: EventLog = SILENT) {
         this.#client = client;
+        this.#log = log;
     }
 
     /**
@@ -154,7 +163,10 @@ export class ChangeEventRegistry {
      * misses the change that arrives during the gap.
      */
     watch(sessionId: string, audience: Audience, watches: readonly Watch[]): void {
-        if (!this.#listeners.has(sessionId)) return;
+        if (!this.#listeners.has(sessionId)) {
+            this.#log.debug({ session_id: sessionId }, 'session watch ignored, no stream attached');
+            return;
+        }
         // A name with a wildcard in it would listen to more than was asked for, and
         // the names arrive from the browser, so only plain names are watched.
         watches = watches.filter(isWatchable);
@@ -170,6 +182,15 @@ export class ChangeEventRegistry {
             this.#acquire(watch, sessionId, audience);
         }
         this.#watching.set(sessionId, { audience, watches });
+        this.#log.debug(
+            {
+                session_id: sessionId,
+                tenant_id: audience.tenantId,
+                every_party: audience.everyParty,
+                watches: watches.map((w) => `${w.component}.${w.entity}`).join(','),
+            },
+            'session watch declared',
+        );
     }
 
     /** Forgets a session, dropping whatever only it was watching. */
@@ -200,10 +221,33 @@ export class ChangeEventRegistry {
                         entity: watch.entity,
                         at: change.at,
                     };
+                    let passed = 0;
+                    let refused = 0;
                     for (const heard of listeners.values()) {
-                        if (mayHear(heard.audience, change)) heard.listener(event);
+                        if (mayHear(heard.audience, change)) {
+                            heard.listener(event);
+                            passed += 1;
+                        } else {
+                            refused += 1;
+                        }
                     }
+                    this.#log.debug(
+                        {
+                            component: watch.component,
+                            entity: watch.entity,
+                            tenant_id: change.tenantId,
+                            party_id: change.partyId,
+                            occurred_at: change.at,
+                            passed,
+                            refused,
+                        },
+                        'change event received',
+                    );
                 },
+            );
+            this.#log.debug(
+                { component: watch.component, entity: watch.entity },
+                'change subscription opened',
             );
             entry = { listeners, stop };
             this.#shared.set(key, entry);
@@ -224,6 +268,10 @@ export class ChangeEventRegistry {
         if (entry.listeners.size === 0) {
             entry.stop();
             this.#shared.delete(key);
+            this.#log.debug(
+                { component: watch.component, entity: watch.entity },
+                'change subscription closed',
+            );
         }
     }
 

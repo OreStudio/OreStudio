@@ -99,6 +99,42 @@ describe('the change registry', () => {
         expect(heard).toEqual(['accounts@2026-10-10T12:00:03Z']);
     });
 
+    it('logs each event it receives, with whom it was passed to and whom it was refused', () => {
+        const { client, open } = fakeClient();
+        const lines: { fields: Record<string, unknown>; message: string }[] = [];
+        const registry = new ChangeEventRegistry(client, {
+            debug: (fields, message) => lines.push({ fields, message }),
+        });
+        registry.attach('s1', () => undefined);
+        registry.attach('s2', () => undefined);
+        const watch = [{ component: 'iam', entity: 'accounts' }];
+        registry.watch('s1', audience({ tenantId: 't1' }), watch);
+        registry.watch('s2', audience({ tenantId: 't2' }), watch);
+        open.get('iam.v1.accounts_events.>')?.(change('t1', undefined, 'first'));
+
+        const received = lines.find((line) => line.message === 'change event received');
+        expect(received?.fields).toMatchObject({
+            component: 'iam',
+            entity: 'accounts',
+            tenant_id: 't1',
+            occurred_at: 'first',
+            passed: 1,
+            refused: 1,
+        });
+        expect(lines.map((line) => line.message)).toContain('change subscription opened');
+        expect(lines.map((line) => line.message)).toContain('session watch declared');
+    });
+
+    it('logs a watch it ignores because no stream is attached yet', () => {
+        const { client } = fakeClient();
+        const lines: string[] = [];
+        const registry = new ChangeEventRegistry(client, {
+            debug: (_fields, message) => lines.push(message),
+        });
+        registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
+        expect(lines).toEqual(['session watch ignored, no stream attached']);
+    });
+
     it('tells a session nothing of another tenant, though the broker delivered it', () => {
         const { client, open } = fakeClient();
         const registry = new ChangeEventRegistry(client);

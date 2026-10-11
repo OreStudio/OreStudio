@@ -2818,7 +2818,10 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             });
         }
     })();
-    const events = new ChangeEventRegistry(eventClient.client);
+    const events = new ChangeEventRegistry(
+        eventClient.client,
+        server.log.child({ name: 'ores.web.bff.events' }),
+    );
 
     server.get('/api/events', async (request, reply) => {
         const session = requireSession(request);

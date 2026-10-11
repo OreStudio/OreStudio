@@ -31,6 +31,7 @@
 #include "ores.refdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
@@ -38,6 +39,19 @@
 #include <vector>
 
 namespace ores::refdata::repository {
+
+/**
+ * @brief One version of a party counterparty, with the end of its validity.
+ *
+ * A link is closed by ending its validity, not by deleting the row, so a closed
+ * link is a row whose end is in the past. @c closed_at is set on a version that
+ * ended because the link was closed, and empty on a version that a later
+ * version replaced and on a link that is open. It is the only thing the domain
+ * type does not carry, so the history inherits the type and adds it.
+ */
+struct party_counterparty_history_row : domain::party_counterparty {
+    std::optional<std::chrono::system_clock::time_point> closed_at;
+};
 
 /**
  * @brief Reads and writes party counterparties to data storage.
@@ -136,6 +150,16 @@ public:
      */
     std::uint32_t
     get_total_party_counterparty_count_by_counterparty(const boost::uuids::uuid& counterparty_id);
+
+    /**
+     * @brief Reads every version of every party counterparty of one party.
+     *
+     * Closed links are included. The rows are grouped by counterparty
+     * and run newest first within a group, so a caller numbers and diffs the
+     * versions of one link by walking a group.
+     */
+    std::vector<party_counterparty_history_row>
+    read_all_by_party(const boost::uuids::uuid& party_id);
 
     /**
      * @brief Deletes a party counterparty by its pair of keys.

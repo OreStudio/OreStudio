@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/party_currency.hpp"
 #include "ores.refdata.api/domain/party_currency_json_io.hpp" // IWYU pragma: keep.
@@ -329,6 +330,46 @@ std::uint32_t party_currency_repository::get_total_party_currency_count_by_curre
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active party currencies count by currency: " << count;
     return count;
+}
+
+std::vector<party_currency_history_row>
+party_currency_repository::read_all_by_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the party currencies. Party: "
+                               << party_id;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_currency_entity>> |
+                       where("tenant_id"_c == tid && "party_id"_c == party_id_str) |
+                       order_by("currency_iso_code"_c, "valid_from"_c.desc());
+
+    return execute_read_query<party_currency_entity, party_currency_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<party_currency_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                party_currency_history_row row;
+                static_cast<domain::party_currency&>(row) = party_currency_mapper::map(entity);
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced = !rows.empty() &&
+                                      rows.back().currency_iso_code == row.currency_iso_code &&
+                                      rows.back().version == row.version + 1;
+                if (entity.valid_to.value() != max.value() && !replaced)
+                    row.closed_at = timestamp_to_timepoint(entity.valid_to);
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the party currencies by party.");
 }
 
 void party_currency_repository::remove(const boost::uuids::uuid& party_id,

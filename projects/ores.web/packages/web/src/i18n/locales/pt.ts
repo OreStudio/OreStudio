@@ -2035,6 +2035,7 @@ const pt: SourceCatalogue = {
             told: 'Notificado',
             decided: 'Respondido',
             granted: 'Concedido',
+            closed: 'Encerrado',
             signed_in: 'Sessão iniciada',
             sign_in_failed: 'Sessão recusada',
             signed_out: 'Sessão terminada',
@@ -2046,13 +2047,13 @@ const pt: SourceCatalogue = {
         gaps: 'O que este histórico não pode mostrar',
         gapFor: {
             party_country:
-                'Os países em que opera não têm versões, por isso não se mostra quando um é adicionado ou removido.',
+                'Os países em que opera não puderam ser lidos, por isso não se mostra quando um é adicionado ou removido.',
             party_currency:
-                'As moedas em que opera não têm versões, por isso não se mostra quando uma é adicionada ou removida.',
+                'As moedas em que opera não puderam ser lidas, por isso não se mostra quando uma é adicionada ou removida.',
             party_counterparty:
-                'As contrapartes com que pode negociar não têm versões, por isso não se mostra quando uma é adicionada ou removida.',
+                'As contrapartes com que pode negociar não puderam ser lidas, por isso não se mostra quando uma é adicionada ou removida.',
             account_party:
-                'As partes em que uma pessoa trabalha não têm versões, por isso não se mostra quando entra ou sai de uma.',
+                'As partes em que uma pessoa trabalha não puderam ser lidas, por isso não se mostra quando entra ou sai de uma.',
             account_role:
                 'Um papel que foi retirado não se mostra, apenas os papéis detidos agora.',
             auth_event:
@@ -3275,6 +3276,9 @@ const pt: SourceCatalogue = {
                 identifier: 'Identificador',
                 contact: 'Contacto',
                 unit: 'Unidade de negócio',
+                country: 'País',
+                currency: 'Moeda',
+                counterparty: 'Contraparte',
             },
         },
     },

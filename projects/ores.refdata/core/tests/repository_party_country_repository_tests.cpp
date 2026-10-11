@@ -24,6 +24,10 @@
 #include "ores.refdata.api/domain/party_country.hpp"
 #include "ores.refdata.api/domain/party_country_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/country_generator.hpp"
+#include "ores.history.api/messaging/history_protocol.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.core/messaging/party_country_history_provider_registrar.hpp"
+#include "ores.refdata.core/presentation/party_country_history_field_mapper.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
 #include "ores.refdata.core/repository/party_country_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
@@ -61,7 +65,7 @@ const std::string tags("[repository][party_country]");
 // Each test uses a different slice of the fictional countries list
 // to avoid interfering with records written by other tests in the
 // same shared tenant database.
-constexpr std::size_t total_slots = 10;
+constexpr std::size_t total_slots = 12;
 
 boost::uuids::uuid find_system_party_id(party_repository& repo,
                                         ores::database::context ctx,
@@ -284,4 +288,112 @@ TEST_CASE("read_nonexistent_party_country", tags) {
     REQUIRE(keeper_rows.size() == 1);
     CHECK(keeper_rows[0].country_alpha2_code == keeper.country_alpha2_code);
     CHECK(keeper_rows[0].change_commentary == keeper.change_commentary);
+}
+
+TEST_CASE("a_closed_party_country_is_in_its_history_with_the_time_it_ended", tags) {
+    scoped_database_helper h;
+
+    party_repository party_repo;
+    country_repository cty_repo;
+
+    const auto party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
+    h.set_party(party_id);
+    party_country_repository repo(h.context());
+
+    auto gctx = ores::testing::make_generation_context(h);
+    auto all = generate_fictional_countries(total_slots, gctx);
+    cty_repo.write(h.context(), {all[8], all[9]});
+
+    repo.write(make_party_country(h, party_id, all[8].alpha2_code));
+    repo.write(make_party_country(h, party_id, all[9].alpha2_code));
+    repo.remove(party_id, all[8].alpha2_code);
+
+    // The live reads no longer return the closed link; the history does.
+    CHECK(repo.read_latest(party_id, all[8].alpha2_code).empty());
+    const auto history = repo.read_all_by_party(party_id);
+
+    const auto closed = std::ranges::find_if(history, [&](const auto& row) {
+        return row.country_alpha2_code == all[8].alpha2_code;
+    });
+    REQUIRE(closed != history.end());
+    CHECK(closed->closed_at.has_value());
+
+    const auto open = std::ranges::find_if(history, [&](const auto& row) {
+        return row.country_alpha2_code == all[9].alpha2_code;
+    });
+    REQUIRE(open != history.end());
+    CHECK_FALSE(open->closed_at.has_value());
+}
+
+TEST_CASE("a_party_country_history_reads_only_its_own_party", tags) {
+    scoped_database_helper h;
+
+    party_repository party_repo;
+    country_repository cty_repo;
+
+    const auto party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
+    h.set_party(party_id);
+    party_country_repository repo(h.context());
+
+    auto gctx = ores::testing::make_generation_context(h);
+    auto all = generate_fictional_countries(total_slots, gctx);
+    cty_repo.write(h.context(), {all[10]});
+    repo.write(make_party_country(h, party_id, all[10].alpha2_code));
+
+    boost::uuids::random_generator generate;
+    CHECK(repo.read_all_by_party(generate()).empty());
+}
+
+TEST_CASE("the_party_country_history_provider_numbers_each_link_on_its_own", tags) {
+    scoped_database_helper h;
+
+    party_repository party_repo;
+    country_repository cty_repo;
+
+    const auto party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
+    h.set_party(party_id);
+    party_country_repository repo(h.context());
+
+    auto gctx = ores::testing::make_generation_context(h);
+    auto all = generate_fictional_countries(total_slots, gctx);
+    cty_repo.write(h.context(), {all[11]});
+
+    // Open the link, replace it once, and close it: two versions of one link.
+    auto link = make_party_country(h, party_id, all[11].alpha2_code);
+    repo.write(link);
+    link.version = repo.read_latest(party_id, all[11].alpha2_code).front().version;
+    link.change_commentary = "Changed once";
+    repo.write(link);
+    repo.remove(party_id, all[11].alpha2_code);
+
+    ores::history::service::dispatch_registry registry;
+    ores::refdata::messaging::register_party_country_history_provider(registry);
+    REQUIRE(registry.has_provider("ores.refdata.party_country"));
+
+    ores::history::messaging::get_entity_history_request request;
+    request.entity_type = "ores.refdata.party_country";
+    request.entity_id = boost::uuids::to_string(party_id);
+    const auto response = registry.dispatch(request, h.context().with_roles({"refdata::party_countries:read"}));
+    REQUIRE(response.success);
+
+    // Only this link's versions: the others of the party are numbered apart.
+    std::vector<ores::history::messaging::entity_history_version> own;
+    const std::string wanted = boost::uuids::to_string(party_id) + "/" + all[11].alpha2_code;
+    for (const auto& version : response.versions) {
+        const auto id = std::ranges::find_if(
+            version.fields, [](const auto& f) { return f.name == "ID"; });
+        if (id != version.fields.end() && id->value == wanted)
+            own.push_back(version);
+    }
+    REQUIRE(own.size() == 2);
+    CHECK(own[0].version == 2);
+    CHECK(own[1].version == 1);
+
+    const auto closed_at = [](const auto& version) {
+        return std::ranges::find_if(version.fields, [](const auto& f) {
+                   return f.name == "Closed At";
+               })->value;
+    };
+    CHECK_FALSE(closed_at(own[0]).empty());
+    CHECK(closed_at(own[1]).empty());
 }

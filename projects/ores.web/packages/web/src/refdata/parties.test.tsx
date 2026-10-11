@@ -244,6 +244,34 @@ describe('a party page', () => {
                     ],
                 },
                 {
+                    entityType: 'ores.refdata.party_currency',
+                    entityId: '44444444-4444-4444-8444-444444444444/GBP',
+                    kind: 'closed',
+                    at: '2026-10-04 12:00:00Z',
+                    actor: '',
+                    version: 1,
+                    reasonCode: '',
+                    commentary: '',
+                    fields: [
+                        { name: 'ID', value: '44444444-4444-4444-8444-444444444444/GBP' },
+                        { name: 'Currency', value: 'GBP' },
+                    ],
+                },
+                {
+                    entityType: 'ores.refdata.party_currency',
+                    entityId: '44444444-4444-4444-8444-444444444444/GBP',
+                    kind: 'raised',
+                    at: '2026-10-04 11:00:00Z',
+                    actor: 'priya',
+                    version: 1,
+                    reasonCode: 'system.new_record',
+                    commentary: '',
+                    fields: [
+                        { name: 'ID', value: '44444444-4444-4444-8444-444444444444/GBP' },
+                        { name: 'Currency', value: 'GBP' },
+                    ],
+                },
+                {
                     entityType: 'ores.refdata.party_identifier',
                     entityId: '33333333-3333-4333-8333-333333333333',
                     kind: 'raised',
@@ -272,7 +300,7 @@ describe('a party page', () => {
             gaps: [
                 {
                     entity: 'ores.refdata.party_country',
-                    reason: 'The countries it works in are a junction with no versions.',
+                    reason: 'The countries it works in could not be read.',
                 },
                 {
                     entity: 'ores.refdata.party_identifier',
@@ -294,12 +322,20 @@ describe('a party page', () => {
             expect(words).toContain('Fixed the name');
         });
 
+        it('draws a link the party held by its currency, with its opening and its closing', () => {
+            const words = textOf(history(['refdata::parties:read']));
+
+            expect(words).toContain('Currency GBP');
+            expect(words).toContain('Closed');
+            expect(words).toContain('Created');
+        });
+
         it('states what the history cannot show, in words', () => {
             const words = textOf(history(['refdata::parties:read']));
 
             expect(words).toContain('What this history cannot show');
             expect(words).toContain(
-                'The countries it works in keep no versions, so adding or removing one is not shown.',
+                'The countries it works in could not be read, so adding or removing one is not shown.',
             );
             expect(words).toContain('Part of this history could not be read, so it is not shown.');
             expect(words).not.toContain('junction');

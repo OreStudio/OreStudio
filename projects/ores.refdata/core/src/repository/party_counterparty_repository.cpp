@@ -26,6 +26,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/party_counterparty.hpp"
 #include "ores.refdata.api/domain/party_counterparty_json_io.hpp" // IWYU pragma: keep.
@@ -360,6 +361,47 @@ std::uint32_t party_counterparty_repository::get_total_party_counterparty_count_
     BOOST_LOG_SEV(lg(), debug) << "Total active party counterparties count by counterparty: "
                                << count;
     return count;
+}
+
+std::vector<party_counterparty_history_row>
+party_counterparty_repository::read_all_by_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the party counterparties. Party: "
+                               << party_id;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
+                       where("tenant_id"_c == tid && "party_id"_c == party_id_str) |
+                       order_by("counterparty_id"_c, "valid_from"_c.desc());
+
+    return execute_read_query<party_counterparty_entity, party_counterparty_history_row>(
+        ctx_,
+        query,
+        [](const auto& entities) {
+            std::vector<party_counterparty_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                party_counterparty_history_row row;
+                static_cast<domain::party_counterparty&>(row) =
+                    party_counterparty_mapper::map(entity);
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced = !rows.empty() &&
+                                      rows.back().counterparty_id == row.counterparty_id &&
+                                      rows.back().version == row.version + 1;
+                if (entity.valid_to.value() != max.value() && !replaced)
+                    row.closed_at = timestamp_to_timepoint(entity.valid_to);
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(),
+        "Reading every version of the party counterparties by party.");
 }
 
 void party_counterparty_repository::remove(const boost::uuids::uuid& party_id,

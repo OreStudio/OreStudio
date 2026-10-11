@@ -4,7 +4,7 @@
 #+title: ores.cpp.history-provider-registrar
 #+description: Per-entity history-provider registrar pair registering an entity's history provider into the ores.history dispatch registry.
 #+type: facet
-#+model_types: domain_entity
+#+model_types: domain_entity junction
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

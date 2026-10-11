@@ -2044,6 +2044,7 @@ const fr: SourceCatalogue = {
             told: 'Notifié',
             decided: 'Répondu',
             granted: 'Accordé',
+            closed: 'Fermé',
             signed_in: 'Connexion',
             sign_in_failed: 'Connexion refusée',
             signed_out: 'Déconnexion',
@@ -2055,13 +2056,13 @@ const fr: SourceCatalogue = {
         gaps: 'Ce que cet historique ne peut pas montrer',
         gapFor: {
             party_country:
-                'Les pays où elle opère n’ont pas de versions, donc l’ajout ou le retrait d’un pays n’apparaît pas.',
+                'Les pays où elle opère n’ont pas pu être lus, donc l’ajout ou le retrait d’un pays n’apparaît pas.',
             party_currency:
-                'Les devises dans lesquelles elle opère n’ont pas de versions, donc l’ajout ou le retrait d’une devise n’apparaît pas.',
+                'Les devises dans lesquelles elle opère n’ont pas pu être lues, donc l’ajout ou le retrait d’une devise n’apparaît pas.',
             party_counterparty:
-                'Les contreparties avec lesquelles elle peut traiter n’ont pas de versions, donc l’ajout ou le retrait d’une contrepartie n’apparaît pas.',
+                'Les contreparties avec lesquelles elle peut traiter n’ont pas pu être lues, donc l’ajout ou le retrait d’une contrepartie n’apparaît pas.',
             account_party:
-                'Les parties où une personne travaille n’ont pas de versions, donc l’arrivée ou le départ n’apparaît pas.',
+                'Les parties où une personne travaille n’ont pas pu être lues, donc l’arrivée ou le départ n’apparaît pas.',
             account_role:
                 'Un rôle retiré n’apparaît pas, seuls les rôles détenus aujourd’hui apparaissent.',
             auth_event:
@@ -3298,6 +3299,9 @@ const fr: SourceCatalogue = {
                 identifier: 'Identifiant',
                 contact: 'Contact',
                 unit: 'Unité d’affaires',
+                country: 'Pays',
+                currency: 'Devise',
+                counterparty: 'Contrepartie',
             },
         },
     },

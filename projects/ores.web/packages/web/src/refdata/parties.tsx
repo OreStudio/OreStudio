@@ -337,6 +337,9 @@ const RECORD_KEYS: Readonly<Record<string, { readonly name: string; readonly fie
     'ores.refdata.party_identifier': { name: 'identifier', field: 'ID Value' },
     'ores.refdata.party_contact_information': { name: 'contact', field: 'Contact Type' },
     'ores.refdata.business_unit': { name: 'unit', field: 'Unit Name' },
+    'ores.refdata.party_country': { name: 'country', field: 'Country' },
+    'ores.refdata.party_currency': { name: 'currency', field: 'Currency' },
+    'ores.refdata.party_counterparty': { name: 'counterparty', field: 'Counterparty' },
 };
 
 /** A timeline entry as the version the revert dialog names. */

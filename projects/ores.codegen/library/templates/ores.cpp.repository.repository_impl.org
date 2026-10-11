@@ -936,6 +936,9 @@ std::vector<ores::utility::domain::hierarchy_flat_row>
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+{{#history}}
+#include "ores.database/repository/mapper_helpers.hpp"
+{{/history}}
 #include "ores.logging/boost_severity.hpp"
 #include "ores.{{component_include}}/domain/{{name_singular}}_json_io.hpp" // IWYU pragma: keep.
 #include "ores.{{component_core}}/repository/{{name_singular}}_entity.hpp"
@@ -1537,6 +1540,55 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
     BOOST_LOG_SEV(lg(), debug) << "Total active {{name_words}} count by {{right.column_short}}: " << count;
     return count;
 }
+{{#history}}
+
+std::vector<{{name_singular}}_history_row>
+{{name_singular}}_repository::read_all_by_{{history_parent.column_short}}(
+    const {{history_parent.cpp_type}}& {{history_parent.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the {{name_words}}. {{history_parent.column_title}}: "
+                               << {{history_parent.column}};
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#history_parent.query_needs_str}}
+    const auto {{history_parent.column}}_str = {{#history_parent.is_uuid}}boost::uuids::to_string({{history_parent.column}}){{/history_parent.is_uuid}}{{#history_parent.is_date}}ores::platform::time::datetime::to_iso8601_date({{history_parent.column}}){{/history_parent.is_date}}{{#history_parent.is_timestamp}}ores::platform::time::datetime::to_iso8601({{history_parent.column}}){{/history_parent.is_timestamp}};
+{{/history_parent.query_needs_str}}
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where({{{tenant_where}}} && "{{history_parent.column}}"_c == {{history_parent.column}}{{#history_parent.query_needs_str}}_str{{/history_parent.query_needs_str}}) |
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("{{history_parent.column}}"_c == {{history_parent.column}}{{#history_parent.query_needs_str}}_str{{/history_parent.query_needs_str}}) |
+{{/has_tenant_id}}
+        order_by("{{history_child.column}}"_c, "valid_from"_c.desc());
+
+    return execute_read_query<{{name_singular}}_entity, {{name_singular}}_history_row>(
+        ctx_, query,
+        [](const auto& entities) {
+            std::vector<{{name_singular}}_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                {{name_singular}}_history_row row;
+                static_cast<domain::{{name_singular}}&>(row) = {{name_singular}}_mapper::map(entity);
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced =
+                    !rows.empty() && rows.back().{{history_child.column}} == row.{{history_child.column}} &&
+                    rows.back().version == row.version + 1;
+                if (entity.valid_to.value() != max.value() && !replaced)
+                    row.closed_at = timestamp_to_timepoint(entity.valid_to);
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(), "Reading every version of the {{name_words}} by {{history_parent.column_short}}.");
+}
+{{/history}}
 
 {{^read_only}}
 void {{name_singular}}_repository::remove(

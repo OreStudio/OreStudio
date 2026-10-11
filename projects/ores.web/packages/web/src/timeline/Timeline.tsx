@@ -221,6 +221,7 @@ const KIND_COLOUR: Readonly<Record<string, string>> = {
     signed_out: 'bg-ink-faint',
     locked: 'bg-warn',
     unlocked: 'bg-up',
+    closed: 'bg-warn',
 };
 
 function colourOf(kind: string): string {
@@ -462,7 +463,7 @@ function shortId(id: string): string {
  */
 export function kindTone(kind: string): 'accent' | 'up' | 'warn' | 'down' | 'muted' | 'neutral' {
     if (kind === 'granted' || kind === 'unlocked') return 'up';
-    if (kind === 'locked') return 'warn';
+    if (kind === 'locked' || kind === 'closed') return 'warn';
     if (kind === 'sign_in_failed') return 'down';
     if (kind === 'decided') return 'warn';
     if (kind === 'changed' || kind === 'raised' || kind === 'asked') return 'accent';

@@ -76,9 +76,9 @@ fx_mixture convert_fx_mixture(const fx_mixture& mixture,
             return out;
         out.means.push_back(0.0);
         out.stdevs.push_back(out_of_price(in_price(mixture.stdevs.front())));
-        out.weights.push_back(to_process_type == ornstein_uhlenbeck
-                                  ? kappa_for_half_life(default_half_life_minutes, ticks_per_hour)
-                                  : 1.0);
+        out.weights.push_back(to_process_type == ornstein_uhlenbeck ?
+                                  kappa_for_half_life(default_half_life_minutes, ticks_per_hour) :
+                                  1.0);
         return out;
     }
 

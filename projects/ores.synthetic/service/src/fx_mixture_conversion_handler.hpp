@@ -90,14 +90,12 @@ public:
         }
 
         try {
-            const auto out =
-                ores::synthetic::feed::convert_fx_mixture({.means = req->gmm_means,
-                                                           .stdevs = req->gmm_stdevs,
-                                                           .weights = req->gmm_weights},
-                                                          req->from_process_type,
-                                                          req->to_process_type,
-                                                          req->initial_price,
-                                                          req->ticks_per_hour);
+            const auto out = ores::synthetic::feed::convert_fx_mixture(
+                {.means = req->gmm_means, .stdevs = req->gmm_stdevs, .weights = req->gmm_weights},
+                req->from_process_type,
+                req->to_process_type,
+                req->initial_price,
+                req->ticks_per_hour);
             resp.gmm_means = out.means;
             resp.gmm_stdevs = out.stdevs;
             // Under the Ornstein-Uhlenbeck engine the one weight is κ, the

@@ -1196,6 +1196,7 @@ extern const xsdcpp::ElementInfo _swaptionStraddleData_LongShort_t_Info;
 extern const xsdcpp::ElementInfo _varianceSwapData_Info;
 extern const xsdcpp::ElementInfo _varianceSwapData_LongShort_t_Info;
 extern const xsdcpp::ElementInfo _forwardRateAgreementData_Info;
+extern const xsdcpp::ElementInfo _moneyFloat_Info;
 extern const xsdcpp::ElementInfo _forwardRateAgreementData_Index_t_Info;
 extern const xsdcpp::ElementInfo _fxForwardData_Info;
 extern const xsdcpp::ElementInfo _fxForwardSettlementData_Info;
@@ -4447,6 +4448,11 @@ void _set_stFreeStyleIndex(domain::stFreeStyleIndex* obj,
                            std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_moneyFloat(domain::moneyFloat* obj, const xsdcpp::Position& pos, std::string&& val) {
+    float& base = *obj;
+    xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
 }
 void _set_stFreeStyleNumber(domain::stFreeStyleNumber* obj,
                             const xsdcpp::Position& pos,
@@ -20452,13 +20458,13 @@ xsdcpp::ChildElementInfo _forwardRateAgreementData_Children[] = {
     {"Strike",
      5,
      (xsdcpp::get_field_t)&_get_forwardRateAgreementData_Strike,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"Notional",
      6,
      (xsdcpp::get_field_t)&_get_forwardRateAgreementData_Notional,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {nullptr}};
@@ -62044,6 +62050,7 @@ void _serialize_amortizationType(xsdcpp::XmlWriter& w,
                                  const char* name,
                                  const domain::amortizationType& v);
 void _serialize_float(xsdcpp::XmlWriter& w, const char* name, float v);
+void _serialize_moneyFloat(xsdcpp::XmlWriter& w, const char* name, const domain::moneyFloat& v);
 void _serialize_amortizationData_StartDate_t(xsdcpp::XmlWriter& w,
                                              const char* name,
                                              const domain::amortizationData_StartDate_t& v);
@@ -68224,6 +68231,13 @@ XSDCPP_MAYBE_UNUSED void _serialize_float(xsdcpp::XmlWriter& w, const char* name
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void
+_serialize_moneyFloat(xsdcpp::XmlWriter& w, const char* name, const domain::moneyFloat& v) {
+    w.startElement(name);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_amortizationData_StartDate_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::amortizationData_StartDate_t& v) {
     w.startElement(name);
@@ -70510,8 +70524,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_forwardRateAgreementData(
     _serialize_currencyCode(w, "Currency", v.Currency);
     _serialize_forwardRateAgreementData_Index_t(w, "Index", v.Index);
     _serialize_longShort(w, "LongShort", v.LongShort);
-    _serialize_float(w, "Strike", v.Strike);
-    _serialize_float(w, "Notional", v.Notional);
+    _serialize_moneyFloat(w, "Strike", v.Strike);
+    _serialize_moneyFloat(w, "Notional", v.Notional);
     w.endElement(name);
 }
 
@@ -93298,6 +93312,8 @@ const xsdcpp::ElementInfo _stFreeStyleEventSchedule_Info = {
     &domain::_stFreeStyleEventScheduleBase_Info,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _moneyFloat_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_moneyFloat};
 const xsdcpp::ElementInfo _stFreeStyleNumber_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_stFreeStyleNumber,

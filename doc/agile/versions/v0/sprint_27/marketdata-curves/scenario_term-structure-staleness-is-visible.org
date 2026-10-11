@@ -8,9 +8,9 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+target_dialog:
 #+created: 2026-10-08
-#+updated: 2026-10-08
+#+updated: 2026-10-11
 #+environment: prime_origin
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 #+startup: inlineimages
 
 This page documents a test scenario verifying [[id:EAE01E59-19F7-4DF0-9944-EC22183FE03E][Show how stale each point of a term structure is]] in [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
@@ -38,7 +38,7 @@ This page documents a test scenario verifying [[id:EAE01E59-19F7-4DF0-9944-EC221
 | Parent story  | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]]   |
 | Target screen | None yet — the read behind the evolution view, =marketdata.v1.curve_snapshot.get= |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Steps
 
@@ -110,3 +110,6 @@ This page documents a test scenario verifying [[id:EAE01E59-19F7-4DF0-9944-EC221
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: it will not be run. A retest brings it back.
+

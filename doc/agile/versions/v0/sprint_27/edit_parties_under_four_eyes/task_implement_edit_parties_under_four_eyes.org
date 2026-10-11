@@ -8,7 +8,7 @@
 #+filetags: :edit_parties_under_four_eyes:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-edit-parties-under-four-eyes
-#+pr:
+#+pr: 3096
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3096][#3096]] | [web] Edit a party on a standard entity page |
 
 * Review
 

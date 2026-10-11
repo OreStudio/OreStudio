@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import type { ServiceRosterRow, SessionView } from '@ores/wire-protocol/browser';
 import type { GridNodeRow, GridSeriesView, GridView } from '@ores/wire-protocol/browser';
 import type { BusView } from '@ores/wire-protocol/browser';
@@ -71,11 +71,14 @@ import {
 } from './LogsPage.js';
 import {
     GRID_SERIES_QUERY_KEY,
-    GridSeriesSection,
+    GridLoadTab,
+    GridNodeLoad,
+    heatmapRow,
     changeOf,
     hasAnySample,
     throughputSeries,
 } from './GridSeries.js';
+import { GridNodePage, nodeColumns, formatMs, formatMiB } from './GridNodePage.js';
 import { VersionsPage } from './VersionsPage.js';
 
 /**
@@ -876,7 +879,7 @@ describe('the compute grid screen', () => {
     it('keeps a quiet node’s row, and shows its failures and its slowest task', () => {
         const html = withProviders(
             <GridPage />,
-            '/',
+            '/?tab=nodes',
             [],
             gridView({
                 nodes: [gridNode({ tasks_failed: 4, max_task_duration_ms: 51_000 }), QUIET_NODE],
@@ -925,7 +928,7 @@ describe('the compute grid screen', () => {
                 host: `node-${String(index + 1).padStart(2, '0')}`,
             }),
         );
-        const html = withProviders(<GridPage />, '/', [], gridView({ nodes }));
+        const html = withProviders(<GridPage />, '/?tab=nodes', [], gridView({ nodes }));
 
         expect(html).toContain('node-15');
         expect(html).not.toContain('node-16');
@@ -934,7 +937,7 @@ describe('the compute grid screen', () => {
     });
 
     it('says no host names a node rather than printing the id as a name', () => {
-        const html = withProviders(<GridPage />, '/', [], gridView({ nodes: [NAMELESS_NODE] }));
+        const html = withProviders(<GridPage />, '/?tab=nodes', [], gridView({ nodes: [NAMELESS_NODE] }));
 
         expect(html).toContain('c30b9d47-0000-4000-8000-000000000003');
         expect(html).toContain('no host names it');
@@ -943,7 +946,7 @@ describe('the compute grid screen', () => {
     it('carries each node’s runner on the node row, with the instance tail shown', () => {
         const html = withProviders(
             <GridPage />,
-            '/',
+            '/?tab=nodes',
             [],
             gridView({
                 nodes: [
@@ -962,7 +965,7 @@ describe('the compute grid screen', () => {
 
         // One table: the node count and the runner report share its header.
         expect(html).toContain('3 rows');
-        expect(html).toContain('1 of 3 runners reported in the last 5 minutes');
+        expect(html).toContain('1 of 3 runners reported in the last 2 minutes');
         expect(html).toContain('1 lost');
         expect(html).toContain('1 missing');
         // The state words are the read's own, one per node.
@@ -984,7 +987,7 @@ describe('the compute grid screen', () => {
     it('warns about a running runner that trails the newest release', () => {
         const html = withProviders(
             <GridPage />,
-            '/',
+            '/?tab=nodes',
             [],
             gridView({
                 nodes: [
@@ -1015,9 +1018,15 @@ describe('the compute grid screen', () => {
         );
 
         expect(html).toContain('No sample yet');
-        // The node table stands alone.
-        expect(html).toContain('grid-01.example.com');
         expect(html).not.toContain('Online 5');
+        // The node table stands alone, on its own tab.
+        const nodes = withProviders(
+            <GridPage />,
+            '/?tab=nodes',
+            [],
+            gridView({ sampled_at: null, total_hosts: 0 }),
+        );
+        expect(nodes).toContain('grid-01.example.com');
     });
 
     it('states only the gaps the journey still records', () => {
@@ -1410,7 +1419,7 @@ describe('the grid over time', () => {
     it('draws the four panels with the range choice, and marks the gap', () => {
         const html = renderToStaticMarkup(
             <QueryClientProviderFor series={gridSeriesView()}>
-                <GridSeriesSection />
+                <GridLoadTab range="1h" onRange={() => undefined} />
             </QueryClientProviderFor>,
         );
 
@@ -1432,7 +1441,7 @@ describe('the grid over time', () => {
 
         const html = renderToStaticMarkup(
             <QueryClientProviderFor series={empty}>
-                <GridSeriesSection />
+                <GridLoadTab range="1h" onRange={() => undefined} />
             </QueryClientProviderFor>,
         );
 
@@ -1440,20 +1449,24 @@ describe('the grid over time', () => {
         expect(html).not.toContain('<svg');
     });
 
-    it('puts the section on the grid screen, above the machines', () => {
-        const html = withProviders(
-            <GridPage />,
-            '/',
-            [],
-            gridView(),
-            busView(),
-            logsView(),
-            [],
-            gridSeriesView(),
-        );
+    it('keeps the grid screen on three tabs, so each page stays short', () => {
+        const overview = withProviders(<GridPage />, '/', [], gridView(), busView(), logsView(), [], gridSeriesView());
+        expect(overview).toContain('role="tablist"');
+        for (const title of ['Overview', 'Load', 'Nodes']) {
+            expect(overview).toContain(`>${title}<`);
+        }
+        // The overview holds the summary and the machines, and not the charts.
+        expect(overview).toContain('Machines');
+        expect(overview).not.toContain('Over time');
 
-        expect(html).toContain('Over time');
-        expect(html.indexOf('Over time')).toBeLessThan(html.indexOf('Machines'));
+        const load = withProviders(<GridPage />, '/?tab=load', [], gridView(), busView(), logsView(), [], gridSeriesView());
+        expect(load).toContain('Over time');
+        expect(load).not.toContain('Machines');
+
+        const nodes = withProviders(<GridPage />, '/?tab=nodes', [], gridView(), busView(), logsView(), [], gridSeriesView());
+        expect(nodes).toContain('Node load');
+        expect(nodes).toContain('grid-01.example.com');
+        expect(nodes).not.toContain('Over time');
     });
 });
 
@@ -1475,3 +1488,122 @@ function QueryClientProviderFor({
         </QueryClientProvider>
     );
 }
+
+const NODE_A = '9e0f33aa-0000-4000-8000-000000000001';
+const NODE_B = '9e0f33aa-0000-4000-8000-000000000002';
+
+/** The series with two nodes on two machines over four buckets, the third a gap for node A. */
+function seriesWithNodes(): GridSeriesView {
+    const base = gridSeriesView();
+    return {
+        ...base,
+        nodes: {
+            list: [
+                { host_id: NODE_A, machine: 'rack-a', host: 'grid-01.example.com' },
+                { host_id: NODE_B, machine: 'rack-b', host: null },
+            ],
+            //                 node A         node B
+            samples: [2, 3, 0, 1, 0, 1, 1, 0],
+            tasks_completed: [5, 9, 0, 12, 0, 3, 4, 0],
+            tasks_failed: [1, 1, 0, 3, 0, 0, 1, 0],
+            tasks_since_last: [3, 4, 0, 3, 0, 2, 5, 0],
+            avg_task_duration_ms: [160, 50, 0, 2500, 0, 10, 20, 0],
+            max_task_duration_ms: [400, 60, 0, 3000, 0, 20, 30, 0],
+            input_bytes_fetched: [30, 5, 0, 1048576, 0, 100, 200, 0],
+            output_bytes_uploaded: [3, 5, 0, 2097152, 0, 200, 300, 0],
+        },
+    };
+}
+
+describe('the node heatmap and the node page', () => {
+    it('colours a cell by the work done and leaves a bucket with no sample unknown', () => {
+        const view = seriesWithNodes();
+
+        expect(heatmapRow(view, 0, 'work')).toEqual([3, 4, null, 3]);
+        expect(heatmapRow(view, 1, 'work')).toEqual([null, 2, 5, null]);
+        // The failures are the change in the count, unknown beside a gap.
+        expect(heatmapRow(view, 0, 'failures')).toEqual([null, 0, null, null]);
+        expect(heatmapRow(view, 1, 'failures')).toEqual([null, null, 1, null]);
+        expect(heatmapRow(view, 0, 'bytes')).toEqual([33, 10, null, 3145728]);
+    });
+
+    it('draws a row per node under its machine, links it to its page and marks the gaps', () => {
+        const html = renderToStaticMarkup(
+            <QueryClientProviderFor series={seriesWithNodes()}>
+                <GridNodeLoad range="1h" onRange={() => undefined} />
+            </QueryClientProviderFor>,
+        );
+
+        expect(html).toContain('rack-a');
+        expect(html).toContain('rack-b');
+        expect(html).toContain(`href="/operations/grid/nodes/${NODE_A}"`);
+        // A node the registry does not name shows the start of its id.
+        expect(html).toContain('9e0f33aa');
+        expect(html).toContain('data-gap');
+        expect(html).toContain('data-cell');
+        expect(html).toContain('is not a measurement of zero');
+    });
+
+    it('lists the columns of one node, with task times unknown where no task finished', () => {
+        const view = seriesWithNodes();
+        const a = nodeColumns(view, 0);
+
+        expect(a.samples).toEqual([2, 3, 0, 1]);
+        expect(a.tasksDone).toEqual([3, 4, 0, 3]);
+        expect(a.failures).toEqual([null, 0, null, null]);
+        expect(a.meanMs).toEqual([160, 50, null, 2500]);
+        // The second node's third bucket finished tasks; its fourth finished none.
+        expect(nodeColumns(view, 1).longestMs).toEqual([null, 20, 30, null]);
+    });
+
+    it('writes a duration and a size as a person reads them', () => {
+        expect(formatMs(40)).toBe('40 ms');
+        expect(formatMs(2500)).toBe('2.5 s');
+        expect(formatMiB(1048576)).toBe('1.0 MiB');
+        expect(formatMiB(52428800)).toBe('50 MiB');
+    });
+
+    function renderNodePage(hostId: string, series: GridSeriesView): string {
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+        client.setQueryData(GRID_QUERY_KEY, gridView());
+        client.setQueryData([GRID_SERIES_QUERY_KEY, series.range], series);
+        return renderToStaticMarkup(
+            <QueryClientProvider client={client}>
+                <TranslationProvider>
+                    <MemoryRouter initialEntries={[`/operations/grid/nodes/${hostId}`]}>
+                        <Routes>
+                            <Route path="/operations/grid/nodes/:hostId" element={<GridNodePage />} />
+                        </Routes>
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
+        );
+    }
+
+    it('shows the node page with its machine, its state and four charts', () => {
+        const html = renderNodePage(NODE_A, seriesWithNodes());
+
+        expect(html).toContain('grid-01.example.com');
+        expect(html).toContain('rack-a');
+        expect(html).toContain('>Tasks done<');
+        expect(html).toContain('>Failures<');
+        expect(html).toContain('>Task time<');
+        expect(html).toContain('>Data moved<');
+        expect(html).toContain('href="/operations/grid?tab=nodes"');
+    });
+
+    it('says a node that reported nothing in the range reported nothing', () => {
+        const html = renderNodePage(NODE_A, gridSeriesView());
+
+        expect(html).toContain('This node reported no sample in this range');
+        // The facts stay, and no chart panel is drawn.
+        expect(html).toContain('rack-a');
+        expect(html).not.toContain('<h3');
+    });
+
+    it('says no node has an id the grid does not know', () => {
+        const html = renderNodePage('00000000-0000-4000-8000-00000000dead', seriesWithNodes());
+
+        expect(html).toContain('No node has this id');
+    });
+});

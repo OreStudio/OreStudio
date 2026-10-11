@@ -56,6 +56,7 @@ import { ScenarioPage } from './development/ScenarioPage.js';
 import { OperationsArea } from './operations/OperationsArea.js';
 import { BusPage } from './operations/BusPage.js';
 import { EvolutionPage } from './market/EvolutionPage.js';
+import { GridNodePage } from './operations/GridNodePage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
@@ -529,6 +530,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <GridPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/grid/nodes/:hostId"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <GridNodePage />
                     ),
                     'workspace',
                 )}

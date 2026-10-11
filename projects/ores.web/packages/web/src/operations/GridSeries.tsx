@@ -33,14 +33,22 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { Link } from 'react-router';
 import { SERIES_RANGES } from '@ores/wire-protocol/browser';
 import type { GridSeriesView, SeriesRange } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
 import { Notice, cx } from '../ui/Primitives.js';
-import { SeriesChart, type ChartAxis, type ChartSeries } from '../ui/SeriesChart.js';
+import { gridNodePath } from '../shell/paths.js';
+import {
+    SeriesChart,
+    axisLabel,
+    type ChartAxis,
+    type ChartSeries,
+    type ChartTone,
+} from '../ui/SeriesChart.js';
 
 /** Where the grid series answer is cached, so a test can seed it per range. */
 export const GRID_SERIES_QUERY_KEY = 'operations-grid-series';
@@ -180,7 +188,7 @@ const RANGE_WORDS: Readonly<Record<SeriesRange, 'hour' | 'day' | 'week'>> = {
 };
 
 /** The range choice: three presets, and the one in force is pressed. */
-function RangeBar({
+export function RangeBar({
     range,
     onChange,
 }: {
@@ -224,6 +232,200 @@ function Panel({
         <div className="space-y-2 rounded-md border border-line-subtle p-4">
             <h3 className="text-sm font-medium">{title}</h3>
             {children}
+        </div>
+    );
+}
+
+/**
+ * The cells of one node in a node-major column.
+ *
+ * The node series lays each column out row-major, nodes times buckets, so node
+ * i owns the entries from i times the bucket count for one bucket count.
+ */
+export function rowOf<T>(column: readonly T[], node: number, count: number): readonly T[] {
+    return column.slice(node * count, (node + 1) * count);
+}
+
+/** What a node's cell can be coloured by. */
+export const HEATMAP_METRICS = ['work', 'failures', 'bytes'] as const;
+export type HeatmapMetric = (typeof HEATMAP_METRICS)[number];
+
+const HEATMAP_TONE: Readonly<Record<HeatmapMetric, ChartTone>> = {
+    work: 'accent',
+    failures: 'warn',
+    bytes: 'accent',
+};
+
+/**
+ * One node's figure per bucket for a heatmap metric, null where it is unknown.
+ *
+ * A bucket with no sample is unknown and is never a zero. The failures are the
+ * change in the count since the wrapper started, so a bucket next to a gap is
+ * unknown too, and a count that falls, as a wrapper restart makes it, is no
+ * change.
+ */
+export function heatmapRow(
+    view: GridSeriesView,
+    node: number,
+    metric: HeatmapMetric,
+): readonly (number | null)[] {
+    const count = view.bucket_count;
+    const samples = rowOf(view.nodes.samples, node, count);
+    if (metric === 'failures') {
+        return changeOf(rowOf(view.nodes.tasks_failed, node, count), samples);
+    }
+    const work = rowOf(view.nodes.tasks_since_last, node, count);
+    const fetched = rowOf(view.nodes.input_bytes_fetched, node, count);
+    const uploaded = rowOf(view.nodes.output_bytes_uploaded, node, count);
+    return samples.map((held, index) => {
+        if (held === 0) {
+            return null;
+        }
+        return metric === 'work' ? (work[index] ?? 0) : (fetched[index] ?? 0) + (uploaded[index] ?? 0);
+    });
+}
+
+/** The name a node row carries: the host registry's, or the start of its id. */
+export function nodeLabel(node: GridSeriesView['nodes']['list'][number]): string {
+    return node.host ?? node.host_id.slice(0, 8);
+}
+
+/** The metric choice of the heatmap: three buttons, the one in force pressed. */
+function MetricBar({
+    metric,
+    onChange,
+}: {
+    readonly metric: HeatmapMetric;
+    readonly onChange: (metric: HeatmapMetric) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <div
+            role="group"
+            aria-label={t('operations.grid.heatmap.metricLabel')}
+            className="inline-flex overflow-hidden rounded-md border border-line"
+        >
+            {HEATMAP_METRICS.map((choice) => (
+                <button
+                    key={choice}
+                    type="button"
+                    aria-pressed={metric === choice}
+                    className={cx(
+                        'px-3 py-1 text-xs',
+                        metric === choice ? 'bg-accent text-ink-inverse' : 'text-ink-muted',
+                    )}
+                    onClick={() => onChange(choice)}
+                >
+                    {t(`operations.grid.heatmap.metrics.${choice}`)}
+                </button>
+            ))}
+        </div>
+    );
+}
+
+/**
+ * One row per node and one column per bucket, coloured by the work the node did.
+ *
+ * The nodes arrive ordered by machine, so the rows of one computer sit under a
+ * heading of its name. A grey cell holds no sample and is not a measured zero;
+ * a sampled cell with nothing to show is left clear. Each row's name opens the
+ * node's own page.
+ */
+export function NodeHeatmap({ view }: { readonly view: GridSeriesView }): ReactNode {
+    const { t } = useTranslation();
+    const [metric, setMetric] = useState<HeatmapMetric>('work');
+    const nodes = view.nodes.list;
+    const count = view.bucket_count;
+    const rows = nodes.map((_, index) => heatmapRow(view, index, metric));
+    const maximum = rows.reduce(
+        (top, row) => Math.max(top, ...row.map((value) => value ?? 0)),
+        0,
+    );
+    const tone = HEATMAP_TONE[metric];
+    const axis = axisOf(view);
+    const toneClass = tone === 'warn' ? 'text-warn' : 'text-accent';
+
+    return (
+        <div className="space-y-3 rounded-md border border-line-subtle p-4">
+            <MetricBar metric={metric} onChange={setMetric} />
+            {nodes.length === 0 ? (
+                <p className="text-sm text-ink-muted">{t('operations.grid.heatmap.none')}</p>
+            ) : (
+                <ul className="space-y-0.5">
+                    {nodes.map((node, index) => {
+                        const row = rows[index] ?? [];
+                        const newMachine = index === 0 || nodes[index - 1]?.machine !== node.machine;
+                        return (
+                            <li key={node.host_id}>
+                                {newMachine && (
+                                    <p className="pt-2 text-xs text-ink-faint">
+                                        {node.machine === ''
+                                            ? t('operations.grid.machines.unnamed')
+                                            : node.machine}
+                                    </p>
+                                )}
+                                <div className="flex items-center gap-2">
+                                    <Link
+                                        to={gridNodePath(node.host_id)}
+                                        className="w-44 shrink-0 truncate text-xs underline"
+                                        title={node.host_id}
+                                    >
+                                        {nodeLabel(node)}
+                                    </Link>
+                                    <svg
+                                        viewBox={`0 0 ${count} 1`}
+                                        preserveAspectRatio="none"
+                                        shapeRendering="crispEdges"
+                                        className={`h-4 w-full rounded-sm bg-line-subtle/40 ${toneClass}`}
+                                        role="img"
+                                        aria-label={nodeLabel(node)}
+                                    >
+                                        {row.map((value, bucket) => {
+                                            if (value === null) {
+                                                return (
+                                                    <rect
+                                                        key={bucket}
+                                                        data-gap=""
+                                                        x={bucket}
+                                                        y={0}
+                                                        width={1}
+                                                        height={1}
+                                                        className="fill-current text-ink-faint"
+                                                        opacity="0.3"
+                                                    />
+                                                );
+                                            }
+                                            if (value <= 0 || maximum <= 0) {
+                                                return null;
+                                            }
+                                            return (
+                                                <rect
+                                                    key={bucket}
+                                                    data-cell=""
+                                                    x={bucket}
+                                                    y={0}
+                                                    width={1}
+                                                    height={1}
+                                                    className="fill-current"
+                                                    opacity={(0.2 + 0.8 * (value / maximum)).toFixed(2)}
+                                                />
+                                            );
+                                        })}
+                                    </svg>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
+            {nodes.length > 0 && (
+                <div className="flex items-center justify-between pl-[calc(11rem+0.5rem)] text-[10px] text-ink-faint">
+                    <span>{axisLabel(axis, 0)}</span>
+                    <span>{axisLabel(axis, Math.floor((count - 1) / 2))}</span>
+                    <span>{axisLabel(axis, Math.max(count - 1, 0))}</span>
+                </div>
+            )}
+            <p className="text-xs text-ink-faint">{t('operations.grid.heatmap.legend')}</p>
         </div>
     );
 }
@@ -275,15 +477,48 @@ export function GridSeriesPanels({ view }: { readonly view: GridSeriesView }): R
     );
 }
 
-/** The section: a range choice over the four panels, read from the server. */
-export function GridSeriesSection(): ReactNode {
-    const { t } = useTranslation();
-    const [range, setRange] = useState<SeriesRange>('1h');
-    const series = useQuery({
+/** The grid series for a range, read from the server. */
+export function useGridSeries(range: SeriesRange): UseQueryResult<GridSeriesView> {
+    return useQuery({
         queryKey: [GRID_SERIES_QUERY_KEY, range],
         queryFn: () => api.gridSeries(range),
     });
+}
 
+/**
+ * What a read of the series shows before it has data: loading, the error, or a
+ * range with no sample at all. A range with no sample says so and draws no chart.
+ */
+export function SeriesStatus({
+    series,
+    children,
+}: {
+    readonly series: UseQueryResult<GridSeriesView>;
+    readonly children: (view: GridSeriesView) => ReactNode;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (series.isPending) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    if (series.isError) {
+        return <Notice tone="error">{series.error.message}</Notice>;
+    }
+    if (!hasAnySample(series.data)) {
+        return <Notice tone="info">{t('operations.grid.series.empty')}</Notice>;
+    }
+    return <>{children(series.data)}</>;
+}
+
+/** The Load tab: a range choice over the four panels. */
+export function GridLoadTab({
+    range,
+    onRange,
+}: {
+    readonly range: SeriesRange;
+    readonly onRange: (range: SeriesRange) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const series = useGridSeries(range);
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-3">
@@ -291,23 +526,42 @@ export function GridSeriesSection(): ReactNode {
                     <h2 className="text-lg font-medium">{t('operations.grid.series.title')}</h2>
                     <p className="text-xs text-ink-faint">{t('operations.grid.series.lead')}</p>
                 </div>
-                <RangeBar range={range} onChange={setRange} />
+                <RangeBar range={range} onChange={onRange} />
             </header>
-            {series.isPending && (
-                <p className="text-sm text-ink-muted">{t('common.loading')}</p>
-            )}
-            {series.isError && <Notice tone="error">{series.error.message}</Notice>}
-            {series.isSuccess &&
-                (hasAnySample(series.data) ? (
+            <SeriesStatus series={series}>
+                {(view) => (
                     <>
-                        <GridSeriesPanels view={series.data} />
+                        <GridSeriesPanels view={view} />
                         <p className="text-xs text-ink-faint">
                             {t('operations.grid.series.gapNote')}
                         </p>
                     </>
-                ) : (
-                    <Notice tone="info">{t('operations.grid.series.empty')}</Notice>
-                ))}
+                )}
+            </SeriesStatus>
+        </section>
+    );
+}
+
+/** The heatmap block of the Nodes tab: a range choice over one row per node. */
+export function GridNodeLoad({
+    range,
+    onRange,
+}: {
+    readonly range: SeriesRange;
+    readonly onRange: (range: SeriesRange) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const series = useGridSeries(range);
+    return (
+        <section className="card space-y-4 p-6">
+            <header className="flex flex-wrap items-baseline justify-between gap-3">
+                <div className="space-y-1">
+                    <h2 className="text-lg font-medium">{t('operations.grid.heatmap.title')}</h2>
+                    <p className="text-xs text-ink-faint">{t('operations.grid.heatmap.lead')}</p>
+                </div>
+                <RangeBar range={range} onChange={onRange} />
+            </header>
+            <SeriesStatus series={series}>{(view) => <NodeHeatmap view={view} />}</SeriesStatus>
         </section>
     );
 }

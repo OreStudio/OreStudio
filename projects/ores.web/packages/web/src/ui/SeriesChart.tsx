@@ -269,12 +269,15 @@ export function SeriesChart({
     samples,
     series,
     caption,
+    format = String,
 }: {
     readonly kind: ChartKind;
     readonly axis: ChartAxis;
     readonly samples: readonly number[];
     readonly series: readonly ChartSeries[];
     readonly caption: string;
+    /** How the top of the scale is written; a count by default. */
+    readonly format?: (value: number) => string;
 }): ReactNode {
     const count = axis.count;
     const runs = drawableRuns(samples, series, count);
@@ -331,7 +334,7 @@ export function SeriesChart({
                     className="fill-current text-ink-faint"
                     fontSize="10"
                 >
-                    {maximum}
+                    {format(maximum)}
                 </text>
                 <text
                     x={PAD_LEFT - 6}

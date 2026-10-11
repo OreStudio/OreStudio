@@ -59,7 +59,7 @@ as $$
             select 1
             from ores_compute_node_samples_tbl sample
             where sample.host_id = h.id
-              and sample.sampled_at > now() - interval '5 minutes'
+              and sample.sampled_at > now() - interval '2 minutes'
           )) as online_hosts
         from ores_compute_hosts_tbl h
         where h.tenant_id = p_tenant_id

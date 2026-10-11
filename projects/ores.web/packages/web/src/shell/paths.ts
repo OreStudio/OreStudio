@@ -53,6 +53,11 @@ export function rolePath(roleId: string): string {
     return `${PATHS.roles}/${encodeURIComponent(roleId)}`;
 }
 
+/** The address of the page of one compute node. */
+export function gridNodePath(hostId: string): string {
+    return `/operations/grid/nodes/${encodeURIComponent(hostId)}`;
+}
+
 /** The address of the rescue screen for one account. */
 export function rescuePath(username: string): string {
     return `${PATHS.rescue}?username=${encodeURIComponent(username)}`;

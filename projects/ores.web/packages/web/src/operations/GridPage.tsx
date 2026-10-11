@@ -36,9 +36,10 @@
  */
 
 import { useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { fromWireTimestamp, isWireTimestamp } from '@ores/wire-protocol/browser';
-import type { GridNodeRow, GridView } from '@ores/wire-protocol/browser';
+import type { GridNodeRow, GridView, SeriesRange } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
@@ -52,10 +53,12 @@ import {
     newestVersionOf,
     type ScreenGap,
 } from './OperationsParts.js';
-import { GridSeriesSection } from './GridSeries.js';
+import { GridLoadTab, GridNodeLoad } from './GridSeries.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { gridNodePath } from '../shell/paths.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
+import { useTabs } from '../ui/Tabs.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 
 /** The journeys that carry on from this one, in the order its page names them. */
@@ -65,6 +68,9 @@ const JOURNEYS: readonly JourneyId[] = [
     '57C4B9A6-DA79-403E-984E-50D2561352B3',
     'C3D59907-9D6A-448C-9A61-9E750755BBFB',
 ];
+
+/** The tabs of the grid screen, in the order they are drawn. */
+export const GRID_TABS = ['overview', 'load', 'nodes'] as const;
 
 /** Where the grid read's answer is cached, so a test can seed it. */
 export const GRID_QUERY_KEY = ['operations-grid'] as const;
@@ -212,18 +218,24 @@ export function instanceTail(instanceId: string): string {
     return instanceId.slice(-8);
 }
 
-/** One node's name: the hostname, or the id beside a plain statement it is one. */
+/** One node's name: the hostname, or the id beside a plain statement it is one. It opens the node's page. */
 function NodeName({ node }: { readonly node: GridNodeRow }): ReactNode {
     const { t } = useTranslation();
     if (node.host === null) {
         return (
             <span className="flex flex-wrap items-center gap-2">
-                <span className="font-mono">{node.host_id}</span>
+                <Link to={gridNodePath(node.host_id)} className="font-mono underline">
+                    {node.host_id}
+                </Link>
                 <Tag tone="muted">{t('operations.grid.nodes.noHost')}</Tag>
             </span>
         );
     }
-    return <span className="font-mono">{node.host}</span>;
+    return (
+        <Link to={gridNodePath(node.host_id)} className="font-mono underline">
+            {node.host}
+        </Link>
+    );
 }
 
 /** The runner's instance, shown by the tail with the full id in the title. */
@@ -383,6 +395,9 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
                             {t('operations.grid.nodes.columns.node')}
                         </th>
                         <th className="py-1 font-normal">
+                            {t('operations.grid.nodes.columns.machine')}
+                        </th>
+                        <th className="py-1 font-normal">
                             {t('operations.grid.nodes.columns.status')}
                         </th>
                         <th className="py-1 font-normal">
@@ -424,6 +439,13 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
                             <tr key={node.host_id}>
                                 <td className="py-2">
                                     <NodeName node={node} />
+                                </td>
+                                <td className="py-2 font-mono">
+                                    {node.machine === '' ? (
+                                        <span className="text-ink-faint">—</span>
+                                    ) : (
+                                        node.machine
+                                    )}
                                 </td>
                                 <td className="py-2">
                                     <InstanceStateTag state={node.state} />
@@ -504,6 +526,12 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
 export function GridPage(): ReactNode {
     const { t } = useTranslation();
     const grid = useQuery({ queryKey: GRID_QUERY_KEY, queryFn: api.grid });
+    const [range, setRange] = useState<SeriesRange>('1h');
+    const { tab, bar } = useTabs({
+        label: t('operations.grid.tabs.label'),
+        tabs: GRID_TABS,
+        titleOf: (candidate) => t(`operations.grid.tabs.${candidate}`),
+    });
 
     if (grid.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
@@ -549,19 +577,32 @@ export function GridPage(): ReactNode {
                 />
             </div>
 
-            {hasSample ? (
-                <SummaryPanel view={view} />
-            ) : (
-                <section className="card space-y-2 p-6">
-                    <h2 className="text-lg font-medium">{t('operations.grid.summary.title')}</h2>
-                    <Notice tone="warn">{t('operations.grid.summary.noSample')}</Notice>
-                </section>
+            {bar}
+
+            {tab === 'overview' && (
+                <>
+                    {hasSample ? (
+                        <SummaryPanel view={view} />
+                    ) : (
+                        <section className="card space-y-2 p-6">
+                            <h2 className="text-lg font-medium">
+                                {t('operations.grid.summary.title')}
+                            </h2>
+                            <Notice tone="warn">{t('operations.grid.summary.noSample')}</Notice>
+                        </section>
+                    )}
+                    <MachinesPanel nodes={view.nodes} />
+                </>
             )}
 
-            <GridSeriesSection />
+            {tab === 'load' && <GridLoadTab range={range} onRange={setRange} />}
 
-            <MachinesPanel nodes={view.nodes} />
-            <NodesPanel nodes={view.nodes} />
+            {tab === 'nodes' && (
+                <>
+                    <GridNodeLoad range={range} onRange={setRange} />
+                    <NodesPanel nodes={view.nodes} />
+                </>
+            )}
 
             <GapPanel gaps={gaps} />
             <RelatedJourneys ids={JOURNEYS} />

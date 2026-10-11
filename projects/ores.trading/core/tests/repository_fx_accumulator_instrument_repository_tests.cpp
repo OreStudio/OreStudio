@@ -94,7 +94,8 @@ TEST_CASE("fx_accumulator_instrument_write_and_read_latest", tags) {
     CHECK(read[0].long_short == "Long");
     CHECK(read[0].start_date == ores::platform::time::datetime::from_iso8601_date("2026-01-12"));
     REQUIRE(read[0].knock_out_barrier.has_value());
-    CHECK(*read[0].knock_out_barrier == ores::utility::decimal::decimal::from_string("126.0").value());
+    CHECK(*read[0].knock_out_barrier ==
+          ores::utility::decimal::decimal::from_string("126.0").value());
     BOOST_LOG_SEV(lg, debug) << "Read FX accumulator instrument: " << read[0];
 }
 

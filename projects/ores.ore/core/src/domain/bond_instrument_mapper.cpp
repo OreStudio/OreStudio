@@ -1408,8 +1408,7 @@ bond_instrument_data bond_instrument_mapper::forward_bond_trs(const trade& t,
         } else if (ld.legDataType->FixedLegData) {
             trs.funding_leg_type = "Fixed";
             if (!ld.legDataType->FixedLegData->Rates.Rate.empty())
-                trs.funding_rate =
-                    exact_decimal(ld.legDataType->FixedLegData->Rates.Rate.front());
+                trs.funding_rate = exact_decimal(ld.legDataType->FixedLegData->Rates.Rate.front());
         }
     }
     stamp_audit(trs);

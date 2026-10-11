@@ -626,9 +626,8 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
         block.automatic_exercise = row.automatic_exercise;
 
         if (row.has_exercise_data)
-            block.exercise_data = domain::bond_option_exercise{
-                iso_or_empty(row.exercise_date),
-                row.exercise_price};
+            block.exercise_data =
+                domain::bond_option_exercise{iso_or_empty(row.exercise_date), row.exercise_price};
 
         if (row.has_payment_data) {
             domain::bond_option_payment_data payment;

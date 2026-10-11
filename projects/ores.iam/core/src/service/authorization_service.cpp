@@ -495,9 +495,9 @@ authorization_service::page_permissions(const std::vector<account_access_entry>&
     for (const auto& [component, count] : area_counts)
         response.areas.push_back({.component = component, .resources = count});
 
-    response.area = !query.area.empty() ? query.area :
-        response.areas.empty()          ? std::string{} :
-                                          response.areas.front().component;
+    response.area = !query.area.empty()    ? query.area :
+                    response.areas.empty() ? std::string{} :
+                                             response.areas.front().component;
 
     std::string needle = query.search;
     std::transform(needle.begin(), needle.end(), needle.begin(), [](unsigned char c) {
@@ -562,8 +562,9 @@ authorization_service::read_role_permissions(const boost::uuids::uuid& caller_id
     return page_permissions({entry}, query);
 }
 
-messaging::role_page_response authorization_service::read_roles_page(
-    const boost::uuids::uuid& caller_id, const roles_query& query) {
+messaging::role_page_response
+authorization_service::read_roles_page(const boost::uuids::uuid& caller_id,
+                                       const roles_query& query) {
     messaging::role_page_response response;
     if (!has_permission(caller_id, domain::permissions::roles_read)) {
         response.result.outcome = ores::utility::domain::outcome::denied;
@@ -608,8 +609,8 @@ messaging::role_page_response authorization_service::read_roles_page(
         const auto id = boost::uuids::to_string(role.id);
         if (single && id != query.role_id)
             continue;
-        const bool service = role.name.size() >= 7 &&
-                             role.name.compare(role.name.size() - 7, 7, "Service") == 0;
+        const bool service =
+            role.name.size() >= 7 && role.name.compare(role.name.size() - 7, 7, "Service") == 0;
         if (service && !query.include_service && !single) {
             ++response.service_hidden;
             continue;
@@ -641,8 +642,8 @@ messaging::role_page_response authorization_service::read_roles_page(
     response.total_count = static_cast<int>(kept.size());
     for (std::size_t i = offset; i < kept.size() && i < offset + limit; ++i) {
         const auto& item = kept[i];
-        const bool everything = std::find(item.codes.begin(), item.codes.end(), "*") !=
-                                item.codes.end();
+        const bool everything =
+            std::find(item.codes.begin(), item.codes.end(), "*") != item.codes.end();
         response.roles.push_back({.id = boost::uuids::to_string(item.role.id),
                                   .version = item.role.version,
                                   .name = item.role.name,
@@ -656,11 +657,8 @@ messaging::role_page_response authorization_service::read_roles_page(
     return response;
 }
 
-messaging::role_holders_response
-authorization_service::read_role_holders(const boost::uuids::uuid& caller_id,
-                                         const boost::uuids::uuid& role_id,
-                                         int offset,
-                                         int limit) {
+messaging::role_holders_response authorization_service::read_role_holders(
+    const boost::uuids::uuid& caller_id, const boost::uuids::uuid& role_id, int offset, int limit) {
     messaging::role_holders_response response;
     if (!has_permission(caller_id, domain::permissions::roles_read)) {
         response.result.outcome = ores::utility::domain::outcome::denied;
@@ -680,7 +678,8 @@ authorization_service::read_role_holders(const boost::uuids::uuid& caller_id,
     };
     std::vector<holder> named;
     for (const auto& assignment : account_role_repo_.read_latest_by_role(role_id)) {
-        const auto found = accounts.read_latest(ctx_, boost::uuids::to_string(assignment.account_id));
+        const auto found =
+            accounts.read_latest(ctx_, boost::uuids::to_string(assignment.account_id));
         if (found.empty())
             continue;
         const auto& account = found.front();

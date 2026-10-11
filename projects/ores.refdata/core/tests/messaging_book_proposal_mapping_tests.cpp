@@ -67,16 +67,20 @@ TEST_CASE("puts_and_deletes_can_be_proposed", tags) {
 
 TEST_CASE("a_recheck_with_no_refusal_completes_its_step", tags) {
     ores::refdata::service::book_preview preview;
-    preview.lines.push_back({.line_no = 1, .operation = "put", .entity_id = {}, .columns = {}, .refusal = ""});
+    preview.lines.push_back(
+        {.line_no = 1, .operation = "put", .entity_id = {}, .columns = {}, .refusal = ""});
 
     CHECK(ores::refdata::messaging::recheck_step_result(preview).completed);
 }
 
 TEST_CASE("a_recheck_fails_its_step_with_the_first_refused_line", tags) {
     ores::refdata::service::book_preview preview;
-    preview.lines.push_back({.line_no = 1, .operation = "put", .entity_id = {}, .columns = {}, .refusal = ""});
-    preview.lines.push_back({.line_no = 2, .operation = "put", .entity_id = {}, .columns = {}, .refusal = "stale"});
-    preview.lines.push_back({.line_no = 3, .operation = "put", .entity_id = {}, .columns = {}, .refusal = "other"});
+    preview.lines.push_back(
+        {.line_no = 1, .operation = "put", .entity_id = {}, .columns = {}, .refusal = ""});
+    preview.lines.push_back(
+        {.line_no = 2, .operation = "put", .entity_id = {}, .columns = {}, .refusal = "stale"});
+    preview.lines.push_back(
+        {.line_no = 3, .operation = "put", .entity_id = {}, .columns = {}, .refusal = "other"});
 
     const auto result = ores::refdata::messaging::recheck_step_result(preview);
 

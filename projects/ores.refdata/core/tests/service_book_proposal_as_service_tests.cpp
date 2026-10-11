@@ -146,9 +146,7 @@ TEST_CASE("the_refdata_service_user_moves_a_refused_request_to_apply_failed", ta
 
     ores::inbox::service::notification_center center(w.ctx);
     const auto page = center.mine(request->requested_by, false, 0, 200);
-    CHECK(std::ranges::any_of(page.notifications, [&](const auto& n) {
-        return n.link_id == id;
-    }));
+    CHECK(std::ranges::any_of(page.notifications, [&](const auto& n) { return n.link_id == id; }));
 }
 
 TEST_CASE("the_refdata_service_user_reads_who_holds_a_permission", tags) {

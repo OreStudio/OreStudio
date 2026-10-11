@@ -58,7 +58,8 @@ inline std::string apply_result_state(const std::string& request_state) {
 class apply_step_handler {
 private:
     [[nodiscard]] static auto& lg() {
-        static auto instance = ores::logging::make_logger("ores.inbox.messaging.apply_step_handler");
+        static auto instance =
+            ores::logging::make_logger("ores.inbox.messaging.apply_step_handler");
         return instance;
     }
 
@@ -108,11 +109,10 @@ public:
             const auto kind = lifecycle.kind(request->kind_code);
             if (kind) {
                 // The announcer logs a failure to tell and never throws.
-                service::approval_announcer(ctx).tell_asker(
-                    *kind,
-                    *request,
-                    apply_result_state(request->state_code),
-                    request->change_commentary);
+                service::approval_announcer(ctx).tell_asker(*kind,
+                                                            *request,
+                                                            apply_result_state(request->state_code),
+                                                            request->change_commentary);
             } else {
                 BOOST_LOG_SEV(lg(), ores::logging::warn)
                     << "Request " << command->request_id << " has the unknown kind "

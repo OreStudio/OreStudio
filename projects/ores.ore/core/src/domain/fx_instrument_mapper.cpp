@@ -172,10 +172,7 @@ std::string option_type_from_single(const optionData& od) {
 // BarrierData carries one level for a single barrier and two for a
 // double barrier, lower first.
 template <typename Lower, typename Upper>
-void fill_barrier(const barrierData& bd,
-                  std::string& barrier_type,
-                  Lower& lower,
-                  Upper& upper) {
+void fill_barrier(const barrierData& bd, std::string& barrier_type, Lower& lower, Upper& upper) {
     barrier_type = to_string(bd.Type);
     const auto& levels = bd.Levels.Level;
     if (!levels.empty())
@@ -259,9 +256,10 @@ barrierData fx_instrument_mapper::make_barrier(const std::string& type, double l
 // The reverse of fill_barrier. Barrier types with a plain double lower
 // level use zero to mean "no lower barrier", so a zero lower lets the
 // upper level start the group on its own.
-barrierData fx_instrument_mapper::make_barrier_group(const std::string& type,
-                                                     const std::optional<ores::utility::decimal::decimal>& lower,
-                                                     const std::optional<ores::utility::decimal::decimal>& upper) {
+barrierData fx_instrument_mapper::make_barrier_group(
+    const std::string& type,
+    const std::optional<ores::utility::decimal::decimal>& lower,
+    const std::optional<ores::utility::decimal::decimal>& upper) {
     const bool has_lower = lower.has_value() && *lower != ores::utility::decimal::decimal{};
     if (!has_lower && !upper.has_value())
         return {};
@@ -447,8 +445,7 @@ fx_instrument_mapper::forward_fx_kiko_barrier_option(const trade& t) {
     if (!d.Barriers.BarrierData.empty()) {
         r.barrier_type = to_string(d.Barriers.BarrierData.front().Type);
         if (!d.Barriers.BarrierData.front().Levels.Level.empty())
-            r.lower_barrier =
-                exact_decimal(d.Barriers.BarrierData.front().Levels.Level.front());
+            r.lower_barrier = exact_decimal(d.Barriers.BarrierData.front().Levels.Level.front());
         if (d.Barriers.BarrierData.size() > 1 && !d.Barriers.BarrierData[1].Levels.Level.empty())
             r.upper_barrier = exact_decimal(d.Barriers.BarrierData[1].Levels.Level.front());
     }
@@ -482,8 +479,7 @@ fx_instrument_mapper::forward_fx_generic_barrier_option(const trade& t) {
     if (!d.Barriers.BarrierData.empty()) {
         r.barrier_type = to_string(d.Barriers.BarrierData.front().Type);
         if (!d.Barriers.BarrierData.front().Levels.Level.empty())
-            r.lower_barrier =
-                exact_decimal(d.Barriers.BarrierData.front().Levels.Level.front());
+            r.lower_barrier = exact_decimal(d.Barriers.BarrierData.front().Levels.Level.front());
         if (d.Barriers.BarrierData.size() > 1 && !d.Barriers.BarrierData[1].Levels.Level.empty())
             r.upper_barrier = exact_decimal(d.Barriers.BarrierData[1].Levels.Level.front());
     }
@@ -853,9 +849,11 @@ trade fx_instrument_mapper::reverse_fx_kiko_barrier_option(
     d.SoldAmount = static_cast<float>(instr.sold_amount.to_double());
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
     if (!instr.barrier_type.empty() && instr.lower_barrier != ores::utility::decimal::decimal{})
-        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier.to_double()));
+        d.Barriers.BarrierData.push_back(
+            make_barrier(instr.barrier_type, instr.lower_barrier.to_double()));
     if (instr.upper_barrier.has_value())
-        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.upper_barrier->to_double()));
+        d.Barriers.BarrierData.push_back(
+            make_barrier(instr.barrier_type, instr.upper_barrier->to_double()));
     t.FxKIKOBarrierOptionData = std::move(d);
     return t;
 }
@@ -877,9 +875,11 @@ trade fx_instrument_mapper::reverse_fx_generic_barrier_option(
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
 
     if (!instr.barrier_type.empty() && instr.lower_barrier != ores::utility::decimal::decimal{})
-        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier.to_double()));
+        d.Barriers.BarrierData.push_back(
+            make_barrier(instr.barrier_type, instr.lower_barrier.to_double()));
     if (instr.upper_barrier.has_value())
-        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.upper_barrier->to_double()));
+        d.Barriers.BarrierData.push_back(
+            make_barrier(instr.barrier_type, instr.upper_barrier->to_double()));
 
     t.FxGenericBarrierOptionData = std::move(d);
     return t;
@@ -897,7 +897,8 @@ trade fx_instrument_mapper::reverse_fx_digital_option(const fx_digital_option_in
     fxDigitalOptionData d;
     d.ForeignCurrency = parse_currency_code(instr.foreign_currency);
     d.DomesticCurrency = parse_currency_code(instr.domestic_currency);
-    d.Strike = static_cast<float>(instr.strike.value_or(ores::utility::decimal::decimal{}).to_double());
+    d.Strike =
+        static_cast<float>(instr.strike.value_or(ores::utility::decimal::decimal{}).to_double());
     d.PayoffAmount = static_cast<float>(instr.payoff_amount.to_double());
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date, instr.long_short);
 
@@ -918,7 +919,8 @@ trade fx_instrument_mapper::reverse_fx_digital_barrier_option(
     fxDigitalBarrierOptionData d;
     d.ForeignCurrency = parse_currency_code(instr.foreign_currency);
     d.DomesticCurrency = parse_currency_code(instr.domestic_currency);
-    d.Strike = static_cast<float>(instr.strike.value_or(ores::utility::decimal::decimal{}).to_double());
+    d.Strike =
+        static_cast<float>(instr.strike.value_or(ores::utility::decimal::decimal{}).to_double());
     d.PayoffAmount = static_cast<float>(instr.payoff_amount.to_double());
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date, instr.long_short);
 

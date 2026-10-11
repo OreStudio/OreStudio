@@ -66,8 +66,8 @@ read_portfolios_by_trade_ids(context ctx, const std::vector<std::string>& trade_
  * The instrument is read by @c instrument_table_for, so a family the
  * catalogue routes nowhere contributes nothing rather than being guessed at.
  */
-ORES_TRADING_CORE_EXPORT std::vector<std::string> read_instrument_digests(
-    context ctx, const std::string& trade_id, const std::string& trade_type);
+ORES_TRADING_CORE_EXPORT std::vector<std::string>
+read_instrument_digests(context ctx, const std::string& trade_id, const std::string& trade_type);
 
 ORES_TRADING_CORE_EXPORT std::vector<domain::trade_party_role>
 read_party_roles_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);

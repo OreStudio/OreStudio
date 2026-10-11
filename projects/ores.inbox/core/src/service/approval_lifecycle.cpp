@@ -147,7 +147,8 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
                        requested_by,
                        "The parts of the request could not be written.");
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error) << "The half-raised request was not withdrawn: " << e.what();
+                BOOST_LOG_SEV(lg(), error)
+                    << "The half-raised request was not withdrawn: " << e.what();
             }
             throw;
         }
@@ -243,7 +244,8 @@ decision_result approval_lifecycle::decide(const std::string& request_id,
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
         "select outcome, message, state_code, version::text "
-        "from ores_inbox_decide_approval_request_fn($1::uuid, $2::integer, $3, $4::uuid, $5, $6, nullif($7, ''))",
+        "from ores_inbox_decide_approval_request_fn($1::uuid, $2::integer, $3, $4::uuid, $5, $6, "
+        "nullif($7, ''))",
         {request_id,
          std::to_string(version),
          decision_code,

@@ -2142,8 +2142,7 @@ trade swap_instrument_mapper::reverse_balance_guaranteed_swap(
     const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
     const std::vector<ores::trading::domain::swap_leg_rate>& rates,
     const std::vector<trading::domain::balance_guaranteed_swap_tranche>& tranches,
-    const std::vector<trading::domain::balance_guaranteed_swap_tranche_notional>&
-        tranche_notionals,
+    const std::vector<trading::domain::balance_guaranteed_swap_tranche_notional>& tranche_notionals,
     const std::vector<trading::domain::instrument_schedule>& schedules,
     const std::vector<trading::domain::instrument_schedule_date>& schedule_dates) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping BalanceGuaranteedSwap";

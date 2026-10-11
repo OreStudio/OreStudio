@@ -75,27 +75,66 @@ struct column {
 };
 
 const column columns[] = {
-    {"party_id", [](const auto& b, const auto& l) { return b.party_id != l.party_id; }},
-    {"name", [](const auto& b, const auto& l) { return b.name != l.name; }},
-    {"description", [](const auto& b, const auto& l) { return b.description != l.description; }},
+    {"party_id",
+     [](const auto& b, const auto& l) {
+         return b.party_id != l.party_id;
+     }},
+    {"name",
+     [](const auto& b, const auto& l) {
+         return b.name != l.name;
+     }},
+    {"description",
+     [](const auto& b, const auto& l) {
+         return b.description != l.description;
+     }},
     {"parent_portfolio_id",
-     [](const auto& b, const auto& l) { return b.parent_portfolio_id != l.parent_portfolio_id; }},
-    {"owner_unit_id", [](const auto& b, const auto& l) { return b.owner_unit_id != l.owner_unit_id; }},
+     [](const auto& b, const auto& l) {
+         return b.parent_portfolio_id != l.parent_portfolio_id;
+     }},
+    {"owner_unit_id",
+     [](const auto& b, const auto& l) {
+         return b.owner_unit_id != l.owner_unit_id;
+     }},
     {"functional_currency",
-     [](const auto& b, const auto& l) { return b.functional_currency != l.functional_currency; }},
-    {"gl_account_ref", [](const auto& b, const auto& l) { return b.gl_account_ref != l.gl_account_ref; }},
-    {"cost_center", [](const auto& b, const auto& l) { return b.cost_center != l.cost_center; }},
-    {"book_status", [](const auto& b, const auto& l) { return b.book_status != l.book_status; }},
+     [](const auto& b, const auto& l) {
+         return b.functional_currency != l.functional_currency;
+     }},
+    {"gl_account_ref",
+     [](const auto& b, const auto& l) {
+         return b.gl_account_ref != l.gl_account_ref;
+     }},
+    {"cost_center",
+     [](const auto& b, const auto& l) {
+         return b.cost_center != l.cost_center;
+     }},
+    {"book_status",
+     [](const auto& b, const auto& l) {
+         return b.book_status != l.book_status;
+     }},
     {"regulatory_book_type",
-     [](const auto& b, const auto& l) { return b.regulatory_book_type != l.regulatory_book_type; }},
+     [](const auto& b, const auto& l) {
+         return b.regulatory_book_type != l.regulatory_book_type;
+     }},
     {"book_purpose_type",
-     [](const auto& b, const auto& l) { return b.book_purpose_type != l.book_purpose_type; }},
+     [](const auto& b, const auto& l) {
+         return b.book_purpose_type != l.book_purpose_type;
+     }},
     {"ledger_feed_type",
-     [](const auto& b, const auto& l) { return b.ledger_feed_type != l.ledger_feed_type; }},
-    {"is_sweepable", [](const auto& b, const auto& l) { return b.is_sweepable != l.is_sweepable; }},
+     [](const auto& b, const auto& l) {
+         return b.ledger_feed_type != l.ledger_feed_type;
+     }},
+    {"is_sweepable",
+     [](const auto& b, const auto& l) {
+         return b.is_sweepable != l.is_sweepable;
+     }},
     {"rates_centre_code",
-     [](const auto& b, const auto& l) { return b.rates_centre_code != l.rates_centre_code; }},
-    {"sandbox_id", [](const auto& b, const auto& l) { return b.sandbox_id != l.sandbox_id; }},
+     [](const auto& b, const auto& l) {
+         return b.rates_centre_code != l.rates_centre_code;
+     }},
+    {"sandbox_id",
+     [](const auto& b, const auto& l) {
+         return b.sandbox_id != l.sandbox_id;
+     }},
 };
 
 /**
@@ -244,10 +283,8 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
 
         in_transaction(ctx, std::string("savepoint ") + savepoint);
         try {
-            out.refusal = run_write(svc,
-                                    live,
-                                    line,
-                                    {line.change_reason_code, line.change_commentary});
+            out.refusal =
+                run_write(svc, live, line, {line.change_reason_code, line.change_commentary});
         } catch (const std::exception& e) {
             out.refusal = e.what();
         }
@@ -256,10 +293,10 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
         // If the savepoint statement itself fails the transaction is
         // unusable: the exception leaves the preview and the unit of work
         // rolls back.
-        in_transaction(ctx,
-                       std::string(out.refusal.empty() ? "release savepoint " :
-                                                         "rollback to savepoint ") +
-                           savepoint);
+        in_transaction(
+            ctx,
+            std::string(out.refusal.empty() ? "release savepoint " : "rollback to savepoint ") +
+                savepoint);
 
         for (const auto& code : policy_parts(ctx, line.operation, out.columns)) {
             if (std::ranges::find(result.part_codes, code) == result.part_codes.end())
@@ -309,8 +346,7 @@ book_apply book_proposal_service::apply(const std::string& request_id) {
     if (!request)
         return {.refusal = "No such request."};
     if (request->state_code != "approved") {
-        return {.refusal = "The request is " + request->state_code +
-                           " and cannot be applied."};
+        return {.refusal = "The request is " + request->state_code + " and cannot be applied."};
     }
 
     book_apply out;
@@ -321,12 +357,14 @@ book_apply book_proposal_service::apply(const std::string& request_id) {
         // Two applies of one request must not both write. The request row is
         // locked for the transaction, and its state is read again under the
         // lock, because the read above was made before it.
-        in_transaction(ctx,
-                       "select id from ores_inbox_approval_requests_tbl where id = '" + request_id +
-                           "'::uuid and valid_to = ores_utility_infinity_timestamp_fn() for update");
+        in_transaction(
+            ctx,
+            "select id from ores_inbox_approval_requests_tbl where id = '" + request_id +
+                "'::uuid and valid_to = ores_utility_infinity_timestamp_fn() for update");
         const auto locked = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
         if (!locked || locked->state_code != "approved") {
-            return {.refusal = "The request is " + (locked ? locked->state_code : std::string("gone")) +
+            return {.refusal = "The request is " +
+                               (locked ? locked->state_code : std::string("gone")) +
                                " and cannot be applied."};
         }
 

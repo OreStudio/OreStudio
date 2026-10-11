@@ -24,11 +24,6 @@
 #include "ores.database/repository/entity_write_observer.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.core/export.hpp"
-#include "ores.trading.core/repository/structure_member_entity.hpp"
-#include "ores.trading.core/repository/trade_additional_field_entity.hpp"
-#include "ores.trading.core/repository/trade_booking_entity.hpp"
-#include "ores.trading.core/repository/trade_identifier_entity.hpp"
-#include "ores.trading.core/repository/trade_party_role_entity.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/bond_instrument_entity.hpp"
 #include "ores.trading.core/repository/callable_swap_instrument_entity.hpp"
@@ -57,10 +52,15 @@
 #include "ores.trading.core/repository/knock_out_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/rate_instrument_entity.hpp"
 #include "ores.trading.core/repository/scripted_instrument_entity.hpp"
+#include "ores.trading.core/repository/structure_member_entity.hpp"
 #include "ores.trading.core/repository/swaption_instrument_entity.hpp"
-#include "ores.trading.core/repository/vanilla_swap_instrument_entity.hpp"
+#include "ores.trading.core/repository/trade_additional_field_entity.hpp"
+#include "ores.trading.core/repository/trade_booking_entity.hpp"
+#include "ores.trading.core/repository/trade_identifier_entity.hpp"
+#include "ores.trading.core/repository/trade_party_role_entity.hpp"
 #include "ores.trading.core/repository/trade_portfolio_entity.hpp"
 #include "ores.trading.core/repository/trade_state_entity.hpp"
+#include "ores.trading.core/repository/vanilla_swap_instrument_entity.hpp"
 #include <string>
 
 namespace ores::trading::service {
@@ -124,7 +124,6 @@ struct entity_write_observer<ores::trading::repository::trade_identifier_entity>
 };
 
 
-
 template <>
 struct entity_write_observer<ores::trading::repository::trade_party_role_entity> {
     static constexpr bool observes = true;
@@ -144,9 +143,10 @@ struct entity_write_observer<ores::trading::repository::trade_party_role_entity>
 template <>
 struct entity_write_observer<ores::trading::repository::balance_guaranteed_swap_instrument_entity> {
     static constexpr bool observes = true;
-    static void observe(context ctx,
-                        const ores::trading::repository::balance_guaranteed_swap_instrument_entity& entity,
-                        ores::logging::logger_t& lg) {
+    static void
+    observe(context ctx,
+            const ores::trading::repository::balance_guaranteed_swap_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, entity.trade_id.value(), entity.change_reason_code, lg);
     }
@@ -221,9 +221,10 @@ struct entity_write_observer<ores::trading::repository::credit_instrument_entity
 template <>
 struct entity_write_observer<ores::trading::repository::equity_accumulator_instrument_entity> {
     static constexpr bool observes = true;
-    static void observe(context ctx,
-                        const ores::trading::repository::equity_accumulator_instrument_entity& entity,
-                        ores::logging::logger_t& lg) {
+    static void
+    observe(context ctx,
+            const ores::trading::repository::equity_accumulator_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, entity.trade_id.value(), entity.change_reason_code, lg);
     }
@@ -232,9 +233,10 @@ struct entity_write_observer<ores::trading::repository::equity_accumulator_instr
 template <>
 struct entity_write_observer<ores::trading::repository::equity_asian_option_instrument_entity> {
     static constexpr bool observes = true;
-    static void observe(context ctx,
-                        const ores::trading::repository::equity_asian_option_instrument_entity& entity,
-                        ores::logging::logger_t& lg) {
+    static void
+    observe(context ctx,
+            const ores::trading::repository::equity_asian_option_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, entity.trade_id.value(), entity.change_reason_code, lg);
     }
@@ -243,9 +245,10 @@ struct entity_write_observer<ores::trading::repository::equity_asian_option_inst
 template <>
 struct entity_write_observer<ores::trading::repository::equity_barrier_option_instrument_entity> {
     static constexpr bool observes = true;
-    static void observe(context ctx,
-                        const ores::trading::repository::equity_barrier_option_instrument_entity& entity,
-                        ores::logging::logger_t& lg) {
+    static void
+    observe(context ctx,
+            const ores::trading::repository::equity_barrier_option_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, entity.trade_id.value(), entity.change_reason_code, lg);
     }
@@ -254,9 +257,10 @@ struct entity_write_observer<ores::trading::repository::equity_barrier_option_in
 template <>
 struct entity_write_observer<ores::trading::repository::equity_digital_option_instrument_entity> {
     static constexpr bool observes = true;
-    static void observe(context ctx,
-                        const ores::trading::repository::equity_digital_option_instrument_entity& entity,
-                        ores::logging::logger_t& lg) {
+    static void
+    observe(context ctx,
+            const ores::trading::repository::equity_digital_option_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, entity.trade_id.value(), entity.change_reason_code, lg);
     }
@@ -309,9 +313,10 @@ struct entity_write_observer<ores::trading::repository::equity_swap_instrument_e
 template <>
 struct entity_write_observer<ores::trading::repository::equity_variance_swap_instrument_entity> {
     static constexpr bool observes = true;
-    static void observe(context ctx,
-                        const ores::trading::repository::equity_variance_swap_instrument_entity& entity,
-                        ores::logging::logger_t& lg) {
+    static void
+    observe(context ctx,
+            const ores::trading::repository::equity_variance_swap_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, entity.trade_id.value(), entity.change_reason_code, lg);
     }
@@ -353,9 +358,10 @@ struct entity_write_observer<ores::trading::repository::fx_asian_forward_instrum
 template <>
 struct entity_write_observer<ores::trading::repository::fx_barrier_option_instrument_entity> {
     static constexpr bool observes = true;
-    static void observe(context ctx,
-                        const ores::trading::repository::fx_barrier_option_instrument_entity& entity,
-                        ores::logging::logger_t& lg) {
+    static void
+    observe(context ctx,
+            const ores::trading::repository::fx_barrier_option_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, entity.trade_id.value(), entity.change_reason_code, lg);
     }
@@ -364,9 +370,10 @@ struct entity_write_observer<ores::trading::repository::fx_barrier_option_instru
 template <>
 struct entity_write_observer<ores::trading::repository::fx_digital_option_instrument_entity> {
     static constexpr bool observes = true;
-    static void observe(context ctx,
-                        const ores::trading::repository::fx_digital_option_instrument_entity& entity,
-                        ores::logging::logger_t& lg) {
+    static void
+    observe(context ctx,
+            const ores::trading::repository::fx_digital_option_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, entity.trade_id.value(), entity.change_reason_code, lg);
     }
@@ -386,9 +393,10 @@ struct entity_write_observer<ores::trading::repository::fx_forward_instrument_en
 template <>
 struct entity_write_observer<ores::trading::repository::fx_vanilla_option_instrument_entity> {
     static constexpr bool observes = true;
-    static void observe(context ctx,
-                        const ores::trading::repository::fx_vanilla_option_instrument_entity& entity,
-                        ores::logging::logger_t& lg) {
+    static void
+    observe(context ctx,
+            const ores::trading::repository::fx_vanilla_option_instrument_entity& entity,
+            ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
             ctx, entity.trade_id.value(), entity.change_reason_code, lg);
     }

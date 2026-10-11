@@ -36,6 +36,7 @@ import { tabsFor } from '../access/screens.js';
 import { actorPathFor } from '../access/PeoplePage.js';
 import { useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
 import { Crumbs } from '../refdata/shared.js';
+import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
@@ -205,11 +206,28 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
         void queries.invalidateQueries({ queryKey: ['timeline', 'person'] });
     };
 
-    if (tree.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (tree.isError) {
-        return <Notice tone="error">{tree.error.message}</Notice>;
+    if (tree.isPending || tree.isError) {
+        return (
+            <ScreenFrame
+                trail={
+                    <Crumbs
+                        parts={[
+                            { label: t('shell.menu.home'), to: '/' },
+                            { label: t('access.hub.title'), to: '/organisation' },
+                            { label: t('access.hub.hierarchy') },
+                        ]}
+                    />
+                }
+                title={t('access.hub.hierarchy')}
+                description={t('membership.reporting.lead')}
+            >
+                {tree.isError ? (
+                    <Notice tone="error">{tree.error.message}</Notice>
+                ) : (
+                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                )}
+            </ScreenFrame>
+        );
     }
 
     const unrooted = nodes.filter((node) => node.depth < 0);

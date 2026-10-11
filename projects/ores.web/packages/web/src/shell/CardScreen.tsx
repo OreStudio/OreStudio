@@ -39,11 +39,13 @@ export function CardScreen({
 }): ReactNode {
     const { t } = useTranslation();
     const def = cardOf(card);
-    const area = areaOfCard(card);
+    // A workflow listed on the screen it acts on has no area page of its own, so
+    // its trail is that screen's: Home, Reference data, Onboard a party.
+    const area = areaOfCard(card) ?? (def.on === undefined ? undefined : areaOfCard(def.on as CardId));
     return (
         <div className="space-y-6">
             <div>
-                {area !== undefined && area !== 'tenants' && (
+                {area !== undefined && (
                     <AreaTrail area={area satisfies AreaName} screen={t(def.titleKey)} />
                 )}
                 <PageHeader title={t(def.titleKey)} description={t(def.bodyKey)} />

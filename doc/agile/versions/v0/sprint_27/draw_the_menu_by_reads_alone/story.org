@@ -21,11 +21,11 @@ Who sees an area or a card depends on the reads a person holds and on nothing el
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Scaffolded. The review of every card, breadcrumb and menu is the first task to run. |
+| Now           | Done. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the review task.                 |
+| Next          | Nothing. |
 | Last touched  | 2026-10-11                               |
 
 * Acceptance
@@ -43,12 +43,28 @@ Who sees an area or a card depends on the reads a person holds and on nothing el
 | [[id:93BE66B8-042D-4EDB-A42E-BD3A27626D3E][Give the installation screens a read of their own]] | DONE | 2026-10-11 | 2026-10-11 | Initial task for: Draw the menu by reads alone |
 | [[id:BBF2EB3F-BC2E-416E-8F57-DEDA19600A95][Review every card, breadcrumb and menu against the menu structure page]] | DONE | 2026-10-11 | 2026-10-11 | List every difference between the menu, the area cards, the breadcrumbs and addresses of the web screens and the menu structure page, then fix each one in the code or the page. |
 | [[id:8E1666B4-BF28-4E11-929C-C5C7D0216208][Settle the open points on the menu structure page]] | DONE | 2026-10-11 | 2026-10-11 | Decide where Rescue access belongs and whether Market data gets its own area, and write both decisions on the page. |
-| [[id:9931C2FF-95F9-4434-ACC1-30566EE27C34][Walk every screen for its area, address and trail]] | BACKLOG | | | A test walks every screen of the web app and checks it has one area, one address and the trail Home, the area, the screen. |
+| [[id:9931C2FF-95F9-4434-ACC1-30566EE27C34][Walk every screen for its area, address and trail]] | DONE | 2026-10-11 | 2026-10-11 | A test walks every screen of the web app and checks it has one area, one address and the trail Home, the area, the screen. |
 
 * Decisions
+
+- Who sees an area or a card depends on the reads a person holds and nothing else. The installation screens ask for =installation::deployment:read=, which the wildcard =*= does not cover, so a tenant's administrator does not hold it. The rule is stated in =ores.security= for the services and in =@ores/contracts= for the browser and the BFF.
+- Staff is the name of the people screen for everyone. Every screen has a breadcrumb, and a person's own pages have Home then the page.
+- Rescue access stays in Organisation, Market data is its own area, Development is an area, and Trades waits for its first screen.
+- A screen that is waiting or has failed keeps its breadcrumb and header. A workflow card is walked under the area of the screen it acts on.
+- One test (=shell/walk.test.tsx=) holds every card screen, area page and own page to the Menu structure page, and fails on a route it does not know.
 
 * Out of scope
 
 - A menu or a card for a kind of user. The page forbids it, and a read decides.
 - New screens. The story moves the screens that exist to the area the page gives them.
 - The Qt application's menus.
+
+* Result
+
+The web menu, cards and breadcrumbs follow the Menu structure page, and a test keeps them there.
+
+- The review listed sixteen rows. Each is fixed in the code or the page, or decided and written on the page.
+- The installation screens are drawn and served by a read of their own.
+- The walk test found and fixed the missing trail of the two workflow cards on Parties and of seven screens that showed only "Loading…".
+
+The story's four tasks are merged or in review, each with its own pull request.

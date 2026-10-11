@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :draw_the_menu_by_reads_alone:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/walk-every-screen-for-its-area-address-and-trail
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:402E9624-50BC-4ABE-B65D-2C0E34764E48][Draw the menu by reads alone]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A new screen with the wrong area, a second address or the wrong trail fails a te
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:402E9624-50BC-4ABE-B65D-2C0E34764E48][Draw the menu by reads alone]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -42,6 +42,11 @@ A new screen with the wrong area, a second address or the wrong trail fails a te
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Render the application at each address and read the breadcrumb it draws, so the test checks what a person sees and not the code that builds it.
+- Take the screens from the one card registry, so a new card is walked without a new line: its address is under its area, and its trail is Home, the area, the screen.
+- Walk the area pages, the pages of a person themselves and the screens that have no card.
+- Read the route declarations of =AppRoutes.tsx= and fail on a route the walk does not know, so a new screen cannot skip it.
 
 * Measurements
 
@@ -58,6 +63,12 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The walk found three real faults before it passed, all fixed in this task.
+- The two workflow cards listed on Parties (Onboard a party, Onboard a counterparty) drew no trail at all. A workflow has no area page of its own, so the card screen found no area. It now takes the area of the screen the workflow acts on.
+- Seven screens drew a bare "Loading…" with no trail and no header until their data came: Running services, Compute grid, Classifications, My access, Where I work, Roles and Hierarchy. A waiting or failed read now keeps the trail and the header, through a shared frame (=ScreenFrame=). The entity screen specification puts the loading line in the place of the content.
+- A walk that opens a record's page needs that record's data, so the record pages (those with a =:code= or =:id= in the address) are named as exempt and not walked. Each starts from its list's trail, which the walk covers.
+- The test reads =AppRoutes.tsx= as text for the list of routes. A route written some other way than a =path= prop would not be found.
 
 * Test Scenarios
 
@@ -83,3 +94,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A test walks the application and holds every screen to the Menu structure page.
+
+- =shell/walk.test.tsx= opens each card screen, each area page, the pages of a person themselves and the screens with no card. It checks the address is under its area, there is one address for each card, and the trail is Home, the area, the screen.
+- It reads the route declarations of the application and fails on a route it does not know, apart from record pages, redirects and the sign-in doors.
+- It found and the task fixed the trail of the two workflow cards on Parties and the seven waiting screens that drew no trail.
+
+Evidence: the web suite passes (106 files, 1195 tests), the typecheck and Prettier are clean, and putting back the old card screen makes the walk fail on exactly the two workflow cards.
+
+Not done here: a walk of the record pages, which need seeded data.

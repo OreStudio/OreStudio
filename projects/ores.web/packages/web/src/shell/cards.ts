@@ -277,6 +277,15 @@ export const AREA_CARDS = {
 
 export type CardArea = keyof typeof AREA_CARDS;
 
+/** The address of each area's page, which is also the start of every address inside it. */
+export const AREA_PAGE: Record<CardArea, string> = {
+    refdata: PATHS.refdata,
+    organisation: PATHS.organisation,
+    marketdata: '/market-data',
+    operations: PATHS.operations,
+    tenants: '/tenants',
+};
+
 /** The cards of a person's own account, which Home offers beside the areas. */
 export const ACCOUNT_CARDS: readonly CardId[] = ['myAccess', 'security'];
 

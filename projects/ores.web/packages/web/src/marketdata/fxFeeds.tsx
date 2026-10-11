@@ -153,7 +153,7 @@ const FEED_WRITE_FIELDS = [
     'base_currency_code',
     'quote_currency_code',
     'source_name',
-    'ore_key',
+    'oresmd_uri',
     'price_source',
     'gmm_initial_price',
     'ticks_per_hour',
@@ -197,7 +197,7 @@ function pairOf(feed: Readonly<Record<string, unknown>>): string {
 }
 
 /**
- * The fields that follow from the others: the ORE key from the pair, a source
+ * The fields that follow from the others: the oresmd URI from the pair, a source
  * name from the pair when none is given, and the price fields the source does
  * not use emptied, as the table requires.
  */
@@ -207,7 +207,7 @@ export function completeFeed(write: Readonly<Record<string, unknown>>): Record<s
     const fixed = write['price_source'] === 'fixed';
     return {
         ...write,
-        ore_key: `FX/RATE/${base}/${quote}`,
+        oresmd_uri: `oresmd://fx/${base}?type=quote&instrument=fx_spot&quote=rate&ccy=${quote}`,
         source_name:
             show(write['source_name']) === ''
                 ? `synthetic.${base}${quote}`.toLowerCase()
@@ -350,11 +350,11 @@ function FxFeedsList(): ReactNode {
                         sort: 'source_name',
                     },
                     {
-                        id: 'ore_key',
-                        header: t('refdata.fields.ore_key'),
-                        cell: (row) => show(row['ore_key']),
+                        id: 'oresmd_uri',
+                        header: t('refdata.fields.oresmd_uri'),
+                        cell: (row) => show(row['oresmd_uri']),
                         mono: true,
-                        sort: 'ore_key',
+                        sort: 'oresmd_uri',
                     },
                     {
                         id: 'process_type',
@@ -483,7 +483,7 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                 <RecordDetails
                     specs={FEED_FIELDS}
                     row={feed}
-                    extra={[[t('refdata.fields.ore_key'), show(feed['ore_key'])]]}
+                    extra={[[t('refdata.fields.oresmd_uri'), show(feed['oresmd_uri'])]]}
                 />
             )}
             {tab === 'behaviour' && (

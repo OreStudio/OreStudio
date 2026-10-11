@@ -54,7 +54,7 @@ constexpr auto second_end = std::chrono::year{2026} / 4 / 29;
 TEST_CASE("a_pillar_that_starts_at_spot_keys_0d_and_the_days_to_its_end", "[oresmd][pillar]") {
     // ORE reads a swap's start and end as two periods or two dates, so a spot
     // pillar's end is the days it lies after spot: 2026-01-28 to 2026-03-19 is 50.
-    const auto key = make_pillar_quote_key("USD", "SPOT", spot_start, first_end);
+    const auto key = make_pillar_quote_key("USD", "1D", "SPOT", spot_start, first_end);
 
     CHECK(key.series_type == "IR_SWAP");
     CHECK(key.metric == "RATE");
@@ -68,7 +68,7 @@ TEST_CASE("a_pillar_that_starts_at_spot_keys_0d_and_the_days_to_its_end", "[ores
 }
 
 TEST_CASE("a_pillar_that_starts_on_a_meeting_keys_the_date_it_starts_on", "[oresmd][pillar]") {
-    const auto key = make_pillar_quote_key("USD", "1F", spot_start, first_end);
+    const auto key = make_pillar_quote_key("USD", "1D", "1F", spot_start, first_end);
 
     CHECK(key.qualifier == "USD/20260128/1D");
     CHECK(key.point == "20260319");
@@ -77,17 +77,17 @@ TEST_CASE("a_pillar_that_starts_on_a_meeting_keys_the_date_it_starts_on", "[ores
 }
 
 TEST_CASE("a_pillars_end_date_is_its_point_and_not_part_of_its_series", "[oresmd][pillar]") {
-    const auto short_pillar = make_pillar_quote_key("USD", "1F", spot_start, first_end);
-    const auto long_pillar = make_pillar_quote_key("USD", "1F", spot_start, second_end);
+    const auto short_pillar = make_pillar_quote_key("USD", "1D", "1F", spot_start, first_end);
+    const auto long_pillar = make_pillar_quote_key("USD", "1D", "1F", spot_start, second_end);
 
     CHECK(short_pillar.point != long_pillar.point);
     CHECK(pillar_series_uri(short_pillar) == pillar_series_uri(long_pillar));
 }
 
 TEST_CASE("two_pillars_are_two_series", "[oresmd][pillar]") {
-    const auto spot = make_pillar_quote_key("USD", "SPOT", spot_start, first_end);
+    const auto spot = make_pillar_quote_key("USD", "1D", "SPOT", spot_start, first_end);
     const auto dated =
-        make_pillar_quote_key("USD", "1F", std::chrono::year{2026} / 1 / 28, second_end);
+        make_pillar_quote_key("USD", "1D", "1F", std::chrono::year{2026} / 1 / 28, second_end);
 
     CHECK(pillar_series_uri(spot) != pillar_series_uri(dated));
     CHECK(pillar_series_uri(spot) ==
@@ -97,9 +97,23 @@ TEST_CASE("two_pillars_are_two_series", "[oresmd][pillar]") {
 }
 
 TEST_CASE("a_spot_pillar_that_does_not_end_after_spot_is_refused", "[oresmd][pillar]") {
-    CHECK_THROWS_AS(make_pillar_quote_key("USD", "SPOT", spot_start, spot_start),
+    CHECK_THROWS_AS(make_pillar_quote_key("USD", "1D", "SPOT", spot_start, spot_start),
                     std::invalid_argument);
     CHECK_THROWS_AS(
-        make_pillar_quote_key("USD", "SPOT", spot_start, std::chrono::year{2026} / 1 / 25),
+        make_pillar_quote_key("USD", "1D", "SPOT", spot_start, std::chrono::year{2026} / 1 / 25),
         std::invalid_argument);
 }
+
+TEST_CASE("the index tenor is the tenor field of the series, so two index tenors are two series",
+          "[oresmd][pillar]") {
+    const auto overnight = make_pillar_quote_key("EUR", "1D", "SPOT", spot_start, first_end);
+    const auto six_month = make_pillar_quote_key("EUR", "6M", "SPOT", spot_start, first_end);
+    const auto three_month = make_pillar_quote_key("EUR", "3M", "SPOT", spot_start, first_end);
+
+    CHECK(six_month.qualifier == "EUR/0D/6M");
+    CHECK(pillar_series_uri(six_month) ==
+          "oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M");
+    CHECK(pillar_series_uri(six_month) != pillar_series_uri(three_month));
+    CHECK(pillar_series_uri(six_month) != pillar_series_uri(overnight));
+}
+

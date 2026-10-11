@@ -3024,7 +3024,7 @@ const fr: SourceCatalogue = {
             base_currency_code: 'Devise de base',
             quote_currency_code: 'Devise de cotation',
             source_name: 'Nom de la source',
-            ore_key: 'Clé ORE',
+            oresmd_uri: 'URI oresmd',
             process_type: 'Moteur',
             ticks_per_hour: 'Ticks par heure',
             price_source: 'Prix initial depuis',

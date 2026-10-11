@@ -185,7 +185,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             'base_currency_code',
             'quote_currency_code',
             'source_name',
-            'ore_key',
+            'oresmd_uri',
             'ticks_per_hour',
         ],
         subjects: {
@@ -200,7 +200,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             base_currency_code: code,
             quote_currency_code: code,
             source_name: label,
-            ore_key: label,
+            oresmd_uri: label,
             price_source: code,
             gmm_initial_price: z.number(),
             ticks_per_hour: z.int().positive(),

@@ -26,6 +26,7 @@
 #include "ores.synthetic.api/domain/binding_mode.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <expected>
@@ -65,24 +66,24 @@ public:
 };
 
 /**
- * @brief Whether two running/candidate feeds would collide: same qualifier
- * AND same role.
+ * @brief Whether two running/candidate feeds would collide: their series lists
+ * share a series.
  *
- * role is deliberately part of the comparison — a discount feed and a
- * projection feed for the same qualifier are expected to coexist, not
- * conflict. FX feeds have an empty role, which makes the comparison
- * qualifier-only: two FX feeds on the same pair cannot both run, because
- * both would publish into the same observation series — the same hazard
- * the IR rule guards against. A feed with an empty qualifier (an
- * unparseable ORE key) has no published market-data key to protect and
- * conflicts with nothing. Pure and free of IFeed/NATS so it is directly
- * unit-testable without a live NATS client.
+ * A curve, a surface and a rate are each a series, and a series holds the points
+ * of one feed at a time: two feeds that publish into the same series would write
+ * points into one coordinate axis, each overwriting the other's values. So the
+ * comparison is on the series alone. The role says how a consumer uses a curve
+ * and is not part of any series, so a discount feed and a projection feed of one
+ * index publish the same series and conflict. Two FX feeds on one pair conflict
+ * for the same reason. A feed that names no series has an empty list, owns
+ * nothing to protect and conflicts with nothing. Pure and free of IFeed/NATS so
+ * it is directly unit-testable without a live NATS client.
  */
-inline bool feeds_conflict(const std::string& qualifier_a,
-                           const std::string& role_a,
-                           const std::string& qualifier_b,
-                           const std::string& role_b) {
-    return !qualifier_a.empty() && qualifier_a == qualifier_b && role_a == role_b;
+inline bool feeds_conflict(const std::vector<std::string>& series_a,
+                           const std::vector<std::string>& series_b) {
+    return std::ranges::any_of(series_a, [&](const std::string& s) {
+        return !s.empty() && std::ranges::find(series_b, s) != series_b.end();
+    });
 }
 
 /**
@@ -98,8 +99,8 @@ make_marketdata_binding_store(ores::nats::service::nats_client& auth_nats);
  * Serves every asset class from one class: the map of running feeds is
  * keyed by source_name (a producer's unique identity), so several
  * producers run concurrently and publish on distinct subjects — but at
- * most one per (qualifier, role) pair (see feeds_conflict), so two feeds
- * on the same pair — two FX feeds included — never both run. Every feed
+ * most one per series (see feeds_conflict), so two feeds that
+ * publish the same series — two FX feeds on one pair included — never both run. Every feed
  * enters the map through the common IFeed interface: the per-kind
  * producers (fx_spot_feed, ir_curve_feed) differ only in what they
  * publish, not in how they are owned.
@@ -119,16 +120,13 @@ make_marketdata_binding_store(ores::nats::service::nats_client& auth_nats);
  * branches on the asset class — a feed arrives as IFeed and its kind is
  * irrelevant here.
  *
- * At most one feed per (qualifier, role) pair — the pair the feed's own
- * IFeed::conflict_key() encodes (see feeds_conflict) — runs at a time:
- * an add()/start() whose pair is already held by a *different* running
+ * At most one feed runs at a time for any series (see feeds_conflict):
+ * an add()/start() whose series is already held by a *different* running
  * feed is rejected, never silently, and never by stopping the existing
- * one. Switching requires an explicit stop() first. The check compares
- * the pair via feeds_conflict() rather than the key string, because an
- * empty qualifier (an unparseable ORE key) must conflict with nothing
- * even though its key string is non-empty. The conflict is reported with
- * the running feed's source_name, via the conflicting-source-name out
- * parameter or running_source_name_for_conflict_key().
+ * one. Switching requires an explicit stop() first. A feed that names no
+ * series has nothing to protect and conflicts with nothing. The conflict
+ * is reported with the running feed's source_name, via the
+ * conflicting-source-name out parameter or running_source_name_for_series().
  *
  * Threading: start() and stop() are called from NATS I/O callbacks and
  * the startup path; both are protected by a mutex. shutdown() is called
@@ -159,7 +157,7 @@ public:
         shutdown();
     }
 
-    enum class start_result { started, already_running, qualifier_conflict, vintage_data_missing };
+    enum class start_result { started, already_running, oresmd_conflict, vintage_data_missing };
 
     /**
      * @brief Config-driven path: registers an already-constructed feed as
@@ -195,7 +193,7 @@ public:
         {
             std::lock_guard lock(mu_);
             // The caller's own source_name is excluded from conflict detection,
-            // so a duplicate add for it would pass the qualifier check and then
+            // so a duplicate add for it would pass the series check and then
             // emplace-collide: the discarded node would destroy a joinable
             // thread (std::terminate). Concurrent request paths (folder cascade)
             // can race past a caller's pre-checks, so guard the same way start()
@@ -218,9 +216,9 @@ public:
 
     /**
      * @brief On-demand path: starts a feed by source_name if not already
-     * running, and if no *different* feed already holds its conflict key.
-     * Use running_source_name_for_conflict_key() to build an actionable
-     * message when this returns qualifier_conflict.
+     * running, and if no *different* feed already publishes one of its series.
+     * Use running_source_name_for_series() to build an actionable
+     * message when this returns oresmd_conflict.
      *
      * @p binding_mode and @p caller_bearer_token mean what they mean in add():
      * the mode the caller built the feed with decides whether a feed_binding
@@ -243,7 +241,7 @@ public:
                 binding_mode = feeds_.at(source_name).binding_mode;
             } else {
                 if (find_conflict(*feed, source_name))
-                    return start_result::qualifier_conflict;
+                    return start_result::oresmd_conflict;
                 start_running(std::move(feed), binding_mode);
             }
         }
@@ -257,21 +255,18 @@ public:
     }
 
     /**
-     * @brief The source_name of the running feed currently holding @p
-     * conflict_key, if any — for building the "already running as X — stop
-     * it first" message after a qualifier_conflict result.
+     * @brief The source_name of the running feed that publishes one of @p
+     * series, if any — for building the "already running as X — stop it
+     * first" message after a oresmd_conflict result.
      *
-     * Feeds with an empty qualifier never hold a conflict key (see
-     * feeds_conflict) and are skipped, so the lookup cannot false-positive
-     * on one of them.
+     * Feeds that name no series never hold one (see feeds_conflict), so the
+     * lookup cannot false-positive on one of them.
      */
     std::optional<std::string>
-    running_source_name_for_conflict_key(const std::string& conflict_key) const {
+    running_source_name_for_series(const std::vector<std::string>& series) const {
         std::lock_guard lock(mu_);
         for (const auto& [name, rf] : feeds_) {
-            if (rf.feed->qualifier().empty())
-                continue;
-            if (rf.feed->conflict_key() == conflict_key)
+            if (feeds_conflict(rf.feed->series_uris(), series))
                 return name;
         }
         return std::nullopt;
@@ -424,19 +419,16 @@ private:
             status_thread_ = std::thread(&feed_controller::status_loop, this);
     }
 
-    // The source_name of a *different* running feed already holding @p
-    // feed's conflict key, if any — a running feed with the same qualifier
-    // but a *different* role (e.g. discount vs. projection) is not a
-    // conflict. Excludes @p excluding_source_name so re-adding/restarting
-    // the same config never self-conflicts. Caller must already hold mu_.
+    // The source_name of a *different* running feed that already publishes one
+    // of @p feed's series, if any. Excludes @p excluding_source_name so
+    // re-adding/restarting the same config never self-conflicts. Caller must
+    // already hold mu_.
     std::optional<std::string> find_conflict(const ores::marketdata::domain::IFeed& feed,
                                              const std::string& excluding_source_name) const {
-        const auto qualifier = feed.qualifier();
-        const auto role = feed.role();
         for (const auto& [name, rf] : feeds_) {
             if (name == excluding_source_name)
                 continue;
-            if (feeds_conflict(rf.feed->qualifier(), rf.feed->role(), qualifier, role))
+            if (feeds_conflict(rf.feed->series_uris(), feed.series_uris()))
                 return name;
         }
         return std::nullopt;

@@ -119,7 +119,7 @@ how a consumer finds it.
 
 | Title | Scope | Filetags | Anchor |
 |-------+-------+----------+--------|
-| The feed and its lifecycle | What an =IFeed= is, its identity triple of source name, qualifier and role, its =start=/=stop= blocking contract, and its publish counter | =marketdata=feeds=producers=lifecycle= | =ores.marketdata.api/domain/i_feed.hpp=, class =IFeed= |
+| The feed and its lifecycle | What an =IFeed= is, its identity of source name, the series it publishes and its role, its =start=/=stop= blocking contract, and its publish counter | =marketdata=feeds=producers=lifecycle= | =ores.marketdata.api/domain/i_feed.hpp=, class =IFeed= |
 | The feed controller | Why one process owns add, start, stop, conflict detection and the binding rule, and what each start result means | =marketdata=feeds=lifecycle=control= | =ores.synthetic/service/src/feed_controller.hpp=, =feed_controller::start_result= |
 | The feed factory and the kind seam | How a kind string selects a producer builder, why the build input is a variant, and how a third asset class registers without touching the lifecycle | =marketdata=feeds=producers=factory= | =ores.synthetic.api/feeds/feed_factory.hpp=, =feed_factory::make=, =make_default_feed_factory= |
 | Adding an asset class | The two places an asset class plugs in, its config rows into a typed build input and its producer behind =IFeed=, and the list of edits a new kind still requires | =marketdata=feeds=producers=extension= | =feed_factory::register_kind=, =fx_spot_feed_kind=, =ir_curve_feed_kind= |

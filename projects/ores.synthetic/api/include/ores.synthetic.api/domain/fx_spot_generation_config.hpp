@@ -85,10 +85,13 @@ struct fx_spot_generation_config final {
     std::string source_name;
 
     /**
-     * @brief ORE market key identifying the FX spot rate produced (e.g. "FX/RATE/EUR/USD"). Derived
-     * from the currency pair; not entered directly.
+     * @brief The oresmd quote URI of the FX spot rate this feed produces (e.g.
+     * "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD"). Derived from the
+     * currency pair; not entered directly. A feed built from the config reads it with the strict
+     * oresmd codec, and refuses a URI that is not an fx_spot quote or whose currencies differ from
+     * the base and the quote currency.
      */
-    std::string ore_key;
+    std::string oresmd_uri;
 
     /**
      * @brief Where this feed's initial spot price comes from: "fixed" (use gmm_initial_price as
@@ -128,7 +131,7 @@ struct fx_spot_generation_config final {
      * (valid, manually startable, but never auto-started -- e.g. a legacy/alternate-index variant
      * living alongside a currency's primary config so the two never silently fight over the same
      * published qualifier at boot). Starting a feed -- whether auto-start-at-boot or a manual Start
-     * -- is rejected outright if another feed is already running for the same ore_key; nothing
+     * -- is rejected outright if another feed is already running for the same oresmd_uri; nothing
      * auto-disables the running one, so switching requires an explicit Stop then Start.
      */
     bool auto_start = false;

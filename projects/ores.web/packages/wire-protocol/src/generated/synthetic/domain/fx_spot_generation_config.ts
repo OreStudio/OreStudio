@@ -39,7 +39,7 @@ export interface FxSpotGenerationConfig {
     base_currency_code: string;
     quote_currency_code: string;
     source_name: string;
-    ore_key: string;
+    oresmd_uri: string;
     price_source: string;
     gmm_initial_price: number;
     ticks_per_hour: number;

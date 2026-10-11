@@ -359,7 +359,7 @@ begin
             insert into ores_synthetic_fx_spot_generation_configs_tbl (
                 tenant_id, id, version, party_id, config_id, folder_id,
                 base_currency_code, quote_currency_code,
-                source_name, ore_key, price_source, gmm_initial_price, ticks_per_hour, process_type,
+                source_name, oresmd_uri, price_source, gmm_initial_price, ticks_per_hour, process_type,
                 enabled, auto_start, vintage_source, vintage_date,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
@@ -375,9 +375,11 @@ begin
                 -- this string.
                 'synthetic.' || lower(replace(v_config_name, ' ', '')) || '.' ||
                     lower(r.base_currency_code) || lower(r.quote_currency_code),
-                -- ore_key uses the pair's natural base/quote order; the
-                -- underlying market data is keyed the same way.
-                'FX/RATE/' || r.base_currency_code || '/' || r.quote_currency_code,
+                -- oresmd_uri is the quote URI of the spot rate, in the pair's
+                -- natural base/quote order; the underlying market data is named
+                -- the same way.
+                'oresmd://fx/' || r.base_currency_code ||
+                    '?type=quote&instrument=fx_spot&quote=rate&ccy=' || r.quote_currency_code,
                 -- price_source/vintage_source/vintage_date are per-row artefact
                 -- columns now — each dataset carries its own vintage tag; 'fixed'
                 -- rows fall back to the artefact's own gmm_initial_price instead

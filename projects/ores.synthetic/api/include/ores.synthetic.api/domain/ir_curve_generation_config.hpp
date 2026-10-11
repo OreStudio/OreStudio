@@ -81,9 +81,9 @@ struct ir_curve_generation_config final {
     std::string currency_code;
 
     /**
-     * @brief Floating-rate index family this curve represents (oresmd's index_family: libor/euribor
-     * for term IBOR-style indices, or one of the overnight/RFR-style families --
-     * sofr/estr/sonia/tona/ saron/aonia/corra/honia/sora/swestr/nowa/kofr/mibor/
+     * @brief Floating-rate index family this curve represents (libor/euribor for term IBOR-style
+     * indices, or one of the overnight/RFR-style families -- sofr/estr/sonia/tona/
+     * saron/aonia/corra/honia/sora/swestr/nowa/kofr/mibor/
      * zaronia/destr/polonia/nzonia/shibor/tiie/taibor), stored as a fixed lower-case token rather
      * than the full ISDA/ORE code the predecessor index_name column held ("USD-SOFR") --
      * currency_code already carries the currency half of that pair. The (currency_code,
@@ -97,31 +97,34 @@ struct ir_curve_generation_config final {
     /**
      * @brief Tenor of this curve's floating-rate index (references tenor.code, e.g. "3M", "6M"),
      * required when index_family is a term family (libor/euribor), empty for overnight families
-     * (sofr/estr/sonia/tona, which have no tenor dimension) -- mirrors oresmd's own
-     * index_family-conditional grammar. The literal discriminator "FOMC" is valid only for
-     * index_family sofr (schema-enforced): it keys a meeting-dated curve variant for the same
-     * (currency_code, index_family) (e.g. the USD-SOFR FOMC-dated short end, whose template entries
-     * resolve to meeting-dated pillars 1F..8F via tenor_resolution), so the config publishes its
-     * own distinct series identity instead of colliding with the standard curve's empty-tenor row.
-     * Other overnight families must leave tenor empty: no tenor_resolution meeting-dated pillar
-     * machinery exists for them. Empty string, not SQL NULL: the codegen used here has no
-     * true-nullable text support, same pattern as vintage_source/vintage_date. Not DB-FK-validated
-     * against tenor, matching the precedent set by ir_curve_template_entry's own
-     * start_tenor_code/end_tenor_code (also soft FKs to tenor.code, resolved only at the
-     * application layer via ores.refdata.api/domain/tenor_resolution.hpp, not a DB trigger --
-     * tenor.org itself emits no single-argument validator function to reuse).
+     * (sofr/estr/sonia/tona, which have no tenor dimension). The tenor of the index is the tenor
+     * identity field of the oresmd series the curve's pillars land in ("1D" for an overnight index,
+     * this column otherwise); see [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio
+     * Market Data URI]]. The literal discriminator "FOMC" is valid only for index_family sofr
+     * (schema-enforced): it keys a meeting-dated curve variant for the same (currency_code,
+     * index_family) (e.g. the USD-SOFR FOMC-dated short end, whose template entries resolve to
+     * meeting-dated pillars 1F..8F via tenor_resolution), so the config has its own natural key and
+     * does not collide with the standard curve's empty-tenor row. Other overnight families must
+     * leave tenor empty: no tenor_resolution meeting-dated pillar machinery exists for them. Empty
+     * string, not SQL NULL: the codegen used here has no true-nullable text support, same pattern
+     * as vintage_source/vintage_date. Not DB-FK-validated against tenor, matching the precedent set
+     * by ir_curve_template_entry's own start_tenor_code/end_tenor_code (also soft FKs to
+     * tenor.code, resolved only at the application layer via
+     * ores.refdata.api/domain/tenor_resolution.hpp, not a DB trigger -- tenor.org itself emits no
+     * single-argument validator function to reuse).
      */
     std::string tenor;
 
     /**
      * @brief Whether this curve discounts cashflows, projects a floating index's forward rate, or
-     * both (oresmd's curve_role: discount/projection/self_discounting). Defaults to
-     * self_discounting for backward-compatible seed data (the shape every existing synthetic IR
-     * curve config already assumes: one curve serving both purposes). Fixed 3-value vocabulary
-     * intrinsic to this record, not a reference to another entity -- no soft FK, validated by a
-     * plain SQL check rather than a lookup-table trigger. curve_feed_controller's collision check
-     * deliberately excludes role from its conflict key, so a discount config and a projection
-     * config for the same (currency_code, index_family, tenor) can run side by side.
+     * both (discount/projection/self_discounting). The oresmd grammar holds no role, so the role is
+     * this config's own data. Defaults to self_discounting for backward-compatible seed data (the
+     * shape every existing synthetic IR curve config already assumes: one curve serving both
+     * purposes). Fixed 3-value vocabulary intrinsic to this record, not a reference to another
+     * entity -- no soft FK, validated by a plain SQL check rather than a lookup-table trigger. The
+     * collision check compares the series a feed publishes into and not the role, so a discount
+     * config and a projection config of one currency and index tenor publish the same series and
+     * cannot run together.
      */
     std::string role = "self_discounting";
 

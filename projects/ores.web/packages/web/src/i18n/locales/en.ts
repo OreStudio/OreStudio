@@ -2981,7 +2981,7 @@ export const en: SourceCatalogue = {
             base_currency_code: 'Base currency',
             quote_currency_code: 'Quote currency',
             source_name: 'Source name',
-            ore_key: 'ORE key',
+            oresmd_uri: 'oresmd URI',
             process_type: 'Engine',
             ticks_per_hour: 'Ticks per hour',
             price_source: 'Initial price from',

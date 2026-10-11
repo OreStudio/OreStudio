@@ -99,21 +99,24 @@ struct ir_curve_refdata_context final {
 };
 
 /**
- * @brief The qualifier an IR curve generation config's feed publishes its series under
- * (currency/index-family[-tenor], e.g. "USD/SOFR" or "USD/SOFR-FOMC").
+ * @brief The tenor of the floating-rate index an IR curve generation config stands for, as the
+ * `tenor` identity field of the series its pillars land in: "1D" for an overnight index (the
+ * config's tenor is empty) and for the meeting-dated FOMC variant of an overnight index, and the
+ * config's own period, such as "3M" or "6M", for a term index.
  *
- * Shared by feed construction (ir_curve_feed.cpp) and by convention selection in the
- * config-start paths, so the two can never disagree on a config's series identity.
+ * The feed and the bootstrap that reads its pillars both state this tenor, so the series one
+ * writes is the series the other looks for.
  */
 ORES_SYNTHETIC_API_EXPORT std::string
-ir_curve_qualifier(const ores::synthetic::domain::ir_curve_generation_config& cfg);
+ir_curve_index_tenor(const ores::synthetic::domain::ir_curve_generation_config& cfg);
 
 /**
- * @brief The tenor convention an IR curve's series resolves under, selected by the series
- * qualifier: the FOMC raw grid (qualifier "...-FOMC") resolves under RATES_SPOT_FOMC;
- * everything else under RATES_SPOT_FORWARD.
+ * @brief The tenor convention an IR curve's pillars resolve under: the meeting-dated FOMC
+ * variant (tenor "FOMC") resolves under RATES_SPOT_FOMC; everything else under
+ * RATES_SPOT_FORWARD.
  */
-ORES_SYNTHETIC_API_EXPORT std::string ir_curve_tenor_convention_code(const std::string& qualifier);
+ORES_SYNTHETIC_API_EXPORT std::string
+ir_curve_tenor_convention_code(const ores::synthetic::domain::ir_curve_generation_config& cfg);
 
 /**
  * @brief Resolves a Curve Template's raw (tenor code, instrument code) entries into the tick

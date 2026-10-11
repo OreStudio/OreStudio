@@ -237,7 +237,7 @@ private:
                              ores::synthetic::domain::binding_mode binding_mode,
                              const std::string& bearer) {
         const auto source_name = feed->source_name();
-        const auto conflict_key = feed->conflict_key();
+        const auto series = feed->series_uris();
         const auto result = ctrl_->start(std::move(feed), binding_mode, bearer);
 
         switch (result) {
@@ -249,8 +249,8 @@ private:
                 resp.success = true;
                 resp.message = "Feed already running: " + source_name;
                 break;
-            case feed_controller::start_result::qualifier_conflict: {
-                const auto conflicting = ctrl_->running_source_name_for_conflict_key(conflict_key);
+            case feed_controller::start_result::oresmd_conflict: {
+                const auto conflicting = ctrl_->running_source_name_for_series(series);
                 resp.success = false;
                 resp.message = "Already running as '" + conflicting.value_or("<unknown>") +
                                "' — stop it first before starting '" + source_name + "'.";

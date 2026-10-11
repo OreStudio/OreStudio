@@ -265,7 +265,7 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
     fx_enabled.base_currency_code = "EUR";
     fx_enabled.quote_currency_code = "USD";
     fx_enabled.source_name = "cascade.test.fx.eur_usd";
-    fx_enabled.ore_key = "FX/RATE/EUR/USD";
+    fx_enabled.oresmd_uri = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
     fx_enabled.price_source = "fixed";
     fx_enabled.gmm_initial_price = 1.08;
     fx_enabled.ticks_per_hour = 12;
@@ -455,7 +455,7 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts", tag
 
     // First pass: one of the two EUR/USD FX configs starts (the uniform
     // conflict rule lets only one run — the second is skipped, proving the
-    // qualifier_conflict rejection end to end), the disabled FX row is
+    // oresmd_conflict rejection end to end), the disabled FX row is
     // skipped, and the IR feed starts. Per-kind counts split the aggregate.
     const auto start1 =
         send_request<start_feeds_under_folder_request, start_feeds_under_folder_response>(

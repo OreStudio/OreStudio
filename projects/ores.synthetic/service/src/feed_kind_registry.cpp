@@ -22,7 +22,6 @@
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -58,7 +57,7 @@ std::optional<feed::ir_curve_refdata_context>
 ir_refdata_context(const ores::database::context& ctx,
                    const ores::synthetic::domain::ir_curve_generation_config& cfg) {
     return feed::build_ir_curve_refdata_context(
-        ctx, feed::ir_curve_tenor_convention_code(feed::ir_curve_qualifier(cfg)));
+        ctx, feed::ir_curve_tenor_convention_code(cfg));
 }
 
 // The system-tenant owned parameter-definition catalogue: the publish path resolves each value's
@@ -93,7 +92,7 @@ feed_kind make_fx_spot_kind() {
             c.feed_config_id = boost::uuids::to_string(fx.id);
             c.container_id = fx.config_id;
             c.source_name = fx.source_name;
-            c.display_name = fx.ore_key;
+            c.display_name = fx.oresmd_uri;
             c.enabled = fx.enabled;
             c.auto_start = fx.auto_start;
             c.folder_id = fx.folder_id;
@@ -104,9 +103,9 @@ feed_kind make_fx_spot_kind() {
                     return a;
                 a.source = fx.vintage_source;
                 a.date = fx.vintage_date;
-                const auto d = datum::ore_key_codec::read(fx.ore_key);
+                const auto d = datum::oresmd_uri_codec::read(fx.oresmd_uri);
                 if (!d) {
-                    a.error = "ORE key '" + fx.ore_key + "': " + d.error();
+                    a.error = "oresmd URI '" + fx.oresmd_uri + "': " + d.error();
                     return a;
                 }
                 a.series_uri = datum::oresmd_uri_codec::write(datum::series_of(*d)).value();
@@ -215,7 +214,7 @@ feed_kind make_ir_curve_kind() {
                 const auto refctx = ir_refdata_context(ctx, cfg);
                 if (!refctx) {
                     a.error = "Tenor convention not found: " +
-                              feed::ir_curve_tenor_convention_code(feed::ir_curve_qualifier(cfg));
+                              feed::ir_curve_tenor_convention_code(cfg);
                     return a;
                 }
                 const auto resolved =
@@ -280,8 +279,7 @@ feed_kind make_ir_curve_kind() {
                 if (!refctx)
                     return {.input = std::nullopt,
                             .skip_reason = "Tenor convention not found: " +
-                                           feed::ir_curve_tenor_convention_code(
-                                               feed::ir_curve_qualifier(cfg))};
+                                           feed::ir_curve_tenor_convention_code(cfg)};
                 return {.input = feed::feed_build_input{ir_curve_feed_build_input{
                             cfg,
                             std::move(entries),

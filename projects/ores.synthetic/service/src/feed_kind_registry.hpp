@@ -80,7 +80,7 @@ struct feed_kind_candidate final {
     /** The market_data_generation_config row this config hangs under. */
     boost::uuids::uuid container_id;
     std::string source_name;
-    /** Log and message label: the ore_key for FX, "ccy/index_family" for IR. */
+    /** Log and message label: the oresmd URI for FX, "ccy/index_family" for IR. */
     std::string display_name;
     bool enabled = false;
     bool auto_start = false;

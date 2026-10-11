@@ -107,7 +107,7 @@ to_domain(const messaging::fx_spot_generation_config_write& write) {
     v.base_currency_code = write.base_currency_code;
     v.quote_currency_code = write.quote_currency_code;
     v.source_name = write.source_name;
-    v.ore_key = write.ore_key;
+    v.oresmd_uri = write.oresmd_uri;
     v.price_source = write.price_source;
     v.gmm_initial_price = write.gmm_initial_price;
     v.ticks_per_hour = write.ticks_per_hour;

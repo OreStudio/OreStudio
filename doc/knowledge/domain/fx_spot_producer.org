@@ -39,7 +39,7 @@ and its component rows. It does four things.
 
 The publish subject is not built here. The caller derives it from
 =source_name= and the binding mode through =producer_subject=, so two
-producers for one ORE key publish on distinct subjects.
+producers for one datum publish on distinct subjects.
 
 ** The tick clock
 
@@ -58,10 +58,9 @@ be clobbered, and the loop and its join would never finish.
 Each pass through the loop advances the process once with =next()= and
 builds one =market_tick=.
 
-- =oresmd_uri= is the URI computed at construction from the ORE key. The
-  constructor reads the key through =ore_key_codec::read= and writes the URI
-  through =oresmd_uri_codec::write=, so the tick and any later vintage read
-  name one series.
+- =oresmd_uri= is the config's quote URI. The constructor reads it through
+  =oresmd_uri_codec::read= and writes it back, so the tick and any later
+  vintage read name one series.
 - =value= is the price as decimal text, produced by =std::format("{}", ...)=
   on the double the process returned.
 - =observation_time= is the wall clock at the tick, and =source= is the
@@ -69,9 +68,11 @@ builds one =market_tick=.
 
 ** Identity and conflict
 
-The constructor derives the qualifier as the text after the second slash of
-the ORE key, so ="FX/RATE/EUR/USD"= yields ="EUR/USD"=. The feed reports an
-empty role, so its conflict key is the qualifier alone. Nothing else about
+The feed reports the one series of its quote in =series_uris()=, so
+=oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD= yields
+=oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD=, as
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] explains. The feed reports an empty role. Two FX feeds conflict when they
+name the same series. Nothing else about
 the config enters the conflict rule.
 
 ** The facts the code shape does not show

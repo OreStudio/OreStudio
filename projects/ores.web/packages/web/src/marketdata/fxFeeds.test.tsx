@@ -76,7 +76,7 @@ const feed: RecordRow = {
     base_currency_code: 'EUR',
     quote_currency_code: 'USD',
     source_name: 'synthetic.eurusd',
-    ore_key: 'FX/RATE/EUR/USD',
+    oresmd_uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
     price_source: 'fixed',
     gmm_initial_price: 1.08,
     ticks_per_hour: 3600,
@@ -133,7 +133,7 @@ describe('the fields a feed derives', () => {
                 vintage_date: null,
             }),
         ).toMatchObject({
-            ore_key: 'FX/RATE/GBP/JPY',
+            oresmd_uri: 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=JPY',
             source_name: 'synthetic.gbpjpy',
             gmm_initial_price: 190,
             vintage_source: '',
@@ -210,7 +210,7 @@ describe('the FX feed screens', () => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('synthetic.eurusd');
-        expect(html).toContain('FX/RATE/EUR/USD');
+        expect(html).toContain('oresmd://fx/EUR?type=quote&amp;instrument=fx_spot&amp;quote=rate&amp;ccy=USD');
         expect(html).toContain('A fixed price');
         expect(html).toContain('>Price behaviour<');
         expect(html).toContain('Edit');

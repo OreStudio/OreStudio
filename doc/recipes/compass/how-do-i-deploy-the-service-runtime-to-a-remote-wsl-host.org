@@ -152,9 +152,20 @@ with =--network=host=, its client certs through a volume, and its
 =--work-dir= under =$REMOTE_ROOT/compute/work=. No NATS sidecar, no
 Postgres, no service set.
 
+The host runs one wrapper per core but one, or =ORES_COMPUTE_REPLICAS= of
+them. Each wrapper has its own host id, a UUID v5 of =<hostname>:<n>=, and
+its own work directory. They share one package cache, so the first wrapper
+that needs an engine package downloads it and the others wait for it.
+
+Each wrapper runs as a systemd user service built from a Quadlet file in
+=~/.config/containers/systemd/=. The service restarts after a crash and
+starts at boot, as long as lingering is on for the user. Quadlet needs podman
+4.4 or later. =--stop= stops the services and removes the files. A WSL host
+starts its wrappers at boot only once the distro itself is running.
+
 ** Idempotency
 
-Re-running any command is safe: containers are =rm -f='d before
+Re-running any command is safe: wrapper units and containers are replaced before
 recreate, files are overwritten, volumes are recreated, and the image
 build is layer-cached. Picking up a new build is just
 =compass env deploy <host>= again.

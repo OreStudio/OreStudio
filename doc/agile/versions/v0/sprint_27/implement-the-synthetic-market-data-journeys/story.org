@@ -63,6 +63,22 @@ A person authors an FX price feed, authors an IR curve feed, runs a collection a
   types and the definitions live in the system tenant. The definitions are
   read only until their key names the process type, and the process types
   are writable from a system session alone.
+- *Feed screens follow one standard.* The FX price feed screen is the shape
+  of every feed screen, recorded in the
+  [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]]: the list
+  is the run dashboard; the process is edited as one set in a list with a
+  dialog per part, with marked unsaved changes and one Save that asks the
+  reason and offers a restart.
+- *The engine sits with the process, and the server converts.* The engine
+  decides what a part's numbers mean, so it is chosen on the process tab, and
+  a change asks the synthetic service to convert the draft
+  (=convert_fx_mixture=). Quant logic that decides a written value lives on
+  the server.
+- *A running feed keeps its process.* A feed reads its parts when it starts,
+  so a save tells the person and offers to restart the feed.
+- *The shared record parts take a store.* =RecordStore= gives the record
+  list, dialogs and history their routes, so a synthetic screen reuses the
+  refdata parts.
 
 * Out of scope
 

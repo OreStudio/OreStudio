@@ -120,7 +120,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web tests | 1090 passed of 1090 | =npx vitest run= in =packages/web= | =bf57e9874b= |
+| BFF tests | 609 passed of 609 | =npx vitest run= in =packages/bff= | =bf57e9874b= |
+| Conversion tests | 5 cases, 22 assertions passed | =ores.synthetic.api.tests "[fx_mixture_conversion]"= | =bf57e9874b= |
+| Codec test | whole number into a double passes | =ores.nats.tests "[wire_codec]"= | =bf57e9874b= |
+| Files changed against main | 77 | =git diff --name-only origin/main...HEAD= | =bf57e9874b= |
 
 * Notes
 
@@ -145,6 +149,42 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Query keys of the shared record parts must name their store, or a refdata and a synthetic resource of one name share a cache | =web/src/refdata/store.tsx= | Accepted | Keys are =['registry', store.name]= and =['records', resource, …]= with distinct resource names; the shared test renderer seeds the store's key |
+| 2 | A mixture save is up to three calls (engine, deletions, writes), not one transaction | =web/src/marketdata/SaveMixtureDialog.tsx= | Declined | No operation writes a feed and its parts together; the journey records the gap and the screen shows the error and reloads. Needs a server apply operation |
+| 3 | The tick buffer lives in the BFF's memory and starts empty after a restart | =bff/src/feed-ticks.ts= | Declined | Stored ticks need the feed's series identity; the oresmd task brings the read. The Ticks tab says what it shows |
+| 4 | Boot auto start never starts a tenant's feeds | =ores.synthetic/service/src/app/application.cpp= | Captured | Not this branch's code: captured as =boot_auto_start_never_sees_tenant_feeds= |
+| 5 | misspell-fixer: "existant" (fr.ts) and "sucesso" (pt.ts) | =web/src/i18n/locales= | Declined | Correct French and Portuguese, on lines from main |
+| 6 | Display helpers (shares, half-life, band, profiles, density) compute quant figures in the browser | =web/src/marketdata/processHelp.ts=, =mixture.ts= | Declined for now | They decide no written value; the feed screen standard lists them as a gap to move to the server |
 
 * Result
+
+The FX price feed screens shipped under *Market data*, and their shape became
+the [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] for every
+asset class.
+
+- *List as dashboard.* Paged, searched and sorted on the server, with a
+  Running or Stopped label and start and stop of the chosen feeds.
+- *Feed page.* Details, Price behaviour, Ticks and History tabs; Start or Stop
+  in the header; the engine in the subtitle; delete stops the feed and
+  removes its mixture first.
+- *Price behaviour.* The mixture as a read-only list with a dialog per
+  component, Share as a computed column, unsaved changes marked per row and
+  cell, and one Save that asks the reason and offers to restart a running
+  feed. The engine lives here, and changing it converts the mixture on the
+  server through the new =convert_fx_mixture= operation. The distribution and
+  the sample paths preview the draft.
+- *Ticks.* A price chart of the last 50, 200 or 500 ticks from a BFF buffer,
+  with the stats strip, high and low, an EMA, CSV export and the process
+  beside it.
+- *History.* One timeline of the feed and its components, with Revert.
+- *Along the way.* The msgpack reader takes a whole number into a double; the
+  synthetic models gained the parent filter and the feed search; the shared
+  record parts take a store; a pending login no longer breaks the session
+  read; the Gemini review of the ticks is filed and read.
+
+Every Acceptance bullet holds. Left for other tasks: the oresmd identity
+([[id:3CD588CB-1B74-40BA-896F-75CFF8157EAF][Name a feed by its oresmd URI]]),
+the simple mode
+([[id:AACBF6DA-53E9-46F4-BBD7-A476625E1732][Give the mixture a simple mode]]),
+and collection-wide start and stop (the collection screen task).
+

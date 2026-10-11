@@ -35,6 +35,12 @@ generated C++ and SQL, the shell command unit and its recipe, and the
 =rpa_instrument= leaf of the rates wire variant, and no tool prunes the
 files it leaves behind.
 
+* Outcome
+
+Done, not discarded for lack of merit. The credit story's task
+=retire-the-unproduced-rpa-instruments-table= retires the table, so this
+capture has no work left. It is filed here to leave the inbox.
+
 * References
 
 - The routing repair that made the table unreachable:

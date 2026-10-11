@@ -484,7 +484,6 @@ entity "trading" as trading {
   ores_trading_price_types_tbl
   ores_trading_rate_instruments_tbl
   ores_trading_return_types_tbl
-  ores_trading_rpa_instruments_tbl
   ores_trading_scripted_instruments_tbl
   ores_trading_settlement_types_tbl
   ores_trading_structure_kinds_tbl

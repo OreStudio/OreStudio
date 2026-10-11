@@ -110,8 +110,6 @@
 \ir ./trading_knock_out_swap_instruments_drop.sql
 \ir ./trading_inflation_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_inflation_swap_instruments_drop.sql
-\ir ./trading_rpa_instruments_notify_trigger_drop.sql
-\ir ./trading_rpa_instruments_drop.sql
 
 -- Per-type FX instruments (Phase 2, drop before generic FX table)
 \ir ./trading_fx_variance_swap_instruments_notify_trigger_drop.sql

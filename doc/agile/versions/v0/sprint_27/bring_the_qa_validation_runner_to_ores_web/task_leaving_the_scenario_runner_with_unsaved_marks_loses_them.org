@@ -8,7 +8,7 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/leaving-the-scenario-runner-with-unsaved-marks-loses-them
-#+pr:
+#+pr: 3097
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3097][#3097]] | [web] Ask before the scenario runner drops unsaved marks |
 
 * Review
 

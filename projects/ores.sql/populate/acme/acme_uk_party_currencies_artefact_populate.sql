@@ -54,5 +54,19 @@ begin
     values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'GBP', 0),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'EUR', 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'USD', 0);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'USD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'CHF', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'JPY', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'CAD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'AUD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'NZD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'SEK', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'NOK', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'DKK', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ZAR', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'TRY', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'PLN', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'CZK', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'HUF', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ILS', 0);
 end $$;

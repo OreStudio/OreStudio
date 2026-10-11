@@ -13,7 +13,75 @@
   },
   {
     "company_code": "acme_group",
+    "currency_iso_code": "CHF"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "JPY"
+  },
+  {
+    "company_code": "acme_group",
     "currency_iso_code": "CAD"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "AUD"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "NZD"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "SEK"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "NOK"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "DKK"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "ZAR"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "TRY"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "PLN"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "CZK"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "HUF"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "ILS"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "MXN"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "BRL"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "CLP"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "COP"
   },
   {
     "company_code": "acme_group",
@@ -21,11 +89,23 @@
   },
   {
     "company_code": "acme_group",
-    "currency_iso_code": "CNY"
+    "currency_iso_code": "CNH"
   },
   {
     "company_code": "acme_group",
-    "currency_iso_code": "JPY"
+    "currency_iso_code": "SGD"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "KRW"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "INR"
+  },
+  {
+    "company_code": "acme_group",
+    "currency_iso_code": "TWD"
   },
   {
     "company_code": "acme_uk",
@@ -40,12 +120,96 @@
     "currency_iso_code": "USD"
   },
   {
+    "company_code": "acme_uk",
+    "currency_iso_code": "CHF"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "JPY"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "CAD"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "AUD"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "NZD"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "SEK"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "NOK"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "DKK"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "ZAR"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "TRY"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "PLN"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "CZK"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "HUF"
+  },
+  {
+    "company_code": "acme_uk",
+    "currency_iso_code": "ILS"
+  },
+  {
     "company_code": "acme_us",
     "currency_iso_code": "USD"
   },
   {
     "company_code": "acme_us",
     "currency_iso_code": "CAD"
+  },
+  {
+    "company_code": "acme_us",
+    "currency_iso_code": "EUR"
+  },
+  {
+    "company_code": "acme_us",
+    "currency_iso_code": "GBP"
+  },
+  {
+    "company_code": "acme_us",
+    "currency_iso_code": "JPY"
+  },
+  {
+    "company_code": "acme_us",
+    "currency_iso_code": "MXN"
+  },
+  {
+    "company_code": "acme_us",
+    "currency_iso_code": "BRL"
+  },
+  {
+    "company_code": "acme_us",
+    "currency_iso_code": "CLP"
+  },
+  {
+    "company_code": "acme_us",
+    "currency_iso_code": "COP"
   },
   {
     "company_code": "acme_hk",
@@ -57,10 +221,34 @@
   },
   {
     "company_code": "acme_hk",
-    "currency_iso_code": "CNY"
+    "currency_iso_code": "JPY"
   },
   {
     "company_code": "acme_hk",
-    "currency_iso_code": "JPY"
+    "currency_iso_code": "AUD"
+  },
+  {
+    "company_code": "acme_hk",
+    "currency_iso_code": "NZD"
+  },
+  {
+    "company_code": "acme_hk",
+    "currency_iso_code": "CNH"
+  },
+  {
+    "company_code": "acme_hk",
+    "currency_iso_code": "SGD"
+  },
+  {
+    "company_code": "acme_hk",
+    "currency_iso_code": "KRW"
+  },
+  {
+    "company_code": "acme_hk",
+    "currency_iso_code": "INR"
+  },
+  {
+    "company_code": "acme_hk",
+    "currency_iso_code": "TWD"
   }
 ]

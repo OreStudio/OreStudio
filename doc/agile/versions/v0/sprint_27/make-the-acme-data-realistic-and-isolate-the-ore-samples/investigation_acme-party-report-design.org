@@ -1,0 +1,232 @@
+:PROPERTIES:
+:ID: 6A1EE441-E132-4230-BCD9-E8BB786D721F
+:END:
+#+title: Investigation: Which reports each ACME party runs
+#+description: The reports, configurations, portfolio trees and currencies each ACME legal entity should hold, with the justification and rejected alternative for every decision, for later review.
+#+type: investigation
+#+level: s1
+#+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into the reports, configurations, portfolio trees and currencies each ACME legal entity should hold, with the justification and rejected alternative for every decision, for later review.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+*Status: DRAFT for review.* Nothing here is implemented. Every decision below is a proposal. A decision marked /open/ needs the product owner. A regulatory statement is a design assumption, not a verified fact, and needs review by someone who knows the regime.
+
+* Context
+
+Every ACME legal entity holds the same seeded report definitions. The holding company runs trading analytics. The Hong Kong entity runs the UK-only transaction report. The UK entity runs the holding-company consolidation reports. A reader of the data cannot believe it describes a real group.
+
+The product owner decided on 2026-10-11 that each party runs the reports that party would really run. This page designs that set, and records why, so a reviewer can challenge each choice later. The task [[id:11AE607C-9F2B-479E-BAA7-36C743AC308F][Design the reports, configs and portfolio trees each ACME party runs]] carries the work. This page covers the reports (D1 to D8), their configuration (D9 to D10) and the portfolio trees and currencies (D11 to D14). Trades are out of scope.
+
+* Methodology
+
+Read, on 2026-10-11:
+
+- The seeded definitions in =reporting_report_definitions_populate.sql=, with their tier, jurisdiction, schedule and the dependencies their descriptions state.
+- The seeded risk configurations in =reporting_risk_report_configs_populate.sql=.
+- The publish functions in =reporting_publish_from_dq_create.sql= and the party provisioning plan in =party_provisioning_plan.hpp=.
+- The ACME source data in =projects/ores.seeder/datasets/acme_corporation=: the offices, desks, books, portfolios and counterparties each entity has.
+- The local database, for what a provision produced. It holds none of the portfolios that the per-party ACME bundles define, although the profile orders the staff step, which publishes them, before the photo step where the provision stops. I did not find out why. The database shows only what the shared bundle published. The ACME trees in this page come from the source JSON, not from the database.
+
+The risk reporting catalogue (=doc/knowledge/domain/risk_reporting.org=) describes market risk reports by audience and scope. It is a different catalogue from the seeded definitions and does not map one to one. This page designs the seeded definitions.
+
+* Paths taken
+
+** What each entity is
+
+The sources describe four legal entities of an investment-bank holding group.
+
+| Entity | Code | Seat | Parent | What it does |
+|--------+------+------+--------+--------------|
+| Acme Corporation Plc | ACMCOR | London | none | Holding company. It has no trading desk. It has a Group Treasury unit and a treasury portfolio. |
+| ACME Corporation UK plc | ACCOUK | London | ACMCOR | Head office of trading. Three desks: rates, credit and FX. The deepest book tree: GBP, EUR and USD rates, investment-grade and high-yield credit, G10 and emerging-market FX. |
+| ACME Corporation US Inc | ACCOUS | New York | ACMCOR | Regional trading entity. The same three desks. USD and CAD rates, one credit book, one G10 FX book. |
+| ACME Corporation HK Ltd | ACCOHK | Hong Kong | ACMCOR | Smallest trading entity. The same three desks. One book each: JPY rates, APAC credit, APAC G10 FX. |
+
+The generator says the offices are deliberately tiered: London is the head office, New York a full regional desk, Hong Kong the shallowest. The report design follows that tiering.
+
+** What the shared provisioning does today
+
+- The provisioning plan publishes the =risk_management= bundle once per party. The bundle carries every seeded definition and the fixture portfolio tree.
+- The definition publish can filter by tier and by jurisdiction. The plan sets neither, so each party gets every definition.
+- The fixture tree is the same for every party, including the holding company, which has no desk.
+- The seeded risk configurations all use GBP, and no party has a risk configuration, because the publish skips a definition that lacks four ORE documents.
+
+** Alternatives for the selection mechanism
+
+| Option | Result |
+|--------+--------|
+| A. Pass =tiers= and =jurisdiction= per party | Small change. Cannot express the design: the entities share a tier, and the rates, credit and FX desks differ by depth, not by tier. Rejected for the design, kept for the generic tenants. |
+| B. Add a =report_names= parameter to the publish | Expresses the design. The list lives in the provisioning plan, away from the party's other data. Rejected for now. |
+| C. One report definitions dataset per ACME party, inside the party's bundle | Expresses the design. Matches how the ACME portfolios, books, netting sets and CSAs already travel: =acme_group=, =acme_uk=, =acme_us= and =acme_hk=. The generic tiered dataset stays for other tenants. *Proposed.* |
+
+Option C also means the plan must stop publishing the shared =risk_management= definitions to the ACME parties. That is an implementation question for the task.
+
+* Conclusions
+
+** Selection rules
+
+#+ATTR_HTML: :class hug-leading
+| Rule | Statement | Justification | Alternative rejected |
+|------+-----------+---------------+----------------------|
+| D1 | An entity runs a report only when the entity is accountable for its output. | A regulatory filing, a capital figure and a trade report belong to the licensed entity that holds the positions. The holding company reports on the consolidated group. | Run every report everywhere. Unrealistic, and it hides which entity owns which obligation. |
+| D2 | The holding company runs consolidation, group oversight and consolidated ratios. It runs no trading analytics. | It has no desk and no book of its own beyond Group Treasury. | Give the holding company the trading set, so consolidation can reuse it. The consolidation reports can read the entities' results instead. |
+| D3 | A trading entity runs the analytics its desks need, scaled to its depth. London runs the full set. New York and Hong Kong run the core set. | The data tiers the offices on purpose. Smaller offices run fewer reports. | One set for all three entities. Ignores the depth the source data already encodes. |
+| D4 | The jurisdiction reports follow the entity's jurisdiction: MiFID II for the UK, CFTC for the US, HKMA for Hong Kong. | The seed already marks each with a jurisdiction. | None. This restates the seed. |
+| D5 | The platform health report runs once, at the holding company. | Service health is a property of the platform and not of a legal entity. | Run it per entity. Four copies of one fact. |
+| D6 | The model-dependent reports run only with the reports they depend on. | The seeded descriptions state the order. Exposure needs Model Calibration and the curves. CVA/DVA/FVA needs Exposure and Credit Curves. NPV needs the curves and FX spot. The sensitivities need the NPV baseline. | Drop a prerequisite to keep a set small. The dependent report would fail. |
+| D7 | Stressed VaR and P&L Attribution run at every trading entity. Decided by the product owner on 2026-10-11. | A trading entity measures VaR and explains its P&L whether or not a regulator has approved an internal model. A bank uses both for management risk and for limits. The seeded text ties them to the internal-model approval, but that tie does not make them optional. | Run neither, because no ACME entity records an approval. This was the first draft. It misread the seeded text as a condition. P&L Attribution splits the P&L into delta, gamma and vega. An entity that runs no Vega report (D8) shows no vega component, which is correct only while that entity holds no option book. |
+| D8 | London alone runs Vega and Volatility Surfaces. Accepted by the product owner on 2026-10-11. | London has the widest FX book, G10 and emerging market, and the widest rates book. The source data does not say which desk trades options. | Run both at all three entities. Cheap, but gives the one-book Hong Kong desk an option franchise nothing in its data supports. |
+
+** Report sets
+
+A tick means the entity runs the report. A dash means it does not. The rule that decides is in the last column.
+
+#+ATTR_HTML: :class hug-leading
+| Report | ACMCOR | ACCOUK | ACCOUS | ACCOHK | Rule |
+|--------+--------+--------+--------+--------+------|
+| Data Quality Completeness | ✓ | ✓ | ✓ | ✓ | D1 |
+| System Health | ✓ | - | - | - | D5 |
+| Audit Trail Summary | ✓ | ✓ | ✓ | ✓ | D1 |
+| SA-CCR Exposure | - | ✓ | ✓ | ✓ | D1: the entity holds the netting sets |
+| Leverage Ratio | ✓ | ✓ | ✓ | ✓ | D1, D2: entity and consolidated |
+| FRTB SA Capital | - | ✓ | ✓ | ✓ | D1: the entity holds the positions |
+| Liquidity Coverage | ✓ | ✓ | ✓ | ✓ | D1, D2: entity and consolidated |
+| Large Exposures | ✓ | ✓ | ✓ | ✓ | D1, D2: entity and consolidated |
+| MIFID II Transaction Reporting | - | ✓ | - | - | D4 |
+| CFTC Swap Data Reporting | - | - | ✓ | - | D4 |
+| HKMA Trade Repository | - | - | - | ✓ | D4 |
+| Group Consolidated Exposure | ✓ | - | - | - | D2 |
+| Board Risk Dashboard | ✓ | - | - | - | D2 |
+| Cross-Entity Counterparty Concentration | ✓ | - | - | - | D2 |
+| Intercompany Exposure Matrix | ✓ | - | - | - | D2 |
+| Model Calibration | - | ✓ | ✓ | ✓ | D3, D6 |
+| Yield Curves | - | ✓ | ✓ | ✓ | D3, D6 |
+| FX Spot Rates | - | ✓ | ✓ | ✓ | D3, D6 |
+| Volatility Surfaces | - | ✓ | - | - | D8 |
+| Credit Curves | - | ✓ | ✓ | ✓ | D3, D6 |
+| NPV | - | ✓ | ✓ | ✓ | D3 |
+| Cashflows | - | ✓ | ✓ | ✓ | D3 |
+| Delta and Gamma | - | ✓ | ✓ | ✓ | D3 |
+| Vega | - | ✓ | - | - | D8 |
+| Bucketed DV01 | - | ✓ | ✓ | ✓ | D3 |
+| Exposure | - | ✓ | ✓ | ✓ | D3, D6 |
+| CVA/DVA/FVA | - | ✓ | ✓ | ✓ | D3, D6 |
+| Stressed VaR | - | ✓ | ✓ | ✓ | D7 |
+| P&L Attribution | - | ✓ | ✓ | ✓ | D7 |
+| Intraday Risk Monitor | - | ✓ | ✓ | ✓ | D3 |
+| Headline Position | - | ✓ | ✓ | ✓ | D3 |
+
+Three notes on the table.
+
+- The generator checks D6 for the prerequisites the catalogue texts state, and
+  refuses a set that lacks one. It leaves Stressed VaR out of the check on
+  purpose. The Volatility Surfaces text calls a surface a prerequisite of
+  stressed VaR, but the Stressed VaR text says it uses full revaluation, and the
+  core set runs it without a surface (D7 and D8 together). A reviewer should
+  decide which text is right.
+
+- Leverage, liquidity and large exposures run at the holding company and at each trading entity. The entity files its own figure and the group files the consolidated one. Whether a Hong Kong trading subsidiary has its own liquidity requirement is /open/ and needs a regulatory view.
+- The seeded text says the market data builders feed all the analytics. D6 gives each trading entity its own builders for the currencies it trades. A central market data hub run once for the group is more realistic. I did not check whether a run can read another party's curves. If it can, a hub is better, and the builders move to London.
+
+** Configuration
+
+#+ATTR_HTML: :class hug-leading
+| Rule | Statement | Justification | Alternative rejected |
+|------+-----------+---------------+----------------------|
+| D9 | A report's base currency is its entity's functional currency: GBP for the holding company and London, USD for New York, HKD for Hong Kong. | An entity reports its regulatory and management figures in its own currency. The group consolidates in GBP, the currency of the holding company. | USD for every entity, which is what the root portfolios carry today. A London entity reporting in dollars is not realistic. Keep GBP everywhere, as the seed does today. The Hong Kong and New York filings would be in the wrong currency. |
+| D10 | A report names its scope. A trading report reads the entity's trading branch. A liquidity or leverage report reads both branches (D13). The holding company's consolidation reports read the treasury portfolio and the entities' results. | A definition names no scope today, and an empty scope means everything the tenant can see. That would let one entity's report read another entity's data. | Leave the scope empty. Wrong across parties. Scope each report to one desk. Too narrow for the capital and exposure reports. |
+
+*The configurations are Acme's own.* A risk report needs four configuration documents: pricing engines, today's market, curve configuration and conventions. Acme crafts these itself, for its own reports, inspired by the ORE samples. They are not ORE import data. Publishing leaves every report ready to run. Exporting the configuration to ORE happens when a job runs, and it is not part of publishing. My first draft of this page said the documents come from an import of an ORE example run. That was wrong, and the product owner corrected it on 2026-10-11.
+
+#+ATTR_HTML: :class hug-leading
+| Rule | Statement | Justification | Alternative rejected |
+|------+-----------+---------------+----------------------|
+| D15 | Each Acme party publishes its own pricing engines, today's market, curve configuration and conventions documents, crafted for the reports that party runs. | The reports must be ready to run after publishing. The documents belong to the reports, so they follow the same per-party design (D1 to D8). | Import ORE example runs onto the definitions. That ties the demonstration data to the ORE samples and makes publishing depend on a runtime import. |
+| D16 | Publishing runs in this order: the configuration documents, then the report definitions with their bindings to those documents, then the risk report configurations. Each dataset declares its dependency on the one before. | A binding names a document, so the document must exist first. The dataset dependency mechanism already orders such publications. | Publish the definitions first and attach documents later. That is the order the current publish assumes, and it leaves a report unready until a person does the attaching. |
+| D17 | Exporting to ORE is out of scope for publishing. | The export happens at run time, from the published rows. | Build the export into the publish. It would make publishing depend on the engine. |
+
+*What exists and what is missing.* The tables exist for all four documents: the pricing model configuration with its products and parameters, the today's market configuration with its entries and collections, the curve configuration with its sections and curve configs, and the instrument conventions. The binding table links a definition to a document, and the report type states which four document kinds it requires. All of these tables hold no rows. What is missing is the publishing side:
+
+- The conventions already travel as a published dataset. The pricing engines, today's market and curve configuration documents have no dataset, no staging table and no publish function.
+- The risk report configuration publish skips a definition that lacks the four bindings, and its header says the documents come from an ORE import. That is the assumption this page rejects (D15).
+- Nothing publishes the bindings.
+
+** Portfolio trees and currencies
+
+#+ATTR_HTML: :class hug-leading
+| Rule | Statement | Justification | Alternative rejected |
+|------+-----------+---------------+----------------------|
+| D11 | Each party's tree comes from its own bundle. The shared fixture tree no longer publishes to ACME parties. | Today every party gets the same fixture tree, including the holding company and Hong Kong. | Keep the fixture and add the ACME tree beside it. Two trees per party, and the root choice becomes arbitrary. |
+| D12 | The London tree covers the London desks only. Its Americas and APAC portfolios move out. | The source marks them structural only, because the US and Hong Kong entities run those desks. A London entity holding New York and Hong Kong portfolios misstates who owns the positions. | Keep them, as the source does. A reader would see London own the other offices' books. |
+| D13 | Each trading entity has one global root named Global Portfolio, with two top branches. The trading branch holds the desks, and a CVA or XVA desk portfolio sits in it. The banking branch is owned by Treasury. The "Regulatory Capital" root goes. Every root names an aggregation currency, equal to the entity's functional currency (D9). The holding company's root is its treasury portfolio. Confirmed by the product owner on 2026-10-11 as two roots, and refined to two branches under one root the same day (see the note below). A capital specialist should still review it. | The regulatory separation is real, and it is the trading book and the banking book. The system already models it as an attribute of each book. A tree that follows the desk and the owner is easier to read, and each branch gives the capital reports a clean scope (D10). A risk function reads positions and does not hold them, so a branch owned by Risk is not how a bank organises itself. | Two roots, which is what the product owner confirmed. Rejected for the three reasons below. Keep one root and put the banking book inside the credit desk, as the source does with the IG bond books. That hides the boundary the capital rules require. Keep the Regulatory Capital root. See the note on its origin. |
+| D14 | An entity's currencies cover its functional currency, every currency its rates books are named for, and every currency in the pairs its FX books trade. The FX books follow market convention (below). /Open for the product owner./ | The party currencies are what an entity is set up to work in. A book in a currency the party lacks is not coherent. | Keep the current sets. London has no entry for the other G10 currencies its FX book trades, and a CAD and a JPY rates book exist in a tree whose party lacks both. |
+
+*Why one root with two branches, and not two roots.* The product owner confirmed two roots. Checking the documentation and the code found three reasons to use one root with two branches, which keeps the separation and the clean scope.
+
+- The page on books and portfolios states a system rule that every book is reachable from the main global tree, and that nothing falls outside it. Two roots would put the banking book outside the tree. Nothing in the code enforces the rule today.
+- The sandbox anchor picks the root named Global Portfolio, and otherwise the first root by name. A root named Banking Book would sort first and take the anchor.
+- The report publish takes one root, the first by name. One root removes that arbitrary choice, and the scope table still holds many portfolios, so each report can name its branches.
+
+The product owner can ask for two roots instead. The change is to the seed data and to the scope each report names.
+
+*Where the Regulatory Capital root came from.* The source data copies a test fixture. The fixture has a root of that name in USD, owned by the risk management unit. It holds three books: a Regulatory Banking Book, a Regulatory Trading Book and a Regulatory CVA Book, which is closed. The sources do not say why the fixture groups them. My reading is that the author wanted one place to show how each book type is treated for capital. That is an inference. The system keeps the trading or banking designation on the book itself, so the tree does not need the grouping.
+
+*Check against public sources, 2026-10-11.* I checked my understanding of normal practice with web searches. The Basel framework pages on the BIS site gave only chapter summaries, and the PDF text did not extract. The paragraph level support below therefore comes from secondary sources and search summaries, and I read no primary paragraph. A reviewer with capital experience should still confirm it.
+
+#+ATTR_HTML: :class hug-leading
+| Claim | Result | Source |
+|-------+--------+--------|
+| The trading book and the banking book are separated by a regulatory boundary, set by trading intent. | Supported. The framework chapter on the boundary is RBC25. Instruments held for short-term resale, short-term price gain, arbitrage or hedging those go to the trading book, and the rest go to the banking book. | [[https://www.bis.org/basel_framework/chapter/RBC/25.htm][BIS, RBC25]] (summary only), [[https://www.bis.org/committees/bcbs/basel-framework/81574/chapter.pdf][BIS chapter PDF]] (via a search summary) |
+| Moving a position between the books is tightly controlled. | Supported in kind. The EBA calls the reclassification and internal risk transfer rules operationally burdensome. I found no primary source for an approval step, so the page does not claim one. | [[https://www.eba.europa.eu/eba-publishes-letter-boundary-between-banking-book-and-trading-book-provisions][EBA no-action letter]] |
+| A banking book exposure hedged by a trading book derivative gets no capital recognition unless external protection exists. | Reported by a search summary of RBC25.8. Supports keeping a banking book hedge on the banking side. | [[https://www.bis.org/committees/bcbs/basel-framework/81574/chapter.pdf][BIS chapter PDF]] (via a search summary) |
+| Treasury or ALM manages the banking book and the liquidity buffer. The trading desks manage the trading book. | Supported by two bank examples. It is a common pattern and not a rule, and one bank's ALM desk also runs a large securities book. | [[https://raportroczny.bnpparibas.pl/2019/en/noty_objasniajace/53-2/53-3/][BNP Paribas Bank Polska annual report]], [[https://www.eba.europa.eu/single-rule-book-qa/qna/view/publicId/2023_6769][EBA Q&A]] |
+| An XVA or CVA desk hedges the CVA risk and sits with the trading business. | Supported by industry sources. | [[https://www.risk.net/benchmarking/xvas/7962659/squashing-cva-still-dominates-xva-desks%E2%80%99-priorities][Risk.net]], [[https://acadifi.com/community/xva-desk-role-function-bank-frm][Acadifi]] |
+| The CVA capital charge is a trading book item. | *Wrong, and the first draft said it.* The CVA risk capital requirement covers derivatives and fair-valued securities financing in both books. The desk that hedges it sits in the trading business, but the charge covers both books. | [[https://www.bis.org/committees/bcbs/basel-framework/81329/chapter.pdf][BIS MAR50]] (via a search summary) |
+| A risk function holds positions. | Not found. No source describes a risk-owned position root. This is my judgement from the pattern above, not a finding. | none |
+
+Two further points from the searches.
+
+- MAR12 is the chapter that defines the trading desk, which is the level at which a model approval is granted. The desk is the unit inside the trading book. This supports a tree built from desks.
+- Banks differ in how they draw the line. The pattern is common, and the document does not call it a rule.
+
+The check upholds D13. It corrects one sentence: the CVA charge covers both books, so the capital reports for CVA read both branches (D10).
+
+Consequence for the source data: the IG Bonds EMEA and IG Bonds Americas books carry the banking designation but sit under the credit trading desk. They move to the banking branch. The Regulatory CVA Book moves to a CVA desk portfolio in the trading root. The Regulatory Trading Book and Regulatory Banking Book have no separate role and go.
+
+The report publish takes one root today, the first by name, and scopes every report to that root. With two branches, each report needs its own scope. The scope table in the risk configuration holds many portfolios, so this is a change to the publish and not to the schema. The earlier text in this page that says "banking book root" means the banking branch.
+
+** Currency sets and FX books
+
+The books follow how a desk splits the market. The currencies follow from the books.
+
+#+ATTR_HTML: :class hug-leading
+| Entity | Rates books | FX books and the pairs they trade | Currencies |
+|--------+-------------+-----------------------------------+------------|
+| London | GBP, EUR, USD, CHF | Cable and Sterling: GBPUSD, EURGBP. G10 Majors: EURUSD, USDJPY, USDCHF, AUDUSD, NZDUSD, USDCAD. Scandies: USDSEK, USDNOK, USDDKK, EURSEK, EURNOK. CEEMEA emerging markets: USDZAR, USDTRY, USDPLN, USDCZK, USDHUF, USDILS. | GBP, EUR, USD, CHF, JPY, CAD, AUD, NZD, SEK, NOK, DKK, ZAR, TRY, PLN, CZK, HUF, ILS |
+| New York | USD, CAD | G10 Americas: EURUSD, GBPUSD, USDJPY, USDCAD. Latin America emerging markets: USDMXN, USDBRL, USDCLP, USDCOP. | USD, CAD, EUR, GBP, JPY, MXN, BRL, CLP, COP |
+| Hong Kong | JPY, HKD | G10 APAC: USDJPY, AUDUSD, NZDUSD. Asia emerging markets: USDCNH, USDSGD, USDKRW, USDINR, USDTWD. The Hong Kong dollar peg: USDHKD. | HKD, USD, JPY, AUD, NZD, CNH, SGD, KRW, INR, TWD |
+| Holding company | none | none | the union of the three entities' sets |
+
+Two points on the table.
+
+- Hong Kong trades the offshore renminbi, CNH, and not the onshore CNY, which foreign banks reach only through limited channels. The current Hong Kong set holds CNY. This is my understanding of the market and needs confirming. All the currencies above exist in the reference data, CNH included.
+- The synthetic market data covers only these USD pairs today: AUD, EUR, GBP, NZD, CAD, CHF, DKK, INR, JPY, MXN, NOK, SEK and ZAR. The books for HKD, CNH, SGD, KRW, TWD, BRL, CLP, COP, PLN, CZK, HUF, TRY and ILS have no spot or curve to price against. The set above is the target. The product owner decided on 2026-10-11 to add the market data feeds for the missing currencies, so every book gets a spot and a curve. The feeds are part of the task.
+
+* Recommendations
+
+1. D7, D8 and D14 are settled by the product owner. D13 is checked against public sources and awaits the product owner. A capital specialist still reviews D13 and the other regulatory statements. For D14 the product owner decided to add the market data feeds for the new currencies, so the staging in the table above is no longer needed.
+2. Take option C for the mechanism. Add one report definitions dataset per ACME party to its bundle, and remove the shared definitions from the ACME parties' provisioning plan.
+3. Remove the count comments from every seed the task touches. The seed header says thirty definitions and the table now holds thirty-one.
+4. Prove the result on a complete provision. The local provision stops at the photo step because of the account visibility defect reported to the other session. Find out first why the per-party ACME portfolios are missing from the local database, because the proof depends on them. The setup cannot finish until that defect is fixed.
+5. Do not add trades yet. The reports will have scope and configuration and no positions.
+
+* See also
+
+- [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]], the story.
+- [[id:11AE607C-9F2B-479E-BAA7-36C743AC308F][Design the reports, configs and portfolio trees each ACME party runs]], the task.
+- [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][Report]] and the [[id:6E218159-C7FB-47AE-9779-B2645CE19B05][Report pages]] index.
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]], the business catalogue.

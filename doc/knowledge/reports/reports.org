@@ -73,6 +73,14 @@ it acquires a purpose, an audience and a worked ORE configuration in one place.
 Until then, the catalogues above are the only description, and they disagree
 about how many reports there are.
 
+* Which entity runs which report
+
+A report definition belongs to one party, and the parties of a group do
+not run the same reports. The rules that choose the reports for each
+Acme entity are in the Acme Corporation chapter of the user manual, under
+"The reports each entity runs". The reason for each choice is in the
+investigation [[id:6A1EE441-E132-4230-BCD9-E8BB786D721F][Which reports each ACME party runs]].
+
 * Adding a report
 
 #+begin_src sh :results verbatim

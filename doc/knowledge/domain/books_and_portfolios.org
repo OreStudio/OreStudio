@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08
-#+updated: 2026-07-08
+#+updated: 2026-10-11
 
 * Summary
 
@@ -89,6 +89,43 @@ forming a regional subtree, e.g. under an "Asia Pacific" node).
 Global portfolio names often form an FQDN-like structure, e.g.
 =AP.CHINA=, =AP.JAPAN=; a URL-like path notation (=A.B.C.D=) is used
 more generally to express a path to a book or portfolio node.
+
+** The trading branch and the banking branch
+
+A bank's books fall on one side of a regulatory line. The trading book
+holds positions kept with trading intent, and the banking book holds the
+rest. The line is set by intent, and moving a position across it is
+tightly controlled. The system stores the side on each book, as its
+regulatory type (see [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]]). The tree does not need to carry the
+side, but it follows the owner, and the two sides have different owners.
+
+Under an entity's one global root, the tree has two top branches.
+
+- *The trading branch* holds the trading desks. A CVA or XVA desk
+  portfolio sits in it, because that desk hedges the CVA risk and
+  belongs to the trading business.
+- *The banking branch* is owned by Treasury. It holds the liquidity
+  buffer, funding and the hedges of those.
+
+A risk or finance function reads these books and runs the capital
+reports on them. It owns no positions, so the tree has no branch owned
+by risk, and no branch named for a regulatory purpose.
+
+The branch gives a capital report a clean scope. A report on trading
+book capital reads the trading branch. A report on liquidity or leverage
+reads both. The CVA capital charge covers derivatives in both books, so
+the CVA reports read both.
+
+Banks differ in how they draw the line between the two owners, and this
+page describes a common pattern and not a rule. The support is public:
+
+- The boundary and its intent test: [[https://www.bis.org/basel_framework/chapter/RBC/25.htm][Basel RBC25]], and the
+  reclassification burden in the [[https://www.eba.europa.eu/eba-publishes-letter-boundary-between-banking-book-and-trading-book-provisions][EBA no-action letter]].
+- Treasury and ALM own the banking book and the liquidity buffer: a
+  [[https://raportroczny.bnpparibas.pl/2019/en/noty_objasniajace/53-2/53-3/][BNP Paribas Bank Polska annual report]] and an [[https://www.eba.europa.eu/single-rule-book-qa/qna/view/publicId/2023_6769][EBA Q&A]].
+- The XVA desk hedges CVA: [[https://acadifi.com/community/xva-desk-role-function-bank-frm][Acadifi]].
+- The CVA charge covers both books: [[https://www.bis.org/committees/bcbs/basel-framework/81329/chapter.pdf][Basel MAR50]], read through a search
+  summary and not in the primary text.
 
 ** System checks and permissions
 

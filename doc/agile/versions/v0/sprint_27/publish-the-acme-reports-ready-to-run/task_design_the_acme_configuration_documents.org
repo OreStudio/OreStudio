@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 94EC50A0-4430-4866-833E-FFCB6F4231EE
+:END:
+#+title: Task: Design the configuration documents each ACME party needs
+#+description: Decide, for each party and each report it runs, the pricing engines, today's market, curve configuration and conventions it needs. Craft them for Acme's own reports, inspired by the ORE samples, and record the reason for each choice.
+#+type: task
+#+level: s1
+#+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A report is ready to run only when its four configuration documents exist. Acme crafts them itself. This task decides their content per party, from the report design in the sprint 27 investigation of which reports each party runs, and writes the design down with its justification before any publishing is built.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- A design page states, for each party, which pricing engines, today's market, curve configuration and conventions documents it holds, what each contains, and why.
+- The design names every static input the reports need beyond those four documents, or states that there is none.
+- The design is independent of ORE import data and says how it differs from the ORE samples it is inspired by.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -351,6 +351,50 @@ function, without yet gating action by desk membership.
 With the departmental shape established, the chapter turns to the
 people who actually staff it.
 
+** The reports each entity runs
+
+Each legal entity runs the reports it would run in a real group. The
+four entities do not share one list. The reasons are the same ones a
+real bank follows.
+
+- An entity runs a report when it is accountable for the output. The
+  regulatory filings, the capital figures and the trade reports belong
+  to the licensed entity that holds the positions. The holding company
+  reports on the group as a whole.
+- The holding company runs the consolidation and oversight reports, the
+  consolidated capital and liquidity ratios, and the platform health
+  report. It has no desk, so it runs no trading analytics.
+- A trading entity runs the analytics its desks need, scaled to its
+  depth. London runs the full set. New York and Hong Kong run the core
+  set. Only London runs the Vega and Volatility Surfaces reports.
+- The jurisdiction reports follow the entity: MiFID II reporting for the
+  UK, CFTC swap reporting for the US, and HKMA trade repository
+  reporting for Hong Kong.
+- A report runs only with the reports it depends on. Exposure needs
+  Model Calibration and the curves. CVA, DVA and FVA need Exposure and
+  Credit Curves.
+- Every trading entity runs Stressed VaR and P&L Attribution.
+
+Each report reports in its entity's currency: GBP for the holding
+company and London, USD for New York and HKD for Hong Kong. Each report
+names the part of the entity's portfolio tree it reads.
+
+Each entity has one global root. London, New York and Hong Kong each
+split it into a trading branch and a banking branch, as
+[[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] describes. The trading branch follows the
+desks. The FX books follow market convention: London runs Cable and
+Sterling, G10 Majors, Scandies and a CEEMEA emerging markets book. New
+York runs G10 Americas and a Latin America emerging markets book. Hong
+Kong runs G10 APAC and an Asia emerging markets book. An entity's
+currencies cover its rates books and every pair its FX books trade.
+
+#+begin_note
+This section states the design for the Acme data. The data does not
+fully match it yet. The task "Design the reports, configs and portfolio
+trees each ACME party runs" brings the data into line, and its design
+page records the reason for every choice.
+#+end_note
+
 ** Staff and accounts
 
 The fifty-eight accounts the previous section walked by department

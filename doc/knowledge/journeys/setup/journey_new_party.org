@@ -248,7 +248,9 @@ each part turned out to be.
    arguments, and every starting point that orders the kind orders it. A party's
    data is therefore the profile's, and the step the tenant run carries is the
    one the party stage runs. There is no separate publish request for a party on
-   its own.
+   its own. The generic report set is the =party_reporting= bundle. A profile
+   that designs each party's reports leaves it out and publishes the party's own
+   report definitions through the party's bundle.
 5. *A retry resumes a stopped run.* =workflow.v1.ops.retry_workflow_instance= resumes a run
    that stopped on its failed step: it re-dispatches that step under its own
    identity, clears the run's error, and leaves every completed step and its

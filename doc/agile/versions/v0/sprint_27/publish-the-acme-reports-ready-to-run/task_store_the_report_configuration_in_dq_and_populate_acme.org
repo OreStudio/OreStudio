@@ -70,6 +70,22 @@ Two parts, in this order, as the product owner decided on 2026-10-11.
 6. Prove it on a clean provision: every definition has all its bindings, and a
    readiness query lists nothing missing.
 
+*Part C. The run document, generated at export.*
+
+The product owner decided on 2026-10-12 to generate the run document when a run
+needs it. Publishing stores no run document.
+
+7. Add a generator that builds the run document from the definition's risk
+   configuration, its bindings, the as-of date and the party. A stored run
+   document, when one exists, overrides the generated one.
+8. Make =export_run= call the generator when the definition holds no stored run
+   document.
+9. List the switches no analytic type represents. The parametric value-at-risk
+   switch is the first. A readiness check reports them, because the run omits
+   them.
+10. Export the UK "Yield Curves" definition and validate each file against its
+    schema.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

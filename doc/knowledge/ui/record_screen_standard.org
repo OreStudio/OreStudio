@@ -377,6 +377,10 @@ generic history request (=GET /api/history=, =refdata.v1.history.get=).
   and an added line per changed field, with the changed part marked.
 - The oldest version shows "Initial version". A version with no field change
   shows "No field changes". A /From/ newer than the /To/ is refused.
+- The same "Hide system activity" toggle sits in the toolbar. It hides the
+  versions that a service account wrote from the timeline on the left. It keeps
+  the selected version. The rules are in
+  [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]], section System activity.
 - The provenance fields are not compared; they differ by definition and show on
   the timeline.
 - /Revert to this version/ is offered on any version but the current one, to a

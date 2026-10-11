@@ -569,6 +569,10 @@ lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notific
   card and the history.
 - The page does not reload by itself. A list does not, a record page does not,
   and the history does not.
+- A save does not reload the page either. The save's own change event makes
+  Refresh gold, like any other change, and the person presses Refresh to see the
+  saved values. A page that was reloaded by the save would hide that the data
+  moved, and would make the gold mean two things.
 
 *** When the data was loaded
 

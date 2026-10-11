@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 48277DF0-3F37-4620-8DCB-E904580D399B
+:END:
+#+title: Structure page prototype
+#+description: A clickable prototype of the page of a structure and of the workflow that groups trades into one.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:trading:ui:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+| Item          | Where |
+|---------------+-------|
+| Prototype     | [[file:structure-page/][the prototype]] |
+| Gemini review | none |
+| Group         | [[file:index.org][Trades prototypes]] |
+
+* Summary
+
+A structure is an entity: an immutable identity and legs that are trades. The prototype draws its page and the workflow [[id:3899F17C-232B-408C-B667-FA5C630BB71B][Group trades into a structure]].
+
+* Detail
+
+** States
+
+#+ATTR_HTML: :class hug-leading
+| Query | What it shows |
+|-------+---------------|
+| =?structure=STR-0004= | A package of two trades |
+| =?structure=STR-0007= | A strategy, a risk reversal, with its template roles checked |
+| =?mode=group&trades=ACME-100202,ACME-100206= | The grouping workflow |
+| =?mode=group&trades=ACME-100201,ACME-100202= | The refusal: the trades have different counterparties |
+
+** What the prototype argues
+
+- The version is read from the legs and is never stored beside them. The page says so and lists the legs' external versions. The rule is the one the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] shows: a change to any component moves the structure, and authorisation does not.
+- The client states the rules the database enforces: every leg shares the party and the counterparty, and a structure nests one level at most. The person sees the check before the server refuses.
+- A trade moves from one structure to another without being rewritten.
+- Pricing and composition stay in the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]]. The Workflows menu links to both.
+
+** What is fake
+
+The structures. Grouping stores the new structure in the browser.
+
+** Where the code lives
+
+=doc/prototypes/trades/structure-page/=.
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]

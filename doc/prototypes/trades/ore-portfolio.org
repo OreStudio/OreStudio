@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: B961CB1F-E9DB-42CE-80F0-2BDBADDCED08
+:END:
+#+title: ORE import and export prototype
+#+description: A clickable prototype of the ORE import and export workflows reached from the trade list.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:trading:ui:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+| Item          | Where |
+|---------------+-------|
+| Prototype     | [[file:ore-portfolio/][the prototype]] |
+| Gemini review | none |
+| Group         | [[file:index.org][Trades prototypes]] |
+
+* Summary
+
+[[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] and [[id:65B02BD9-4633-490C-B8A3-F5680067054B][Export a portfolio to ORE]] are workflows: each has several steps and a write that a person must understand before it happens. The prototype draws both. =?mode=export= switches to the export.
+
+* Detail
+
+** Import
+
+Four steps: file and book, preview, confirm, result. The preview is the plan. It lists every trade of the file with what will happen to it, and says which counterparty names match no alias and which trade types have no instrument table. The result says what was refused and why, and offers the rollback. A rollback removes the trades the import created, and the prototype keeps them in the browser so that they appear on the trade list.
+
+** Export
+
+The person chooses a book or the trades chosen in the list, and chooses a file or storage for a run. The check names the trades the file cannot hold (a draft, a cancelled trade, a trade type with no instrument table) before it is made. The result shows the beginning of the file.
+
+** What is fake
+
+The file never leaves the browser. The upload path of a browser is not defined: the journey names it as missing.
+
+** Where the code lives
+
+=doc/prototypes/trades/ore-portfolio/=.
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — where workflows live.

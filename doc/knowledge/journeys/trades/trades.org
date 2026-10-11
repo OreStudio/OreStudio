@@ -35,6 +35,10 @@ journeys to decide the cards and the workflows on the page.
 | [[id:D763A432-443A-4CE1-BC00-75D4A9970EDF][Record a lifecycle event on a trade]] | operations | Record an exercise, a termination or a novation |
 | [[id:3899F17C-232B-408C-B667-FA5C630BB71B][Group trades into a structure]] | trader | Hold several trades as one deal |
 
+* Prototypes
+
+The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] serve these journeys. Review, amendment and lifecycle events are one trade page. Booking, ORE import and export, and grouping are workflows reached from the trade list.
+
 * What blocks all of them
 
 - The BFF and the web app have no trading route.

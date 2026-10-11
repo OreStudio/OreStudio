@@ -137,6 +137,7 @@ for the assumptions it was built on, and for the decisions still open.
 
 * See also
 
+- [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] — the trade list and page, booking, ORE import and export, and a structure page, which link to this prototype for pricing and for composing a structure.
 - [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition ladder, the deal topology and the versioning rule this prototype follows.
 - [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] — the story the prototype belongs to.

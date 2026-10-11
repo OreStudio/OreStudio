@@ -52,7 +52,7 @@ This journey is a use case. The workflow is the Import action in the Workflows m
 trade list, as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] places workflows. It opens a dialog or a short sequence.
 The result is the trade list filtered to the trades the import created.
 
-No wireframe is drawn here. The prototype story draws the screens, from the
+The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =ore-portfolio=. No wireframe is drawn here. The prototype story draws the screens, from the
 [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed

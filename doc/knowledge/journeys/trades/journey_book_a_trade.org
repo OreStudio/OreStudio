@@ -68,7 +68,7 @@ makes booking easier or quicker. A prototype decides that. The prototype must al
 the trade as the subject: the person must be able to leave the sequence and land on the
 same trade page.
 
-No wireframe is drawn here. The prototype story draws the screens, from the
+The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =book-a-trade=, as a page and as a sequence. No wireframe is drawn here. The prototype story draws the screens, from the
 [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed
@@ -106,7 +106,9 @@ is written with a plain =s=. A table whose plural is irregular, such as
 - The web app and the BFF have no trading route. Nothing here is reachable from a browser
   yet.
 - The four-eyes rule for a trade, if any, is not stated for booking. The activity types
-  carry a =requires_confirmation= flag, and no journey says who confirms. The story [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] owns the approval rule.
+  carry a =requires_confirmation= flag, which is the counterparty's confirmation and not an
+  internal approval. No journey covers the counterparty's confirmation or Operations'
+  authorisation of a new live trade. The story [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] owns any escalation.
 
 * Related journeys
 

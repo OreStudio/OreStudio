@@ -42,7 +42,7 @@ a storage reference.
 This journey is a use case. It is the Export action in the Workflows menu of the trade
 list. It also serves the compute journeys, which need a portfolio in storage.
 
-No wireframe is drawn here. The prototype story draws the screens, from the
+The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =ore-portfolio= with =?mode=export=. No wireframe is drawn here. The prototype story draws the screens, from the
 [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed

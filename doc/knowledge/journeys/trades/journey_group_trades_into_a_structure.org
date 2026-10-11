@@ -48,7 +48,7 @@ This journey is a use case. The structure is an entity with its own page, which 
 its members and holds the Edit and Workflows actions of the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]]. The trade page
 links to the structure it belongs to.
 
-No wireframe is drawn here. The prototype story draws the screens, from the
+The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =structure-page=. No wireframe is drawn here. The prototype story draws the screens, from the
 [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed

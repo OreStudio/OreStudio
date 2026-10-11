@@ -80,7 +80,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The sprint row says BACKLOG and the story says STARTED | sprint.org | Fix | The row says STARTED with a start date of 2026-10-11. |
+| 2 | The description repeats in three places | story.org | Note | Compass copies the capture's text to the description, the goal and the capture section. The text stays. |
+| 3 | Acceptance does not say what holds without assignment | story.org | Fix | The bullet says the notification goes to every holder of the permission, and to the assigned tester only if the story takes assignment. |
+| 4 | Step 4 of the plan needs step 2 | story.org | Fix | Step 4 now needs 1 and 2. |
+| 5 | The move of the two earlier stories is in the PR text, not the commit | | Fix | The follow-up commit message names the move. |
+| 6 | Long Now and Next cells | story.org | Note | They hold the questions the story waits on. |
 
 * Result
 

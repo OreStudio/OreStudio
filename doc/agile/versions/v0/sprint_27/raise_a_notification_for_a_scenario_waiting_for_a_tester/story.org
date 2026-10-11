@@ -31,7 +31,7 @@ Story 3 of the QA runner arc. A scenario that waits for a tester raises an inbox
 * Acceptance
 
 - A tester role and a permission for the Development module exist, and the QA and agile routes refuse a signed-in user who does not hold the permission.
-- A scenario that waits for a tester raises an inbox notification for the people who hold the permission, once for each scenario, and the bell shows it.
+- A scenario that waits for a tester raises an inbox notification, once for each scenario, and the bell shows it. The notification goes to every person who holds the permission. If the story takes assignment, it goes to the assigned tester only.
 - A tester opens the scenario from the notification.
 - The story records whether the module runs in production, and what changes if it does.
 - A prototype of the bell entry is accepted before the web screen is built.
@@ -66,7 +66,7 @@ A provisional order, to be made into tasks when the questions are answered.
 | 1 | Decide where the module runs and who raises the notification | the answers above |
 | 2 | Add the tester permission and role to the seed data | 1 |
 | 3 | Gate the QA and agile routes on the permission | 2 |
-| 4 | Add the notification kind for a waiting scenario | 1 |
+| 4 | Add the notification kind for a waiting scenario | 1 and 2 |
 | 5 | Raise the notification for a waiting scenario, once for each | 3 and 4 |
 | 6 | Prototype the bell entry, then show it and open the scenario from it | 5 |
 | 7 | Assign a scenario to a tester, if the story takes assignment | 5 |

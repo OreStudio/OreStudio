@@ -8,7 +8,7 @@
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
 #+branch: feature/grant-the-services-that-raise-and-apply-the-inbox-access
-#+pr:
+#+pr: 3100
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3100][#3100]] | [refdata,inbox] Grant the refdata service the inbox access it needs |
 
 * Review
 

@@ -407,6 +407,8 @@ const pt: SourceCatalogue = {
             login_failure: 'início de sessão falhado',
             logout: 'fim de sessão',
             token_refresh: 'renovação do token',
+            account_locked: 'conta bloqueada',
+            account_unlocked: 'conta desbloqueada',
         },
         column: {
             started: 'Início',
@@ -1826,6 +1828,8 @@ const pt: SourceCatalogue = {
             signed_in: 'Sessão iniciada',
             sign_in_failed: 'Sessão recusada',
             signed_out: 'Sessão terminada',
+            locked: 'Conta bloqueada',
+            unlocked: 'Conta desbloqueada',
             refreshed: 'Sessão renovada',
             noticed: 'Registado',
         },

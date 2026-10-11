@@ -191,6 +191,8 @@ const SIGN_IN_KINDS: Readonly<Record<string, string>> = {
     login_failure: 'sign_in_failed',
     logout: 'signed_out',
     token_refresh: 'refreshed',
+    account_locked: 'locked',
+    account_unlocked: 'unlocked',
 };
 
 /**

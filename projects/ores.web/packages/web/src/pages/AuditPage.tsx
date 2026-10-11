@@ -84,6 +84,8 @@ export const AUDIT_EVENT_TYPES = [
     'login_failure',
     'logout',
     'token_refresh',
+    'account_locked',
+    'account_unlocked',
 ] as const;
 
 /** The filter the screen opens on: the last day, with every event. */
@@ -254,6 +256,8 @@ const EVENT_KIND: Readonly<Record<string, string>> = {
     signup_failure: 'sign_in_failed',
     logout: 'signed_out',
     token_refresh: 'refreshed',
+    account_locked: 'locked',
+    account_unlocked: 'unlocked',
 };
 
 /** The kind of timeline entry an event type is drawn as; an unknown type is just recorded. */

@@ -410,6 +410,8 @@ describe('the audit helpers', () => {
         expect(eventKind('signup_failure')).toBe('sign_in_failed');
         expect(eventKind('logout')).toBe('signed_out');
         expect(eventKind('token_refresh')).toBe('refreshed');
+        expect(eventKind('account_locked')).toBe('locked');
+        expect(eventKind('account_unlocked')).toBe('unlocked');
         expect(eventKind('select_party_only')).toBe('noticed');
     });
 

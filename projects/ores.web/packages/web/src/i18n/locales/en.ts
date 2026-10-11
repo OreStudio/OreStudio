@@ -411,6 +411,8 @@ export const en: SourceCatalogue = {
             login_failure: 'login failed',
             logout: 'logout',
             token_refresh: 'token refresh',
+            account_locked: 'account locked',
+            account_unlocked: 'account unlocked',
         },
         column: {
             started: 'Started',
@@ -1811,6 +1813,8 @@ export const en: SourceCatalogue = {
             signed_in: 'Signed in',
             sign_in_failed: 'Sign-in refused',
             signed_out: 'Signed out',
+            locked: 'Account locked',
+            unlocked: 'Account unlocked',
             refreshed: 'Session renewed',
             noticed: 'Recorded',
         },

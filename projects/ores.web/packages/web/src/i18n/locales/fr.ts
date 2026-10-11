@@ -408,6 +408,8 @@ const fr: SourceCatalogue = {
             login_failure: 'connexion échouée',
             logout: 'déconnexion',
             token_refresh: 'renouvellement du jeton',
+            account_locked: 'compte verrouillé',
+            account_unlocked: 'compte déverrouillé',
         },
         column: {
             started: 'Début',
@@ -1834,6 +1836,8 @@ const fr: SourceCatalogue = {
             signed_in: 'Connexion',
             sign_in_failed: 'Connexion refusée',
             signed_out: 'Déconnexion',
+            locked: 'Compte verrouillé',
+            unlocked: 'Compte déverrouillé',
             refreshed: 'Session renouvelée',
             noticed: 'Enregistré',
         },

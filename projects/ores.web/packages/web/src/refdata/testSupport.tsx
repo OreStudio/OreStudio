@@ -52,6 +52,7 @@ export function resourceView(
         writable: true,
         search: options.search ?? false,
         sortable: options.sortable ?? [],
+        events: { component: 'refdata', entity: name },
         writePermission: `refdata::${name}:write`,
         deletePermission: `refdata::${name}:delete`,
     };

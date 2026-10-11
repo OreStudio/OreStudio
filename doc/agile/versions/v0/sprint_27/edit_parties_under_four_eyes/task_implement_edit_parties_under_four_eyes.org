@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 775FD373-90C1-469E-8FCA-0A5210858813
 :END:
-#+title: Task: Gate party changes on the server
-#+description: Initial task for: Edit parties as an entity under four-eyes
+#+title: Task: Edit a party on a standard entity page
+#+description: Build the party list, page and dialogs from the shared record parts, and remove the party wizards.
 #+type: task
 #+level: s1
 #+filetags: :edit_parties_under_four_eyes:sprint_27:v0:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8493EF5E-F6D7-4CE4-B8AC-3C871FEF3059][Edit parties as an entity under four-eyes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8493EF5E-F6D7-4CE4-B8AC-3C871FEF3059][Edit a party on a standard entity page]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ A party is edited on one standard page, and every gated change goes into a four-
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:8493EF5E-F6D7-4CE4-B8AC-3C871FEF3059][Edit parties as an entity under four-eyes]] |
+| Parent story | [[id:8493EF5E-F6D7-4CE4-B8AC-3C871FEF3059][Edit a party on a standard entity page]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

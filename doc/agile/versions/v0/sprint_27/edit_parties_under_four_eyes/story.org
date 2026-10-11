@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 8493EF5E-F6D7-4CE4-B8AC-3C871FEF3059
 :END:
-#+title: Story: Edit parties as an entity under four-eyes
-#+description: Replace the party wizards with a standard entity page for a party: a list, a page with cards and tabs, and dialogs. A save proposes the change, and the change applies when a second person approves it. Two PRs: the server gating of parties, then the web screens.
+#+title: Story: Edit a party on a standard entity page
+#+description: Replace the party wizards with a standard entity page for a party: a list, a page with cards and tabs, and dialogs, built from the shared record parts. A save writes directly for now. The four-eyes approval of party changes belongs to the story Build the four-eyes framework.
 #+type: story
 #+level: s2
 #+filetags: :web:ux:refdata:sprint_27:v0:
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A party is edited on one standard page, and every gated change goes into a four-eyes approval request that applies when approved.
+A party is edited on one standard entity page, in dialogs on its cards, like a currency. The wizards are gone, and the page is ready for the four-eyes approval that another story adds.
 
 * Status
 
@@ -30,19 +30,21 @@ A party is edited on one standard page, and every gated change goes into a four-
 
 * Acceptance
 
-- The party record and its identifiers can be proposed, previewed, raised and applied on the server like a book.
-- The party page edits every card in a dialog, and a save proposes the change.
-- The three party wizards are removed.
+- The Parties list adds a party in a dialog, and a row opens the party page.
+- The party page has tabs for the details, the identifiers, the contacts, the memberships, the structure and the history, and each card is changed in a dialog.
+- The three party wizards, their routes and their cards are removed.
+- The page follows the entity screen specification and shares its parts with the other record screens.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:4E67658D-2523-4DC8-8C72-309F9721E5A7][Scaffold story: Edit parties as an entity under four-eyes]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:775FD373-90C1-469E-8FCA-0A5210858813][Gate party changes on the server]] | BACKLOG | | | Initial task for: Edit parties as an entity under four-eyes |
+| [[id:4E67658D-2523-4DC8-8C72-309F9721E5A7][Scaffold story: Edit a party on a standard entity page]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:775FD373-90C1-469E-8FCA-0A5210858813][Edit a party on a standard entity page]] | BACKLOG | | | Build the party list, page and dialogs from the shared record parts, and remove the party wizards. |
 
 * Decisions
 
 * Out of scope
 
--
+- The four-eyes gating of party changes, the request screens for them, and the apply. The story Build the four-eyes framework does them.
+- Counterparties. They follow the same pattern after parties are signed off.

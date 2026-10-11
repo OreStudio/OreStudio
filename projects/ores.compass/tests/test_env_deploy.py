@@ -11,6 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 # Allow importing from the src directory without installing the package.
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
@@ -207,7 +209,6 @@ class TestWriteComputeEnv:
         _write(keys / "client.crt", "CERT")
         _write(keys / "client.key", "KEY")
         return {
-            "ORES_COMPUTE_HOST_ID": "host-uuid-1",
             "ORES_COMPUTE_TENANT_ID": "acme",
             "ORES_COMPUTE_NATS_URL": "nats://192.168.1.10:4222",
             "ORES_COMPUTE_NATS_SUBJECT_PREFIX": "ores.prod.main1",
@@ -234,9 +235,16 @@ class TestWriteComputeEnv:
                 "/home/marco/ores-deploy/compute/keys/client.crt") in text
         assert ("ORES_COMPUTE_WRAPPER_NATS_TLS_KEY="
                 "/home/marco/ores-deploy/compute/keys/client.key") in text
-        assert "ORES_COMPUTE_WRAPPER_HOST_ID=host-uuid-1" in text
+        assert "ORES_COMPUTE_REPLICAS" not in text
         assert "ORES_COMPUTE_WRAPPER_TENANT_ID=acme" in text
         assert "ORES_COMPUTE_LABEL=prod-main1" in text
+
+    def test_writes_replicas_only_when_the_profile_sets_them(self, tmp_path):
+        profile = self._profile(tmp_path)
+        profile["ORES_COMPUTE_REPLICAS"] = "3"
+        env_path, _ = env_deploy._write_compute_env(
+            tmp_path / "checkout", profile, "prod-main1", "/home/marco/ores-deploy")
+        assert "ORES_COMPUTE_REPLICAS=3\n" in env_path.read_text(encoding="utf-8")
 
     def test_certs_staged_with_basenames(self, tmp_path):
         root = tmp_path / "checkout"
@@ -345,9 +353,9 @@ class TestHelpers:
         full = {k: "v" for k in env_deploy._COMPUTE_REQUIRED}
         assert env_deploy._missing_compute_keys(full) == []
         empty = dict(full)
-        del empty["ORES_COMPUTE_HOST_ID"]
+        del empty["ORES_COMPUTE_TENANT_ID"]
         assert env_deploy._missing_compute_keys(empty) == \
-            ["ORES_COMPUTE_HOST_ID"]
+            ["ORES_COMPUTE_TENANT_ID"]
 
 
 # --- subprocess composition ----------------------------------------------
@@ -455,3 +463,121 @@ class TestRemoteScript:
         # backticks would execute `compass env deploy <host>` as command
         # substitution on the remote (with <host> read as a redirect).
         assert "\\`compass env deploy <host>\\`" in script
+
+
+# --- deploy all -----------------------------------------------------------
+
+class TestDeployAll:
+    def _profiles(self, root):
+        _write(root / ".env.goedel",
+               "ORES_REMOTE_HOST=marco@192.168.1.199\n"
+               "ORES_COMPUTE_NATS_URL=aaaa\n")
+        _write(root / ".env.newton",
+               "ORES_REMOTE_HOST=marco@192.168.1.22\n"
+               "ORES_COMPUTE_NATS_URL=bbbb\n")
+        _write(root / ".env.runtime-only", "ORES_REMOTE_HOST=marco@h\n")
+
+    def test_lists_only_profiles_with_compute_settings(self, tmp_path):
+        self._profiles(tmp_path)
+
+        assert env_deploy._compute_aliases(tmp_path) == ["goedel", "newton"]
+
+    def test_a_host_that_is_down_is_skipped_and_the_rest_deploy(
+            self, tmp_path, monkeypatch, capsys):
+        self._profiles(tmp_path)
+        deployed = []
+        monkeypatch.setattr(env_deploy, "_reachable",
+                            lambda host, timeout=5: "199" in host)
+        monkeypatch.setattr(
+            env_deploy, "_cmd_deploy",
+            lambda argv, root: deployed.append(argv) or 0)
+
+        code = env_deploy.run(["all"], tmp_path)
+
+        assert deployed == [["goedel", "--role", "compute"]]
+        assert code == 1
+        out = capsys.readouterr().out
+        assert "down: no answer over ssh, skipped" in out
+        assert "newton           down" in out
+        assert "goedel           ok" in out
+
+    def test_a_failing_host_does_not_stop_the_others(
+            self, tmp_path, monkeypatch):
+        self._profiles(tmp_path)
+        seen = []
+
+        def deploy(argv, root):
+            seen.append(argv[0])
+            if argv[0] == "goedel":
+                raise RuntimeError("podman missing")
+            return 0
+
+        monkeypatch.setattr(env_deploy, "_reachable",
+                            lambda host, timeout=5: True)
+        monkeypatch.setattr(env_deploy, "_cmd_deploy", deploy)
+
+        assert env_deploy.run(["all"], tmp_path) == 1
+        assert seen == ["goedel", "newton"]
+
+    def test_an_exit_inside_one_deploy_does_not_stop_the_others(
+            self, tmp_path, monkeypatch):
+        self._profiles(tmp_path)
+        seen = []
+
+        def deploy(argv, root):
+            seen.append(argv[0])
+            if argv[0] == "goedel":
+                raise SystemExit(2)
+            return 0
+
+        monkeypatch.setattr(env_deploy, "_reachable",
+                            lambda host, timeout=5: True)
+        monkeypatch.setattr(env_deploy, "_cmd_deploy", deploy)
+
+        assert env_deploy.run(["all"], tmp_path) == 1
+        assert seen == ["goedel", "newton"]
+
+    def test_succeeds_when_every_host_deploys(self, tmp_path, monkeypatch):
+        self._profiles(tmp_path)
+        monkeypatch.setattr(env_deploy, "_reachable",
+                            lambda host, timeout=5: True)
+        monkeypatch.setattr(env_deploy, "_cmd_deploy", lambda argv, root: 0)
+
+        assert env_deploy.run(["all"], tmp_path) == 0
+
+    def test_stop_is_passed_through(self, tmp_path, monkeypatch):
+        self._profiles(tmp_path)
+        seen = []
+        monkeypatch.setattr(env_deploy, "_reachable",
+                            lambda host, timeout=5: True)
+        monkeypatch.setattr(
+            env_deploy, "_cmd_deploy",
+            lambda argv, root: seen.append(argv) or 0)
+
+        env_deploy.run(["all", "--stop"], tmp_path)
+
+        assert seen[0] == ["goedel", "--role", "compute", "--stop"]
+
+    def test_no_compute_profile_is_an_error(self, tmp_path, capsys):
+        assert env_deploy.run(["all"], tmp_path) == 1
+        assert "No host profile has compute settings" in capsys.readouterr().out
+
+
+class TestRequirePodman:
+    def test_passes_when_podman_is_there(self, monkeypatch):
+        monkeypatch.setattr(
+            env_deploy, "_ssh",
+            lambda host, command, **kw: subprocess.CompletedProcess([], 0))
+
+        env_deploy._require_podman("marco@h")
+
+    def test_names_the_host_and_the_fix_when_it_is_missing(self, monkeypatch):
+        monkeypatch.setattr(
+            env_deploy, "_ssh",
+            lambda host, command, **kw: subprocess.CompletedProcess([], 1))
+
+        with pytest.raises(RuntimeError) as err:
+            env_deploy._require_podman("marco@192.168.1.11")
+
+        assert "marco@192.168.1.11" in str(err.value)
+        assert "sudo apt install podman" in str(err.value)

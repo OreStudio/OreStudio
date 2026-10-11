@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 9CBCE5F3-8366-420B-A118-58690CAAD747
+:END:
+#+title: Turn ORE's memory reports into node memory samples
+#+description: ORE writes six memory-use lines per run (peak and current memory at the start and end of the analytics and the pricing analytic). The wrapper now stores them as debug log lines. Parse them into node samples so the grid screen can chart the memory each node uses.
+#+type: capture
+#+level: cross
+#+filetags: :compute:telemetry:ore:monitoring:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Parse the memory lines ORE writes into its log, and turn each one into a sample of the node's memory use. The grid screen can then chart the memory of every node over time.
+
+ORE writes six such lines per run. Each carries two numbers, the peak memory and the current memory, in bytes. Here is one of them, as ORE wrote it.
+
+#+begin_example
+WARNING  [2026-Oct-11 09:54:13.735791]  (OREAnalytics/orea/app/oreapp.cpp:257) : Starting OREApp::analytics(): 52359168|52514816 (peakMemoryUsage (bytes) | memoryUsage (bytes))
+#+end_example
+
+The six points in a run are the start and finish of =OREApp::analytics=, the start and finish of the PRICING analytic, and the lines before and after =releaseMemory=. The first number is the peak and the second is the current use.
+
+* Why
+
+The node samples carry task counts, durations and bytes moved. They say nothing about memory, and memory is what limits a node. The laptop runs seven wrappers in 2.7 GiB, so the screen should show when a node runs short.
+
+The numbers are already in the telemetry. ORE sends these lines through its WARNING channel. The wrapper used to store them as warnings, so every stored ORE warning was a memory line. The ORE log parser now stores them as debug lines. Parsing the two numbers out of the same lines costs no new instrumentation.
+
+A design note for whoever takes this. The lines belong to a job, not to a node. A sample per node needs a rule, such as the peak over the jobs since the last node sample. The wrapper could read the lines while it publishes the ORE log, in =log_publisher.cpp=. It would add peak and current memory to =node_sample_message=. The grid screen would then show them beside the task counts.
+
+* References
+
+- =projects/ores.ore/core/src/log/ore_log_parser.cpp=, the parser that now maps these lines to debug.
+- =projects/ores.compute/wrapper/src/app/log_publisher.cpp=, where the wrapper publishes the ORE log.
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][User Journey: Watch the compute grid]]
+
+* See also
+
+- [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Story: Implement the operations journeys in ores.web]], which owns the grid screen.
+- [[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the failure fields]], the neighbouring grid stats capture.

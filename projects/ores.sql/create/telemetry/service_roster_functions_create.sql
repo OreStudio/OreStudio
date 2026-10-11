@@ -25,12 +25,15 @@
  * name and then slot. A service expects as many slots as its replicas in
  * ores_telemetry_expected_services_tbl. The instances that ever reported are
  * ranked by their last report, newest first, and the newest fill the slots.
- * An older instance ranked past the replicas is a restart's leftover, because
- * an instance id is new at every start, so it fills no slot. A slot no
+ * An older instance on a host that has a newer one is a restart's leftover,
+ * because an instance id is new at every start, so it fills no slot. A slot no
  * instance fills has null report columns.
  *
  * The caller decides running or lost from sampled_at; this function only
  * ranks, so the running window lives in one place.
+ *
+ * A host past the replicas still gets a slot, so a service that runs on more
+ * hosts than it expects shows every one of them.
  */
 create or replace function ores_telemetry_service_roster_fn()
 returns table (
@@ -55,19 +58,32 @@ as $$
           on e.service_name = s.service_name
         order by s.service_name, s.instance_id, s.sampled_at desc
     ),
-    ranked as (
+    newest as (
         select l.*,
                row_number() over (
-                   partition by l.service_name
+                   partition by l.service_name, coalesce(l.host_id, l.instance_id)
                    order by l.sampled_at desc, l.instance_id
-               ) as rank
+               ) as host_rank
         from latest l
+    ),
+    ranked as (
+        select c.*,
+               row_number() over (
+                   partition by c.service_name
+                   order by c.sampled_at desc, c.instance_id
+               ) as rank
+        from newest c
+        where c.host_rank = 1
     ),
     slots as (
         select e.service_name, e.display_name, e.description, e.service_account,
                g.slot::integer as slot
         from ores_telemetry_expected_services_tbl e
-        cross join lateral generate_series(1, e.replicas) as g(slot)
+        cross join lateral generate_series(
+            1,
+            greatest(e.replicas,
+                     (select count(*) from ranked r where r.service_name = e.service_name))
+        ) as g(slot)
     )
     select sl.service_name, sl.display_name, sl.description, sl.service_account, sl.slot,
            r.instance_id, r.host_id, r.version, r.sampled_at

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Remote side of `compass env deploy <host> --stop` — runs ON the target
 # WSL host, piped in via `ssh <host> bash -s`. Removes the containers
-# started by docker/remote-run.sh. The staged certs volume is left in
+# started by docker/remote-run.sh, and the Quadlet units that supervise
+# the compute wrappers. The staged certs volume is left in
 # place (cheap to keep, re-staged on every remote-run.sh anyway) unless
 # PURGE=1 is passed.
 set -euo pipefail
@@ -22,8 +23,17 @@ if [[ "$ROLE" == "compute" ]]; then
     fi
     label="${ORES_COMPUTE_LABEL:-ores}"
     container="ores-compute-node-${label}"
-    echo "=== Stopping compute node '$container' ==="
-    podman rm -f "$container" >/dev/null 2>&1 || true
+    echo "=== Stopping compute nodes '$container*' ==="
+    export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
+    unit_dir="${XDG_CONFIG_HOME:-$HOME/.config}/containers/systemd"
+    systemctl --user stop "$container-[0-9]*.service" >/dev/null 2>&1 || true
+    for old_unit in "$unit_dir/$container"-[0-9]*.container; do
+        [[ -e "$old_unit" ]] && rm -f "$old_unit"
+    done
+    systemctl --user daemon-reload >/dev/null 2>&1 || true
+    for old in $(podman ps -aq --filter "name=^${container}(-[0-9]+)?$" 2>/dev/null); do
+        podman rm -f "$old" >/dev/null 2>&1 || true
+    done
 else
     env_file="$REMOTE_ROOT/docker/.env"
     if [[ -f "$env_file" ]]; then

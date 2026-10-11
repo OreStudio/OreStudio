@@ -50,6 +50,7 @@ create table if not exists "ores_compute_node_samples_tbl" (
     "sampled_at" timestamp with time zone not null,
     "tenant_id" uuid not null,
     "host_id" uuid not null,
+    "machine" text not null default '',
     "tasks_completed" integer not null default 0,
     "tasks_failed" integer not null default 0,
     "tasks_since_last" integer not null default 0,

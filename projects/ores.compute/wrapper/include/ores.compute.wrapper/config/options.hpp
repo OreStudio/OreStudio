@@ -59,6 +59,15 @@ struct options final {
     std::string work_dir;
 
     /**
+     * @brief Directory for the engine package cache.
+     *
+     * Empty means the packages directory under the work directory. Wrappers on
+     * one host point this at one directory, so that one of them downloads each
+     * package and the rest wait for it.
+     */
+    std::string package_dir;
+
+    /**
      * @brief Interval in seconds between heartbeat messages while a job is running.
      */
     std::uint32_t heartbeat_interval_seconds{30};

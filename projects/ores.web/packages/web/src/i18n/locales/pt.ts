@@ -1465,9 +1465,26 @@ const pt: SourceCatalogue = {
                 noSample:
                     'Ainda sem amostra. A instalação não guarda qualquer resumo da grelha, por isso os contadores não podem ser desenhados; a tabela de nós abaixo fica sozinha.',
             },
+            machines: {
+                title: 'Máquinas',
+                summary: '{up} de {total} máquinas ativas',
+                columns: {
+                    machine: 'Máquina',
+                    status: 'Estado',
+                    nodes: 'Nós',
+                    tasksCompleted: 'Tarefas concluídas',
+                    tasksFailed: 'Falhas',
+                },
+                up: 'Ativa',
+                down: 'Parada',
+                unnamed: 'Máquina sem nome',
+                nodes: '{running} de {total}',
+                hint: 'Os nós que não indicam máquina ficam agrupados aqui.',
+            },
             nodes: {
                 title: 'Nós',
                 rows: '{count} linhas',
+                showing: '{first}–{last} de {total} nós',
                 reported:
                     '{running} de {total} executores anunciaram-se nos últimos {minutes} minutos',
                 lost: '{count} perdidos',

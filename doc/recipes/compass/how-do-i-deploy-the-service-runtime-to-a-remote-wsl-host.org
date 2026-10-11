@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :compass:env:deploy:wsl:devops:
 #+created: 2026-08-08
-#+updated: 2026-08-08
+#+updated: 2026-10-11
 
 This is the first-class replacement for the manual podman
 build / save / ssh ... load / run-pod.sh sequence used to deploy to
@@ -46,7 +46,19 @@ compass env deploy newton --setup-host
 
 # What hosts do we know about?
 compass env deploy list
+
+# The compute node on every host profile that has compute settings
+# (ORES_COMPUTE_NATS_URL). Each host is probed first: one that does not
+# answer over ssh is reported as down and skipped, the others still
+# deploy, and a summary closes the run. The exit status is non-zero when
+# any host was down or failed.
+compass env deploy all
+compass env deploy all --stop
 #+end_src
+
+Every host needs =podman= installed. The deploy checks for it before it
+transfers anything and names the host and the fix when it is missing, so a
+host that was not prepared leaves nothing behind on it.
 
 The first deploy to a new host generates its profile, =.env.<host>= at
 the repo root (e.g. =.env.newton=), from the current environment via
@@ -73,7 +85,7 @@ The compute role additionally needs the serving environment's details
 in the profile (the wrapper is NATS/TLS-only — no DB credentials):
 
 #+begin_src sh :results verbatim
-ORES_COMPUTE_HOST_ID=<uuid>            # row in the serving env's compute.hosts
+ORES_COMPUTE_REPLICAS=<n>               # optional; default is one wrapper per core but one
 ORES_COMPUTE_TENANT_ID=<tenant>        # required by the wrapper parser
 ORES_COMPUTE_NATS_URL=nats://<serving-host>:4222
 ORES_COMPUTE_NATS_SUBJECT_PREFIX=ores.<serving-env-label>
@@ -140,9 +152,20 @@ with =--network=host=, its client certs through a volume, and its
 =--work-dir= under =$REMOTE_ROOT/compute/work=. No NATS sidecar, no
 Postgres, no service set.
 
+The host runs one wrapper per core but one, or =ORES_COMPUTE_REPLICAS= of
+them. Each wrapper has its own host id, a UUID v5 of =<hostname>:<n>=, and
+its own work directory. They share one package cache, so the first wrapper
+that needs an engine package downloads it and the others wait for it.
+
+Each wrapper runs as a systemd user service built from a Quadlet file in
+=~/.config/containers/systemd/=. The service restarts after a crash and
+starts at boot, as long as lingering is on for the user. Quadlet needs podman
+4.4 or later. =--stop= stops the services and removes the files. A WSL host
+starts its wrappers at boot only once the distro itself is running.
+
 ** Idempotency
 
-Re-running any command is safe: containers are =rm -f='d before
+Re-running any command is safe: wrapper units and containers are replaced before
 recreate, files are overwritten, volumes are recreated, and the image
 build is layer-cached. Picking up a new build is just
 =compass env deploy <host>= again.

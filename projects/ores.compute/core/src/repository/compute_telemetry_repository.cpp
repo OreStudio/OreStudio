@@ -42,7 +42,7 @@ std::vector<domain::node_sample> compute_telemetry_repository::latest_node_sampl
     // session sees: its own tenant's and the system tenant's.
     const std::string sql = R"(
         SELECT DISTINCT ON (host_id)
-            id, sampled_at, tenant_id, host_id,
+            id, sampled_at, tenant_id, host_id, machine,
             tasks_completed, tasks_failed, tasks_since_last,
             avg_task_duration_ms, max_task_duration_ms,
             input_bytes_fetched, output_bytes_uploaded,
@@ -57,21 +57,22 @@ std::vector<domain::node_sample> compute_telemetry_repository::latest_node_sampl
     std::vector<domain::node_sample> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
-        if (row.size() < 12)
+        if (row.size() < 13)
             continue;
         domain::node_sample s;
         s.id = boost::lexical_cast<boost::uuids::uuid>(row[0].value_or(""));
         s.sampled_at = timestamp_to_timepoint(std::string_view{row[1].value_or("")});
         s.tenant_id = utility::uuid::tenant_id::from_string(row[2].value_or("")).value();
         s.host_id = boost::lexical_cast<boost::uuids::uuid>(row[3].value_or(""));
-        s.tasks_completed = row[4] ? std::stoi(*row[4]) : 0;
-        s.tasks_failed = row[5] ? std::stoi(*row[5]) : 0;
-        s.tasks_since_last = row[6] ? std::stoi(*row[6]) : 0;
-        s.avg_task_duration_ms = row[7] ? std::stoll(*row[7]) : 0;
-        s.max_task_duration_ms = row[8] ? std::stoll(*row[8]) : 0;
-        s.input_bytes_fetched = row[9] ? std::stoll(*row[9]) : 0;
-        s.output_bytes_uploaded = row[10] ? std::stoll(*row[10]) : 0;
-        s.seconds_since_hb = row[11] ? std::stoi(*row[11]) : 0;
+        s.machine = row[4].value_or("");
+        s.tasks_completed = row[5] ? std::stoi(*row[5]) : 0;
+        s.tasks_failed = row[6] ? std::stoi(*row[6]) : 0;
+        s.tasks_since_last = row[7] ? std::stoi(*row[7]) : 0;
+        s.avg_task_duration_ms = row[8] ? std::stoll(*row[8]) : 0;
+        s.max_task_duration_ms = row[9] ? std::stoll(*row[9]) : 0;
+        s.input_bytes_fetched = row[10] ? std::stoll(*row[10]) : 0;
+        s.output_bytes_uploaded = row[11] ? std::stoll(*row[11]) : 0;
+        s.seconds_since_hb = row[12] ? std::stoi(*row[12]) : 0;
         result.push_back(std::move(s));
     }
     return result;

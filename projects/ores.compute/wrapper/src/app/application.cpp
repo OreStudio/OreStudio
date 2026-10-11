@@ -40,6 +40,9 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/writable_pipe.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/interprocess/sync/file_lock.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
+#include <boost/process/v2/environment.hpp>
 #include <boost/process/v2/process.hpp>
 #include <boost/process/v2/start_dir.hpp>
 #include <boost/process/v2/stdio.hpp>
@@ -55,6 +58,7 @@
 #include <rfl/json.hpp>
 #include <sstream>
 #include <thread>
+#include <unistd.h>
 
 namespace ores::compute::wrapper::app {
 
@@ -69,6 +73,17 @@ constexpr std::string_view service_version = ORES_VERSION;
  */
 std::string to_iso8601(std::chrono::system_clock::time_point tp) {
     return std::format("{:%Y-%m-%dT%H:%M:%SZ}", tp);
+}
+
+/**
+ * @brief The name of the computer the wrapper runs on, empty if it cannot be read.
+ */
+std::string machine_name() {
+    char name[256] = {};
+    if (gethostname(name, sizeof(name) - 1) != 0) {
+        return {};
+    }
+    return name;
 }
 
 /**
@@ -88,6 +103,7 @@ public:
                         std::uint32_t interval_seconds)
         : nats_(nats)
         , host_id_(host_id)
+        , machine_(machine_name())
         , tenant_id_(tenant_id)
         , interval_(interval_seconds) {}
 
@@ -199,6 +215,7 @@ private:
         compute::messaging::node_sample_message msg;
         msg.tenant_id = tenant_id_;
         msg.host_id = host_id_;
+        msg.machine = machine_;
         msg.sampled_at = to_iso8601(std::chrono::system_clock::now());
         msg.tasks_completed = tasks_completed_.load();
         msg.tasks_failed = tasks_failed_.load();
@@ -223,6 +240,7 @@ private:
 
     ores::nats::service::client& nats_;
     std::string host_id_;
+    std::string machine_;
     std::string tenant_id_;
     std::uint32_t interval_;
     std::atomic<bool> stop_{false};
@@ -442,6 +460,70 @@ std::string read_file_text(const fs::path& path) {
 }
 
 /**
+ * @brief Make sure the engine package for an app version is unpacked in the cache.
+ *
+ * The wrappers on one host share the cache directory. A lock file per package
+ * lets one wrapper download while the others wait, so a host fetches each
+ * package once and not once per wrapper. A failed transfer is tried again,
+ * because a burst of downloads from many hosts can cut one short.
+ */
+void ensure_package(const fs::path& pkg_cache_dir,
+                    const compute::messaging::work_assignment_event& evt,
+                    const std::string& http_base_url,
+                    auto& lg) {
+    if (fs::exists(pkg_cache_dir / "manifest.json"))
+        return;
+
+    fs::create_directories(pkg_cache_dir.parent_path());
+    const fs::path lock_path = pkg_cache_dir.parent_path() / (evt.app_version_id + ".lock");
+    { std::ofstream create_lock(lock_path, std::ios::app); }
+    boost::interprocess::file_lock file_lock(lock_path.string().c_str());
+    boost::interprocess::scoped_lock<boost::interprocess::file_lock> guard(file_lock);
+
+    // Another wrapper may have finished the download while this one waited.
+    if (fs::exists(pkg_cache_dir / "manifest.json"))
+        return;
+
+    constexpr int max_attempts = 4;
+    const fs::path pkg_archive = pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
+    for (int attempt = 1;; ++attempt) {
+        BOOST_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id << " (attempt "
+                                 << attempt << " of " << max_attempts << ")";
+        try {
+            ores::storage::net::http_client::get(
+                make_url(http_base_url, evt.package_uri), pkg_archive, evt.storage_token);
+            break;
+        } catch (const std::exception& e) {
+            std::error_code ignored;
+            fs::remove(pkg_archive, ignored);
+            if (attempt == max_attempts)
+                throw;
+            BOOST_LOG_SEV(lg, warn) << "Package download failed, retrying: " << e.what();
+            std::this_thread::sleep_for(std::chrono::seconds(5 * attempt));
+        }
+    }
+
+    const auto actual_sha256 = ores::utility::crypto::sha256::hex_digest_of_file(pkg_archive);
+    if (actual_sha256 != evt.package_sha256) {
+        throw std::runtime_error("Package SHA256 mismatch for " + evt.app_version_id +
+                                 ": expected " + evt.package_sha256 + ", got " + actual_sha256 +
+                                 " -- refusing to run a corrupted or tampered package");
+    }
+
+    // Unpack beside the final directory and rename it into place, so that
+    // manifest.json exists only in a finished package. A wrapper that checks for
+    // it without the lock, or after a crash during the unpack, never sees half a
+    // package.
+    const fs::path unpack_dir = pkg_cache_dir.string() + ".tmp";
+    std::error_code ignored;
+    fs::remove_all(unpack_dir, ignored);
+    fs::create_directories(unpack_dir);
+    ores::storage::filesystem::archiver::extract(pkg_archive, unpack_dir);
+    fs::remove_all(pkg_cache_dir, ignored);
+    fs::rename(unpack_dir, pkg_cache_dir);
+}
+
+/**
  * @brief Process one work assignment.
  *
  * 1. Download and cache the engine package (if not already cached).
@@ -474,26 +556,10 @@ void process_assignment(ores::nats::service::client& nats,
     std::int64_t duration_ms = 0;
 
     try {
-        const fs::path pkg_cache_dir = fs::path(cfg.work_dir) / "packages" / evt.app_version_id;
-        if (!fs::exists(pkg_cache_dir / "manifest.json")) {
-            BOOST_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id;
-            const fs::path pkg_archive =
-                pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
-            ores::storage::net::http_client::get(
-                make_url(cfg.http_base_url, evt.package_uri), pkg_archive, evt.storage_token);
-
-            const auto actual_sha256 =
-                ores::utility::crypto::sha256::hex_digest_of_file(pkg_archive);
-            if (actual_sha256 != evt.package_sha256) {
-                throw std::runtime_error("Package SHA256 mismatch for " + evt.app_version_id +
-                                         ": expected " + evt.package_sha256 + ", got " +
-                                         actual_sha256 +
-                                         " -- refusing to run a corrupted or tampered package");
-            }
-
-            fs::create_directories(pkg_cache_dir);
-            ores::storage::filesystem::archiver::extract(pkg_archive, pkg_cache_dir);
-        }
+        const fs::path package_root =
+            cfg.package_dir.empty() ? fs::path(cfg.work_dir) / "packages" : fs::path(cfg.package_dir);
+        const fs::path pkg_cache_dir = package_root / evt.app_version_id;
+        ensure_package(pkg_cache_dir, evt, cfg.http_base_url, lg);
 
         const auto mf = read_manifest(pkg_cache_dir);
 
@@ -539,11 +605,22 @@ void process_assignment(ores::nats::service::client& nats,
         boost::asio::connect_pipe(out_r, out_w);
         boost::asio::connect_pipe(err_r, err_w);
 
+        // ORE stamps its log lines in the local time of the machine, and the log
+        // parser reads them as UTC, so the engine runs with TZ=UTC on every node.
+        std::vector<std::string> engine_env;
+        for (const auto& entry : bp2::environment::current()) {
+            const auto key = entry.key().string();
+            if (key != "TZ")
+                engine_env.push_back(key + "=" + entry.value().string());
+        }
+        engine_env.push_back("TZ=UTC");
+
         const auto engine_start = std::chrono::steady_clock::now();
         bp2::process engine_proc(boost::asio::any_io_executor(proc_ioc.get_executor()),
                                  boost::filesystem::path(exe.string()),
                                  args,
                                  bp2::process_start_dir(job_dir.string()),
+                                 bp2::process_environment(engine_env),
                                  bp2::process_stdio{.in = nullptr, .out = out_w, .err = err_w});
 
         // Close write ends so readers see EOF when the process exits.
@@ -696,10 +773,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         throw;
     }
 
-    // Idle heartbeat — compute-domain signal; tells the compute service this
-    // worker is alive even when no job is running (subject: compute.v1.ops.heartbeat).
-    heartbeat_sender idle_hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, nullptr);
-
     // Node telemetry reporter — publishes per-node metrics to
     // compute.v1.ops.node_sample at the configured interval.
     std::unique_ptr<node_stats_reporter> reporter;
@@ -708,6 +781,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             nats, cfg.host_id, cfg.tenant_id, cfg.telemetry_interval_seconds);
     }
     node_stats_reporter* raw_reporter = reporter.get();
+
+    // Idle heartbeat — compute-domain signal; tells the compute service this
+    // worker is alive even when no job is running (subject: compute.v1.ops.heartbeat).
+    // It notifies the reporter too, so seconds_since_hb keeps counting from the
+    // last heartbeat of any kind and not from the last one sent during a job.
+    heartbeat_sender idle_hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, raw_reporter);
 
     // Subject routing is per-triplet: the compute orchestrator publishes each
     // assignment on compute.v1.ops.work_assignment.{tenant_id}.{platform_code}

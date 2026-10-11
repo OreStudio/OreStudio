@@ -113,6 +113,7 @@ public:
             for (const auto& n : nodes) {
                 node_stats_summary s;
                 s.host_id = boost::uuids::to_string(n.host_id);
+                s.machine = n.machine;
                 s.tasks_completed = n.tasks_completed;
                 s.tasks_failed = n.tasks_failed;
                 s.tasks_since_last = n.tasks_since_last;
@@ -155,6 +156,7 @@ public:
             s.id = boost::uuids::random_generator()();
             s.sampled_at = std::chrono::system_clock::now();
             s.host_id = boost::lexical_cast<boost::uuids::uuid>(parsed->host_id);
+            s.machine = parsed->machine;
             s.tasks_completed = parsed->tasks_completed;
             s.tasks_failed = parsed->tasks_failed;
             s.tasks_since_last = parsed->tasks_since_last;

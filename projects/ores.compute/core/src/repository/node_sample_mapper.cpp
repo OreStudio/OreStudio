@@ -50,6 +50,7 @@ domain::node_sample node_sample_mapper::map(const node_sample_entity& v) {
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.sampled_at = timestamp_to_timepoint(std::string_view{v.sampled_at.value()});
     r.host_id = boost::lexical_cast<boost::uuids::uuid>(v.host_id);
+    r.machine = v.machine;
     r.tasks_completed = v.tasks_completed;
     r.tasks_failed = v.tasks_failed;
     r.tasks_since_last = v.tasks_since_last;
@@ -71,6 +72,7 @@ node_sample_entity node_sample_mapper::map(const domain::node_sample& v) {
     r.sampled_at = ores::platform::time::datetime::to_db_string(v.sampled_at);
     r.tenant_id = v.tenant_id.to_string();
     r.host_id = boost::uuids::to_string(v.host_id);
+    r.machine = v.machine;
     r.tasks_completed = v.tasks_completed;
     r.tasks_failed = v.tasks_failed;
     r.tasks_since_last = v.tasks_since_last;

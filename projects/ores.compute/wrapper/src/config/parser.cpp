@@ -39,6 +39,7 @@ const std::string version_arg("version");
 const std::string host_id_arg("host-id");
 const std::string tenant_id_arg("tenant-id");
 const std::string work_dir_arg("work-dir");
+const std::string package_dir_arg("package-dir");
 const std::string heartbeat_interval_arg("heartbeat-interval-seconds");
 const std::string telemetry_interval_arg("telemetry-interval-seconds");
 const std::string http_base_url_arg("http-base-url");
@@ -70,6 +71,10 @@ options_description make_options_description() {
         work_dir_arg.c_str(),
         value<std::string>()->default_value("/var/ores/wrapper"),
         "Directory for package cache and job scratch space")(
+        package_dir_arg.c_str(),
+        value<std::string>()->default_value(""),
+        "Directory for the engine package cache, shared by the wrappers on a host "
+        "(default: packages under --work-dir)")(
         heartbeat_interval_arg.c_str(),
         value<std::uint32_t>()->default_value(30),
         "Seconds between heartbeat messages while a job runs")(
@@ -144,6 +149,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.host_id = vm[host_id_arg].as<std::string>();
     r.tenant_id = vm[tenant_id_arg].as<std::string>();
     r.work_dir = vm[work_dir_arg].as<std::string>();
+    r.package_dir = vm[package_dir_arg].as<std::string>();
     r.heartbeat_interval_seconds = vm[heartbeat_interval_arg].as<std::uint32_t>();
     r.telemetry_interval_seconds = vm[telemetry_interval_arg].as<std::uint32_t>();
     r.http_base_url = vm[http_base_url_arg].as<std::string>();

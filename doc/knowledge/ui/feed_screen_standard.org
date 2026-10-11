@@ -273,15 +273,20 @@ keeps the oresmd URI of each tick, and the screen groups by time (=irTicks.ts=).
 batch with a pillar missing, which the server heard in part, is not a curve and
 is not drawn.
 
-- The strip shows the curves shown, the tenor of the second chart, the time of the
-  newest curve, its short end and long end, and the slope between them in basis
-  points, green or red.
-- The first chart overlays the newest curve over the ones before it, rate against
-  tenor. The second plots one tenor over time. The person chooses how many curves
-  and which tenor.
+- The strip shows the history, the time of the newest curve, its short end and long
+  end, and the slope between them in basis points, green or red.
+- One chart, the one the Qt market simulator draws: the tenors of the curve along
+  the bottom, short end to long end, each named under its point, and the rate up the
+  side, with a margin of a tenth of the range. The newest curve is bold and green.
+  The curves before it are overlaid, thinner, grey-blue and fading with age: the
+  oldest is the faintest, and none fades below 40 of 255. Every point has a dot.
+  The legend under the chart says so: "Newest curve bold; older snapshots
+  overlaid, fading with age."
+- The history is a number from 1 to 20, five by default, as in the Qt window. It
+  is the number of recent curves to overlay.
 - *Export CSV* hands the curves shown to the browser, one row for each curve and one
   column for each pillar.
-- A column beside the plots shows the process that made the curves: the engine, the
+- A column beside the plot shows the process that made the curves: the engine, the
   rate and each parameter with its saved value.
 
 ** History

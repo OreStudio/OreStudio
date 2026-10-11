@@ -322,7 +322,9 @@ describe('the IR curve feed screens', () => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('The last curves of the feed');
-        expect(html).toContain('The 3M rate over time');
+        expect(html).toContain('Newest curve bold; older snapshots overlaid, fading with age.');
+        expect(html).toContain('>3M<');
+        expect(html).toContain('>5Y<');
         expect(html).toContain('Short end (3M)');
         expect(html).toContain('Long end (5Y)');
         expect(html).toContain('Slope (bp)');

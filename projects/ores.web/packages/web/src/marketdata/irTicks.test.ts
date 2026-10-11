@@ -21,6 +21,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { curvesCsv, curvesOf, pillarsOf, slopeOf, type PillarTick } from './irTicks.js';
+import { curveStyle } from './IrTicksPanel.js';
 
 const tick = (at: string, value: number): PillarTick => ({ at, value, uri: '' });
 
@@ -77,5 +78,21 @@ describe('the CSV of the curves', () => {
             [{ at: 't1', rates: [0.01, 0.02] }],
         );
         expect(csv).toBe('source,time,SPOT-3M,SPOT-5Y\nusd.sofr,t1,0.01,0.02\n');
+    });
+});
+
+describe('how a curve of the history is drawn', () => {
+    it('makes the newest curve bold and green, as the Qt chart does', () => {
+        expect(curveStyle(4, 5)).toEqual({ colour: '#22C55E', width: 2.5, opacity: 1 });
+    });
+
+    it('fades the older curves with age, and no curve below 40 of 255', () => {
+        const oldest = curveStyle(0, 5);
+        const middle = curveStyle(2, 5);
+        expect(oldest.colour).toBe('#8A9BAE');
+        expect(oldest.width).toBe(1);
+        expect(oldest.opacity).toBeCloseTo(40 / 255, 6);
+        expect(middle.opacity).toBeCloseTo(((255 * 3) / 5 - 60) / 255, 6);
+        expect(middle.opacity).toBeGreaterThan(oldest.opacity);
     });
 });

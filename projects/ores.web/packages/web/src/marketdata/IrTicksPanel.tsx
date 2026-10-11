@@ -24,15 +24,15 @@ import { useState, type ReactNode } from 'react';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { show } from '../refdata/records.js';
-import { Button, Notice, Select, Tag } from '../ui/Primitives.js';
+import { Button, Input, Notice, Tag } from '../ui/Primitives.js';
 import { parameterLines, type ParameterLine } from './irCurve.js';
 import { curvesCsv, curvesOf, pillarsOf, slopeOf } from './irTicks.js';
-import { LineChart, SERIES_COLOURS } from './LineChart.js';
+import { LineChart } from './LineChart.js';
 import { instantOf } from './ticks.js';
 import { Stat, clock } from './TicksPanel.js';
 
-/** How many whole curves the plot can overlay. The BFF keeps 500 ticks for each feed. */
-export const CURVE_COUNTS = [1, 5, 10, 20] as const;
+/** The most curves the plot overlays, as the Qt market simulator allows. */
+const MAX_HISTORY = 20;
 
 /** The newest ticks the BFF keeps for a feed. */
 const TICKS_KEPT = 500;
@@ -55,11 +55,30 @@ function download(name: string, csv: string): void {
 }
 
 /**
+ * How a curve of the history is drawn, as the Qt market simulator draws it. The
+ * newest curve is bold and green. The older ones are grey-blue, thinner, and
+ * fade with age: the oldest of n is the faintest, and none is fainter than 40
+ * of 255.
+ */
+export function curveStyle(
+    index: number,
+    count: number,
+): { readonly colour: string; readonly width: number; readonly opacity: number } {
+    const newest = index === count - 1;
+    return {
+        colour: newest ? '#22C55E' : '#8A9BAE',
+        width: newest ? 2.5 : 1,
+        opacity: newest ? 1 : Math.max(40, (255 * (index + 1)) / count - 60) / 255,
+    };
+}
+
+/**
  * The last curves of one IR curve feed, drawn as the Qt market simulator draws
- * them: the newest curve over the ones before it, rate against tenor, and the
- * rate of one tenor over time. Beside them is the process that made the curves.
- * A running feed is read again every two seconds; a stopped one has none,
- * because a run's ticks go with it.
+ * them: one chart with the tenors of the curve along the bottom, short end to
+ * long end, and the rate up the side. The newest curve is bold and the earlier
+ * ones are overlaid, fading with age. Beside it is the process that made the
+ * curves. A running feed is read again every two seconds; a stopped one has
+ * none, because a run's ticks go with it.
  *
  * A tick of a curve feed is one pillar of a curve, so the ticks are grouped by
  * the time they share and each whole group is one curve.
@@ -78,8 +97,8 @@ export function IrTicksPanel({
     const { t } = useTranslation();
     const feedId = show(feed['id']);
     const pillars = pillarsOf(entries);
-    const [count, setCount] = useState<number>(5);
-    const [chosen, setChosen] = useState(0);
+    const [history, setHistory] = useState('5');
+    const count = Math.min(MAX_HISTORY, Math.max(1, Math.round(Number(history)) || 1));
     const limit = Math.min(TICKS_KEPT, Math.max(1, (count + 1) * pillars.length));
     const ticks = useQuery({
         queryKey: ['feed-ticks', feedId, limit],
@@ -90,8 +109,7 @@ export function IrTicksPanel({
     });
     const curves = curvesOf(ticks.data?.ticks ?? [], pillars.length).slice(-count);
     const newest = curves[curves.length - 1];
-    const pillar = Math.min(chosen, Math.max(0, pillars.length - 1));
-    const label = (index: number): string => pillars[Math.round(index)]?.end ?? '';
+    const tenors = pillars.map((pillar) => pillar.end);
 
     return (
         <div className="grid items-start gap-4 xl:grid-cols-4">
@@ -100,50 +118,29 @@ export function IrTicksPanel({
                 <div className="flex flex-wrap items-end gap-x-6 gap-y-3 rounded-md border border-line p-3">
                     <label className="block">
                         <span className="block text-[10px] tracking-wide text-ink-faint uppercase">
-                            {t('marketdata.irTicks.curves')}
+                            {t('marketdata.irTicks.history')}
                         </span>
-                        <Select
-                            className="w-24"
-                            value={String(count)}
-                            onChange={(event) => setCount(Number(event.target.value))}
-                        >
-                            {CURVE_COUNTS.map((one) => (
-                                <option key={one} value={one}>
-                                    {one}
-                                </option>
-                            ))}
-                        </Select>
-                    </label>
-                    <label className="block">
-                        <span className="block text-[10px] tracking-wide text-ink-faint uppercase">
-                            {t('marketdata.irTicks.tenor')}
-                        </span>
-                        <Select
-                            className="w-28"
-                            value={String(pillar)}
-                            onChange={(event) => setChosen(Number(event.target.value))}
-                        >
-                            {pillars.map((one, index) => (
-                                <option
-                                    key={`${one.start}-${one.end}-${String(index)}`}
-                                    value={index}
-                                >
-                                    {one.end}
-                                </option>
-                            ))}
-                        </Select>
+                        <Input
+                            type="number"
+                            min={1}
+                            max={MAX_HISTORY}
+                            className="w-20"
+                            value={history}
+                            title={t('marketdata.irTicks.historyHelp')}
+                            onChange={(event) => setHistory(event.target.value)}
+                        />
                     </label>
                     {newest !== undefined && (
                         <>
                             <Stat label={t('marketdata.irTicks.at')}>
                                 {clock(instantOf(newest.at))}
                             </Stat>
-                            <Stat label={t('marketdata.irTicks.short', { tenor: label(0) })}>
+                            <Stat label={t('marketdata.irTicks.short', { tenor: tenors[0] ?? '' })}>
                                 {rate(newest.rates[0] ?? 0)}
                             </Stat>
                             <Stat
                                 label={t('marketdata.irTicks.long', {
-                                    tenor: label(pillars.length - 1),
+                                    tenor: tenors[tenors.length - 1] ?? '',
                                 })}
                             >
                                 {rate(newest.rates[newest.rates.length - 1] ?? 0)}
@@ -180,47 +177,25 @@ export function IrTicksPanel({
                             : t('marketdata.ticks.notRunning')}
                     </Notice>
                 ) : (
-                    <div className="grid gap-4 lg:grid-cols-2">
-                        <div className="space-y-2 rounded-md border border-line p-3">
-                            <h3 className="text-sm font-medium">
-                                {t('marketdata.irTicks.curveChart')}
-                            </h3>
-                            <LineChart
-                                label={t('marketdata.irTicks.curveChart')}
-                                format={rate}
-                                xFormat={label}
-                                series={curves.map((curve, index) => ({
-                                    points: curve.rates,
-                                    colour:
-                                        index === curves.length - 1
-                                            ? (SERIES_COLOURS[0] ?? '')
-                                            : 'var(--color-ink-faint)',
-                                    strong: index === curves.length - 1,
-                                    dashed: index !== curves.length - 1,
-                                }))}
-                            />
-                        </div>
-                        <div className="space-y-2 rounded-md border border-line p-3">
-                            <h3 className="text-sm font-medium">
-                                {t('marketdata.irTicks.pillarChart', { tenor: label(pillar) })}
-                            </h3>
-                            <LineChart
-                                label={t('marketdata.irTicks.pillarChart', {
-                                    tenor: label(pillar),
-                                })}
-                                xs={curves.map((curve) => instantOf(curve.at))}
-                                format={rate}
-                                xFormat={clock}
-                                series={[
-                                    {
-                                        points: curves.map((curve) => curve.rates[pillar] ?? 0),
-                                        colour: SERIES_COLOURS[1] ?? '',
-                                        strong: true,
-                                        fill: true,
-                                    },
-                                ]}
-                            />
-                        </div>
+                    <div className="space-y-2 rounded-md border border-line p-3">
+                        <h3 className="font-mono text-xs font-semibold text-ink">
+                            {t('marketdata.irTicks.curveChart')}
+                        </h3>
+                        <LineChart
+                            label={t('marketdata.irTicks.curveChart')}
+                            format={rate}
+                            categories={tenors}
+                            padding={0.1}
+                            series={curves.map((curve, index) => ({
+                                points: curve.rates,
+                                dots: true,
+                                strong: index === curves.length - 1,
+                                ...curveStyle(index, curves.length),
+                            }))}
+                        />
+                        <p className="text-xs text-ink-faint italic">
+                            {t('marketdata.irTicks.legend')}
+                        </p>
                     </div>
                 )}
             </section>

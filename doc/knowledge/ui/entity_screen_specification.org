@@ -489,7 +489,7 @@ as a record of its own.
   "Counterparty Globex Corporation". A counterparty or a party is said by its
   name, and its id stands only when the name cannot be read.
 - The opening of a link is a "Created" entry. A change to a link, where it has a
-  column of its own, is a "Moved" entry with the difference.
+  column of its own, is a "Changed" entry with the difference.
 - The closing of a link is a "Closed" entry. It carries the time the link ended.
   It has no author, because the store records when a link ended and not who ended
   it. The entry does not say that it has none.

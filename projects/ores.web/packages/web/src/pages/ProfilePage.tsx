@@ -30,7 +30,7 @@ import { usePermissions } from '../access/holds.js';
 import { PERMISSION } from '../access/permissions.js';
 import { tabsFor } from '../access/screens.js';
 import { actorPathFor } from '../access/PeoplePage.js';
-import { useActorPictures } from '../access/PersonRef.js';
+import { useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
@@ -86,6 +86,7 @@ export function ProfilePage({ session }: { readonly session: SessionView }): Rea
 function MyHistory({ username }: { readonly username: string }): ReactNode {
     const { t } = useTranslation();
     const actorPicture = useActorPictures();
+    const { isService } = usePeopleDirectory();
     const story = useQuery({
         queryKey: ['timeline', 'person', username],
         queryFn: () => api.timeline('person', username),
@@ -101,6 +102,7 @@ function MyHistory({ username }: { readonly username: string }): ReactNode {
             timeline={story.data}
             actorPath={actorPathFor(true)}
             actorPicture={actorPicture}
+            isService={isService}
         />
     );
 }

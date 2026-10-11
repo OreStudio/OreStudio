@@ -35,6 +35,8 @@ export interface KnownPerson {
     readonly fullName: string;
     /** The identifier of the person's picture, or null when they have none. */
     readonly imageId: string | null;
+    /** Whether the account is a person's or a service's, when the directory knows. */
+    readonly accountType?: string;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -49,6 +51,12 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function usePeopleDirectory(): {
     readonly find: (who: string) => KnownPerson | undefined;
     readonly mayOpen: boolean;
+    /**
+     * Whether a name is a service account, or undefined when the reader cannot
+     * tell. Only a reader who may read accounts can: a name the directory does
+     * not know might be a service or a person outside the reader's view.
+     */
+    readonly isService: ((who: string) => boolean | undefined) | undefined;
 } {
     const holds = useHolds();
     const mayReadAccounts = holds('iam::accounts:read');
@@ -76,6 +84,11 @@ export function usePeopleDirectory(): {
     return {
         find: (who) => people.find((person) => person.username === who || person.id === who),
         mayOpen: mayReadAccounts,
+        isService:
+            mayReadAccounts && accounts.data !== undefined
+                ? (who) =>
+                      people.find((person) => person.username === who)?.accountType === 'service'
+                : undefined,
     };
 }
 

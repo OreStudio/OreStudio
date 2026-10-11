@@ -1889,6 +1889,8 @@ export const en: SourceCatalogue = {
     },
 
     timeline: {
+        hideSystem: "Hide system activity",
+        showSystem: "Show system activity",
         empty: 'Nothing has happened to this yet.',
         details: 'Details',
         current: 'Current version',

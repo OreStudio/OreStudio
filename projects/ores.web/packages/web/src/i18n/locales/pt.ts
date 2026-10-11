@@ -1904,6 +1904,8 @@ const pt: SourceCatalogue = {
     },
 
     timeline: {
+        hideSystem: "Ocultar a atividade do sistema",
+        showSystem: "Mostrar a atividade do sistema",
         empty: 'Ainda nada lhe aconteceu.',
         details: 'Detalhes',
         current: 'Versão atual',

@@ -24,6 +24,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { Timeline as Stream, TimelineEvent } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { Timeline, kindTone } from './Timeline.js';
+import { showsActor } from './SystemToggle.js';
 
 function event(over: Partial<TimelineEvent>): TimelineEvent {
     return {
@@ -264,5 +265,56 @@ describe('kindTone', () => {
         expect(kindTone('decided')).toBe('warn');
         expect(kindTone('changed')).toBe('accent');
         expect(kindTone('signed_in')).toBe('muted');
+    });
+
+    describe('what service accounts did', () => {
+        const stream: Stream = {
+            subject: 'person',
+            id: 'ana',
+            gaps: [],
+            events: [
+                event({
+                    version: 2,
+                    actor: 'ores_dev_refdata_service',
+                    fields: [{ name: 'Job Title', value: 'B' }],
+                }),
+                event({ version: 1, actor: 'tenant_admin', kind: 'raised' }),
+            ],
+        };
+        const withKinds = (isService: ((actor: string) => boolean | undefined) | undefined) =>
+            renderToStaticMarkup(
+                <TranslationProvider>
+                    <Timeline timeline={stream} isService={isService} />
+                </TranslationProvider>,
+            );
+
+        it('offers to hide them when a service wrote an entry', () => {
+            const html = withKinds((actor) => actor.endsWith('_service'));
+
+            expect(html).toContain('Hide system activity');
+            expect(html).toContain('ores_dev_refdata_service');
+            expect(html).toContain('tenant_admin');
+        });
+
+        it('offers nothing to a reader who cannot tell a service from a person', () => {
+            expect(withKinds(undefined)).not.toContain('system activity');
+        });
+
+        it('offers nothing when no service wrote an entry', () => {
+            expect(withKinds(() => false)).not.toContain('system activity');
+        });
+
+        it('hides a service and keeps the tenant and super administrators, who are people', () => {
+            const isService = (actor: string): boolean => actor.endsWith('_service');
+
+            expect(showsActor(true, isService, 'ores_dev_refdata_service')).toBe(false);
+            expect(showsActor(true, isService, 'tenant_admin')).toBe(true);
+            expect(showsActor(true, isService, 'super_admin')).toBe(true);
+            expect(showsActor(false, isService, 'ores_dev_refdata_service')).toBe(true);
+        });
+
+        it('hides nobody when it cannot tell who is a service', () => {
+            expect(showsActor(true, undefined, 'ores_dev_refdata_service')).toBe(true);
+        });
     });
 });

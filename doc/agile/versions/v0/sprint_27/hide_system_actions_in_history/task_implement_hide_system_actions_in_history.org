@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :hide_system_actions_in_history:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-hide-system-actions-in-history
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:57749440-463B-4F2D-99AC-B1348F4507C3][Hide what system accounts did in a history]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A history shows a toggle that hides or shows the entries made by service account
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:57749440-463B-4F2D-99AC-B1348F4507C3][Hide what system accounts did in a history]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

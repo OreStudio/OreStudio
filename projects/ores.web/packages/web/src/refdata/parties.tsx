@@ -27,7 +27,7 @@ import type { RecordRow } from '../api/client.js';
 import { api } from '../api/client.js';
 import { useHolds } from '../access/holds.js';
 import { actorPathFor } from '../access/PeoplePage.js';
-import { useActorPictures } from '../access/PersonRef.js';
+import { useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Button, Notice } from '../ui/Primitives.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -366,6 +366,7 @@ function PartyHistory({
     const { t } = useTranslation();
     const holds = useHolds();
     const pictureOf = useActorPictures();
+    const { isService } = usePeopleDirectory();
     const id = show(row['id']);
     const story = useQuery({
         queryKey: ['timeline', 'party', id],
@@ -382,6 +383,7 @@ function PartyHistory({
             timeline={story.data}
             actorPath={actorPathFor(holds('iam::accounts:read'))}
             actorPicture={pictureOf}
+            isService={isService}
             recordName={(event) => {
                 const record = RECORD_KEYS[event.entityType];
                 if (record === undefined) return undefined;

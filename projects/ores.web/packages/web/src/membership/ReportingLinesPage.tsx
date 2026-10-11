@@ -34,7 +34,7 @@ import { useHolds, usePermissions } from '../access/holds.js';
 import { PERMISSION } from '../access/permissions.js';
 import { tabsFor } from '../access/screens.js';
 import { actorPathFor } from '../access/PeoplePage.js';
-import { useActorPictures } from '../access/PersonRef.js';
+import { useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
 import { Crumbs } from '../refdata/shared.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
@@ -108,6 +108,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     const { can } = usePermissions();
     const mayReadAccounts = holds('iam::accounts:read');
     const actorPicture = useActorPictures();
+    const { isService } = usePeopleDirectory();
     const mayChange = holds('iam::accounts:update');
     const mayReadRoles = holds('iam::roles:read');
     const [selectedId, setSelectedId] = useState('');
@@ -387,6 +388,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                             <Timeline
                                 actorPath={actorPathFor(mayReadAccounts)}
                                 actorPicture={actorPicture}
+                                isService={isService}
                                 hideUnchanged
                                 timeline={lineTimeline(
                                     story.data,

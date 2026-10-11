@@ -210,7 +210,9 @@ describe('the FX feed screens', () => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('synthetic.eurusd');
-        expect(html).toContain('oresmd://fx/EUR?type=quote&amp;instrument=fx_spot&amp;quote=rate&amp;ccy=USD');
+        expect(html).toContain(
+            'oresmd://fx/EUR?type=quote&amp;instrument=fx_spot&amp;quote=rate&amp;ccy=USD',
+        );
         expect(html).toContain('A fixed price');
         expect(html).toContain('>Price behaviour<');
         expect(html).toContain('Edit');
@@ -472,6 +474,6 @@ describe('the FX feed screens', () => {
         expect(html).toContain('gmm_component');
         expect(html).toContain('common.correction');
         expect(html.match(/>Revert</g)?.length).toBe(1);
-        expect(html).toContain('A component deleted from the mixture is not in this stream');
+        expect(html).toContain('A row deleted from the feed is not in this stream');
     });
 });

@@ -103,7 +103,7 @@ The prototype is at
 :ID: 6AE940F0-160F-4F14-91F0-038038F4D37A
 :END:
 
-The IR curve generation config editor, four tabs. *Instrument* holds the
+The IR curve generation config editor, four tabs. ores.web draws the same journey with the shared feed screens of the [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]]. *Instrument* holds the
 currency, the index name, the tenor, the role (Discount, Projection or
 Self-discounting), the fixed leg frequency and the oresmd series URI of the curve it publishes. *Process*
 chooses one of the seeded short-rate models, Vasicek, Cox-Ingersoll-Ross,

@@ -2898,6 +2898,8 @@ export const en: SourceCatalogue = {
                 counterparties: 'Counterparties',
                 behaviour: 'Price behaviour',
                 ticks: 'Ticks',
+                process: 'Process',
+                template: 'Curve template',
             },
         },
         fields: {
@@ -2993,6 +2995,16 @@ export const en: SourceCatalogue = {
             mean: 'Mean (μ)',
             stdev: 'Deviation (σ)',
             weight: 'Weight (w)',
+            currency_code: 'Currency',
+            index_family: 'Index name',
+            tenor: 'Tenor',
+            role: 'Role',
+            vintage_series_uri: 'Vintage series',
+            sequence_index: 'Sequence',
+            fixed_leg_payment_frequency_code: 'Fixed leg frequency',
+            start_tenor_code: 'Start tenor',
+            end_tenor_code: 'End tenor',
+            instrument_code: 'Instrument',
             component_index: 'Index',
         },
         choices: {
@@ -3000,6 +3012,35 @@ export const en: SourceCatalogue = {
                 geometric: 'Geometric',
                 arithmetic: 'Arithmetic',
                 ornstein_uhlenbeck: 'Mean reverting (Ornstein-Uhlenbeck)',
+            },
+            role: {
+                self_discounting: 'Self-discounting',
+                discount: 'Discount',
+                projection: 'Projection',
+            },
+            index_family: {
+                libor: 'LIBOR',
+                euribor: 'EURIBOR',
+                sofr: 'SOFR',
+                estr: 'ESTR',
+                sonia: 'SONIA',
+                tona: 'TONA',
+                saron: 'SARON',
+                aonia: 'AONIA',
+                corra: 'CORRA',
+                honia: 'HONIA',
+                sora: 'SORA',
+                swestr: 'SWESTR',
+                nowa: 'NOWA',
+                kofr: 'KOFR',
+                mibor: 'MIBOR',
+                zaronia: 'ZARONIA',
+                destr: 'DESTR',
+                polonia: 'POLONIA',
+                nzonia: 'NZONIA',
+                shibor: 'SHIBOR',
+                tiie: 'TIIE',
+                taibor: 'TAIBOR',
             },
             price_source: {
                 fixed: 'A fixed price',
@@ -3200,6 +3241,9 @@ export const en: SourceCatalogue = {
                 fxFeeds: 'FX price feeds',
                 fxFeedsBody:
                     'Compose the synthetic FX feeds: the pair, the engine and the mixture each one draws from.',
+                irFeeds: 'IR curve feeds',
+                irFeedsBody:
+                    'Compose the synthetic IR curve feeds: the currency and index, the short-rate engine with its parameters, and the curve template.',
                 evolution: 'Watch a curve evolve',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
@@ -3225,6 +3269,79 @@ export const en: SourceCatalogue = {
             removeWarning:
                 'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',
         },
+        irFeeds: {
+            title: 'IR curve feeds',
+            lead: 'The synthetic interest rate curve feeds of your party. A feed produces nothing until it is enabled and started.',
+            add: 'New IR curve',
+            addTitle: 'New IR curve',
+            curve: 'Curve',
+            priceSource: 'Starting rate from',
+            tenorNeeded: 'A term index needs a tenor, such as 3M or 6M.',
+            tenorOnlyFomc: 'Only the meeting-dated variant of SOFR takes a tenor, and it is FOMC.',
+            help: {
+                tenor: 'The tenor of a term index, such as 3M or 6M. Leave it empty for an overnight index. FOMC marks the meeting-dated variant of SOFR.',
+                role: {
+                    self_discounting: 'One curve serving both uses.',
+                    discount: 'The curve cashflows are discounted on.',
+                    projection: 'The curve a floating index projects its forward rates on.',
+                },
+                ticks_per_hour: 'How many curves the feed makes in an hour. 3600 is one a second.',
+                price_source: {
+                    fixed: 'The curve starts from the rate you give on the Process tab.',
+                    vintage:
+                        'The curve starts from the rate an imported market data vintage holds for the currency and index.',
+                },
+                enabled: 'A feed that is not enabled cannot start.',
+                auto_start: 'The feed starts when the synthetic service starts.',
+            },
+            engine: {
+                VASICEK: 'Vasicek',
+                COX_INGERSOLL_ROSS: 'Cox-Ingersoll-Ross',
+                HULL_WHITE: 'Hull-White',
+                TWO_FACTOR_GAUSSIAN: 'Two-Factor Gaussian',
+                BLACK_KARASINSKI: 'Black-Karasinski',
+            },
+            removeWarning:
+                'The feed stops if it runs. Its parameters and its curve template are deleted first, then the feed. The history of each stays.',
+        },
+        irProcess: {
+            shape: 'Curve shape',
+            paths: 'Sample short-rate paths',
+            shapeWaiting:
+                'Give every parameter a value, and add a tenor entry on the Curve template tab, to see the curve.',
+            previewNote:
+                'The server prices these from the values on the screen, with the {engine} engine. Nothing is saved.',
+            lead: 'The short-rate engine the curve is drawn from and the parameters it reads. Change the values and save them together with the engine.',
+            engine: 'Engine',
+            parameter: 'Parameter',
+            value: 'Value',
+            bounds: 'Allowed range',
+            none: 'The {engine} engine has no parameters.',
+            save: 'Save',
+            discard: 'Discard changes',
+            unsaved: 'Unsaved changes',
+            clean: 'No unsaved changes.',
+            engineChanged:
+                'Engine: {from} → {to}. The parameters of {from} are removed when you save.',
+            error: {
+                number: 'Enter a number.',
+                min: 'Below the allowed range.',
+                max: 'Above the allowed range.',
+            },
+            saveTitle: 'Save the process',
+            saveButton: 'Save',
+            saveEngine: 'Engine: {from} → {to}.',
+            saveSummary: '{added} added, {changed} changed and {removed} deleted.',
+            runningNote: 'The feed is running on the old parameters.',
+            restart: 'Restart it to apply',
+            stoppedNote: 'The feed is stopped. It applies on start.',
+        },
+        irTemplate: {
+            lead: 'The tenor entries the curve is priced at: where each starts and ends, and the instrument that prices it. Add at least one before the feed starts.',
+            add: 'Add a tenor entry',
+            one: 'Tenor entry',
+            remove: 'Delete the tenor entry',
+        },
         runs: {
             status: 'Status',
             running: 'Running',
@@ -3240,8 +3357,8 @@ export const en: SourceCatalogue = {
             refused: '{feed}: {message}',
         },
         history: {
-            lead: "The feed and every component of its mixture, in one stream, newest first. Revert writes an older version's values back as a new version.",
-            gap: 'A component deleted from the mixture is not in this stream: the screen reads the history of the components the feed holds now.',
+            lead: "The feed and every row it owns, in one stream, newest first. Revert writes an older version's values back as a new version.",
+            gap: 'A row deleted from the feed is not in this stream: the screen reads the history of the rows the feed holds now.',
         },
         ticks: {
             lead: 'The last prices the feed made, newest on the right. The web server keeps the last 500 of each running feed from when it began to listen, so a feed started before that shows only what came since.',
@@ -3450,6 +3567,7 @@ export const en: SourceCatalogue = {
         sessionsRead: "read people's sign-ins",
         curveSnapshotsRead: 'see the market data curves',
         fxFeedsRead: 'see the synthetic FX price feeds',
+        irFeedsRead: 'see the synthetic IR curve feeds',
     },
 
     unavailable: {

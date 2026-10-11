@@ -30,41 +30,49 @@ import { RUNNING_KEY } from './feedRuns.js';
 import type { savePlan } from './mixture.js';
 
 /** What the save writes, counted as a person reads it. */
-export interface MixtureCounts {
+export interface PartCounts {
     readonly added: number;
     readonly changed: number;
     readonly removed: number;
 }
 
-/** Writes the feed's engine, with the reason the mixture is saved under. */
+/** Writes the feed's engine, with the reason its parts are saved under. */
 export type SaveEngine = (
     engine: string,
     intent: { readonly reasonCode: string; readonly commentary: string },
 ) => Promise<void>;
 
 /**
- * Asks why the mixture changes and writes it. The removed components go
- * first and the rest in one write, all under one reason. A running feed drew
- * its mixture when it started and keeps it, so the dialog says so and offers
- * to restart the feed, which then draws from the mixture saved.
+ * Asks why the parts of a feed change and writes them: the mixture of an FX
+ * feed, the parameters of an IR curve feed. The removed rows go first and the
+ * rest in one write, all under one reason. A running feed drew its parts when
+ * it started and keeps them, so the dialog says so and offers to restart the
+ * feed, which then draws from the parts saved.
+ *
+ * `words` names the block of `marketdata.*` words the dialog speaks in, and
+ * `engineLabel` says how an engine is named to a person.
  */
-export function SaveMixtureDialog({
+export function SavePartsDialog({
     feedId,
-    components,
+    resource,
     plan,
     counts,
     running,
     engine,
+    engineLabel,
     saveEngine,
+    words,
     onClose,
 }: {
     readonly feedId: string;
-    readonly components: string;
+    readonly resource: string;
     readonly plan: ReturnType<typeof savePlan>;
-    readonly counts: MixtureCounts;
+    readonly counts: PartCounts;
     readonly running: boolean;
     readonly engine: { readonly from: string; readonly to: string } | undefined;
+    readonly engineLabel: (engine: string) => string;
     readonly saveEngine: SaveEngine;
+    readonly words: string;
     readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -88,7 +96,7 @@ export function SaveMixtureDialog({
             }
             if (plan.removals.length > 0) {
                 await api.removeSynthetic(
-                    components,
+                    resource,
                     plan.removals.map((removal) => ({
                         key: removal.key,
                         version: plan.removals.length === 1 ? removal.version : null,
@@ -97,7 +105,7 @@ export function SaveMixtureDialog({
                 );
             }
             if (plan.changes.length > 0) {
-                await api.saveSynthetic(components, plan.changes, intent);
+                await api.saveSynthetic(resource, plan.changes, intent);
             }
             if (running && restart) {
                 await api.stopFeed(feedId);
@@ -114,7 +122,7 @@ export function SaveMixtureDialog({
 
     return (
         <Dialog
-            title={t('marketdata.mixture.saveTitle')}
+            title={t(`marketdata.${words}.saveTitle`)}
             onClose={onClose}
             footer={
                 <>
@@ -128,7 +136,7 @@ export function SaveMixtureDialog({
                         disabled={missing || (!onlyNew && reason.code === '')}
                         onClick={() => save.mutate()}
                     >
-                        {t('marketdata.mixture.saveButton')}
+                        {t(`marketdata.${words}.saveButton`)}
                     </Button>
                 </>
             }
@@ -136,14 +144,14 @@ export function SaveMixtureDialog({
             <div className="space-y-4">
                 {engine !== undefined && (
                     <p className="text-sm">
-                        {t('marketdata.mixture.saveEngine', {
-                            from: t(`refdata.choices.process_type.${engine.from}`),
-                            to: t(`refdata.choices.process_type.${engine.to}`),
+                        {t(`marketdata.${words}.saveEngine`, {
+                            from: engineLabel(engine.from),
+                            to: engineLabel(engine.to),
                         })}
                     </p>
                 )}
                 <p className="text-sm">
-                    {t('marketdata.mixture.saveSummary', {
+                    {t(`marketdata.${words}.saveSummary`, {
                         added: String(counts.added),
                         changed: String(counts.changed),
                         removed: String(counts.removed),
@@ -163,18 +171,18 @@ export function SaveMixtureDialog({
                 )}
                 {running ? (
                     <div className="space-y-2 rounded-md border border-line p-3 text-sm">
-                        <p>{t('marketdata.mixture.runningNote')}</p>
+                        <p>{t(`marketdata.${words}.runningNote`)}</p>
                         <label className="flex items-center gap-2">
                             <input
                                 type="checkbox"
                                 checked={restart}
                                 onChange={(event) => setRestart(event.target.checked)}
                             />
-                            {t('marketdata.mixture.restart')}
+                            {t(`marketdata.${words}.restart`)}
                         </label>
                     </div>
                 ) : (
-                    <p className="text-sm text-ink-muted">{t('marketdata.mixture.stoppedNote')}</p>
+                    <p className="text-sm text-ink-muted">{t(`marketdata.${words}.stoppedNote`)}</p>
                 )}
                 {save.isError && <Notice tone="error">{save.error.message}</Notice>}
             </div>

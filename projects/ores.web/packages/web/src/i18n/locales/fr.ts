@@ -2941,6 +2941,8 @@ const fr: SourceCatalogue = {
                 counterparties: 'Contreparties',
                 behaviour: 'Comportement du prix',
                 ticks: 'Cotations',
+                process: 'Processus',
+                template: 'Modèle de courbe',
             },
         },
         fields: {
@@ -3036,6 +3038,16 @@ const fr: SourceCatalogue = {
             mean: 'Moyenne (μ)',
             stdev: 'Écart type (σ)',
             weight: 'Poids (w)',
+            currency_code: 'Devise',
+            index_family: "Nom de l'indice",
+            tenor: 'Durée',
+            role: 'Rôle',
+            vintage_series_uri: 'Série du millésime',
+            sequence_index: 'Ordre',
+            fixed_leg_payment_frequency_code: 'Fréquence de la jambe fixe',
+            start_tenor_code: 'Durée de départ',
+            end_tenor_code: 'Durée de fin',
+            instrument_code: 'Instrument',
             component_index: 'Indice',
         },
         choices: {
@@ -3043,6 +3055,35 @@ const fr: SourceCatalogue = {
                 geometric: 'Géométrique',
                 arithmetic: 'Arithmétique',
                 ornstein_uhlenbeck: 'Retour à la moyenne (Ornstein-Uhlenbeck)',
+            },
+            role: {
+                self_discounting: 'Auto-actualisante',
+                discount: 'Actualisation',
+                projection: 'Projection',
+            },
+            index_family: {
+                libor: 'LIBOR',
+                euribor: 'EURIBOR',
+                sofr: 'SOFR',
+                estr: 'ESTR',
+                sonia: 'SONIA',
+                tona: 'TONA',
+                saron: 'SARON',
+                aonia: 'AONIA',
+                corra: 'CORRA',
+                honia: 'HONIA',
+                sora: 'SORA',
+                swestr: 'SWESTR',
+                nowa: 'NOWA',
+                kofr: 'KOFR',
+                mibor: 'MIBOR',
+                zaronia: 'ZARONIA',
+                destr: 'DESTR',
+                polonia: 'POLONIA',
+                nzonia: 'NZONIA',
+                shibor: 'SHIBOR',
+                tiie: 'TIIE',
+                taibor: 'TAIBOR',
             },
             price_source: {
                 fixed: 'Un prix fixe',
@@ -3246,6 +3287,9 @@ const fr: SourceCatalogue = {
                 fxFeeds: 'Flux de prix FX',
                 fxFeedsBody:
                     'Composez les flux FX synthétiques : la paire, le moteur et le mélange de chacun.',
+                irFeeds: 'Flux de courbes de taux',
+                irFeedsBody:
+                    "Composez les flux synthétiques de courbes de taux : la devise et l'indice, le moteur de taux court avec ses paramètres, et le modèle de courbe.",
                 evolution: 'Suivre l’évolution d’une courbe',
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
@@ -3272,6 +3316,82 @@ const fr: SourceCatalogue = {
             removeWarning:
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
         },
+        irFeeds: {
+            title: 'Flux de courbes de taux',
+            lead: "Les flux synthétiques de courbes de taux de votre partie. Un flux ne produit rien tant qu'il n'est pas activé et démarré.",
+            add: 'Nouvelle courbe de taux',
+            addTitle: 'Nouvelle courbe de taux',
+            curve: 'Courbe',
+            priceSource: 'Taux de départ issu de',
+            tenorNeeded: 'Un indice à terme exige une durée, comme 3M ou 6M.',
+            tenorOnlyFomc:
+                "Seule la variante datée des réunions pour SOFR prend une durée, et c'est FOMC.",
+            help: {
+                tenor: "La durée d'un indice à terme, comme 3M ou 6M. Laissez vide pour un indice au jour le jour. FOMC désigne la variante datée des réunions pour SOFR.",
+                role: {
+                    self_discounting: 'Une courbe qui sert aux deux usages.',
+                    discount: 'La courbe sur laquelle les flux sont actualisés.',
+                    projection:
+                        'La courbe sur laquelle un indice flottant projette ses taux à terme.',
+                },
+                ticks_per_hour:
+                    'Combien de courbes le flux produit en une heure. 3600 en fait une par seconde.',
+                price_source: {
+                    fixed: "La courbe part du taux donné dans l'onglet Processus.",
+                    vintage:
+                        "La courbe part du taux qu'un millésime de données de marché importé donne pour la devise et l'indice.",
+                },
+                enabled: "Un flux qui n'est pas activé ne peut pas démarrer.",
+                auto_start: 'Le flux démarre avec le service synthétique.',
+            },
+            engine: {
+                VASICEK: 'Vasicek',
+                COX_INGERSOLL_ROSS: 'Cox-Ingersoll-Ross',
+                HULL_WHITE: 'Hull-White',
+                TWO_FACTOR_GAUSSIAN: 'Two-Factor Gaussian',
+                BLACK_KARASINSKI: 'Black-Karasinski',
+            },
+            removeWarning:
+                "Le flux s'arrête s'il tourne. Ses paramètres et son modèle de courbe sont supprimés d'abord, puis le flux. L'historique de chacun reste.",
+        },
+        irProcess: {
+            shape: 'Forme de la courbe',
+            paths: "Trajectoires d'échantillon du taux court",
+            shapeWaiting:
+                "Donnez une valeur à chaque paramètre et ajoutez une entrée de durée dans l'onglet Modèle de courbe pour voir la courbe.",
+            previewNote:
+                "Le serveur calcule ces valeurs à partir de l'écran, avec le moteur {engine}. Rien n'est enregistré.",
+            lead: "Le moteur de taux court dont la courbe est tirée et les paramètres qu'il lit. Changez les valeurs et enregistrez-les avec le moteur.",
+            engine: 'Moteur',
+            parameter: 'Paramètre',
+            value: 'Valeur',
+            bounds: 'Plage permise',
+            none: "Le moteur {engine} n'a pas de paramètres.",
+            save: 'Enregistrer',
+            discard: 'Annuler les changements',
+            unsaved: 'Changements non enregistrés',
+            clean: 'Aucun changement non enregistré.',
+            engineChanged:
+                "Moteur : {from} → {to}. Les paramètres de {from} sont supprimés à l'enregistrement.",
+            error: {
+                number: 'Saisissez un nombre.',
+                min: 'Sous la plage permise.',
+                max: 'Au-dessus de la plage permise.',
+            },
+            saveTitle: 'Enregistrer le processus',
+            saveButton: 'Enregistrer',
+            saveEngine: 'Moteur : {from} → {to}.',
+            saveSummary: '{added} ajoutés, {changed} modifiés et {removed} supprimés.',
+            runningNote: 'Le flux tourne avec les anciens paramètres.',
+            restart: 'Redémarrer pour appliquer',
+            stoppedNote: 'Le flux est arrêté. Il applique au démarrage.',
+        },
+        irTemplate: {
+            lead: "Les entrées de durée auxquelles la courbe est évaluée : où chacune commence et finit, et l'instrument qui la valorise. Ajoutez-en au moins une avant de démarrer le flux.",
+            add: 'Ajouter une entrée de durée',
+            one: 'Entrée de durée',
+            remove: "Supprimer l'entrée de durée",
+        },
         runs: {
             status: 'État',
             running: 'En marche',
@@ -3287,8 +3407,8 @@ const fr: SourceCatalogue = {
             refused: '{feed} : {message}',
         },
         history: {
-            lead: "Le flux et chaque composante de son mélange, dans un seul fil, du plus récent au plus ancien. Rétablir réécrit les valeurs d'une version antérieure comme une nouvelle version.",
-            gap: "Une composante supprimée du mélange n'est pas dans ce fil : l'écran lit l'historique des composantes que le flux contient maintenant.",
+            lead: "Le flux et chaque ligne qu'il possède, dans un seul fil, du plus récent au plus ancien. Rétablir réécrit les valeurs d'une version plus ancienne comme une nouvelle version.",
+            gap: "Une ligne supprimée du flux n'est pas dans ce fil : l'écran lit l'historique des lignes que le flux détient maintenant.",
         },
         ticks: {
             lead: "Les derniers prix du flux, les plus récents à droite. Le serveur web garde les 500 derniers de chaque flux en marche depuis qu'il a commencé à écouter, donc un flux démarré avant ne montre que ce qui est venu depuis.",
@@ -3501,6 +3621,7 @@ const fr: SourceCatalogue = {
         sessionsRead: 'lire les connexions des personnes',
         curveSnapshotsRead: 'voir les courbes de données de marché',
         fxFeedsRead: 'voir les flux de prix FX synthétiques',
+        irFeedsRead: 'voir les flux de courbes de taux synthétiques',
     },
 
     unavailable: {

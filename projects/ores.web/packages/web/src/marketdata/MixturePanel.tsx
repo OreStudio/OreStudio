@@ -27,7 +27,7 @@ import { Button, Field, Input, Notice, Select, Tag, cx } from '../ui/Primitives.
 import { NEW_RECORD_REASON, show, useRecordPermissions, useRecords } from '../refdata/records.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
 import { ComponentDialog } from './ComponentDialog.js';
-import { SaveMixtureDialog, type SaveEngine } from './SaveMixtureDialog.js';
+import { SavePartsDialog, type SaveEngine } from './SavePartsDialog.js';
 import {
     bandWidth,
     halfLifeMinutes,
@@ -60,7 +60,7 @@ const MAX_PATHS = 50;
 /** How long the preview waits after the last keystroke before it asks the server. */
 const PREVIEW_PAUSE_MS = 300;
 
-function useSettled<Value>(value: Value): Value {
+export function useSettled<Value>(value: Value): Value {
     const [settled, setSettled] = useState(value);
     useEffect(() => {
         const timer = setTimeout(() => setSettled(value), PREVIEW_PAUSE_MS);
@@ -579,9 +579,11 @@ function MixtureEditor({
                 />
             )}
             {saving && (
-                <SaveMixtureDialog
+                <SavePartsDialog
                     feedId={feedId}
-                    components={COMPONENTS}
+                    resource={COMPONENTS}
+                    words="mixture"
+                    engineLabel={(code) => t(`refdata.choices.process_type.${code}`)}
                     plan={plan}
                     counts={counts}
                     engine={engineChanged ? { from: savedEngine, to: engine } : undefined}

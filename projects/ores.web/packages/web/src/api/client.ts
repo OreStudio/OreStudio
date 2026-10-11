@@ -1143,6 +1143,68 @@ export const api = {
         ).paths;
     },
 
+    /** Sample short-rate paths from the engine and parameters on a screen; nothing is saved. */
+    async simulateIr(input: {
+        readonly process_type: string;
+        readonly parameters: readonly {
+            readonly parameter_name: string;
+            readonly parameter_value: number;
+        }[];
+        readonly num_ticks: number;
+        readonly num_paths: number;
+        readonly seed: number;
+    }): Promise<readonly (readonly number[])[]> {
+        return z.object({ paths: z.array(z.array(z.number())) }).parse(
+            await request('/api/synthetic/simulate/ir', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(input),
+            }),
+        ).paths;
+    },
+
+    /** The rate at each row of a curve template, priced from the values on a screen; nothing is saved. */
+    async previewIrShape(input: {
+        readonly process_type: string;
+        readonly parameters: readonly {
+            readonly parameter_name: string;
+            readonly parameter_value: number;
+        }[];
+        readonly fixed_leg_payment_frequency_code: string;
+        readonly entries: readonly {
+            readonly sequence_index: number;
+            readonly start_tenor_code: string;
+            readonly end_tenor_code: string;
+            readonly instrument_code: string;
+        }[];
+    }): Promise<
+        readonly {
+            readonly sequence_index: number;
+            readonly start_tenor_code: string;
+            readonly end_tenor_code: string;
+            readonly rate: number;
+        }[]
+    > {
+        return z
+            .object({
+                points: z.array(
+                    z.object({
+                        sequence_index: z.number(),
+                        start_tenor_code: z.string(),
+                        end_tenor_code: z.string(),
+                        rate: z.number(),
+                    }),
+                ),
+            })
+            .parse(
+                await request('/api/synthetic/preview/ir-shape', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify(input),
+                }),
+            ).points;
+    },
+
     /** The mixture an engine change leaves, as the synthetic service converts it. */
     async convertFxMixture(input: {
         readonly gmm_means: readonly number[];

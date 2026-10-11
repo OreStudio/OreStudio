@@ -63,7 +63,9 @@ struct ir_curve_generation_config_process_parameter_value_lookup {
 };
 
 struct ir_curve_generation_config_process_parameter_values_filter {
+    std::optional<boost::uuids::uuid> config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> config_id_one_of;
 };
 
 struct ir_curve_generation_config_process_parameter_value_event {

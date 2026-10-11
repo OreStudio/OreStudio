@@ -27,6 +27,7 @@ import { Crumbs } from '../refdata/shared.js';
 import { PageHeader } from '../ui/Primitives.js';
 import { Tiles } from '../ui/Tiles.js';
 import { fxFeedPath } from './fxFeeds.js';
+import { irFeedPath } from './irFeeds.js';
 
 /** The screens built, with their addresses and the read each needs. */
 const BUILT = [
@@ -35,6 +36,12 @@ const BUILT = [
         to: fxFeedPath(),
         icon: 'trend',
         read: PERMISSION.fxFeedsRead,
+    },
+    {
+        screen: 'irFeeds',
+        to: irFeedPath(),
+        icon: 'trend',
+        read: PERMISSION.irFeedsRead,
     },
     {
         screen: 'evolution',

@@ -2921,6 +2921,8 @@ const pt: SourceCatalogue = {
                 counterparties: 'Contrapartes',
                 behaviour: 'Comportamento do preço',
                 ticks: 'Cotações',
+                process: 'Processo',
+                template: 'Modelo da curva',
             },
         },
         fields: {
@@ -3016,6 +3018,16 @@ const pt: SourceCatalogue = {
             mean: 'Média (μ)',
             stdev: 'Desvio padrão (σ)',
             weight: 'Peso (w)',
+            currency_code: 'Moeda',
+            index_family: 'Nome do índice',
+            tenor: 'Prazo',
+            role: 'Papel',
+            vintage_series_uri: 'Série da versão',
+            sequence_index: 'Ordem',
+            fixed_leg_payment_frequency_code: 'Frequência da perna fixa',
+            start_tenor_code: 'Prazo de início',
+            end_tenor_code: 'Prazo de fim',
+            instrument_code: 'Instrumento',
             component_index: 'Índice',
         },
         choices: {
@@ -3023,6 +3035,35 @@ const pt: SourceCatalogue = {
                 geometric: 'Geométrico',
                 arithmetic: 'Aritmético',
                 ornstein_uhlenbeck: 'Reversão à média (Ornstein-Uhlenbeck)',
+            },
+            role: {
+                self_discounting: 'Autodesconto',
+                discount: 'Desconto',
+                projection: 'Projeção',
+            },
+            index_family: {
+                libor: 'LIBOR',
+                euribor: 'EURIBOR',
+                sofr: 'SOFR',
+                estr: 'ESTR',
+                sonia: 'SONIA',
+                tona: 'TONA',
+                saron: 'SARON',
+                aonia: 'AONIA',
+                corra: 'CORRA',
+                honia: 'HONIA',
+                sora: 'SORA',
+                swestr: 'SWESTR',
+                nowa: 'NOWA',
+                kofr: 'KOFR',
+                mibor: 'MIBOR',
+                zaronia: 'ZARONIA',
+                destr: 'DESTR',
+                polonia: 'POLONIA',
+                nzonia: 'NZONIA',
+                shibor: 'SHIBOR',
+                tiie: 'TIIE',
+                taibor: 'TAIBOR',
             },
             price_source: {
                 fixed: 'Um preço fixo',
@@ -3223,6 +3264,9 @@ const pt: SourceCatalogue = {
                 fxFeeds: 'Fluxos de preços FX',
                 fxFeedsBody:
                     'Componha os fluxos FX sintéticos: o par, o motor e a mistura de cada um.',
+                irFeeds: 'Fluxos de curvas de taxas',
+                irFeedsBody:
+                    'Componha os fluxos sintéticos de curvas de taxas: a moeda e o índice, o motor de taxa curta com os seus parâmetros e o modelo da curva.',
                 evolution: 'Acompanhar a evolução de uma curva',
                 evolutionBody:
                     'Ler uma curva ou superfície ao longo de um intervalo de instantes, e como está agora.',
@@ -3248,6 +3292,79 @@ const pt: SourceCatalogue = {
             removeWarning:
                 'O fluxo para se estiver a correr. A mistura é apagada primeiro, depois o fluxo. O histórico de cada um fica.',
         },
+        irFeeds: {
+            title: 'Fluxos de curvas de taxas',
+            lead: 'Os fluxos sintéticos de curvas de taxas da sua parte. Um fluxo não produz nada até ser ativado e iniciado.',
+            add: 'Nova curva de taxas',
+            addTitle: 'Nova curva de taxas',
+            curve: 'Curva',
+            priceSource: 'Taxa inicial vinda de',
+            tenorNeeded: 'Um índice a prazo precisa de um prazo, como 3M ou 6M.',
+            tenorOnlyFomc: 'Só a variante com datas das reuniões do SOFR leva um prazo, e é FOMC.',
+            help: {
+                tenor: 'O prazo de um índice a prazo, como 3M ou 6M. Deixe vazio para um índice overnight. FOMC marca a variante com datas das reuniões do SOFR.',
+                role: {
+                    self_discounting: 'Uma curva que serve os dois usos.',
+                    discount: 'A curva em que os fluxos são descontados.',
+                    projection: 'A curva em que um índice flutuante projeta as suas taxas a prazo.',
+                },
+                ticks_per_hour: 'Quantas curvas o fluxo produz numa hora. 3600 é uma por segundo.',
+                price_source: {
+                    fixed: 'A curva parte da taxa dada no separador Processo.',
+                    vintage:
+                        'A curva parte da taxa que uma versão importada de dados de mercado tem para a moeda e o índice.',
+                },
+                enabled: 'Um fluxo que não está ativado não pode iniciar.',
+                auto_start: 'O fluxo inicia quando o serviço sintético inicia.',
+            },
+            engine: {
+                VASICEK: 'Vasicek',
+                COX_INGERSOLL_ROSS: 'Cox-Ingersoll-Ross',
+                HULL_WHITE: 'Hull-White',
+                TWO_FACTOR_GAUSSIAN: 'Two-Factor Gaussian',
+                BLACK_KARASINSKI: 'Black-Karasinski',
+            },
+            removeWarning:
+                'O fluxo para se estiver a correr. Os seus parâmetros e o modelo da curva são apagados primeiro, depois o fluxo. O histórico de cada um fica.',
+        },
+        irProcess: {
+            shape: 'Forma da curva',
+            paths: 'Trajetórias de amostra da taxa curta',
+            shapeWaiting:
+                'Dê um valor a cada parâmetro e adicione uma entrada de prazo no separador Modelo da curva para ver a curva.',
+            previewNote:
+                'O servidor calcula estes valores a partir do ecrã, com o motor {engine}. Nada é guardado.',
+            lead: 'O motor de taxa curta de que a curva é tirada e os parâmetros que lê. Mude os valores e guarde-os com o motor.',
+            engine: 'Motor',
+            parameter: 'Parâmetro',
+            value: 'Valor',
+            bounds: 'Intervalo permitido',
+            none: 'O motor {engine} não tem parâmetros.',
+            save: 'Guardar',
+            discard: 'Descartar alterações',
+            unsaved: 'Alterações por guardar',
+            clean: 'Sem alterações por guardar.',
+            engineChanged:
+                'Motor: {from} → {to}. Os parâmetros de {from} são removidos ao guardar.',
+            error: {
+                number: 'Introduza um número.',
+                min: 'Abaixo do intervalo permitido.',
+                max: 'Acima do intervalo permitido.',
+            },
+            saveTitle: 'Guardar o processo',
+            saveButton: 'Guardar',
+            saveEngine: 'Motor: {from} → {to}.',
+            saveSummary: '{added} adicionados, {changed} alterados e {removed} apagados.',
+            runningNote: 'O fluxo corre com os parâmetros antigos.',
+            restart: 'Reiniciar para aplicar',
+            stoppedNote: 'O fluxo está parado. Aplica ao iniciar.',
+        },
+        irTemplate: {
+            lead: 'As entradas de prazo a que a curva é avaliada: onde cada uma começa e acaba, e o instrumento que a avalia. Adicione pelo menos uma antes de iniciar o fluxo.',
+            add: 'Adicionar uma entrada de prazo',
+            one: 'Entrada de prazo',
+            remove: 'Apagar a entrada de prazo',
+        },
         runs: {
             status: 'Estado',
             running: 'Em execução',
@@ -3263,8 +3380,8 @@ const pt: SourceCatalogue = {
             refused: '{feed}: {message}',
         },
         history: {
-            lead: 'O fluxo e cada componente da sua mistura, num só fio, do mais recente para o mais antigo. Reverter escreve os valores de uma versão anterior como uma nova versão.',
-            gap: 'Uma componente apagada da mistura não está neste fio: o ecrã lê o histórico das componentes que o fluxo tem agora.',
+            lead: 'O fluxo e cada linha que possui, num só fio, do mais recente ao mais antigo. Reverter escreve de novo os valores de uma versão mais antiga como nova versão.',
+            gap: 'Uma linha apagada do fluxo não está neste fio: o ecrã lê o histórico das linhas que o fluxo tem agora.',
         },
         ticks: {
             lead: 'Os últimos preços do fluxo, os mais recentes à direita. O servidor web guarda os últimos 500 de cada fluxo em execução desde que começou a ouvir, por isso um fluxo arrancado antes mostra só o que veio depois.',
@@ -3476,6 +3593,7 @@ const pt: SourceCatalogue = {
         sessionsRead: 'ler as sessões das pessoas',
         curveSnapshotsRead: 'ver as curvas de dados de mercado',
         fxFeedsRead: 'ver os fluxos de preços FX sintéticos',
+        irFeedsRead: 'ver os fluxos de curvas de taxas sintéticos',
     },
 
     unavailable: {

@@ -169,7 +169,13 @@ describe('synthetic resource routes', () => {
             'ir-template-entries',
             'process-types',
             'parameter-definitions',
+            'tenors',
+            'instrument-codes',
+            'payment-frequencies',
         ]);
+        const tenors = resources.find((resource) => resource.key === 'tenors');
+        expect(tenors?.writable).toBe(false);
+        expect(tenors?.readOnlyBecause).toContain('reference data');
         const definitions = resources.find((resource) => resource.key === 'parameter-definitions');
         expect(definitions?.writable).toBe(false);
         expect(definitions?.readOnlyBecause).toContain('name alone');
@@ -251,6 +257,41 @@ describe('synthetic resource routes', () => {
         expect(response.json().rows).toEqual([COMPONENT]);
         expect(calls[0]?.body).toMatchObject({
             filter: { fx_spot_config_id: OTHER, id_one_of: null, fx_spot_config_id_one_of: null },
+        });
+    });
+
+    it('reads the template entries and the parameter values of one curve feed by its parent', async () => {
+        const entry = { id: ID, ir_curve_config_id: OTHER, sequence_index: 0 };
+        const value = { id: ID, config_id: OTHER, parameter_value: 0.04 };
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ir_curve_template_entries.list': {
+                result: ok,
+                ir_curve_template_entries: [entry],
+            },
+            'synthetic.v1.ir_curve_generation_config_process_parameter_values.list': {
+                result: ok,
+                process_parameter_values: [value],
+            },
+        });
+        const entries = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/ir-template-entries/by/${OTHER}`,
+        );
+        const values = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/ir-parameter-values/by/${OTHER}`,
+        );
+        expect(entries.json().rows).toEqual([entry]);
+        expect(values.json().rows).toEqual([value]);
+        expect(calls[0]?.body).toMatchObject({
+            filter: { ir_curve_config_id: OTHER, id_one_of: null, ir_curve_config_id_one_of: null },
+        });
+        expect(calls[1]?.body).toMatchObject({
+            filter: { config_id: OTHER, id_one_of: null, config_id_one_of: null },
         });
     });
 

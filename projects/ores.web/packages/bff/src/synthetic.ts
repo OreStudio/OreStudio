@@ -42,6 +42,9 @@ import {
     type IrCurveGenerationConfigWrite,
     type IrCurveGenerationConfigsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_generation_config_protocol';
+import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
+import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
+import { subjects as paymentFrequencySubjects } from '@ores/wire-protocol/generated/refdata/protocol/payment_frequency_protocol';
 import { subjects as irOperationSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_operations_protocol';
 import {
     subjects as parameterValueSubjects,
@@ -129,6 +132,8 @@ interface SyntheticResource {
     readonly writes?: z.ZodType<Record<string, unknown>>;
     readonly readOnlyBecause?: string;
     readonly systemOwned?: true;
+    /** The permission namespace, when the rows belong to another service than the synthetic one. */
+    readonly namespace?: 'refdata';
     readonly search?: true;
     readonly sortable?: readonly string[];
     readonly parentField?: string;
@@ -280,7 +285,12 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'process_parameter_values',
-        filter: { id_one_of: null } satisfies IrCurveGenerationConfigProcessParameterValuesFilter,
+        filter: {
+            config_id: null,
+            id_one_of: null,
+            config_id_one_of: null,
+        } satisfies IrCurveGenerationConfigProcessParameterValuesFilter,
+        parentField: 'config_id',
         subjects: {
             list: parameterValueSubjects.list_ir_curve_generation_config_process_parameter_values_request,
             putMany:
@@ -302,7 +312,12 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'ir_curve_template_entries',
-        filter: { id_one_of: null } satisfies IrCurveTemplateEntriesFilter,
+        filter: {
+            ir_curve_config_id: null,
+            id_one_of: null,
+            ir_curve_config_id_one_of: null,
+        } satisfies IrCurveTemplateEntriesFilter,
+        parentField: 'ir_curve_config_id',
         subjects: {
             list: templateEntrySubjects.list_ir_curve_template_entries_request,
             putMany: templateEntrySubjects.put_many_ir_curve_template_entries_request,
@@ -356,6 +371,49 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         readOnlyBecause:
             'The server addresses a parameter definition by its name alone, which several process types share, so a write would reach whichever type it found first.',
     },
+    ...[
+        {
+            key: 'tenors',
+            entityType: 'ores.refdata.tenor',
+            rows: 'tenors',
+            subjects: {
+                list: tenorSubjects.list_tenors_request,
+                putMany: tenorSubjects.put_many_tenors_request,
+                remove: tenorSubjects.delete_tenor_request,
+                removeMany: tenorSubjects.delete_many_tenors_request,
+            },
+        },
+        {
+            key: 'instrument-codes',
+            entityType: 'ores.refdata.instrument_code',
+            rows: 'instruments',
+            subjects: {
+                list: instrumentCodeSubjects.list_instrument_codes_request,
+                putMany: instrumentCodeSubjects.put_many_instrument_codes_request,
+                remove: instrumentCodeSubjects.delete_instrument_code_request,
+                removeMany: instrumentCodeSubjects.delete_many_instrument_codes_request,
+            },
+        },
+        {
+            key: 'payment-frequencies',
+            entityType: 'ores.refdata.payment_frequency',
+            rows: 'payment_frequencies',
+            subjects: {
+                list: paymentFrequencySubjects.list_payment_frequencies_request,
+                putMany: paymentFrequencySubjects.put_many_payment_frequencies_request,
+                remove: paymentFrequencySubjects.delete_payment_frequency_request,
+                removeMany: paymentFrequencySubjects.delete_many_payment_frequencies_request,
+            },
+        },
+    ].map((lookup): SyntheticResource => ({
+        ...lookup,
+        keyField: 'code',
+        oneOf: 'code_one_of',
+        filter: { code_one_of: null },
+        namespace: 'refdata',
+        readOnlyBecause:
+            'These are reference data of the refdata service. A synthetic screen offers their codes and does not write them.',
+    })),
 ];
 
 /** The synthetic entity types whose history the history route serves. */
@@ -636,9 +694,9 @@ export function registerSyntheticRoutes(
                     readOnlyBecause: because ?? null,
                     search: resource.search === true,
                     sortable: resource.sortable ?? [],
-                    readPermission: `synthetic::${resourceName(resource)}:read`,
-                    writePermission: `synthetic::${resourceName(resource)}:write`,
-                    deletePermission: `synthetic::${resourceName(resource)}:delete`,
+                    readPermission: `${resource.namespace ?? 'synthetic'}::${resourceName(resource)}:read`,
+                    writePermission: `${resource.namespace ?? 'synthetic'}::${resourceName(resource)}:write`,
+                    deletePermission: `${resource.namespace ?? 'synthetic'}::${resourceName(resource)}:delete`,
                 };
             }),
         };

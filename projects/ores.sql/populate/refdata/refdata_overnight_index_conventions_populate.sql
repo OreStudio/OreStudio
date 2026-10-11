@@ -22,11 +22,11 @@
  * Overnight Index Conventions Population Script
  *
  * Seeds one ores_refdata_overnight_index_conventions_tbl row per (currency,
- * RFR family) pair used by the synthetic.ir_curve_configs.* seed themes
- * (ore_samples_2016/realistic_2026/uniform_demo) -- id is
- * "<currency_code>-<upper(index_family)>", matching
- * ir_curve_generation_config_service::validate_index_family()'s own lookup
- * shape. fixing_calendar values are refdata.calendars codes (see
+ * RFR family) pair used by the synthetic.feeds.* seed datasets
+ * (ore_samples_2016/bloomberg/uniform_demo) -- id is
+ * "<currency_code>-<upper(index_family)>", the shape a curve's
+ * (currency_code, index_family) pair names; nothing validates a curve
+ * against these rows. fixing_calendar values are refdata.calendars codes (see
  * refdata_calendars_populate.sql); day_count_fraction values are FpML
  * canonical day-count-fraction codes (see
  * external/fpml/codelist/day-count-fraction-2-3.xml).
@@ -102,6 +102,35 @@ values
     -- (Act/365 Fixed, New Zealand calendar; see task C80D94BB's Notes for sources). Real
     -- benchmark name is NZONIA, not the "NZIONA" the seed data originally (incorrectly) used.
     (ores_utility_system_tenant_id_fn(), 'NZD-NZONIA', 0, 'NewZealand', 'ACT/365.FIXED', 0,
+     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
+    -- The eight benchmarks below carry the curves the ACME books need beyond
+    -- the ones above. Each id and day count is the one ORE's own conventions
+    -- use for the benchmark (refdata_conventions_seed_populate.sql), so a
+    -- curve the synthetic feeds tick names an index an ORE run can resolve.
+    -- BRL CDI: the interbank deposit rate, compounded on business days / 252.
+    (ores_utility_system_tenant_id_fn(), 'BRL-CDI', 0, 'Brazil', 'BUS/252', 0,
+     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
+    -- CZK CZEONIA: the Czech National Bank's overnight rate.
+    (ores_utility_system_tenant_id_fn(), 'CZK-CZEONIA', 0, 'CzechRepublic', 'ACT/365.FIXED', 0,
+     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
+    -- HUF BUBORON: the Budapest interbank overnight rate.
+    (ores_utility_system_tenant_id_fn(), 'HUF-BUBORON', 0, 'Hungary', 'ACT/365.FIXED', 0,
+     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
+    -- ILS TELBORON: the Tel Aviv interbank overnight rate.
+    (ores_utility_system_tenant_id_fn(), 'ILS-TELBORON', 0, 'Israel.Settlement', 'ACT/365.FIXED', 0,
+     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
+    -- TRY TLREF: Borsa Istanbul's Turkish lira overnight reference rate.
+    (ores_utility_system_tenant_id_fn(), 'TRY-TLREF', 0, 'Turkey', 'ACT/365.FIXED', 0,
+     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
+    -- CLP CAMARA: the Chilean average interbank chamber index (ICP).
+    (ores_utility_system_tenant_id_fn(), 'CLP-CAMARA', 0, 'Chile', 'ACT/360', 0,
+     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
+    -- COP IBR: the Colombian overnight interbank reference rate. The calendar
+    -- seed holds no Colombia calendar yet.
+    (ores_utility_system_tenant_id_fn(), 'COP-IBR', 0, 'Colombia', 'ACT/360', 0,
+     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
+    -- CNH HIBOR: the offshore renminbi overnight fixing in Hong Kong.
+    (ores_utility_system_tenant_id_fn(), 'CNH-HIBOR', 0, 'HongKong', 'ACT/365.FIXED', 0,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()

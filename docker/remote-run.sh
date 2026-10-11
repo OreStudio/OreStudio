@@ -81,39 +81,87 @@ if [[ "$ROLE" == "compute" ]]; then
     log_dir="$REMOTE_ROOT/compute/log"
     mkdir -p "$log_dir"
 
-    echo "=== Recreating $replicas compute node container(s) '$container-N' ==="
-    # Remove every wrapper of this label, including a single-container
-    # deploy from before replicas existed.
+    # The wrappers run as systemd user services built from Quadlet files, so
+    # they restart after a crash and start again at boot (the user must have
+    # lingering enabled, which `compass env deploy --setup-host` does).
+    export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
+    unit_dir="${XDG_CONFIG_HOME:-$HOME/.config}/containers/systemd"
+    mkdir -p "$unit_dir"
+    user_manager="$(systemctl --user is-system-running 2>&1 || true)"
+    case "$user_manager" in
+        running | degraded) ;;
+        *)
+            echo "Error: the systemd user manager is not running for $(whoami) ($user_manager)." >&2
+            echo "  Run: loginctl enable-linger $(whoami)  (as root), then retry." >&2
+            exit 1
+            ;;
+    esac
+
+    echo "=== Replacing $replicas compute node unit(s) '$container-N' ==="
+    # Remove the units and containers of an earlier deploy, including a
+    # single-container deploy from before replicas existed.
+    systemctl --user stop "$container-*.service" >/dev/null 2>&1 || true
+    for old_unit in "$unit_dir/$container"-*.container; do
+        [[ -e "$old_unit" ]] && rm -f "$old_unit"
+    done
     for old in $(podman ps -aq --filter "name=^${container}" 2>/dev/null); do
         podman rm -f "$old" >/dev/null 2>&1 || true
     done
-    extra_args=()
+
+    extra_args=""
     if [[ -n "$http_base_url" ]]; then
-        extra_args=(--http-base-url "$http_base_url")
+        extra_args=" --http-base-url $http_base_url"
     fi
+    run_uid="${ORES_REMOTE_USER:-$(id -u)}"
+    run_gid="${ORES_REMOTE_GROUP:-$(id -g)}"
     node_name="$(hostname)"
+    units=()
     for replica in $(seq 1 "$replicas"); do
         # Same derivation as the local services: UUID v5 of "<hostname>:<replica>".
         host_id="$(python3 -c 'import sys,uuid; print(uuid.uuid5(uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8"), sys.argv[1]))' "$node_name:$replica")"
         replica_dir="$work_dir/$replica"
         mkdir -p "$replica_dir"
-        podman run -d --rm --network=host --userns=keep-id \
-            --name "$container-$replica" \
-            --user "${ORES_REMOTE_USER:-$(id -u)}:${ORES_REMOTE_GROUP:-$(id -g)}" \
-            --env-file "$compute_env" \
-            -v "$certs_volume:$keys_dir:ro" \
-            -v "$work_dir:$work_dir:rw" \
-            -v "$log_dir:/app/log:rw" \
-            "$image" \
-            --log-enabled --log-level info --log-to-console \
-            --log-directory ../log --log-filename ores.compute.wrapper \
-            --log-replica-index "$((replica - 1))" \
-            --host-id "$host_id" --tenant-id "$tenant_id" \
-            --work-dir "$replica_dir" --package-dir "$work_dir/packages" "${extra_args[@]}" >/dev/null
+        cat > "$unit_dir/$container-$replica.container" <<UNIT
+[Unit]
+Description=ORE Studio compute wrapper $replica ($label)
+StartLimitIntervalSec=0
+
+[Container]
+Image=$image
+ContainerName=$container-$replica
+Network=host
+UserNS=keep-id
+User=$run_uid
+Group=$run_gid
+EnvironmentFile=$compute_env
+Volume=$certs_volume:$keys_dir:ro
+Volume=$work_dir:$work_dir:rw
+Volume=$log_dir:/app/log:rw
+Exec=--log-enabled --log-level info --log-to-console --log-directory ../log --log-filename ores.compute.wrapper --log-replica-index $((replica - 1)) --host-id $host_id --tenant-id $tenant_id --work-dir $replica_dir --package-dir $work_dir/packages$extra_args
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
+UNIT
+        units+=("$container-$replica.service")
     done
+
+    systemctl --user daemon-reload
+    # A unit that systemd cannot see means the Quadlet generator is missing
+    # (podman older than 4.4) or the file is malformed.
+    if ! systemctl --user cat "${units[0]}" >/dev/null 2>&1; then
+        echo "Error: systemd did not generate ${units[0]} from $unit_dir." >&2
+        echo "  Quadlet needs podman 4.4 or later (this host: $(podman --version))." >&2
+        exit 1
+    fi
+    systemctl --user start "${units[@]}"
 
     echo
     echo "$replicas compute node(s) started as '$container-N' (NATS: $ORES_COMPUTE_WRAPPER_NATS_URL)."
+    echo "  Units: systemctl --user status $container-1.service (restart on failure, start at boot)"
     echo "  Logs : $log_dir/*.log (podman logs -f $container-1 for stdout)"
     echo "  Stop : compass env deploy <host> --role compute --stop"
     exit 0

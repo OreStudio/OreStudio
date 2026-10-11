@@ -378,7 +378,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/netting_set_alias_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/netting_set_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/origin_dimension_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/party_provisioning_plan.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/publication_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/publish_bundle_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/publish_datasets_protocol.hpp"

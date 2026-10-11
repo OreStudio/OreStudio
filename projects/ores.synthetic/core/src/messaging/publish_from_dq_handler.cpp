@@ -46,8 +46,8 @@ auto& lg() {
 /**
  * @brief Derives the SQL function name from the NATS subject.
  *
- * Converts "synthetic.v1.ops.publish_theme_from_dq" to
- * "ores_synthetic_publish_theme_from_dq_fn".
+ * Converts "synthetic.v1.ops.publish_feeds_from_dq" to
+ * "ores_synthetic_publish_feeds_from_dq_fn".
  */
 std::string subject_to_fn(std::string_view subject) {
     // The operation is the last segment of a reserved-namespace subject,
@@ -76,7 +76,7 @@ std::string subject_to_fn(std::string_view subject) {
  */
 bool is_known_fn(std::string_view fn_name) {
     static constexpr std::array<std::string_view, 2> known = {
-        "ores_synthetic_publish_theme_from_dq_fn",
+        "ores_synthetic_publish_feeds_from_dq_fn",
         "ores_synthetic_publish_market_data_providers_from_dq_fn"};
     return std::find(known.begin(), known.end(), fn_name) != known.end();
 }

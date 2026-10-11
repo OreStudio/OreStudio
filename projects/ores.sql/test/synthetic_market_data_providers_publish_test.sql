@@ -40,6 +40,12 @@ where code = 'synthetic.market_data_providers'
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
+-- A database the system provisioning step has not run on holds no
+-- providers yet, so the test publishes them once first.
+create temporary table t_first_publish on commit drop as
+select * from ores_synthetic_publish_market_data_providers_from_dq_fn(
+    (select id from t_dataset), ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
+
 select throws_ok(
     format($$select * from ores_synthetic_publish_market_data_providers_from_dq_fn(%L::uuid, gen_random_uuid(), 'upsert', '{}'::jsonb)$$,
         (select id from t_dataset)),

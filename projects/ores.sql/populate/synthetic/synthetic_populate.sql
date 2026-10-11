@@ -29,27 +29,22 @@
 \echo '=== Synthetic Component Population ==='
 \echo ''
 
-\echo '--- FX Spot Config Seed Data ---'
+\echo '--- Market Data Providers ---'
 \ir ./synthetic_market_data_providers_artefact_populate.sql
+
+\echo '--- FX Spot Config Seed Data ---'
 \ir ./synthetic_fx_spot_configs_populate.sql
 
-\echo '--- FX Spot Config Seed Data: Uniform Volatility Demo ---'
+\echo '--- Synthetic Feeds: Uniform Volatility Demo ---'
 \ir ./synthetic_fx_spot_configs_uniform_demo_populate.sql
-
-\echo '--- FX Spot Config Seed Data: 2016 ORE Samples ---'
-\ir ./synthetic_fx_spot_configs_ore_samples_2016_populate.sql
-
-\echo '--- FX Spot Config Seed Data: 2026 Realistic ---'
-\ir ./synthetic_fx_spot_configs_realistic_2026_populate.sql
-
-\echo '--- IR Curve Config Seed Data: Uniform Volatility Demo ---'
 \ir ./synthetic_ir_curve_configs_uniform_demo_populate.sql
 
-\echo '--- IR Curve Config Seed Data: 2016 ORE Samples (legacy IBOR-era curves) ---'
+\echo '--- Synthetic Feeds: 2016 ORE Samples ---'
+\ir ./synthetic_fx_spot_configs_ore_samples_2016_populate.sql
 \ir ./synthetic_ir_curve_configs_ore_samples_2016_populate.sql
 
-\echo '--- IR Curve Config Seed Data: 2026 Realistic (RFR curves) ---'
-\ir ./synthetic_ir_curve_configs_realistic_2026_populate.sql
+\echo '--- Synthetic Feeds: Bloomberg ---'
+\ir ./synthetic_feeds_bloomberg_populate.sql
 
 \echo '--- Dataset Dependencies (vintage-mode configs -> their real market data) ---'
 \ir ./synthetic_dataset_dependency_populate.sql

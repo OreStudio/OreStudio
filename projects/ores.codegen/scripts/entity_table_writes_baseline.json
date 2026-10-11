@@ -686,7 +686,7 @@
     },
     {
       "kind": "sql_function",
-      "name": "ores_synthetic_publish_theme_from_dq_fn",
+      "name": "ores_synthetic_publish_feeds_from_dq_fn",
       "file": "projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql",
       "reason": "predates the check"
     },

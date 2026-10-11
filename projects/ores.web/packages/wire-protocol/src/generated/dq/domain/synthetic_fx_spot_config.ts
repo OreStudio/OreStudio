@@ -45,4 +45,5 @@ export interface SyntheticFxSpotConfig {
     price_source: string;
     vintage_source: string | null;
     vintage_date: string | null;
+    provider_code: string | null;
 }

@@ -72,7 +72,10 @@ cannot collide.
 A collection's scope decides who reads its feeds. A system collection belongs
 to the system tenant and its system party, as its feeds do, and row-level
 security lets every tenant read a system collection and every feed and part
-under it. Writing stays with the system tenant.
+under it. Writing stays with the system tenant. Only the database admits
+this so far: the synthetic service's generated repositories read the
+caller's own tenant alone, so no service lists a system collection to a
+tenant, and no dataset publishes one yet.
 
 Only one enabled, bound system collection may run at a time: the conflict
 guard of the collection rejects a second. So one provider is chosen as the
@@ -82,6 +85,26 @@ owner of blended rates: it will read the providers' spots and publish the
 blended EUR/USD itself. A tenant consumes a
 system feed's ticks through a feed binding, which stores each tick once for
 every party that binds the source.
+
+** How a set of feeds names its provider
+
+Feeds come from a synthetic feeds dataset, the one way to set them up: a DQ
+dataset of artefact type =synthetic_feeds=, published by
+=ores_synthetic_publish_feeds_from_dq_fn= into the party the tenant's
+provisioning names. Each FX and IR feed row of the dataset may carry a
+=provider_code=. The published feed's source name then starts
+=synthetic.<provider code>.=, and the collection names the provider when
+every feed row names the same one.
+
+=synthetic.feeds.bloomberg= is the provider dataset today
+(=projects/ores.sql/populate/synthetic/synthetic_feeds_bloomberg_populate.sql=),
+in the =synthetic_bloomberg= bundle that =acme_demo= publishes. It holds what
+the ACME reports need: a USD spot for each of 26 currencies, and a curve on
+the overnight benchmark of each of 28 currencies, plus the USD FOMC short
+end. A bank reads all its spots from one vendor, so one provider quoting
+every pair is the realistic case. The 13 spots the Federal Reserve H.10
+release quotes start from its 2026-05-05 vintage; the other 13 start at an
+illustrative fixed level, which is not a sourced quote.
 
 * See also
 

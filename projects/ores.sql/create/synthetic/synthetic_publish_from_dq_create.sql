@@ -30,26 +30,31 @@
  */
 
 -- =============================================================================
--- Theme Configs: synthetic.v1.ops.publish_theme_from_dq
+-- Synthetic Feeds: synthetic.v1.ops.publish_feeds_from_dq
 --
--- A theme (e.g. "2016 ORE Samples") is one DQ dataset covering every asset
--- class it contains, published atomically by this single function -- not N
--- independently-publishable per-asset-class datasets that merely share a
--- naming convention (the FX/IR functions this replaces each independently
--- resolved their own container and collection folder, so a party could end
--- up with FX published but IR not, and the Market Simulator tree showed two
--- top-level nodes for one theme instead of one). One container
--- (market_data_generation_config) and one collection folder are resolved
--- once, shared by every asset class's loop below; a future third asset
--- class is a third loop added here against its own artefact table, under
--- the same shared container/folder, not a new independently-publishable
--- dataset. Each asset class's chain (asset_class + instrument_type folder,
--- generation-config rows, and children) is only created/populated if this
--- dataset actually has artefact rows for it, so an IR-only (or FX-only)
--- theme never gets an empty sibling folder for the asset class it lacks.
+-- A synthetic feeds dataset (e.g. "Bloomberg") is one DQ dataset covering
+-- every asset class it contains, published atomically by this single
+-- function -- not N independently-publishable per-asset-class datasets that
+-- merely share a naming convention (the FX/IR functions this replaces each
+-- independently resolved their own container and collection folder, so a
+-- party could end up with FX published but IR not, and the Market Simulator
+-- tree showed two top-level nodes for one dataset instead of one). One
+-- container (market_data_generation_config) and one collection folder are
+-- resolved once, shared by every asset class's loop below; a future third
+-- asset class is a third loop added here against its own artefact table,
+-- under the same shared container/folder, not a new independently-
+-- publishable dataset. Each asset class's chain (asset_class +
+-- instrument_type folder, generation-config rows, and children) is only
+-- created/populated if this dataset actually has artefact rows for it, so an
+-- IR-only (or FX-only) dataset never gets an empty sibling folder for the
+-- asset class it lacks.
+--
+-- Each feed row may name the simulated market data provider it stands for;
+-- its source name then starts synthetic.<provider code>. The collection
+-- names a provider when every feed row names the same one.
 -- =============================================================================
 
-create or replace function ores_synthetic_publish_theme_from_dq_fn(
+create or replace function ores_synthetic_publish_feeds_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
     p_mode text default 'upsert',
@@ -63,6 +68,7 @@ declare
     v_party_id uuid;
     v_config_id uuid;
     v_config_name text;
+    v_provider_code text;
     v_root_folder_id uuid;
     v_collection_folder_id uuid;
     v_fx_asset_class_folder_id uuid;
@@ -102,18 +108,19 @@ begin
     -- configs are always scoped to an explicit party the caller names.
     v_party_id := (p_params ->> 'party_id')::uuid;
     if v_party_id is null then
-        raise exception 'p_params.party_id is required to publish a synthetic theme';
+        raise exception 'p_params.party_id is required to publish a synthetic feeds dataset';
     end if;
 
     if p_mode = 'replace_all' then
         -- Void each asset class only if THIS dataset actually carries artefact
         -- rows for it, mirroring the `if exists (...)` gates on the population
         -- loops below. Without that symmetry, publishing a single-asset-class
-        -- theme in replace_all mode would void the party's other asset class
+        -- dataset in replace_all mode would void the party's other asset class
         -- and then skip repopulating it (that loop being gated), silently
         -- destroying configs with nothing left to restore them. Harmless while
-        -- every theme carries both FX and IR, but the point of the one-theme-
-        -- unit design is that a future asset class is just another gated loop.
+        -- every dataset carries both FX and IR, but the point of the
+        -- one-dataset-one-unit design is that a future asset class is just
+        -- another gated loop.
         if exists (
             select 1 from ores_dq_synthetic_fx_spot_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
@@ -171,9 +178,9 @@ begin
     end if;
 
     -- Resolve (or create) the ONE container for this (tenant, party, dataset),
-    -- shared by every asset class this theme contains. Keyed by dataset_id,
-    -- not just (tenant, party): a party can run several distinct themes
-    -- (e.g. "2016 ORE Samples" alongside "2026 Realistic") side by side, each
+    -- shared by every asset class this dataset contains. Keyed by dataset_id,
+    -- not just (tenant, party): a party can run several feeds datasets
+    -- (e.g. "2016 ORE Samples" alongside "Bloomberg") side by side, each
     -- published from its own dataset, and each must get its own container --
     -- not be silently merged into whichever one happened to publish first.
     select id into v_config_id
@@ -184,11 +191,24 @@ begin
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     -- The container's name is the dataset's own human-readable name (e.g.
-    -- "Synthetic Theme: 2016 ORE Samples"), trimmed to its label after the
+    -- "Synthetic Feeds: 2016 ORE Samples"), trimmed to its label after the
     -- last ": " when present ("2016 ORE Samples") -- not any one pair/curve's
     -- artefact name, which would be a single arbitrary row. Used both for the
     -- new container's name (below) and to namespace each row's source_name.
     v_config_name := coalesce(nullif(split_part(v_dataset_name, ': ', 2), ''), v_dataset_name);
+
+    -- The collection stands for a provider when every feed row of the
+    -- dataset names the same one.
+    select min(p.provider_code) into v_provider_code
+    from (
+        select provider_code from ores_dq_synthetic_fx_spot_configs_artefact_tbl
+        where dataset_id = p_dataset_id
+        union all
+        select provider_code from ores_dq_synthetic_ir_curve_configs_artefact_tbl
+        where dataset_id = p_dataset_id
+    ) p
+    having count(*) = count(p.provider_code)
+       and count(distinct p.provider_code) = 1;
 
     if v_config_id is null then
         v_config_id := gen_random_uuid();
@@ -199,16 +219,16 @@ begin
         -- publish path does implicitly. The exclusivity trigger only
         -- blocks scope-widening conflicts (system/tenant vs narrower),
         -- not multiple bound configs at the same party, so publishing
-        -- more than one theme's configuration for the same party (see
+        -- more than one feeds dataset's configuration for the same party (see
         -- party_provisioning_bundle_plan()) is safe.
         insert into ores_synthetic_market_data_generation_configs_tbl (
             tenant_id, id, version, party_id, scope, binding_mode, name, description, enabled,
-            dataset_id, modified_by, performed_by, change_reason_code, change_commentary
+            dataset_id, provider_code, modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             p_target_tenant_id, v_config_id, 0, v_party_id, 'party', 'bound',
             v_config_name,
             'Published from DQ dataset: ' || v_dataset_name,
-            true, p_dataset_id,
+            true, p_dataset_id, v_provider_code,
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
         );
@@ -226,12 +246,12 @@ begin
         return;
     end if;
 
-    -- Resolve (or create) the folder chain this theme's feeds live under:
+    -- Resolve (or create) the folder chain this dataset's feeds live under:
     -- root ("Synthetic") > collection (linked to v_config_id via
-    -- collection_id, one per theme) > asset class > instrument type. The
+    -- collection_id, one per dataset) > asset class > instrument type. The
     -- asset-class/instrument-type pair below each branches on whether this
     -- dataset actually carries rows for that asset class, so every asset
-    -- class this theme contains shares the same root and collection folder.
+    -- class this dataset contains shares the same root and collection folder.
     -- Real, queryable rows (not a parsed source_name string) so any caller --
     -- Qt, ores.shell, or a wt workflow -- can resolve "everything under this
     -- folder" via the generated hierarchy function.
@@ -271,7 +291,7 @@ begin
             'system.external_data_import', 'Collection folder for ' || v_config_name
         );
     else
-        -- Keep the folder's display name in sync if the theme was renamed.
+        -- Keep the folder's display name in sync if the collection was renamed.
         update ores_synthetic_folders_tbl
         set name = v_config_name
         where tenant_id = p_target_tenant_id and id = v_collection_folder_id
@@ -336,7 +356,8 @@ begin
                 a.auto_start,
                 a.price_source,
                 a.vintage_source,
-                a.vintage_date
+                a.vintage_date,
+                a.provider_code
             from ores_dq_synthetic_fx_spot_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
             order by a.base_currency_code, a.quote_currency_code
@@ -369,11 +390,13 @@ begin
                 coalesce(existing.version, 0),
                 v_party_id, v_config_id, v_fx_folder_id,
                 r.base_currency_code, r.quote_currency_code,
-                -- source_name is now just a display/NATS-subject string, namespaced
-                -- by collection only (to avoid two themes' same pair colliding) --
-                -- the actual hierarchy lives in folder_id above, not parsed out of
-                -- this string.
-                'synthetic.' || lower(replace(v_config_name, ' ', '')) || '.' ||
+                -- source_name is just a display/NATS-subject string, namespaced
+                -- by the feed's provider, or by the collection when the feed
+                -- names none (to avoid two datasets' same pair colliding) --
+                -- the actual hierarchy lives in folder_id above, not parsed out
+                -- of this string.
+                'synthetic.' ||
+                    coalesce(r.provider_code, lower(replace(v_config_name, ' ', ''))) || '.' ||
                     lower(r.base_currency_code) || lower(r.quote_currency_code),
                 -- ore_key uses the pair's natural base/quote order; the
                 -- underlying market data is keyed the same way.
@@ -409,7 +432,7 @@ begin
             -- Ensure every FX config has at least one GMM component; without
             -- one the mixture has nothing to sample from. Components are
             -- sourced from the dataset's own GMM component artefact rows,
-            -- keyed by currency pair, so each theme carries its own
+            -- keyed by currency pair, so each dataset carries its own
             -- calibrated mixture. Falls back to a single unrehearsed
             -- placeholder component if the dataset has none.
             if exists (
@@ -584,7 +607,8 @@ begin
                 a.price_source,
                 coalesce(a.vintage_source, '') as vintage_source,
                 coalesce(a.vintage_date, '') as vintage_date,
-                coalesce(a.vintage_series_uri, '') as vintage_series_uri
+                coalesce(a.vintage_series_uri, '') as vintage_series_uri,
+                a.provider_code
             from ores_dq_synthetic_ir_curve_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
             order by a.currency_code, a.index_family
@@ -626,9 +650,10 @@ begin
                 r.description,
                 r.fixed_leg_payment_frequency_code,
                 -- Same shape as fx_spot_generation_config.source_name: namespaced by
-                -- theme only (so two themes' same currency+index never collide), not by
-                -- asset class.
-                'synthetic.' || lower(replace(v_config_name, ' ', '')) || '.' ||
+                -- provider or collection only (so two datasets' same currency+index
+                -- never collide), not by asset class.
+                'synthetic.' ||
+                    coalesce(r.provider_code, lower(replace(v_config_name, ' ', ''))) || '.' ||
                     lower(r.currency_code) || lower(r.index_family) ||
                     lower(replace(r.tenor, ' ', '')),
                 r.price_source, r.vintage_source, r.vintage_date, r.vintage_series_uri,

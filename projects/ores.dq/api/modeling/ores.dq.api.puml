@@ -424,6 +424,14 @@ namespace ores #F2F2F2 {
                 +vintage_source : optional<string>
                 +vintage_date : optional<string>
             }
+            class synthetic_market_data_provider <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
+                +code : string
+                +name : string
+                +kind : string
+                +description : string
+                +display_order : int
+            }
             class treatment_dimension <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
@@ -2630,10 +2638,6 @@ namespace ores #F2F2F2 {
                 +result : ores::utility::domain::result
                 +version : ores::dq::domain::origin_dimension
             }
-            class party_bundle_publish_step <<struct>> {
-                +bundle_code : string
-                +label : string
-            }
             class publication_key <<struct>> {
                 +id : boost::uuids::uuid
             }
@@ -2980,6 +2984,49 @@ namespace ores #F2F2F2 {
             class get_many_synthetic_fx_spot_configs_response <<struct>> {
                 +result : ores::utility::domain::result
                 +entries : vector<synthetic_fx_spot_config_lookup>
+            }
+            class synthetic_market_data_provider_key <<struct>> {
+                +code : string
+            }
+            class synthetic_market_data_provider_lookup <<struct>> {
+                +key : synthetic_market_data_provider_key
+                +synthetic_market_data_provider : optional<ores::dq::domain::synthetic_market_data_provider>
+            }
+            class synthetic_market_data_providers_filter <<struct>> {
+                +code_one_of : optional<vector<string>>
+            }
+            class synthetic_market_data_provider_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : synthetic_market_data_provider_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_synthetic_market_data_providers_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<synthetic_market_data_providers_filter>
+            }
+            class list_synthetic_market_data_providers_response <<struct>> {
+                +result : ores::utility::domain::result
+                +providers : vector<ores::dq::domain::synthetic_market_data_provider>
+                +total : uint64_t
+            }
+            class get_synthetic_market_data_provider_request <<struct>> {
+                +key : synthetic_market_data_provider_key
+            }
+            class get_synthetic_market_data_provider_response <<struct>> {
+                +result : ores::utility::domain::result
+                +synthetic_market_data_provider : optional<ores::dq::domain::synthetic_market_data_provider>
+            }
+            class get_many_synthetic_market_data_providers_request <<struct>> {
+                +keys : vector<synthetic_market_data_provider_key>
+            }
+            class get_many_synthetic_market_data_providers_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<synthetic_market_data_provider_lookup>
             }
             class treatment_dimension_key <<struct>> {
                 +code : string

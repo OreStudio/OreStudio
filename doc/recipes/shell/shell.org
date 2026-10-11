@@ -1532,3 +1532,7 @@ tangled into the runnable script library
 * Market Data Providers
 
 - [[id:2383895A-489A-5885-8C10-AEDFBB636BC8][How do I run the market_data_providers commands from the shell?]]
+
+* Synthetic Market Data Providers
+
+- [[id:754A384A-55E2-5721-BDC9-29B82F93FBE4][How do I run the synthetic_market_data_providers commands from the shell?]]

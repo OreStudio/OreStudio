@@ -75,8 +75,9 @@ std::string subject_to_fn(std::string_view subject) {
  * the subscription, when a new entity is wired up.
  */
 bool is_known_fn(std::string_view fn_name) {
-    static constexpr std::array<std::string_view, 1> known = {
-        "ores_synthetic_publish_theme_from_dq_fn"};
+    static constexpr std::array<std::string_view, 2> known = {
+        "ores_synthetic_publish_theme_from_dq_fn",
+        "ores_synthetic_publish_market_data_providers_from_dq_fn"};
     return std::find(known.begin(), known.end(), fn_name) != known.end();
 }
 

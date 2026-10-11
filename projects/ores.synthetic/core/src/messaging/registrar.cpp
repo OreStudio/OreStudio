@@ -139,6 +139,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats.queue_subscribe("synthetic.v1.ops.publish_theme_from_dq",
                                  "ores.synthetic.service",
                                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe("synthetic.v1.ops.publish_market_data_providers_from_dq",
+                                 "ores.synthetic.service",
+                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------

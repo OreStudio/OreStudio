@@ -30,6 +30,7 @@
 \echo ''
 
 \echo '--- FX Spot Config Seed Data ---'
+\ir ./synthetic_market_data_providers_artefact_populate.sql
 \ir ./synthetic_fx_spot_configs_populate.sql
 
 \echo '--- FX Spot Config Seed Data: Uniform Volatility Demo ---'

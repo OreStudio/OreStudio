@@ -14,9 +14,19 @@
 =market_data_provider= is a reference-data table of the providers whose
 market data the synthetic feeds simulate: data vendors such as Bloomberg and
 Refinitiv, exchanges such as CME and LSE, a broker, and a /generic/ provider.
-It is declared in =ores.synthetic.api/domain/market_data_provider.hpp=, seeded
-by =projects/ores.sql/populate/synthetic/synthetic_market_data_providers_populate.sql=,
-and a collection's optional =provider_code= is validated against its =code=.
+It is declared in =ores.synthetic.api/domain/market_data_provider.hpp=, and a
+collection's optional =provider_code= is validated against its =code=.
+
+The rows arrive through DQ, as the installation's other reference data does.
+The =synthetic.market_data_providers= dataset stages them in
+=ores_dq_synthetic_market_data_providers_artefact_tbl=
+(=projects/ores.sql/populate/synthetic/synthetic_market_data_providers_artefact_populate.sql=).
+The dataset is a member of the =system_core= bundle, so the system
+provisioning step of a profile such as =acme_demo= publishes it into the
+system tenant through =ores_synthetic_publish_market_data_providers_from_dq_fn=
+on =synthetic.v1.ops.publish_market_data_providers_from_dq=. The function
+refuses any other target tenant, so a tenant's own setup never writes the
+catalogue.
 
 * Detail
 

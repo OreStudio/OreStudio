@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ID: 16B14910-504D-4040-9296-7E635E86653C
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.dq.synthetic_market_data_provider
+#+description: Codegen entity model for the dq =synthetic_market_data_provider= artefact table: the simulated market data providers the installation publishes into the synthetic provider catalogue.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: Market Data Provider artefacts - the simulated providers staged for the system_core bundle
+#+entity_singular: synthetic_market_data_provider
+#+entity_plural: synthetic_market_data_providers
+#+entity_title: Synthetic Market Data Provider
+#+coding_scheme: none
+#+image_id: false
+#+has_artefact_insert_fn: false
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+Market Data Provider artefacts: one row per simulated market data provider
+(Bloomberg, Refinitiv, the exchanges, a broker, and the generic provider),
+staged for the =system_core= bundle and published into
+=ores_synthetic_market_data_providers_tbl= in the system tenant. Every
+provider is simulated; see the synthetic catalogue's own model for the
+synthetic mark.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   uuid-surrogate-lookup, read-only-current-state, artefact-staging-only
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The provider code, the provider segment of a source name.
+
+#+begin_src cpp :name generator
+std::string("provider")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The provider as a person knows it, without the synthetic mark.
+
+#+begin_src cpp :name generator
+std::string(faker::company::companyName())
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+=data_vendor=, =exchange=, =broker= or =generic=.
+
+#+begin_src cpp :name generator
+std::string("data_vendor")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the provider publishes, in a sentence.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for display.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_synthetic_market_data_providers_artefact_tbl
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:     api
+:has_batch_remove: true
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: provider
+:entity_plural_short:   providers
+:entity_singular_words: synthetic market data provider
+:entity_plural_words:   synthetic market data providers
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mdp
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| code   | Code   |
+| name   | Name   |
+| kind   | Kind   |
+
+** Custom repository methods
+
+* Notes
+
+Bound to [[id:5D3A6D13-73E0-41A5-9E08-0C8C11BD609E][Artefact staging only]]: this artefact type's row in
+=ores_dq_artefact_types_tbl= (=market_data_providers=) publishes to
+=synthetic_market_data_providers_tbl=, which =ores.synthetic= owns. This
+model describes the DQ staging shape only.
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

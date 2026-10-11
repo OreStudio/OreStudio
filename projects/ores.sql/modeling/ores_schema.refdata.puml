@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T02:26:09.491000Z
+' Generated: 2026-10-11T23:16:21.371166Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3626,6 +3626,7 @@ package "refdata" #FFF3E0 {
         * output_series_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * currency_code : text <<FK>>
+        * index_tenor : text
         * curve_family_role : text
         * discount_curve_config_id : uuid <<FK>>
         * interpolation_method : text

@@ -33,6 +33,7 @@ import { api, type AuditPeriod } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
 import { actorPathFor } from '../access/PeoplePage.js';
+import { Avatar, imageUrl } from '../ui/Images.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { AccountLockBadge } from '../ui/AccountLockBadge.js';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
@@ -167,6 +168,12 @@ export function orderLoginRecords(rows: readonly LoginInfo[]): readonly LoginInf
     });
 }
 
+/** What a panel needs to draw an account: the name and the photo. */
+export interface AuditPerson {
+    readonly username: string;
+    readonly imageId: string | null;
+}
+
 /**
  * An account as the audit names it.
  *
@@ -181,28 +188,41 @@ function AccountCell({
 }: {
     readonly accountId: string;
     readonly username?: string;
-    readonly nameOf: ReadonlyMap<string, string>;
+    readonly nameOf: ReadonlyMap<string, AuditPerson>;
 }): ReactNode {
     if (accountId === '') {
         return <span>{username === undefined || username === '' ? '—' : username}</span>;
     }
-    const name =
-        username !== undefined && username !== '' ? username : (nameOf.get(accountId) ?? '');
+    const person = nameOf.get(accountId);
+    const name = username !== undefined && username !== '' ? username : (person?.username ?? '');
     const personPath = actorPathFor(true)(name);
     return (
-        <div className="space-y-0.5">
+        <div className="flex items-center gap-2">
             {name !== '' && (
-                <div>
-                    {personPath === undefined ? (
-                        <span>{name}</span>
-                    ) : (
-                        <Link className="text-accent-bright hover:underline" to={personPath}>
-                            {name}
-                        </Link>
-                    )}
-                </div>
+                <Avatar
+                    name={name}
+                    size="sm"
+                    src={
+                        person === undefined || person.imageId === null
+                            ? null
+                            : imageUrl(person.imageId)
+                    }
+                />
             )}
-            <div className="font-mono text-xs text-ink-faint">{accountId}</div>
+            <div className="space-y-0.5">
+                {name !== '' && (
+                    <div>
+                        {personPath === undefined ? (
+                            <span>{name}</span>
+                        ) : (
+                            <Link className="text-accent-bright hover:underline" to={personPath}>
+                                {name}
+                            </Link>
+                        )}
+                    </div>
+                )}
+                <div className="font-mono text-xs text-ink-faint">{accountId}</div>
+            </div>
         </div>
     );
 }
@@ -303,7 +323,7 @@ function SessionsPanel({
     onEnd,
 }: {
     readonly sessions: readonly Session[];
-    readonly accountNames: ReadonlyMap<string, string>;
+    readonly accountNames: ReadonlyMap<string, AuditPerson>;
     readonly pending: boolean;
     readonly error: Error | null;
     readonly endingId: string;
@@ -493,7 +513,7 @@ function StatisticsPanel({
     accountNames,
 }: {
     readonly query: UseQueryResult<readonly SessionStatisticsRow[]>;
-    readonly accountNames: ReadonlyMap<string, string>;
+    readonly accountNames: ReadonlyMap<string, AuditPerson>;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -575,7 +595,7 @@ function FailuresPanel({
         readonly loginInfo: readonly LoginInfo[];
         readonly totalCount: number;
     }>;
-    readonly accountNames: ReadonlyMap<string, string>;
+    readonly accountNames: ReadonlyMap<string, AuditPerson>;
 }): ReactNode {
     const { t } = useTranslation();
     const [hideNeverSignedIn, setHideNeverSignedIn] = useState(false);
@@ -676,7 +696,7 @@ function EventsPanel({
     accountNames,
 }: {
     readonly query: UseQueryResult<readonly AuthEvent[]>;
-    readonly accountNames: ReadonlyMap<string, string>;
+    readonly accountNames: ReadonlyMap<string, AuditPerson>;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -782,7 +802,9 @@ export function AuditPage(): ReactNode {
      * map empty and each panel falls back to the identifier alone.
      */
     const accountNames = new Map(
-        (accounts.data?.accounts ?? []).map((row) => [row.id, row.username] as const),
+        (accounts.data?.accounts ?? []).map(
+            (row) => [row.id, { username: row.username, imageId: row.imageId }] as const,
+        ),
     );
 
     const { tab, bar } = useTabs({

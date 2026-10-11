@@ -25,8 +25,9 @@ The rules in short:
 - Every list pages on the server, and the pager on the screen is the request. No
   screen reads an entity whole.
 - Every mention of a person is a link to the person, with their photo where the
-  place has room for one. An email is a =mailto:= link and a web address an
-  =http= link.
+  place has room for one. A username is always drawn with the photo, on every
+  tab and in every panel. The one exception is the accounts dialog itself. An
+  email is a =mailto:= link and a web address an =http= link.
 - Every change is made in a dialog opened by an Edit button on the card it
   changes. The reason is asked in the dialog and nowhere else.
 - History is a chart of events over time above a rail of one-line headers with
@@ -240,6 +241,16 @@ rule is the same in all of them.
   page header, a manager line, a card in a chart, a person in a picker and the
   history rail. Where a person has no photo, their initials stand in the same
   circle, so a list does not jump.
+- A username is never drawn without the photo. This holds on every screen and
+  on every tab of a screen, including the audit screens, where a username
+  names who signed in, who failed to sign in or who ended a session. The
+  photo stands at the left of the name, small in rows.
+- The one exception is the accounts dialog itself, where the account is the
+  subject of the dialog and its photo is already its own control.
+- A screen that reads accounts by identifier reads the image identifier with the
+  username, so that it can draw the photo. A reading that carries only the
+  username does not leave the photo out. The screen reads the account list once
+  and joins it.
 - A photo is fetched by its image identifier, which the read already carries. A
   screen never asks for a person's picture once per row by username. The image is
   cached by its identifier for a year.

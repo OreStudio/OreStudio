@@ -147,7 +147,11 @@ function statisticsRow(overrides: Partial<SessionStatisticsRow> = {}): SessionSt
     };
 }
 
-function render(path = '/audit', loginRecords: readonly LoginInfo[] = [loginInfo()]): string {
+function render(
+    path = '/audit',
+    loginRecords: readonly LoginInfo[] = [loginInfo()],
+    people: readonly Account[] = [account()],
+): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData([AUDIT_SESSIONS_QUERY_KEY], [session()]);
     client.setQueryData([AUDIT_FAILURES_QUERY_KEY], {
@@ -157,8 +161,8 @@ function render(path = '/audit', loginRecords: readonly LoginInfo[] = [loginInfo
     client.setQueryData([AUDIT_EVENTS_QUERY_KEY, 'day', ''], [authEvent()]);
     client.setQueryData([AUDIT_STATISTICS_QUERY_KEY, 'day'], [statisticsRow()]);
     client.setQueryData([AUDIT_ACCOUNTS_QUERY_KEY], {
-        accounts: [account()],
-        totalCount: 1,
+        accounts: people,
+        totalCount: people.length,
     });
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
@@ -249,6 +253,24 @@ describe('the audit sign-ins screen', () => {
         const html = render('/audit?tab=failures');
 
         expect(html).toContain(`href="/people/${USERNAME}"`);
+    });
+
+    it('draws the photo of the account beside its name on every tab', () => {
+        const photo = '5b8e0a52-7c1d-4f43-9a6b-0d2f6e3a9c11';
+        const people = [account({ imageId: photo })];
+
+        for (const tab of ['sessions', 'statistics', 'failures', 'events']) {
+            expect(render(`/audit?tab=${tab}`, [loginInfo()], people)).toContain(
+                `/api/images/${photo}`,
+            );
+        }
+    });
+
+    it('draws the initials where the account has no photo', () => {
+        const html = render('/audit?tab=failures');
+
+        expect(html).not.toContain('<img');
+        expect(html).toContain('>AO<');
     });
 
     it('offers to hide the accounts that never signed in', () => {

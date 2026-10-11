@@ -55,6 +55,13 @@
   --color-roadmap-dim: #252032;
   --color-roadmap-line: #302646;
 
+  /* A workflow: a guided run of steps, not a place. Teal, which no accent,
+     semantic or roadmap role claims, so a workflow card is told from a
+     screen card and from a card that is not built yet at a glance. */
+  --color-flow: #2dd4bf;
+  --color-flow-dim: #14302d;
+  --color-flow-line: #1d4a45;
+
   --color-up: #3fb950;
   --color-down: #f85149;
   --color-warn: #d29922;

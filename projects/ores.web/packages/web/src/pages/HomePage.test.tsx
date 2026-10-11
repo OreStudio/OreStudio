@@ -265,7 +265,7 @@ describe("the system administrator's home", () => {
         expect(order.every((position) => position > 0)).toBe(true);
         expect([...order].sort((a, b) => a - b)).toEqual(order);
         expect(html).toMatch(/aria-selected="true"[^>]*>Dashboard</);
-        expect(html).not.toContain('href="/people"');
+        expect(html).not.toContain('href="/organisation/people"');
     });
 
     it('has a Tenants, a Services, a Grid and a Message queue panel on the Dashboard', () => {
@@ -451,13 +451,12 @@ describe("the system administrator's home", () => {
         expect(html).not.toContain(ALL_CLEAR);
     });
 
-    it('offers four cards on the Active modules tab and reaches the operations screens through one', () => {
+    it('offers the same cards as the area pages on the Active modules tab, and no tenant creation', () => {
         const html = home('system-administration', quiet, undefined, undefined, '/?tab=active');
 
-        for (const href of ['/tenants', '/people', '/operations', '/security']) {
+        for (const href of ['/tenants', '/refdata', '/operations', '/security']) {
             expect(html).toContain(`href="${href}"`);
         }
-        expect(html.match(/href="/g)).toHaveLength(4);
         expect(html).not.toContain('href="/operations/');
         expect(html).not.toContain('System health');
         expect(html).not.toContain('href="/tenants/new"');
@@ -676,7 +675,14 @@ describe("the tenant administrator's home", () => {
             '/?tab=active',
         );
 
-        for (const href of ['/parties', '/parties/new', '/rescue', '/audit', '/security']) {
+        for (const href of [
+            '/refdata',
+            '/organisation',
+            '/requests',
+            '/operations',
+            '/access',
+            '/security',
+        ]) {
             expect(html).toContain(`href="${href}"`);
         }
         expect(html).not.toContain('href="/tenants');
@@ -741,10 +747,10 @@ describe("a member's home", () => {
     it('offers only the screens that are theirs', () => {
         const html = home('application', undefined, undefined, seedMember);
 
-        for (const href of ['/security', '/access', '/refdata', '/operations/versions']) {
+        for (const href of ['/security', '/access', '/refdata', '/requests', '/operations']) {
             expect(html).toContain(`href="${href}"`);
         }
-        for (const href of ['/audit', '/rescue', '/roles', '/parties/new', '/organisation']) {
+        for (const href of ['/organisation', '/tenants']) {
             expect(html).not.toContain(`href="${href}"`);
         }
         expect(html).not.toContain('href="/tenants');

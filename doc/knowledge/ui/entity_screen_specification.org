@@ -34,6 +34,9 @@ The rules in short:
   the note stands on its own line below the header.
 - A combo box offers only values that exist, and a screen that shows one value at
   a time has no "all" choice.
+- The main screen of an entity contains the workflows that act on it, in a
+  Workflows menu in its header. A workflow is never a card on an area page when
+  the entity has a screen to hold it.
 - How a screen learns that something changed is not settled yet. That section is
   a placeholder until the update and refresh story is done.
 
@@ -52,6 +55,26 @@ A kind of record with one table and no aspects is still a record screen. Use the
 replaces it. Where the two disagree on the same thing, the record standard rules
 for a screen of one record kind, and this page rules for an entity.
 
+** User journeys and screens
+
+A user journey says what a person is trying to do. A screen is a part of the
+interface. The two are not the same shape, and a screen is never a journey
+copied step by step.
+
+- A journey is a design document. It names the goal, the actor, the reads and
+  writes it needs, and what is missing. It stays as it is.
+- The screens that serve a journey follow the UX standards: the list, the page
+  of one subject, the cards, the dialogs and the history. One journey is usually
+  served by several standard screens, and one screen serves several journeys.
+- A wizard is the exception. Use a guided sequence of steps only when it makes
+  the task easier or quicker for the person, for example the first run of an
+  installation or the setup of a tenant. Editing a record, or a record made of
+  several kinds of record, is not such a task. It is done on the page of the
+  subject, with an Edit button on each card.
+- A change that needs a second person is not a different screen. The person
+  saves in the usual dialog, and the save proposes the change. See
+  [[*Proposals and four-eyes][Proposals and four-eyes]].
+
 ** Words
 
 | Word | Meaning |
@@ -64,6 +87,7 @@ for a screen of one record kind, and this page rules for an entity.
 | /Self read/ | A read of the signed-in person's own record, which needs no permission |
 | /Gap/ | A part of a stream that the server cannot answer, stated on the screen |
 | /Window/ | One page of rows, asked for by offset and limit |
+| /Workflow/ | A guided sequence of steps with several writes and a step rail, such as onboarding a party. It is not a CRUD command (Add, Edit, Delete) |
 
 ** The shape of an entity screen
 
@@ -206,6 +230,30 @@ Each aspect that a person can change is one card.
 The control is not drawn. A disabled button asks a question that a missing one
 does not. The server still decides every write; the screen hides only what the
 server would refuse.
+
+** Workflows on the entity screen
+
+The main screen of an entity contains the workflows that act on it. A person who
+looks at the parties finds how to onboard one there, and does not have to know
+which area page holds the workflow.
+
+- The workflows are in one Workflows menu in the header of the list, beside
+  Refresh. An entity with a page of its own carries the workflows that act on one
+  subject in the same menu on that page.
+- Each line of the menu has the workflow's name, which is a verb and its object,
+  and one line about it. Choosing a line opens the workflow.
+- A line is drawn only for a person who may start that workflow. If there is
+  none, the menu is not drawn.
+- A workflow is not a CRUD command. Add, Edit and Delete are buttons on the list
+  or on a card. A workflow has several steps, so it has its own address and its
+  own trail: Home, the area, the workflow.
+- A workflow is listed once. It is listed on the screen of the entity it acts
+  on. It has a card on its area page, in the workflow hue and with the tag
+  Workflow, only when no screen of an entity can hold it. See
+  [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]].
+- The component is =WorkflowMenu= in =shell/WorkflowMenu.tsx=. It reads the
+  workflows from the card registry (=shell/cards.ts=), where each workflow names
+  the screen it acts on.
 
 ** People are links
 
@@ -567,6 +615,7 @@ What is not settled, and will be specified here:
 | Links for email and web | =mailto= and =webLink= in =access/PersonForms.tsx=, =Detail= in =ui/Primitives.tsx= | Exists |
 | Tenant and party in the footer | =VersionFooter= | Exists |
 | Refresh | =RefreshButton= in =ui/RefreshButton.tsx= | Exists; the stale pulse waits for the update story |
+| The workflows on an entity screen | =WorkflowMenu= in =shell/WorkflowMenu.tsx=, =workflowsOn= in =shell/cards.ts= | Exists on Parties; the other entities have no workflow yet |
 
 ** How the Staff screens conform today
 
@@ -600,7 +649,9 @@ Work in this order. Each step ends in something to check.
    of Authorised reads in the same change.
 5. Build the list from the shared parts, then the page: header, tabs in the
    address, one card per changeable aspect.
-6. Put Edit on each card, with the reason in the dialog.
+6. Put Edit on each card, with the reason in the dialog. Give the list a
+   Workflows menu if any workflow acts on the entity, and register each workflow
+   against the screen it acts on.
 7. Draw every person with =PersonRef=, every email as =mailto:=, every web
    address as a link, every flagged code with its flag.
 8. Build the timeline from the shared =Timeline=: headers, details on demand,

@@ -20,6 +20,7 @@
  */
 
 import { AccessMark } from '../ui/AccessMark.js';
+import { Phrase, PersonRef, slot } from '../access/PersonRef.js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { Navigate, useNavigate } from 'react-router';
@@ -571,9 +572,17 @@ export function LastChanged({ row }: { readonly row: RecordRow }): ReactNode {
         <p className="border-t border-line px-4 py-3 text-xs text-ink-muted">
             <span className="text-ink-faint">{t('refdata.records.lastChanged')}</span>{' '}
             {t('refdata.records.versionLabel', { version: String(row.version) })} ·{' '}
-            {modified === performed || performed === ''
-                ? modified
-                : t('refdata.records.modifiedFor', { modified, performed })}{' '}
+            {modified === performed || performed === '' ? (
+                <PersonRef who={modified} />
+            ) : (
+                <Phrase
+                    text={t('refdata.records.modifiedFor', {
+                        modified: slot(0),
+                        performed: slot(1),
+                    })}
+                    names={[<PersonRef who={modified} />, <PersonRef who={performed} />]}
+                />
+            )}{' '}
             · <RelativeTime at={show(row['recorded_at'])} /> ·{' '}
             <span className="font-mono">{show(row['change_reason_code'])}</span>
             {commentary !== '' && <> · “{commentary}”</>}

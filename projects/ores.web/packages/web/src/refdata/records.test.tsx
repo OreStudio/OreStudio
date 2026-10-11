@@ -20,6 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { textOf } from '../textOf.js';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
@@ -259,6 +260,17 @@ describe('the currency screens', () => {
         expect(html).toContain('Remove');
     });
 
+    it('is reached from Home through Reference data', () => {
+        for (const path of ['/refdata/currencies', '/refdata/currencies/EUR']) {
+            const html = render(path, (client) => {
+                client.setQueryData(['records', 'currencies', 'key', 'EUR'], euro);
+            });
+
+            expect(html.indexOf('href="/"'), path).toBeGreaterThanOrEqual(0);
+            expect(html.indexOf('href="/refdata"'), path).toBeGreaterThan(html.indexOf('href="/"'));
+        }
+    });
+
     it('ends the details with who last changed the record', () => {
         const html = render('/refdata/currencies/EUR', (client) => {
             client.setQueryData(['records', 'currencies', 'key', 'EUR'], {
@@ -271,7 +283,7 @@ describe('the currency screens', () => {
             });
         });
         expect(html).toContain('Last changed:');
-        expect(html).toContain('svc for priya');
+        expect(textOf(html)).toContain('svc for priya');
         expect(html).toContain('common.rectification');
         expect(html).toContain('Fixed the symbol');
     });

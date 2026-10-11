@@ -39,7 +39,7 @@ import type { ServiceRosterRow } from '@ores/wire-protocol/browser';
 import { api, type LogsRange } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
-import { Button, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import {
     GapPanel,
     InstanceStateTag,
@@ -59,6 +59,7 @@ import {
 } from './InstallationHealth.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { RefreshButton } from '../ui/RefreshButton.js';
 
 /** The ranges the error and warning counts can be read over, as the logs screen offers them. */
 const HEALTH_RANGES: readonly LogsRange[] = ['15m', '1h', '6h', '24h'];
@@ -223,9 +224,10 @@ export function ServicesPage(): ReactNode {
                                     at: readTime(roster.dataUpdatedAt),
                                 })}
                             </span>
-                            <Button variant="secondary" onClick={() => void roster.refetch()}>
-                                {t('operations.services.refresh')}
-                            </Button>
+                            <RefreshButton
+                                onClick={() => void roster.refetch()}
+                                pending={roster.isFetching}
+                            />
                             <OperationsBack />
                         </div>
                     }

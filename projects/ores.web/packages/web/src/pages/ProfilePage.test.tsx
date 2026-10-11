@@ -234,7 +234,7 @@ describe('ProfilePage', () => {
 
         expect(html).toContain('system.external_data_import');
         expect(html).toContain('Published from organisation dataset');
-        expect(html).toContain('href="/people/grace"');
+        expect(html).toContain('href="/organisation/people/grace"');
         expect(html).toContain('<details');
     });
 
@@ -303,7 +303,7 @@ describe('ProfilePage', () => {
          * it names — their picture and their name, opening their page — because
          * an identifier tells a reader nothing.
          */
-        expect(html).toContain('href="/people/grace"');
+        expect(html).toContain('href="/organisation/people/grace"');
         expect(html).toContain('>GH<');
         expect(html).toContain('>Grace Hopper<');
     });
@@ -334,7 +334,7 @@ describe('ProfilePage', () => {
 
         expect(html).toContain('>Grace Hopper<');
         expect(html).toContain('>Chief of Staff<');
-        expect(html).not.toContain('href="/people/grace"');
+        expect(html).not.toContain('href="/organisation/people/grace"');
         expect(html).not.toContain(`Reports to ${MANAGER_ID}`);
     });
 

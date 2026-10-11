@@ -19,6 +19,7 @@
  *
  */
 
+import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button } from './Primitives.js';
@@ -50,5 +51,28 @@ export function RefreshButton({
         >
             {t('common.refresh')}
         </Button>
+    );
+}
+
+/**
+ * Refresh for a screen whose rows come from queries: it reads again every query
+ * that starts with one of the given keys, and shows that it is reading.
+ */
+export function RefreshQueries({
+    keys,
+}: {
+    readonly keys: readonly (readonly unknown[])[];
+}): ReactNode {
+    const client = useQueryClient();
+    const reading = keys.some((queryKey) => client.isFetching({ queryKey }) > 0);
+    return (
+        <RefreshButton
+            pending={reading}
+            onClick={() => {
+                for (const queryKey of keys) {
+                    void client.invalidateQueries({ queryKey });
+                }
+            }}
+        />
     );
 }

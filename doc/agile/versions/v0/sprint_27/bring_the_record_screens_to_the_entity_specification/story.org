@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 21546E45-9DD3-4406-B5EB-86C87C88524D
+:END:
+#+title: Story: Bring the existing screens to the entity screen specification
+#+description: Check the currency screens and every other existing screen against the entity screen specification and the record screen standard, and fix each difference in one PR.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every existing screen follows the entity screen specification: paging on the server, people as links, history as a timeline, edit in a dialog, flags, states and words.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- Each existing screen is checked against the specification, and each difference is fixed or recorded as a follow-up.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:270AE199-79D2-40C5-9786-6B0F618049E8][Scaffold story: Bring the existing screens to the entity screen specification]] | STARTED | 2026-10-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:37289A3C-DEA7-4D6D-8E53-697241E3D201][Check the existing screens against the specification and fix them]] | STARTED | 2026-10-10 | | Initial task for: Bring the existing screens to the entity screen specification |
+
+* Decisions
+
+* Out of scope
+
+-

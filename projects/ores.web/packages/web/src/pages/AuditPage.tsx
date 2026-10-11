@@ -32,6 +32,7 @@ import { api, type AuditPeriod } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { RefreshButton } from '../ui/RefreshButton.js';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { isZeroTimestamp } from '../ui/Time.js';
@@ -818,9 +819,7 @@ export function AuditPage(): ReactNode {
                                 {t('auditSignIns.readAt', { at: readAt })}
                             </span>
                         )}
-                        <Button variant="secondary" onClick={refresh}>
-                            {t('auditSignIns.refresh')}
-                        </Button>
+                        <RefreshButton onClick={refresh} />
                     </div>
                 }
             />

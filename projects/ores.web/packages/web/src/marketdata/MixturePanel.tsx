@@ -215,10 +215,11 @@ function MixtureEditor({
                                         <td className="px-3 py-1.5 font-mono text-xs text-ink-muted">
                                             {index}
                                         </td>
-                                        <td className="w-full px-3 py-1.5">
+                                        <td className="px-3 py-1.5">
                                             <Input
                                                 aria-label={t('refdata.fields.description')}
-                                                className="min-w-64"
+                                                className="w-64 truncate"
+                                                title={component.description}
                                                 value={component.description}
                                                 readOnly={!may.write}
                                                 maxLength={2000}

@@ -3284,6 +3284,8 @@ const fr: SourceCatalogue = {
             export: 'Exporter en CSV',
             process: 'Processus',
             rate: '{rate} cotations par heure',
+            unnamed: 'Composante sans nom',
+            weightSum: 'Somme des poids, telle que saisie',
         },
         process: {
             about: {

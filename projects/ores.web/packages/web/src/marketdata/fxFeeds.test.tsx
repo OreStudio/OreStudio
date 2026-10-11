@@ -301,7 +301,15 @@ describe('the FX feed screens', () => {
         const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=ticks`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['synthetic-running'], ['synthetic.eurusd']);
-            client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
+            client.setQueryData(
+                ['records', 'gmm-components', FEED_ID],
+                [
+                    {
+                        ...component(0, 1),
+                        description: 'Primary: calibrated to ~8.5% annualised realised vol.',
+                    },
+                ],
+            );
             client.setQueryData(['feed-ticks', FEED_ID, 200], {
                 sourceName: 'synthetic.eurusd',
                 ticks: [
@@ -323,6 +331,11 @@ describe('the FX feed screens', () => {
         expect(html).toContain('Moving average (EMA 20)');
         expect(html).toContain('Export CSV');
         expect(html).toContain('3600 ticks per hour');
+        expect(html).toContain('Primary</span>');
+        expect(html).toContain(
+            'text-xs text-ink-faint">calibrated to ~8.5% annualised realised vol.</p>',
+        );
+        expect(html).toContain('Weight sum, as typed');
         expect(html).toContain('μ 0');
         expect(html).toContain('σ 0.01');
     });

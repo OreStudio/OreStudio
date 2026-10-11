@@ -207,3 +207,15 @@ export function savePlan(
         .map((component) => ({ key: component.id, version: component.version }));
     return { changes, removals };
 }
+
+/**
+ * A component's description as a name and a note: the text before the first
+ * colon names it, and what follows says how it was set, such as "calibrated to
+ * ~8.5% annualised realised vol.". A description with no colon is all name.
+ */
+export function describedAs(description: string): { readonly name: string; readonly note: string } {
+    const at = description.indexOf(':');
+    return at < 0
+        ? { name: description.trim(), note: '' }
+        : { name: description.slice(0, at).trim(), note: description.slice(at + 1).trim() };
+}

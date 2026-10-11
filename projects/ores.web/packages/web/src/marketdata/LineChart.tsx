@@ -26,7 +26,7 @@ const HEIGHT = 240;
 const TOP = 8;
 const BOTTOM = 24;
 /** The margin on the side that carries the value labels, and on the other side. */
-const AXIS_MARGIN = 64;
+const AXIS_MARGIN = 48;
 const BARE_MARGIN = 8;
 /** How many value levels a gridded chart draws and labels, the low and high ends included. */
 const GRID_LEVELS = 5;
@@ -146,26 +146,26 @@ export function LineChart({
                 stroke="var(--color-line)"
                 vectorEffect="non-scaling-stroke"
             />
-            <g fill="var(--color-ink-faint)" fontSize="11" fontFamily="monospace">
+            <g fill="var(--color-ink-faint)" fontSize="8" fontFamily="monospace">
                 {levels.map((level) => (
                     <text
                         key={level}
-                        x={price ? axisX + 6 : axisX - 6}
-                        y={Math.min(Math.max(yOf(level) + 4, TOP + 10), HEIGHT - BOTTOM)}
+                        x={price ? axisX + 4 : axisX - 4}
+                        y={Math.min(Math.max(yOf(level) + 3, TOP + 8), HEIGHT - BOTTOM)}
                         textAnchor={price ? 'start' : 'end'}
                     >
                         {format(level)}
                     </text>
                 ))}
-                <text x={left} y={HEIGHT - 6}>
+                <text x={left} y={HEIGHT - 10}>
                     {showX(xLow)}
                 </text>
                 {price && (
-                    <text x={(left + WIDTH - right) / 2} y={HEIGHT - 6} textAnchor="middle">
+                    <text x={(left + WIDTH - right) / 2} y={HEIGHT - 10} textAnchor="middle">
                         {showX((xLow + xHigh) / 2)}
                     </text>
                 )}
-                <text x={WIDTH - right} y={HEIGHT - 6} textAnchor="end">
+                <text x={WIDTH - right} y={HEIGHT - 10} textAnchor="end">
                     {showX(xHigh)}
                 </text>
             </g>

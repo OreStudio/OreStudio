@@ -24,8 +24,9 @@ import { useState, type ReactNode } from 'react';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { show } from '../refdata/records.js';
-import { Button, Notice, Select } from '../ui/Primitives.js';
+import { Button, Notice, Select, Tag } from '../ui/Primitives.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
+import { describedAs } from './mixture.js';
 import { processTypeOf } from './processHelp.js';
 import { EMA_PERIOD, emaOf, instantOf, statsOf, ticksCsv, type Tick } from './ticks.js';
 
@@ -214,40 +215,65 @@ function MixtureSummary({
     const components = [...mixture].sort(
         (a, b) => Number(a['component_index']) - Number(b['component_index']),
     );
+    const sum = components.reduce((total, row) => total + Number(row['weight']), 0);
     return (
-        <aside className="space-y-3 rounded-md border border-line p-3 text-sm">
-            <h3 className="font-medium">{t('marketdata.ticks.process')}</h3>
-            <p className="text-ink-muted">
-                {t(`refdata.choices.process_type.${processType}`)} ·{' '}
+        <aside className="space-y-3 rounded-md border border-line p-3">
+            <div className="flex items-center justify-between gap-2 border-b border-line pb-2">
+                <h3 className="text-xs font-semibold tracking-wide uppercase">
+                    {t('marketdata.ticks.process')}
+                </h3>
+                <Tag tone="accent" small>
+                    {t(`refdata.choices.process_type.${processType}`)}
+                </Tag>
+            </div>
+            <p className="text-xs text-ink-muted">
                 {t('marketdata.ticks.rate', { rate: show(feed['ticks_per_hour']) })}
             </p>
             {components.length === 0 ? (
-                <p className="text-ink-muted">{t('marketdata.mixture.none')}</p>
+                <p className="text-sm text-ink-muted">{t('marketdata.mixture.none')}</p>
             ) : (
                 <ul className="space-y-2">
-                    {components.map((row, index) => (
-                        <li
-                            key={show(row['id'])}
-                            className="rounded border border-line-subtle p-2 font-mono text-xs"
-                        >
-                            <div className="flex justify-between gap-2 font-sans text-sm">
-                                <span>
-                                    #{index}
-                                    {show(row['description']) === ''
-                                        ? ''
-                                        : ` ${show(row['description'])}`}
-                                </span>
-                                <span>
-                                    {ou ? 'κ' : 'w'} {show(row['weight'])}
-                                </span>
-                            </div>
-                            <div className="mt-1 flex justify-between gap-2 text-ink-muted">
-                                <span>μ {show(row['mean'])}</span>
-                                <span>σ {show(row['stdev'])}</span>
-                            </div>
-                        </li>
-                    ))}
+                    {components.map((row, index) => {
+                        const { name, note } = describedAs(show(row['description']));
+                        return (
+                            <li
+                                key={show(row['id'])}
+                                className="space-y-1 rounded-md border border-line-subtle bg-surface-base p-2"
+                            >
+                                <div className="flex items-start justify-between gap-2">
+                                    <span className="text-sm font-medium text-ink">
+                                        <span className="font-mono text-ink-faint">#{index}</span>{' '}
+                                        {name === '' ? t('marketdata.ticks.unnamed') : name}
+                                    </span>
+                                    <span
+                                        className="font-mono text-sm font-semibold"
+                                        style={{
+                                            color: SERIES_COLOURS[
+                                                (index + 1) % SERIES_COLOURS.length
+                                            ],
+                                        }}
+                                        title={t(
+                                            `marketdata.process.columns.${processType}.weight`,
+                                        )}
+                                    >
+                                        {ou ? 'κ' : 'w'} {show(row['weight'])}
+                                    </span>
+                                </div>
+                                {note !== '' && <p className="text-xs text-ink-faint">{note}</p>}
+                                <div className="flex justify-between gap-2 font-mono text-xs text-ink-muted">
+                                    <span>μ {show(row['mean'])}</span>
+                                    <span>σ {show(row['stdev'])}</span>
+                                </div>
+                            </li>
+                        );
+                    })}
                 </ul>
+            )}
+            {!ou && components.length > 0 && (
+                <div className="flex justify-between rounded-md border border-line-subtle px-2 py-1.5 font-mono text-xs">
+                    <span className="text-ink-muted">{t('marketdata.ticks.weightSum')}</span>
+                    <span>{sum.toFixed(4)}</span>
+                </div>
             )}
         </aside>
     );

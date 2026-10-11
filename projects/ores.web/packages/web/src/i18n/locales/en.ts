@@ -3236,6 +3236,8 @@ export const en: SourceCatalogue = {
             export: 'Export CSV',
             process: 'Process',
             rate: '{rate} ticks per hour',
+            unnamed: 'Unnamed component',
+            weightSum: 'Weight sum, as typed',
         },
         process: {
             about: {

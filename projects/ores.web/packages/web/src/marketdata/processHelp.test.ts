@@ -22,6 +22,7 @@
 import { describe, expect, it } from 'vitest';
 import { runFeeds } from './feedRuns.js';
 import { bandWidth, halfLifeMinutes, PROFILES, processTypeOf, profileOf } from './processHelp.js';
+import { describedAs } from './mixture.js';
 import { emaOf, instantOf, statsOf, ticksCsv } from './ticks.js';
 
 describe('the quant help', () => {
@@ -42,6 +43,18 @@ describe('the quant help', () => {
         expect(profileOf('0')).toBe('flat');
         expect(profileOf('0.0123')).toBe('custom');
         expect(profileOf('')).toBe('custom');
+    });
+
+    it('reads a description as the name before its first colon and the note after it', () => {
+        expect(
+            describedAs(
+                '2026 Realistic primary component: calibrated to ~8.5% annualised realised vol.',
+            ),
+        ).toEqual({
+            name: '2026 Realistic primary component',
+            note: 'calibrated to ~8.5% annualised realised vol.',
+        });
+        expect(describedAs('calm')).toEqual({ name: 'calm', note: '' });
     });
 
     it('reads an unknown engine as geometric, the default', () => {

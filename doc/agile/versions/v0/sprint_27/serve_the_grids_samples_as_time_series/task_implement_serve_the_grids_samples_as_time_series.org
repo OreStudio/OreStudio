@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 109AD3A6-9F4B-40DA-9965-F7791460B746
+:END:
+#+title: Task: Read the grid samples over a range
+#+description: Initial task for: Serve the grid's samples as time series
+#+type: task
+#+level: s1
+#+filetags: :serve_the_grids_samples_as_time_series:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A system administrator picks last hour, day or week and reads how the grid's load, fleet, throughput and outcomes moved, and which node was busy or quiet when. Both stored sample tables already hold the data. No subject reads a range of either, so the story adds the reads, serves them through the BFF, and draws the panels the Watch the grid journey names. A week of node samples is about half a million rows for 26 nodes, so the reads bucket the rows on the server. The second half reads ORE's runtimes.csv and its memory lines in the wrapper, so each node sample can also state how long the engine ran and how much memory it peaked at.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Serve the grid's samples as time series]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- A grid sample range read returns the samples between two times, bucketed to a width the caller asks for, so a week comes back as hundreds of points and not tens of thousands.
+- A node sample range read returns one series per node over the same range and buckets, with the tasks done, failed, mean and longest duration and bytes moved.
+- Both reads serve the whole installation, are gated by a permission, and say an empty range is empty and not a flat line at zero.
+- The BFF serves both reads with the range presets of the other operations screens, and the grid screen draws load, fleet, throughput and outcomes on one shared time axis.
+- The grid screen draws the node load heatmap and the node state ribbon from the node series, grouped by machine.
+- A node sample carries the engine run time and the peak memory of its jobs, read from runtimes.csv and the memory lines, and the screen can chart them.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

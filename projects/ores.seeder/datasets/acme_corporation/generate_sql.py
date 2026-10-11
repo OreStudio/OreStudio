@@ -577,6 +577,18 @@ end $$;
     write(f"{company}_portfolios_artefact_populate.sql", content)
 
 
+def book_purpose_type(book):
+    """A book whose name says Sweep is the sweep target. Every other book trades."""
+    return book.get("book_purpose_type") or (
+        "SweepTarget" if "Sweep" in book["name"] else "Trading")
+
+
+def ledger_feed_type(book):
+    """A book that carries a GL account is fed automatically. One that does not is not fed."""
+    return book.get("ledger_feed_type") or (
+        "Automatic" if book.get("gl_account_ref") else "None")
+
+
 def generate_books_populate(company, books, portfolios):
     portfolio_id_by_code = {p["portfolio_code"]: p["id"] for p in portfolios}
     ccy = COMPANY_CCY[company]
@@ -599,7 +611,9 @@ def generate_books_populate(company, books, portfolios):
             f"{sql_str(b.get('book_status', 'Active'))}, "
             f"{sql_str(b.get('regulatory_book_type'))}, "
             f"{sql_bool(b.get('is_sweepable', False))}, "
-            f"{sql_str(b.get('rates_centre_code'))})"
+            f"{sql_str(b.get('rates_centre_code'))}, "
+            f"{sql_str(book_purpose_type(b))}, "
+            f"{sql_str(ledger_feed_type(b))})"
         )
     values = ",\n".join(rows)
     code = f"acme.{company}.books"
@@ -631,7 +645,8 @@ begin
     insert into ores_dq_books_artefact_tbl (
         dataset_id, tenant_id, id, version, name,
         parent_portfolio_id, functional_currency, gl_account_ref, cost_center,
-        book_status, regulatory_book_type, is_sweepable, rates_centre_code
+        book_status, regulatory_book_type, is_sweepable, rates_centre_code,
+        book_purpose_type, ledger_feed_type
     )
     values
 {values};
@@ -778,11 +793,11 @@ def generate_staff_photos_populate(accounts):
     if not exists (
         select 1 from ores_assets_images_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and key = {sql_str(photo_key)}
+          and code = {sql_str(photo_key)}
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_assets_images_tbl (
-            image_id, tenant_id, version, key, description, mime_type, data,
+            id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             {sql_str(image_id)}, ores_utility_system_tenant_id_fn(), 0,

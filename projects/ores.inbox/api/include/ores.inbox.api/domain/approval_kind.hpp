@@ -98,6 +98,24 @@ struct approval_kind final {
     std::optional<int> expires_after_days;
 
     /**
+     * @brief The type of the workflow that applies a request of this kind once every part has
+     * approved it, or null when the owning component applies the request itself.
+     *
+     * The workflow is started with the request's id as its request, which is {"request_id":
+     * "<id>"}. Each definition reads that shape, so the inbox starts any kind's workflow without
+     * knowing what the kind changes.
+     */
+    std::optional<std::string> apply_workflow_type;
+
+    /**
+     * @brief The number of hours after approval during which a stopped apply is retried, or null
+     * when the kind names no apply workflow. When the window ends, the request moves to
+     * apply_failed with the reason "could not apply" and the person who asked is told, so a request
+     * never retries forever.
+     */
+    std::optional<int> apply_window_hours;
+
+    /**
      * @brief How many approvals, each by a different person, close a request as approved.
      */
     int approvals_required = 0;

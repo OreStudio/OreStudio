@@ -40,6 +40,8 @@ export interface ApprovalKind {
     allows_hold: boolean;
     comment_on_approve: boolean;
     expires_after_days: number | null;
+    apply_workflow_type: string | null;
+    apply_window_hours: number | null;
     approvals_required: number;
     display_order: number;
     modified_by: string;

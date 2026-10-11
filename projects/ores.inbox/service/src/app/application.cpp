@@ -25,6 +25,7 @@
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.core/messaging/registrar.hpp"
 #include "ores.inbox.service/app/application_exception.hpp"
+#include "ores.inbox.service/app/nats_apply_engine.hpp"
 #include "ores.inbox.service/app/approval_sweep_schedule.hpp"
 #include "ores.inbox.service/app/approval_windows.hpp"
 #include "ores.inbox.service/messaging/approval_decision_event_registrar.hpp"
@@ -145,6 +146,21 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     approval_sweep_schedule reminder(svc_nats, reminder_sweep);
     co_await reminder.register_job();
 
+    // An approved request whose apply stopped stays approved until something
+    // resumes it, so a third sweep finds those requests and asks the engine to
+    // resume each, until its kind's window ends.
+    const sweep apply_retry_sweep{
+        .setting_name = "inbox.apply_retry.schedule",
+        .job_name = "ores.inbox.apply_retry",
+        .subject =
+            std::string(ores::inbox::messaging::retry_stalled_applies_request::nats_subject),
+        .description = "Resume the approved requests whose apply stopped, and end the ones whose "
+                       "window ran out"};
+    approval_sweep_schedule apply_retry(svc_nats, apply_retry_sweep);
+    co_await apply_retry.register_job();
+
+    auto engine = std::make_shared<nats_apply_engine>(nats, svc_nats);
+
     // Both windows are the installation's to set, so they are read once from the
     // settings and a service that cannot read one still serves: a window of zero
     // answers no tail and warns nobody.
@@ -156,9 +172,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         make_context(cfg.database),
         "ores.inbox.service",
-        [answered_window, reminder_window](auto& n, auto c, auto v) {
+        [answered_window, reminder_window, engine](auto& n, auto c, auto v) {
             return ores::inbox::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v), answered_window, reminder_window);
+                n, std::move(c), std::move(v), answered_window, reminder_window, engine);
         },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

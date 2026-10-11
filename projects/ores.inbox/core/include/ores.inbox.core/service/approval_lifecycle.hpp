@@ -67,6 +67,22 @@ struct expired_request {
 };
 
 /**
+ * @brief An approved request whose apply has not finished.
+ *
+ * The kind names the workflow that applies it. over_window says the kind's
+ * window for retrying has ended, so the request is not retried again.
+ */
+struct stalled_apply {
+    std::string request_id;
+    std::string tenant_id;
+    std::string kind_code;
+    std::string requested_by;
+    std::string apply_workflow_type;
+    std::string approved_at;
+    bool over_window = false;
+};
+
+/**
  * @brief A request whose deadline is close, and the people who may answer it.
  */
 struct expiring_request {
@@ -220,6 +236,16 @@ public:
      * once, and the notice already raised is what says so.
      */
     std::vector<expiring_request> remind_expiring(std::chrono::seconds window);
+
+    /**
+     * @brief The approved requests whose apply has not finished, across every
+     * tenant, oldest first.
+     *
+     * The read is the scheduled retry's, so it acts as the service and touches
+     * no row. A request is over its window when the window ended before
+     * @p as_of.
+     */
+    std::vector<stalled_apply> stalled_applies(std::chrono::system_clock::time_point as_of);
 
 private:
     /**

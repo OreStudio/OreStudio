@@ -426,6 +426,40 @@ std::vector<expired_request> approval_lifecycle::expire_overdue() {
     return expired;
 }
 
+std::vector<stalled_apply>
+approval_lifecycle::stalled_applies(std::chrono::system_clock::time_point as_of) {
+    // Seconds as a double hold a moment to well under a millisecond, which is
+    // far finer than a window counted in hours.
+    const auto epoch_seconds =
+        std::chrono::duration<double>(as_of.time_since_epoch()).count();
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "select request_id::text, tenant_id::text, kind_code, requested_by::text,"
+        " apply_workflow_type, approved_at::text, over_window::text"
+        " from ores_inbox_stalled_applies_fn(to_timestamp($1::double precision))",
+        {std::to_string(epoch_seconds)},
+        lg(),
+        "Reading the approved requests whose apply has not finished");
+
+    std::vector<stalled_apply> stalled;
+    stalled.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() != 7) {
+            BOOST_LOG_SEV(lg(), warn) << "A stalled apply came back with " << row.size()
+                                      << " columns instead of 7, so it was skipped.";
+            continue;
+        }
+        stalled.push_back(stalled_apply{.request_id = row[0].value_or(""),
+                                        .tenant_id = row[1].value_or(""),
+                                        .kind_code = row[2].value_or(""),
+                                        .requested_by = row[3].value_or(""),
+                                        .apply_workflow_type = row[4].value_or(""),
+                                        .approved_at = row[5].value_or(""),
+                                        .over_window = row[6].value_or("") == "true"});
+    }
+    return stalled;
+}
+
 std::vector<expiring_request> approval_lifecycle::remind_expiring(std::chrono::seconds window) {
     if (window <= std::chrono::seconds::zero())
         return {};

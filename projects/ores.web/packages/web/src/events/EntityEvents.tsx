@@ -22,6 +22,7 @@
 import { createContext, use, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { api } from '../api/client.js';
 import { EntityEventStream, type ChangeListener } from './EntityEventStream.js';
+import { mayConcern, type RecordKey } from './recordKey.js';
 
 const EntityEventsContext = createContext<EntityEventStream | undefined>(undefined);
 
@@ -47,6 +48,13 @@ export function EntityEventsProvider({ children }: { readonly children: ReactNod
 export interface WatchedEntity {
     readonly component: string;
     readonly entity: string;
+    /**
+     * The one record a screen shows, by the entity's declared key such as
+     * `{ username }`. A screen that names it hears of a change only when the
+     * change may concern that record. A screen that shows many records, or does
+     * not know the key's columns, leaves it out and hears every change.
+     */
+    readonly record?: RecordKey;
 }
 
 /**
@@ -65,15 +73,18 @@ export function useEntityChangeEvents(
     latest.current = onChange;
     // The list is a new array on every render, so what is watched is what its
     // names say, and the subscription is renewed only when they change.
-    const names = watches.map((watch) => `${watch.component}\u0000${watch.entity}`).join('\u0001');
+    const names = JSON.stringify(
+        watches.map((watch) => [watch.component, watch.entity, watch.record ?? null]),
+    );
     useEffect(() => {
-        if (stream === undefined || names === '') return undefined;
-        const stops = names.split('\u0001').map((name) => {
-            const [component = '', entity = ''] = name.split('\u0000');
-            return stream.watch(component, entity, (change) => {
+        if (stream === undefined) return undefined;
+        const parsed = JSON.parse(names) as [string, string, RecordKey | null][];
+        const stops = parsed.map(([component, entity, record]) =>
+            stream.watch(component, entity, (change) => {
+                if (record !== null && !mayConcern(change.keys, record)) return;
                 latest.current(change);
-            });
-        });
+            }),
+        );
         return () => {
             for (const stop of stops) stop();
         };

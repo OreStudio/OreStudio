@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T09:42:55.095349Z
+' Generated: 2026-10-11T10:09:54.355611Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 83
+Tables: 87
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -678,17 +678,17 @@ package "dq_staging" #F3E5F5 {
           bilateral : text
           csa_currency : text
           index_name : text
-          threshold_pay : double
-          threshold_receive : double
-          minimum_transfer_amount_pay : double
-          minimum_transfer_amount_receive : double
-          independent_amount_held : double
+          threshold_pay : numeric(38, 12)
+          threshold_receive : numeric(38, 12)
+          minimum_transfer_amount_pay : numeric(38, 12)
+          minimum_transfer_amount_receive : numeric(38, 12)
+          independent_amount_held : numeric(38, 12)
           independent_amount_type : text
           call_frequency : text
           post_frequency : text
           margin_period_of_risk : text
-          collateral_compounding_spread_receive : double
-          collateral_compounding_spread_pay : double
+          collateral_compounding_spread_receive : numeric(38, 12)
+          collateral_compounding_spread_pay : numeric(38, 12)
           apply_initial_margin : boolean
           initial_margin_type : text
           calculate_im_amount : boolean
@@ -1217,6 +1217,64 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_overnight_index_conventions_artefact_tbl
     Defines the fixing calendar, day count, and settlement lag for a risk-free overnight rate index. Corresponds to the <OvernightIndex> element in ORE conventions.xml. - Artefact Table
+    end note
+
+    entity ores_dq_party_contact_informations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * contact_type : text
+        * version : integer
+          street_line_1 : text
+          street_line_2 : text
+          city : text
+          state : text
+          country_code : text <<FK>>
+          postal_code : text
+          phone : text
+          email : text
+          web_page : text
+        * is_primary : boolean
+    }
+
+    note right of ores_dq_party_contact_informations_artefact_tbl
+    Contact details for parties organised by purpose (Legal, Operations, Settlement, Billing). Each party can have one contact record per type. - Artefact Table
+    end note
+
+    entity ores_dq_party_counterparties_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * counterparty_lei : text
+        * version : integer
+    }
+
+    note right of ores_dq_party_counterparties_artefact_tbl
+    Party Counterparty - Artefact Table
+    end note
+
+    entity ores_dq_party_countries_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * country_alpha2_code : text
+        * version : integer
+    }
+
+    note right of ores_dq_party_countries_artefact_tbl
+    Party Country - Artefact Table
+    end note
+
+    entity ores_dq_party_currencies_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * currency_iso_code : text
+        * version : integer
+    }
+
+    note right of ores_dq_party_currencies_artefact_tbl
+    Party Currency - Artefact Table
     end note
 
     entity ores_dq_party_relationships_artefact_tbl  #F7E5FF {

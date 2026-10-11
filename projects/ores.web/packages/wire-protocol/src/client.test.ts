@@ -1082,8 +1082,38 @@ describe('listening to published events', () => {
         deliver?.(payload, { tenantId: undefined, partyId: undefined });
 
         expect(heard).toEqual([
-            { at: '2026-10-10T12:00:03Z', tenantId: 't1', partyId: 'p1' },
-            { at: '2026-10-10T12:00:03Z', tenantId: undefined, partyId: undefined },
+            { at: '2026-10-10T12:00:03Z', tenantId: 't1', partyId: 'p1', key: {} },
+            { at: '2026-10-10T12:00:03Z', tenantId: undefined, partyId: undefined, key: {} },
         ]);
+    });
+
+    it('hands over the key of the record an event is about, as text', () => {
+        let deliver: ((payload: Uint8Array, envelope: MessageEnvelope) => void) | undefined;
+        const transport = {
+            async request(): Promise<Reply> {
+                throw new Error('not used');
+            },
+            async close(): Promise<void> {
+                return undefined;
+            },
+            subscribe(
+                _relative: string,
+                onMessage: (payload: Uint8Array, envelope: MessageEnvelope) => void,
+            ) {
+                deliver = onMessage;
+                return () => undefined;
+            },
+        } as unknown as Transport;
+        const heard: unknown[] = [];
+        new OresClient({ transport }).subscribeToEvents('iam.v1.accounts_events.>', (change) =>
+            heard.push(change.key),
+        );
+        const encode = (key: unknown): Uint8Array =>
+            new WireCodec('msgpack').encode({ occurred_at: '2026-10-10T12:00:03Z', key });
+        const envelope = { tenantId: 't1', partyId: undefined };
+        deliver?.(encode({ username: 'diane.kay', version: 4, nested: { a: 1 } }), envelope);
+        deliver?.(encode(undefined), envelope);
+
+        expect(heard).toEqual([{ username: 'diane.kay', version: '4' }, {}]);
     });
 });

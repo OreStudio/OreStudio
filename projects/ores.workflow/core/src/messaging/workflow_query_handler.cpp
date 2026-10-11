@@ -240,8 +240,13 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
     }
     const auto* instance = &instances.front();
 
-    // Tenant isolation guard: verify the instance belongs to the caller.
-    if (instance->tenant_id != req_ctx.tenant_id()) {
+    // Tenant isolation guard: verify the instance belongs to the caller. A
+    // caller in the system tenant is a service that sweeps every tenant, such as
+    // the scheduled retry of a stopped apply, and reads the run's status. The
+    // steps below are read through the caller's own context, so such a caller
+    // sees the status and no steps of another tenant.
+    if (instance->tenant_id != req_ctx.tenant_id() &&
+        req_ctx.tenant_id() != ores::utility::uuid::tenant_id::system()) {
         reply(nats_,
               msg,
               get_workflow_steps_response{.success = false,

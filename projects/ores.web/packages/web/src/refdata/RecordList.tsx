@@ -34,8 +34,10 @@ import { useTranslation } from '../i18n/Provider.js';
 import { FlagOf, type FlagSource } from '../images/flags.js';
 import { type WatchedEntity } from '../events/EntityEvents.js';
 import { useChangedRows } from './changedRows.js';
+import { NOTHING_HEARD, whereChanged, type Heard, type RecordKey } from '../events/recordKey.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
+import { ChangedElsewhere } from '../ui/ChangedElsewhere.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Icon } from '../ui/Icon.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
@@ -81,6 +83,11 @@ export interface ListSource<Row> {
     readonly mayAdd: boolean;
     /** The entities the rows come from, so the list can say when they changed on the server. */
     readonly watches?: readonly WatchedEntity[];
+    /**
+     * The key of the record a row shows, as the events name it. A source without
+     * one cannot point at a changed row, so it only says that something changed.
+     */
+    readonly recordKey?: (row: Row) => RecordKey;
     /** Reads a row's audit field by its server name; a source without one shows no audit columns. */
     readonly audit?: (row: Row, field: string) => unknown;
 }
@@ -359,6 +366,7 @@ export function RecordList<Row>({
                 {...(keyOf === undefined ? {} : { keyOf })}
                 {...(notes === undefined ? {} : { notes })}
                 {...(add === undefined ? {} : { add })}
+                heard={news.heard}
             />
         </div>
     );
@@ -378,6 +386,7 @@ export function RecordTable<Row>({
     keyOf,
     notes = [],
     add,
+    heard = NOTHING_HEARD,
 }: {
     readonly source: ListSource<Row>;
     /** The records' plural, as the empty states name them. */
@@ -387,6 +396,8 @@ export function RecordTable<Row>({
     readonly keyOf?: (row: Row) => string;
     readonly notes?: readonly ListNote[];
     readonly add?: { readonly label: string; readonly onAdd: () => void };
+    /** What the screen has heard change since it loaded; the table marks the rows and says what it cannot point at. */
+    readonly heard?: Heard;
 }): ReactNode {
     const { t, language } = useTranslation();
     const navigate = useNavigate();
@@ -458,10 +469,12 @@ export function RecordTable<Row>({
         state.clear();
     };
     const data = rows.data;
+    const news = whereChanged(heard, data?.rows ?? [], source.recordKey);
     const bounds = pageBounds(state.offset, data?.rows.length ?? 0);
 
     return (
         <section className="overflow-hidden rounded-md border border-line">
+            {news.elsewhere && <ChangedElsewhere />}
             <div className="flex flex-wrap items-center gap-3 border-b border-line p-3">
                 {source.search && (
                     <label className="relative min-w-60 flex-1">
@@ -617,11 +630,11 @@ export function RecordTable<Row>({
                                 key={rowKey(row, index)}
                                 {...(open === undefined
                                     ? {
-                                          className: `border-b border-line-subtle last:border-b-0${changed.has(rowKey(row, index)) ? ' row-changed' : ''}`,
+                                          className: `border-b border-line-subtle last:border-b-0${changed.has(rowKey(row, index)) ? ' row-changed' : news.rows.has(index) ? ' row-news' : ''}`,
                                       }
                                     : {
                                           tabIndex: 0,
-                                          className: `cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover focus:bg-surface-hover focus:outline-none${changed.has(rowKey(row, index)) ? ' row-changed' : ''}`,
+                                          className: `cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover focus:bg-surface-hover focus:outline-none${changed.has(rowKey(row, index)) ? ' row-changed' : news.rows.has(index) ? ' row-news' : ''}`,
                                           onClick: (event: MouseEvent) => {
                                               if (!fromControl(event)) {
                                                   open(row);

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T22:19:47.526253Z
+' Generated: 2026-10-11T02:26:09.491000Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1798,17 +1798,17 @@ package "refdata" #FFF3E0 {
           bilateral : text
           csa_currency : text
           index_name : text
-          threshold_pay : double
-          threshold_receive : double
-          minimum_transfer_amount_pay : double
-          minimum_transfer_amount_receive : double
-          independent_amount_held : double
+          threshold_pay : numeric(38, 12)
+          threshold_receive : numeric(38, 12)
+          minimum_transfer_amount_pay : numeric(38, 12)
+          minimum_transfer_amount_receive : numeric(38, 12)
+          independent_amount_held : numeric(38, 12)
           independent_amount_type : text
           call_frequency : text
           post_frequency : text
           margin_period_of_risk : text
-          collateral_compounding_spread_receive : double
-          collateral_compounding_spread_pay : double
+          collateral_compounding_spread_receive : numeric(38, 12)
+          collateral_compounding_spread_pay : numeric(38, 12)
           apply_initial_margin : boolean
           initial_margin_type : text
           calculate_im_amount : boolean
@@ -2685,7 +2685,7 @@ package "refdata" #FFF3E0 {
           ibor_index : text <<FK>>
           rfr_curve : text
           rfr_index : text <<FK>>
-          spread : double
+          spread : numeric(38, 12)
           base_curve : text
           base_curve_currency : text
           numerator_curve : text
@@ -2894,7 +2894,7 @@ package "refdata" #FFF3E0 {
           calendar : text
           conventions : text
           extrapolation : text
-          running_spread : double
+          running_spread : numeric(38, 12)
           index_term : text
           imply_default_from_market : text
           allow_negative_rates : text

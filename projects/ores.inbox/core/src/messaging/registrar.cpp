@@ -85,7 +85,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              ores::database::context ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              std::chrono::seconds answered_window,
-                             std::chrono::seconds reminder_window) {
+                             std::chrono::seconds reminder_window,
+                             std::shared_ptr<service::apply_engine> engine) {
 
     std::vector<ores::nats::service::subscription> subs;
     const auto add = [&subs](std::vector<ores::nats::service::subscription> more) {
@@ -127,7 +128,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // one's own requests are reads a person works from.
     {
         auto h = std::make_shared<approval_operations_handler>(
-            nats, ctx, verifier, answered_window, reminder_window);
+            nats, ctx, verifier, answered_window, reminder_window, std::move(engine));
         subs.push_back(
             nats.queue_subscribe(raise_approval_request_request::nats_subject,
                                  queue_group,
@@ -160,6 +161,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             remind_expiring_approvals_request::nats_subject,
             queue_group,
             [h](ores::nats::message msg) { h->remind_expiring(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            retry_stalled_applies_request::nats_subject,
+            queue_group,
+            [h](ores::nats::message msg) { h->retry_stalled_applies(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             expire_overdue_approvals_request::nats_subject,
             queue_group,

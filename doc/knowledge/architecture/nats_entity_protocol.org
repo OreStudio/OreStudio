@@ -840,6 +840,26 @@ subject, or giving each tenant its own broker account, would let the broker
 enforce it. That changes the grammar and the broker's provisioning, so it is
 recorded here as a later option and is not part of this version.
 
+*** The record an event names
+
+An event names the record it announces. The payload of every entity event holds
+=key=, the entity's declared key as an object of its columns, such as
+={"username": "diane.kay"}= for an account. The key is business data about the
+entity, so it is in the payload and not in a header. A header is for what a
+subscriber must decide before it reads the payload, which the tenant and the
+party are and the key is not.
+
+A subscriber that cannot read the key from the notification publishes the event
+with an empty =key=. An empty key names no record, and a reader treats the event
+as a change to records it cannot name.
+
+A relay that serves people may tell its readers which records changed, so that a
+screen showing one record can tell a change to that record from a change to
+another. It names the records only when there are few. The web BFF joins the events
+of one entity that arrive within 150 ms into one message, names up to 20 records,
+and names none when there are more or when any event had an empty key. A reader
+treats a message that names no records as a change to any record.
+
 Events are published at least once and may arrive more than once, and they may
 arrive out of order. A consumer is therefore idempotent and does not assume
 ordering: it applies change by key and version, so that applying an event it has

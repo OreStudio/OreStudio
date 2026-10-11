@@ -447,7 +447,7 @@ function IdentityDialog({
         onClose,
         onSaved,
     });
-    useEntityChangeEvents([{ component: 'iam', entity: 'accounts' }], () => {
+    useEntityChangeEvents([{ component: 'iam', entity: 'accounts', record: { username } }], () => {
         if (edit.saving.current) return;
         void queries.invalidateQueries({ queryKey: ['account', username] });
     });
@@ -625,18 +625,16 @@ export function ReportingLineDialog({
     const edit = useRecordEdit({
         form: 'person.reporting_line',
         onClose,
-        onSaved: async () => {
-            await queries.invalidateQueries({ queryKey: ['reporting-tree'] });
-            await queries.invalidateQueries({ queryKey: ['accounts'] });
-            await queries.invalidateQueries({ queryKey: ['timeline', 'person', account.username] });
-            await onSaved();
-        },
+        onSaved,
     });
     const { busy, outcome } = edit;
-    useEntityChangeEvents([{ component: 'iam', entity: 'accounts' }], () => {
-        if (edit.saving.current) return;
-        void queries.invalidateQueries({ queryKey: ['account', account.username] });
-    });
+    useEntityChangeEvents(
+        [{ component: 'iam', entity: 'accounts', record: { username: account.username } }],
+        () => {
+            if (edit.saving.current) return;
+            void queries.invalidateQueries({ queryKey: ['account', account.username] });
+        },
+    );
     const nameOfManager = (id: string | null): string =>
         id === null
             ? ''
@@ -1405,13 +1403,7 @@ export function IdentityTab({
             me={me}
             username={username}
             reasons={reasons.data ?? []}
-            onSaved={() =>
-                Promise.all([
-                    queries.invalidateQueries({ queryKey: ['account', username] }),
-                    // The new version is an entry in the person's story.
-                    queries.invalidateQueries({ queryKey: ['timeline', 'person', username] }),
-                ])
-            }
+            onSaved={() => Promise.resolve()}
         />
     );
 }
@@ -1463,13 +1455,7 @@ export function ContactTab({
             accountId={accountId}
             signInEmail={account.data?.email ?? fallbackEmail}
             reasons={reasons.data ?? []}
-            onSaved={() =>
-                Promise.all([
-                    queries.invalidateQueries({ queryKey: ['contact-information', contactKey] }),
-                    // The new version is an entry in the person's story.
-                    queries.invalidateQueries({ queryKey: ['timeline', 'person', username] }),
-                ])
-            }
+            onSaved={() => Promise.resolve()}
         />
     );
 }

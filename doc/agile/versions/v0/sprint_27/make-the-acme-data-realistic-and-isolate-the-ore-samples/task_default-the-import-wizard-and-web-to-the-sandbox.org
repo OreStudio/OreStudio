@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-the-acme-data-realistic-and-isolate-the-ore-samples:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/default-the-import-wizard-and-web-to-the-sandbox
+#+pr: 3114
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,29 @@ Every import path (shell, Qt wizard, web) lands in a sandbox unless the user pic
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
 
-- The Qt wizard and the web import offer the party's sandboxes and default to its sample sandbox.
-- An import with no choice never creates a portfolio or book in the official tree.
+- An import with no choice never creates a portfolio or book in the official tree. It lands in the party's open sample sandbox, or it fails.
+- The caller can choose the official tree on purpose.
 - The import can be proven for a second party, with a way to choose the party for the session.
+- The Qt wizard and the web import offer the party's sandboxes. This tree has neither screen, so this part moves to the task that adds them.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The server decides, so every client gets the default: the import service picks the sandbox when the choices name none. A client that wants the official tree says so with =official=.
+
+1. Add =official= to the import choices, optional so that older choices files still parse.
+2. In the import handler, when the choices name no sandbox, no existing parent portfolio, no existing target book and not =official=, read the open sample sandboxes and keep the one whose anchor portfolio belongs to the importing party.
+3. Fail the import with a clear message when the party has no such sandbox. Never fall back to the official tree.
+4. Add =--official= to the shell =ore import=.
+5. Prove it on a clean database for two parties.
 
 * Measurements
 
@@ -57,9 +62,18 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ORE tests (api, core, service) | 3 of 3 pass | =./compass.sh test run -- -R ores.ore= | working tree on top of 0dcabbe620 |
+| Plc: official portfolios and books before and after a default import | 20 and 22, unchanged | =./compass.sh sql -- -f v13.sql= (scratchpad) | working tree on top of 0dcabbe620 |
+| Plc: rows the import added | 2 sandbox portfolios, 1 virtual book, 2 trades of nature =test= | same | same |
+| UK party: rows the import added | 2 sandbox portfolios, 1 virtual book, 2 trades of nature =test= | same | same |
 
 * Notes
+
+- The tree has no Qt import wizard and no web import screen. The shell is the only client. The server default covers the other two when they arrive.
+- The first draft listed every sample sandbox of the tenant and took the first by name. A tenant administrator sees the sandboxes of all parties, so the import took the sandbox of another party. A sandbox has no party of its own, so the lookup now reads the anchor portfolios and keeps those of the importing party.
+- A way to choose the party for the session already exists: =accounts set-default-party <name>=, then log in again. It works once the tenant has left bootstrap mode. In bootstrap mode the login always opens the tenant's system party.
+- Found, not fixed: the tenant setup stops at its =attach_photos= step with "The picture was not attached to the account 'ores_bright_faraday_analytics_service': Account does not exist". The tenant then stays in bootstrap mode and the administrator signs in to the system party. It repeated on three clean provisions. I cleared =system.bootstrap_mode= for the tenant with SQL on my local database to continue. This is not caused by this task.
+- The services in the proof ran a build that differed from the final one only in the text of one error message.
 
 * Test Scenarios
 
@@ -76,12 +90,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3114][#3114]] | [ore,shell] Default an import to the party's sample sandbox |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The lists stop at 1000 rows, so a large tenant could miss its sandbox | ore_import_execute_handler.cpp | Declined | A tenant has a handful of sandboxes. Revisit when one has hundreds. |
+| 2 | Tie-break by id when two sandboxes share a name | ore_import_execute_handler.cpp | Declined | Sandbox names are unique per party, and the lookup keeps one party's sandboxes. |
+| 3 | Confirm the sandbox list is not limited to the caller's party | ore_import_execute_handler.cpp | Answered | It is not. A tenant administrator sees all parties, which is why the lookup filters by anchor party. |
+| 4 | The message is imprecise when the session cannot see an anchor | ore_import_execute_handler.cpp | Declined | The outcome is the same: no sandbox is usable. |
+| 5 | Add a unit test with a fake for the lookup | ore_import_execute_handler.cpp | Deferred | Follow-up task. The lookup is a template, so a fake fits. |
+| 6 | Say in the =ore import= help that the default is the sample sandbox | ore_commands.cpp | Deferred | Needs a rebuild and a new test cycle. Bundle with the follow-up. |
 
 * Result
+
+An import that names no sandbox now lands in the importing party's open sample sandbox. If the party has none, the import fails with a message, and the official tree stays untouched. =official= in the choices, or =--official= in the shell, picks the official tree on purpose. An import that names an existing parent portfolio or target book also counts as an official choice.
+
+Proven on a clean database for two parties (see Measurements). Not done: the Qt and web screens, which do not exist here; a unit test of the lookup, which needs a NATS stand-in; the =attach_photos= failure above.

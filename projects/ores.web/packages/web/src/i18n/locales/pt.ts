@@ -3331,7 +3331,7 @@ const pt: SourceCatalogue = {
                 negative: 'Um desvio padrão ou um peso não pode ser negativo.',
                 weights: 'A soma dos pesos tem de ser maior que zero.',
             },
-            discard: 'Descartar alterações',
+            discard: 'Descartar',
             addTitle: 'Adicionar uma componente',
             editTitle: 'Componente {index}',
             done: 'Concluído',

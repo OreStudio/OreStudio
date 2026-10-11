@@ -3356,7 +3356,7 @@ const fr: SourceCatalogue = {
                 negative: 'Un écart type ou un poids ne peut pas être négatif.',
                 weights: 'La somme des poids doit être supérieure à zéro.',
             },
-            discard: 'Annuler les modifications',
+            discard: 'Abandonner',
             addTitle: 'Ajouter une composante',
             editTitle: 'Composante {index}',
             done: 'Terminé',

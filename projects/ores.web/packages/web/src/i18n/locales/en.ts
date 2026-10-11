@@ -3306,7 +3306,7 @@ export const en: SourceCatalogue = {
                 negative: 'A deviation or a weight cannot be negative.',
                 weights: 'The weights must add up to more than zero.',
             },
-            discard: 'Discard changes',
+            discard: 'Discard',
             addTitle: 'Add a component',
             editTitle: 'Component {index}',
             done: 'Done',

@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Who sees an area or a card depends on the reads a person holds and on nothing else, so the menu reads the same way for every person and a new screen needs no change to it.
+The installation screens (Tenants, Services, Grid, Message queue and Logs) are drawn by a read, and not by the session mode.
 
 * Status
 
@@ -36,8 +36,6 @@ Who sees an area or a card depends on the reads a person holds and on nothing el
 * Acceptance
 
 - The installation screens have a read of their own that a tenant's wildcard does not grant, the server guards them by that read, and the menu and cards draw them by it, not by the session mode
-- The open points on the menu structure page are decided and written there: where Rescue access belongs, and whether Market data gets its own area
-- A test walks every screen and checks it has one area, one address, and the trail Home, the area, the screen
 - The table How today's menu differs on the menu structure page is empty
 
 * Plan

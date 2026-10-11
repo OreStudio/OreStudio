@@ -61,10 +61,20 @@ function buildTestServer(
     readonly server: ReturnType<typeof buildServer>;
     readonly sessionId: string;
     readonly calls: { subject: string; body: unknown }[];
+    readonly publish: (subject: string, message: unknown) => void;
 } {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const calls: { subject: string; body: unknown }[] = [];
+    const listeners = new Map<string, (message: unknown) => void>();
     const client = {
+        subscribeToMessages(
+            subject: string,
+            schema: { parse: (value: unknown) => unknown },
+            onMessage: (message: unknown) => void,
+        ): () => void {
+            listeners.set(subject, (message) => onMessage(schema.parse(message)));
+            return () => listeners.delete(subject);
+        },
         async callAuthenticated(
             subject: string,
             body: unknown,
@@ -104,6 +114,7 @@ function buildTestServer(
         }),
         sessionId: session.id,
         calls,
+        publish: (subject, message) => listeners.get(subject)?.(message),
     };
 }
 
@@ -540,6 +551,60 @@ describe('synthetic operations', () => {
         });
         const response = await send(server, sessionId, 'GET', '/api/synthetic/running');
         expect(response.json()).toEqual({ sourceNames: ['fx.EURUSD'] });
+    });
+
+    it('keeps the ticks of each running feed and serves the newest ones for a feed the session reads', async () => {
+        const replies: Record<string, unknown> = {
+            'synthetic.v1.feed_configs.list': {
+                success: true,
+                running_source_names: ['live.eurusd'],
+            },
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [{ id: ID, source_name: 'live.eurusd' }],
+            },
+        };
+        const { server, sessionId, publish } = buildTestServer(replies);
+        await send(server, sessionId, 'GET', '/api/synthetic/running');
+
+        const subject = 'synthetic.v1.ops.tick.live.eurusd';
+        publish(subject, { value: '1.1', observation_time: '2026-10-11 09:00:00Z' });
+        publish(subject, { value: 'not a price', observation_time: '2026-10-11 09:00:30Z' });
+        publish(subject, { value: '1.2', observation_time: '2026-10-11 09:01:00Z' });
+        publish(subject, { value: '1.3', observation_time: '2026-10-11 09:02:00Z' });
+
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/feeds/${ID}/ticks?limit=2`,
+        );
+        expect(response.json()).toEqual({
+            sourceName: 'live.eurusd',
+            ticks: [
+                { at: '2026-10-11 09:01:00Z', value: 1.2 },
+                { at: '2026-10-11 09:02:00Z', value: 1.3 },
+            ],
+        });
+
+        replies['synthetic.v1.feed_configs.list'] = { success: true, running_source_names: [] };
+        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        publish(subject, { value: '9.9', observation_time: '2026-10-11 09:03:00Z' });
+        const stopped = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        expect(stopped.json().ticks.map((tick: { value: number }) => tick.value)).toEqual([
+            1.1, 1.2, 1.3,
+        ]);
+    });
+
+    it('answers 404 for the ticks of a feed the session cannot read', async () => {
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        expect(response.statusCode).toBe(404);
     });
 
     it('answers 409 with the server words when a feed start is refused', async () => {

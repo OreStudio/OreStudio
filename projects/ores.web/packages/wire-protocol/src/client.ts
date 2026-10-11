@@ -1013,6 +1013,31 @@ export class OresClient {
     }
 
     /**
+     * Listens for published messages of one shape, such as a feed's ticks.
+     *
+     * Like the change events, nothing is authenticated and nothing is reported:
+     * a message that does not parse is skipped, and a transport that cannot
+     * subscribe hears nothing.
+     */
+    subscribeToMessages<Schema extends z.ZodType>(
+        relative: string,
+        schema: Schema,
+        onMessage: (message: z.infer<Schema>) => void,
+    ): () => void {
+        const subscribe = this.#transport.subscribe;
+        if (subscribe === undefined) {
+            return () => undefined;
+        }
+        return subscribe.call(this.#transport, relative, (payload) => {
+            try {
+                onMessage(this.#codec.decodeAs(payload, schema));
+            } catch {
+                // A message this build does not understand is one it cannot use.
+            }
+        });
+    }
+
+    /**
      * Tells the registry this process is running.
      *
      * Published, not asked for, and not authenticated: the subject needs no

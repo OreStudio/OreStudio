@@ -82,6 +82,7 @@ import {
     resultSchema,
     row,
 } from './refdata-calls.js';
+import { TICK_CAPACITY, type FeedTickBuffers } from './feed-ticks.js';
 import type { LiveSession } from './sessions.js';
 
 const code = z.string().trim().min(1).max(100);
@@ -366,11 +367,47 @@ function resourceName(resource: SyntheticResource): string {
     return resource.subjects.list.split('.')[2] ?? '';
 }
 
+/** The FX feeds resource, which the tick read reads a feed through. */
+const FX_FEEDS = ((): SyntheticResource => {
+    const found = SYNTHETIC_RECORDS.find((candidate) => candidate.key === 'fx-feeds');
+    if (found === undefined) {
+        throw new Error('The synthetic resources have no fx-feeds.');
+    }
+    return found;
+})();
+
 function resourceFor(request: FastifyRequest): SyntheticResource {
     const { resource } = request.params as { resource: string };
     const found = SYNTHETIC_RECORDS.find((candidate) => candidate.key === resource);
     if (found === undefined) {
         throw notFound(`There is no synthetic resource ${resource}.`);
+    }
+    return found;
+}
+
+/** One row by its key, read as the session, or a 404 when the session cannot see it. */
+async function readByKey(
+    session: LiveSession,
+    resource: SyntheticResource,
+    key: string,
+): Promise<Record<string, unknown>> {
+    const reply = await session.client.callAuthenticated(
+        resource.subjects.list,
+        {
+            offset: 0,
+            limit: 1,
+            order: NO_ORDER,
+            filter: { ...resource.filter, [resource.oneOf]: [key] },
+            as_of: null,
+        },
+        z.looseObject({ result: resultSchema }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusal(reply.result);
+    }
+    const found = z.array(row).default([]).parse(reply[resource.rows])[0];
+    if (found === undefined) {
+        throw notFound(`There is no ${resource.key} row ${key}.`);
     }
     return found;
 }
@@ -556,6 +593,7 @@ const irShapeSchema = z.object({
 export function registerSyntheticRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
+    ticks: FeedTickBuffers,
 ): void {
     server.get('/api/synthetic', async (request) => {
         const session = requireSession(request);
@@ -593,7 +631,26 @@ export function registerSyntheticRoutes(
             { success: reply.success, message: 'The running feeds could not be read.' },
             upstreamFailure,
         );
+        ticks.running(reply.running_source_names);
         return { sourceNames: reply.running_source_names };
+    });
+
+    /**
+     * The newest ticks heard from one FX feed, oldest first. The feed is read
+     * as the session first, so a feed the session cannot see has no ticks to
+     * show. Asking starts the listening, so a feed opened before any list
+     * asked what runs is heard from then on.
+     */
+    server.get('/api/synthetic/feeds/:id/ticks', async (request) => {
+        const session = requireSession(request);
+        const { limit } = input(
+            z.object({ limit: z.coerce.number().int().min(1).max(TICK_CAPACITY).default(200) }),
+            request.query,
+        );
+        const feed = await readByKey(session, FX_FEEDS, paramId(request));
+        const sourceName = z.string().parse(feed['source_name']);
+        ticks.listen([sourceName]);
+        return { sourceName, ticks: ticks.ticks(sourceName, limit) };
     });
 
     /** Whether each vintage a feed draws from is still valid. */
@@ -668,25 +725,7 @@ export function registerSyntheticRoutes(
         const session = requireSession(request);
         const resource = resourceFor(request);
         const key = input(keySchema(resource), (request.params as { key: string }).key);
-        const reply = await session.client.callAuthenticated(
-            resource.subjects.list,
-            {
-                offset: 0,
-                limit: 1,
-                order: NO_ORDER,
-                filter: { ...resource.filter, [resource.oneOf]: [key] },
-                as_of: null,
-            },
-            z.looseObject({ result: resultSchema }),
-        );
-        if (reply.result.outcome !== 'ok') {
-            throw refusal(reply.result);
-        }
-        const found = z.array(row).default([]).parse(reply[resource.rows])[0];
-        if (found === undefined) {
-            throw notFound(`There is no ${resource.key} row ${key}.`);
-        }
-        return { row: found };
+        return { row: await readByKey(session, resource, key) };
     });
 
     /** Writes one or many rows in one call, and answers with the rows as written. */

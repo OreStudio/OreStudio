@@ -534,7 +534,10 @@ function LockPanel({
                             'px-4 py-1.5 text-sm capitalize',
                             !locked ? 'bg-accent text-ink-inverse' : 'text-ink-muted',
                         )}
-                        onClick={() => setConfirming(false)}
+                        onClick={() => {
+                            setOutcome(undefined);
+                            setConfirming(false);
+                        }}
                     >
                         unlocked
                     </button>
@@ -544,7 +547,10 @@ function LockPanel({
                             'px-4 py-1.5 text-sm capitalize',
                             locked ? 'bg-accent text-ink-inverse' : 'text-ink-muted',
                         )}
-                        onClick={() => setConfirming(true)}
+                        onClick={() => {
+                            setOutcome(undefined);
+                            setConfirming(true);
+                        }}
                     >
                         locked
                     </button>
@@ -557,7 +563,7 @@ function LockPanel({
                 A lock leaves open sessions open. Nothing ends them today, so the colleague&rsquo;s
                 existing session keeps working until it expires.
             </Notice>
-            {outcome !== undefined && (
+            {outcome !== undefined && confirming === undefined && (
                 <Notice tone={outcome.ok ? 'success' : 'error'}>{outcome.text}</Notice>
             )}
             {confirming !== undefined && (
@@ -584,6 +590,9 @@ function LockPanel({
                             ? `${account.username} will not be able to sign in. Sessions it already holds stay open until they expire.`
                             : `${account.username} will be able to sign in again, and its failed attempt count is cleared.`}
                     </p>
+                    {outcome !== undefined && !outcome.ok && (
+                        <Notice tone="error">{outcome.text}</Notice>
+                    )}
                 </Dialog>
             )}
         </section>

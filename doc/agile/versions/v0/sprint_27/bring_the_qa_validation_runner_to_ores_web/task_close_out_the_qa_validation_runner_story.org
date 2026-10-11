@@ -13,24 +13,24 @@
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Close the paperwork of the QA validation runner story. The scenario text must match the screens. The follow-ups must be in the backlog. The story must be DONE.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -41,9 +41,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Update the scenario wording, file the follow-ups as captures, and close the story and its sprint row.
 
 * Measurements
 
@@ -61,6 +59,9 @@ task and name that file in the Command column.
 
 * Notes
 
+Follow-ups filed in the inbox: browse the agile tree in ores.web (arc story 2), raise a notification for a scenario waiting for a tester (arc story 3), teach compass the ABANDONED scenario state, and the raw =../../= path that answers 500. The French and Portuguese text needs a speaker, and is in the last capture.
+
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -70,7 +71,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:BE03EF33-C2A7-4B0B-A444-BDA37F4663AE][Test the QA validation runner in the browser]] | PASSED | Wording brought up to date. The run is not repeated. |
 
 * PRs
 
@@ -85,3 +86,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The scenario text matches the screens. Four captures hold the follow-ups. The story is DONE.

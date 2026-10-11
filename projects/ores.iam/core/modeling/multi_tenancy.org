@@ -259,11 +259,20 @@ own-tenant policy, so tenant isolation does not change.
 | A tenant administrator | Every account of the tenant, because its account is linked to every party of the tenant |
 | A session with no actor: a service acting as itself, or the sign-in lookup before a session exists | Every account of the tenant, as a session with no party set passes the party policy of other tables |
 
+A person whose account has no party links gets no party set, so they see their
+own account and no other. This includes a tenant administrator: the
+administrator sees the tenant because its account is linked to every party of
+the tenant, and not because the policy names the role. A tenant provisioned
+without party links would show its administrator only the administrator's own
+account until the links exist.
+
 The function =ores_iam_actor_party_ids_fn()= returns the parties the actor's
 account is linked to. The actor is =app.current_actor=, which every user
 request sets from the token. The function is =security definer=. It reads the
 actor's account to find the links, and without that it would apply the policy to
 itself.
+The policy wraps its function calls in a =select=, so the planner runs each
+once per query and not once per row.
 
 What the exception does not do:
 

@@ -118,9 +118,10 @@ export function eventSubject(component: string, entity: string): string {
 /** The part of a logger the registry writes through: a record of facts and a message. */
 export interface EventLog {
     debug(fields: Record<string, unknown>, message: string): void;
+    warn(fields: Record<string, unknown>, message: string): void;
 }
 
-const SILENT: EventLog = { debug: () => undefined };
+const SILENT: EventLog = { debug: () => undefined, warn: () => undefined };
 
 export class ChangeEventRegistry {
     readonly #client: OresClient;
@@ -216,6 +217,19 @@ export class ChangeEventRegistry {
             const stop = this.#client.subscribeToEvents(
                 eventSubject(watch.component, watch.entity),
                 (change) => {
+                    // An event that names no tenant is told to nobody. That is safe
+                    // and also silent, so a publisher that stops stating the tenant
+                    // would make every screen go quiet with nothing to say why.
+                    if (change.tenantId === undefined) {
+                        this.#log.warn(
+                            {
+                                component: watch.component,
+                                entity: watch.entity,
+                                occurred_at: change.at,
+                            },
+                            'change event without a tenant, told to nobody',
+                        );
+                    }
                     const event: ChangeEvent = {
                         component: watch.component,
                         entity: watch.entity,

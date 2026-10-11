@@ -104,6 +104,7 @@ describe('the change registry', () => {
         const lines: { fields: Record<string, unknown>; message: string }[] = [];
         const registry = new ChangeEventRegistry(client, {
             debug: (fields, message) => lines.push({ fields, message }),
+            warn: (fields, message) => lines.push({ fields, message }),
         });
         registry.attach('s1', () => undefined);
         registry.attach('s2', () => undefined);
@@ -125,11 +126,27 @@ describe('the change registry', () => {
         expect(lines.map((line) => line.message)).toContain('session watch declared');
     });
 
+    it('warns when an event names no tenant, and tells nobody', () => {
+        const { client, open } = fakeClient();
+        const warnings: string[] = [];
+        const registry = new ChangeEventRegistry(client, {
+            debug: () => undefined,
+            warn: (_fields, message) => warnings.push(message),
+        });
+        const heard: string[] = [];
+        registry.attach('s1', (c) => heard.push(c.at));
+        registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
+        open.get('iam.v1.accounts_events.>')?.(change(undefined));
+        expect(warnings).toEqual(['change event without a tenant, told to nobody']);
+        expect(heard).toEqual([]);
+    });
+
     it('logs a watch it ignores because no stream is attached yet', () => {
         const { client } = fakeClient();
         const lines: string[] = [];
         const registry = new ChangeEventRegistry(client, {
             debug: (_fields, message) => lines.push(message),
+            warn: (_fields, message) => lines.push(message),
         });
         registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
         expect(lines).toEqual(['session watch ignored, no stream attached']);

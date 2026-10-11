@@ -54,6 +54,13 @@ with check (
 -- lookup before a session exists) is not restricted, as with the visible-party
 -- passthrough on party-owned tables. The caller always sees their own account.
 --
+-- An actor whose account has no party links gets no party set, and sees only its
+-- own account. A tenant administrator sees the tenant because its account is
+-- linked to every party of the tenant, and not because the policy names it.
+--
+-- The function calls are wrapped in a select, so the planner runs each once per
+-- query and not once per row.
+--
 -- Security definer, so that reading the caller's own account to find its links
 -- does not apply this policy to itself.
 create or replace function ores_iam_actor_party_ids_fn()
@@ -75,15 +82,15 @@ drop policy if exists accounts_party_visibility_policy
 create policy accounts_party_visibility_policy on ores_iam_accounts_tbl
 as restrictive
 for select using (
-    ores_iam_current_actor_fn() is null
-    or username = ores_iam_current_actor_fn()
+    (select ores_iam_current_actor_fn()) is null
+    or username = (select ores_iam_current_actor_fn())
     or exists (
         select 1
         from ores_iam_account_parties_tbl ap
         where ap.tenant_id = ores_iam_accounts_tbl.tenant_id
           and ap.account_id = ores_iam_accounts_tbl.id
           and ap.valid_to = ores_utility_infinity_timestamp_fn()
-          and ap.party_id = any(ores_iam_actor_party_ids_fn())
+          and ap.party_id = any((select ores_iam_actor_party_ids_fn())::uuid[])
     )
 );
 

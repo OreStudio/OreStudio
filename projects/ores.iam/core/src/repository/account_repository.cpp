@@ -389,7 +389,9 @@ void account_repository::remove(context ctx, const std::vector<std::string>& ids
 
 
 std::vector<domain::account> account_repository::read_all(context ctx) {
-    const auto query = sqlgen::read<std::vector<account_entity>> | order_by("valid_from"_c.desc());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<account_entity>> | where("tenant_id"_c == tid) |
+                       order_by("valid_from"_c.desc());
 
     return execute_read_query<account_entity, domain::account>(
         ctx,
@@ -404,9 +406,11 @@ account_repository::read_latest_by_username(context ctx, const std::string& user
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("username"_c == username && "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<account_entity>> |
+        where("tenant_id"_c == tid && "username"_c == username && "valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc());
 
     return execute_read_query<account_entity, domain::account>(
         ctx,
@@ -421,9 +425,11 @@ std::vector<domain::account> account_repository::read_latest_by_email(context ct
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("email"_c == email && "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<account_entity>> |
+        where("tenant_id"_c == tid && "email"_c == email && "valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc());
 
     return execute_read_query<account_entity, domain::account>(
         ctx,

@@ -29,7 +29,10 @@
  * ores_iam_account_exists_fn, which answers for the session's tenant and for the
  * shared accounts of the system tenant, and for no other tenant.
  *
- * The other tenant is one people set up, not an automation tenant.
+ * The other tenant is one people set up, not an automation tenant. The
+ * assertions about it need such a tenant to exist and skip without one, so a run
+ * that provisions none proves nothing about tenant isolation. Provision the
+ * Acme dataset first, as the test environments do.
  *
  * Run as ORES_TEST_DB_USER, never as the owner role, which bypasses row-level
  * security: pg_prove -d <database> test/iam_accounts_shared_visibility_test.sql

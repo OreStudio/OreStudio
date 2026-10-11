@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T09:42:55.095349Z
+' Generated: 2026-10-11T02:26:09.491000Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -678,17 +678,17 @@ package "dq_staging" #F3E5F5 {
           bilateral : text
           csa_currency : text
           index_name : text
-          threshold_pay : double
-          threshold_receive : double
-          minimum_transfer_amount_pay : double
-          minimum_transfer_amount_receive : double
-          independent_amount_held : double
+          threshold_pay : numeric(38, 12)
+          threshold_receive : numeric(38, 12)
+          minimum_transfer_amount_pay : numeric(38, 12)
+          minimum_transfer_amount_receive : numeric(38, 12)
+          independent_amount_held : numeric(38, 12)
           independent_amount_type : text
           call_frequency : text
           post_frequency : text
           margin_period_of_risk : text
-          collateral_compounding_spread_receive : double
-          collateral_compounding_spread_pay : double
+          collateral_compounding_spread_receive : numeric(38, 12)
+          collateral_compounding_spread_pay : numeric(38, 12)
           apply_initial_margin : boolean
           initial_margin_type : text
           calculate_im_amount : boolean

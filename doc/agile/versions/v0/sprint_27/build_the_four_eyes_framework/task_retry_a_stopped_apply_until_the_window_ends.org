@@ -35,6 +35,8 @@ A stopped apply resumes until the kind's window ends, and a request never retrie
 
 * Acceptance
 
+- The same scheduled job finds approved requests whose kind names an apply workflow and that have no run, because the start was lost, and starts them. A repeated start names the same run and changes nothing.
+
 - A scheduled job finds apply runs that stopped and whose request is still approved, and calls the engine's retry verb.
 - When the kind's window ends the request moves to apply_failed with the reason could not apply, and the person who asked is told.
 - A run that stopped on a refusal is never retried.

@@ -88,8 +88,8 @@ public:
 
     /**
      * @brief add <code> <name> <description> <decide_permission_code> <allows_hold>
-     * <comment_on_approve> <expires_after_days> <approvals_required> <display_order> <reason>
-     * <commentary>
+     * <comment_on_approve> <expires_after_days> <apply_workflow_type> <approvals_required>
+     * <display_order> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,8 +97,8 @@ public:
 
     /**
      * @brief set <code> <name> <description> <decide_permission_code> <allows_hold>
-     * <comment_on_approve> <expires_after_days> <approvals_required> <display_order> <reason>
-     * <commentary> [--version <n>]
+     * <comment_on_approve> <expires_after_days> <apply_workflow_type> <approvals_required>
+     * <display_order> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -106,8 +106,8 @@ public:
 
     /**
      * @brief put-many --count <n> <code> <name> <description> <decide_permission_code>
-     * <allows_hold> <comment_on_approve> <expires_after_days> <approvals_required> <display_order>
-     * <reason> <commentary>
+     * <allows_hold> <comment_on_approve> <expires_after_days> <apply_workflow_type>
+     * <approvals_required> <display_order> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

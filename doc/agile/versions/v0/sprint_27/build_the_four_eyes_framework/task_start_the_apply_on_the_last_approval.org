@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/start-the-apply-on-the-last-approval
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The last approval of a request starts the workflow its kind names.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -45,6 +45,12 @@ The last approval of a request starts the workflow its kind names.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Add a nullable =apply_workflow_type= column to the approval kind. The kind is the typed place that says which workflow applies a request, and the inbox reads it without knowing what the request changes.
+- Fix one shape for the workflow's request, ={"request_id": "<id>"}=, so the inbox starts any kind's workflow. The book apply workflow already reads that shape.
+- Build the start message in one pure function, so it has tests. The run's id comes from the request's id alone, so a second start names the same run and the engine leaves it alone.
+- Start the workflow from the decision that moves a request to approved, forwarding the approver's token so the run is attributed to them.
+- Seed the book change kind with =book_apply_workflow=.
 
 * Measurements
 
@@ -61,6 +67,11 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- A failure to publish the start is logged and is not the decision. The request stays approved with no run behind it. The task "Retry a stopped apply until the window ends" now also finds such requests and starts them.
+- The engine already recognises a repeated start by the run's id and leaves the first run alone, so a redelivered decision cannot apply a request twice.
+- The role request kind names no workflow, so it starts nothing and its reconciliation is unchanged.
+- The start is not tested against a running engine, as no other start is. The message and the seeded kinds are tested.
 
 * Test Scenarios
 
@@ -86,3 +97,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The decision that approves the last part of a request starts the workflow its kind names.
+
+- =apply_workflow_type= is a nullable column of the approval kind. =refdata.book_change= names =book_apply_workflow=, and =iam.role_grant= names none.
+- =apply_start_of= builds the start message from the kind and the request: the type, the tenant, the request as target, ={"request_id": ...}= as the request, and a run id derived from the request id alone.
+- The decide handler publishes it when a request moves to approved, forwarding the approver's token, and logs a failure without undoing the decision.
+
+Evidence: the four new cases pass with the whole =ores.inbox.core.tests= binary (43 cases, 220 assertions), and the whole =ores.refdata.core.tests= binary passes (359 cases, 4799 assertions). The BFF tests (526) and the web typecheck pass with the regenerated wire types. The cmake source, handler permission, test case reachability, pasted block symbol, populate reference and derived-model checks pass, the strict ER parse is clean and the diagrams match, and the catalogue drift sweep is clean.
+
+Not done here: a test against a running engine, and the repair for an approved request whose start was lost, which is in the retry task.

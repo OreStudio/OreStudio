@@ -35,17 +35,17 @@
 
 insert into ores_inbox_approval_kinds_tbl (
     tenant_id, code, version, name, description, decide_permission_code,
-    allows_hold, comment_on_approve, expires_after_days, approvals_required,
-    display_order,
+    allows_hold, comment_on_approve, expires_after_days, apply_workflow_type,
+    approvals_required, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values
     (ores_utility_system_tenant_id_fn(), 'iam.role_grant', 0, 'Role request',
      'A person asks to be given a role', 'iam::roles:assign',
-     false, false, 14, 1, 10,
+     false, false, 14, null, 1, 10,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'refdata.book_change', 0, 'Book change',
      'A person proposes changes to books', 'inbox::approvals:decide_operations',
-     false, false, 14, 1, 20,
+     false, false, 14, 'book_apply_workflow', 1, 20,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

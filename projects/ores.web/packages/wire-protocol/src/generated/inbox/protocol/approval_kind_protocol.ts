@@ -40,6 +40,7 @@ export interface ApprovalKindWrite {
     allows_hold: boolean;
     comment_on_approve: boolean;
     expires_after_days: number | null;
+    apply_workflow_type: string | null;
     approvals_required: number;
     display_order: number;
 }

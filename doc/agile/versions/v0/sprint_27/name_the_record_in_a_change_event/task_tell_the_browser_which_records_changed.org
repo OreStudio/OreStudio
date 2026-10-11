@@ -8,7 +8,7 @@
 #+filetags: :name_the_record_in_a_change_event:sprint_27:v0:
 #+owner: marco
 #+branch: feature/name-the-record-in-a-change-event
-#+pr:
+#+pr: 3111
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3111][#3111]] | [web] Name the record in a change event, and show where a change fell |
 
 * Review
 

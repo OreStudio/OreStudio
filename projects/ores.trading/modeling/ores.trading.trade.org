@@ -68,10 +68,11 @@ ctx.generate_uuid()
 
 ** counterparty_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: std::optional<boost::uuids::uuid>
-:nullable: true
-:economic: false
+:type:       uuid
+:cpp_type:   std::optional<boost::uuids::uuid>
+:nullable:   true
+:economic:   false
+:filterable: true
 :END:
 
 The party the firm faces. Absent only on an intra-entity trade, which
@@ -83,10 +84,13 @@ std::nullopt
 
 ** trade_type
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:economic: true
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:economic:   true
+:filterable: true
+:searchable: true
+:sortable:   true
 :END:
 
 ORE trade type code (e.g. Swap, FxForward, CapFloor).

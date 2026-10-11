@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: E47BAF35-066F-4EF2-BA3D-522AED44FF33
+:END:
+#+title: Use exact decimals for rates, amounts and every money value
+#+description: A rate, spread, notional, amount, price, strike, fee or recovery rate is an exact decimal in the domain type and in the column. A double never enters the persisted domain.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+Use the decimal type for every rate, spread, notional, amount, price, strike, fee, premium and recovery rate. The domain type is the exact decimal and the column is numeric(38, 12). A double never enters the persisted domain. Convert from decimal to double only at the numerical kernel seam. At the ORE boundary, read the digits the document wrote and write the same digits back. Do not read them through a float.
+
+*Why:* ORE types these values as xs:float. A float holds only the nearest binary value, so a strike of 0.005 was stored and exported as 0.00499999989, and a cap of 0.025 was stored as 0.02500000037252903. The FRA digits fix and the credit analysis both found this.
+
+*How to apply:* Give each money column in a new model the type numeric(38, 12). In the ORE binding, make the member a lexical leaf through scripts/reapply_ore_lexical_form.py, read it with exact_decimal and write it with set_exact. Add a mapper test that holds the digits. See doc/knowledge/architecture/exact_numbers_and_economic_change.org.

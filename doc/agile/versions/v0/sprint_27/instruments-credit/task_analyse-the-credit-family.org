@@ -77,6 +77,11 @@ task and name that file in the Command column.
 
 - The design is =design.org= beside this page, with =design_er.puml= and the
   rendered =design_er.png=.
+- The operator asked that the key principles of the work be remembered and
+  that a checklist be written from the bond and rates work. Three memories
+  record the principles (data-oriented design, the hot and cold split, exact
+  decimals), and the runbook =rework_an_instrument_family= holds the
+  checklist.
 - The rates repair already routed =RiskParticipationAgreement= to the credit
   table. What is left of the agreement's problem is its required elements,
   its underlying and the retired =rpa_instruments= table.

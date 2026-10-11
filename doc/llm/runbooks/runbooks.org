@@ -36,6 +36,7 @@ all runbooks with =compass list --type runbook=.
 | [[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][Run a sprint health review]]                                  | Branch → charts → task scaffold → System 2 analysis → findings → shape fixes → PR |
 | [[id:0CED1212-6763-4238-B861-9740C62AE499][Handle a hotfix]]                                             | Extract error → branch hotfix/ → scaffold → diagnose/fix → commit → PR    |
 | [[id:CC0A311E-7245-4694-86A1-3170023C385A][Run a compute job end to end]]                               | Recreate the DB → start the fleet → provision the ORE package → dispatch TA002_IR_Swap → compare the output |
+| [[id:774A5408-AED2-4A69-8F52-4860D1B80B4C][Rework an instrument family to the instrument table rule]] | Analyse → route → digits → legs → header and facts → round trip → dates → corpus proof |
 
 * See also
 

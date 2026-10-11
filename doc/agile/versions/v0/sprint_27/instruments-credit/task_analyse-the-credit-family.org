@@ -8,7 +8,7 @@
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
 #+branch: feature/analyse-the-credit-family
-#+pr:
+#+pr: 3133
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3133][#3133]] | [agile] Analyse the credit family |
 
 * Review
 

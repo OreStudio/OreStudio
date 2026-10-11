@@ -43,7 +43,7 @@ Rework the credit trade types and the risk participation agreement to the instru
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:4434DCEA-FBDA-4C19-BF98-0EF57E0A546C][Analyse the credit family and propose its relational data model]] | DONE | 2026-10-11 | 2026-10-11 | Credit is the third family after the bond pilot and the rates rework. Survey every credit-related type and subtype in the tree (modeling orgs, SQL, domain C++, mappers, repositories, services, messaging, the ores.ore mapping), then propose the entity-relationship model in the clean data-oriented shape, taking in the risk participation agreement the rates rework left for credit. (Staging unit 1.) |
-| [[id:C5829235-D255-4C13-9EC1-6658CA518B02][Carry the credit digits]] | BACKLOG | | | The credit money members are bare floats in the ORE binding, so the mapper stores float artifacts: 0.025 becomes 0.02500000037252903. Make them lexical leaves through the reapply script and store recovery_rate as a decimal. (Staging unit 2.) |
+| [[id:C5829235-D255-4C13-9EC1-6658CA518B02][Carry the credit digits]] | DONE | 2026-10-11 | 2026-10-11 | The credit money members, the upfront fee and the option strike, are bare floats in the ORE binding, so the mapper reads them through a double. Make them lexical leaves through the reapply script. Classify every credit numeric column as money or continuous, and make the tranche columns agree with their domain type. (Staging unit 2.) |
 | [[id:1BE86F61-1DEF-4430-8AA6-C41F1C658007][Retire the unproduced rpa_instruments table]] | BACKLOG | | | RiskParticipationAgreement routes to credit_instrument, so nothing writes ores_trading_rpa_instruments_tbl and nothing reads it. Remove the table, its model and every generated file named for it, including the shell commands and their tests. (Staging unit 3.) |
 | [[id:DD0F79D0-38B4-43DE-B2E0-135976B8BA25][Author the credit family header and its fact tables]] | BACKLOG | | | Replace the 25-column credit table with a header holding the reference entity and the two dates, and six product fact tables keyed by the trade. Remove the two importer-less codes from the routing. (Staging unit 4.) |
 | [[id:CFBA80D2-A5EA-45DA-8566-D65C41C37D53][Write the credit legs and the basket]] | BACKLOG | | | A credit swap's premium leg and a credit linked swap's payment groups are rows of the shared swap leg tables, told apart by a new leg_group column. The names of a basket get a new child table. (Staging unit 5.) |
@@ -65,8 +65,10 @@ Distilled from =design.org=, which carries the argument and the evidence.
 - *The agreement's facts get a table of their own.* Its participation rate
   and protection fee are required by the schema and belong to no other
   product.
-- *Every money column is an exact decimal.* A float column stores an artifact
-  of the document's value.
+- *Every money column is an exact decimal, and a continuous quantity is a
+  binary float.* A float column stores an artifact of a money value. The
+  recovery rate, the tranche points and the participation rate are continuous
+  quantities, and each column agrees with its domain type.
 
 * Documents
 

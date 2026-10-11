@@ -309,8 +309,11 @@ trade credit_instrument_mapper::reverse_index_cds_option(const credit_instrument
     indexCreditDefaultSwapOptionData d;
     static_cast<std::string&>(d.IndexCreditDefaultSwapData.CreditCurveId) = instr.reference_entity;
     d.IndexCreditDefaultSwapData.LegData = reverse_cds_leg(instr);
-    if (instr.option_strike)
-        d.Strike = static_cast<float>(instr.option_strike->to_double());
+    if (instr.option_strike) {
+        moneyFloat strike;
+        set_exact(strike, *instr.option_strike);
+        d.Strike = std::move(strike);
+    }
     if (instr.option_expiry_date) {
         _ExerciseDates_t exd;
         date ed;

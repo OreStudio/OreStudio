@@ -24,6 +24,7 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 /**
@@ -212,4 +213,24 @@ TEST_CASE("credit_mapper_leaves_expiry_unset_without_exercise_dates", tags) {
     const auto rt = credit_instrument_mapper::reverse_index_cds_option(*r);
     REQUIRE(rt.IndexCreditDefaultSwapOptionData);
     CHECK(!rt.IndexCreditDefaultSwapOptionData->OptionData.exerciseDatesGroup);
+}
+
+namespace {
+
+ores::utility::decimal::decimal dec(const std::string& text) {
+    return ores::utility::decimal::decimal::from_string(text).value();
+}
+
+} // namespace
+
+TEST_CASE("credit_mapper_holds_the_digits_of_the_option_strike", tags) {
+    const auto r = load_and_map("Credit_Index_CDS_Option.xml");
+
+    REQUIRE(r.option_strike);
+    CHECK(*r.option_strike == dec("1.0"));
+
+    const auto rt = credit_instrument_mapper::reverse_index_cds_option(r);
+    REQUIRE(rt.IndexCreditDefaultSwapOptionData);
+    REQUIRE(rt.IndexCreditDefaultSwapOptionData->Strike);
+    CHECK(dec(rt.IndexCreditDefaultSwapOptionData->Strike->lexical()) == dec("1.0"));
 }

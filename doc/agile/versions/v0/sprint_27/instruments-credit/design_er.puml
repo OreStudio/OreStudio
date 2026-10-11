@@ -61,7 +61,7 @@ package "Product facts (one row per trade, keyed by trade_id)" {
     protection_start_date : date
     upfront_date : date
     upfront_fee : numeric(38,12)
-    fixed_recovery_rate : numeric(38,12)
+    fixed_recovery_rate : double precision
     cash_settlement_days : integer
   }
   entity index_credit_default_swap_instruments #FCF3CF {
@@ -88,12 +88,12 @@ package "Product facts (one row per trade, keyed by trade_id)" {
     --
     * qualifier : text
     * protection_start_date : date
-    * attachment_point : numeric(38,12)
-    * detachment_point : numeric(38,12)
+    * attachment_point : double precision
+    * detachment_point : double precision
     accrual and payment flags
     upfront_date : date
     upfront_fee : numeric(38,12)
-    fixed_recovery_rate : numeric(38,12)
+    fixed_recovery_rate : double precision
   }
   entity credit_linked_swap_instruments #FCF3CF {
     * trade_id : uuid <<PK>>
@@ -101,17 +101,17 @@ package "Product facts (one row per trade, keyed by trade_id)" {
     * credit_curve_id : text
     settles_accrual : boolean
     default_payment_time : text
-    fixed_recovery_rate : numeric(38,12)
+    fixed_recovery_rate : double precision
   }
   entity risk_participation_agreement_instruments #FCF3CF {
     * trade_id : uuid <<PK>>
     --
-    * participation_rate : numeric(38,12)
+    * participation_rate : double precision
     * protection_fee : numeric(38,12)
     * credit_curve_id : text
     issuer_id : text
     settles_accrual : boolean
-    fixed_recovery_rate : numeric(38,12)
+    fixed_recovery_rate : double precision
   }
 }
 

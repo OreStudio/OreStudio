@@ -97,6 +97,51 @@ struct resolve_series_identity_response {
     std::string message;
 };
 
+/**
+ * @brief Requests the typed identity of each series the caller can see.
+ *
+ * A party reads only its own series, so the list is the caller's view and not the
+ * tenant's. An empty `party_id` asks across the parties the caller can see.
+ */
+struct list_series_identities_request {
+    using response_type = struct list_series_identities_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.list_series_identities";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string party_id;
+};
+
+/**
+ * @brief One series in the list, with the typed identity that names it.
+ *
+ * The identity carries the owning party, so passing it to the snapshot, slice or
+ * evolution read names this series and no other party's series of the same kind.
+ */
+struct listed_series {
+    std::string series_id;
+    resolve_series_identity_request identity;
+    /** The declared coordinate fields in order. Empty when no shape is declared. */
+    std::vector<std::string> axes;
+};
+
+/**
+ * @brief The series the caller can see, in a stable order.
+ *
+ * Only series a curve read can name are listed: a series whose URI carries an
+ * instrument type and a quote type. A fixing series is not.
+ */
+struct list_series_identities_response {
+    std::vector<listed_series> series;
+    bool truncated = false;
+    bool success = false;
+    std::string message;
+};
+
 struct crm_rate_item {
     std::string crm_name;
     std::string base_currency_code;

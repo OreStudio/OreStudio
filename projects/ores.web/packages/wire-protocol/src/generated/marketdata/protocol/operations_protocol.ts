@@ -75,6 +75,42 @@ export interface ResolveSeriesIdentityResponse {
     message: string;
 }
 
+/**
+ * @brief Requests the typed identity of each series the caller can see.
+ *
+ * A party reads only its own series, so the list is the caller's view and not the
+ * tenant's. An empty `party_id` asks across the parties the caller can see.
+ */
+export interface ListSeriesIdentitiesRequest {
+    party_id: string;
+}
+
+/**
+ * @brief One series in the list, with the typed identity that names it.
+ *
+ * The identity carries the owning party, so passing it to the snapshot, slice or
+ * evolution read names this series and no other party's series of the same kind.
+ */
+export interface ListedSeries {
+    series_id: string;
+    identity: ResolveSeriesIdentityRequest;
+    /** The declared coordinate fields in order. Empty when no shape is declared. */
+    axes: string[];
+}
+
+/**
+ * @brief The series the caller can see, in a stable order.
+ *
+ * Only series a curve read can name are listed: a series whose URI carries an
+ * instrument type and a quote type. A fixing series is not.
+ */
+export interface ListSeriesIdentitiesResponse {
+    series: ListedSeries[];
+    truncated: boolean;
+    success: boolean;
+    message: string;
+}
+
 export interface CrmRateItem {
     crm_name: string;
     base_currency_code: string;
@@ -792,6 +828,7 @@ export interface MarketTick {
 
 export const subjects = {
     resolve_series_identity_request: 'marketdata.v1.ops.resolve_series_identity',
+    list_series_identities_request: 'marketdata.v1.ops.list_series_identities',
     get_crm_rate_request: 'marketdata.v1.ops.get_crm_rate',
     get_crm_rates_request: 'marketdata.v1.ops.get_crm_rates',
     republish_curve_request: 'marketdata.v1.ops.republish_curve',
@@ -815,6 +852,7 @@ export const subjects = {
  */
 export const requiresSession = {
     resolve_series_identity_request: true,
+    list_series_identities_request: true,
     get_crm_rate_request: true,
     get_crm_rates_request: true,
     republish_curve_request: true,

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T21:24:50.900683Z
+' Generated: 2026-10-11T23:20:31.653727Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -26,7 +26,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-506 tables in 21 groups.
+505 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -511,7 +511,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-105 tables — ores_schema.trading.puml
+104 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {

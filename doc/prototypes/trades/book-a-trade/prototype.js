@@ -120,7 +120,7 @@ function resultView() {
             h('button', { class: 'btn small', onclick: () => { result = { ok: t }; redraw(); } }, 'Retry the instrument write')) : null,
         result.ok ? h('div', { class: 'notice ok' }, h('b', null, t.code + ' is booked. '), 'State ' + t.state + ', internal version 1, external version 1. Activity ' + (t.state === 'live' ? 'new_booking' : 'draft_capture') + '.') : null,
         h('div', { class: 'filters' }, h('a', { class: 'btn primary', href: '../trade-page/?trade=' + t.code }, 'Open the trade'), h('a', { class: 'btn', href: qs({ like: t.code }) }, 'Book a similar trade'),
-            h('a', { class: 'btn', href: '../structure-page/?mode=group&trades=' + t.code }, 'Group into a structure'), h('a', { class: 'btn', href: '../../books/trade-entry/pricing.html' }, 'Price it (trade-entry prototype)')));
+            h('a', { class: 'btn', href: '../structure-page/?mode=group&trades=' + t.code }, 'Group with other trades'), h('a', { class: 'btn', href: '../../books/trade-entry/pricing.html' }, 'Price it (trade-entry prototype)')));
 }
 
 /* ---------- layout ---------- */

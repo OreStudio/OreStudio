@@ -35,7 +35,8 @@ structure, and ends when the structure is saved.
 1. *Choose the trades.* The person chooses the trades that make the deal. All must share the
    party and the counterparty, and none may belong to another structure.
 2. *Choose the kind.* The kind is a rung of the composition ladder, and it decides what the
-   customer sees. A strategy, a typed structure and a dynamic structure bind their legs
+   customer sees. A package is not a second entity. It is the bottom rung, a structure of kind
+   Package, in the same table. A strategy, a typed structure and a dynamic structure bind their legs
    economically: the customer holds one deal, so it is confirmed as one document and priced as
    a whole. A package binds nothing economic: the customer holds each trade under its own terms,
    so each leg confirms on its own and the package is priced leg by leg. A strategy has one

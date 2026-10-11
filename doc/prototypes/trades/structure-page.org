@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 48277DF0-3F37-4620-8DCB-E904580D399B
 :END:
-#+title: Structure page prototype
-#+description: A clickable prototype of the page of a structure and of the workflow that groups trades into one.
+#+title: Structure and package page prototype
+#+description: A clickable prototype of the page of a structure or a package, and of the workflow that groups trades.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:trading:ui:
@@ -17,7 +17,7 @@
 
 * Summary
 
-A structure is an entity: an immutable identity and legs that are trades. The prototype draws its page and the workflow [[id:3899F17C-232B-408C-B667-FA5C630BB71B][Group trades into a structure]].
+A structure is an entity: an immutable identity and legs that are trades. A package is not a second entity. The composition ladder in [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] ends in the untyped structure, which the note calls a package, and the model holds it as a structure of kind Package: the same table, the same anchor, the same members. So the prototype has one screen, and its words follow the kind. A package page says package, and a strategy page says structure. It also draws the workflow [[id:3899F17C-232B-408C-B667-FA5C630BB71B][Group trades into a structure]].
 
 * Detail
 
@@ -26,14 +26,15 @@ A structure is an entity: an immutable identity and legs that are trades. The pr
 #+ATTR_HTML: :class hug-leading
 | Query | What it shows |
 |-------+---------------|
-| =?structure=STR-0004= | A package of a swap and a cap |
-| =?structure=STR-0007= | A strategy, a risk reversal, with its template roles checked |
-| =?mode=group&trades=ACME-100202,ACME-100206= | The grouping workflow |
+| =?deal=STR-0007= | A strategy, a risk reversal, with its template roles checked |
+| =?deal=PKG-0004= | A package of a swap and a cap |
+| =?mode=group&trades=ACME-100202,ACME-100209= | The grouping workflow, with the kind to choose |
 | =?mode=group&trades=ACME-100201,ACME-100202= | The refusal: the trades have different counterparties |
+| =?mode=group&trades=ACME-100203,ACME-100206= | A strategy refused for mixed product families |
 
 ** Structure and package
 
-The two are different rungs of the composition ladder, and the page treats them differently. The test is how the customer holds the trades. See [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]].
+They are different rungs of the composition ladder, one entity with a kind, and the page treats the kinds differently. The test is how the customer holds the trades. See [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]].
 
 #+ATTR_HTML: :class hug-leading
 | | Strategy, typed, dynamic | Package |
@@ -46,14 +47,14 @@ The two are different rungs of the composition ladder, and the page treats them 
 | Product family | A strategy has one. Typed and dynamic may mix | Any mix |
 | Unlinking a leg | Changes the deal. A partial close-out is a lifecycle event | The other legs are unaffected |
 
-STR-0004 is a package of a swap and a cap. STR-0007 is a risk reversal, a strategy. The page shows the chips, the card "How it confirms and prices", and the members table differently for each. The Members tab of a package shows each leg's external version, because the customer quotes the one for the trade they hold. The trade page says which kind a trade's structure is, and the amend dialog says whose confirmation a change reaches.
+PKG-0004 is a package of a swap and a cap. STR-0007 is a risk reversal, a strategy. The page shows the chips, the card "How it confirms and prices", and the members table differently for each. The Members tab of a package shows each leg's external version, because the customer quotes the one for the trade they hold. The trade page says which kind a trade's structure is, and the amend dialog says whose confirmation a change reaches.
 
 A composite trade is neither. It is one trade with its own legs, and it is not in a structure in these prototypes.
 
 ** What the prototype argues
 
 - The version is read from the legs and is never stored beside them. The rule is the one the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] shows: a change to any component moves the structure, and authorisation does not.
-- The kind is chosen at grouping, with its consequences stated beside each choice, because it decides what the customer receives.
+- The kind is chosen at grouping, with its consequences stated beside each choice, because it decides what the customer receives. Package is one of the four kinds, so there is one workflow, Group trades.
 - The client states the rules the database enforces: every leg shares the party and the counterparty, a structure nests one level at most, and a strategy has one product family. The person sees the check before the server refuses it.
 - A trade moves from one structure to another without being rewritten.
 - Pricing and composition stay in the Trade Entry Prototype. The Workflows menu links to both.

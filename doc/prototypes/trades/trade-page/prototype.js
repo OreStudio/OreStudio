@@ -6,7 +6,8 @@ const STATE_P = P.get('state') || '';
 const SERVER = P.get('server') === 'today' ? 'today' : 'target';
 const TAB = P.get('tab') || 'details';
 const CODE = P.get('trade');
-const STRUCT_KIND = { 'STR-0004': { kind: 'Package', whole: false, legs: 2 }, 'STR-0007': { kind: 'Strategy', template: 'RiskReversal', whole: true, legs: 2 } };
+const STRUCT_KIND = { 'PKG-0004': { kind: 'Package', whole: false, legs: 2 }, 'STR-0007': { kind: 'Strategy', template: 'RiskReversal', whole: true, legs: 2 } };
+const dealHref = id => '../structure-page/?deal=' + id;
 const TABS = [['details', 'Details'], ['instrument', 'Instrument'], ['identifiers', 'Identifiers and roles'], ['links', 'Links'], ['history', 'History']];
 
 /* What the server holds, and what the screen has been told about. A save does
@@ -65,7 +66,7 @@ function renderList() {
             { title: 'Book a trade', line: 'Record a new deal, live or as a draft.', href: '../book-a-trade/', allowed: !!CAN.book },
             { title: 'Import a portfolio from ORE', line: 'Bring an ORE portfolio file into a book.', href: '../ore-portfolio/?mode=import', allowed: !!CAN.import },
             { title: 'Export a portfolio to ORE', line: 'Write trades out as the portfolio the engine reads.', href: '../ore-portfolio/?mode=export' + (selected.size ? '&trades=' + [...selected].join(',') : ''), allowed: !!CAN.export },
-            { title: 'Group trades into a structure', line: selected.size >= 2 ? 'Hold the ' + selected.size + ' chosen trades as one deal.' : 'Choose two or more trades first.', run: () => selected.size >= 2 ? location.href = '../structure-page/?mode=group&trades=' + [...selected].join(',') : toast('Choose two or more trades in the list first.'), allowed: !!CAN.structure }
+            { title: 'Group trades', line: selected.size >= 2 ? 'Hold the ' + selected.size + ' chosen trades as one deal, or as a package that confirms trade by trade.' : 'Choose two or more trades first.', run: () => selected.size >= 2 ? location.href = '../structure-page/?mode=group&trades=' + [...selected].join(',') : toast('Choose two or more trades in the list first.'), allowed: !!CAN.structure }
         ])]
     });
     const filters = SERVER === 'today'
@@ -120,14 +121,14 @@ function renderPage() {
             refreshButton({ stale, onClick: refresh }),
             workflowMenu([
                 { title: 'Record a lifecycle event', line: 'Exercise, terminate, cancel, novate or move book.', run: () => lifecycle(t), allowed: !!CAN.event },
-                { title: 'Group into a structure', line: 'Hold this trade with others as one deal.', href: '../structure-page/?mode=group&trades=' + t.code, allowed: !!CAN.structure && !t.structure },
+                { title: 'Group with other trades', line: 'Hold this trade with others as one deal, or as a package.', href: '../structure-page/?mode=group&trades=' + t.code, allowed: !!CAN.structure && !t.structure },
                 { title: 'Book a similar trade', line: 'Start a booking from this trade\'s terms.', href: '../book-a-trade/?like=' + t.code, allowed: !!CAN.book },
                 { title: 'Export to ORE', line: 'Write this trade out as an ORE portfolio.', href: '../ore-portfolio/?mode=export&trades=' + t.code, allowed: !!CAN.export }
             ])]
     });
     const sub = h('div', { class: 'filters', style: 'margin-top:-.25rem' }, h('span', { class: 'chip' }, t.code), stateChip(t.state), authChip(t),
         chip('v' + t.ver, 'v', 'Internal version: moves on every recorded change'), chip('external v' + t.ext, 'v', 'External version: moves only when the agreed terms change'),
-        t.structure ? h('a', { class: 'chip acc', href: '../structure-page/?structure=' + t.structure }, 'in ' + t.structure) : null);
+        t.structure ? h('a', { class: 'chip acc', href: dealHref(t.structure) }, 'in ' + t.structure) : null);
     const content = TAB === 'instrument' ? instrumentTab(t) : TAB === 'identifiers' ? identifiersTab(t) : TAB === 'links' ? linksTab(t) : TAB === 'history' ? historyTab(t) : detailsTab(t);
     put(wrap(head, sub, stale ? h('div', { class: 'strip' }, 'This trade changed since the page was read. Press Refresh to read it again.') : null,
         tabs(TABS, TABS.some(x => x[0] === TAB) ? TAB : 'details', id => tradeHref(t.code, id === 'details' ? null : id)), content));
@@ -158,8 +159,8 @@ function identifiersTab(t) {
 function linksTab(t) {
     const cards = [];
     cards.push(t.structure
-        ? h('section', { class: 'card' }, h('header', null, h('h2', null, 'Structure'), h('span', { class: 'sp' })), h('div', { class: 'body' }, h('a', { href: '../structure-page/?structure=' + t.structure }, t.structure), ' — ' + STRUCT_KIND[t.structure].kind + (STRUCT_KIND[t.structure].template ? ' (' + STRUCT_KIND[t.structure].template + ')' : '') + ', ' + STRUCT_KIND[t.structure].legs + ' legs. ' + (STRUCT_KIND[t.structure].whole ? 'Confirmed and priced as one deal.' : 'Each leg confirms on its own. A package has no price of its own.')))
-        : h('section', { class: 'card' }, h('header', null, h('h2', null, 'Structure')), h('div', { class: 'body' }, 'Not part of a structure. ', CAN.structure ? h('a', { href: '../structure-page/?mode=group&trades=' + t.code }, 'Group into a structure') : null)));
+        ? h('section', { class: 'card' }, h('header', null, h('h2', null, STRUCT_KIND[t.structure].kind === 'Package' ? 'Package' : 'Structure'), h('span', { class: 'sp' })), h('div', { class: 'body' }, h('a', { href: dealHref(t.structure) }, t.structure), ' — ' + STRUCT_KIND[t.structure].kind + (STRUCT_KIND[t.structure].template ? ' (' + STRUCT_KIND[t.structure].template + ')' : '') + ', ' + STRUCT_KIND[t.structure].legs + ' legs. ' + (STRUCT_KIND[t.structure].whole ? 'Confirmed and priced as one deal.' : 'Each leg confirms on its own. A package has no price of its own.')))
+        : h('section', { class: 'card' }, h('header', null, h('h2', null, 'Structure or package')), h('div', { class: 'body' }, 'Not part of a structure or a package. ', CAN.structure ? h('a', { href: '../structure-page/?mode=group&trades=' + t.code }, 'Group with other trades') : null)));
     const links = [];
     if (t.rebookedTo) links.push([t.rebookKind || 'Novation', 'transferred → new trade', t.rebookedTo]);
     if (t.rebookedFrom) links.push([(trade(t.rebookedFrom) || {}).rebookKind || 'Novation', 'new trade ← transferred', t.rebookedFrom]);

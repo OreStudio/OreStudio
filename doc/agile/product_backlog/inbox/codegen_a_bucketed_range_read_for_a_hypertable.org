@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: D3EAE1D2-17BD-416F-9219-C8806ABAA81C
+:END:
+#+title: Codegen a bucketed range read for a hypertable
+#+description: The entity codegen generates paged and newest reads and cannot express a read that groups a hypertable into time buckets. The grid and node series reads are hand-written, and every sample table will need the same read. Let an entity model declare it, and generate the repository read, the columnar protocol and the TypeScript schema.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:telemetry:compute:timeseries:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Let an entity model for a hypertable declare a bucketed range read, and generate everything the read needs. The model would state four things.
+
+- The time column the buckets cut, and the grouping key, if any. The grid samples have none. The node samples group by host.
+- For each column, how a bucket reduces it: the newest value, the sum, the maximum, or a mean weighted by another column.
+- The largest number of buckets, and for a grouped read the largest number of cells, that one read may return.
+- The permission that gates the read.
+
+From that the codegen would produce the repository read, the request and reply messages with the reply as columns on a regular time axis, the handler skeleton, and the TypeScript schema.
+
+The reply shape is the one the grid and node series use. It carries the start, the bucket width and the bucket count once. Each column is one array. A =samples= array says how many samples each bucket held, so a bucket with none is a gap and not a measured zero. A grouped read lists its keys once and lays each column out row-major.
+
+* Why
+
+The entity codegen generates a paged read and a newest read. Neither groups rows into buckets, so the grid series and the node series reads were written by hand in =compute_telemetry_repository.cpp=. Both repeat the same work: widen the range to whole buckets from the epoch, refuse a range that needs too many buckets, build the SQL, and fill dense arrays from sparse rows.
+
+Every sample table will need the same read. The service samples, the NATS server and stream samples, and the telemetry logs are all time series that a screen wants as a chart over a range. Each one written by hand repeats the axis rules and risks a different gap convention. A generated read keeps one shape and one set of limits.
+
+The shape is data-oriented on purpose. A chart reads one column, the time axis is implicit, and nothing repeats per point. Generating it keeps later reads from drifting back to a list of rows.
+
+* References
+
+- =projects/ores.compute/core/src/repository/compute_telemetry_repository.cpp=, the two hand-written reads and the shared axis function.
+- =projects/ores.compute/modeling/ores.compute.telemetry.org=, the series messages.
+- =projects/ores.compute/modeling/ores.compute.grid_sample.org= and =ores.compute.node_sample.org=, the hypertable entities.
+- The decision in the story "Serve the grid's samples as time series", under Decisions.
+
+* See also
+
+- [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Story: Serve the grid's samples as time series]], where the two reads were written.
+- [[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage history]], the capture the first read answers.
+- [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]], the same kind of aggregate read on another table.

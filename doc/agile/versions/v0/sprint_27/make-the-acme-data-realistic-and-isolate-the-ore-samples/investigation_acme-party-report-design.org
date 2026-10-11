@@ -214,11 +214,11 @@ The books follow how a desk splits the market. The currencies follow from the bo
 Two points on the table.
 
 - Hong Kong trades the offshore renminbi, CNH, and not the onshore CNY, which foreign banks reach only through limited channels. The current Hong Kong set holds CNY. This is my understanding of the market and needs confirming. All the currencies above exist in the reference data, CNH included.
-- The synthetic market data covers only these USD pairs today: AUD, EUR, GBP, NZD, CAD, CHF, DKK, INR, JPY, MXN, NOK, SEK and ZAR. The books for HKD, CNH, SGD, KRW, TWD, BRL, CLP, COP, PLN, CZK, HUF, TRY and ILS have no spot or curve to price against. The set above is the target. The product owner decided on 2026-10-11 to add the market data feeds for the missing currencies, so every book gets a spot and a curve. The feeds are part of the task.
+- The synthetic market data covers only these USD pairs today: AUD, EUR, GBP, NZD, CAD, CHF, DKK, INR, JPY, MXN, NOK, SEK and ZAR. The books for HKD, CNH, SGD, KRW, TWD, BRL, CLP, COP, PLN, CZK, HUF, TRY and ILS have no spot or curve to price against. The set above is the target. The product owner decided on 2026-10-11 to add the market data feeds for the missing currencies, so every book gets a spot and a curve. Other work is refactoring the feeds, so the feeds are not part of this task and are left to that work.
 
 * Recommendations
 
-1. D7, D8 and D14 are settled by the product owner. D13 is checked against public sources and awaits the product owner. A capital specialist still reviews D13 and the other regulatory statements. For D14 the product owner decided to add the market data feeds for the new currencies, so the staging in the table above is no longer needed.
+1. D7, D8, D13 and D14 are settled by the product owner. A capital specialist still reviews D13 and the other regulatory statements. The market data feeds for the new currencies are left to the other work that refactors the feeds.
 2. Take option C for the mechanism. Add one report definitions dataset per ACME party to its bundle, and remove the shared definitions from the ACME parties' provisioning plan.
 3. Remove the count comments from every seed the task touches. The seed header says thirty definitions and the table now holds thirty-one.
 4. Prove the result on a complete provision. The local provision stops at the photo step because of the account visibility defect reported to the other session. Find out first why the per-party ACME portfolios are missing from the local database, because the proof depends on them. The setup cannot finish until that defect is fixed.

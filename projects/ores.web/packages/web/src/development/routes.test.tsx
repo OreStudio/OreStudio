@@ -223,6 +223,42 @@ describe('the story and the task beside the steps', () => {
         expect(html).toContain('Retake four screenshots.');
     });
 
+    it('opens an open scenario on its steps, and offers the report beside them', () => {
+        const html = render(`/development/tests/${ID}`, seeded);
+        const tabs = html
+            .match(/role="tab"[^>]*>([^<]+)</g)
+            ?.map((t) => t.replace(/^.*>/, '').replace('<', ''));
+        expect(tabs).toEqual(['Steps', 'Report', 'Story', 'Task']);
+        expect(html).not.toContain('Steps at a glance');
+    });
+
+    it('opens a closed scenario on its report, where a reviewer reads it', () => {
+        const closed = (client: QueryClient) =>
+            client.setQueryData(['qa-scenario', ID], {
+                ...withContext,
+                state: 'PASSED',
+                steps: withContext.steps.map((step) => ({
+                    ...step,
+                    status: 'PASS',
+                    notes: 'It worked.',
+                })),
+            });
+        const html = render(`/development/tests/${ID}`, closed);
+        const tabs = html
+            .match(/role="tab"[^>]*>([^<]+)</g)
+            ?.map((t) => t.replace(/^.*>/, '').replace('<', ''));
+        expect(tabs).toEqual(['Report', 'Steps', 'Story', 'Task']);
+        expect(html).toContain('Steps at a glance');
+        expect(html).toContain('It worked.');
+        expect(html).toContain('<div hidden="">');
+    });
+
+    it('shows the report of an open scenario when its tab is asked for', () => {
+        const html = render(`/development/tests/${ID}?tab=report`, seeded);
+        expect(html).toContain('Steps at a glance');
+        expect(html).toContain('<div hidden="">');
+    });
+
     it('keeps the runner mounted but hidden on another tab, so its marks survive', () => {
         const html = render(`/development/tests/${ID}?tab=story`, seeded);
         expect(html).toContain('<div hidden="">');

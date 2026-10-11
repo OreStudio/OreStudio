@@ -1163,6 +1163,7 @@ const fr: SourceCatalogue = {
             tabsLabel: 'Vues du scénario',
             tabs: {
                 steps: 'Étapes',
+                report: 'Rapport',
                 story: 'Récit',
                 task: 'Tâche',
             },
@@ -1174,6 +1175,14 @@ const fr: SourceCatalogue = {
             body: 'Des marques ou des notes ne sont pas enregistrées. En partant, vous les perdez.',
             stay: 'Rester',
             leave: 'Quitter',
+        },
+        report: {
+            instructions: 'Instructions',
+            notMarked: 'Non marquée.',
+            noSteps: "Ce scénario n'a aucune étape.",
+            build: 'Version',
+            glance: "Les étapes en un coup d'œil",
+            count: '{count} {status}',
         },
         docs: {
             title: 'Document',

@@ -24,8 +24,8 @@ import { Link } from 'react-router';
 import type { Scenario, ScenarioState } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Field, Notice, Tag } from '../ui/Primitives.js';
-import { qaImageUrl } from '../api/qa.js';
-import { attachedImages, carriesFiles, filesOf } from './images.js';
+import { AttachedImages } from './AttachedImages.js';
+import { carriesFiles, filesOf } from './images.js';
 import { OrgText } from './OrgText.js';
 import {
     markedCount,
@@ -377,44 +377,8 @@ function StepCard({
                 </div>
             )}
             {imageError !== null && <Notice tone="error">{imageError}</Notice>}
-            <Attached scenarioId={scenario.id} notes={step.notes} />
+            <AttachedImages scenarioId={scenario.id} notes={step.notes} />
         </section>
-    );
-}
-
-/**
- * The images the note of a step links, as thumbnails. A click opens the image
- * itself in a new tab. A closed scenario shows them too, so a finished run can
- * be read with its screenshots.
- */
-function Attached({
-    scenarioId,
-    notes,
-}: {
-    readonly scenarioId: string;
-    readonly notes: string;
-}): ReactNode {
-    const names = attachedImages(notes);
-    if (names.length === 0) return null;
-    return (
-        <div className="flex flex-wrap gap-2">
-            {names.map((name) => (
-                <a
-                    key={name}
-                    href={qaImageUrl(scenarioId, name)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={name}
-                >
-                    <img
-                        src={qaImageUrl(scenarioId, name)}
-                        alt={name}
-                        loading="lazy"
-                        className="max-h-32 rounded-md border border-line"
-                    />
-                </a>
-            ))}
-        </div>
     );
 }
 

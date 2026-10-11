@@ -30,6 +30,7 @@ import { Notice } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { DocPanel } from './DocPanel.js';
 import { closeDoc, openDoc, shownDoc } from './docStack.js';
+import { ScenarioReport } from './ScenarioReport.js';
 import { UnsavedGuard } from './UnsavedGuard.js';
 import {
     ClipboardProblem,
@@ -71,7 +72,14 @@ export function ScenarioPage(): ReactNode {
     );
 }
 
-const TABS = ['steps', 'story', 'task'] as const;
+/**
+ * The tabs of a scenario. A scenario that is open opens on its steps, which is
+ * where a tester works. A scenario that is closed opens on its report, which is
+ * what a reviewer reads. The order is fixed when the page opens, so saving a
+ * scenario shut does not move the tester to another tab.
+ */
+const OPEN_TABS = ['steps', 'report', 'story', 'task'] as const;
+const CLOSED_TABS = ['report', 'steps', 'story', 'task'] as const;
 
 /**
  * A loaded scenario: its runner, and the story and task it belongs to.
@@ -81,9 +89,10 @@ const TABS = ['steps', 'story', 'task'] as const;
  */
 function Loaded({ id, scenario }: { readonly id: string; readonly scenario: Scenario }): ReactNode {
     const { t } = useTranslation();
+    const [closedAtOpen] = useState(scenario.state !== 'PENDING');
     const { tab, bar } = useTabs({
         label: t('development.scenario.tabsLabel'),
-        tabs: TABS,
+        tabs: closedAtOpen ? CLOSED_TABS : OPEN_TABS,
         titleOf: (candidate) => t(`development.scenario.tabs.${candidate}`),
     });
     return (
@@ -92,6 +101,7 @@ function Loaded({ id, scenario }: { readonly id: string; readonly scenario: Scen
             <div hidden={tab !== 'steps'}>
                 <Run id={id} scenario={scenario} />
             </div>
+            {tab === 'report' && <ScenarioReport scenario={scenario} />}
             {tab === 'story' && (
                 <Context link={scenario.story} none={t('development.scenario.noStory')} />
             )}

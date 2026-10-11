@@ -28,6 +28,7 @@ import {
     filesOf,
     imageProblem,
     imagesFromClipboard,
+    plainNote,
     type ClipboardLike,
     type Transfer,
 } from './images.js';
@@ -233,5 +234,36 @@ describe('the images on the clipboard', () => {
     it('says the clipboard cannot be read when the browser has none', async () => {
         expect(await problem(imagesFromClipboard(undefined))).toBe('unavailable');
         expect(await problem(imagesFromClipboard({} as ClipboardLike))).toBe('unavailable');
+    });
+});
+
+describe('the words of a note without the links to its images', () => {
+    it('is empty for a note that is only image links', () => {
+        expect(plainNote('[[file:a.png]]')).toBe('');
+        expect(plainNote('[[file:a.png]]; [[file:b.png]]')).toBe('');
+    });
+
+    it('drops the links and the separators that held them, and keeps the words', () => {
+        expect(plainNote('The tab stayed blank.; [[file:a.png]]; [[file:b.png]]')).toBe(
+            'The tab stayed blank.',
+        );
+        expect(plainNote('[[file:a.png]]; It was red.')).toBe('It was red.');
+    });
+
+    it('keeps the words on both sides of a link, in order', () => {
+        expect(plainNote('Before.; [[file:a.png]]; After.')).toBe('Before.; After.');
+    });
+
+    it('keeps a link that is not to an image, because it is part of what was written', () => {
+        expect(plainNote('see [[file:notes.txt]] and [[id:X][a doc]]')).toBe(
+            'see [[file:notes.txt]] and [[id:X][a doc]]',
+        );
+    });
+
+    it('leaves a note with no link as it is, and an empty note empty', () => {
+        expect(plainNote('A plain note; with a semicolon.')).toBe(
+            'A plain note; with a semicolon.',
+        );
+        expect(plainNote('')).toBe('');
     });
 });

@@ -1155,6 +1155,7 @@ const pt: SourceCatalogue = {
             tabsLabel: 'Visões do cenário',
             tabs: {
                 steps: 'Passos',
+                report: 'Relatório',
                 story: 'História',
                 task: 'Tarefa',
             },
@@ -1166,6 +1167,14 @@ const pt: SourceCatalogue = {
             body: 'Há marcas ou notas que não foram gravadas. Sair as descarta.',
             stay: 'Ficar',
             leave: 'Sair',
+        },
+        report: {
+            instructions: 'Instruções',
+            notMarked: 'Não marcado.',
+            noSteps: 'Este cenário não tem passos.',
+            build: 'Versão',
+            glance: 'Os passos de relance',
+            count: '{count} {status}',
         },
         docs: {
             title: 'Documento',

@@ -1152,6 +1152,7 @@ export const en: SourceCatalogue = {
             tabsLabel: 'Scenario views',
             tabs: {
                 steps: 'Steps',
+                report: 'Report',
                 story: 'Story',
                 task: 'Task',
             },
@@ -1163,6 +1164,14 @@ export const en: SourceCatalogue = {
             body: 'You have marks or notes that are not saved. Leaving drops them.',
             stay: 'Stay',
             leave: 'Leave',
+        },
+        report: {
+            instructions: 'Instructions',
+            notMarked: 'Not marked.',
+            noSteps: 'This scenario has no steps.',
+            build: 'Build',
+            glance: 'Steps at a glance',
+            count: '{count} {status}',
         },
         docs: {
             title: 'Doc',

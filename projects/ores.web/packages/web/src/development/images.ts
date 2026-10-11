@@ -160,3 +160,20 @@ export async function imagesFromClipboard(clipboard: ClipboardLike | undefined):
     if (files.length === 0) throw new ClipboardProblem('empty');
     return files;
 }
+
+/**
+ * The words of a note without the links to its images. A note keeps a line end
+ * as "; " in the table cell of the doc, so a note that is only image links
+ * leaves nothing, and a note with words and links leaves the words without the
+ * separators that held the links.
+ */
+export function plainNote(notes: string): string {
+    return notes
+        .replace(/\[\[file:([^\]]+)\]\]/g, (link, name: string) =>
+            isImageName(name) ? '\u0000' : link,
+        )
+        .split('\u0000')
+        .map((part) => part.replace(/^[;\s]+|[;\s]+$/g, ''))
+        .filter((part) => part !== '')
+        .join('; ');
+}

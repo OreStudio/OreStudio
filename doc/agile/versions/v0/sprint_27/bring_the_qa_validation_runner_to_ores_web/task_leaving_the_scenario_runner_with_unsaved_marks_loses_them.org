@@ -44,6 +44,7 @@ A tester never loses a mark or a note by leaving the runner page without meaning
 - A step has a button that pastes an image from the clipboard, because a screenshot taken to the clipboard, such as one from GNOME, can be pasted with Ctrl+V only when a field has the focus. The images a note links show as thumbnails under it, and a click opens the picture.
 - The Tests queue groups the scenarios by sprint, newest sprint first. In a sprint the live scenarios, which wait for a tester, are the Active bucket at the top, and the done scenarios are the Done bucket below them. The abandoned scenarios are a bucket of their own that is closed, at the bottom. There is no Done tab. A sprint is open when something in it is active, and the newest sprint is always open.
 - Save, or Retest for a closed scenario, sits above the step, in the card with the step navigation, with the way back to the tests. The message about a save is directly under it. A tester sees it without scrolling to the end of a long step.
+- A scenario can be read as a report, on a Report tab beside the Steps tab. It shows every step on one page, in order, with the mark, the note the tester wrote and the screenshots as large pictures with their file names. A summary at the top gives the state, the count of each status, the target, the dates and the build, and a strip of numbered markers, coloured by status, jumps to a step. A scenario that is closed opens on the report, so a reviewer reads what the tester did. A scenario that is open opens on its steps.
 - Within a bucket the scenarios run from the newest created date to the oldest, and each row shows the created date.
 
 * Plan
@@ -69,6 +70,10 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- A pasted screenshot was uploaded twice. The clipboard gives the same image in its items and in its files, as two File objects, and the page kept both because it compared the objects. Each of the three pairs in the first run was byte-identical, and was saved in the same second as =name.png= and =name_2.png=. The items are read first now, and the files only when there are none. The first browser run missed it, because a test event made with =DataTransfer= shares one object. A real Ctrl+V on a real clipboard in headless Chrome made two uploads with the old rule and one with the fix.
+- The first run of the scenario is committed as the record: all 17 steps passed, and the six screenshots are the ones pasted on steps 2 and 13. Only the screenshot of step 13 is linked from a note, so the report shows one picture.
+- The report was checked in the real app with a real sign-in. It opened the finished scenario on its Report tab, loaded the screenshot of step 13 as a real picture, and a marker scrolled to its step.
 
 - The Abandoned status is a state a person sets in the doc. The runner never sets it. Compass does not know it yet, and the scenario template still says =PENDING | PASSED FAILED=. The 12 legacy docs have it in their =#+todo:= line.
 - The abandoned set is the 12 scenarios that waited and were created before 2026-09-01. Four more wait, and they are not legacy: three were created on 2026-10-06 to 2026-10-08 for stories that are DONE, and one is dated 2026-09-29 for a web journey. They are left for a decision, and so is the scenario that is being run.

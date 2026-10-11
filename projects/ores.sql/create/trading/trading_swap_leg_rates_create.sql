@@ -51,7 +51,7 @@ create table if not exists "ores_trading_swap_leg_rates_tbl" (
     "version" integer not null,
     "trade_activity_id" uuid not null,
     "start_date" date null,
-    "value" numeric(18, 10) not null,
+    "value" numeric(38, 12) not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

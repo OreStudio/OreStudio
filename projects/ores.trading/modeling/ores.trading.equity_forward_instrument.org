@@ -113,7 +113,7 @@ std::string("USD")
 
 ** quantity
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          double precision
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
@@ -127,7 +127,7 @@ Number of shares / contracts. Must be positive.
 
 ** forward_price
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:

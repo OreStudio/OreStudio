@@ -45,11 +45,11 @@ struct fx_accumulator_instrument_write {
     boost::uuids::uuid trade_activity_id;
     std::string currency;
     ores::utility::decimal::decimal fixing_amount;
-    double strike;
+    ores::utility::decimal::decimal strike;
     std::string underlying_code;
     std::string long_short;
     std::chrono::year_month_day start_date;
-    std::optional<double> knock_out_barrier;
+    std::optional<ores::utility::decimal::decimal> knock_out_barrier;
     std::string description;
 };
 

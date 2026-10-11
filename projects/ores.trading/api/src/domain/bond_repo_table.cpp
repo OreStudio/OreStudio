@@ -25,9 +25,22 @@
 #include "ores.trading.api/domain/bond_repo_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<bond_repo>& v) {
     fort::char_table table;
@@ -37,8 +50,8 @@ std::string convert_to_table(const std::vector<bond_repo>& v) {
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& brp : v) {
-        table << brp.repo_type << brp.repo_rate << brp.repo_index << brp.modified_by << brp.version
-              << fort::endr;
+        table << brp.repo_type << opt_str(brp.repo_rate) << brp.repo_index << brp.modified_by
+              << brp.version << fort::endr;
     }
     return table.to_string();
 }

@@ -77,8 +77,7 @@ render_curve_segment_fields(const domain::curve_segment& v) {
     fields.push_back({.name = "Ibor Index", .value = v.ibor_index.value_or(std::string{})});
     fields.push_back({.name = "Rfr Curve", .value = v.rfr_curve.value_or(std::string{})});
     fields.push_back({.name = "Rfr Index", .value = v.rfr_index.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Spread", .value = v.spread ? std::to_string(*v.spread) : std::string{}});
+    fields.push_back({.name = "Spread", .value = v.spread ? v.spread->to_string() : std::string{}});
     fields.push_back({.name = "Base Curve", .value = v.base_curve.value_or(std::string{})});
     fields.push_back(
         {.name = "Base Curve Currency", .value = v.base_curve_currency.value_or(std::string{})});

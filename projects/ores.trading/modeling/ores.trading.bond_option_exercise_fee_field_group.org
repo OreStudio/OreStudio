@@ -28,7 +28,7 @@ so the container keeps the number and the attributes apart.
 
 ** amount
 :PROPERTIES:
-:cpp_type: double
+:cpp_type:      ores::utility::decimal::decimal
 :END:
 
 The fee amount.

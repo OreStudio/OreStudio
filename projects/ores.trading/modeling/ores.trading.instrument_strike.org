@@ -54,7 +54,7 @@ The activity that wrote this version.
 
 ** price_value
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -72,8 +72,8 @@ Currency the price strike is stated in.
 
 ** yield_value
 :PROPERTIES:
-:type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -90,7 +90,7 @@ Compounding the yield strike is stated under.
 
 ** bare_value
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:

@@ -118,7 +118,7 @@ std::string("USD")
 
 ** notional
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :END:
@@ -146,7 +146,7 @@ std::string("Call")
 
 ** strike
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -159,7 +159,7 @@ std::make_optional(ores::utility::decimal::decimal::from_string("3300").value())
 
 ** barrier_level
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -209,7 +209,7 @@ std::string("Long")
 
 ** payout_amount
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:

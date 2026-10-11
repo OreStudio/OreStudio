@@ -54,7 +54,10 @@ domain::instrument_strike instrument_strike_mapper::map(const instrument_strike_
             std::optional(ores::utility::decimal::decimal::from_string(*v.price_value).value()) :
             std::nullopt;
     r.price_currency = v.price_currency;
-    r.yield_value = v.yield_value;
+    r.yield_value =
+        v.yield_value.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.yield_value).value()) :
+            std::nullopt;
     r.yield_compounding = v.yield_compounding;
     r.bare_value =
         v.bare_value.has_value() ?
@@ -82,7 +85,8 @@ instrument_strike_entity instrument_strike_mapper::map(const domain::instrument_
     r.price_value =
         v.price_value.has_value() ? std::optional(v.price_value->to_string()) : std::nullopt;
     r.price_currency = v.price_currency;
-    r.yield_value = v.yield_value;
+    r.yield_value =
+        v.yield_value.has_value() ? std::optional(v.yield_value->to_string()) : std::nullopt;
     r.yield_compounding = v.yield_compounding;
     r.bare_value =
         v.bare_value.has_value() ? std::optional(v.bare_value->to_string()) : std::nullopt;

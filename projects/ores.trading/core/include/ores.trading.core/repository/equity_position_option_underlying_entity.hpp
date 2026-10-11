@@ -49,7 +49,7 @@ struct equity_position_option_underlying_entity {
     std::string trade_activity_id;
     std::string underlying_name;
     std::string strike;
-    std::optional<std::string> weight;
+    std::optional<double> weight;
     std::string long_short;
     std::optional<std::string> option_type;
     std::optional<std::string> exercise_type;

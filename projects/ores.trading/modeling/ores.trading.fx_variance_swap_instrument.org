@@ -157,7 +157,7 @@ std::string("Long")
 
 ** strike
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          numeric(38, 12)
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
@@ -171,7 +171,7 @@ Fixed variance or volatility strike. Must be positive.
 
 ** notional
 :PROPERTIES:
-:type:          numeric(28, 10)
+:type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :END:

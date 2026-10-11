@@ -73,7 +73,7 @@ std::string("UKRPI")
 
 ** base_cpi
 :PROPERTIES:
-:type:     numeric(18, 10)
+:type:          double precision
 :cpp_type: std::optional<double>
 :nullable: true
 :END:

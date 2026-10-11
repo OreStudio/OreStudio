@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 37651D1D-7929-4813-AC5B-5D47A3512D03
+:END:
+#+title: Task: Add the trade external version
+#+description: The trade carries the version the customer's records match, moved only by economic change.
+#+type: task
+#+level: s1
+#+filetags: :exact_numbers_and_economic_change:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A trade's external version moves when the agreed terms change, and never for an internal reason.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- A null amend does not move the external version.
+- The placement against the agreement, which the trade-structures work owns, is decided and recorded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Live =ores_trading_trades_tbl.external_version= | =integer=, not null | =select column_name, data_type from information_schema.columns where table_name in ('ores_trading_trades_tbl')= as =ORES_DB_DDL_USER= | uncommitted (working tree over =ca0bea89af=) |
+| Live =ores_trading_trades_tbl.economic_digest= | =text=, nullable | same | same |
+| Surfaces carrying the field | model, domain type, entity protocol and the history projection | =grep -rl external_version projects/ores.trading= | same |
+| Moves the field | nothing yet: the fold is the task that does | =grep -rn external_version projects/ores.trading/core/src= | same |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

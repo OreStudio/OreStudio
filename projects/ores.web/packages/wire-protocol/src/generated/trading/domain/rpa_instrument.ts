@@ -38,7 +38,7 @@ export interface RpaInstrument {
     maturity_date: string;
     reference_counterparty: string;
     participation_rate: number;
-    protection_fee: number | null;
+    protection_fee: string;
     description: string;
     audit: AuditRecord;
 }

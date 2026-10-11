@@ -28,12 +28,10 @@
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/commodity_basket_constituent_entity.hpp"
-#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -53,9 +51,7 @@ commodity_basket_constituent_mapper::map(const commodity_basket_constituent_enti
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.underlying_code = v.underlying_code;
-    r.weight = v.weight.has_value() ?
-                   std::optional(ores::utility::decimal::decimal::from_string(*v.weight).value()) :
-                   std::nullopt;
+    r.weight = v.weight;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -77,7 +73,7 @@ commodity_basket_constituent_mapper::map(const domain::commodity_basket_constitu
     r.version = v.version;
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.underlying_code = v.underlying_code;
-    r.weight = v.weight.has_value() ? std::optional(v.weight->to_string()) : std::nullopt;
+    r.weight = v.weight;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

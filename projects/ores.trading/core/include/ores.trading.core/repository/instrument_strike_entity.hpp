@@ -48,7 +48,7 @@ struct instrument_strike_entity {
     std::string trade_activity_id;
     std::optional<std::string> price_value;
     std::optional<std::string> price_currency;
-    std::optional<double> yield_value;
+    std::optional<std::string> yield_value;
     std::optional<std::string> yield_compounding;
     std::optional<std::string> bare_value;
     std::optional<std::string> bare_currency;

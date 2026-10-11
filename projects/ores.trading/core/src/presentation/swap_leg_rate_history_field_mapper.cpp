@@ -45,7 +45,7 @@ render_swap_leg_rate_fields(const domain::swap_leg_rate& v) {
                       .value = v.start_date ?
                                    ores::platform::time::datetime::to_iso8601_date(*v.start_date) :
                                    std::string{}});
-    fields.push_back({.name = "Value", .value = std::to_string(v.value)});
+    fields.push_back({.name = "Value", .value = v.value.to_string()});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

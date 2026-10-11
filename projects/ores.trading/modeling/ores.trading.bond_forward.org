@@ -105,7 +105,7 @@ Settlement type the forward pays under.
 
 ** amount
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
@@ -114,8 +114,8 @@ Amount the forward settles for.
 
 ** lock_rate
 :PROPERTIES:
-:type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -123,7 +123,7 @@ Rate the forward's value is locked at.
 
 ** dv01
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:

@@ -48,7 +48,7 @@ domain::bond_trs generate_synthetic_bond_trs(utility::generation::generation_con
     r.trade_activity_id = ctx.generate_uuid();
     r.return_type = std::string("Total");
     r.funding_leg_type = std::string("Floating");
-    r.funding_rate = 0.045;
+    r.funding_rate = ores::utility::decimal::decimal::from_string("0.045").value();
     r.funding_index = std::string("SOFR");
     r.payer = std::optional<std::string>(std::string("true"));
     r.price_type = std::optional<std::string>(std::string("Dirty"));

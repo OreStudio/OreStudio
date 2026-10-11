@@ -1,0 +1,624 @@
+:PROPERTIES:
+:ID: A1358CC9-3EA3-4D2A-97DF-AE6E27A83DCF
+:END:
+#+title: Task: Make money exact by role across families
+#+description: The remaining money quantities whose type disagrees with their economic twin become exact decimals at numeric(38,12), and the continuous quantities that are exact become binary float.
+#+type: task
+#+level: s1
+#+filetags: :exact_numbers_and_economic_change:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The same economic quantity is typed the same way in every family.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] |
+| Now          | **Done and verified.** All 35 columns are converted, both baselines are empty, and the whole suite passes after a database recreate. 12 of 37 money columns converted. The slice is proven end to end on the live environment at the numeric(38, 12) scale. A second scan found 10 continuous columns typed exact, so the remaining batch is 35, not 25. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. The baselines are empty, so a new offender now fails the check. |
+| Last touched | 2026-10-09                               |
+
+* Where the batch stands
+
+`build/scripts/money_decimal_columns.baseline` holds the columns still to
+convert. At the time of writing it holds **25**, and every one of them is in
+`ores.trading`; the CSA, curve and swap slices are done.
+
+| Family | Columns | Seam | State |
+|--------+---------+------+-------|
+| Bond | 11 | direct assignment, the `bond_instrument_mapper.cpp` shape | not started |
+| FX | 8 | helper signatures (`fill_barrier`, `make_barrier`) | not started; the slice was attempted and reverted |
+| Credit | 2 | not located | not started |
+| FRA | 1 | not located | not started |
+| Strike / yield | 1 | not located | not started |
+| Knock-out swap | 1 | not located | not started |
+| RPA | 1 | not located | not started |
+
+The FX slice is the one to do last or not at all: its seam is the only shape so
+far that is not a conversion, and the first attempt produced 19 compile errors
+because `fill_barrier`'s upper level is hard-coded to `std::optional<double>&`
+and `make_barrier` takes a `double level`.
+
+* The other half of the rule: continuous quantities typed exact
+
+The acceptance says "no money quantity is binary float, **and no continuous
+quantity is decimal**". Only the first half was gated. The second half is not
+empty: `check-money-decimal-columns` now also reports a continuous quantity
+whose SQL type is exact, and 10 exist, held in
+`build/scripts/continuous_decimal_columns.baseline`:
+
+| Column | File | Why it is continuous |
+|--------+------+----------------------|
+| `conversion_ratio` | `bond_issue_conversion_target` | a ratio |
+| `weight` (x2) | `commodity_basket_constituent`, `equity_position_option_underlying` | a basket weight |
+| `quantity` (x3) | `commodity_instrument`, `equity_forward_instrument`, `equity_position_instrument` | a unit quantity |
+| `recovery_rate` | `credit_instrument` | a recovery rate |
+| `variance_strike` (x2) | `commodity_instrument`, `equity_variance_swap_instrument` | a volatility level |
+| `base_cpi` | `inflation_swap_instrument` | a CPI index level |
+
+Four of them carry a `double` in the domain over a `numeric` column, which is
+the worse of the two shapes: exact at rest and lossy in the domain. All ten
+become `double precision`, and the reason is not only the rule — ORE's schema
+reads each of these leaves as `xs:float`, so the binary float is the more
+faithful type as well.
+
+They convert with the same batch, so the count of columns to move is 35, not
+25: 25 money to decimal, 10 continuous to float.
+
+*The 10 need almost no mapper seam — two exceptions, and one of them is a trap.*
+Every continuous column's ORE seam already assigns a `double` — `result.quantity
+= static_cast<double>(d.Quantity)` at `commodity_instrument_mapper.cpp:248`,
+`result.recovery_rate = static_cast<double>(*d.FixedRecoveryRate)` at
+`credit_instrument_mapper.cpp:161`, and the same shape for `variance_strike`
+and `conversion_ratio` in the bond, commodity, equity and curve mappers. For
+those, changing the column to `double precision` makes the two agree and needs
+no C++ change.
+
+Two do not follow that pattern, because their model says `numeric` *and* their
+C++ says `optional<decimal>`: `commodity_instrument_mapper.cpp:434`
+(`constituent.weight`) and `equity_instrument_mapper.cpp:1354` (`row.weight`),
+both `from_double(static_cast<double>(*...Weight)).value()`. When the batch
+flips those columns to `double precision` **these two seams must be reverted to
+a plain `static_cast<double>`**, or the build fails on a decimal assigned to a
+double. They are the only two in the 10, and they are the trap: a batch that
+changes the models and regenerates will build cleanly for the other eight and
+break here.
+
+*A money target with a continuous-looking source.* Separately,
+`equity_instrument_mapper.cpp` fills `inst.notional` — a money column,
+`numeric(38, 12)` and decimal — from ORE's `Quantity` leaf at lines 316, 383,
+452, 489, 729, 1150 and 1186. ORE's `Quantity` is an `xsd::base<float>`
+binding, so the lexical patch gives it the document's digits, and these seven
+sites were still converting through `from_double` and throwing them away. The
+lesson worth keeping: classify a seam by the **target column's role**, not by
+the source leaf's name. "Quantity" sounds continuous and feeds a notional.
+
+Note also that nothing in `ores.trading`'s models names `positiveDecimal`,
+`correlationValue`, `recoveryRate`, `non_negative_decimal` or
+`offPeakPowerIndexDataType_OffPeakHours_t` — the five ORE leaves that are a
+plain `typedef double` rather than a binding, and so are the only floating
+leaves the lexical patch does not touch. No money value travels through them,
+so the patch's coverage is complete for the persisted domain even though 5 of
+the 42 floating setters keep the old shape (35 `set_float` sites plus 7
+`set_double`, of which 2 are bindings and these 5 are bare typedefs). Measured
+by matching every `_set_` function body against the setter calls: 42 setters in
+the code, 37 in `ore_numeric_leaf_setters.txt`, and the five in the difference
+are exactly the typedefs.
+
+* The seams for the 25, located
+
+Searched for each column name under `projects/ores.ore/core/src/domain/`; a hit
+there is a hand-written seam and its absence means the column is pure codegen.
+
+| Columns | Mapper | Shape |
+|---------+--------+-------|
+| Bond (11: `lock_rate`, `repo_rate`, `funding_rate`, `price_value`, `yield_value`, `trs_initial_price`, …) | `bond_instrument_mapper.cpp` | direct assignment; `from_double(...).value()` / `.to_double()` |
+| Credit (2: `option_strike`, `spread`) | `credit_instrument_mapper.cpp` | direct assignment |
+| FX (8: all barriers and strikes) | `fx_instrument_mapper.cpp` | helper signatures |
+| `barrier_level` | `swap_instrument_mapper.cpp` (also `equity_instrument_mapper.cpp`) | not yet read |
+| `protection_fee` | — | none: codegen only |
+
+The located bond and credit lines, verified by grep rather than guessed:
+`bond_instrument_mapper.cpp:460`, `:478`, `:1025`, `:1030`, `:1046`, `:1054`,
+`:1374`, `:1423`, `:1433`, `:1456`, `:1603`, `:1644`, `:1662`, `:1687`;
+`credit_instrument_mapper.cpp:198`, `:314`.
+
+* Acceptance
+
+- No money quantity is binary float, and no continuous quantity is decimal.
+- The batch is verified by one recreate, re-provision and run. NOT by the
+  round trip's numeric bucket: the exporter renders a stored decimal back
+  through ORE's `float`, whose shortest spelling restores the document's
+  digits, so a truncated column still round trips exactly. Measured:
+  `0.00999999978` in, `0.0099999998` stored, `0.00999999978` out, classifier
+  reports numeric 0. Verify against the **columns**, or against a stored text
+  copy of the document's spelling, not against the exported XML.
+
+* Plan
+
+Convert in one batch and verify with one environment cycle. The model change
+is mechanical; three things about it are not obvious and cost a build
+iteration each if missed. All three were learned from the
+=swap_leg_rate.value= slice.
+
+1. The column's own generator block must change too. Every column carries a
+   =#+begin_src cpp :name generator= block, and a money column's emits a bare
+   literal such as =0.05=. That generates a =*_generator.cpp= assigning a
+   =double= to a =decimal=, which does not compile. The spelling that works is
+   =ores::utility::decimal::decimal::from_string("0.05").value()=. A scripted
+   edit that changes only =:type:= and =:cpp_type:= will fail the build.
+2. The ORE mappers convert across the boundary, in both directions. Taking a
+   value from ORE is =from_double(v).value()=; handing one back is
+   =X.to_double()=, and the ORE leaf is a =float= so it takes a further cast.
+   The =ore= component's mappers are where the compile errors land, not the
+   trading repositories, which the generator handles.
+3. Test helpers that read a rate as a =double= need =.to_double()= as well.
+   The sibling helper on the line above already does this; copy it.
+
+Cost, measured: the slice needed three builds. Most of that is items 1 and 3,
+which a script can handle; item 2 is per-family.
+
+The inventory is not written here, on purpose.
+=build/scripts/money_decimal_columns.baseline= is the authoritative list,
+produced by the check from the models themselves, so it cannot drift from
+them. It holds 37 money columns that are binary float: 11 in =ores.trading=,
+the rest in =ores.dq=, =ores.refdata= and =ores.synthetic=, mostly CSA terms
+and curve spreads. A converted column shows up in the check's output as
+"fixed since the baseline was written", which is the signal to delete its
+line — so the baseline shrinks as the work lands and never needs a second
+copy kept in step.
+
+* Resolved: the guard reads 40 columns fewer than the models declare
+
+All 40 are `:type:` lines sitting before the first `** ` heading, and every
+one is in a junction entity — `app_version_platform_junction`,
+`badge_mapping_junction`, `account_party_junction` and the like — whose
+columns are declared in a form the scan does not walk. Each is a `uuid` or a
+`text` foreign key. Not one is a money column.
+
+So the gap is a coverage blemish, not an inventory error: the baseline of 37
+stands. The junctions are still worth handling, because the day one carries
+an amount it would be invisible, and the check should not claim to read every
+column while skipping a whole entity kind.
+
+* The batch, characterised before it runs
+
+The codemod was dry-run over all 37 baseline entries. They divide exactly:
+
+| Case | Count | Outcome |
+|------+-------+---------|
+| Non-optional, generator holds a literal | 8 | automatic: `:type:`, `:cpp_type:` and the literal rewritten to `from_string(...)` |
+| Optional, generator holds `std::nullopt` | 12 | nothing to rewrite; `nullopt` is already right for `optional<decimal>` |
+| Optional, no generator block | 15 | safe; the member defaults |
+| Non-optional `double`, no generator block | 2 | **hand work** |
+
+The two are `bond_option_exercise_fee_field_group::amount` and
+`bond_option_premium_field_group::amount`. Neither has a generator block, so
+the type change lands on the generated mapper, which assigns a `double` to a
+`decimal` and will not compile. That is the same failure the swap-leg slice
+took three builds to find. The codemod now names them rather than reporting
+them like the other 35.
+
+So the batch is one command over 35 entries, plus two mapper fixes, plus one
+regenerate and one build.
+
+The two mapper fixes are located, so they need no discovery:
+`bond_instrument_mapper.cpp:814` and `:835` assign a `double` into the field
+(`result.amount = static_cast<double>(...)`), and the reverse mappers at `:822`
+and `:846` read it back out. They become `from_double(...).value()` and
+`.to_double()` respectively, the same two idioms the swap-leg slice used.
+
+* Which entries need a mapper seam, and which are pure codegen
+
+The ORE boundary seams are only in `ores.ore`. That gives a cheap split of
+the 37, checked by searching `ores.ore` for the column names rather than
+guessed:
+
+- The ten CSA columns (`ores.dq.csa` five, `ores.refdata.csa` five — minimum
+  transfer amounts, collateral compounding spreads, independent amount held)
+  are mapped by `ores.ore` after all, in `netting_set_mapper.cpp`. An
+  earlier version of this note claimed they were unreferenced there; that was
+  wrong, and the file was in the very grep output it was read from. They are written
+  by the dq and refdata services through their own generated mappers, which
+  handle a decimal without help. So these need hand work too, and the build proved it: fourteen
+  compile errors, every one in that file, at `:124`, `:125`, `:127`, `:135`
+  and `:136` forward (which need a `number_decimal` beside `number` at `:62`)
+  and its `put` reverse at `:106`.
+- The two curve columns (`ores.refdata.curve_segment.spread`,
+  `default_curve_configuration.running_spread`) **are** — `ores.ore` ships
+  `curve_configuration_mapper.cpp`. Expect seams there, in the shape of the
+  four `bond_instrument_mapper.cpp` lines.
+
+So the batch has three classes, not two: automatic (35), mechanical with no
+ORE seam (10 of the 35), and hand work (the 2 bond field groups plus whatever
+the curve mapper turns out to need).
+
+* The curve-mapper seam, verified and small
+
+`curve_configuration_mapper.cpp:544` does `s.spread = optional_double(g.Spread)`
+and `:735` does `r.running_spread = optional_double(v.RunningSpread)`. The file
+already holds the helper pair to mirror — `optional_double` at `:182` and
+`assign_optional_double` at `:189` — so the fix is a decimal pair beside them
+plus those two call sites, not a rewrite of the other 26 uses.
+
+* Seam shapes, learned by building
+
+Three attempts, three different shapes. None was predicted correctly; each was
+found by converting, regenerating, building, and reading the errors.
+
+| Slice | Shape | Fix |
+|-------+-------+-----|
+| Bond (`bond_instrument_mapper.cpp`) | direct assignment | `from_double(...).value()` and `.to_double()` at 4 lines |
+| CSA (`netting_set_mapper.cpp`) | helper pair | `number_decimal` beside `number`, `put_decimal` beside `put`, 10 call sites |
+| Curve (`curve_configuration_mapper.cpp`) | helper pair | `optional_decimal` / `assign_optional_decimal`, 4 call sites |
+| **FX (`fx_instrument_mapper.cpp`)** | **helper signatures** | not done: `fill_barrier` and `make_barrier` take `double`, and the call sites pass decimals, so the helpers' parameters change rather than the call sites converting |
+| **Equity (`equity_instrument_mapper.cpp`)** | **helper return type** | `extract_strike`, `first_barrier_level` and `second_barrier_level` return `double`, so they lose the digits before the seam sees them. Turning the call sites into `exact_decimal(<double>)` looks correct and is not: the value is already a float by then. The three helpers must return `decimal`. |
+
+The equity row is the one that hides best. `exact_decimal(extract_strike(...))`
+reads as exact and is not, because `extract_strike` returns a `double` computed
+from the binding. A conversion is only as exact as its input, and a
+`double`-returning helper is a float boundary in the middle of the mapper. The
+rule that catches it: when converting a seam, check where the *value* was last
+text, not what the call looks like. `_Strike_t` is literally `xsd::string`
+(`domain.hpp:9666`), so the text was still there and `std::stod` threw it away.
+
+Read closely, the FX fix is narrower than "templatise everything".
+`fill_barrier` already takes its lower level as a template parameter
+(`template <typename Lower> ... Lower& lower`), so a decimal lower works; it
+is the upper that is hard-coded to `std::optional<double>&`, and the two
+assignments inside do `lower = static_cast<double>(levels.front())`. So the
+change is: templatise the upper as well, convert those two assignments with
+`from_double`, and change `make_barrier`'s `double level` parameter. The call
+sites then need nothing.
+
+The FX case is the one that is not a conversion. `make_barrier(const std::string&, double level)` and `fill_barrier(barrierData&, type, lower, upper)` must take the decimal types, and 19 compile errors follow from it. Expect the same shape in any family whose mapper has a helper that carries a money value across its interface.
+
+* The lever has known gaps
+
+`scripts/convert_money_column_to_decimal.py` now makes four edits, not three:
+`:type:`, `:cpp_type:`, the generator block, and `:default_value:`. It learned
+the fourth from a build, not from reading — a default of `0.0` renders as
+`= 0.0` in the generated header, which a decimal cannot take.
+
+It has also carried the same bug twice: a rewrite ending in `\s*$` consumes the
+newline before `:END:` and welds the drawer closed. Fixed once in the generator
+path and reintroduced in the default-value path. **Both were caught by grep,
+not by any test.** Treat the lever as unverified for any edit path that has not
+been exercised on a real column, and grep the model afterwards for a `:END:`
+that has moved onto the previous line. The lever now checks its own output for
+that shape and refuses to write.
+
+A third bug, and the worst of the three: the generator-block search ran from
+the column's heading to the next `#+begin_src cpp :name generator` **in the
+whole file**, with `.` matching newlines. A column that has no generator block
+therefore matched its *neighbour's*, and the lever rewrote a column nobody
+named. It was caught by the mirror direction, where `commodity_instrument`'s
+`variance_strike` reported a generator body of
+`std::chrono::year_month_day{...}` — a date. The search now stops at the next
+`** ` heading. The money direction's output is byte-identical before and after
+the fix, so no already-converted column was harmed, but it was luck: the
+continuous columns happened to be adjacent to a date leaf.
+
+* The scale, scoped from the live schema
+
+`numeric(28, 10)` rounds a document's eleventh and twelfth decimal places
+away, and the corpus states them. Measured against the recreated database
+rather than the models:
+
+    select count(*) from information_schema.columns
+     where table_schema='public' and data_type='numeric' and numeric_scale=10;
+    --> 90 in ores_trading_*, and the rest elsewhere
+
+That is many more than the 63 the model audit reported, because the audit read
+declarations and this reads the schema the server actually carries.
+
+The fix is a lever, not ninety edits: models declare the scale literally as
+`:type: numeric(28, 10)`, so replacing that string with `numeric(28, 12)`
+across `projects/**/modeling/*.org` widens every column at once, and one
+regenerate plus one build and recreate proves it. The final scale is numeric(38, 12), and the route there is worth recording
+because the first attempt was wrong. "Wider is free and cannot lose digits"
+is false: numeric(28, 10) allows eighteen integer digits and numeric(28, 12)
+allows sixteen, so widening the scale without widening the precision **narrows
+the integer part**. The suite caught it — three assertions failed with
+"numeric field overflow: a field with precision 28, scale 12 must round to an
+absolute value less than 10^16" in repository_bond_leg_amount_repository_tests.
+numeric(38, 12) gives twenty-six integer digits and twelve places, more room
+than the original in both dimensions.
+
+**Verify it against the columns.** The round trip cannot see this: the
+exporter re-renders a stored decimal through ORE's `float`, whose shortest
+spelling restores the document's digits, so a truncated column still exports
+byte-identical text. `select value from ores_trading_bond_issue_leg_amounts_tbl
+where amount_role='spread'` said `0.0099999998` while the document said
+`0.00999999978` and the classifier said numeric 0.
+
+* How the batch runs
+
+*Dry-run first.* The two lever runs were executed against a staged copy of the
+35 target models under `build/output/scratch/batch/`, with the baselines
+rewritten to point into the copy, and the result checked before anything was
+written to the tree. Measured on the copy: **0 money offenders, 0 continuous
+offenders, 442 columns read, 0 welded drawers**. The diff is what the plan
+says — money columns take `numeric(38, 12)`, `ores::utility::decimal::decimal`
+(or `std::optional<...>`) and `from_string(...).value()` generators; continuous
+columns take `double precision` and `double`. The one side effect worth knowing
+is that the lever re-aligns the whitespace of every `:type:` and `:cpp_type:`
+line it touches, including ones whose value already matched, so the diff is a
+little larger than the semantic change and the reported change list counts
+those as `type`.
+
+The dry run does not cover the mapper seams, which are C++ and cannot be
+rehearsed this way. Those are the risk, and step 4 is where the builds go.
+
+One unit, in this order, because the model change, the regeneration and the
+recreate cannot be separated (see the next section):
+
+1. `python3 scripts/convert_money_column_to_decimal.py --write` — 25 columns.
+2. `python3 scripts/convert_money_column_to_decimal.py --baseline
+   build/scripts/continuous_decimal_columns.baseline --to-float --write` — 10
+   columns.
+3. Grep both model sets for a `:END:` that has moved onto the previous line.
+   The lever now refuses that shape itself, but the grep is the independent
+   check and it is what caught the bug twice.
+4. Fix the mapper seams. **Do not read the lever's "2 need a hand-written
+   mapper seam" as the size of this step.** That count is about a missing
+   *generator block*; the mapper seams are a different and much larger set. The
+   candidate list is in `evidence/money_seams.txt` beside this task, generated
+   by matching each of the 25 column names against an assignment in `ores.ore`'s
+   mappers. It is a *candidate* list and not an edit plan: name-level matching
+   over-reports, because `strike` is already decimal in six of its eleven
+   families and the grep cannot tell which family a line belongs to. Read each
+   hit against its entity, and let the compiler confirm the rest. The same
+   matching is sorted into an edit preview in `evidence/money_seam_plan.txt`:
+   **21 forward lines** that assign a `double` into a field becoming `decimal`
+   (the ones the compiler will reject, needing `exact_decimal(...)`), **17
+   reverse lines** assigning back through a `float` (needing `.to_double()`),
+   and 54 to leave alone. The preview is a map, not the edit: same-named columns
+   in families that are already decimal inflate it, so the build is still what
+   decides.
+
+   One reverse shape is not a wrap. `fx_instrument_mapper.cpp:922` and `:943`
+   read `static_cast<float>(instr.strike.value_or(0.0))`, and `0.0` is a
+   `double`: once `strike` is `std::optional<decimal>`, `value_or(0.0)` does not
+   compile, because `decimal` has no constructor from a `double` — only
+   `from_double`, which returns an `expected`. The spelling is
+   `value_or(ores::utility::decimal::decimal{})` wrapped in `.to_double()`, and
+   the default is a `decimal{}` and not a literal. Most of the 25 are on the "exact at rest, lossy in the domain"
+   shape, so their seams are `static_cast<double>(*binding)` forward and
+   `static_cast<float>(*row.field)` back, and both must move: the forward to
+   `exact_decimal(binding)` and the back to
+   `static_cast<float>(row.field->to_double())`. Bond carries most of them,
+   then FX, then credit, swap and equity.
+5. `./compass.sh codegen regenerate --component trading-cpp --address ores`.
+6. `./compass.sh build -j 2`.
+7. `./compass.sh services stop && ./compass.sh db recreate -y -k`.
+8. `./compass.sh services start`, then re-provision the tenant.
+9. `./compass.sh check --only money-decimal-columns --only model-sql-types`;
+   empty both baselines once the counts are zero, and delete the columns'
+   lines from them.
+
+**The expected red between step 4 and step 5.** `check-model-sql-types` compares
+SQL types, not C++ types, so the batch moves it in one direction only: measured
+on the staged tree, **11 columns will disagree before the regeneration and 0
+after** — the ten continuous columns, whose SQL type changes from
+`numeric(38, 12)` to `double precision`, plus one money column whose `:type:`
+string changes. The other 24 money columns already declared `numeric(38, 12)`
+and only their `:cpp_type:` moves, which this check does not read and
+`check-money-decimal-columns` does. So 11 is the number to expect, and a
+different number means the batch did something other than what was rehearsed.
+
+* The batch is two units, and the first one needs no recreate
+
+The 35 columns do not split the way the rules do. Measured on the staged tree by
+comparing each column's declared type before and after: **24 of the 25 money
+columns already declare `numeric(38, 12)`**, so converting them changes only
+`:cpp_type:` — and `cpp_type` appears in sixteen codegen templates, none of them
+an SQL one. So that unit produces no SQL change, no schema-fingerprint change,
+and **no recreate and no tenant rebuild**. The other 11 columns — the ten
+continuous plus `rpa_instrument.protection_fee`, whose type moves the other way,
+from `double precision` to `numeric(38, 12)` — do change SQL and do need the
+recreate.
+
+| Unit | Columns | Changes | Needs |
+|------+---------+---------+-------|
+| A | 24 money | `:cpp_type:` and json/nats C++ only | regenerate, seam fixes, build, tests |
+| B | 10 continuous + `rpa_instrument.protection_fee` | SQL type | regenerate, 2 seam reverts, build, recreate, provision |
+
+Ship A first. It carries almost all of the correctness value — every remaining
+money quantity becomes exact in the domain — and it does not need the database
+recreate that B does.
+
+**But weigh the build before splitting, because the build dominates.** The
+split was recommended on the recreate, and that is the smaller cost. Measured
+since: `compass codegen regenerate` rewrites every file a component owns
+whether or not the content changes, so it moves mtimes for all of them and
+invalidates that component's whole build cache. A second unit therefore costs a
+second full `trading-cpp` build — an hour or more here, against roughly half an
+hour for the recreate and re-provision. So:
+
+| Route | Builds | Recreates | Roughly |
+|-------+--------+-----------+---------|
+| A then B | 2 full trading builds | 1 | 2h30 |
+| A and B together | 1 full trading build | 1 | 1h30 |
+
+Unless the recreate itself is the risk being managed — it takes the services
+down and rebuilds the tenant, and it cannot be rehearsed — the combined unit is
+the cheaper one, and the two-unit split is worth it only when something needs
+the money half on the environment before the continuous half is ready.
+
+The reason to state this at all is that the two were planned as one unit
+because the *rules* are two halves of one rule, then split because the *schema*
+cares only about which columns change type, and now the *build* pulls them back
+together. Each split was reasoned from a different cost, and the build is the
+one that actually dominates.
+
+* What "consistent by role" means, measured
+
+The goal is that the same economic quantity is typed the same way in every
+family. It is not, and the counterexample is `strike`, which appears across
+eleven families in **three** different shapes:
+
+| Column | Distinct (SQL, cpp) shapes | Where |
+|--------+---------------------------+-------|
+| `strike` | 3 | `numeric`+decimal in 6 equity families; `numeric`+`double` in `fra_instrument`, `fx_accumulator_instrument`, `fx_variance_swap_instrument`; `numeric`+`std::optional<double>` in `fx_asian_forward_instrument`, `fx_digital_option_instrument` |
+| `lower_barrier` | 3 | decimal in commodity and equity; `double` in `fx_barrier_option`; `optional<double>` in `fx_digital_option` |
+| `upper_barrier` | 2 | decimal in commodity and equity; `optional<double>` in both fx families |
+| `amount` | 1 | decimal everywhere it appears |
+| `spread` | 1 | `double`, in `credit_instrument` |
+
+So the acceptance is not "one shape per column" — optionality is a real
+difference and an optional strike is legitimately `std::optional<decimal>`. It
+is: **the value type is `decimal` in every family, never `double`**, and the
+column is exact. That is what `check-money-decimal-columns` enforces, with the
+baseline as the list of places it is not yet true.
+
+The measurement also explains why a name-level search for the work
+over-reports: `strike` is already decimal in six of its eleven families, so a
+grep for the name finds files that need no change. The compiler is the reliable
+oracle for which seams move, and the dry run says 11 columns change SQL type
+while the other 24 change only `:cpp_type:`.
+
+* Why the scale change is one unit, not two
+
+Changing the model's scale changes the generated SQL, which changes the schema
+fingerprint, and the fingerprint guard runs when a process starts. Two
+consequences that decide how the work must be sequenced:
+
+- The already-running services keep running, because they checked at startup
+  and do not re-check. So the change does not visibly break anything.
+- Every *new* process that touches the database refuses, including the test
+  binaries, which print "the database was built from different SQL" and exit.
+
+So applying the replace and the regenerate without the recreate leaves the
+source coherent and the environment unverifiable — the 13 converted columns
+and the digest tests can no longer be run at all. The change, the regenerate,
+the build and the recreate are one unit, and it should be started only when
+there is room to finish it. Around twenty minutes, services down, tenant
+rebuilt.
+
+* Two things this change exposed
+
+**model-drift does not check column types.** While the models said
+numeric(38, 12) and the generated SQL still said numeric(28, 12) — before the
+regeneration reached that component — `compass check --only model-drift`
+passed. It compares structure, not types, so a precision change is invisible
+to it and only the build and the database suite can confirm a regeneration
+finished. Do not treat model-drift as evidence that the SQL matches the
+models.
+
+**component-drift is red on any branch that regenerates, and that is not
+drift.** `check_component_drift.py --component <x>` regenerates the component
+and then reports a `git diff` of the working tree against the base ref, so it
+fails for every generated file the branch has touched — including regenerated
+ones that are correct. On an uncommitted branch the verdict is unreadable.
+
+The question to ask instead is whether regeneration is a **no-op**, and it is
+answerable in two commands: hash the component's generated tree, regenerate,
+hash again. Measured for `trading-cpp` after the trade columns, the digest and
+the boundary work had all landed: the tree hash is
+`0ebc616cb36a395c06ed088846deaccc8bab9f287cf6c4d8f85f0289f5b98727` before and
+after, and `git status` reports the same 232 paths. So the tree matches its
+models, and the check's red is a statement about the branch and not about the
+work.
+
+The gap is now closed by `check-model-sql-types`
+(`projects/ores.codegen/scripts/check_model_sql_types.py`, registered in
+`build/scripts/local_checks.py`). It reads each model's `:tablename:` and
+`* Columns` drawers, finds the SQL file that actually creates that table, and
+compares the declared type with the created one. Measured on this tree: 3152
+columns compared, 0 mismatches, 0 models whose table no file creates. It was
+mutation-proved in both directions — a model changed to `numeric(28, 12)`
+against SQL at `numeric(38, 12)`, and the reverse, each reported and each
+exiting 1 — and it carries a vacuity floor so a parse that stops understanding
+the models fails instead of passing, with `--min-compared` to lower that floor
+only when running against a subtree.
+
+**The tests pinned the old scale.** `repository_bond_leg_amount_repository_tests`
+hard-codes ten decimal places in its probe expectations and uses an
+eighteen-digit value to test the column refusing an over-wide number. Both
+were correct assertions about numeric(28, 10) and both had to change with the
+scale. They were not a regression to revert; they were the schema being
+asserted in two places, which is what a test of a decimal column should do.
+
+* The import is not idempotent on the book name
+
+For anyone re-running the round trip to check this work: `ore import` names the
+book after the source **filename**, and a second import of
+`portfolio_roundtrip.xml` fails with "The book already exists for that id".
+
+    ✗ Script aborted at line 4: ore import …
+      [1/1] ore_import_execute: failed — The book already exists for that id.
+
+Three times in this work a re-run was mistaken for a defect because of it.
+Either stage the document under a fresh name, or delete the old book first.
+It is a property of the importer, not of the decimals.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Batch landed: money columns left on the baseline | **0** | =python3 build/scripts/check_money_decimal_columns.py= | uncommitted (working tree over =ca0bea89af=) |
+| Batch landed: continuous columns typed exact | **0** | same | same |
+| Live =numeric(38, 12)= columns | 94 (was 103) | =information_schema.columns= as =ORES_DB_DDL_USER= | same |
+| Live =double precision= columns | 70 (was 61) | same | same |
+| =ores.ore.core.tests= after the batch | 482198 assertions in 627 cases, all passing | the binary, =.env= sourced, after =db recreate= | same |
+| =ores.trading.core.tests= | 929 assertions in 140 cases, all passing | same | same |
+| =ores.trading.api.tests= | 400 assertions in 100 cases, all passing | same | same |
+| =ores.trading.core.tests= | 929 assertions in 140 cases, all passing | =build/output/linux-clang-debug-make/publish/bin/ores.trading.core.tests= with =.env= sourced; binary of 22:05 | uncommitted (working tree over =ca0bea89af=) |
+| Live numeric columns at =numeric(38, 12)= | 103 | =select data_type, numeric_precision, numeric_scale, count(*) from information_schema.columns where table_schema='public' group by 1,2,3;= as =ORES_DB_DDL_USER= against =ores_dev_merry_newton= | uncommitted (working tree over =ca0bea89af=) |
+| Live numeric columns still at =numeric(28, 10)= | 0 | same | same |
+| Live =numeric(5, 4)= columns, deliberately untouched | 2 | same | same |
+| Money columns still on the baseline | 25 | =python3 build/scripts/check_money_decimal_columns.py= | same |
+| Continuous columns typed exact | 10 | same (second direction, =continuous_decimal_columns.baseline=) | same |
+| Models whose declared type disagrees with the created table | 0, over 3152 columns compared | =python3 projects/ores.codegen/scripts/check_model_sql_types.py= | same |
+| ORE assignment lines naming one of the 25 columns | =evidence/money_seams.txt= beside this task, as candidates not an edit plan | generated by matching the 25 baseline names against assignments in =projects/ores.ore/core/src/domain/*.cpp=; over-reports for a name that is decimal in one family and float in another | same |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

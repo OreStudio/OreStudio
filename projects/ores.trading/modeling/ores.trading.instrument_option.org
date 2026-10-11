@@ -299,7 +299,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 
 ** exercise_price
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:

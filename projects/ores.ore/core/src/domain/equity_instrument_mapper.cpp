@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/equity_instrument_mapper.hpp"
+#include "ores.ore.core/domain/ore_boundary_decimal.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <chrono>
@@ -251,31 +252,36 @@ std::chrono::year_month_day equity_instrument_mapper::first_exercise_date(const 
         std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front()));
 }
 
-double equity_instrument_mapper::extract_strike(const strikeGroup_group_t& sg) {
+ores::utility::decimal::decimal
+equity_instrument_mapper::extract_strike(const strikeGroup_group_t& sg) {
     if (sg.Strike) {
         const std::string s(*sg.Strike);
-        if (!s.empty())
-            return std::stod(s);
+        if (!s.empty()) {
+            if (auto parsed = ores::utility::decimal::decimal::from_string(s))
+                return std::move(*parsed);
+        }
     }
     if (sg.StrikeData && sg.StrikeData->Value)
-        return static_cast<double>(*sg.StrikeData->Value);
-    return 0.0;
+        return exact_decimal(static_cast<double>(*sg.StrikeData->Value));
+    return ores::utility::decimal::decimal{};
 }
 
 std::string equity_instrument_mapper::barrier_type_str(const barrierData& bd) {
     return to_string(bd.Type);
 }
 
-double equity_instrument_mapper::first_barrier_level(const barrierData& bd) {
+ores::utility::decimal::decimal
+equity_instrument_mapper::first_barrier_level(const barrierData& bd) {
     if (!bd.Levels.Level.empty())
-        return static_cast<double>(bd.Levels.Level.front());
-    return 0.0;
+        return exact_decimal(static_cast<double>(bd.Levels.Level.front()));
+    return ores::utility::decimal::decimal{};
 }
 
-double equity_instrument_mapper::second_barrier_level(const barrierData& bd) {
+ores::utility::decimal::decimal
+equity_instrument_mapper::second_barrier_level(const barrierData& bd) {
     if (bd.Levels.Level.size() >= 2)
-        return static_cast<double>(bd.Levels.Level[1]);
-    return 0.0;
+        return exact_decimal(static_cast<double>(bd.Levels.Level[1]));
+    return ores::utility::decimal::decimal{};
 }
 
 std::string equity_instrument_mapper::underlyings_to_json(const underlyings& us) {
@@ -311,13 +317,11 @@ equity_instrument_mapper::forward_equity_option(const trade& t) {
 
     inst.underlying_name = extract_underlying_name(d.underlyingTypes);
     inst.currency = std::string(d.Currency);
-    inst.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Quantity)).value();
+    inst.notional = exact_decimal(d.Quantity);
     inst.option_type = extract_option_type(d.OptionData);
     inst.exercise_type = extract_exercise_style(d.OptionData);
     inst.expiry_date = first_exercise_date(d.OptionData);
-    inst.strike =
-        ores::utility::decimal::decimal::from_double(extract_strike(d.strikeGroup)).value();
+    inst.strike = extract_strike(d.strikeGroup);
     return result;
 }
 
@@ -342,8 +346,7 @@ equity_instrument_mapper::forward_equity_forward(const trade& t) {
     inst.underlying_name = extract_underlying_name(d.underlyingTypes);
     inst.currency = std::string(d.Currency);
     inst.quantity = static_cast<double>(d.Quantity);
-    inst.forward_price =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Strike)).value();
+    inst.forward_price = exact_decimal(d.Strike);
     inst.expiry_date = to_domain_date(std::string(d.Maturity));
     return result;
 }
@@ -378,17 +381,13 @@ equity_instrument_mapper::forward_equity_swap(const trade& t) {
             // present. Adding a separate quantity field on the per-type
             // schema is future schema work.
             if (el.Quantity)
-                inst.notional =
-                    ores::utility::decimal::decimal::from_double(static_cast<double>(*el.Quantity))
-                        .value();
+                inst.notional = exact_decimal(*el.Quantity);
         } else {
             // Non-equity leg provides currency/notional/schedule.
             if (ld.Currency)
                 inst.currency = std::string(*ld.Currency);
             if (ld.Notionals && !ld.Notionals->Notional.empty())
-                inst.notional = ores::utility::decimal::decimal::from_double(
-                                    static_cast<double>(ld.Notionals->Notional.front()))
-                                    .value();
+                inst.notional = exact_decimal(ld.Notionals->Notional.front());
             if (ld.ScheduleData && !ld.ScheduleData->Rules.empty()) {
                 const auto& rule = ld.ScheduleData->Rules.front();
                 inst.start_date = to_domain_date(std::string(rule.StartDate));
@@ -421,8 +420,7 @@ equity_instrument_mapper::forward_equity_variance_swap(const trade& t) {
 
     inst.underlying_name = extract_underlying_name(d.underlyingTypes);
     inst.currency = to_string(d.Currency);
-    inst.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Notional)).value();
+    inst.notional = exact_decimal(d.Notional);
     inst.variance_strike = static_cast<double>(d.Strike);
     inst.start_date = to_domain_date(std::string(d.StartDate));
     inst.maturity_date = to_domain_date(std::string(d.EndDate));
@@ -449,19 +447,16 @@ equity_instrument_mapper::forward_equity_barrier_option(const trade& t) {
 
     inst.underlying_name = extract_underlying_name(d.underlyingTypes);
     inst.currency = to_string(d.Currency);
-    inst.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Quantity)).value();
+    inst.notional = exact_decimal(d.Quantity);
     inst.option_type = extract_option_type(d.OptionData);
     inst.exercise_type = extract_exercise_style(d.OptionData);
     inst.expiry_date = first_exercise_date(d.OptionData);
-    inst.strike =
-        ores::utility::decimal::decimal::from_double(extract_strike(d.strikeGroup)).value();
+    inst.strike = extract_strike(d.strikeGroup);
     inst.lower_barrier_type = barrier_type_str(d.BarrierData);
-    inst.lower_barrier =
-        ores::utility::decimal::decimal::from_double(first_barrier_level(d.BarrierData)).value();
+    inst.lower_barrier = first_barrier_level(d.BarrierData);
     const auto upper = second_barrier_level(d.BarrierData);
-    if (upper > 0.0)
-        inst.upper_barrier = ores::utility::decimal::decimal::from_double(upper).value();
+    if (upper > ores::utility::decimal::decimal{})
+        inst.upper_barrier = upper;
     return result;
 }
 
@@ -486,12 +481,10 @@ equity_instrument_mapper::forward_equity_asian_option(const trade& t) {
     if (d.Underlying)
         inst.underlying_name = std::string(d.Underlying->Name);
     inst.currency = to_string(d.Currency);
-    inst.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Quantity)).value();
+    inst.notional = exact_decimal(d.Quantity);
     inst.option_type = extract_option_type(d.OptionData);
     inst.expiry_date = first_exercise_date(d.OptionData);
-    inst.strike =
-        ores::utility::decimal::decimal::from_double(extract_strike(d.strikeGroup)).value();
+    inst.strike = extract_strike(d.strikeGroup);
     if (d.ObservationDates && !d.ObservationDates->Rules.empty())
         inst.averaging_start_date =
             to_domain_date(std::string(d.ObservationDates->Rules.front().StartDate));
@@ -519,10 +512,8 @@ equity_instrument_mapper::forward_equity_digital_option(const trade& t) {
     inst.underlying_name = extract_underlying_name(d.underlyingTypes);
     inst.option_type = extract_option_type(d.OptionData);
     inst.expiry_date = first_exercise_date(d.OptionData);
-    inst.strike =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Strike)).value();
-    inst.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.PayoffAmount)).value();
+    inst.strike = exact_decimal(d.Strike);
+    inst.notional = exact_decimal(d.PayoffAmount);
     if (d.PayoffCurrency)
         inst.currency = to_string(*d.PayoffCurrency);
     return result;
@@ -548,14 +539,13 @@ equity_instrument_mapper::forward_equity_touch_option(const trade& t) {
 
     inst.underlying_name = extract_underlying_name(d.underlyingTypes);
     inst.currency = to_string(d.PayoffCurrency);
-    inst.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.PayoffAmount)).value();
+    inst.notional = exact_decimal(d.PayoffAmount);
     inst.option_type = extract_option_type(d.OptionData);
     inst.expiry_date = first_exercise_date(d.OptionData);
     inst.barrier_type = barrier_type_str(d.BarrierData);
     const auto lb = first_barrier_level(d.BarrierData);
-    if (lb > 0.0)
-        inst.barrier_level = ores::utility::decimal::decimal::from_double(lb).value();
+    if (lb > ores::utility::decimal::decimal{})
+        inst.barrier_level = lb;
     return result;
 }
 
@@ -579,12 +569,10 @@ equity_instrument_mapper::forward_equity_outperformance_option(const trade& t) {
     const auto& d = *t.EquityOutperformanceOptionData;
 
     inst.currency = to_string(d.Currency);
-    inst.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Notional)).value();
+    inst.notional = exact_decimal(d.Notional);
     inst.option_type = extract_option_type(d.OptionData);
     inst.expiry_date = first_exercise_date(d.OptionData);
-    inst.strike =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.StrikeReturn)).value();
+    inst.strike = exact_decimal(d.StrikeReturn);
 
     // Both underlyings join as a slash-separated name since the per-type
     // option struct has no basket field. Preserves round-trip visibility
@@ -615,11 +603,9 @@ equity_instrument_mapper::forward_equity_accumulator(const trade& t) {
 
     inst.underlying_name = std::string(d.Underlying.Name);
     inst.currency = to_string(d.Currency);
-    inst.fixing_amount =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.FixingAmount)).value();
+    inst.fixing_amount = exact_decimal(d.FixingAmount);
     if (d.Strike)
-        inst.strike =
-            ores::utility::decimal::decimal::from_double(static_cast<double>(*d.Strike)).value();
+        inst.strike = exact_decimal(*d.Strike);
     if (d.StartDate)
         inst.start_date = to_domain_date(std::string(*d.StartDate));
 
@@ -628,9 +614,7 @@ equity_instrument_mapper::forward_equity_accumulator(const trade& t) {
         for (const auto& bd : d.Barriers->BarrierData) {
             const auto btype = to_string(bd.Type);
             if ((btype == "DownAndOut" || btype == "UpAndOut") && !bd.Levels.Level.empty()) {
-                inst.knock_out_level = ores::utility::decimal::decimal::from_double(
-                                           static_cast<double>(bd.Levels.Level.front()))
-                                           .value();
+                inst.knock_out_level = exact_decimal(bd.Levels.Level.front());
                 break;
             }
         }
@@ -658,18 +642,14 @@ equity_instrument_mapper::forward_equity_tarf(const trade& t) {
 
     inst.underlying_name = std::string(d.Underlying.Name);
     inst.currency = to_string(d.Currency);
-    inst.fixing_amount =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.FixingAmount)).value();
+    inst.fixing_amount = exact_decimal(d.FixingAmount);
     if (d.Strike)
-        inst.strike =
-            ores::utility::decimal::decimal::from_double(static_cast<double>(*d.Strike)).value();
+        inst.strike = exact_decimal(*d.Strike);
 
     // Capture FixingCap barrier level as knock_out
     for (const auto& bd : d.Barriers.BarrierData) {
         if (to_string(bd.Type) == "FixingCap" && !bd.Levels.Level.empty()) {
-            inst.knock_out_level = ores::utility::decimal::decimal::from_double(
-                                       static_cast<double>(bd.Levels.Level.front()))
-                                       .value();
+            inst.knock_out_level = exact_decimal(bd.Levels.Level.front());
             break;
         }
     }
@@ -696,8 +676,7 @@ equity_instrument_mapper::forward_equity_cliquet_option(const trade& t) {
 
     inst.underlying_name = extract_underlying_name(d.underlyingTypes);
     inst.currency = to_string(d.Currency);
-    inst.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Notional)).value();
+    inst.notional = exact_decimal(d.Notional);
     inst.option_type = to_string(d.OptionType);
 
     // Extract tenor from schedule rules if available
@@ -730,8 +709,7 @@ equity_instrument_mapper::forward_equity_worst_of_basket_swap(const trade& t) {
     const auto& d = *t.EquityWorstOfBasketSwapData;
 
     inst.currency = to_string(d.Currency);
-    inst.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Quantity)).value();
+    inst.notional = exact_decimal(d.Quantity);
     inst.basket_json = underlyings_to_json(d.Underlyings);
     if (!d.Underlyings.Underlying.empty())
         inst.underlying_name = std::string(d.Underlyings.Underlying.front().Name);
@@ -1151,19 +1129,16 @@ equity_instrument_mapper::forward_equity_double_barrier_option(const trade& t) {
     const auto& d = *t.EquityDoubleBarrierOptionData;
     inst.underlying_name = extract_underlying_name(d.underlyingTypes);
     inst.currency = to_string(d.Currency);
-    inst.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Quantity)).value();
+    inst.notional = exact_decimal(d.Quantity);
     inst.option_type = extract_option_type(d.OptionData);
     inst.exercise_type = extract_exercise_style(d.OptionData);
     inst.expiry_date = first_exercise_date(d.OptionData);
-    inst.strike =
-        ores::utility::decimal::decimal::from_double(extract_strike(d.strikeGroup)).value();
+    inst.strike = extract_strike(d.strikeGroup);
     inst.lower_barrier_type = barrier_type_str(d.BarrierData);
-    inst.lower_barrier =
-        ores::utility::decimal::decimal::from_double(first_barrier_level(d.BarrierData)).value();
+    inst.lower_barrier = first_barrier_level(d.BarrierData);
     const auto upper = second_barrier_level(d.BarrierData);
-    if (upper > 0.0)
-        inst.upper_barrier = ores::utility::decimal::decimal::from_double(upper).value();
+    if (upper > ores::utility::decimal::decimal{})
+        inst.upper_barrier = upper;
     return result;
 }
 
@@ -1187,19 +1162,16 @@ equity_instrument_mapper::forward_equity_european_barrier_option(const trade& t)
     const auto& d = *t.EquityEuropeanBarrierOptionData;
     inst.underlying_name = extract_underlying_name(d.underlyingTypes);
     inst.currency = to_string(d.Currency);
-    inst.notional =
-        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Quantity)).value();
+    inst.notional = exact_decimal(d.Quantity);
     inst.option_type = extract_option_type(d.OptionData);
     inst.exercise_type = extract_exercise_style(d.OptionData);
     inst.expiry_date = first_exercise_date(d.OptionData);
-    inst.strike =
-        ores::utility::decimal::decimal::from_double(extract_strike(d.strikeGroup)).value();
+    inst.strike = extract_strike(d.strikeGroup);
     inst.lower_barrier_type = barrier_type_str(d.BarrierData);
-    inst.lower_barrier =
-        ores::utility::decimal::decimal::from_double(first_barrier_level(d.BarrierData)).value();
+    inst.lower_barrier = first_barrier_level(d.BarrierData);
     const auto upper = second_barrier_level(d.BarrierData);
-    if (upper > 0.0)
-        inst.upper_barrier = ores::utility::decimal::decimal::from_double(upper).value();
+    if (upper > ores::utility::decimal::decimal{})
+        inst.upper_barrier = upper;
     return result;
 }
 
@@ -1353,12 +1325,12 @@ equity_instrument_mapper::forward_equity_option_position(const trade& t) {
         trading::domain::equity_position_option_underlying row;
         row.sequence_number = sequence_number++;
         row.underlying_name = std::string(entry.Underlying.Name);
-        row.strike =
-            ores::utility::decimal::decimal::from_double(static_cast<double>(entry.Strike)).value();
+        row.strike = exact_decimal(entry.Strike);
+        // A basket weight is a continuous quantity and not money. A later
+        // batch moves this column to double precision; this seam then
+        // becomes static_cast<double>(*entry.Underlying.Weight) with no decimal.
         if (entry.Underlying.Weight)
-            row.weight = ores::utility::decimal::decimal::from_double(
-                             static_cast<double>(*entry.Underlying.Weight))
-                             .value();
+            row.weight = static_cast<double>(*entry.Underlying.Weight);
         row.long_short = std::string(entry.OptionData.LongShort);
         row.option_type = extract_option_type(entry.OptionData);
         row.exercise_type = extract_exercise_style(entry.OptionData);
@@ -1412,7 +1384,7 @@ trade equity_instrument_mapper::reverse_equity_option_position(
         equityOptionUnderlyingData entry;
         entry.Underlying = make_underlying(row.underlying_name);
         if (row.weight)
-            entry.Underlying.Weight = static_cast<float>(row.weight->to_double());
+            entry.Underlying.Weight = static_cast<float>(*row.weight);
         optionData od;
         static_cast<std::string&>(od.LongShort) = row.long_short;
         if (!row.option_type.empty()) {

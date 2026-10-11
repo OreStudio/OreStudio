@@ -40,7 +40,7 @@ struct bond_option_exercise_fee {
     /**
      * @brief The fee amount.
      */
-    double amount;
+    ores::utility::decimal::decimal amount;
 
     /**
      * @brief The kind of fee the document states, when it states one.

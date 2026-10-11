@@ -47,7 +47,7 @@ struct knock_out_swap_instrument_entity {
     int version = 0;
     std::string trade_activity_id;
     std::string barrier_start_date;
-    double barrier_level = 0.0;
+    std::string barrier_level;
     std::string barrier_type;
     std::string modified_by;
     std::string performed_by;

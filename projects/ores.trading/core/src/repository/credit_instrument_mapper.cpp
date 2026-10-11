@@ -56,7 +56,7 @@ domain::credit_instrument credit_instrument_mapper::map(const credit_instrument_
     r.reference_entity = v.reference_entity;
     r.currency = v.currency;
     r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
-    r.spread = v.spread;
+    r.spread = ores::utility::decimal::decimal::from_string(v.spread).value();
     r.recovery_rate = v.recovery_rate;
     r.tenor = v.tenor;
     r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
@@ -73,7 +73,10 @@ domain::credit_instrument credit_instrument_mapper::map(const credit_instrument_
                                std::optional(ores::platform::time::datetime::from_iso8601_date(
                                    *v.option_expiry_date)) :
                                std::nullopt;
-    r.option_strike = v.option_strike;
+    r.option_strike =
+        v.option_strike.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.option_strike).value()) :
+            std::nullopt;
     r.linked_asset_code = v.linked_asset_code.value_or("");
     r.tranche_attachment = v.tranche_attachment;
     r.tranche_detachment = v.tranche_detachment;
@@ -100,7 +103,7 @@ credit_instrument_entity credit_instrument_mapper::map(const domain::credit_inst
     r.reference_entity = v.reference_entity;
     r.currency = v.currency;
     r.notional = v.notional.to_string();
-    r.spread = v.spread;
+    r.spread = v.spread.to_string();
     r.recovery_rate = v.recovery_rate;
     r.tenor = v.tenor;
     r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
@@ -117,7 +120,8 @@ credit_instrument_entity credit_instrument_mapper::map(const domain::credit_inst
         v.option_expiry_date.has_value() ?
             std::optional(ores::platform::time::datetime::to_iso8601_date(*v.option_expiry_date)) :
             std::nullopt;
-    r.option_strike = v.option_strike;
+    r.option_strike =
+        v.option_strike.has_value() ? std::optional(v.option_strike->to_string()) : std::nullopt;
     r.linked_asset_code =
         v.linked_asset_code.empty() ? std::nullopt : std::optional(v.linked_asset_code);
     r.tranche_attachment = v.tranche_attachment;

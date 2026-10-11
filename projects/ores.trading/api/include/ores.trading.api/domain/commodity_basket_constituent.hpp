@@ -97,7 +97,7 @@ struct commodity_basket_constituent final {
      * The ORE Weight element is optional. A document that states no weight leaves this column null,
      * and the reverse mapper then writes no Weight element back.
      */
-    std::optional<ores::utility::decimal::decimal> weight;
+    std::optional<double> weight;
 
     /**
      * @brief Username of the person who last modified this commodity basket constituent.

@@ -47,7 +47,7 @@ create table if not exists "ores_trading_bond_options_tbl" (
     "version" integer not null,
     "trade_activity_id" uuid not null,
     "option_type" text not null,
-    "option_strike" numeric(28, 10) not null,
+    "option_strike" numeric(38, 12) not null,
     "redemption" text null,
     "price_type" text null,
     "knocks_out" text null,

@@ -107,7 +107,7 @@ struct fx_asian_forward_instrument final {
     /**
      * @brief Target strike level (FxTaRF-specific). Absent for FxAverageForward.
      */
-    std::optional<double> strike;
+    std::optional<ores::utility::decimal::decimal> strike;
 
     /**
      * @brief Optional free-text description.

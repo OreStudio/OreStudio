@@ -176,8 +176,19 @@ select _ores_grant_execute_fn('ores_iam_unapplied_role_grants_', :'iam_service_u
 -- refdata_service: Reference Data domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_refdata_', :'refdata_service_user');
+select _ores_grant_dml_fn('ores_inbox_approval_requests_', :'refdata_service_user');
+select _ores_grant_dml_fn('ores_inbox_approval_request_parts_', :'refdata_service_user');
+select _ores_grant_dml_fn('ores_inbox_notifications_', :'refdata_service_user');
+select _ores_grant_dml_fn('ores_inbox_notification_arguments_', :'refdata_service_user');
+select _ores_grant_dml_fn('ores_inbox_notification_recipients_', :'refdata_service_user');
+select _ores_grant_dml_fn('ores_inbox_notification_deliveries_', :'refdata_service_user');
 select _ores_grant_select_fn('ores_variability_', :'refdata_service_user');
 select _ores_grant_select_fn('ores_assets_', :'refdata_service_user');
+select _ores_grant_select_fn('ores_inbox_approval_', :'refdata_service_user');
+select _ores_grant_select_fn('ores_inbox_notification_kinds_', :'refdata_service_user');
+select _ores_grant_select_fn('ores_inbox_notification_channels_', :'refdata_service_user');
+select _ores_grant_select_fn('ores_inbox_delivery_outcome_types_', :'refdata_service_user');
+select _ores_grant_select_fn('ores_iam_accounts_', :'refdata_service_user');
 select _ores_grant_execute_fn('ores_refdata_publish_', :'refdata_service_user');
 select _ores_grant_execute_fn('ores_refdata_book_change_parties_', :'refdata_service_user');
 select _ores_grant_execute_fn('ores_assets_get_template_image_', :'refdata_service_user');

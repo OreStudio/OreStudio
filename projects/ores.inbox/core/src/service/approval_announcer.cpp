@@ -19,6 +19,7 @@
  */
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <exception>
@@ -49,9 +50,22 @@ void approval_announcer::tell_asker(const domain::approval_kind& kind,
                                    const std::string& comment) {
     try {
         notification_center center(ctx_);
-        const auto sender = center.actor_account_id();
-        if (!sender)
+        // A person who acts is an account of the tenant. The service that acts
+        // for a workflow is an account of the system tenant, so the sender is
+        // looked up there when the tenant does not hold it.
+        auto sender = center.actor_account_id();
+        if (!sender) {
+            const auto name = ctx_.actor().empty() ? ctx_.service_account() : ctx_.actor();
+            sender = notification_center(
+                         ctx_.with_tenant(ores::utility::uuid::tenant_id::system(), name))
+                         .actor_account_id();
+        }
+        if (!sender) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Request " << boost::uuids::to_string(request.id) << " is " << state
+                << ", but no account sends the notice, so the person who asked was not told.";
             return;
+        }
         messaging::raise_notification_request n{
             .kind_code = "inbox.approval_decided",
             .link_route = "requests",

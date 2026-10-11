@@ -28,7 +28,7 @@
  * - The LEI counterparty publish adds what a tenant lacks and skips the rest
  * - A published counterparty links to a parent the tenant already holds
  * - The alias publish writes each alias once and skips a LEI the tenant lacks
- * - An alias the tenant already resolves to another counterparty is refused
+ * - An alias the tenant already resolves to another counterparty is skipped
  *
  * Run with: pg_prove -d <database> test/refdata_counterparty_ore_aliases_test.sql
  */
@@ -239,20 +239,21 @@ begin
     where code = 'test.ore_alias_taken'
       and valid_to = ores_utility_infinity_timestamp_fn();
     -- CPTY_A is already the alias of one counterparty, and this dataset names
-    -- a different one, so the name cannot be applied over.
+    -- a different one, so the name is not applied over and the publish skips it.
     insert into ores_dq_counterparty_aliases_artefact_tbl (dataset_id, tenant_id, id_value,
         version, id_scheme, lei, description)
     values (v_dataset_id, ores_utility_system_tenant_id_fn(), 'CPTY_A', 0, 'ORE',
         '7H6GLXDRUGQFU57RNE97', 'test');
 end $$;
 
-select throws_like(
-    $$select * from ores_refdata_publish_counterparty_aliases_from_dq_fn(
+select is(
+    (select record_count from ores_refdata_publish_counterparty_aliases_from_dq_fn(
         (select id from ores_dq_datasets_tbl where code = 'test.ore_alias_taken'
            and valid_to = ores_utility_infinity_timestamp_fn()),
-        ores_utility_system_tenant_id_fn())$$,
-    '%Alias CPTY_A already belongs to another counterparty%',
-    'an alias the tenant already resolves to another counterparty is refused');
+        ores_utility_system_tenant_id_fn())
+     where action = 'skipped'),
+    1::bigint,
+    'an alias the tenant already resolves to another counterparty is skipped');
 
 select * from finish();
 

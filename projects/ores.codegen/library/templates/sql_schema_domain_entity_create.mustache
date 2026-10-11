@@ -459,6 +459,13 @@ begin
 {{^skip_check}}
 {{^nullable}}
     -- Validate {{column}} (soft FK to {{table}})
+{{#exists_function}}
+    if not {{exists_function}}(NEW.{{column}}) then
+        raise exception '{{error_message}}', NEW.{{column}}
+            using errcode = '23503';
+    end if;
+{{/exists_function}}
+{{^exists_function}}
     if not exists (
         select 1 from {{table}}
         where {{^use_no_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
@@ -473,11 +480,19 @@ begin
         raise exception '{{error_message}}', NEW.{{column}}
             using errcode = '23503';
     end if;
+{{/exists_function}}
 
 {{/nullable}}
 {{#nullable}}
     -- Validate {{column}} (optional soft FK to {{table}})
     if NEW.{{column}} is not null then
+{{#exists_function}}
+        if not {{exists_function}}(NEW.{{column}}) then
+            raise exception '{{error_message}}', NEW.{{column}}
+                using errcode = '23503';
+        end if;
+{{/exists_function}}
+{{^exists_function}}
         if not exists (
             select 1 from {{table}}
             where {{^use_no_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
@@ -492,6 +507,7 @@ begin
             raise exception '{{error_message}}', NEW.{{column}}
                 using errcode = '23503';
         end if;
+{{/exists_function}}
 {{#prevent_cycle}}
 
         -- Reject a {{column}} pointing back at NEW's own row, directly or
@@ -832,6 +848,13 @@ on delete to "{{domain_entity.sql_name_base}}_tbl" do instead (
     where {{#domain_entity.has_tenant_in_pk}}tenant_id = OLD.tenant_id
       and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = OLD.tenant_id or (tenant_id is null and OLD.tenant_id is null))
       and {{/domain_entity.sql.nullable_tenant_id}}{{{domain_entity.primary_key.where_old}}}
+{{#domain_entity.system_tenant_visible}}
+      -- A tenant reads the shared rows of the system tenant, so OLD can be one.
+      -- The rule runs with the owner's rights, which row-level security does
+      -- not bind, so the rule states the own-tenant limit that the delete
+      -- policy cannot enforce here.
+      and tenant_id = ores_iam_current_tenant_id_fn()
+{{/domain_entity.system_tenant_visible}}
       and valid_to = ores_utility_infinity_timestamp_fn();
 {{#domain_entity.foreign_keys}}
 {{#bump_parent_version}}

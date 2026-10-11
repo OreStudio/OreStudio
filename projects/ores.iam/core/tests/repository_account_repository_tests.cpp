@@ -26,8 +26,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -335,4 +337,28 @@ TEST_CASE("write_account_with_itself_as_modified_by", tags) {
     CHECK(read_accounts[0].version == 2);
     CHECK(read_accounts[0].modified_by == first.username);
     CHECK(read_accounts[0].full_name == second.full_name);
+}
+
+TEST_CASE("a_username_or_email_lookup_never_returns_a_shared_account_of_the_system_tenant", tags) {
+    database_helper h;
+    account_repository repo;
+
+    const auto system_ctx =
+        h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+    const auto all = repo.read_latest(system_ctx);
+    const auto shared = std::ranges::find_if(all, [](const auto& a) { return a.shared; });
+    REQUIRE(shared != all.end());
+
+    // A tenant reads the shared rows of the system tenant, but a lookup by
+    // username or email names the session's own tenant, so the sign-in of a
+    // tenant user never resolves to a service or to the super admin.
+    const auto other = ores::utility::uuid::tenant_id::from_string(
+        boost::uuids::to_string(boost::uuids::random_generator()()));
+    REQUIRE(other.has_value());
+    const auto tenant_ctx = h.context().with_tenant(*other, h.db_user());
+
+    CHECK(repo.read_latest_by_username(tenant_ctx, shared->username).empty());
+    CHECK(repo.read_latest_by_email(tenant_ctx, shared->email).empty());
+    CHECK_FALSE(repo.read_latest_by_username(system_ctx, shared->username).empty());
+    CHECK_FALSE(repo.read_latest_by_email(system_ctx, shared->email).empty());
 }

@@ -28,6 +28,7 @@
 #include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/account_protocol.hpp"
@@ -186,9 +187,11 @@ void account_repository::write(context ctx,
 std::vector<domain::account> account_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::read<std::vector<account_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
+        order_by("id"_c);
 
     return execute_read_query<account_entity, domain::account>(
         ctx,
@@ -202,8 +205,10 @@ std::vector<domain::account> account_repository::read_latest(context ctx, const 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<account_entity, domain::account>(
         ctx,
@@ -218,9 +223,11 @@ std::vector<domain::account> account_repository::read_any_by_username(context ct
                                                                       const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any account by username: " << username;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("tenant_id"_c == tid && "username"_c == username) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::read<std::vector<account_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "username"_c == username) |
+        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
     return execute_read_query<account_entity, domain::account>(
         ctx,
@@ -234,8 +241,9 @@ std::vector<domain::account> account_repository::read_any_by_username(context ct
 std::vector<domain::account> account_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all account versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<account_entity, domain::account>(
@@ -251,8 +259,10 @@ account_repository::read_at_version(context ctx, const std::string& id, std::uin
     BOOST_LOG_SEV(lg(), debug) << "Reading account at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
+                             "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<account_entity, domain::account>(
@@ -312,7 +322,9 @@ account_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_entity>> | where("tenant_id"_c == tid) |
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<account_entity, domain::account>(
@@ -332,7 +344,9 @@ account_repository::get_total_account_count(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_entity>> | where("tenant_id"_c == tid);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return execute_count_query<account_entity>(
         ctx, query, narrowed(valid_at(as_of), filter_condition(filter)), lg(), "Counting accounts");
@@ -344,8 +358,10 @@ std::vector<domain::account> account_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c.in(ids) &&
+                             "valid_to"_c == max.value());
     auto result = execute_read_query<account_entity, domain::account>(
         ctx,
         query,
@@ -373,7 +389,9 @@ void account_repository::remove(context ctx, const std::vector<std::string>& ids
 
 
 std::vector<domain::account> account_repository::read_all(context ctx) {
-    const auto query = sqlgen::read<std::vector<account_entity>> | order_by("valid_from"_c.desc());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<account_entity>> | where("tenant_id"_c == tid) |
+                       order_by("valid_from"_c.desc());
 
     return execute_read_query<account_entity, domain::account>(
         ctx,
@@ -388,9 +406,11 @@ account_repository::read_latest_by_username(context ctx, const std::string& user
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("username"_c == username && "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<account_entity>> |
+        where("tenant_id"_c == tid && "username"_c == username && "valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc());
 
     return execute_read_query<account_entity, domain::account>(
         ctx,
@@ -405,9 +425,11 @@ std::vector<domain::account> account_repository::read_latest_by_email(context ct
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("email"_c == email && "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<account_entity>> |
+        where("tenant_id"_c == tid && "email"_c == email && "valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc());
 
     return execute_read_query<account_entity, domain::account>(
         ctx,

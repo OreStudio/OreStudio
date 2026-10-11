@@ -806,7 +806,7 @@ begin
 
         insert into ores_iam_accounts_tbl (
             id, tenant_id, version, account_type, username, full_name, email,
-            picture_code, modified_by, performed_by, change_reason_code,
+            picture_code, shared, modified_by, performed_by, change_reason_code,
             change_commentary, valid_from, valid_to
         )
         values (
@@ -818,6 +818,7 @@ begin
             p_full_name,
             p_email,
             p_picture_code,
+            true,
             current_user,
             current_user,
             'system.initial_load',

@@ -106,12 +106,7 @@ begin
     end if;
 
     -- Validate requested_by (soft FK to ores_iam_accounts_tbl)
-    if not exists (
-        select 1 from ores_iam_accounts_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.requested_by
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
+    if not ores_iam_account_exists_fn(NEW.requested_by) then
         raise exception 'Invalid requested_by: %. No account found with this id.', NEW.requested_by
             using errcode = '23503';
     end if;

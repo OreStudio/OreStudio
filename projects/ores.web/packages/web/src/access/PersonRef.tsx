@@ -86,8 +86,10 @@ export function usePeopleDirectory(): {
         mayOpen: mayReadAccounts,
         isService:
             mayReadAccounts && accounts.data !== undefined
-                ? (who) =>
-                      people.find((person) => person.username === who)?.accountType === 'service'
+                ? (who) => {
+                      const type = people.find((person) => person.username === who)?.accountType;
+                      return type !== undefined && type !== 'user';
+                  }
                 : undefined,
     };
 }

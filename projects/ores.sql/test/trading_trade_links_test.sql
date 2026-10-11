@@ -83,18 +83,18 @@ select (select id from ores_refdata_parties_tbl
 -- the link starts at; the replacement is where it ends.
 insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
     trade_type, counterparty_scope, booking_nature, entry_channel,
-    modified_by, performed_by, change_reason_code, change_commentary)
+    external_version, modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000ca003', ores_utility_system_tenant_id_fn(), party_id,
     counterparty_id, 'Swap', 'external', 'actual', 'manual',
-    current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
+    0, current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
 from t_ctx;
 
 insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
     trade_type, counterparty_scope, booking_nature, entry_channel,
-    modified_by, performed_by, change_reason_code, change_commentary)
+    external_version, modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000ca004', ores_utility_system_tenant_id_fn(), party_id,
     counterparty_id, 'Swap', 'external', 'actual', 'manual',
-    current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
+    0, current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
 from t_ctx;
 
 create or replace function pg_temp.activity(p_party uuid, p_type text default 'new_booking')

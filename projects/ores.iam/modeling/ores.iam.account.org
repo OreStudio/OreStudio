@@ -252,6 +252,24 @@ The account this person reports to, capturing the functional reporting
 line. Soft self-reference to another row in this same table; unset means
 no reporting line is recorded.
 
+** shared
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether every tenant may read this account. A shared account is owned by the
+system tenant: the service accounts, which write under their own name into the
+history of every tenant, and the super administrator. A history names its
+author for every reader only if the reader can read that author's account.
+
+The flag is the whole rule. The row-level policy admits a system tenant row to
+another tenant only when this column is true, so a later human account in the
+system tenant stays hidden until the flag is set. A tenant never writes a
+shared row, and the seed is the only writer of the flag.
+
 
 * Artefact columns
 
@@ -382,7 +400,14 @@ refuses a write that would reach the row being written.
 :entity_plural_short:   accounts
 :entity_singular_words: account
 :entity_plural_words:   accounts
+:system_tenant_visible: true
 :END:
+
+The service accounts and the super administrator are shared rows of the system
+tenant. =:system_tenant_visible: true= makes the generated repository read own
+tenant OR system tenant rows on every read path. The row-level policy decides
+which system tenant rows a reader sees: only those with =shared= set. Mutations
+stay own-tenant scoped.
 
 ** Domain includes
 
@@ -465,8 +490,9 @@ translate.
 Reads every version of every account. The generated CRUD set reads all
 versions of one account by primary key, which is what the history path
 needs; the CLI export and the repository test read the whole table, so
-that unfiltered read stays declared here, unscoped by tenant exactly as
-the hand-written repository was.
+that unfiltered read stays declared here. It states the session's tenant,
+because a tenant also reads the shared rows of the system tenant, and an
+export of a tenant's accounts is not an export of the platform's.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
     std::vector<domain::account> read_all(context ctx);
@@ -474,7 +500,9 @@ the hand-written repository was.
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::account> account_repository::read_all(context ctx) {
-    const auto query = sqlgen::read<std::vector<account_entity>> | order_by("valid_from"_c.desc());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+                       where("tenant_id"_c == tid) | order_by("valid_from"_c.desc());
 
     return execute_read_query<account_entity, domain::account>(
         ctx,
@@ -493,8 +521,11 @@ std::vector<domain::account> account_repository::read_all(context ctx) {
 Reads the latest active account with the given username. The generated
 CRUD set reads by primary key only, and the login and password-reset
 paths address the row by username, so the read stays declared here.
-Deliberately unscoped by tenant, exactly as the hand-written repository
-was: the login flow resolves the account before the tenant is known.
+It names the session's tenant. A tenant reads the shared rows of the system
+tenant too, and a username that a tenant account shares with a shared account
+must resolve to the tenant's own, so the sign-in lookup never picks a service or
+the super admin for a tenant user. The login flow takes its tenant from the
+host name before it looks the account up.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
     std::vector<domain::account> read_latest_by_username(context ctx, const std::string& username);
@@ -506,8 +537,10 @@ account_repository::read_latest_by_username(context ctx, const std::string& user
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("username"_c == username && "valid_to"_c == max.value()) |
+                       where("tenant_id"_c == tid && "username"_c == username &&
+                             "valid_to"_c == max.value()) |
                        order_by("valid_from"_c.desc());
 
     return execute_read_query<account_entity, domain::account>(
@@ -526,7 +559,8 @@ account_repository::read_latest_by_username(context ctx, const std::string& user
 
 Reads the latest active account with the given email. The password-reset
 and self-service paths address the row by email, so the read stays
-declared here rather than forcing those callers onto a full table scan.
+declared here rather than forcing those callers onto a full table scan. It
+names the session's tenant, for the same reason as the username read.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
     std::vector<domain::account> read_latest_by_email(context ctx, const std::string& email);
@@ -538,8 +572,10 @@ account_repository::read_latest_by_email(context ctx, const std::string& email) 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("email"_c == email && "valid_to"_c == max.value()) |
+                       where("tenant_id"_c == tid && "email"_c == email &&
+                             "valid_to"_c == max.value()) |
                        order_by("valid_from"_c.desc());
 
     return execute_read_query<account_entity, domain::account>(

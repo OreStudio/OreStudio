@@ -119,6 +119,32 @@ grant execute on function ores_variability_get_system_settings_fn(uuid, uuid)
 grant execute on function ores_variability_resolve_system_party_fn(uuid)
     to :test_dml_user, :test_ddl_user;
 
+-- A record that names a person is written by a service, and its trigger asks
+-- whether the account exists through this function, because the party rule
+-- hides every account from a service. The function is SECURITY DEFINER and
+-- answers yes or no. It takes the tenant from the session, so granting it to
+-- every service role opens no read across the tenant boundary.
+grant execute on function ores_iam_account_exists_fn(uuid)
+    to :iam_service_user,
+       :refdata_service_user,
+       :dq_service_user,
+       :variability_service_user,
+       :assets_service_user,
+       :scheduler_service_user,
+       :reporting_service_user,
+       :telemetry_service_user,
+       :trading_service_user,
+       :compute_service_user,
+       :synthetic_service_user,
+       :workflow_service_user,
+       :ore_service_user,
+       :marketdata_service_user,
+       :analytics_service_user,
+       :storage_service_user,
+       :inbox_service_user,
+       :test_dml_user,
+       :test_ddl_user;
+
 -- Initialize instance-specific feature flags
 \ir ./instance/init_instance.sql
 

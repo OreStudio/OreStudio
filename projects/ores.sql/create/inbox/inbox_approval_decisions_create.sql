@@ -110,12 +110,7 @@ begin
     end if;
 
     -- Validate decided_by (soft FK to ores_iam_accounts_tbl)
-    if not exists (
-        select 1 from ores_iam_accounts_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.decided_by
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
+    if not ores_iam_account_exists_fn(NEW.decided_by) then
         raise exception 'Invalid decided_by: %. No account found with this id.', NEW.decided_by
             using errcode = '23503';
     end if;

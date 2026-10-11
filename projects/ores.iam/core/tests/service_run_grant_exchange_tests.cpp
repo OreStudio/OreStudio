@@ -74,10 +74,14 @@ ores::security::jwt::jwt_authenticator signer_for_tests() {
     return ores::security::jwt::jwt_authenticator::create_hs256("ores-iam-run-token-tests");
 }
 
-account write_account(database_helper& h, generation_context& gen, const std::string& status) {
+account write_account(database_helper& h,
+                      generation_context& gen,
+                      const std::string& status,
+                      const std::string& type = "user") {
     ores::iam::repository::account_repository repo;
     auto value = ores::iam::generators::generate_synthetic_account(gen);
     value.account_status = status;
+    value.account_type = type;
     repo.write(h.context(), value);
     return value;
 }
@@ -193,7 +197,7 @@ struct exchange_fixture {
         , party(boost::uuids::random_generator()())
         , tenant_id(h.tenant_id().to_string()) {
         grantor = write_account(h, gen, grantor_status);
-        service_account = write_account(h, gen, "active");
+        service_account = write_account(h, gen, "active", "service");
         grantor_role = existing_or_new_role(h, gen, "ReportRunViewer", granted_code);
         service_role = existing_or_new_role(h, gen, reporting_service, granted_code);
 

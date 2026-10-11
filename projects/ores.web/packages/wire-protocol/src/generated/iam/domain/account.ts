@@ -44,6 +44,7 @@ export interface Account {
     picture_code: string;
     job_title: string;
     reports_to_account_id: string | null;
+    shared: boolean;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

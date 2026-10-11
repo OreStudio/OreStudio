@@ -300,6 +300,14 @@ describe('the audit sign-ins screen', () => {
         expect(html).toContain(`href="/people/${USERNAME}"`);
     });
 
+    it('links a locked account to its rescue page, and an unlocked one to nothing', () => {
+        const locked = renderFailures([loginInfo({ locked: true })], false);
+        const open = renderFailures([loginInfo({ locked: false })], false);
+
+        expect(locked).toContain(`href="/rescue?username=${USERNAME}"`);
+        expect(open).not.toContain('/rescue');
+    });
+
     it('draws the photo of the account beside its name on every tab', () => {
         const photo = '5b8e0a52-7c1d-4f43-9a6b-0d2f6e3a9c11';
         const people = [account({ imageId: photo })];

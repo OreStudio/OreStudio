@@ -26,7 +26,7 @@ import { MemoryRouter } from 'react-router';
 import type { Account, LoginInfo } from '@ores/wire-protocol/browser';
 import { uuid } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { RescueView } from './RescuePage.js';
+import { RescueView, findAccounts } from './RescuePage.js';
 
 /**
  * Rescue access, as a reader sees it.
@@ -133,5 +133,31 @@ describe('RescueView', () => {
 
         expect(markup).toContain('Activate or deactivate an account');
         expect(markup).toContain('Self-service recovery');
+    });
+});
+
+describe('findAccounts', () => {
+    const locked = account();
+    const open = account({
+        id: uuid('99999999-9999-9999-9999-999999999999'),
+        username: 'open.one',
+    });
+    const ids = new Set([locked.id]);
+
+    it('lists only the locked accounts while the filter is on', () => {
+        expect(findAccounts([locked, open], '', true, ids)).toEqual([locked]);
+    });
+
+    it('lists every account once the filter is released', () => {
+        expect(findAccounts([locked, open], '', false, ids)).toEqual([locked, open]);
+    });
+
+    it('hides nothing while the locked accounts are not known', () => {
+        expect(findAccounts([locked, open], '', true, null)).toEqual([locked, open]);
+    });
+
+    it('applies the typed text on top of the filter', () => {
+        expect(findAccounts([locked, open], 'open', false, ids)).toEqual([open]);
+        expect(findAccounts([locked, open], 'open', true, ids)).toEqual([]);
     });
 });

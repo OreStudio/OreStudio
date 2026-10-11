@@ -150,6 +150,27 @@ export function RescuePage(): ReactNode {
 }
 
 /**
+ * The accounts the picker lists: those that match the filter text and, while
+ * the locked-only filter is on, those the login records say are locked. An
+ * unknown set of locked accounts hides nothing.
+ */
+export function findAccounts(
+    accounts: readonly Account[],
+    filter: string,
+    lockedOnly: boolean,
+    lockedIds: ReadonlySet<string> | null,
+): readonly Account[] {
+    const needle = filter.trim().toLowerCase();
+    return accounts.filter(
+        (row) =>
+            (!lockedOnly || lockedIds === null || lockedIds.has(row.id)) &&
+            (needle.length === 0 ||
+                row.username.toLowerCase().includes(needle) ||
+                row.fullName.toLowerCase().includes(needle)),
+    );
+}
+
+/**
  * The colleague, found in the tenant's accounts.
  *
  * The journey starts from the account list, and that page is not built yet, so
@@ -164,6 +185,8 @@ function Finder(): ReactNode {
     const [totalCount, setTotalCount] = useState(0);
     const [reason, setReason] = useState<string | undefined>(undefined);
     const [filter, setFilter] = useState('');
+    const [lockedOnly, setLockedOnly] = useState(true);
+    const [lockedIds, setLockedIds] = useState<ReadonlySet<string> | null>(null);
 
     useEffect(() => {
         let live = true;
@@ -181,21 +204,25 @@ function Finder(): ReactNode {
                 }
                 setReason(error instanceof Error ? error.message : 'The read failed.');
             });
+        /*
+         * A refused login read leaves the set unknown, and the filter then
+         * lists every account rather than hiding the one that is locked.
+         */
+        api.loginInfoPage()
+            .then((page) => {
+                if (live) {
+                    setLockedIds(
+                        new Set(page.loginInfo.filter((row) => row.locked).map((r) => r.accountId)),
+                    );
+                }
+            })
+            .catch(() => undefined);
         return () => {
             live = false;
         };
     }, []);
 
-    const needle = filter.trim().toLowerCase();
-    const matches =
-        accounts === null
-            ? []
-            : accounts.filter(
-                  (row) =>
-                      needle.length === 0 ||
-                      row.username.toLowerCase().includes(needle) ||
-                      row.fullName.toLowerCase().includes(needle),
-              );
+    const matches = accounts === null ? [] : findAccounts(accounts, filter, lockedOnly, lockedIds);
     const shown = matches.slice(0, FILTER_LIMIT);
 
     const choose = (row: Account): void => {
@@ -221,6 +248,16 @@ function Finder(): ReactNode {
                     onChange={(event) => setFilter(event.target.value)}
                 />
             </Field>
+            <div>
+                <Button
+                    size="sm"
+                    variant={lockedOnly ? 'primary' : 'secondary'}
+                    aria-pressed={lockedOnly}
+                    onClick={() => setLockedOnly(!lockedOnly)}
+                >
+                    Locked only
+                </Button>
+            </div>
             {reason !== undefined && <Notice tone="error">{reason}</Notice>}
             {accounts === null && reason === undefined && (
                 <p className="text-sm text-ink-muted">Reading the tenant&rsquo;s accounts…</p>
@@ -249,7 +286,11 @@ function Finder(): ReactNode {
                         ))}
                     </ul>
                     {matches.length === 0 && (
-                        <p className="text-sm text-ink-muted">No account matches that.</p>
+                        <p className="text-sm text-ink-muted">
+                            {lockedOnly && lockedIds !== null
+                                ? 'No locked account matches that. Release Locked only to see every account.'
+                                : 'No account matches that.'}
+                        </p>
                     )}
                     <p className="text-xs text-ink-faint">
                         Showing {String(shown.length)} of {String(matches.length)} matches, from the{' '}

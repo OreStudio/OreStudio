@@ -168,6 +168,22 @@ export function orderLoginRecords(rows: readonly LoginInfo[]): readonly LoginInf
     });
 }
 
+/** The way from a locked account to the screen that unlocks it. */
+function RescueLink({ username }: { readonly username: string | undefined }): ReactNode {
+    const { t } = useTranslation();
+    if (username === undefined || username === '') {
+        return null;
+    }
+    return (
+        <Link
+            className="text-xs text-accent-bright hover:underline"
+            to={`/rescue?username=${encodeURIComponent(username)}`}
+        >
+            {t('shell.menu.rescue')}
+        </Link>
+    );
+}
+
 /** What a panel needs to draw an account: the name and the photo. */
 export interface AuditPerson {
     readonly username: string;
@@ -701,7 +717,14 @@ export function FailuresPanel({
                                     )}
                                 </td>
                                 <td className="py-2">
-                                    <AccountLockBadge locked={row.locked} />
+                                    <span className="flex flex-wrap items-center gap-2">
+                                        <AccountLockBadge locked={row.locked} />
+                                        {row.locked && (
+                                            <RescueLink
+                                                username={accountNames.get(row.accountId)?.username}
+                                            />
+                                        )}
+                                    </span>
                                 </td>
                             </tr>
                         ))}

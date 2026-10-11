@@ -85,7 +85,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The breadcrumb shows Trades twice | book-a-trade/prototype.js | decline | The entity specification sets the trail as Home, the area, the list, then the subject. The area and the list are both called Trades. Declined in the previous PR for the same reason. |
+| 2 | The common.js copies can drift | the trades prototypes | no change needed | The copies are deliberate. =check_prototype_inventory.py= already fails when they differ, and the group page says so. |
+| 3 | A deep link with an unknown tab or sub-tab | book-a-trade/prototype.js | no change needed | An unknown tab falls back to Trade. An unknown sub-tab is not in the address. It is chosen in the page, and falls back to the first part of the instrument. |
+| 4 | Track the model changes the trade list needs | backlog | accept | Filed as a capture in the next backlog: a search member, filterable columns, the scoped read for a book, the child tables with no filter, and the registry entry. |
+| 5 | Stale links to the removed authorisation text | other docs | accept | No link was broken, but a search found one stale clause in the trade page note, which said the dialog says whether authorisation is withdrawn. Removed. The capture for the authorisation journey remains. |
 
 * Result
 

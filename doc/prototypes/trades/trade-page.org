@@ -49,7 +49,7 @@ The prototype is throwaway. Everything on it is mock data: 38 trades, 7 of them 
 
 ** What the Edit dialog argues
 
-The save sends a standard =put= with the version the edit started from as its precondition, and the reason and the commentary as its change intent. The dialog shows it. The kind of change comes first, as [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] says. The dialog offers only the activity types the card allows. An economic amendment unlocks the economic fields, a change of reference details unlocks the rest, and a null amend locks all of them and is saved only when nothing changed. Under the fields the dialog says what the save will do: which version moves, whether a confirmation is issued, and whether the operational authorisation is withdrawn.
+The save sends a standard =put= with the version the edit started from as its precondition, and the reason and the commentary as its change intent. The dialog shows it. The kind of change comes first, as [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] says. The dialog offers only the activity types the card allows. An economic amendment unlocks the economic fields, a change of reference details unlocks the rest, and a null amend locks all of them and is saved only when nothing changed. Under the fields the dialog says what the save will do: which version moves, and whether a confirmation is issued.
 
 Open the exercise prices card of ACME-100202 and change the strike. The dialog says the external version stays, because the digest does not read that table. This is the defect filed as a capture. Add =?digest=fixed= to see it closed.
 

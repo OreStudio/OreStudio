@@ -8,7 +8,7 @@
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
 #+branch: feature/run-the-apply-as-a-workflow
-#+pr:
+#+pr: 3098
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3098][#3098]] | [refdata,inbox,workflow] Define the book apply workflow and serve its steps |
 
 * Review
 

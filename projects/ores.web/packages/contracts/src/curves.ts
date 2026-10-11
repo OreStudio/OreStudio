@@ -89,3 +89,19 @@ export const curveIdentitySchema = z.object({
     fields: z.array(z.object({ name: z.string(), text: z.string() })),
 });
 export type CurveIdentity = z.infer<typeof curveIdentitySchema>;
+
+/** One series a party can see: the identity that names it, and the axes it declares. */
+export const listedSeriesSchema = z.object({
+    series_id: z.string(),
+    identity: curveIdentitySchema,
+    /** Empty when the series declares no shape, which the evolution read refuses. */
+    axes: z.array(z.string()),
+});
+export type ListedSeries = z.infer<typeof listedSeriesSchema>;
+
+export const curveSeriesListSchema = z.object({
+    series: z.array(listedSeriesSchema),
+    /** True when the party can see more series than the list holds. */
+    truncated: z.boolean(),
+});
+export type CurveSeriesList = z.infer<typeof curveSeriesListSchema>;

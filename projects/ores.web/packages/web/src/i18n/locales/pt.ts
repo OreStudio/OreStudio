@@ -1877,7 +1877,15 @@ const pt: SourceCatalogue = {
                 derived: 'Derivado',
                 manual: 'Manual',
             },
-            gap: 'Ainda não se lê nenhuma lista de séries, por isso o objeto é indicado pela sua identidade.',
+            picker: {
+                label: 'Série',
+                placeholder: 'Escolha uma série, ou escreva a sua identidade abaixo',
+                loading: 'A ler as séries que pode ver...',
+                empty: 'A sua parte não vê nenhuma série. Os dados de mercado semeados pelo provisionamento podem não constar até a sua identidade ser projetada. Pode escrever uma identidade abaixo.',
+                truncated:
+                    'A lista contém as primeiras {count} séries que a sua parte pode ver. Trabalhe numa parte com menos séries para ver as restantes.',
+                noShape: 'nenhuma forma declarada',
+            },
         },
     },
 

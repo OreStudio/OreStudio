@@ -21,9 +21,11 @@
 
 import {
     curveEvolutionSchema,
+    curveSeriesListSchema,
     curveSnapshotSchema,
     type CurveEvolution,
     type CurveIdentity,
+    type CurveSeriesList,
     type CurveSnapshot,
 } from '@ores/contracts';
 import { request } from './transport.js';
@@ -49,6 +51,11 @@ function post(path: string, body: unknown): Promise<unknown> {
  * back as a failure that carries the server's reason.
  */
 export const curves = {
+    /** The series the session's party can see, each as the identity that names it. */
+    async seriesList(): Promise<CurveSeriesList> {
+        return curveSeriesListSchema.parse(await post('/api/curves/series-list', {}));
+    },
+
     /** The aligned matrix of instants by nodes over the range. */
     async evolution(identity: CurveIdentity, range: CurveRange): Promise<CurveEvolution> {
         return curveEvolutionSchema.parse(

@@ -20,9 +20,11 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { CurveEvolution, CurveSnapshot } from '@ores/contracts';
+import type { CurveEvolution, CurveSnapshot, ListedSeries } from '@ores/contracts';
 import {
+    canBeShown,
     endOfDay,
+    formFrom,
     formatAge,
     identityOf,
     matrixOf,
@@ -30,6 +32,7 @@ import {
     nodeLabel,
     nowRowsOf,
     rangeOf,
+    seriesLabel,
     startOfDay,
 } from './evolutionView.js';
 
@@ -39,6 +42,7 @@ const FORM = {
     instrumentType: 'fx_option',
     quoteType: 'rate_lnvol',
     fields: 'ccy=PLN',
+    partyId: '',
 };
 
 describe('identityOf', () => {
@@ -75,6 +79,48 @@ describe('identityOf', () => {
     it('keeps an equals sign inside the value', () => {
         const result = identityOf({ ...FORM, fields: 'curve_id=A=B' });
         expect(result.ok && result.identity.fields).toEqual([{ name: 'curve_id', text: 'A=B' }]);
+    });
+});
+
+const PARTY = '88888888-8888-4888-8888-888888888888';
+
+const LISTED: ListedSeries = {
+    series_id: '77777777-7777-4777-8777-777777777777',
+    identity: {
+        asset: 'fx',
+        scope: 'EUR',
+        instrument_type: 'fx_option',
+        quote_type: 'rate_lnvol',
+        party_id: PARTY,
+        fields: [{ name: 'ccy', text: 'USD' }],
+    },
+    axes: ['expiry', 'strike_label'],
+};
+
+describe('the series picker helpers', () => {
+    it('names a series by its four words and the fields that tell it apart', () => {
+        expect(seriesLabel(LISTED)).toBe('fx / EUR / fx_option / rate_lnvol · ccy=USD');
+        expect(seriesLabel({ ...LISTED, identity: { ...LISTED.identity, fields: [] } })).toBe(
+            'fx / EUR / fx_option / rate_lnvol',
+        );
+    });
+
+    it('shows only a series that declares a shape', () => {
+        expect(canBeShown(LISTED)).toBe(true);
+        expect(canBeShown({ ...LISTED, axes: [] })).toBe(false);
+    });
+
+    it('fills the form from a series and keeps its party, so the read names that series', () => {
+        const form = formFrom(LISTED);
+        expect(form.fields).toBe('ccy=USD');
+        expect(form.partyId).toBe(PARTY);
+        const identity = identityOf(form);
+        expect(identity.ok && identity.identity).toEqual(LISTED.identity);
+    });
+
+    it('states no party for an identity the person typed', () => {
+        const identity = identityOf(FORM);
+        expect(identity.ok && identity.identity.party_id).toBe('');
     });
 });
 

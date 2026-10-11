@@ -23,9 +23,9 @@ import { describe, expect, it } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
-import type { CurveEvolution, CurveSnapshot } from '@ores/contracts';
+import type { CurveEvolution, CurveSeriesList, CurveSnapshot } from '@ores/contracts';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { EvolutionPage, MatrixPanel, NowPanel } from './EvolutionPage.js';
+import { EvolutionPage, MatrixPanel, NowPanel, SeriesPicker } from './EvolutionPage.js';
 
 /**
  * The evolution screen, as a reader sees it.
@@ -159,6 +159,85 @@ describe('NowPanel', () => {
         expect(html).toContain('The oldest is 3h old');
         const quiet = render(<NowPanel snapshot={snapshot} provenance={false} />);
         expect(quiet).not.toContain('several market states');
+    });
+});
+
+const LIST: CurveSeriesList = {
+    truncated: false,
+    series: [
+        {
+            series_id: '77777777-7777-4777-8777-777777777777',
+            identity: {
+                asset: 'fx',
+                scope: 'EUR',
+                instrument_type: 'fx_option',
+                quote_type: 'rate_lnvol',
+                party_id: '88888888-8888-4888-8888-888888888888',
+                fields: [{ name: 'ccy', text: 'USD' }],
+            },
+            axes: ['expiry', 'strike_label'],
+        },
+        {
+            series_id: '99999999-9999-4999-8999-999999999999',
+            identity: {
+                asset: 'fx',
+                scope: 'EUR',
+                instrument_type: 'fx_spot',
+                quote_type: 'rate',
+                party_id: '88888888-8888-4888-8888-888888888888',
+                fields: [{ name: 'ccy', text: 'GBP' }],
+            },
+            axes: [],
+        },
+    ],
+};
+
+function picker(props: Partial<Parameters<typeof SeriesPicker>[0]>): string {
+    return render(
+        <SeriesPicker
+            list={LIST}
+            loading={false}
+            failure={undefined}
+            picked=""
+            onPick={() => undefined}
+            {...props}
+        />,
+    );
+}
+
+describe('SeriesPicker', () => {
+    it('lists the series the party can see, named by their identity', () => {
+        const html = picker({});
+        expect(html).toContain('fx / EUR / fx_option / rate_lnvol · ccy=USD');
+        expect(html).toContain('Choose a series, or type its identity below');
+    });
+
+    it('lists a series with no shape and does not let it be chosen', () => {
+        const html = picker({});
+        expect(html).toContain('fx / EUR / fx_spot / rate · ccy=GBP (no shape declared)');
+        expect(html).toMatch(/<option[^>]*value="99999999[^>]*disabled/);
+        expect(html).not.toMatch(/<option[^>]*value="77777777[^>]*disabled/);
+    });
+
+    it('says why a list can be empty, and does not read as an error', () => {
+        const html = picker({ list: { series: [], truncated: false } });
+        expect(html).toContain('Your party can see no series.');
+        expect(html).toContain('may not be listed until its identity is projected');
+        expect(html).not.toContain('role="alert"');
+    });
+
+    it('says when the list was cut, so it is not read as complete', () => {
+        const html = picker({ list: { ...LIST, truncated: true } });
+        expect(html).toContain('The list holds the first 2 series your party can see.');
+    });
+
+    it('shows a refused read as the reason, and a read in progress as such', () => {
+        expect(picker({ failure: 'You do not have access to this.' })).toContain(
+            'You do not have access to this.',
+        );
+        expect(picker({ list: undefined, loading: true })).toContain(
+            'Reading the series you can see...',
+        );
     });
 });
 

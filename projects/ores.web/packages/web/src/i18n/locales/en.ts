@@ -1864,7 +1864,15 @@ export const en: SourceCatalogue = {
                 derived: 'Derived',
                 manual: 'Manual',
             },
-            gap: 'No list of series is read yet, so the object is named by its identity.',
+            picker: {
+                label: 'Series',
+                placeholder: 'Choose a series, or type its identity below',
+                loading: 'Reading the series you can see...',
+                empty: 'Your party can see no series. Market data that provisioning seeded may not be listed until its identity is projected. You can still type an identity below.',
+                truncated:
+                    'The list holds the first {count} series your party can see. Work in a party that holds fewer series to see the rest.',
+                noShape: 'no shape declared',
+            },
         },
     },
 

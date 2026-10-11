@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :curve_screen_series_picker:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/pick-the-curve-on-the-evolution-screen
 #+pr:
 #+blocked_on: Route the series list through the BFF
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09ACD454-F923-46B8-9A23-96C226295CEA][Pick a curve from the series a party can see]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person chooses a curve or surface from a list and watches it evolve without ty
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:09ACD454-F923-46B8-9A23-96C226295CEA][Pick a curve from the series a party can see]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | The BFF series list route.             |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -41,9 +41,12 @@ A person chooses a curve or surface from a list and watches it evolve without ty
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add the series list to the contract and the api. Add a =SeriesPicker= to the evolution page, above the identity form: a
+select of the visible series, named by their four words and their fields. A series with no declared shape is listed and
+cannot be chosen. Choosing a series fills the form from it and keeps its party, so the read names that series. Typing in
+the form clears the pick and the party, so a typed identity asks across the parties the person sees. An empty list, a
+cut list, a refused read and a read in progress each have their own words in three languages. Prove it by parsing the
+real lists of two parties with the new schema.
 
 * Measurements
 
@@ -57,7 +60,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Market tests and the catalogue | 86 pass in 5 files | =npx vitest run src/market src/i18n= in =packages/web= | f2f3c5b0cc plus the change |
+| Whole web suite | 104 files, 1153 tests, pass | =npx vitest run= in =packages/web= | f2f3c5b0cc plus the change |
+| Real list as System Party, parsed by =curveSeriesListSchema= | 6 series, 6 can be shown | =POST /api/curves/series-list= after choosing the party, then =node= with =@ores/contracts= | f2f3c5b0cc plus the change |
+| Real list as Acme Corporation Plc, parsed by the same schema | 13 series, 0 can be shown | same | f2f3c5b0cc plus the change |
 
 * Notes
 
@@ -85,3 +91,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The evolution screen offers a picker. It lists the series the signed-in party can see, each named by its asset class,
+scope, instrument type, quote type and the fields that tell it apart. Choosing one fills the identity form and keeps the
+series' party, so the snapshot and the evolution read name that series and no other party's. The person can still type an
+identity, and typing clears the pick and the party.
+
+A series that declares no shape is listed and cannot be chosen, and its option says "no shape declared". An empty list says
+that the party sees no series and that market data seeded by provisioning may not be listed until its identity is
+projected. A list cut at the cap says so. A refused read shows the server's words, and a read in progress says so. The
+earlier note that no list exists is gone. All messages are in English, French and Portuguese.
+
+Real lists parse with the new schema. As the System Party the picker offers six volatility surfaces. As Acme Corporation
+Plc it lists thirteen FX spot series and offers none, because a spot rate has no grid; this is correct and it may look
+empty until a person reads the option text.
+
+*What was not done.* The picker has not been looked at in a browser. It is tested with rendered markup and canned lists,
+and the real lists were parsed with its schema.

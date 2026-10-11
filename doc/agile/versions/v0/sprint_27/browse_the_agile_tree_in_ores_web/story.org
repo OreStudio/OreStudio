@@ -8,7 +8,7 @@
 #+filetags: :web:qa:testing:kanban:v0:sprint_27:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,9 +21,9 @@ Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the bac
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Scaffolded. No build tasks yet.        |
 | Waiting on    | Nothing.                               |
 | Next          | Break the story into tasks.            |
 | Last touched  | 2026-10-11                               |
@@ -39,7 +39,7 @@ Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the bac
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:94820929-77DC-47B2-89D3-40B485AEA36B][Scaffold story: Browse the agile tree in ores.web]] | BACKLOG | | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:94820929-77DC-47B2-89D3-40B485AEA36B][Scaffold story: Browse the agile tree in ores.web]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 
 * Decisions
 

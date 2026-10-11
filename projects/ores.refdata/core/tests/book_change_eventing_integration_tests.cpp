@@ -23,10 +23,6 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
-// A seeded parent is system-tenant reference data (its soft FK carries
-// :use_system_tenant:), so its row is forced to the system tenant and
-// written under a system-scoped context, and the tenant_id helpers are
-// needed.
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
@@ -43,7 +39,6 @@
 #include "ores.refdata.api/messaging/book_change_protocol.hpp"
 #include "ores.refdata.core/repository/book_change_repository.hpp"
 #include "ores.refdata.core/service/book_change_service.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 // Party seeds (mandatory party_id soft FKs, direct or via a parent's own
 // mandatory party_id FK): the party generator and repository are used
 // regardless of the child's generator facet, hence the fully-qualified
@@ -59,29 +54,16 @@
 // generator facet, hence the fully-qualified refdata paths.
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
-// Soft-FK parent seeding (ores_inbox_approval_requests_tbl): the parent may live in another
-// component, so its own component names the headers. A system-tenant parent
-// is read rather than generated, so it needs no generator.
-#include "ores.inbox.api/generators/approval_request_generator.hpp"
-#include "ores.inbox.core/repository/approval_request_repository.hpp"
-// Grand-parent seeding (ores_inbox_approval_kinds_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
-#include "ores.inbox.core/repository/approval_kind_repository.hpp"
-// Grand-parent seeding (ores_inbox_approval_request_states_tbl): the parent's own mandatory soft
-// FKs reference rows the test seeds before the parent, so their generator and repository headers
-// are needed too. A system-tenant parent is read rather than seeded, so its grand-parents need
-// nothing, and a system-tenant grand-parent is read rather than generated.
-#include "ores.inbox.core/repository/approval_request_state_repository.hpp"
-// Grand-parent seeding (ores_iam_accounts_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
+// Parent-seed snippet includes (ores_inbox_approval_requests_tbl): the parent table is
+// hand-authored with no modeling org, so the snippet's generator and
+// repository headers are named by the org rather than derived.
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.api/generators/approval_request_generator.hpp"
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_state_repository.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 // Soft-FK parent seeding (ores_refdata_currencies_tbl): the parent may live in another
 // component, so its own component names the headers. A system-tenant parent
 // is read rather than generated, so it needs no generator.
@@ -171,47 +153,32 @@ TEST_CASE("write_book_change_publishes_an_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_book_change(ctx);
     v.change_reason_code = "system.test";
-    // Seed the active approval_request row ores_inbox_approval_requests_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto request_id_parent = ores::inbox::generators::generate_synthetic_approval_request(ctx);
-    request_id_parent.change_reason_code = "system.test";
-    auto request_id_parent_account_parent = ores::iam::generators::generate_synthetic_account(ctx);
-    request_id_parent_account_parent.change_reason_code = "system.test";
-    // approval_kind is system-tenant reference data: reference a
-    // seeded catalogue row instead of creating one, as the direct-parent
-    // system-tenant branch does.
     {
-        ores::inbox::repository::approval_kind_repository
-            request_id_parent_approval_kind_parent_repo;
-        const auto request_id_parent_approval_kind_parent_catalogue =
-            request_id_parent_approval_kind_parent_repo.read_latest(
-                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
-        REQUIRE_FALSE(request_id_parent_approval_kind_parent_catalogue.empty());
-        request_id_parent.kind_code = request_id_parent_approval_kind_parent_catalogue.front().code;
+        auto asker = ores::iam::generators::generate_synthetic_account(ctx);
+        asker.account_type = "service";
+        asker.change_reason_code = "system.test";
+        ores::iam::repository::account_repository asker_repo;
+        asker_repo.write(party_ctx, asker);
+
+        auto request = ores::inbox::generators::generate_synthetic_approval_request(ctx);
+        request.change_reason_code = "system.test";
+        request.requested_by = asker.id;
+
+        const auto system_ctx =
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+        const auto kinds =
+            ores::inbox::repository::approval_kind_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(kinds.empty());
+        request.kind_code = kinds.front().code;
+        const auto states =
+            ores::inbox::repository::approval_request_state_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(states.empty());
+        request.state_code = states.front().code;
+
+        ores::inbox::repository::approval_request_repository request_repo;
+        request_repo.write(party_ctx, request);
+        v.request_id = request.id;
     }
-    // approval_request_state is system-tenant reference data: reference a
-    // seeded catalogue row instead of creating one, as the direct-parent
-    // system-tenant branch does.
-    {
-        ores::inbox::repository::approval_request_state_repository
-            request_id_parent_approval_request_state_parent_repo;
-        const auto request_id_parent_approval_request_state_parent_catalogue =
-            request_id_parent_approval_request_state_parent_repo.read_latest(
-                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
-        REQUIRE_FALSE(request_id_parent_approval_request_state_parent_catalogue.empty());
-        request_id_parent.state_code =
-            request_id_parent_approval_request_state_parent_catalogue.front().code;
-    }
-    // Seed the active account row ores_iam_accounts_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
-    ores::iam::repository::account_repository request_id_parent_account_parent_repo;
-    request_id_parent_account_parent_repo.write(party_ctx, request_id_parent_account_parent);
-    request_id_parent.requested_by = request_id_parent_account_parent.id;
-    ores::inbox::repository::approval_request_repository request_id_repo;
-    request_id_repo.write(party_ctx, request_id_parent);
-    v.request_id = request_id_parent.id;
     // Seed the active currency row ores_refdata_currencies_tbl references:
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.

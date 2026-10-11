@@ -66,6 +66,17 @@ public:
                        const domain::approval_request& raised,
                        const std::string& permission_code);
 
+    /**
+     * @brief Tells the person who asked how the request ended.
+     *
+     * The state is the word the notice shows. A failure to tell is logged and
+     * never the operation.
+     */
+    void tell_asker(const domain::approval_kind& kind,
+                    const domain::approval_request& request,
+                    const std::string& state,
+                    const std::string& comment);
+
 private:
     ores::database::context ctx_;
 };

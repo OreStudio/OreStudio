@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
         ores.diff.lib
         ores.eventing.api.lib
         ores.iam.api.lib
+        ores.inbox.api.lib
         ores.platform.lib
         ores.workflow.api.lib
     PRIVATE

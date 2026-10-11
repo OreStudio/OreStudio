@@ -2,50 +2,58 @@
 :ID: 34376AC6-D999-4AB0-BE79-A9BC84FACDF3
 :END:
 #+title: Task: Run the apply as a workflow
-#+description: Start a workflow on the last approval whose steps re-check, apply and tell, stop on an infrastructure failure so the retry verb resumes it, and show the run on the workflow screens.
+#+description: Define the book apply workflow and serve its three steps: re-check the stored lines, apply them in one transaction, and tell the person who asked. Starting it on the last approval and retrying it are the next tasks.
 #+type: task
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/run-the-apply-as-a-workflow
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The last approval starts a workflow that applies the request's changes, and a stopped run resumes until the kind's window ends.
+A workflow definition applies an approved book request in three idempotent steps, each with a deadline, and the services that own the steps answer them.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
 
-- The last approval starts an apply workflow for a kind that names one.
-- The workflow steps re-check, apply and tell the person who asked, each idempotent and each with a deadline.
-- A permanent refusal ends the run as failed with the request in apply_failed. An infrastructure failure or missed deadline stops the run and leaves the request approved.
-- A scheduled retry calls the retry verb until the kind's window ends, then moves the request to apply_failed with the reason could not apply.
-- The run shows on the workflow screens.
+- The book apply workflow is registered with the engine. Its policy is stop. Its steps are re-check, apply and tell, in that order, each naming the step it reads and a deadline, and none has a compensation.
+- The refdata service answers the re-check and the apply steps. The inbox answers the tell step for every kind.
+- Each step is idempotent: the engine's record of a finished step is replayed, and the apply marks each line once.
+- A re-check that finds a refused line moves the request to apply_failed before anything is written. A refused apply ends the request in apply_failed. A failure of the infrastructure fails the step and leaves the request approved.
+- The apply acts for the tenant and is scoped to the parties of the request's own lines, read through a function that answers party ids only.
+- The tell step tells the person who asked. The notice says applied, or the state the request ended in.
+- Starting the workflow on the last approval is the task "Start the apply on the last approval". The scheduled retry is "Retry a stopped apply until the window ends". The run already shows on the workflow screens, which list every run the engine holds.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Define the workflow in =ores.refdata.api=, as the iam, dq and ore workflows are defined in their api libraries, and register it in the engine.
+- Share one step command, the request id, between the refdata steps and the inbox step. It lives in =ores.inbox.api=, so =ores.refdata.api= now links the inbox api.
+- Serve the re-check and apply steps in =ores.refdata.service=, beside the proposal service. Serve the tell step in the inbox, because telling a person is the inbox's work.
+- A step handler follows the engine's contract: read the workflow headers, replay a finished step, do the work, then publish a completion or a failure.
+- Keep the mapping from a service result to a step result in plain functions with tests.
 
 * Measurements
 
@@ -62,6 +70,10 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- No NATS test of the step handlers exists, as no other handler has one. The definition, the step mapping, the party function and the notice have tests.
+- The party function reads past the party policy. A workflow has no party, and the books and the lines are party-scoped, so the apply could not otherwise find either.
+- The notice reuses the decided notice with the state "applied" or "apply_failed". The web may need words for those two states.
 
 * Test Scenarios
 
@@ -87,3 +99,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The book apply workflow exists and the services that own its steps answer them.
+
+- =book_apply_workflow= is defined in =ores.refdata.api= and registered with the engine. Its policy is stop. Its steps are re-check, apply and tell, each naming the step it reads and stating a deadline, with no compensation.
+- The refdata service answers the re-check and apply steps. A re-check that finds a refused line moves the request to apply_failed before anything is written. The apply acts for the tenant, scoped to the parties of the request's lines, which =ores_refdata_book_change_parties_fn= answers by party id alone.
+- The inbox answers the tell step for every kind, with the decided notice and the state applied or apply_failed. The step command is one request id, shared from =ores.inbox.api=.
+- The tests that wrote ordinary user accounts into the shared test tenant, which ended its bootstrap and made later tests fail on =modified_by=, now write service accounts. The generated =book_change= test gets its service-account requester from a seed on the derived model's request key, so a regeneration keeps it.
+
+Evidence: the whole =ores.refdata.core.tests= binary passes in one process in default order (353 cases, 4774 assertions), and the whole =ores.inbox.core.tests= binary passes (39 cases, 201 assertions). The new cases cover the definition (five), the step mapping (five), the party function and the notice. The cmake source, handler permission, test case reachability, pasted block symbol, populate reference and derived-model checks pass, the strict ER parse is clean and the diagrams match, and the catalogue drift sweep is clean.
+
+Not done here: starting the workflow on the last approval, the scheduled retry, an end-to-end NATS test of the step handlers, and the full ctest suite. They are the next two tasks and a limit noted above.

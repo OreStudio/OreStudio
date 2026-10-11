@@ -323,8 +323,8 @@ const hook = ctx.get('sessions')            // or the seat's `useSessions` prop
 const cwd = hook((store) => store?.byId?.[sessionId]?.cwd)
 ```
 
-`ctx.get('sessions')` is the store hook the shipped `ores.dsh_kanban` plugin uses,
-and this half reads it the same way, preferring a `useSessions` prop when the
+`ctx.get('sessions')` is the DSH store hook for the session list,
+and this half reads it, preferring a `useSessions` prop when the
 seat is given one.
 
 When it is absent, send no `cwd` at all rather than a guess.

@@ -59,6 +59,15 @@ specific to synthetic; synthetic is where it was first seen.
 
 - [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] — the task that found it.
 
+* Resolution — RESOLVED by [[id:6E54699C-427C-471A-AA70-FCCCD27ABC85][Build the FX price feed screen]]
+
+A reflect-cpp overlay port (=build/cmake/overlays/common/reflectcpp=) patches
+the msgpack reader to read a positive or a negative integer into a
+floating-point field. The wire codec test "wire_codec msgpack reads a whole
+number into a double field" encodes 1 and -2 as integers and decodes them as
+doubles; live, a feed with an initial price of 1 and a component with a mean
+of 0 and a weight of 1 save through the BFF.
+
 * See also
 
 -

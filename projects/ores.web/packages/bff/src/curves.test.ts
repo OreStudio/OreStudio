@@ -177,6 +177,68 @@ describe('the curve read routes', () => {
         expect(calls[0]?.body).toEqual(IDENTITY);
     });
 
+    it('lists the series the session can see, as identities the other reads take', async () => {
+        const listed = {
+            success: true,
+            message: '',
+            truncated: false,
+            series: [
+                {
+                    series_id: '77777777-7777-4777-8777-777777777777',
+                    identity: { ...IDENTITY, party_id: '88888888-8888-4888-8888-888888888888' },
+                    axes: ['expiry', 'strike_label'],
+                },
+            ],
+        };
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.list_series_identities': listed,
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-list', {});
+        expect(response.statusCode).toBe(200);
+        expect(response.json().series[0].axes).toEqual(['expiry', 'strike_label']);
+        expect(response.json().truncated).toBe(false);
+        expect(response.json()).not.toHaveProperty('success');
+        expect(calls[0]?.body).toEqual({ party_id: '' });
+    });
+
+    it('lists with no body at all, and names a party when asked', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.list_series_identities': {
+                success: true,
+                message: '',
+                truncated: true,
+                series: [],
+            },
+        });
+        const bare = await send(server, sessionId, 'POST', '/api/curves/series-list');
+        expect(bare.statusCode).toBe(200);
+        expect(bare.json().truncated).toBe(true);
+        const party = '88888888-8888-4888-8888-888888888888';
+        await send(server, sessionId, 'POST', '/api/curves/series-list', { party_id: party });
+        expect(calls[0]?.body).toEqual({ party_id: '' });
+        expect(calls[1]?.body).toEqual({ party_id: party });
+    });
+
+    it('refuses a party that is no UUID, without asking the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-list', {
+            party_id: 'acme',
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('reports a missing permission on the list as forbidden', async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.ops.list_series_identities': new ServerError(
+                'forbidden',
+                'marketdata.v1.ops.list_series_identities',
+            ),
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-list', {});
+        expect(response.statusCode).toBe(403);
+    });
+
     it('reads a snapshot without provenance unless asked', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'marketdata.v1.curve_snapshot.get': SNAPSHOT,

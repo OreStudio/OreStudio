@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :curve_screen_series_picker:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/route-the-series-list-through-the-bff
 #+pr:
 #+blocked_on: List the series identities a party can see
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09ACD454-F923-46B8-9A23-96C226295CEA][Pick a curve from the series a party can see]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The browser reads the list of series its session can see.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:09ACD454-F923-46B8-9A23-96C226295CEA][Pick a curve from the series a party can see]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | The marketdata series identity list.   |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -41,9 +41,11 @@ The browser reads the list of series its session can see.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add =POST /api/curves/series-list= to =curves.ts=. The body is empty or names a party, which must be a
+UUID. The route forwards it to the server's list operation and returns the series and the =truncated=
+flag without the success and message fields. A refusal reaches the browser as a 422 with the server's
+words, and a missing permission as 403, as for the other curve routes. Test the route against a canned
+client, then read it against the running stack as two different parties.
 
 * Measurements
 
@@ -57,7 +59,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curve route tests | 18 pass | =npx vitest run src/curves.test.ts= in =packages/bff= | 8df82f4cba plus the change |
+| BFF suite | 60 files, 647 tests, pass | =npx vitest run= in =packages/bff= | 8df82f4cba plus the change |
+| Series listed as System Party, from the running stack | 6, all with axes =expiry= and =strike_label= | =POST /api/curves/series-list= after =POST /api/session/party= | 8df82f4cba plus the change |
+| Series listed as Acme Corporation Plc before the identity backfill | 0 | same request | 8df82f4cba plus the change |
+| Series listed as Acme Corporation Plc after =marketdata backfill-identity --party= | 13 FX spot series, none with axes | same request | 8df82f4cba plus the change |
+| Series held by each Acme party with no identity row, before the backfill | 13 each, for 4 parties | a join of the series and identity tables, grouped by party | 8df82f4cba |
 
 * Notes
 
@@ -85,3 +92,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The browser can ask which series its session can see. =POST /api/curves/series-list= returns each series
+as the typed identity the other curve reads take, with the owning party stated and the axes the series
+declares, and says when the list was cut. The route was read against the running stack, signed in as the
+tenant administrator under two parties. As the System Party it returns the six imported volatility
+surfaces with their axes. As Acme Corporation Plc it returns the thirteen FX spot series, which have no
+axes because a spot rate has no grid. A party sees its own series and no other's.
+
+*A gap this found.* The market data that provisioning seeds for the Acme parties has no rows in the
+identity projection, so thirteen series for each of four parties, and fourteen of the System Party's
+twenty, were invisible to the list and to the resolver. =marketdata backfill-identity --party= fixes it
+for one party at a time, and it has to run in a session of that party. It was run here for Acme
+Corporation Plc. Provisioning should project the identities it seeds. It is captured as a backlog item.
+
+Left for the picker task: the screen does not call this route yet.

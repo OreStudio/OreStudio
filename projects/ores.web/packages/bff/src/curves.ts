@@ -28,8 +28,8 @@ import { input } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /**
- * The reads of a composite object: the series an identity names, the object at
- * one instant, one slice of it over time, and its evolution over a range.
+ * The reads of a composite object: the series an identity names, the series a party
+ * can see, the object at one instant, one slice of it over time, and its evolution over a range.
  *
  * Each route forwards the typed request to the server's subject and returns the
  * reply without its success and message fields. The server checks the
@@ -70,6 +70,10 @@ const identity = z.strictObject({
 });
 
 const identityBody = z.strictObject({ identity });
+
+const seriesListBody = z.strictObject({
+    party_id: z.union([z.uuid(), z.literal('')]).default(''),
+});
 
 const snapshotBody = identityBody.extend({
     include_provenance: z.boolean().default(false),
@@ -144,6 +148,14 @@ export function registerCurveRoutes(
         const session = requireSession(request);
         const body = input(identityBody, request.body);
         return call(session, subjects.resolve_series_identity_request, body.identity);
+    });
+
+    // The series the session's party can see, each as the identity the other reads
+    // take. The body may be empty, which asks across the parties the session sees.
+    server.post('/api/curves/series-list', async (request) => {
+        const session = requireSession(request);
+        const body = input(seriesListBody, request.body ?? {});
+        return call(session, subjects.list_series_identities_request, body);
     });
 
     server.post('/api/curves/snapshot', async (request) => {

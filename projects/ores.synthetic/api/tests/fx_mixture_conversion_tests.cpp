@@ -94,4 +94,6 @@ TEST_CASE("fx_mixture_conversion refuses what it cannot convert", tags) {
     CHECK_THROWS_AS(
         convert_fx_mixture(fx_mixture{{0.1}, {0.2}, {}}, "geometric", "arithmetic", 2.0, 60),
         std::invalid_argument);
+    CHECK_THROWS_AS(kappa_for_half_life(0.0, 60), std::invalid_argument);
+    CHECK_THROWS_AS(kappa_for_half_life(15.0, 0), std::invalid_argument);
 }

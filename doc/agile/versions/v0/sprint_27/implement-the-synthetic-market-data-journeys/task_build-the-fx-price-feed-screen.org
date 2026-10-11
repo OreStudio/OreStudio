@@ -155,6 +155,11 @@ via its "Verifies task" field.
 | 4 | Boot auto start never starts a tenant's feeds | =ores.synthetic/service/src/app/application.cpp= | Captured | Not this branch's code: captured as =boot_auto_start_never_sees_tenant_feeds= |
 | 5 | misspell-fixer: "existant" (fr.ts) and "sucesso" (pt.ts) | =web/src/i18n/locales= | Declined | Correct French and Portuguese, on lines from main |
 | 6 | Display helpers (shares, half-life, band, profiles, density) compute quant figures in the browser | =web/src/marketdata/processHelp.ts=, =mixture.ts= | Declined for now | They decide no written value; the feed screen standard lists them as a gap to move to the server |
+| 7 | Round 1: the tick buffers are shared by every session while the running read is per caller, so one tenant could unsubscribe another's feeds | =bff/src/feed-ticks.ts= | Declined in part | The running read is the service's whole process list, so every session states the same set; a test pins that. The real risk it pointed at, a buffer outliving its run and read through another tenant's feed of the same name, is fixed: a run's ticks go when it stops |
+| 8 | Round 1: buffers never free memory | =bff/src/feed-ticks.ts= | Accepted | Buffers end with their run, so they are bounded by the feeds running |
+| 9 | Round 1: the ticks route starts a listener for a stopped feed | =bff/src/synthetic.ts= | Accepted | Reading starts no listening; the running read decides |
+| 10 | Round 1: the OU conversion drops the other components silently | =fx_mixture_conversion.cpp= | Declined | The screen shows each dropped component as Deleted with Undo and a notice names the conversion |
+| 11 | Round 1: the weight slot holds κ under OU, and the half-life does not guard its inputs | =fx_mixture_conversion_handler.hpp=, =fx_mixture_conversion.cpp= | Accepted | A comment at the call site; =kappa_for_half_life= refuses a duration or rate that is not positive, tested |
 
 * Result
 

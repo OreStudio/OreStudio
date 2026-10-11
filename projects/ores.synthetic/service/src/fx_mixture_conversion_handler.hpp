@@ -100,6 +100,8 @@ public:
                                                           req->ticks_per_hour);
             resp.gmm_means = out.means;
             resp.gmm_stdevs = out.stdevs;
+            // Under the Ornstein-Uhlenbeck engine the one weight is κ, the
+            // reversion speed, which the engine reads from the weight slot.
             resp.gmm_weights = out.weights;
             resp.success = true;
         } catch (const std::exception& e) {

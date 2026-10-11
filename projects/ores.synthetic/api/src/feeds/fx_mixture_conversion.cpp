@@ -38,6 +38,8 @@ void require_known(const std::string& process_type) {
 }
 
 double kappa_for_half_life(double minutes, int ticks_per_hour) {
+    if (!(minutes > 0.0) || ticks_per_hour <= 0)
+        throw std::invalid_argument("A half-life needs a positive duration and rate.");
     return std::log(2.0) / (minutes * ticks_per_hour / 60.0);
 }
 

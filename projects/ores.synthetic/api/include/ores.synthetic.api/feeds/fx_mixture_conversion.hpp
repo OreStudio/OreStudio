@@ -45,6 +45,8 @@ inline constexpr double default_half_life_minutes = 15.0;
 /**
  * @brief The reversion speed κ that halves the distance to the long-run level
  * in @p minutes at @p ticks_per_hour: ln(2) over the half-life in updates.
+ *
+ * Throws std::invalid_argument for a duration or a rate that is not positive.
  */
 ORES_SYNTHETIC_API_EXPORT double kappa_for_half_life(double minutes, int ticks_per_hour);
 

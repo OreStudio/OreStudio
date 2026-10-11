@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 93F08DE9-0843-40D8-8EE9-313A18AC581E
+:END:
+#+title: User Journey: Amend a trade's economics
+#+description: A trader changes the agreed terms of a live trade, and the change moves the trade's external version.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:trading:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader changes the agreed terms of a live trade, and the change moves the trade's external version.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"The deal changed after we booked it, and I want the firm's record to say what was agreed
+now, with the reason, and I want everyone who relies on the trade to see that it changed."
+The journey is done when the trade reads with the new terms, a new version and an
+activity that names the reason, and the external version has moved if the change was
+economic.
+
+* Actor and trigger
+
+The actor is a trader, or an operations user acting for one. The trigger is a correction
+of a booking error, or an agreed change to the terms of a live trade. The journey starts
+on a trade and ends when the amendment is saved, awaits confirmation, or is refused.
+
+* Steps
+
+1. *Open the trade.* The person opens the trade they want to change.
+2. *Say what kind of change it is.* The person chooses the activity: an amendment of the
+   terms, a correction of an operational error, or another type the trade's state allows.
+   The system offers only the activity types the state machine allows from the trade's
+   present state.
+3. *Change the terms.* The person edits the part of the trade that changed: an
+   instrument term, a leg, a booking field or an identifier. The person changes one part
+   at a time and gives a reason each time.
+4. *Review the effect.* The system shows the fields that changed and says whether the
+   change is economic. An economic change moves the trade's external version. A change
+   that is not economic does not.
+5. *Save.* The system writes the activity and the component versions that the activity
+   causes, and shows the new versions.
+6. *Wait for confirmation, if needed.* When the activity type requires confirmation, the
+   change waits. The person sees that it waits.
+7. *Handle a refusal.* The system refuses a stale write, a change the state does not
+   allow, and a field that fails a check. The trade stays as it was.
+
+* Screens and wireframes
+
+This journey is a use case. The trade page serves it: an Edit button on each card opens a
+dialog that asks for the change and the reason, as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] requires. History
+shows the result. There is no separate amend screen. A prototype must show the
+activity type, the state check and the economic mark inside that dialog.
+
+No wireframe is drawn here. The prototype story draws the screens, from the user
+interface standards and from this use case.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =trade_activity= | The event that causes the change | [[id:6B361413-828D-4F84-8AD7-58DA1442580B][ores.trading.trade_activity]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open | Read the trade and its parts | =trading.v1.trades.get=, =trading.v1.<instrument>s.get= | exists |
+| Kind of change | Offer the activity types | =trading.v1.activity_types.list= | exists |
+| Kind of change | Say which activity types the state allows | none | missing |
+| Change | Write an instrument or a child | =trading.v1.<instrument>s.put=, =put_many= of a child | exists |
+| Save | Write the activity and the versions it causes in one transaction | none | missing |
+| Review | Say whether a change is economic | none; the digest is computed on the server | missing |
+
+Status is one of =exists=, =partial=, or =missing=. A subject that contains
+=<instrument>= stands for the one instrument table the trade type routes to.
+
+* What is missing
+
+- Nothing writes an activity with the versions it causes in one transaction. Only
+  =book_trade= does. An amendment is several writes today.
+- Nothing tells the client which activity types the present state allows. The state
+  machine is in the model and the client cannot ask.
+- Nothing tells the client whether a change is economic before it saves. The server
+  computes the digest and moves the external version afterwards.
+- The economic digest does not read the option's exercise prices or a composite trade's
+  legs. A change to either does not move the external version. Fix both before this
+  journey is built. The captures are linked below.
+- The confirmation step for activities that require it has no operation and no journey.
+
+* Related journeys
+
+- [[id:9E66EB4C-D456-41DB-AC46-8936B61FD80F][Review a trade and its history]] — to read the history of the amendment.
+- [[id:D763A432-443A-4CE1-BC00-75D4A9970EDF][Record a lifecycle event on a trade]] — when the change is an exercise, a termination or a novation.
+
+* Related knowledge
+
+- [[id:B9DAC38A-BEB1-4658-87BC-DFF901033E84][Exact Numbers and Economic Change]] — what is economic, and when the external version moves.
+- [[id:BDFB3544-363B-4EC3-82AF-3369AA7483AC][The option's exercise prices are not in the economic digest]] — capture.
+- [[id:E8835866-EE2D-4C13-802B-A5A22C6C0111][A composite trade's legs are not in the economic digest]] — capture.
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

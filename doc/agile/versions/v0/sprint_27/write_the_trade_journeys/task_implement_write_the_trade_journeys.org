@@ -1,0 +1,216 @@
+:PROPERTIES:
+:ID: 417033FE-69BB-4AE3-9075-CA1A2621ADA7
+:END:
+#+title: Task: Inventory the trade operations and the legacy Qt trade screens
+#+description: Initial task for: Write the trade journeys
+#+type: task
+#+level: s1
+#+filetags: :write_the_trade_journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/implement-write-the-trade-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BDAA2DD8-E268-4BC4-87B4-0E60EC181B23][Write the trade journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The trade journeys exist as use cases under doc/knowledge/journeys/trades/. Each names the actor, the goal, the operations it reaches and what is missing. A later story builds prototypes that serve them as entity pages under the UX standards.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BDAA2DD8-E268-4BC4-87B4-0E60EC181B23][Write the trade journeys]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- The inventory table lists every trade operation with its actor and NATS subject.
+- Every legacy Qt trade action has a disposition: kept, changed or dropped.
+- Seven journey documents exist under doc/knowledge/journeys/trades/ with coverage tables. They draw no wireframes: a journey is a use case, and the prototype story draws the screens from the UX standards.
+- The trade group is on the journeys index and its subjects are checked against the protocol headers.
+
+* Plan
+
+Read the legacy Qt trade screens and the trading protocol. Record the inventory and the dispositions here. Write one use case for each agreed journey and a hub page. Check every full subject against the protocol headers. Do not draw wireframes, and do not name a screen as the journey's shape.
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Full subjects named in the journeys and found in the protocol headers | 33 of 33 | a Python check of every =trading.v1=, =refdata.v1=, =ore.v1= and =workflow.v1= name in =doc/knowledge/journeys/trades/*.org= against =nats_subject= in =projects/*/api/include/*/messaging/*.hpp= | 2a5324d1a3 |
+| Bond round trip suite | pass (ores.ore.core.tests, 33.5 s) | =ctest -R ^ores.ore.core.tests$= in =build/output/linux-clang-debug-make= | build from before 2a5324d1a3 |
+
+* Notes
+
+** Policy this story follows
+
+A journey is a use case. It names the goal, the actor, the reads and writes it
+needs, and what is missing. It does not name a screen. The prototypes that serve
+the journeys come in a later story, and they follow the UX cluster
+([[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]]):
+
+- A trade is an entity, made of several kinds of record. Its screens follow the
+  [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]]: one page per trade, one tab per aspect, an
+  Edit button on each card, history as a timeline, and a Workflows menu in the
+  header.
+- Every journey in this story is served by those standard screens. One screen
+  serves several journeys. No journey becomes a screen of its own.
+- Booking is the one candidate for a guided sequence, because an instrument form
+  depends on the trade type. A prototype decides that. It is not decided here.
+- The Qt client was entry-centric: a trade list, a detail dialog, one form per
+  instrument family. The prototypes keep the entry (the trade) as the subject and
+  use the use cases to decide which cards and workflows the page holds.
+
+** I01 to I03: operations, actors and subjects
+
+All actors are people who work in a party: a trader, or an operations user. No
+operation here is system-administrator only. Permission codes are not yet
+checked against the protocol headers (item X01, below).
+
+| Operation | Subject | Used by |
+|-----------+---------+---------|
+| List, get, get many trades | =trading.v1.trades.list=, =.get=, =.get_many= | Review |
+| Put, put many, delete trades | =trading.v1.trades.put=, =.put_many=, =.delete=, =.delete_many= | Amend, Book (wide trade) |
+| Trade versions | =trading.v1.trades_versions.list=, =.get= | Review |
+| Book a trade | =trading.v1.ops.book_trade= | Book |
+| Trade booking, state, activity (an activity is the append-only record of one business event, and every component version names it) | =trading.v1.trade_bookings.*=, =trade_states.*=, =trade_activities.*=, =activity_types.*= | Book, Amend, Lifecycle |
+| Trade links | =trading.v1.trade_links.*= | Structure |
+| Structures | =trading.v1.structures.*=, =structure_members.*= | Structure |
+| Lifecycle event types (a lookup: New, Amendment, Novation, terminations) | =trading.v1.lifecycle_events.*= | Reference data only |
+| One table per instrument and child | =trading.v1.<instrument>s.*= (22 routed instrument tables) | Book, Amend, Review |
+| Export portfolio | =trading.v1.ops.export_portfolio=, =.export_trades_to_storage= | Export |
+| ORE import | =ore.v1.ops.ore_import_execute=, =.ore_import_rollback=, =workflow.v1.ops.ore_import= | Import |
+
+** I04: sensitive fields
+
+No trade message carries a secret. The grep for password, secret and token in
+the trading protocol headers matched only a comment about session tokens.
+
+** I05: how trade records are stored
+
+- The trade anchor is immutable. Party, counterparty, trade type and origin never
+  change after booking.
+- The booking and the state are temporal components keyed by the trade, so each
+  has a history. The state moves by activity, through a finite state machine
+  (=activity_type.fsm_transition_id=).
+- An activity type says whether it is economic and whether it needs
+  confirmation. An amendment is therefore a booked activity, not a bare write to
+  the trade. The Amend journey must say so.
+- Each instrument table is a one-to-one child of the trade, chosen by the trade
+  type. Its child rows (legs, schedules, exercise prices) are owned parts. The
+  trade page holds them as cards or panels, and does not give them screens.
+- The economic digest folds the instrument and its parts into the trade's
+  external version. Two parts are not folded yet: the option exercise prices and
+  a composite trade's legs. They are filed as captures. The Amend journey names
+  them as a dependency.
+
+** Q01 to Q05: the legacy Qt trade screens
+
+| Qt screen | Action | Operation | Disposition |
+|-----------+--------+-----------+-------------|
+| TradeMdiWindow | Reload | trades.list | kept: Refresh on the list |
+| TradeMdiWindow | Add | book_trade | changed: Book a trade workflow |
+| TradeMdiWindow | Edit | trades.put | changed: Edit on a card, which books an amendment |
+| TradeMdiWindow | Delete | trades.delete | changed: Cancel a trade is a cancellation activity. A hard delete is dropped for live trades |
+| TradeMdiWindow | History | trades_versions.list | kept: History tab |
+| TradeMdiWindow | Import | ore_import_execute | changed: Import a portfolio workflow |
+| TradeDetailDialog | Edit and save the trade and its instrument form | trades.put and the instrument put | changed: cards on the trade page |
+| TradeDetailDialog | Counterparty combo with "None" | none | changed: a link to the party page. "None" is dropped |
+| Instrument forms (bond, FX, equity, swap, credit, commodity, composite and others) | Edit the instrument | instrument put | changed: one card set per trade type, from the model |
+| CompositeLegsWidget | Edit the legs | composite_leg put | changed: Legs tab. Blocked by the composite digest gap |
+| TradeHistoryDialog | View versions | trades_versions.list | kept: History timeline |
+| LifecycleEventMdiWindow | Add, edit, delete, history of event types | lifecycle_events.* | dropped here: the window maintained the lookup of event types, which is reference data. The per-trade event is a trade activity, covered by the lifecycle journey |
+| OreImportWizard | Scan a directory, pick currencies, import | ore_import_execute | changed: only the trade import is in this story. Currencies and books are not trades |
+| ImportTradeDialog and TradeController import | Pick a book, pick a file, import | ore_import_execute | kept as the Import workflow, with the book as a field |
+| PortfolioExplorer and OrgExplorer | Tree of portfolios and books with trades | books and trades list | dropped here: the book and portfolio journeys own them. The trade list filters by book |
+| TradeType, TradeIdType, PartyRoleType windows | Maintain the lookups | lookup puts | dropped here: reference data |
+
+Qt mistakes the journeys must not repeat:
+
+- A detail dialog that edited the whole trade at once. The new page edits one
+  card at a time, with a reason.
+- A hard delete of a trade. A live trade is cancelled by an activity.
+- One window per lookup table.
+- An instrument form that was missing for a trade type, and the dialog that only
+  warned. The model must make a trade type with no card set impossible.
+
+** Gaps found while reading
+
+- No operation writes an activity together with the component versions it
+  causes, except =book_trade=. An amendment or a lifecycle event is several
+  writes today (activity, then components), with no shared transaction. The
+  subject list above is the evidence: the only =ops.= subjects are
+  =book_trade=, =export_portfolio= and =export_trades_to_storage=.
+- =book_trade= writes the anchor, the booking and the first state. It does not
+  write the instrument. A booked trade has no instrument until a second write.
+  The Book journey needs one operation, or a defined order with a repair path.
+- =trades.list= filters only by trade id, and =trade_activities.list= only by
+  activity id. A trade search and a trade's activity history need new filters.
+- Trade identifiers, party roles, portfolios, additional fields, links and instrument
+  child tables (checked on =bond_leg=) have no list filter at all. A trade page needs
+  a by-trade read for each. Only trade bookings, trade states and structure members
+  filter by trade id.
+- The BFF and the web app have no trading route or screen. Only the generated
+  wire types exist in =wire-protocol=. (Checked with a search of =web/src= and
+  =bff/src= for "trading": only locale strings, the home page and one inbox test
+  match.)
+- Option exercise prices and composite legs are outside the digest (two
+  captures already filed).
+- =BondForward= has no standalone round trip test. It appears only as the
+  underlying of a Generic TRS golden file.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Seven use cases and a hub page exist under =doc/knowledge/journeys/trades/=, and the
+group is on the journeys index. The inventory and the Qt dispositions are in Notes.
+
+The reading found gaps that block every screen: no web route for trading, a trade
+list that filters only by id, child tables with no by-trade read, no operation that
+writes an activity with the versions it causes, and two digest gaps. They are on the
+journey pages and in the hub. They are for the owner to plan; none is fixed here.

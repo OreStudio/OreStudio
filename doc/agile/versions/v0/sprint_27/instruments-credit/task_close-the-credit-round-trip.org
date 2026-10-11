@@ -2,7 +2,7 @@
 :ID: 8B6C30D1-9BFE-484A-AACD-7541CBE77715
 :END:
 #+title: Task: Close the credit round trip
-#+description: The agreement's export omits its required ParticipationRate, ProtectionFee and Underlying, so it is not valid ORE, and every credit product drops elements of the schema. Write them on import and export. (Staging unit 5.)
+#+description: The agreement's export omits its required ParticipationRate, ProtectionFee and Underlying, so it is not valid ORE, and every credit product drops elements of the schema. Write them on import and export. (Staging unit 6.)
 #+type: task
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:
@@ -38,6 +38,7 @@ Each credit product's ORE elements come back from the tables, and the agreement 
 - The agreement stores its participation rate, protection fee and underlying legs, and exports all three.
 - The dropped elements of each product are stored in its fact table and exported.
 - A mapper test per product holds its fields through the round trip.
+- The design's open question is settled and recorded: how an agreement's underlying option is told apart from a trade's own option on the shared option table.
 - The ORE suite passes.
 
 * Plan

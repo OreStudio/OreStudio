@@ -31,7 +31,8 @@ the table holds nothing for them.
 
 The table is wide because it is the union of what the six products share
 and what each keeps for itself. Six columns are never written by any
-mapper. Two are written and never read. Four more belong to one product. The mapper drops most of the elements the ORE schema
+mapper. Two are written and never read. Four more belong to one product: =option_strike=, =option_expiry_date=,
+=tranche_attachment= and =tranche_detachment=. The mapper drops most of the elements the ORE schema
 gives these products: the upfront fee, the accrual flags, the payment time,
 the basket, the knock-out flag, the strike type and, for the risk
 participation agreement, the participation rate, the protection fee and the
@@ -55,7 +56,7 @@ The proposal follows the bond and rates reworks:
 
 The money columns become exact decimals, and the ORE binding keeps the
 digits for the credit members, as it now does for the FRA. The rework is
-staged into seven units; the last proves the eight credit documents
+staged into eight units; the last proves the eight credit documents
 (eight trades) over the round trip.
 
 * Detail
@@ -207,8 +208,8 @@ The diagram is in =design_er.puml= and =design_er.png= beside this page.
 
 *** The family header
 
-=credit_instruments= (renamed from nothing: the table keeps its name and
-loses its product columns). It holds:
+=credit_instruments= (the table keeps its name and loses its product
+columns). It holds:
 
 | Column | Why it is on the header |
 |--------+-------------------------|
@@ -321,11 +322,26 @@ The units are ordered so each ends in a check and none depends on a later one.
 |------+------+-------|
 | 1 | Analyse the credit family and propose its relational data model | this page |
 | 2 | Carry the credit digits: lexical leaves for the credit members, =recovery_rate= as a decimal | a mapper test per member; the goldens that change are numeric text |
-| 3 | Author the credit family header and its fact tables, and retire the agreement table | codegen drift clean; the generated eventing tests pass |
-| 4 | Write the credit legs and the basket | the corpus documents' legs come back as rows |
-| 5 | Close the credit round trip: the agreement's required elements and underlying, the dropped elements | the mapper round trip per product |
-| 6 | Map the credit dates into the common-date view | a probe across a swap and a credit trade |
-| 7 | Prove the credit round trip over the corpus | eight documents, eight trades, equal family rows |
+| 3 | Retire the unproduced =rpa_instruments= table | the tree builds and passes without its 47 files |
+| 4 | Author the credit family header and its fact tables | codegen drift clean; the generated eventing tests pass |
+| 5 | Write the credit legs and the basket | the corpus documents' legs come back as rows |
+| 6 | Close the credit round trip: the agreement's required elements and underlying, the dropped elements | the mapper round trip per product |
+| 7 | Map the credit dates into the common-date view | a probe across a swap and a credit trade |
+| 8 | Prove the credit round trip over the corpus | eight documents, eight trades, equal family rows |
+
+Retiring the agreement table is its own unit because it touches 47 files and
+a rates wire variant, and it can land before the new tables exist.
+
+** Open questions
+
+- *Two sets of option rows on one trade.* The agreement's underlying can be a
+  callable swap, which has its own =instrument_options= rows. The index option
+  writes an option row on the same trade, which the shared table keys by the
+  trade. The design does not yet say how an underlying's option is told apart
+  from the trade's own. Unit 6 settles it: either a group or role column on
+  =instrument_options=, or a rule that a trade holds one of the two. The
+  corpus holds an agreement on a callable swap and an index option, never both
+  on one trade, so the rule is a safe default.
 
 * Decisions
 

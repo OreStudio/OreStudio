@@ -2,7 +2,7 @@
 :ID: CFBA80D2-A5EA-45DA-8566-D65C41C37D53
 :END:
 #+title: Task: Write the credit legs and the basket
-#+description: A credit swap's premium leg and a credit linked swap's payment groups are rows of the shared swap leg tables, told apart by a new leg_group column. The names of a basket get a new child table. (Staging unit 4.)
+#+description: A credit swap's premium leg and a credit linked swap's payment groups are rows of the shared swap leg tables, told apart by a new leg_group column. The names of a basket get a new child table. (Staging unit 5.)
 #+type: task
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:

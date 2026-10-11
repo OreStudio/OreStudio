@@ -2,7 +2,7 @@
 :ID: DD0F79D0-38B4-43DE-B2E0-135976B8BA25
 :END:
 #+title: Task: Author the credit family header and its fact tables
-#+description: Replace the 25-column credit table with a header holding the reference entity and the two dates, and six product fact tables keyed by the trade. Remove the two importer-less codes from the routing and retire the unproduced rpa_instruments table. (Staging unit 3.)
+#+description: Replace the 25-column credit table with a header holding the reference entity and the two dates, and six product fact tables keyed by the trade. Remove the two importer-less codes from the routing. (Staging unit 4.)
 #+type: task
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The credit family has a header and one fact table per product, generated from models, and the retired agreement table is gone.
+The credit family has a header and one fact table per product, generated from models.
 
 * Status
 
@@ -37,7 +37,6 @@ The credit family has a header and one fact table per product, generated from mo
 
 - The header's trade_type check lists the six codes the importer writes, and the catalogue routes only those.
 - Six fact tables are keyed by the trade and pinned to the header by the generated delete cascade.
-- The rpa_instruments model and every generated file named for it are removed.
 - Codegen drift is clean and the generated eventing tests pass.
 
 * Plan

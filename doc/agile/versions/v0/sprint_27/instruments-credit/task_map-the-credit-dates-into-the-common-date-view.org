@@ -2,7 +2,7 @@
 :ID: E58A1EF3-89FF-4AD8-BB25-462A2F8F29D7
 :END:
 #+title: Task: Map the credit dates into the common-date view
-#+description: The blotter's common-date view lists the rates family only. Map the credit header's start and maturity dates, and give the family generated eventing tests. (Staging unit 6.)
+#+description: The blotter's common-date view lists the rates family only. Map the credit header's start and maturity dates, and give the family generated eventing tests. (Staging unit 7.)
 #+type: task
 #+level: s1
 #+filetags: :instruments-credit:sprint_27:v0:

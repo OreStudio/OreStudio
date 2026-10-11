@@ -121,7 +121,7 @@ stored as float artifacts.
 The proposal is a six-code header with the reference entity and the two
 dates, six product fact tables keyed by the trade, the swap leg tables reused
 with a =leg_group= column, the shared option and strike children reused, and
-one new basket child. The rework is staged into seven units, from the digits
+one new basket child. The rework is staged into eight units, from the digits
 to the proof over the eight corpus documents.
 
 Acceptance met: every credit type is inventoried, the divergences are

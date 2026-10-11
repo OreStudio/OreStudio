@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 62313BC5-7E9D-4AAF-B74C-53AE63B3D943
 :END:
-#+title: Story 2 of the QA runner arc. Add kanban for the sprint, sto…
+#+title: Browse the agile tree in ores.web
 #+description: Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the backlog buckets and any doc by link to the Development module in ores.web. Reach parity with ores.dsh_kanban and ores.org-js, then retire both and their publishing (the copy into the site in ores-build-site.el, the exclude patterns, and the memory, tag and modeling pages that name them). Check that no site page links to the old agile view.
 #+type: capture
 #+level: cross
@@ -13,16 +13,16 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the backlog buckets and any doc by link to the Development module in ores.web. Reach parity with ores.dsh_kanban and ores.org-js, then retire both and their publishing (the copy into the site in ores-build-site.el, the exclude patterns, and the memory, tag and modeling pages that name them). Check that no site page links to the old agile view.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+Story 2 of the QA runner arc. It lets the team drop the old agile views and keep one browser module.
 
 * References
 
--
+- [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]]
 
 * See also
 
--
+- [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]]

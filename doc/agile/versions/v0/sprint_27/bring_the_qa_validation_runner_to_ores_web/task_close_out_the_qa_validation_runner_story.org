@@ -55,12 +55,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| none |       |         |        |
 
 * Notes
 
 Follow-ups filed in the inbox: browse the agile tree in ores.web (arc story 2), raise a notification for a scenario waiting for a tester (arc story 3), teach compass the ABANDONED scenario state, and the raw =../../= path that answers 500. The French and Portuguese text needs a speaker, and is in the last capture.
-
 
 * Test Scenarios
 
@@ -71,7 +70,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:BE03EF33-C2A7-4B0B-A444-BDA37F4663AE][Test the QA validation runner in the browser]] | PASSED | Wording brought up to date. The run is not repeated. |
+| [[id:BE03EF33-C2A7-4B0B-A444-BDA37F4663AE][Test the QA validation runner in the browser]] | NOT RUN | Passed in PR 3097. Only the wording changed here, and the run is not repeated. |
 
 * PRs
 
@@ -83,7 +82,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The four captures are unfilled templates | inbox captures | Fix | What and Why are written, and the links are set. |
+| 2 | The capture titles are cut off | inbox captures | Fix | The titles are short. The index is regenerated. |
+| 3 | The scenario row says PASSED for a run not repeated | task | Fix | The row says NOT RUN and names PR 3097. |
+| 4 | The Abandoned step has no result if no sprint has the bucket | scenario | Fix | The step says the part is optional. |
+| 5 | Empty Measurements and Review rows | task | Fix | Measurements says none. Review holds these rows. |
 
 * Result
 

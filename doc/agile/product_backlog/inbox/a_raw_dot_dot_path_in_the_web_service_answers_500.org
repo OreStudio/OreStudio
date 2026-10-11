@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: AE3483EF-13A7-484D-B7B2-E4101BA125A1
 :END:
-#+title: A request to ores.web with raw ../../ segments in the path a…
+#+title: A raw ../../ path in the web service answers 500
 #+description: A request to ores.web with raw ../../ segments in the path answers 500 from @fastify/static, not 400 or 404. It was so before the QA runner work. Find where the error comes from and map it to a 4xx in the BFF error handler. Also: the French and Portuguese text of the Development module is a machine-style translation and needs a speaker to read it.
 #+type: capture
 #+level: cross
@@ -13,16 +13,16 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+A request to ores.web with raw ../../ segments in the path answers 500 from @fastify/static, not 400 or 404. It was so before the QA runner work. Find where the error comes from and map it to a 4xx in the BFF error handler. Also: the French and Portuguese text of the Development module is a machine-style translation and needs a speaker to read it.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+A client error should not look like a server fault. A 500 here also pollutes the failure log.
 
 * References
 
--
+- [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]]
 
 * See also
 
--
+- [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]]

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8D0C358D-771A-4E4C-BC2E-5DA9AECE03E5
 :END:
-#+title: The web QA runner has a fourth scenario state, ABANDONED, fo…
+#+title: Teach compass the ABANDONED scenario state
 #+description: The web QA runner has a fourth scenario state, ABANDONED, for a scenario nobody will run. A person sets it by hand in the doc: the State row, a dated note, and ABANDONED in the #+todo line. The test_scenario template and compass do not know it, so the template todo line lacks it and no compass verb sets it. Add it to the template, add a verb that abandons a scenario, and let sprint audit and the indexes treat it as closed.
 #+type: capture
 #+level: cross
@@ -13,16 +13,16 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+The web QA runner has a fourth scenario state, ABANDONED, for a scenario nobody will run. A person sets it by hand in the doc: the State row, a dated note, and ABANDONED in the #+todo line. The test_scenario template and compass do not know it, so the template todo line lacks it and no compass verb sets it. Add it to the template, add a verb that abandons a scenario, and let sprint audit and the indexes treat it as closed.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The state exists in the web runner, but compass cannot create or set it. People edit the docs by hand until it can.
 
 * References
 
--
+- [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]]
 
 * See also
 
--
+- [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]]

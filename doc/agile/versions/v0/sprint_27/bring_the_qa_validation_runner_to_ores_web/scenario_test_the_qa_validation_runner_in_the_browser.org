@@ -69,7 +69,7 @@ This scenario tests the runner by running in it. The scenario you are reading is
 - In the *Sprint 27* section, under *Active*, find the row *Test the QA validation runner in the browser*.
 - The row shows the story and the task of the scenario under the title, the target =Development > Tests, and the scenario runner=, a progress bar with *0 of 17 steps*, the state *Pending*, and the date it was created, =2026-10-11=.
 - Inside a sprint the newest created date comes first, so this scenario is at the top of its sprint. The columns line up from one sprint to the next, and a date stays on one line.
-- Click the heading of an older sprint to open it, and click it again to close it. Its *Done* rows show *Passed* or *Failed*, the created date and a completion time. Open an *Abandoned* bucket to see the scenarios nobody will run.
+- Click the heading of an older sprint to open it, and click it again to close it. Its *Done* rows show *Passed* or *Failed*, the created date and a completion time. If a sprint has an *Abandoned* bucket, open it to see the scenarios nobody will run. This part is optional, and the step does not fail if no sprint has one.
 - Wait up to ten seconds for a first listing. It scans the whole =doc/= tree.
 
 *** Result

@@ -8,7 +8,7 @@
 #+filetags: :exact_numbers_and_economic_change:sprint_27:v0:
 #+owner: marco
 #+branch: feature/declare-the-economic-fields
-#+pr:
+#+pr: 3109
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -133,7 +133,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3109][#3109]] | [trading,codegen] Declare the economic fields in the model |
 
 * Review
 

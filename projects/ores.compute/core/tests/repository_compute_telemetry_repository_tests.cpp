@@ -61,6 +61,17 @@ std::vector<std::string> host_ids_of(const std::vector<ores::compute::domain::no
     return ids;
 }
 
+/// The generator leaves the 64-bit members of a node sample indeterminate, because
+/// the codegen gives a default to int and bool alone. A test that writes the row
+/// as it is would store stack garbage, so it states them.
+ores::compute::domain::node_sample with_defined_counters(ores::compute::domain::node_sample row) {
+    row.avg_task_duration_ms = 0;
+    row.max_task_duration_ms = 0;
+    row.input_bytes_fetched = 0;
+    row.output_bytes_uploaded = 0;
+    return row;
+}
+
 } // namespace
 
 using namespace ores::compute::generators;
@@ -93,17 +104,17 @@ TEST_CASE("read_latest_node_samples_sees_own_and_system_tenants_but_not_a_third"
                                    provision_ctx, third_code, "compute telemetry third tenant"))
             .value();
 
-    auto own_row = generate_synthetic_node_sample(gen);
+    auto own_row = with_defined_counters(generate_synthetic_node_sample(gen));
     own_row.tenant_id = own;
     own_row.host_id = random_uuid();
     own_row.sampled_at = std::chrono::system_clock::now();
 
-    auto system_row = generate_synthetic_node_sample(gen);
+    auto system_row = with_defined_counters(generate_synthetic_node_sample(gen));
     system_row.tenant_id = system;
     system_row.host_id = random_uuid();
     system_row.sampled_at = std::chrono::system_clock::now();
 
-    auto third_row = generate_synthetic_node_sample(gen);
+    auto third_row = with_defined_counters(generate_synthetic_node_sample(gen));
     third_row.tenant_id = third;
     third_row.host_id = random_uuid();
     third_row.sampled_at = std::chrono::system_clock::now();
@@ -342,7 +353,7 @@ TEST_CASE("node_series_sums_the_interval_counters_and_orders_the_nodes_by_machin
 
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto model = generate_synthetic_node_sample(gen);
+    const auto model = with_defined_counters(generate_synthetic_node_sample(gen));
 
     auto provision_ctx = h.context();
     const auto third =

@@ -100,16 +100,26 @@ BEGIN
         'Imports the GLEIF legal-entity hierarchy under a root LEI as the tenant''s parties. Published tenant-wide with the {"lei_parties": {"root_lei": "..."}} param, before any party under the root exists. The root LEI is the run''s, so the bundle holds no organisation''s data.'
     );
 
-    -- The reference data one party needs and nothing more: the reporting
-    -- definitions it runs and its CRM topology. Published once per party
-    -- with a {"party_id": "..."} param. Deliberately excludes the
-    -- organisation structure, staff accounts and demonstration data that
-    -- the ACME office bundles and risk_management carry, so a production
-    -- tenant's parties get reference data and no test data.
+    -- The reference data one party needs and nothing more: its instrument
+    -- conventions and its CRM topology. Published once per party with a
+    -- {"party_id": "..."} param. Deliberately excludes the organisation
+    -- structure, staff accounts and demonstration data that the ACME office
+    -- bundles and risk_management carry, so a production tenant's parties
+    -- get reference data and no test data.
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_essentials',
         'Party Essentials',
-        'The reference data a single party needs: its ORE report definitions and its CRM (Cross-Rates Matrix) topology. Published once per party with a {"party_id": "..."} param. Carries no organisation structure, staff accounts or demonstration data -- those belong to the ACME demo bundles.'
+        'The reference data a single party needs: its instrument conventions and its CRM (Cross-Rates Matrix) topology. Published once per party with a {"party_id": "..."} param. Carries no organisation structure, staff accounts or demonstration data -- those belong to the ACME demo bundles.'
+    );
+
+    -- The generic report set for a party that has no report design of its
+    -- own: the tiered ORE report definitions and the run settings they
+    -- resolve. A profile that gives each party its own report definitions,
+    -- as acme_demo does through the ACME office bundles, does not name it.
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'party_reporting',
+        'Party Reporting',
+        'The generic report set for a party: the tiered ORE report definitions and the run settings they resolve. Published once per party with a {"party_id": "..."} param, after party_essentials. A profile that gives each party its own report definitions does not publish it.'
     );
 
     -- What the ORE sample documents import against. Demonstration data for

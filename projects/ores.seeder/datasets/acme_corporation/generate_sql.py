@@ -324,6 +324,15 @@ def generate_dataset_populate(companies):
             "counterparty LEI and published to the party a publish names.",
             "party_counterparties"))
 
+    for company in NETTING_COMPANIES:
+        label = COMPANY_LABEL[company]
+        body.append(dataset_upsert(
+            f"acme.{company}.report_definitions", "Reporting",
+            f"ACME Corporation {label} Report Definitions",
+            f"The reports ACME Corporation {label} runs, with their schedules, "
+            "published to the party a publish names.",
+            "report_definitions"))
+
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
  * ACME Corporation Dataset Population Script
@@ -939,6 +948,22 @@ def generate_party_links_populate(company, family, title, note, column, records,
         f"ores_dq_{family}_artefact_tbl", [column, "version"], rows))
 
 
+def generate_report_definitions_populate(company, reports):
+    rows = [
+        "        (v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 1, "
+        f"{sql_str(r['name'])}, {sql_str(r['description'])}, {sql_str(r['report_type'])}, "
+        f"{sql_str(r['schedule_expression'])}, {sql_str(r['concurrency_policy'])}, "
+        f"{r['display_order']}, {sql_str(r['tier'])}, {sql_str(r['applicable_jurisdiction'])})"
+        for r in reports]
+    write(f"{company}_report_definitions_artefact_populate.sql", netting_artefact_script(
+        company, "report_definitions", "Report Definitions",
+        "The reports the party runs.",
+        "ores_dq_report_definitions_artefact_tbl",
+        ["id", "version", "name", "description", "report_type", "schedule_expression",
+         "concurrency_policy", "display_order", "tier", "applicable_jurisdiction"],
+        rows))
+
+
 def by_company(records):
     grouped = {c: [] for c in COMPANIES}
     for r in records:
@@ -960,6 +985,7 @@ def main():
     party_countries = by_company(load("party_countries"))
     party_currencies = by_company(load("party_currencies"))
     party_counterparties = by_company(load("party_counterparties"))
+    report_definitions = by_company(load("report_definitions"))
 
     generate_catalog_populate()
     generate_dataset_populate(COMPANIES)
@@ -1006,6 +1032,7 @@ def main():
         generate_netting_agreements_populate(company, netting_agreements[company])
         generate_netting_sets_populate(company, netting_sets[company])
         generate_csas_populate(company, csas[company])
+        generate_report_definitions_populate(company, report_definitions[company])
 
 
 if __name__ == "__main__":

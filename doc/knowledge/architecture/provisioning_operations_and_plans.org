@@ -70,6 +70,16 @@ the bundle it publishes and the label it shows, and nothing more. The plan carri
 root LEI; such a value arrives as a starting-point parameter or as an operation's argument, which
 keeps the party plan a list of bundles.
 
+** A party gets the generic report set, or its own
+Reference data every party needs, the instrument conventions and the CRM topology, travels in the
+=party_essentials= bundle. The generic report set travels apart from it, in the =party_reporting=
+bundle: the tiered report definitions and the run settings they resolve. A starting point for parties
+that share one report design names both bundles. A starting point that gives each party its own
+report design names only =party_essentials= and publishes each party's own report definitions
+dataset through that party's bundle. The Acme demo does this, because a real group's legal entities
+do not run the same reports. The tier and jurisdiction qualifiers cannot express such a design,
+because the entities share a tier and differ in the desks they run.
+
 * See also
 
 - [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the structure note that orders this cluster, and where to read this page in it.

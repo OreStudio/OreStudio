@@ -28,15 +28,15 @@ Today every ACME party holds the same 31 report definitions. No party has a risk
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F7AD36C5-7413-4733-9383-72C9E8F56326][Make the ACME data realistic and isolate the ORE samples]] |
-| Now          | Design drafted in [[id:6A1EE441-E132-4230-BCD9-E8BB786D721F][Which reports each ACME party runs]]. |
-| Waiting on   | The product owner's review of the draft. |
-| Next         | Settle the open decisions, then change the provisioning. |
+| Now          | Design agreed in [[id:6A1EE441-E132-4230-BCD9-E8BB786D721F][Which reports each ACME party runs]]. Each party now gets its own report definitions. |
+| Waiting on   | The attach-photos fix, to prove a complete provision. |
+| Next         | The configuration for each report, then the portfolio trees, currencies and market data feeds. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
 
 - A design document states, for each of the four parties, which reports it runs and why, from its role, its jurisdiction and its place in the group. Each decision names its justification and the alternative rejected.
-- Provisioning gives each party only the reports in the design. The tier and jurisdiction filter of the publish is driven by the party, not left at its default.
+- Provisioning gives each party only the reports in the design. Each party publishes its own report definitions dataset, and the generic tiered set no longer reaches the Acme parties or the system party.
 - Each party's report definitions carry the configuration they need, with a base currency that matches the party.
 - Each party has a realistic portfolio tree, root portfolio and currencies, and each report scope names portfolios that exist for that party.
 - The seeds carry no comment that states a count. Existing count comments in the files the task touches are removed.
@@ -59,8 +59,10 @@ Steps:
 1. Write the design document: for each party, its role, jurisdiction and place
    in the group, then the reports it runs, each with a justification and the
    alternative rejected.
-2. Make provisioning pass the tiers and jurisdiction the design gives for each
-   party. Today only =party_id= is passed.
+2. Give each party its own report definitions dataset, and stop the generic
+   set reaching the Acme parties. Done: the tier and jurisdiction filter cannot
+   express the design, so the generic set moved to its own bundle and the Acme
+   office bundles carry the per-party datasets.
 3. Add the configuration for each chosen report, including a base currency that
    matches the party.
 4. Rework the portfolio tree, the root portfolio and the currencies per party.
@@ -80,7 +82,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Report definitions per party after a clean provision | Group 10, UK 24, US 22, HK 22, both system parties 0 | =compass sql= count of =ores_reporting_report_definitions_tbl= by party, after =compass db recreate -y -k= and =bootstrap setup --profile acme_demo= | the commit that adds the per-party datasets |
+| Definitions each party must not hold | System Health only at the group. Strategic reports only at the group. MiFID II only UK, CFTC only US, HKMA only HK. Vega and Volatility Surfaces only UK. Stressed VaR and P&L Attribution at the three trading entities | the same query, with a filter on the report name | the same commit |
+| Roots of the official portfolio tree after the same provision | Group 1, UK 2, US 1, HK 1 | =compass sql= count of portfolios with no parent, by party | the same commit |
 
 * Notes
 
@@ -104,6 +108,29 @@ the files.
 - Every party has a USD root portfolio, and two roots: Global Portfolio and
   Regulatory Capital. The publish takes the first by name.
 - The official trees hold no trades. Trades are out of scope here.
+
+Provisioning change, 2026-10-11.
+
+- A profile's party stage published =party_essentials= to every party, and that
+  bundle held the generic report definitions. The profile's first publish also
+  named =risk_management=, which published the same definitions and the fixture
+  portfolio tree to the system party. Both are why every party held the same
+  reports.
+- The fix is data only. The generic definitions and run settings moved to a new
+  bundle, =party_reporting=. The two non-Acme profiles name it. The Acme demo
+  profile does not, and no longer publishes =risk_management=.
+- The tree finding changed with it. Before, every Acme party held the fixture
+  tree. After, each party holds the tree its own bundle defines, which is the
+  tree this task reworks next.
+- The generator =generate_sql.py= produced differences in the books and staff
+  photos scripts that this task did not cause. The committed scripts carry book
+  purpose columns that the generator does not write. Another story fixes the
+  book purpose, so those scripts were restored and left alone.
+- The tenant setup still stops at the photo step, because of the account
+  visibility defect. The report definitions and the trees publish before that
+  step, so the proof above does not depend on the fix. The market feeds start
+  after it, so the feeds are not proved.
+- The entity-writes check reports five writers that this task did not touch.
 
 * Test Scenarios
 

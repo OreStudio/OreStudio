@@ -43,6 +43,9 @@ Decisions=): JSON only — no SQL, no server-side wiring yet.
 | =party_countries.json=    | ores_dq_party_countries_artefact_tbl shape — the countries each entity works in |
 | =party_currencies.json=   | ores_dq_party_currencies_artefact_tbl shape — the currencies each entity works in |
 | =party_counterparties.json= | ores_dq_party_counterparties_artefact_tbl shape — the counterparties each entity may trade with, by LEI |
+| =generate_report_data.py= | Report design table; re-run to regenerate report_definitions.json from the catalogue |
+| =report_catalogue.json=   | The report definitions the platform seeds: text, schedule, concurrency policy, tier and jurisdiction |
+| =report_definitions.json= | ores_dq_report_definitions_artefact_tbl shape -- the reports each entity runs, chosen by rules, not one shared list |
 | =manifest.json=           | Dataset/catalog descriptor following the crafted-dataset convention |
 | =methodology.txt=         | Full generation approach and how to extend (add an office/desk)    |
 

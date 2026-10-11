@@ -130,6 +130,10 @@ select ores_utility_allow_version_replace_fn();
 \ir acme/acme_hk_party_countries_artefact_populate.sql
 \ir acme/acme_hk_party_currencies_artefact_populate.sql
 \ir acme/acme_hk_party_counterparties_artefact_populate.sql
+\ir acme/acme_group_report_definitions_artefact_populate.sql
+\ir acme/acme_uk_report_definitions_artefact_populate.sql
+\ir acme/acme_us_report_definitions_artefact_populate.sql
+\ir acme/acme_hk_report_definitions_artefact_populate.sql
 \ir acme/acme_group_business_units_artefact_populate.sql
 \ir acme/acme_group_portfolios_artefact_populate.sql
 \ir acme/acme_group_books_artefact_populate.sql

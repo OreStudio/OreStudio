@@ -165,4 +165,26 @@ via its "Verifies task" field.
 
 * Result
 
-The design is written, reviewed and agreed in PR #3115. It holds the use cases, the two tables, the six building blocks of the shared-read standard, and the product owner's decisions. The task is not done: the implementation follows in a later PR on this task.
+The design is in PR #3115. This task builds it. The accounts table is the open table and no column moves, as the product owner decided.
+
+What changed:
+
+- The accounts table has the column =shared=. The seed sets it for the 23 service accounts and for the super admin.
+- =accounts_select_policy= admits the current tenant and the shared rows of the system tenant. One policy per command keeps every write inside the tenant. The party rule passes a shared row.
+- =ores_iam_account_exists_fn(id)= answers yes or no for the session's tenant and the shared accounts. The generated soft foreign key trigger calls it for every foreign key to the accounts table, through the map =EXISTENCE_FUNCTIONS= in the codegen loader. Sixteen entities were regenerated.
+- The account repository states =:system_tenant_visible: true=. A tenant administrator reads the 23 services and the super admin beside the 59 people.
+- The delete rule of an entity that is visible to the system tenant keeps to the own tenant. The pgTAP test found that the rule, which runs with the owner's rights, closed a shared row for another tenant.
+- The web directory counts every account type except a user as system activity.
+- The standard "Data read across tenants" states the six blocks and the checklist. The multi-tenancy and authorised-reads pages describe the accounts case.
+
+Evidence:
+
+- =test/iam_accounts_shared_visibility_test.sql= passes 13 pgTAP assertions, including a service acting in a tenant that finds a person only through the existence check.
+- A clean provision of the Acme dataset completes. The step =attach_photos= passes, all 23 services and all 59 people hold a picture, and the workflow reaches COMPLETED. The step failed before on main with the party rule.
+- The inbox and refdata test suites pass. The web suite passes (1045 tests).
+- The IAM core suite has 7 failures: run grant exchange (4), the role grant applier (1), the member role test (1) and the login of a suspended tenant (1). All 7 pass when only =accounts_party_visibility_policy= is dropped, so they come from the party rule on main and not from the shared rows. They were hidden before because the old development database did not have the rule.
+
+Not done:
+
+- A service that acts in a tenant still cannot read a person through the table. Only the existence check serves it. The seven failing tests read people as a service. Whether a service acting in a tenant should read the people of that tenant is a decision for the product owner.
+- The People list of a tenant now shows the shared rows. They carry the service tag.

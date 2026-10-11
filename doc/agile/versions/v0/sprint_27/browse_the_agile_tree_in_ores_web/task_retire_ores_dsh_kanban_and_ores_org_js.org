@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -84,3 +84,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.dsh_kanban= and =ores.org-js= are removed, with what published and checked them.
+
+Removed: both project folders, the =dsh-kanban= workflow, the =dsh-kanban= check and its path class in the local checks (the plugin class keeps =ores.dsh_environment=), the copy of the agile app into the site and the =Agile Board= link in the site navigation, and the =projects/ores.org-js= exclude pattern in =ores-build-site.el= (six places), =ores-sync-org-roam.el=, =ores-check-org-links.el=, =compass.py= and =.misspell-fixer.ignore=.
+
+Rewritten: the CI doc (twelve retired triggers, not thirteen, and one plugin), the tag inventory example, the two technical space pages (the JavaScript space is now =ores.dsh_environment=), the =ores.dsh_environment= contract (it named the kanban plugin as the source of the sessions hook), and the memory page, which keeps its rule that nothing is named 'dashboard'. The memory file is renamed to =dashboard_name_is_reserved.org=, and its id is unchanged. The comments in the ores.web agile code no longer name the old projects.
+
+Left as history, because they describe what was true then: the agile docs of sprints 20 to 27 and the closed backlog items, and the prototype pages, which the site publishes as written. The old contract and code stay in git history.
+
+No page on the site links to the old agile view. A search of the whole tree for =OreStudio/agile=, =agile/index.html= and =Agile Board= found the one navigation link, and it is gone. =emacs --batch= reads the three edited Lisp files without a paren error, and the local-checks tests pass. I did not run a full site build.
+
+Not done by this task: the capture =standardize_timeline_bucket_writer= is about the timeline snapshots that only =ores.org-js= read, and it names that project. It needs a decision from you: keep it or discard it. A DSH profile that installed =ores.dsh_kanban= keeps its copy until someone removes it, because that lives outside the repository.

@@ -23,11 +23,10 @@ import { findSection, parseOrg } from '@ores/org';
 import { parseSprint, parseTask, type AgileState, type StoryFiles } from './agile-model.js';
 
 /**
- * The series of the sprint charts. They replace the panels of ores.org-js:
- * stories done in each sprint, tasks done by day with their running total
+ * The series of the sprint charts: stories done in each sprint, tasks done by day with their running total
  * against the scope, and tasks by state. Nothing here touches the disk.
  *
- * The end dates of the tasks live only in the \`* Tasks\` table of a story, so
+ * The end dates of the tasks live only in the `* Tasks` table of a story, so
  * the burn-up and the day bars read that table. The scope and the states count
  * the task docs. The two can differ when a row has no doc or a doc has no row.
  */

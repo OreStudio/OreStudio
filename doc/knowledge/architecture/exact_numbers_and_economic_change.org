@@ -195,10 +195,10 @@ digest can be written as one function that walks the fields, skips the ones
 named identity or audit, renders each remaining field canonically and hashes
 the result — no per-family code, and no generator change.
 
-What the generator cannot express is a per-field =economic= marking, so the
-first version has to decide inclusion by name. That is weaker than a
-declaration and it is the reason the =declare the economic fields= task
-exists; it is not, as this page first implied, a blocker for the digest.
+The first version decided inclusion by name, which a name cannot do well:
+it can state what a field is called, not what it means. The
+[[#declaring-the-economic-fields][declaration]] below replaced that rule, so
+the digest decides nothing by a field's name.
 
 ** What was built
 
@@ -209,11 +209,9 @@ with =rfl::to_view=, skips the excluded ones at compile time through
 returns =sha256::hex_digest= of it. Values are length-prefixed, so no value
 can run into the next and no two different values frame to the same text.
 
-The exclusion is an exact list — identity, audit and the trade's own
-classification — plus every name ending in =_id=, plus an allow-list of five
-names that survive that suffix because they are external identity rather than
-foreign keys: =security_id=, =credit_curve_id=, =reference_curve_id=,
-=income_curve_id=, =volatility_curve_id=.
+A field takes part when its model says so. The digest reads the type's
+=economic_fields_of= declaration, which codegen writes from the model, and
+renders only the members that list names. The name list it replaced is gone.
 
 ** What was built, part two: the trade's digest
 
@@ -234,12 +232,14 @@ classification moves it; and it does not collide on ambiguous concatenation.
 ** The limit, in one example
 
 =security_id= is the ISIN: external identity, and economic. =issue_id= is a
-surrogate key: identity, and not. Both end in =_id=, so no suffix rule can
-separate them and the allow-list is a list of exceptions rather than a rule.
-That is the concrete case for declaring the fields instead of naming them.
+surrogate key: identity, and not. Both end in =_id=, so no suffix rule could
+separate them and the allow-list was a list of exceptions rather than a rule.
+That was the concrete case for declaring the fields instead of naming them.
 
 The suite that proves it uses the real =bond_issue=: changing =security_id=
-moves the digest, changing =issue_id= does not.
+moves the digest, changing =issue_id= does not. It passes unchanged under the
+declaration, where =security_id= says =:economic: true= and =issue_id= says
+=:economic: false=.
 
 ** Why the test is believable
 
@@ -250,6 +250,68 @@ for no reason. It was proved by mutation rather than asserted: removing
 =modified_by= from the exclusion list makes the case fail with two different
 digests, and restoring it makes the suite green. A test that has never been
 seen to fail is a test that may not be testing anything.
+
+** Declaring the economic fields
+:PROPERTIES:
+:CUSTOM_ID: declaring-the-economic-fields
+:END:
+
+A column states =:economic: true= or =:economic: false= in its model drawer.
+Codegen writes the answer into the domain header beside the struct:
+
+#+begin_src cpp
+inline constexpr std::string_view vanilla_swap_instrument_economic_fields[] = {
+    "settlement_lag",
+};
+
+constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<vanilla_swap_instrument>) {
+    return vanilla_swap_instrument_economic_fields;
+}
+#+end_src
+
+The overload takes the type and not a value. The digest asks it at compile
+time, so a member that is not economic is never rendered, and a type such as
+=tenant_id= that has no canonical form costs nothing. A struct without the
+overload cannot be digested: =canonical_struct= stops the build and says which
+model to declare.
+
+Four rules keep the declaration honest.
+
+- A struct declares all of its members or none of them. Codegen refuses a model
+  that declares some columns and omits others, so a field added later cannot be
+  economic or not by default.
+- A column that reaches no flat member, such as one carried by the identity
+  group, must not declare. The group's own model declares it.
+- The members the template writes itself, such as =version=, =tenant_id= and
+  the audit tail, are never listed, so they are never economic.
+- A member holding a declared struct of its own, such as an identity or audit
+  group, takes part only when that struct names an economic field.
+
+The declaration was written once from the old rule, by
+=scripts/declare_economic_fields.py=, and checked against the old rule on 35
+types before the rule was deleted, and on all 51 declared types afterwards by
+=evidence/economic_declaration_parity.py= in the task's folder. After that the models own the answer. The
+script is kept because a model that gains columns can be declared the same way,
+but it only proposes: what a field means is the model author's call.
+
+*** The components of a shape
+
+The trade-type catalogue's =* Digest= section declares which rows make up an
+instrument's economic shape. =Instrument components= lists them per routed
+instrument table, and =Shared components= lists the rows every instrument
+shares, with the function that reads each by trade id. Codegen refuses a
+routed instrument that has no entry, an entry for one that is not routed, and
+a component whose model declares no economic fields.
+
+The reader is generated, =instrument_economic_shape.hpp=, and
+=read_instrument_digests= calls it instead of keeping 22 hand-written cases.
+The generated switch has no default, so a table the catalogue routes and does
+not list fails the build.
+
+Declaring the shape made one gap visible. The option's exercise prices are an
+economic table that the digest has never read. They are not listed, because
+listing them changes what the digest covers.
 
 * Propagating it up to the trade
 

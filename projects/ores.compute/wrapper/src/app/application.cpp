@@ -40,6 +40,7 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/writable_pipe.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/process/v2/environment.hpp>
 #include <boost/process/v2/process.hpp>
 #include <boost/process/v2/start_dir.hpp>
 #include <boost/process/v2/stdio.hpp>
@@ -554,11 +555,22 @@ void process_assignment(ores::nats::service::client& nats,
         boost::asio::connect_pipe(out_r, out_w);
         boost::asio::connect_pipe(err_r, err_w);
 
+        // ORE stamps its log lines in the local time of the machine, and the log
+        // parser reads them as UTC, so the engine runs with TZ=UTC on every node.
+        std::vector<std::string> engine_env;
+        for (const auto& entry : bp2::environment::current()) {
+            const auto key = entry.key().string();
+            if (key != "TZ")
+                engine_env.push_back(key + "=" + entry.value().string());
+        }
+        engine_env.push_back("TZ=UTC");
+
         const auto engine_start = std::chrono::steady_clock::now();
         bp2::process engine_proc(boost::asio::any_io_executor(proc_ioc.get_executor()),
                                  boost::filesystem::path(exe.string()),
                                  args,
                                  bp2::process_start_dir(job_dir.string()),
+                                 bp2::process_environment(engine_env),
                                  bp2::process_stdio{.in = nullptr, .out = out_w, .err = err_w});
 
         // Close write ends so readers see EOF when the process exits.

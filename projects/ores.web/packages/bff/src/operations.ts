@@ -24,6 +24,8 @@ import { z } from 'zod';
 import {
     busViewSchema,
     fromWireTimestamp,
+    SERIES_RANGES,
+    gridSeriesViewSchema,
     gridStatsRequestSchema,
     gridViewSchema,
     isWireTimestamp,
@@ -32,6 +34,7 @@ import {
     serviceRosterViewSchema,
     toWireTimestamp,
     type BusView,
+    type SeriesRange,
     type WireTimestamp,
 } from '@ores/wire-protocol';
 import { invalidRequest, notPermitted } from './errors.js';
@@ -109,6 +112,43 @@ export function busWindow(
 
 /** The one field the bus read takes: the range the person chose. */
 const busRequestSchema = z.object({ range: z.enum(BUS_RANGES) }).strict();
+
+/**
+ * The range presets the grid series offers, and the window and bucket each one reads at.
+ *
+ * The bucket width is chosen here, not by the browser, so a range always comes
+ * back as a few hundred buckets and never as raw rows. An hour reads at a
+ * minute, a day at five minutes and a week at half an hour: 60, 288 and 336
+ * buckets. The window is computed from the deployment's clock for the same
+ * reason the bus window is, and its end is exclusive.
+ */
+const SERIES_PRESETS: Readonly<
+    Record<SeriesRange, { readonly seconds: number; readonly bucketSeconds: number }>
+> = {
+    '1h': { seconds: 60 * 60, bucketSeconds: 60 },
+    '24h': { seconds: 24 * 60 * 60, bucketSeconds: 5 * 60 },
+    '7d': { seconds: 7 * 24 * 60 * 60, bucketSeconds: 30 * 60 },
+};
+
+/** The window and the bucket width one series range names. */
+export function seriesWindow(
+    range: SeriesRange,
+    now: number,
+): {
+    readonly start: WireTimestamp;
+    readonly end: WireTimestamp;
+    readonly bucketSeconds: number;
+} {
+    const preset = SERIES_PRESETS[range];
+    return {
+        start: toWireTimestamp(new Date(now - preset.seconds * 1000)),
+        end: toWireTimestamp(new Date(now)),
+        bucketSeconds: preset.bucketSeconds,
+    };
+}
+
+/** The one field the series read takes: the range the person chose. */
+const gridSeriesRequestSchema = z.object({ range: z.enum(SERIES_RANGES) }).strict();
 
 /**
  * The range presets the logs screen offers, and the window each names.
@@ -291,6 +331,58 @@ export function registerOperationsRoutes(
                     version: runner?.version ?? null,
                 };
             }),
+        });
+    });
+
+    /**
+     * The grid's samples over a range, as the load and node panels read them.
+     *
+     * One call carries both series on one time axis: the grid counters per
+     * bucket, and one row of buckets per node. The window and the bucket come
+     * from the preset and the deployment's clock, the two reads run together,
+     * and the host registry is joined onto the nodes so a node carries the name
+     * a person reads, or none when no host names it. A cell with no sample keeps
+     * its place and says so through the samples column, so the browser never
+     * reads a gap as a measured zero.
+     */
+    server.get('/api/operations/grid/series', async (request) => {
+        const session = requireSession(request);
+        if (session.mode !== 'system-administration') {
+            throw notPermitted('The grid series of a deployment is read in system administration.');
+        }
+        const parsed = gridSeriesRequestSchema.safeParse(request.query ?? {});
+        if (!parsed.success) {
+            throw invalidRequest('The grid series read takes a range of 1h, 24h or 7d.');
+        }
+        const now = Date.now();
+        const window = seriesWindow(parsed.data.range, now);
+        const input = {
+            startTime: window.start,
+            endTime: window.end,
+            bucketSeconds: window.bucketSeconds,
+        };
+        const [grid, nodes, hosts] = await Promise.all([
+            session.client.gridSeries(input),
+            session.client.nodeSeries(input),
+            session.client.listHosts(),
+        ]);
+        const hostNames = new Map(
+            hosts.map((host) => [host.id, host.display_name || host.external_id]),
+        );
+        return gridSeriesViewSchema.parse({
+            read_at: toWireTimestamp(new Date(now)),
+            range: parsed.data.range,
+            start_time: grid.start_time,
+            bucket_seconds: grid.bucket_seconds,
+            bucket_count: grid.bucket_count,
+            grid,
+            nodes: {
+                ...nodes,
+                list: nodes.nodes.map((node) => ({
+                    ...node,
+                    host: hostNames.get(node.host_id) ?? null,
+                })),
+            },
         });
     });
 

@@ -364,6 +364,23 @@ export {
 } from './operations.js';
 export type { GridStatsReply, GridView } from './operations.js';
 
+// The grid's samples as time series: the two range reads, their columnar
+// replies, and the view the BFF serves the browser.
+export {
+    SERIES_RANGES,
+    gridSeriesReplySchema,
+    gridSeriesRequestSchema,
+    gridSeriesViewSchema,
+    nodeSeriesReplySchema,
+    nodeSeriesRequestSchema,
+} from './operations.js';
+export type {
+    GridSeriesReply,
+    GridSeriesView,
+    NodeSeriesReply,
+    SeriesRange,
+} from './operations.js';
+
 // The message bus the operations screen reads: the two sample queries, their
 // replies, and the view the BFF serves the browser.
 export {

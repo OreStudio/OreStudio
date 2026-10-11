@@ -157,6 +157,56 @@ function wireGridStats(overrides: Record<string, unknown> = {}): Record<string, 
     };
 }
 
+/** A grid series reply as the wire answers it: 3 buckets, the middle one a gap. */
+function wireGridSeries(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+        success: true,
+        message: '',
+        start_time: '2026-10-04 13:00:00Z',
+        bucket_seconds: 60,
+        bucket_count: 3,
+        samples: [2, 0, 1],
+        total_hosts: [2, 0, 2],
+        online_hosts: [2, 0, 1],
+        idle_hosts: [0, 0, 1],
+        results_inactive: [0, 0, 0],
+        results_unsent: [4, 0, 1],
+        results_in_progress: [2, 0, 1],
+        results_done: [10, 0, 16],
+        total_workunits: [16, 0, 18],
+        total_batches: [1, 0, 1],
+        active_batches: [1, 0, 1],
+        outcomes_success: [10, 0, 15],
+        outcomes_client_error: [0, 0, 1],
+        outcomes_no_reply: [0, 0, 0],
+        ...overrides,
+    };
+}
+
+/** A node series reply: two nodes, three buckets, row-major. */
+function wireNodeSeries(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+        success: true,
+        message: '',
+        start_time: '2026-10-04 13:00:00Z',
+        bucket_seconds: 60,
+        bucket_count: 3,
+        nodes: [
+            { host_id: HOST, machine: 'alpha' },
+            { host_id: UNKNOWN_HOST, machine: 'beta' },
+        ],
+        samples: [2, 0, 1, 0, 1, 0],
+        tasks_completed: [5, 0, 9, 0, 4, 0],
+        tasks_failed: [1, 0, 2, 0, 0, 0],
+        tasks_since_last: [3, 0, 4, 0, 4, 0],
+        avg_task_duration_ms: [160, 0, 50, 0, 10, 0],
+        max_task_duration_ms: [400, 0, 60, 0, 20, 0],
+        input_bytes_fetched: [30, 0, 5, 0, 100, 0],
+        output_bytes_uploaded: [3, 0, 5, 0, 200, 0],
+        ...overrides,
+    };
+}
+
 function buildTestServer(
     mode: SessionMode,
     slots: readonly Record<string, unknown>[],
@@ -165,6 +215,8 @@ function buildTestServer(
     serverSamples: readonly Record<string, unknown>[] = [],
     streamSamples: readonly Record<string, unknown>[] = [],
     logEntries: readonly Record<string, unknown>[] = [],
+    gridSeries: Record<string, unknown> = wireGridSeries(),
+    nodeSeries: Record<string, unknown> = wireNodeSeries(),
 ) {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const calls: { subject: string; body: unknown }[] = [];
@@ -176,6 +228,14 @@ function buildTestServer(
         async gridStats(): Promise<Record<string, unknown>> {
             calls.push({ subject: 'compute.v1.ops.get_grid_stats', body: {} });
             return grid;
+        },
+        async gridSeries(input: Record<string, unknown>): Promise<Record<string, unknown>> {
+            calls.push({ subject: 'compute.v1.ops.get_grid_series', body: input });
+            return gridSeries;
+        },
+        async nodeSeries(input: Record<string, unknown>): Promise<Record<string, unknown>> {
+            calls.push({ subject: 'compute.v1.ops.get_node_series', body: input });
+            return nodeSeries;
         },
         async listHosts(): Promise<readonly Record<string, unknown>[]> {
             calls.push({ subject: 'compute.v1.hosts.list', body: {} });
@@ -331,6 +391,154 @@ interface GridBody {
         readonly max_task_duration_ms: number;
     }[];
 }
+
+describe('GET /api/operations/grid/series', () => {
+    interface SeriesBody {
+        read_at: string;
+        range: string;
+        start_time: string;
+        bucket_seconds: number;
+        bucket_count: number;
+        grid: Record<string, number[]>;
+        nodes: {
+            list: { host_id: string; machine: string; host: string | null }[];
+            samples: number[];
+            tasks_since_last: number[];
+        };
+    }
+
+    it('answers both series on one axis, with the preset deciding the bucket', async () => {
+        const { server, cookies, calls } = buildTestServer('system-administration', []);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid/series?range=24h',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as SeriesBody;
+        expect(body.range).toBe('24h');
+        expect(body.start_time).toBe('2026-10-04 13:00:00Z');
+        expect(body.bucket_count).toBe(3);
+        // The columns travel as the read gave them, with the gap kept in place.
+        expect(body.grid['samples']).toEqual([2, 0, 1]);
+        expect(body.grid['results_done']).toEqual([10, 0, 16]);
+        expect(body.nodes.samples).toEqual([2, 0, 1, 0, 1, 0]);
+        expect(body.nodes.tasks_since_last).toEqual([3, 0, 4, 0, 4, 0]);
+        // Both reads were asked for the same window and the five-minute bucket
+        // the 24 hour preset names, and the host registry was read once.
+        const asked = calls.filter((call) => call.subject.includes('series'));
+        expect(asked.map((call) => call.subject).sort()).toEqual([
+            'compute.v1.ops.get_grid_series',
+            'compute.v1.ops.get_node_series',
+        ]);
+        for (const call of asked) {
+            const input = call.body as { bucketSeconds: number; startTime: string; endTime: string };
+            expect(input.bucketSeconds).toBe(300);
+            const spanMs = Date.parse(input.endTime.replace(' ', 'T')) - Date.parse(input.startTime.replace(' ', 'T'));
+            expect(spanMs).toBe(24 * 60 * 60 * 1000);
+        }
+        expect(calls.filter((call) => call.subject === 'compute.v1.hosts.list')).toHaveLength(1);
+    });
+
+    it('reads each preset at its own bucket width', async () => {
+        const widths: Record<string, number> = { '1h': 60, '24h': 300, '7d': 1800 };
+        for (const [range, bucketSeconds] of Object.entries(widths)) {
+            const { server, cookies, calls } = buildTestServer('system-administration', []);
+            const response = await server.inject({
+                method: 'GET',
+                url: `/api/operations/grid/series?range=${range}`,
+                cookies,
+            });
+            await server.close();
+            expect(response.statusCode).toBe(200);
+            const call = calls.find((c) => c.subject === 'compute.v1.ops.get_grid_series');
+            expect((call?.body as { bucketSeconds: number }).bucketSeconds).toBe(bucketSeconds);
+        }
+    });
+
+    it('names a node the registry knows and leaves the one it does not unnamed', async () => {
+        const { server, cookies } = buildTestServer('system-administration', []);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid/series?range=1h',
+            cookies,
+        });
+        await server.close();
+
+        const { list } = (response.json() as SeriesBody).nodes;
+        expect(list.map((node) => node.host)).toEqual(['Grid 01', null]);
+        expect(list.map((node) => node.machine)).toEqual(['alpha', 'beta']);
+    });
+
+    it('answers an empty range as empty columns and not as zeros', async () => {
+        const { server, cookies } = buildTestServer(
+            'system-administration',
+            [],
+            wireGridStats(),
+            [wireHost()],
+            [],
+            [],
+            [],
+            wireGridSeries({ samples: [], total_hosts: [], bucket_count: 0 }),
+            wireNodeSeries({ nodes: [], samples: [], bucket_count: 0 }),
+        );
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid/series?range=1h',
+            cookies,
+        });
+        await server.close();
+
+        const body = response.json() as SeriesBody;
+        expect(body.grid['samples']).toEqual([]);
+        expect(body.nodes.list).toEqual([]);
+    });
+
+    it('refuses a session outside system administration', async () => {
+        const { server, cookies, calls } = buildTestServer('tenant', []);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid/series?range=1h',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(403);
+        expect(calls).toEqual([]);
+    });
+
+    it('refuses a range that is not a preset, and any other field', async () => {
+        for (const url of [
+            '/api/operations/grid/series',
+            '/api/operations/grid/series?range=30d',
+            '/api/operations/grid/series?range=1h&bucket=1',
+        ]) {
+            const { server, cookies, calls } = buildTestServer('system-administration', []);
+            const response = await server.inject({ method: 'GET', url, cookies });
+            await server.close();
+            expect(response.statusCode).toBe(400);
+            expect(calls).toEqual([]);
+        }
+    });
+
+    it('refuses an anonymous caller', async () => {
+        const { server } = buildTestServer('system-administration', []);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid/series?range=1h',
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(401);
+    });
+});
 
 describe('GET /api/operations/grid', () => {
     /* The registry's service name; the screen calls the agent a runner. */

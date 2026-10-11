@@ -399,4 +399,45 @@ describe('the FX feed screens', () => {
         expect(html).toContain('The mean reverting engine reads only the first component.');
         expect(html).not.toContain('Weight sum');
     });
+
+    it('draws the feed and its components as one history, with Revert on an older version', () => {
+        const version = (n: number, at: string, fields: [string, string][]) => ({
+            version: n,
+            modifiedBy: 'priya',
+            recordedAt: at,
+            fields: [
+                ...fields.map(([name, value]) => ({ name, value })),
+                {
+                    name: 'Change Reason Code',
+                    value: n === 1 ? 'system.new_record' : 'common.correction',
+                },
+                { name: 'Change Commentary', value: '' },
+            ],
+            changes: [],
+        });
+        const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=history`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(
+                ['records', 'gmm-components', FEED_ID],
+                [{ ...component(0, 1), description: 'Primary: calibrated to ~8.5% vol.' }],
+            );
+            client.setQueryData(
+                ['history', 'ores.synthetic.fx_spot_generation_config', FEED_ID],
+                [
+                    version(2, '2026-10-11 09:00:00', [['Ticks Per Hour', '3600']]),
+                    version(1, '2026-10-10 09:00:00', [['Ticks Per Hour', '60']]),
+                ],
+            );
+            client.setQueryData(
+                ['history', 'ores.synthetic.gmm_component', 'c0'],
+                [version(1, '2026-10-10 09:05:00', [['Weight', '1']])],
+            );
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('fx_spot_generation_config');
+        expect(html).toContain('gmm_component');
+        expect(html).toContain('common.correction');
+        expect(html.match(/>Revert</g)?.length).toBe(1);
+        expect(html).toContain('A component deleted from the mixture is not in this stream');
+    });
 });

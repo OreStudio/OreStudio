@@ -21,10 +21,8 @@
 
 import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { HistoryPanel } from '../refdata/HistoryPanel.js';
 import { RecordList, useRecordSource } from '../refdata/RecordList.js';
 import {
     RecordDetails,
@@ -32,7 +30,6 @@ import {
     RecordGate,
     RecordHeader,
     RemoveRecordDialog,
-    RevertDialog,
     show,
     useRecordPermissions,
     useRecordTabs,
@@ -43,6 +40,7 @@ import {
 import { RecordStoreProvider, syntheticStore } from '../refdata/store.js';
 import { Button, Notice } from '../ui/Primitives.js';
 import { FeedStatus, RunOutcomeText, useFeedRuns, useRunningFeeds } from './feedRuns.js';
+import { FeedHistory } from './FeedHistory.js';
 import { COMPONENTS, MixturePanel } from './MixturePanel.js';
 import { TicksPanel } from './TicksPanel.js';
 
@@ -392,6 +390,7 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
     const id = show(feed['id']);
     const pair = pairOf(feed);
     const may = useRecordPermissions(FEEDS);
+    const mayComponents = useRecordPermissions(COMPONENTS);
     const check = useFeedCheck();
     const mixture = useRecords(COMPONENTS, id);
     const { tab, bar } = useRecordTabs({
@@ -402,7 +401,6 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
     const runs = useFeedRuns();
     const [editing, setEditing] = useState(false);
     const [removing, setRemoving] = useState(false);
-    const [reverting, setReverting] = useState<HistoryVersion | null>(null);
 
     return (
         <div className="space-y-4">
@@ -456,10 +454,15 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                 <TicksPanel feed={feed} running={running} mixture={mixture.data ?? []} />
             )}
             {tab === 'history' && (
-                <HistoryPanel
-                    entityType="ores.synthetic.fx_spot_generation_config"
-                    entityId={id}
-                    {...(may.write ? { onRevert: setReverting } : {})}
+                <FeedHistory
+                    feed={feed}
+                    components={mixture.data ?? []}
+                    feedSpecs={FEED_FIELDS}
+                    feedResource={FEEDS}
+                    componentResource={COMPONENTS}
+                    complete={completeFeed}
+                    keep={['id', ...FEED_KEPT]}
+                    mayWrite={{ feed: may.write, components: mayComponents.write }}
                 />
             )}
             {editing && (
@@ -497,17 +500,6 @@ function FxFeedBody({ feed }: { readonly feed: RecordRow }): ReactNode {
                     }}
                     onClose={() => setRemoving(false)}
                     onRemoved={() => void navigate(fxFeedPath())}
-                />
-            )}
-            {reverting !== null && (
-                <RevertDialog
-                    resource={FEEDS}
-                    specs={FEED_FIELDS}
-                    row={feed}
-                    version={reverting}
-                    keep={['id', ...FEED_KEPT]}
-                    complete={completeFeed}
-                    onClose={() => setReverting(null)}
                 />
             )}
         </div>

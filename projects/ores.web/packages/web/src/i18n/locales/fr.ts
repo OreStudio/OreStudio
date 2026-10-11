@@ -3267,6 +3267,10 @@ const fr: SourceCatalogue = {
             stoppedCount: '{count} flux arrêtés.',
             refused: '{feed} : {message}',
         },
+        history: {
+            lead: "Le flux et chaque composante de son mélange, dans un seul fil, du plus récent au plus ancien. Rétablir réécrit les valeurs d'une version antérieure comme une nouvelle version.",
+            gap: "Une composante supprimée du mélange n'est pas dans ce fil : l'écran lit l'historique des composantes que le flux contient maintenant.",
+        },
         ticks: {
             lead: "Les derniers prix du flux, les plus récents à droite. Le serveur web garde les 500 derniers de chaque flux en marche depuis qu'il a commencé à écouter, donc un flux démarré avant ne montre que ce qui est venu depuis.",
             count: 'Cotations affichées',

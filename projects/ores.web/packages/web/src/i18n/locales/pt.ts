@@ -3243,6 +3243,10 @@ const pt: SourceCatalogue = {
             stoppedCount: '{count} fluxos parados.',
             refused: '{feed}: {message}',
         },
+        history: {
+            lead: 'O fluxo e cada componente da sua mistura, num só fio, do mais recente para o mais antigo. Reverter escreve os valores de uma versão anterior como uma nova versão.',
+            gap: 'Uma componente apagada da mistura não está neste fio: o ecrã lê o histórico das componentes que o fluxo tem agora.',
+        },
         ticks: {
             lead: 'Os últimos preços do fluxo, os mais recentes à direita. O servidor web guarda os últimos 500 de cada fluxo em execução desde que começou a ouvir, por isso um fluxo arrancado antes mostra só o que veio depois.',
             count: 'Cotações mostradas',

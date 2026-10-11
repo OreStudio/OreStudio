@@ -316,6 +316,8 @@ export type {
 export {
     TIMELINE_PROVENANCE_FIELDS,
     fieldValue,
+    orderTimeline,
+    recordEvents,
     timelineEventSchema,
     timelineFieldSchema,
     timelineGapSchema,

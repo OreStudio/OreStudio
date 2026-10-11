@@ -3220,6 +3220,10 @@ export const en: SourceCatalogue = {
             stoppedCount: 'Stopped {count} feeds.',
             refused: '{feed}: {message}',
         },
+        history: {
+            lead: "The feed and every component of its mixture, in one stream, newest first. Revert writes an older version's values back as a new version.",
+            gap: 'A component deleted from the mixture is not in this stream: the screen reads the history of the components the feed holds now.',
+        },
         ticks: {
             lead: 'The last prices the feed made, newest on the right. The web server keeps the last 500 of each running feed from when it began to listen, so a feed started before that shows only what came since.',
             count: 'Ticks shown',

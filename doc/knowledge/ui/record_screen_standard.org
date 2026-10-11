@@ -574,7 +574,7 @@ and in its journey, never found later.
 | /Shaped by its source/ | Tabs depend on what the record is made of, such as a QuantLib, derived or bespoke calendar |
 | /Singleton/ | One record by definition: no list, no Add, no Delete |
 | /Accumulating/ | Most recent first; Delete usually refused |
-| /Mixture/ | A set of parts that are read and judged as one, such as an FX feed's Gaussians. The tab edits the set in a table across the full width, with the previews it implies side by side below it, and Save writes it in one call. A saved part keeps Delete; its history is not offered row by row |
+| /Mixture/ | A set of parts that are read and judged as one, such as an FX feed's Gaussians. The tab edits the set in a table across the full width, with the previews it implies side by side below it, and Save writes it in one call. A saved part keeps Delete. Its history is not offered row by row: the parent's History tab is one stream of the parent and every part, the timeline of the entity screen specification, with Revert on each older version |
 
 An exception decides which parts exist and which actions show. It never changes
 the layout of a part, and it never brings a new icon or a new word for an

@@ -93,7 +93,8 @@ if [[ "$ROLE" == "compute" ]]; then
         -v "$work_dir:$work_dir:rw" \
         -v "$log_dir:/app/log:rw" \
         "$image" \
-        --log-enabled --log-level info --log-directory ../log --log-replica-index 0 \
+        --log-enabled --log-level info --log-to-console \
+        --log-directory ../log --log-filename ores.compute.wrapper --log-replica-index 0 \
         --host-id "$host_id" --tenant-id "$tenant_id" \
         --work-dir "$work_dir" "${extra_args[@]}" >/dev/null
 
@@ -201,7 +202,8 @@ for svc in $SERVICES; do
         -v "$storage_dir:/app/storage:rw" \
         -v "$ore_work_dir:/app/var/ore-service/work:rw" \
         "$image" \
-        --log-enabled --log-level info --log-directory ../log --log-replica-index 0 \
+        --log-enabled --log-level info --log-to-console \
+        --log-directory ../log --log-filename "$svc" --log-replica-index 0 \
         --nats-tls-ca "$keys_dir/ca.crt" \
         --nats-tls-cert "$tls_cert" \
         --nats-tls-key "$tls_key" \

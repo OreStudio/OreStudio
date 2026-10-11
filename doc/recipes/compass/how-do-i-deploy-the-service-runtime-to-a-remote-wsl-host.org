@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :compass:env:deploy:wsl:devops:
 #+created: 2026-08-08
-#+updated: 2026-08-08
+#+updated: 2026-10-11
 
 This is the first-class replacement for the manual podman
 build / save / ssh ... load / run-pod.sh sequence used to deploy to
@@ -46,7 +46,19 @@ compass env deploy newton --setup-host
 
 # What hosts do we know about?
 compass env deploy list
+
+# The compute node on every host profile that has compute settings
+# (ORES_COMPUTE_HOST_ID). Each host is probed first: one that does not
+# answer over ssh is reported as down and skipped, the others still
+# deploy, and a summary closes the run. The exit status is non-zero when
+# any host was down or failed.
+compass env deploy all
+compass env deploy all --stop
 #+end_src
+
+Every host needs =podman= installed. The deploy checks for it before it
+transfers anything and names the host and the fix when it is missing, so a
+host that was not prepared leaves nothing behind on it.
 
 The first deploy to a new host generates its profile, =.env.<host>= at
 the repo root (e.g. =.env.newton=), from the current environment via

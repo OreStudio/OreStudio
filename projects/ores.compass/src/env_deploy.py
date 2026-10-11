@@ -546,6 +546,17 @@ def _missing_compute_keys(profile_env: dict) -> list:
     return [k for k in _COMPUTE_REQUIRED if not profile_env.get(k)]
 
 
+def _require_podman(host):
+    """Fail before any transfer when the remote host has no podman, so a
+    host that was not prepared leaves nothing behind on it."""
+    result = _ssh(host, "command -v podman >/dev/null 2>&1")
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"podman is not installed on {host}. Install it first, e.g. "
+            "(Debian/Ubuntu):  sudo apt install podman  "
+            "-- then run: compass env deploy <host> --setup-host")
+
+
 def _setup_host(project_root, host):
     script = """set -euo pipefail
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
@@ -659,6 +670,7 @@ def _cmd_deploy(argv, project_root):
         return 0
 
     _preflight(project_root, profile_path, args.role, profile_env)
+    _require_podman(remote_host)
 
     # Image build is a separate step — require it to have been run first.
     import image_build  # noqa: PLC0415
@@ -697,9 +709,79 @@ def _cmd_deploy(argv, project_root):
     return 0
 
 
+def _reachable(host, timeout=5):
+    """Whether `ssh <host> true` succeeds within `timeout` seconds, without
+    ever prompting: a host that is switched off must not stall the run."""
+    try:
+        result = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", f"ConnectTimeout={timeout}",
+             host, "true"],
+            capture_output=True, text=True, timeout=timeout + 5)
+    except subprocess.TimeoutExpired:
+        return False
+    return result.returncode == 0
+
+
+def _compute_aliases(project_root):
+    """Aliases of the host profiles that describe a compute node."""
+    aliases = []
+    for p in sorted(project_root.glob(".env.*")):
+        if p.name.endswith(".old"):
+            continue
+        if _read_env(p).get("ORES_COMPUTE_HOST_ID"):
+            aliases.append(p.name[len(".env."):])
+    return aliases
+
+
+def _cmd_deploy_all(argv, project_root):
+    """Deploy (or stop) the compute node on every host profile that has one.
+
+    Not every host is always up, so each is probed first: a host that does
+    not answer is reported and skipped, and the rest still deploy. The exit
+    status is non-zero when any host was down or failed."""
+    ap = argparse.ArgumentParser(
+        prog="compass env deploy all",
+        description="Deploy the compute node to every host profile that "
+                    "has compute settings, skipping hosts that are down.")
+    ap.add_argument("--stop", action="store_true",
+                    help="Stop the compute nodes instead of deploying")
+    args = ap.parse_args(argv)
+
+    aliases = _compute_aliases(project_root)
+    if not aliases:
+        print("No host profile has compute settings (ORES_COMPUTE_HOST_ID).")
+        return 1
+    outcomes = {}
+    for alias in aliases:
+        profile = _read_env(_profile_path(project_root, alias))
+        remote = profile.get("ORES_REMOTE_HOST", alias)
+        print(f"=== {alias} ({remote}) ===")
+        if not _reachable(remote):
+            print("  down: no answer over ssh, skipped")
+            outcomes[alias] = "down"
+            continue
+        deploy_argv = [alias, "--role", "compute"]
+        if args.stop:
+            deploy_argv.append("--stop")
+        try:
+            code = _cmd_deploy(deploy_argv, project_root)
+        except (subprocess.CalledProcessError, RuntimeError) as e:
+            print(f"  failed: {e}", file=sys.stderr)
+            outcomes[alias] = "failed"
+            continue
+        outcomes[alias] = "ok" if code == 0 else "failed"
+
+    print("=== Summary ===")
+    for alias, outcome in outcomes.items():
+        print(f"  {alias:<16} {outcome}")
+    return 0 if all(o == "ok" for o in outcomes.values()) else 1
+
+
 def run(argv, project_root: Path) -> int:
     if argv and argv[0] == "list":
         return _cmd_list(project_root)
+    if argv and argv[0] == "all":
+        return _cmd_deploy_all(argv[1:], project_root)
     try:
         return _cmd_deploy(argv, project_root)
     except subprocess.CalledProcessError as e:

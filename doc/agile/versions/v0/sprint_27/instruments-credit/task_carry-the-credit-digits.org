@@ -8,7 +8,7 @@
 #+filetags: :instruments-credit:sprint_27:v0:
 #+owner: marco
 #+branch: feature/carry-the-credit-digits
-#+pr:
+#+pr: 3139
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3139][#3139]] | [ore,trading] Carry the credit money digits |
 
 * Review
 

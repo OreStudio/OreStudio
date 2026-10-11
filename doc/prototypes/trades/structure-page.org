@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 48277DF0-3F37-4620-8DCB-E904580D399B
+:END:
+#+title: Structure and package page prototype
+#+description: A clickable prototype of the page of a structure or a package, and of the workflow that groups trades.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:trading:ui:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+| Item          | Where |
+|---------------+-------|
+| Prototype     | [[file:structure-page/][the prototype]] |
+| Gemini review | none |
+| Group         | [[file:index.org][Trades prototypes]] |
+
+* Summary
+
+A structure is an entity: an immutable identity and legs that are trades. A package is not a second entity. The composition ladder in [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] ends in the untyped structure, which the note calls a package, and the model holds it as a structure of kind Package: the same table, the same anchor, the same members. So the prototype has one screen, and its words follow the kind. A package page says package, and a strategy page says structure. It also draws the workflow [[id:3899F17C-232B-408C-B667-FA5C630BB71B][Group trades into a structure]].
+
+* Detail
+
+** A structure is a tree
+
+The root is the deal the customer sees. Inside it are strategies, packages and plain trades, and the leaves are trades. This is the deal topology of [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]. The page draws it as a tree in its own panel beside the page, in the manner of the structure editor of the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]]: one row for the root, one for each inner structure with its kind tag and how it confirms, and one for each trade with its product tag, its role and its notional. The panel shows the whole tree of the root whichever node is open. A click on a structure opens its page. A click on a trade selects it, and the page shows that trade's card in the tree, with a link to the trade.
+
+The model nests one level at most. =parent_structure_id= points to a root, and an inner structure holds only trades. The note draws a deeper tree, and the insert trigger refuses it. The page says so under the tree.
+
+** States
+
+The page opens on the list of trees. The list shows each root with its inner structures indented under it.
+
+#+ATTR_HTML: :class hug-leading
+| Query | What it shows |
+|-------+---------------|
+| (none) | The list: roots, with inner structures indented, filtered by kind, paged on the server |
+| =?deal=STR-0010= | A dynamic structure that is the root of a tree: a strategy, a package and a hedge trade inside it |
+| =?deal=STR-0007= | The strategy inside it, a risk reversal, with its template roles checked |
+| =?deal=PKG-0021= | The package inside it: a bond repo and a bond, each confirming on its own |
+| =?deal=STR-0009= | A typed structure on its own: a callable swap, with legs of different families |
+| =?deal=PKG-0004= | A package on its own: a swap and a cap |
+| =?mode=group&trades=ACME-100202,ACME-100209= | The grouping workflow, with the kind to choose |
+| =?mode=group&trades=ACME-100201,ACME-100202= | The refusal: the trades have different counterparties |
+
+** Open question
+
+A package inside a structure that confirms as one document: does each of its trades still confirm on its own, or inside the one document? The notes do not say. The tree shows each node's own kind, the page warns that this is undecided, and the amend dialog says so for a trade inside such a package. It is filed as a capture.
+
+** Structure and package
+
+They are different rungs of the composition ladder, one entity with a kind, and the page treats the kinds differently. The test is how the customer holds the trades. See [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]].
+
+#+ATTR_HTML: :class hug-leading
+| | Strategy, typed, dynamic | Package |
+|-+--------------------------+---------|
+| The customer holds | One deal | Each trade under its own terms |
+| Confirmation | One document for the deal | Each leg confirms on its own |
+| Pricing | As a whole | Leg by leg: the price is the sum of the parts |
+| External version | Of the deal | Of each trade |
+| Template and roles | A template fixes them (strategy, typed). Dynamic reads them from data | None. Any role is allowed |
+| Product family | A strategy has one. Typed and dynamic may mix | Any mix |
+| Unlinking a leg | Changes the deal. A partial close-out is a lifecycle event | The other legs are unaffected |
+
+PKG-0004 is a package of a swap and a cap. STR-0007 is a risk reversal, a strategy. The page shows the chips, the card "How it confirms and prices", and the members table differently for each. The Members tab of a package shows each leg's external version, because the customer quotes the one for the trade they hold. The trade page says which kind a trade's structure is, and the amend dialog says whose confirmation a change reaches.
+
+A composite trade is neither. It is one trade with its own legs, and it is not in a structure in these prototypes.
+
+** What the prototype argues
+
+- The version is read from the legs and is never stored beside them. The rule is the one the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] shows: a change to any component moves the structure, and authorisation does not.
+- The kind is chosen at grouping, with its consequences stated beside each choice, because it decides what the customer receives. Package is one of the four kinds, so there is one workflow, Group trades.
+- The client states the rules the database enforces: every leg shares the party and the counterparty, a structure nests one level at most, and a strategy has one product family. The person sees the check before the server refuses it.
+- A trade moves from one structure to another without being rewritten.
+- Pricing and composition stay in the Trade Entry Prototype. The Workflows menu links to both.
+
+** What is fake
+
+The structures. Grouping stores the new structure in the browser.
+
+** Where the code lives
+
+=doc/prototypes/trades/structure-page/=.
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]

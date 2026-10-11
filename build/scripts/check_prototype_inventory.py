@@ -38,6 +38,9 @@ How it checks
 - A row whose prototype has a review links it, and a row whose prototype has
   none says none.
 - Every review directory holds an index.html.
+- Where a group shares a script or a stylesheet by copy, so that each prototype
+  stays standalone, the copies are identical. One prototype may extend the shared
+  stylesheet with its own rules after it.
 - Every group that holds a prototype has a group page, and the top page links
   it.
 - The site build discovers the prototypes rather than naming them, so a new
@@ -76,6 +79,43 @@ REACT_PROTOTYPE_DIRS = (
     "projects/ores.web/packages/web/src/prototype",
     "projects/ores.web/packages/web/src/pages/prototype",
 )
+
+
+# Groups whose prototypes share a file by copy. Each entry maps a file name to
+# the one prototype whose copy may carry its own rules after the shared text, or
+# to None when every copy must be identical.
+SHARED_COPIES: dict[str, dict[str, str | None]] = {
+    "trades": {"common.js": None, "prototype.css": "trade-entry"},
+}
+
+
+def shared_copy_problems(root: pathlib.Path) -> list[str]:
+    """The copies of a shared file that differ from the others."""
+    problems: list[str] = []
+    for group, files in SHARED_COPIES.items():
+        folders = sorted(path.parent for path in
+                         (root / "doc" / "prototypes" / group).glob("*/index.html"))
+        for file_name, extender in files.items():
+            copies = {folder.name: (folder / file_name).read_text(encoding="utf-8")
+                      for folder in folders if (folder / file_name).is_file()}
+            plain = {name: text for name, text in copies.items() if name != extender}
+            if not plain:
+                continue
+            reference_name, reference = next(iter(plain.items()))
+            for name, text in plain.items():
+                if text != reference:
+                    problems.append(
+                        f"doc/prototypes/{group}/{name}/{file_name} differs from "
+                        f"doc/prototypes/{group}/{reference_name}/{file_name}: the group "
+                        "shares this file by copy, so the copies must be identical"
+                    )
+            if extender in copies and not copies[extender].startswith(reference):
+                problems.append(
+                    f"doc/prototypes/{group}/{extender}/{file_name} does not begin with "
+                    f"the shared {file_name}: it may add rules after the shared text, "
+                    "and may not change it"
+                )
+    return problems
 
 
 def prototypes(root: pathlib.Path) -> set[tuple[str, str]]:
@@ -210,6 +250,7 @@ def main() -> int:
             f"the site build does not call {DISCOVERY_CALL}: the prototypes "
             "must be deployed where they sit, with no list to keep in step"
         )
+    problems.extend(shared_copy_problems(root))
     for relative in REACT_PROTOTYPE_DIRS:
         if (root / relative).exists():
             problems.append(

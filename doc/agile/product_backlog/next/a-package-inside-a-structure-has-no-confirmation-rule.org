@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 697E4617-BD63-4819-8CBE-FF44DE898B58
+:END:
+#+title: A structure that confirms as one document can hold a package…
+#+description: A structure that confirms as one document can hold a package, and a package confirms trade by trade. The notes do not say how a package inside such a structure confirms: each trade on its own, or inside the one document. The external version of a trade in that package depends on the answer, and so does what an amendment sends to the customer. The structure page prototype draws the tree, shows each node's own kind, and warns that the rule is undecided. Decide the rule, state it in the trade structures and confirmations notes, and make the amend dialog say which confirmation changes.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

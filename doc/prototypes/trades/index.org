@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 741FE353-C420-41C1-913D-EA99A73754CA
+:END:
+#+title: Trades prototypes
+#+description: The prototypes that answer to the trade journeys: the trade list and page, booking, ORE import and export, and a structure.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:trading:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+* Summary
+
+What a person does with a trade: book it, amend it, read it, bring it in from ORE and send it out, record what happens to it, and group trades into one deal. The [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]] are use cases. These prototypes are the screens that serve them.
+
+5 prototypes answer to this group. Each one is a static page under =doc/prototypes/=, opens with no build and no session, and reads mock data only. They share one stylesheet and one script of mock data and components, by copy: each folder holds its own copy, so each prototype stands alone and opens without the others. =build/scripts/check_prototype_inventory.py= fails when the copies differ. The trade-entry prototype carries the shared stylesheet followed by its own rules. They link to each other, and to the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]], which belongs to this group, for pricing and for composing a structure.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype | What it argues | Open it | Review |
+|-----------+----------------+---------+--------|
+| [[file:trade-page.org][The trade list and page]] | A trade is an entity. One page with a tab for each aspect serves review, amendment and lifecycle events. Edit asks for the kind of change first, and the kind bounds the fields. A save does not reload the page. The list is the request. | [[file:trade-page/][prototype]] | none |
+| [[file:book-a-trade.org][Book a trade]] | Booking is one page of cards, or a guided sequence. The entity specification allows the sequence only if it is quicker. The trade type comes first because it decides which instrument card appears. | [[file:book-a-trade/][prototype]] | none |
+| [[file:ore-portfolio.org][ORE import and export]] | Import is a workflow because the person must see the plan before it is written and must be able to undo it. Export checks the trades before it makes the file. | [[file:ore-portfolio/][prototype]] | none |
+| [[file:structure-page.org][A structure or a package]] | A package is a kind of structure, so one screen serves every kind and its words follow the kind. It opens on the list of strategies, typed structures, dynamic structures and packages. A structure is one deal, confirmed as one document and priced as a whole. A package confirms trade by trade and is priced leg by leg. | [[file:structure-page/][prototype]] | none |
+| [[file:trade-entry.org][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. It was the first prototype of this work, built before the entity screen specification. It moved here from the Books and portfolios group, and now sits on the group's shell. | [[file:trade-entry/][prototype]] | none |
+
+* How the prototypes follow the UX standards
+
+#+ATTR_HTML: :class hug-leading
+| Rule | Where to see it |
+|------+-----------------|
+| One page per subject, one tab for each aspect, tabs held in the address | trade page: =?trade=ACME-100201&tab=history= |
+| Edit is a button on a card. The reason is asked in the dialog. Save stays disabled until a field differs | trade page: Edit on the Instrument or Booking card |
+| A control the person may not use is not drawn | every prototype: switch to =reader= in the bar |
+| The pager is the request | trade list: the request line under the table |
+| A save does not reload the page. Refresh turns gold and the person presses it | trade page: save an edit, then Refresh |
+| History is a chart over a rail of one-line entries, with details on demand | trade page: History tab |
+| A reference is a link to its record. A person is drawn with a photo or initials | every list and card |
+| A workflow is in the Workflows menu of the screen it acts on, in the workflow hue | trade list and page: Workflows |
+| A fixed field says why | trade page: Identity card |
+| Loading, empty, error and refused states are in place | trade list: the states in the bar |
+
+* Decisions the prototypes need from the owner
+
+- *A Trades area.* The [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] page names five areas and none holds trades. The prototypes put the trade list in a new area, Trades, which is the name of the journey group. The page must change if this holds.
+- *The kind of change comes first.* The prototypes follow [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]]: the person chooses the activity and the activity bounds the fields. A form that offers every field and asks the reason afterwards is the opposite. Say if the owner wants the second.
+- *Booking: page or sequence.* The prototype shows both. A decision should follow a trial by a trader.
+- *The page header.* The entity specification puts only the identifier under the title and the version on each card. The trade page also draws the state, the authorisation and both versions under the title, because the two-version rule is what a person reads a trade for. The specification should say so for a trade, or the prototype should move them to the cards.
+- *Authorisation.* The state machine has operational authorisation, and no journey covers it. The trade page draws an Authorise button so that the machine reads whole. It is filed as a capture.
+
+* What is not drawn
+
+- Pricing and the composition of a structure are the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]]. The prototypes link to them and do not repeat them.
+- A person does not confirm anything with a counterparty here. Confirmations have no journey.
+- Currencies, books and the ORE directory wizard are other groups.
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]] — the use cases these prototypes serve.
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] and [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the screen rules.
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders the UX cluster.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the only inventory of prototypes.

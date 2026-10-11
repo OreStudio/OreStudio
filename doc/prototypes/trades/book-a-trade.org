@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 9870DF91-2196-4538-A892-033D4C468BD7
+:END:
+#+title: Book a trade prototype
+#+description: A clickable prototype of booking a trade, as one page of cards or as a guided sequence.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:trading:ui:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+| Item          | Where |
+|---------------+-------|
+| Prototype     | [[file:book-a-trade/][the prototype]] |
+| Gemini review | none |
+| Group         | [[file:index.org][Trades prototypes]] |
+
+* Summary
+
+Booking is the journey [[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][Book a trade]]. The [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] allows a guided sequence only when it makes the task quicker or easier. The prototype draws the same form two ways so that a trader can try both: the page of cards (default) and the sequence (=?variant=steps=).
+
+* Detail
+
+** States
+
+#+ATTR_HTML: :class hug-leading
+| Query | What it shows |
+|-------+---------------|
+| (none) | One page: trade type, parties and book, instrument terms, identifiers, review |
+| =?variant=steps= | The same sections, one at a time, with a rail |
+| =?like=ACME-100201= | A booking started from an existing trade |
+| =?fail=instrument= | The half-booked trade: the booking is written and the instrument is not |
+| =?fail=duplicate= | The refusal for a trade id that is already booked |
+| =?as=reader= | The screen is not drawn for a person without the right |
+
+** What the prototype argues
+
+- The trade type comes first. It decides which instrument card appears, because each trade type routes to one instrument table.
+- 28 of the 121 trade types have no instrument table. The picker draws them disabled and says so. This is a real gap.
+- A virtual book holds only a draft, a test or a hypothetical. The review step refuses a live, real trade in a virtual book.
+- The review lists the writes. =book_trade= does not write the instrument today, so the prototype shows the second write and the half-booked outcome.
+- A composite is built from its legs. The prototype links to the structure editor of the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]], and a booked trade links to its pricing screen.
+
+** What is fake
+
+Everything. A booked trade is kept in the browser so that it appears on the trade list.
+
+** Where the code lives
+
+=doc/prototypes/trades/book-a-trade/=.
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] — the structure editor and the pricing screen.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]

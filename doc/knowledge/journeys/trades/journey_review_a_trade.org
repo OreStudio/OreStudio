@@ -53,7 +53,7 @@ with a tab for each aspect, and the History timeline, all as the [[id:BD492939-1
 [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] describe. The Qt client had a detail dialog and a history dialog. They become
 a page and a tab, and the person reads one subject on one page.
 
-No wireframe is drawn here. The prototype story draws the screens, from the
+The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =trade-page=: the list, the page and the History tab. No wireframe is drawn here. The prototype story draws the screens, from the
 [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed

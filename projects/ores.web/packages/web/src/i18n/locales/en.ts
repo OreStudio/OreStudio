@@ -3297,7 +3297,7 @@ export const en: SourceCatalogue = {
         mixture: {
             lead: 'The Gaussians the feed draws each return from. Change the values and read what they imply before you save them.',
             none: 'No component yet. Add one to give the feed a process.',
-            add: 'Add component',
+            add: 'Add',
             sum: 'Weight sum {sum}. The weights stay as typed, and the draw normalises them.',
             sumPending: 'Weight sum: waiting for every weight to be a number.',
             problems: {

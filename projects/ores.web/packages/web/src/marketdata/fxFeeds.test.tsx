@@ -243,7 +243,7 @@ describe('the FX feed screens', () => {
         );
         expect(html).toContain('Return distribution');
         expect(html).toContain('<svg');
-        expect(html).toContain('Add component');
+        expect(html).toContain('>Add</button>');
         expect(html).not.toContain('Save mixture');
     });
 

@@ -3322,7 +3322,7 @@ const pt: SourceCatalogue = {
         mixture: {
             lead: 'As gaussianas de que o fluxo tira cada retorno. Altere os valores e leia o que implicam antes de os guardar.',
             none: 'Ainda sem componentes. Adicione uma para dar um processo ao fluxo.',
-            add: 'Adicionar componente',
+            add: 'Adicionar',
             sum: 'Soma dos pesos {sum}. Os pesos ficam como escritos, e o sorteio normaliza-os.',
             sumPending: 'Soma dos pesos: à espera que cada peso seja um número.',
             problems: {

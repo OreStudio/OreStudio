@@ -3347,7 +3347,7 @@ const fr: SourceCatalogue = {
         mixture: {
             lead: 'Les gaussiennes dont le flux tire chaque rendement. Changez les valeurs et lisez ce qu’elles impliquent avant de les enregistrer.',
             none: 'Aucune composante. Ajoutez-en une pour donner un processus au flux.',
-            add: 'Ajouter une composante',
+            add: 'Ajouter',
             sum: 'Somme des poids {sum}. Les poids restent tels que saisis, et le tirage les normalise.',
             sumPending: 'Somme des poids : en attente que chaque poids soit un nombre.',
             problems: {

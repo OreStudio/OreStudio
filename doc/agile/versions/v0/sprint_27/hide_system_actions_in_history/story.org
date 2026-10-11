@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 57749440-463B-4F2D-99AC-B1348F4507C3
+:END:
+#+title: Story: Hide what system accounts did in a history
+#+description: A history can hide the entries made by service accounts, so a reader sees what people did. The server says which actor is a service, so the answer does not depend on what the caller may read.
+#+type: story
+#+level: s2
+#+filetags: :web:iam:history:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A history shows a toggle that hides or shows the entries made by service accounts. Tenant admin and super admin are people, so the toggle never hides them. The server classifies the actor, because the web directory only names the accounts the caller may read, and cannot tell a service from a person it may not see.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- Every timeline entry carries the kind of its actor, set by the server for any caller who may read the timeline.
+- Every history screen shows a toggle that hides or shows the entries made by service accounts, and the toggle is on by default.
+- Tenant admin and super admin entries stay visible when the toggle hides services.
+- The toggle is one shared part of the Timeline and the version history panel, not one copy per screen.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BCE9531F-F1EB-4A60-9C96-E44A8E713766][Scaffold story: Hide what system accounts did in a history]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0D0F526D-FE2B-43F2-965F-FBB4E86C50FE][Mark each timeline entry with the kind of its actor]] | BACKLOG | | | Initial task for: Hide what system accounts did in a history |
+
+* Decisions
+
+* Out of scope
+
+-

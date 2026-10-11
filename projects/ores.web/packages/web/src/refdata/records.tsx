@@ -23,7 +23,7 @@ import { AccessMark } from '../ui/AccessMark.js';
 import { Phrase, PersonRef, slot } from '../access/PersonRef.js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import { Link, Navigate, useNavigate } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
@@ -79,6 +79,8 @@ export interface FieldSpec {
     /** The field holds a code of this source, drawn with its flag. */
     readonly flag?: FlagSource;
     readonly when?: (values: FieldValues) => boolean;
+    /** Where a record named by this field is opened, so its name on a page is a link. */
+    readonly pathOf?: (value: string) => string;
 }
 
 function asked(spec: FieldSpec, values: FieldValues): boolean {
@@ -595,14 +597,39 @@ export function RecordDetails({
     specs,
     row,
     extra,
+    heading,
 }: {
     readonly specs: readonly FieldSpec[];
     readonly row: RecordRow;
     readonly extra?: readonly (readonly [string, ReactNode])[];
+    /**
+     * Makes the details a card of an entity page: a title with the version of
+     * the record beside it, and the Edit button of the card on the right. A
+     * card the person may not change shows the access mark instead.
+     */
+    readonly heading?: {
+        readonly title: string;
+        readonly onEdit: (() => void) | undefined;
+    };
 }): ReactNode {
     const { t } = useTranslation();
     return (
         <section className="rounded-md border border-line bg-surface-raised">
+            {heading !== undefined && (
+                <header className="flex items-center justify-between gap-3 border-b border-line px-4 py-2">
+                    <div className="flex items-baseline gap-2">
+                        <h3 className="text-sm font-medium">{heading.title}</h3>
+                        <span className="text-xs text-ink-faint">v{row.version}</span>
+                    </div>
+                    {heading.onEdit !== undefined ? (
+                        <Button icon="edit" onClick={heading.onEdit}>
+                            {t('refdata.records.edit')}
+                        </Button>
+                    ) : (
+                        <AccessMark canWrite={false} />
+                    )}
+                </header>
+            )}
             <dl className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
                 {specs.map((spec) => (
                     <div key={spec.field}>
@@ -641,6 +668,9 @@ function DetailValue({
     if (spec.kind.kind === 'bool') {
         return <>{text === 'true' ? t('refdata.records.yes') : t('refdata.records.no')}</>;
     }
+    if (spec.kind.kind === 'record' && spec.flag === undefined) {
+        return <RecordValue kind={spec.kind} code={text} pathOf={spec.pathOf} />;
+    }
     if (spec.kind.kind === 'classification') {
         return <ClassifiedValue list={spec.kind.list} code={text} />;
     }
@@ -659,6 +689,35 @@ function DetailValue({
         return <>{t(`refdata.choices.${spec.field}.${text}`)}</>;
     }
     return <>{text}</>;
+}
+
+/**
+ * A value that names another record, drawn as that record's name, and as a link
+ * to its page when the field says where it opens. A name that cannot be found
+ * stays as the value, so a gap shows.
+ */
+function RecordValue({
+    kind,
+    code,
+    pathOf,
+}: {
+    readonly kind: Extract<FieldKind, { kind: 'record' }>;
+    readonly code: string;
+    readonly pathOf: ((value: string) => string) | undefined;
+}): ReactNode {
+    const records = useRecords(kind.resource);
+    const found = records.data?.find((candidate) => show(candidate[kind.value]) === code);
+    const name = found === undefined ? code : show(found[kind.label]);
+    return pathOf === undefined ? (
+        <>{name}</>
+    ) : (
+        <Link
+            to={pathOf(code)}
+            className="underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+        >
+            {name}
+        </Link>
+    );
 }
 
 /** A code of a classification list, drawn as its label when the list has labels. */

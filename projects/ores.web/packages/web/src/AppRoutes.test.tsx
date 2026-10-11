@@ -130,7 +130,6 @@ const tenantSetupJourney = <p>Tenant setup screen</p>;
 const newTenantJourney = <p>New tenant journey</p>;
 const newPartyJourney = <p>New party journey</p>;
 const counterpartyJourney = <p>Counterparty onboarding</p>;
-const partyDetailsJourney = <p>Party details</p>;
 const bookStructureJourney = <p>Book structure</p>;
 const conventionJourney = <p>Instrument conventions</p>;
 const signUpJourney = <p>Registration door</p>;
@@ -175,7 +174,6 @@ function render(
                         newTenantJourney={newTenantJourney}
                         newPartyJourney={newPartyJourney}
                         counterpartyJourney={counterpartyJourney}
-                        partyDetailsJourney={partyDetailsJourney}
                         bookStructureJourney={bookStructureJourney}
                         conventionJourney={conventionJourney}
                         signUpJourney={signUpJourney}
@@ -325,12 +323,6 @@ describe('the route table once the flag is clear', () => {
         expect(html).toContain('Counterparty onboarding');
     });
 
-    it('offers the party details screen to a signed-in person', () => {
-        const html = render('/refdata/parties/details', ready, authenticated);
-
-        expect(html).toContain('Party details');
-    });
-
     it('offers the book structure screen to a signed-in person', () => {
         const html = render('/refdata/books/structure', ready, authenticated);
 
@@ -353,12 +345,6 @@ describe('the route table once the flag is clear', () => {
         const html = render('/refdata/books/structure', readyAnonymous, anonymous);
 
         expect(html).not.toContain('Book structure');
-    });
-
-    it('sends a visitor to sign in rather than to the party details screen', () => {
-        const html = render('/refdata/parties/details', readyAnonymous, anonymous);
-
-        expect(html).not.toContain('Party details');
     });
 
     it('sends a visitor to sign in rather than to the counterparty screen', () => {

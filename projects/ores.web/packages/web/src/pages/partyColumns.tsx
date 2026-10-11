@@ -19,40 +19,10 @@
  *
  */
 
-import type { ReactNode } from 'react';
 import type { TenantParty } from '@ores/wire-protocol/browser';
-import { api } from '../api/client.js';
-import { useAreaParts } from '../shell/AreaTrail.js';
-import { WorkflowMenu } from '../shell/WorkflowMenu.js';
-import { useTranslation } from '../i18n/Provider.js';
 import { FlaggedCode } from '../images/flags.js';
-import { RecordList, type ListColumn, type ListSource } from '../refdata/RecordList.js';
+import type { ListColumn } from '../refdata/RecordList.js';
 import { imageUrl } from '../ui/Images.js';
-
-/** The parties of the session's own tenant; the server pages them in the caller's order. */
-const PARTIES: ListSource<TenantParty> = {
-    key: 'parties',
-    read: async (page) => {
-        const read = await api.parties({
-            offset: page.offset,
-            limit: page.limit,
-            search: page.search,
-            sort: page.sort,
-            descending: page.descending,
-        });
-        return { rows: read.parties, total: read.totalCount };
-    },
-    search: true,
-    sortable: [
-        'short_code',
-        'full_name',
-        'party_category',
-        'party_type',
-        'status',
-        'business_center_code',
-    ],
-    mayAdd: false,
-};
 
 /**
  * The columns of a list of parties. `tenant` names the tenant whose images
@@ -108,26 +78,4 @@ export function partyColumns(
                 ),
         },
     ];
-}
-
-/**
- * The parties of the session's own tenant: the shared record list. The read
- * names no tenant, because row-level security scopes it from the session's
- * token; a system administrator reads a tenant's parties after entering it. A
- * parent is named when it is on the same page. A party has no page of its own
- * yet, so a row does not open.
- */
-export function PartiesPage(): ReactNode {
-    const { t } = useTranslation();
-    return (
-        <RecordList
-            source={PARTIES}
-            title={t('parties.title')}
-            lead={t('parties.description')}
-            crumbs={useAreaParts('refdata', t('parties.title'))}
-            keyOf={(party) => party.id}
-            actions={<WorkflowMenu on="parties" />}
-            columns={partyColumns(t)}
-        />
-    );
 }

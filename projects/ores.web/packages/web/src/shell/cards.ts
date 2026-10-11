@@ -73,15 +73,6 @@ export const CARDS = {
         kind: 'workflow',
         on: 'parties',
     },
-    partyDetails: {
-        titleKey: 'home.tenant.partyDetails',
-        bodyKey: 'home.tenant.partyDetailsBody',
-        to: PATHS.partyDetails,
-        icon: 'party',
-        permission: 'refdata::parties:write',
-        kind: 'workflow',
-        on: 'parties',
-    },
     onboardCounterparty: {
         titleKey: 'home.tenant.counterpartyOnboard',
         bodyKey: 'home.tenant.counterpartyOnboardBody',

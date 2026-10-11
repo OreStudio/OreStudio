@@ -33,6 +33,7 @@ import { DeskGroupPage } from './deskGroups.js';
 import { FIRST_PAGE, pageKey } from './RecordList.js';
 import { valuesFromHistory, writeOf, type FieldSpec } from './records.js';
 import { reasonsFor } from './shared.js';
+import { accessOf, resourceView } from './testSupport.js';
 import { parseTimestamp, relativeTime } from '../ui/Time.js';
 
 /**
@@ -40,46 +41,18 @@ import { parseTimestamp, relativeTime } from '../ui/Time.js';
  * that turns a form into a write and a history version back into a form.
  */
 
-function resource(key: string, keyFields: string[], versioned = true): RecordResourceView {
-    const name = key.replaceAll('-', '_');
-    return {
-        key,
-        entityType: `ores.refdata.${name}`,
-        keyFields,
-        versioned,
-        writable: true,
-        search: key === 'currencies',
-        sortable: key === 'currencies' ? ['iso_code', 'name'] : [],
-        writePermission: `refdata::${name}:write`,
-        deletePermission: `refdata::${name}:delete`,
-    };
-}
-
 const REGISTRY: RecordResourceView[] = [
-    resource('currencies', ['iso_code']),
-    resource('currency-groups', ['code']),
-    resource('currency-countries', ['currency_iso_code', 'country_alpha2_code'], false),
-    resource('currency-memberships', ['currency_iso_code', 'currency_group_code'], false),
-    resource('currency-pairs', ['pair_code']),
-    resource('pair-calendars', ['pair_code', 'calendar_code'], false),
+    resourceView('currencies', ['iso_code'], { search: true, sortable: ['iso_code', 'name'] }),
+    resourceView('currency-groups', ['code']),
+    resourceView('currency-countries', ['currency_iso_code', 'country_alpha2_code'], {
+        versioned: false,
+    }),
+    resourceView('currency-memberships', ['currency_iso_code', 'currency_group_code'], {
+        versioned: false,
+    }),
+    resourceView('currency-pairs', ['pair_code']),
+    resourceView('pair-calendars', ['pair_code', 'calendar_code'], { versioned: false }),
 ];
-
-function access(codes: string[]): AccountAccess {
-    return {
-        roles: [
-            {
-                roleId: '33333333-3333-3333-3333-333333333333' as AccountAccess['roles'][number]['roleId'],
-                name: 'Operations',
-                description: '',
-                permissionCodes: codes,
-                givenBy: 'priya',
-                givenAt: '2026-10-04',
-                reasonCode: 'access.new_joiner',
-                commentary: '',
-            },
-        ],
-    };
-}
 
 const euro: RecordRow = {
     version: 2,
@@ -195,7 +168,7 @@ describe('the currency screens', () => {
                 rows: [euro],
                 total: 168,
             });
-            client.setQueryData(['my-access'], access(['refdata::currencies:write']));
+            client.setQueryData(['my-access'], accessOf(['refdata::currencies:write']));
         });
         expect(html).toContain('Add currency');
         expect(html).toContain('Refresh');
@@ -223,7 +196,7 @@ describe('the currency screens', () => {
                 rows: [],
                 total: 0,
             });
-            client.setQueryData(['my-access'], access(['*']));
+            client.setQueryData(['my-access'], accessOf(['*']));
         });
         expect(html).toContain('There are no currencies yet.');
     });
@@ -231,7 +204,7 @@ describe('the currency screens', () => {
     it('shows a currency with its fields, the export note, Edit and Delete, and its links as tabs', () => {
         const html = render('/refdata/currencies/EUR', (client) => {
             client.setQueryData(['records', 'currencies', 'key', 'EUR'], euro);
-            client.setQueryData(['my-access'], access(['*']));
+            client.setQueryData(['my-access'], accessOf(['*']));
         });
         expect(html).toContain('ACT/360');
         expect(html).toContain('>Countries<');
@@ -254,7 +227,7 @@ describe('the currency screens', () => {
                 ['records', 'currency-countries', 'EUR'],
                 [{ version: 1, currency_iso_code: 'EUR', country_alpha2_code: 'DE' }],
             );
-            client.setQueryData(['my-access'], access(['*']));
+            client.setQueryData(['my-access'], accessOf(['*']));
         });
         expect(html).toContain('Germany');
         expect(html).toContain('Remove');
@@ -291,7 +264,7 @@ describe('the currency screens', () => {
     it('offers a reader no change', () => {
         const html = render('/refdata/currencies/EUR', (client) => {
             client.setQueryData(['records', 'currencies', 'key', 'EUR'], euro);
-            client.setQueryData(['my-access'], access(['refdata::currencies:read']));
+            client.setQueryData(['my-access'], accessOf(['refdata::currencies:read']));
         });
         expect(html).not.toContain('>Edit<');
         expect(html).not.toContain('Delete');
@@ -317,7 +290,7 @@ describe('the desk group screen', () => {
                     { version: 1, currency_iso_code: 'NOK', currency_group_code: 'SCANDIES' },
                 ],
             );
-            client.setQueryData(['my-access'], access(['*']));
+            client.setQueryData(['my-access'], accessOf(['*']));
         });
         expect(html).toContain('Group of eleven');
         expect(html).toContain('>Euro<');
@@ -346,7 +319,7 @@ describe('the currency pair screen', () => {
                 spot_relative: true,
                 end_of_month: false,
             });
-            client.setQueryData(['my-access'], access(['*']));
+            client.setQueryData(['my-access'], accessOf(['*']));
         });
         expect(html).toContain('EUR/USD');
         expect(html).toContain('1.0842');
@@ -358,7 +331,7 @@ describe('the currency pair screen', () => {
         const html = render('/refdata/currency-pairs/EUR%2FUSD', (client) => {
             client.setQueryData(['records', 'currency-pairs', 'key', 'EUR/USD'], pair);
             client.setQueryData(['records', 'currency-pair-conventions', 'key', 'EUR/USD'], null);
-            client.setQueryData(['my-access'], access(['*']));
+            client.setQueryData(['my-access'], accessOf(['*']));
         });
         expect(html).toContain('This pair has no convention');
     });

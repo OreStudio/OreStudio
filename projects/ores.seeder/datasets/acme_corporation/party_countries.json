@@ -1,0 +1,74 @@
+[
+  {
+    "company_code": "acme_group",
+    "country_alpha2_code": "GB"
+  },
+  {
+    "company_code": "acme_group",
+    "country_alpha2_code": "IE"
+  },
+  {
+    "company_code": "acme_group",
+    "country_alpha2_code": "DE"
+  },
+  {
+    "company_code": "acme_group",
+    "country_alpha2_code": "FR"
+  },
+  {
+    "company_code": "acme_group",
+    "country_alpha2_code": "US"
+  },
+  {
+    "company_code": "acme_group",
+    "country_alpha2_code": "CA"
+  },
+  {
+    "company_code": "acme_group",
+    "country_alpha2_code": "HK"
+  },
+  {
+    "company_code": "acme_group",
+    "country_alpha2_code": "SG"
+  },
+  {
+    "company_code": "acme_group",
+    "country_alpha2_code": "JP"
+  },
+  {
+    "company_code": "acme_uk",
+    "country_alpha2_code": "GB"
+  },
+  {
+    "company_code": "acme_uk",
+    "country_alpha2_code": "IE"
+  },
+  {
+    "company_code": "acme_uk",
+    "country_alpha2_code": "DE"
+  },
+  {
+    "company_code": "acme_uk",
+    "country_alpha2_code": "FR"
+  },
+  {
+    "company_code": "acme_us",
+    "country_alpha2_code": "US"
+  },
+  {
+    "company_code": "acme_us",
+    "country_alpha2_code": "CA"
+  },
+  {
+    "company_code": "acme_hk",
+    "country_alpha2_code": "HK"
+  },
+  {
+    "company_code": "acme_hk",
+    "country_alpha2_code": "SG"
+  },
+  {
+    "company_code": "acme_hk",
+    "country_alpha2_code": "JP"
+  }
+]

@@ -99,6 +99,23 @@ public:
     static std::chrono::system_clock::time_point from_db_string(const std::string& str);
 
     /**
+     * @brief Parses a timestamp written in a given strftime format, as UTC.
+     *
+     * For text whose format is not ISO 8601, such as a log line that names the
+     * month ("2026-Oct-11 16:52:50"). The text carries no timezone, and the
+     * source is stated to write UTC, so the result is the UTC instant. Parsing
+     * uses the C locale, so a month name is always the English one whatever the
+     * system locale is.
+     *
+     * @param str String to parse.
+     * @param format strptime format string the text was written in.
+     * @return Parsed time point.
+     * @throws std::invalid_argument if the string does not match the format.
+     */
+    static std::chrono::system_clock::time_point
+    from_utc_format(const std::string& str, const std::string& format);
+
+    /**
      * @brief Formats a time point as a human-readable local-time string.
      *
      * Intended for display only (UI, CLI output). Do NOT use for wire

@@ -220,3 +220,16 @@ TEST_CASE("from_iso8601_utc_still_refuses_the_designatorless_form", tags) {
     // local time being read as UTC.
     CHECK_THROWS_AS(datetime::from_iso8601_utc("2026-04-08 10:30:00"), std::invalid_argument);
 }
+
+TEST_CASE("from_utc_format_reads_a_month_name_as_a_utc_instant", tags) {
+    const auto tp = datetime::from_utc_format("2026-Oct-11 16:52:50", "%Y-%b-%d %H:%M:%S");
+    CHECK(tp == make_utc(2026, 10, 11, 16, 52, 50));
+    CHECK(datetime::to_iso8601_utc(tp) == "2026-10-11 16:52:50Z");
+}
+
+TEST_CASE("from_utc_format_refuses_text_that_does_not_match_the_format", tags) {
+    CHECK_THROWS_AS(datetime::from_utc_format("11/10/2026", "%Y-%b-%d %H:%M:%S"),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(datetime::from_utc_format("", "%Y-%b-%d %H:%M:%S"), std::invalid_argument);
+}
+

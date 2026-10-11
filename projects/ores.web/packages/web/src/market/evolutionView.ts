@@ -23,6 +23,7 @@ import type {
     CurveEvolution,
     CurveIdentity,
     CurveSnapshot,
+    ListedSeries,
     PointProvenance,
 } from '@ores/contracts';
 import { fromWireTimestamp, isWireTimestamp } from '@ores/wire-protocol/browser';
@@ -35,6 +36,8 @@ export interface IdentityForm {
     readonly quoteType: string;
     /** One `name=value` per line, for the fields the type declares beyond the four. */
     readonly fields: string;
+    /** The party a picked series belongs to. Empty when the identity is typed. */
+    readonly partyId: string;
 }
 
 /** The identity the form states, or the reason it does not state one. */
@@ -78,7 +81,7 @@ export function identityOf(form: IdentityForm): IdentityResult {
             scope,
             instrument_type: instrumentType,
             quote_type: quoteType,
-            party_id: '',
+            party_id: form.partyId,
             fields,
         },
     };
@@ -223,4 +226,32 @@ export function formatAge(ageSeconds: number): string {
         return `${Math.floor(whole / 3600)}h`;
     }
     return `${Math.floor(whole / 86400)}d`;
+}
+
+/** What a series is called in the picker: its four words, then the fields that tell it apart. */
+export function seriesLabel(listed: ListedSeries): string {
+    const { asset, scope, instrument_type, quote_type, fields } = listed.identity;
+    const words = [asset, scope, instrument_type, quote_type].join(' / ');
+    if (fields.length === 0) {
+        return words;
+    }
+    return `${words} · ${fields.map((field) => `${field.name}=${field.text}`).join(', ')}`;
+}
+
+/** Whether the evolution can draw the series: only a series with a declared shape has a grid. */
+export function canBeShown(listed: ListedSeries): boolean {
+    return listed.axes.length > 0;
+}
+
+/** The form a picked series fills in, with its party kept so the read names this series. */
+export function formFrom(listed: ListedSeries): IdentityForm {
+    const { asset, scope, instrument_type, quote_type, fields, party_id } = listed.identity;
+    return {
+        asset,
+        scope,
+        instrumentType: instrument_type,
+        quoteType: quote_type,
+        fields: fields.map((field) => `${field.name}=${field.text}`).join('\n'),
+        partyId: party_id,
+    };
 }

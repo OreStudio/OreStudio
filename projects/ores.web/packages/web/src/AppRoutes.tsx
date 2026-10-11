@@ -564,8 +564,8 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    () => (
-                        <EvolutionPage />
+                    (view) => (
+                        <EvolutionPage partyId={view.party.id} />
                     ),
                     'workspace',
                 )}

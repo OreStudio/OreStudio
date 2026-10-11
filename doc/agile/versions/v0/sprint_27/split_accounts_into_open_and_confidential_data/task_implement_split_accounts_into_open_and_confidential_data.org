@@ -167,3 +167,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The design is written, reviewed and agreed in PR #3115. It holds the use cases, the two tables, the six building blocks of the shared-read standard, and the product owner's decisions. The task is not done: the implementation follows in a later PR on this task.

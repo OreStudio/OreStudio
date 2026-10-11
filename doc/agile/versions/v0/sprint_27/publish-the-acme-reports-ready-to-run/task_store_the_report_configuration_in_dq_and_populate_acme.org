@@ -144,6 +144,15 @@ What this means for the order of work.
 - The historical return and Basel traffic light kinds stay out until the
   blocked reports are reconciled with the report design.
 
+*Found while proving the publish, 2026-10-11.* A definition also needs its run
+document, the ORE run document that the export names. Exporting the run
+configuration of a published Acme definition fails with "The report definition holds
+no run document". The run document is the setup block, the market bindings and the
+analytic list, held in the run setup, market binding, analytic and analytic parameter
+tables of the reporting component. Nothing publishes them for Acme, so they join the
+scope of this task as part C below. The analytic list follows the analytics switches
+that the risk report configurations already carry for each report.
+
 *Open points the first step settles.*
 
 - The tables I found for the documents are pricing engines, today's market,

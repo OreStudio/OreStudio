@@ -9,9 +9,37 @@
   {
     "company_code": "acme_group",
     "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "Group today's market"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "Group curve configuration"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
     "report_name": "System Health",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "Group pricing engines"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "System Health",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "Group today's market"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "System Health",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "Group curve configuration"
   },
   {
     "company_code": "acme_group",
@@ -23,9 +51,37 @@
   {
     "company_code": "acme_group",
     "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "Group today's market"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "Group curve configuration"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
     "report_name": "Leverage Ratio",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "Group pricing engines"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "Group today's market"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "Group curve configuration"
   },
   {
     "company_code": "acme_group",
@@ -37,9 +93,37 @@
   {
     "company_code": "acme_group",
     "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "Group today's market"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "Group curve configuration"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
     "report_name": "Large Exposures",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "Group pricing engines"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "Group today's market"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "Group curve configuration"
   },
   {
     "company_code": "acme_group",
@@ -51,9 +135,37 @@
   {
     "company_code": "acme_group",
     "version": 0,
+    "report_name": "Group Consolidated Exposure",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "Group today's market"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Group Consolidated Exposure",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "Group curve configuration"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
     "report_name": "Board Risk Dashboard",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "Group pricing engines"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Board Risk Dashboard",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "Group today's market"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Board Risk Dashboard",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "Group curve configuration"
   },
   {
     "company_code": "acme_group",
@@ -65,9 +177,37 @@
   {
     "company_code": "acme_group",
     "version": 0,
+    "report_name": "Cross-Entity Counterparty Concentration",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "Group today's market"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Cross-Entity Counterparty Concentration",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "Group curve configuration"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
     "report_name": "Intercompany Exposure Matrix",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "Group pricing engines"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Intercompany Exposure Matrix",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "Group today's market"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Intercompany Exposure Matrix",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "Group curve configuration"
   },
   {
     "company_code": "acme_uk",
@@ -79,9 +219,37 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "Audit Trail Summary",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
   },
   {
     "company_code": "acme_uk",
@@ -93,9 +261,37 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "Leverage Ratio",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
   },
   {
     "company_code": "acme_uk",
@@ -107,6 +303,20 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "Liquidity Coverage",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
@@ -114,9 +324,37 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "Large Exposures",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
   },
   {
     "company_code": "acme_uk",
@@ -128,9 +366,37 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "MIFID II Transaction Reporting",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "MIFID II Transaction Reporting",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "Model Calibration",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Model Calibration",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Model Calibration",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
   },
   {
     "company_code": "acme_uk",
@@ -142,9 +408,37 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "Yield Curves",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Yield Curves",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "FX Spot Rates",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
   },
   {
     "company_code": "acme_uk",
@@ -156,9 +450,37 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "Volatility Surfaces",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Volatility Surfaces",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "Credit Curves",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Credit Curves",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Credit Curves",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
   },
   {
     "company_code": "acme_uk",
@@ -170,6 +492,20 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "NPV",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "NPV",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "Cashflows",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
@@ -177,9 +513,37 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "Cashflows",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Cashflows",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "Delta and Gamma",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Delta and Gamma",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Delta and Gamma",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
   },
   {
     "company_code": "acme_uk",
@@ -191,9 +555,37 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "Vega",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Vega",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "Bucketed DV01",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Bucketed DV01",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Bucketed DV01",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
   },
   {
     "company_code": "acme_uk",
@@ -205,9 +597,37 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "Exposure",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Exposure",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "CVA/DVA/FVA",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
   },
   {
     "company_code": "acme_uk",
@@ -219,9 +639,37 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "Stressed VaR",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Stressed VaR",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "P&L Attribution",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "P&L Attribution",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "P&L Attribution",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
   },
   {
     "company_code": "acme_uk",
@@ -233,9 +681,37 @@
   {
     "company_code": "acme_uk",
     "version": 0,
+    "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
     "report_name": "Headline Position",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "UK pricing engines"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Headline Position",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "UK today's market"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Headline Position",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "UK curve configuration"
   },
   {
     "company_code": "acme_us",
@@ -247,9 +723,37 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "Audit Trail Summary",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
   },
   {
     "company_code": "acme_us",
@@ -261,9 +765,37 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "Leverage Ratio",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
   },
   {
     "company_code": "acme_us",
@@ -275,6 +807,20 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "Liquidity Coverage",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
@@ -282,9 +828,37 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "Large Exposures",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
   },
   {
     "company_code": "acme_us",
@@ -296,9 +870,37 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "CFTC Swap Data Reporting",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "CFTC Swap Data Reporting",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "Model Calibration",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Model Calibration",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Model Calibration",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
   },
   {
     "company_code": "acme_us",
@@ -310,9 +912,37 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "Yield Curves",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Yield Curves",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "FX Spot Rates",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
   },
   {
     "company_code": "acme_us",
@@ -324,9 +954,37 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "Credit Curves",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Credit Curves",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "NPV",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "NPV",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "NPV",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
   },
   {
     "company_code": "acme_us",
@@ -338,9 +996,37 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "Cashflows",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Cashflows",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "Delta and Gamma",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Delta and Gamma",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Delta and Gamma",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
   },
   {
     "company_code": "acme_us",
@@ -352,9 +1038,37 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "Bucketed DV01",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Bucketed DV01",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "Exposure",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Exposure",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Exposure",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
   },
   {
     "company_code": "acme_us",
@@ -366,9 +1080,37 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "Stressed VaR",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Stressed VaR",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Stressed VaR",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
   },
   {
     "company_code": "acme_us",
@@ -380,6 +1122,20 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "P&L Attribution",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "P&L Attribution",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "Intraday Risk Monitor",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
@@ -387,9 +1143,37 @@
   {
     "company_code": "acme_us",
     "version": 0,
+    "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
     "report_name": "Headline Position",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "US pricing engines"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Headline Position",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "US today's market"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Headline Position",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "US curve configuration"
   },
   {
     "company_code": "acme_hk",
@@ -401,9 +1185,37 @@
   {
     "company_code": "acme_hk",
     "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
     "report_name": "Audit Trail Summary",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "HK pricing engines"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
   },
   {
     "company_code": "acme_hk",
@@ -415,9 +1227,37 @@
   {
     "company_code": "acme_hk",
     "version": 0,
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
     "report_name": "Leverage Ratio",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "HK pricing engines"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
   },
   {
     "company_code": "acme_hk",
@@ -429,9 +1269,37 @@
   {
     "company_code": "acme_hk",
     "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
     "report_name": "Liquidity Coverage",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "HK pricing engines"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
   },
   {
     "company_code": "acme_hk",
@@ -443,9 +1311,37 @@
   {
     "company_code": "acme_hk",
     "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
     "report_name": "HKMA Trade Repository",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "HK pricing engines"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "HKMA Trade Repository",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "HKMA Trade Repository",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
   },
   {
     "company_code": "acme_hk",
@@ -457,9 +1353,37 @@
   {
     "company_code": "acme_hk",
     "version": 0,
+    "report_name": "Model Calibration",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Model Calibration",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
     "report_name": "Yield Curves",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "HK pricing engines"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Yield Curves",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Yield Curves",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
   },
   {
     "company_code": "acme_hk",
@@ -471,9 +1395,37 @@
   {
     "company_code": "acme_hk",
     "version": 0,
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
     "report_name": "Credit Curves",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "HK pricing engines"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Credit Curves",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Credit Curves",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
   },
   {
     "company_code": "acme_hk",
@@ -485,9 +1437,37 @@
   {
     "company_code": "acme_hk",
     "version": 0,
+    "report_name": "NPV",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "NPV",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
     "report_name": "Cashflows",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "HK pricing engines"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Cashflows",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Cashflows",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
   },
   {
     "company_code": "acme_hk",
@@ -499,9 +1479,37 @@
   {
     "company_code": "acme_hk",
     "version": 0,
+    "report_name": "Delta and Gamma",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Delta and Gamma",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
     "report_name": "Bucketed DV01",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "HK pricing engines"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Bucketed DV01",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Bucketed DV01",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
   },
   {
     "company_code": "acme_hk",
@@ -513,9 +1521,37 @@
   {
     "company_code": "acme_hk",
     "version": 0,
+    "report_name": "Exposure",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Exposure",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
     "report_name": "CVA/DVA/FVA",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "HK pricing engines"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
   },
   {
     "company_code": "acme_hk",
@@ -527,9 +1563,37 @@
   {
     "company_code": "acme_hk",
     "version": 0,
+    "report_name": "Stressed VaR",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Stressed VaR",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
     "report_name": "P&L Attribution",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "HK pricing engines"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "P&L Attribution",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "P&L Attribution",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
   },
   {
     "company_code": "acme_hk",
@@ -541,8 +1605,36 @@
   {
     "company_code": "acme_hk",
     "version": 0,
+    "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
     "report_name": "Headline Position",
     "configuration_type_code": "pricing_engines",
     "configuration_name": "HK pricing engines"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Headline Position",
+    "configuration_type_code": "todays_market",
+    "configuration_name": "HK today's market"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Headline Position",
+    "configuration_type_code": "curve_configuration",
+    "configuration_name": "HK curve configuration"
   }
 ]

@@ -100,6 +100,12 @@ COMPANIES = ["acme_uk", "acme_us", "acme_hk"]
 CONFIGURATION_DOCUMENTS = [
     ("pricing_engines", "Pricing Engines",
      ["pricing_model_configs", "pricing_model_products", "pricing_model_product_parameters"]),
+    ("todays_market", "Today's Market",
+     ["todays_market_configs", "todays_market_collections", "todays_market_entries",
+      "todays_market_configurations", "todays_market_configuration_bindings"]),
+    ("curve_configuration", "Curve Configuration",
+     ["curve_configurations", "curve_definitions", "yield_curve_configs", "curve_segments",
+      "curve_quotes"]),
 ]
 
 NETTING_COMPANIES = ["acme_group"] + COMPANIES

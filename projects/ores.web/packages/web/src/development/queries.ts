@@ -66,10 +66,11 @@ export const qaQueries = {
             refetchOnReconnect: false,
         }),
 
+    /** Any agile doc by id, from the agile route. A scenario's story and task, and a backlog link, read through it. */
     doc: (id: string) =>
         queryOptions({
             queryKey: docKey(id),
-            queryFn: () => qa.doc(id),
+            queryFn: () => agile.doc(id),
             meta: QUIET,
         }),
 };
@@ -79,6 +80,7 @@ export function boardKey(sprint: string | undefined): readonly [string, string] 
 }
 
 export const AGILE_SPRINTS_KEY = ['agile-sprints'] as const;
+export const AGILE_BACKLOG_KEY = ['agile-backlog'] as const;
 
 /** The reads of the agile browser. Quiet for the same reason as the QA reads. */
 export const agileQueries = {
@@ -86,6 +88,13 @@ export const agileQueries = {
         queryOptions({
             queryKey: AGILE_SPRINTS_KEY,
             queryFn: () => agile.sprints(),
+            meta: QUIET,
+        }),
+
+    backlog: () =>
+        queryOptions({
+            queryKey: AGILE_BACKLOG_KEY,
+            queryFn: () => agile.backlog(),
             meta: QUIET,
         }),
 

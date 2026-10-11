@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -83,3 +83,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Development area has a Backlog tab. It lists the four buckets (inbox, next, deferred, discarded) with the captures and stories in each, newest first. A row opens its doc inside the tab, and a link in that doc opens the next one, with a Back button that returns to the list. Every doc read now goes through =/api/agile/docs/:id=, which also serves test scenarios, so the story and task tabs of the scenario runner and the board's doc links share one route. The old =qa.doc= client call is gone, and the =/api/qa/docs= route stays on the server for now. The French and Portuguese text is my translation and needs a speaker. The tests cover the buckets, the rows, the empty and loading states, and the widened doc route. I did not click through the tab in a browser.

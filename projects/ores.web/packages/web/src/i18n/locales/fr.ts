@@ -1239,6 +1239,21 @@ const fr: SourceCatalogue = {
             label: 'Zones de développement',
             tests: 'Tests',
             board: 'Tableau',
+            backlog: 'Backlog',
+        },
+        backlog: {
+            buckets: {
+                inbox: 'Boîte de réception',
+                next: 'Suivant',
+                deferred: 'Reporté',
+                discarded: 'Écarté',
+            },
+            empty: 'Rien dans ce panier.',
+            item: 'Élément',
+            kind: 'Type',
+            created: 'Créé',
+            capture: 'Capture',
+            story: { one: 'Récit, {count} tâche', other: 'Récit, {count} tâches' },
         },
         board: {
             search: 'Chercher des récits, tâches, environnements',

@@ -21,8 +21,10 @@
 
 import {
     agileDocResponseSchema,
+    backlogSchema,
     boardResponseSchema,
     sprintListSchema,
+    type Backlog,
     type Board,
     type QaDoc,
 } from '@ores/contracts';
@@ -55,7 +57,12 @@ export const agile = {
         ).board;
     },
 
-    /** A sprint, story, task or capture by its :ID:, as org text. */
+    /** The four backlog buckets, each newest first. */
+    async backlog(): Promise<Backlog> {
+        return backlogSchema.parse(await request('/api/agile/backlog', { method: 'GET' }));
+    },
+
+    /** A sprint, story, task, capture or scenario by its :ID:, as org text. */
     async doc(id: string): Promise<QaDoc> {
         return agileDocResponseSchema.parse(
             await request(`/api/agile/docs/${encodeURIComponent(id)}`, { method: 'GET' }),

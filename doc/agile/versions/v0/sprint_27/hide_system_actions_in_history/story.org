@@ -40,7 +40,7 @@ A history shows a toggle that hides or shows the entries made by service account
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:BCE9531F-F1EB-4A60-9C96-E44A8E713766][Scaffold story: Hide what system accounts did in a history]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:0D0F526D-FE2B-43F2-965F-FBB4E86C50FE][Mark each timeline entry with the kind of its actor]] | STARTED | 2026-10-11 | | Initial task for: Hide what system accounts did in a history |
+| [[id:0D0F526D-FE2B-43F2-965F-FBB4E86C50FE][Mark each timeline entry with the kind of its actor]] | DONE | 2026-10-11 | 2026-10-11 | Initial task for: Hide what system accounts did in a history |
 
 * Decisions
 

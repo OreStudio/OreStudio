@@ -52,9 +52,37 @@ describe('the files in a paste or a drop', () => {
         expect(filesOf({ files: [png, text, jpg] })).toEqual([png, text, jpg]);
     });
 
-    it('does not count one file twice when items and files carry it both', () => {
+    it('counts a file once when the items and the files both carry it', () => {
         const transfer: Transfer = { items: [item('file', 'image/png', png)], files: [png] };
         expect(filesOf(transfer)).toEqual([png]);
+    });
+
+    it('counts a pasted screenshot once, though the browser gives a new File object for the item and for the file', () => {
+        const same = () =>
+            new File([new Uint8Array([1, 2, 3])], 'image.png', { type: 'image/png' });
+        const transfer: Transfer = { items: [item('file', 'image/png', same())], files: [same()] };
+        const files = filesOf(transfer);
+        expect(files).toHaveLength(1);
+        expect(files[0]?.size).toBe(3);
+    });
+
+    it('counts two screenshots as two, each once', () => {
+        const copy = (name: string) => new File([new Uint8Array([1])], name, { type: 'image/png' });
+        const transfer: Transfer = {
+            items: [
+                item('file', 'image/png', copy('a.png')),
+                item('file', 'image/png', copy('b.png')),
+            ],
+            files: [copy('a.png'), copy('b.png')],
+        };
+        expect(filesOf(transfer).map((f) => f.name)).toEqual(['a.png', 'b.png']);
+    });
+
+    it('falls back to the files when the items carry none, as a dropped file can', () => {
+        expect(filesOf({ items: [item('string', 'text/plain', null)], files: [png, jpg] })).toEqual(
+            [png, jpg],
+        );
+        expect(filesOf({ files: [png] })).toEqual([png]);
     });
 
     it('leaves pasted text alone, so the note gets it', () => {

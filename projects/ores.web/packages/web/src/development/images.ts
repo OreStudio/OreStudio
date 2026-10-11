@@ -42,18 +42,21 @@ export interface Transfer {
  * The files a paste or a drop carries, whatever they are. Pasted text carries
  * none, so the note keeps it. A file that is not an image is still handed on,
  * so the tester is told it was refused and is not left wondering.
+ *
+ * The items and the files of a transfer are two views of the same data, and a
+ * browser gives a new File object each time it is asked, so a file seen through
+ * both is not the same object. The items are read first, and the files only when
+ * the items gave none, so a pasted screenshot is one file and not two.
  */
 export function filesOf(transfer: Transfer | null | undefined): File[] {
     if (transfer === null || transfer === undefined) return [];
-    const found: File[] = [];
-    const take = (file: File | null): void => {
-        if (file !== null && !found.includes(file)) found.push(file);
-    };
+    const fromItems: File[] = [];
     for (const item of Array.from(transfer.items ?? [])) {
-        if (item.kind === 'file') take(item.getAsFile());
+        if (item.kind !== 'file') continue;
+        const file = item.getAsFile();
+        if (file !== null) fromItems.push(file);
     }
-    for (const file of Array.from(transfer.files ?? [])) take(file);
-    return found;
+    return fromItems.length > 0 ? fromItems : Array.from(transfer.files ?? []);
 }
 
 /** Whether a drag carries files, which is all a drag can say before the drop. */

@@ -215,9 +215,10 @@ function MixtureEditor({
                                         <td className="px-3 py-1.5 font-mono text-xs text-ink-muted">
                                             {index}
                                         </td>
-                                        <td className="px-3 py-1.5">
+                                        <td className="w-full px-3 py-1.5">
                                             <Input
                                                 aria-label={t('refdata.fields.description')}
+                                                className="min-w-64"
                                                 value={component.description}
                                                 readOnly={!may.write}
                                                 maxLength={2000}
@@ -229,6 +230,7 @@ function MixtureEditor({
                                         <td className="px-3 py-1.5">
                                             <Select
                                                 aria-label={t('marketdata.process.profile')}
+                                                className="w-32"
                                                 value={profileOf(component.stdev)}
                                                 disabled={!may.write}
                                                 onChange={(event) => {
@@ -523,6 +525,23 @@ function Preview({
             </div>
             <div className="space-y-3 rounded-md border border-line p-3">
                 <h3 className="text-sm font-medium">{t('marketdata.preview.paths')}</h3>
+                {request === undefined ? (
+                    <p className="text-sm text-ink-muted">{t('marketdata.preview.waiting')}</p>
+                ) : sample.isError ? (
+                    <Notice tone="error">{sample.error.message}</Notice>
+                ) : sample.data === undefined || sample.data.length === 0 ? (
+                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                ) : (
+                    <LineChart
+                        label={t('marketdata.preview.paths')}
+                        format={figure}
+                        xFormat={(tick) => String(tick)}
+                        series={sample.data.map((points, i) => ({
+                            points,
+                            colour: SERIES_COLOURS[i % SERIES_COLOURS.length] ?? '',
+                        }))}
+                    />
+                )}
                 <div className="grid gap-3 sm:grid-cols-4">
                     <Field label={t('marketdata.preview.initialPrice')}>
                         <Input
@@ -558,23 +577,6 @@ function Preview({
                         </div>
                     </Field>
                 </div>
-                {request === undefined ? (
-                    <p className="text-sm text-ink-muted">{t('marketdata.preview.waiting')}</p>
-                ) : sample.isError ? (
-                    <Notice tone="error">{sample.error.message}</Notice>
-                ) : sample.data === undefined || sample.data.length === 0 ? (
-                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
-                ) : (
-                    <LineChart
-                        label={t('marketdata.preview.paths')}
-                        format={figure}
-                        xFormat={(tick) => String(tick)}
-                        series={sample.data.map((points, i) => ({
-                            points,
-                            colour: SERIES_COLOURS[i % SERIES_COLOURS.length] ?? '',
-                        }))}
-                    />
-                )}
                 <p className="text-xs text-ink-faint">
                     {t('marketdata.preview.unsaved', {
                         process: t(`refdata.choices.process_type.${processType}`),

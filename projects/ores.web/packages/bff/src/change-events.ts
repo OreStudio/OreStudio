@@ -19,7 +19,7 @@
  *
  */
 
-import { SYSTEM_TENANT_ID, type OresClient } from '@ores/wire-protocol';
+import { SYSTEM_TENANT_ID, type OresClient, type RecordKey } from '@ores/wire-protocol';
 
 /**
  * Who is watching what, and the one subscription that serves them.
@@ -58,8 +58,54 @@ export type ChangeListener = (change: ChangeEvent) => void;
 export interface ChangeEvent {
     readonly component: string;
     readonly entity: string;
-    /** When the change happened, server-side. */
+    /** When the newest of the changes happened, server-side. */
     readonly at: string;
+    /**
+     * The records that changed, when there are few enough to name. Left out, it
+     * means many records or records the event could not name, and a reader treats
+     * every record as changed.
+     */
+    readonly keys?: readonly RecordKey[];
+}
+
+/** How many records one message names. More than this is a bulk change. */
+export const MAX_KEYS = 20;
+
+/**
+ * How long a burst of changes to one entity is gathered into one message, in
+ * milliseconds. A bulk import is thousands of events, and a session needs to be
+ * told once.
+ */
+export const BATCH_WINDOW_MS = 150;
+
+/** What one session has not yet been told of one entity. */
+interface Batch {
+    at: string;
+    keys: RecordKey[];
+    many: boolean;
+}
+
+function sameKey(a: RecordKey, b: RecordKey): boolean {
+    const names = Object.keys(a);
+    return names.length === Object.keys(b).length && names.every((name) => a[name] === b[name]);
+}
+
+/** Adds one change to what a session is waiting to be told. */
+export function addToBatch(batch: Batch | undefined, at: string, key: RecordKey): Batch {
+    const next: Batch = batch ?? { at, keys: [], many: false };
+    next.at = at;
+    if (next.many) return next;
+    if (Object.keys(key).length === 0) {
+        next.many = true;
+        next.keys = [];
+    } else if (!next.keys.some((known) => sameKey(known, key))) {
+        next.keys.push(key);
+        if (next.keys.length > MAX_KEYS) {
+            next.many = true;
+            next.keys = [];
+        }
+    }
+    return next;
 }
 
 /** Whose events a session may hear. */
@@ -117,6 +163,8 @@ export function eventSubject(component: string, entity: string): string {
 
 /** The part of a logger the registry writes through: a record of facts and a message. */
 export interface EventLog {
+    /** Whether a level is written; a log that cannot say is taken as writing every level. */
+    isLevelEnabled?(level: string): boolean;
     debug(fields: Record<string, unknown>, message: string): void;
     warn(fields: Record<string, unknown>, message: string): void;
 }
@@ -132,6 +180,8 @@ export class ChangeEventRegistry {
         {
             listeners: Map<string, { listener: ChangeListener; audience: Audience }>;
             stop: () => void;
+            /** Drops what is waiting to be told, with the subscription. */
+            cancel: () => void;
         }
     >();
     /** Session id to what it watches, so a session can be forgotten wholesale. */
@@ -139,9 +189,12 @@ export class ChangeEventRegistry {
     /** How to reach a session, registered once when its stream opens. */
     readonly #listeners = new Map<string, ChangeListener>();
 
-    constructor(client: OresClient, log: EventLog = SILENT) {
+    readonly #windowMs: number;
+
+    constructor(client: OresClient, log: EventLog = SILENT, windowMs: number = BATCH_WINDOW_MS) {
         this.#client = client;
         this.#log = log;
+        this.#windowMs = windowMs;
     }
 
     /**
@@ -214,6 +267,26 @@ export class ChangeEventRegistry {
             // The subscription is opened once for everyone watching, and the listener
             // map starts empty: it is the sessions that listen, and they arrive next.
             const listeners = new Map<string, { listener: ChangeListener; audience: Audience }>();
+            // What each session has not yet been told, and the timer that tells it.
+            const waiting = new Map<string, Batch>();
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            const flush = (): void => {
+                timer = undefined;
+                for (const [session, batch] of waiting) {
+                    listeners.get(session)?.listener({
+                        component: watch.component,
+                        entity: watch.entity,
+                        at: batch.at,
+                        ...(batch.many ? {} : { keys: batch.keys }),
+                    });
+                }
+                waiting.clear();
+            };
+            const cancel = (): void => {
+                if (timer !== undefined) clearTimeout(timer);
+                timer = undefined;
+                waiting.clear();
+            };
             const stop = this.#client.subscribeToEvents(
                 eventSubject(watch.component, watch.entity),
                 (change) => {
@@ -230,21 +303,24 @@ export class ChangeEventRegistry {
                             'change event without a tenant, told to nobody',
                         );
                     }
-                    const event: ChangeEvent = {
-                        component: watch.component,
-                        entity: watch.entity,
-                        at: change.at,
-                    };
                     let passed = 0;
                     let refused = 0;
-                    for (const heard of listeners.values()) {
+                    for (const [session, heard] of listeners) {
                         if (mayHear(heard.audience, change)) {
-                            heard.listener(event);
+                            waiting.set(
+                                session,
+                                addToBatch(waiting.get(session), change.at, change.key),
+                            );
                             passed += 1;
                         } else {
                             refused += 1;
                         }
                     }
+                    if (waiting.size > 0 && timer === undefined) {
+                        timer = setTimeout(flush, this.#windowMs);
+                    }
+                    // The key is text built for the line, so a bulk import builds none when debug is off.
+                    if (this.#log.isLevelEnabled?.('debug') === false) return;
                     this.#log.debug(
                         {
                             component: watch.component,
@@ -252,6 +328,7 @@ export class ChangeEventRegistry {
                             tenant_id: change.tenantId,
                             party_id: change.partyId,
                             occurred_at: change.at,
+                            key: JSON.stringify(change.key),
                             passed,
                             refused,
                         },
@@ -263,7 +340,7 @@ export class ChangeEventRegistry {
                 { component: watch.component, entity: watch.entity },
                 'change subscription opened',
             );
-            entry = { listeners, stop };
+            entry = { listeners, stop, cancel };
             this.#shared.set(key, entry);
         }
 
@@ -281,6 +358,7 @@ export class ChangeEventRegistry {
         // for an entity nobody is looking at.
         if (entry.listeners.size === 0) {
             entry.stop();
+            entry.cancel();
             this.#shared.delete(key);
             this.#log.debug(
                 { component: watch.component, entity: watch.entity },

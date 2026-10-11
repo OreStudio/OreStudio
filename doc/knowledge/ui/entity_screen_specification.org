@@ -640,6 +640,12 @@ lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notific
   registry states these, so no screen guesses a plural.
 - The news is a time and not a list. A thousand changes in one import make a
   screen stale once.
+- The news may name the records that changed, when there are few (up to 20 in
+  one message). A list uses them to place the change (see Refresh). A record page names its record in its watch
+  (={ component, entity, record: { username } }=) and goes stale only when the
+  news names its record or names none. It does not pulse for another person's
+  change. A page that cannot state its record's key leaves the record out and
+  goes stale for any change to the entity.
 - A screen is stale when a change reached the browser after the load that
   produced its data began. The comparison uses the browser's clock at both ends,
   because the server's clock differs. A change that arrives while a load is in
@@ -653,10 +659,24 @@ lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notific
   gold until the screen loads again. Its tooltip says the data changed and gives
   the time. A reader who asks for less motion gets the gold and no pulse.
 - The gold (=--color-stale=) means "changed on the server" and nothing else.
+- A list also says where the change fell, in three cases. The list keeps the
+  records that the changes since its load named.
+  1. A few records, all on the page: those rows pulse (=row-news=).
+  2. Too many to name, or a list that cannot tell its rows apart: a strip along
+     the top of the table says that something changed which the page cannot show.
+  3. A record on another page: the same strip, because no row on this page can
+     carry the mark. When a change names rows on the page and also a record off it,
+     the rows pulse and the strip shows.
+  A list tells its rows apart by =recordKey=, the key of the record a row shows,
+  as the events name it. Refresh stays gold in all three cases.
 - A click reads again whatever the screen shows. On a record page that is every
   card and the history.
 - The page does not reload by itself. A list does not, a record page does not,
   and the history does not.
+- A save does not reload the page either. The save's own change event makes
+  Refresh gold, like any other change, and the person presses Refresh to see the
+  saved values. A page that was reloaded by the save would hide that the data
+  moved, and would make the gold mean two things.
 
 *** When the data was loaded
 

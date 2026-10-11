@@ -48,6 +48,19 @@ CONSOLIDATED_REPORTS = {"Leverage Ratio", "Liquidity Coverage", "Large Exposures
 # D8: the option risk reports, which only the full-depth entity runs.
 OPTION_REPORTS = {"Vega", "Volatility Surfaces"}
 
+# D6: what a report needs in the same entity, from the prerequisites its
+# catalogue text states. Stressed VaR is left out on purpose: its text names
+# the volatility surface as a prerequisite elsewhere, but it also states that it
+# uses full revaluation, and the core set runs it without a surface (D7, D8).
+PREREQUISITES = {
+    "Exposure": {"Model Calibration", "Yield Curves"},
+    "CVA/DVA/FVA": {"Exposure", "Credit Curves"},
+    "NPV": {"Yield Curves", "FX Spot Rates"},
+    "Delta and Gamma": {"NPV"},
+    "Bucketed DV01": {"NPV"},
+    "Vega": {"NPV", "Volatility Surfaces"},
+}
+
 
 def load(name):
     with open(os.path.join(SCRIPT_DIR, f"{name}.json")) as f:
@@ -67,11 +80,9 @@ def runs(entity, report):
     name = report["name"]
 
     if entity["role"] == "holding":
-        if tier == "strategic" or name in PLATFORM_REPORTS:
-            return True
-        if tier == "common":
-            return True
-        return name in CONSOLIDATED_REPORTS
+        # D2: oversight, consolidation and the consolidated ratios. D5: the
+        # platform report. The common tier is the reports every entity runs.
+        return tier in ("strategic", "common") or name in CONSOLIDATED_REPORTS
 
     if name in PLATFORM_REPORTS:
         return False
@@ -85,13 +96,21 @@ def runs(entity, report):
     return True
 
 
+def check_prerequisites(company, records):
+    names = {r["name"] for r in records}
+    for name in names & PREREQUISITES.keys():
+        missing = PREREQUISITES[name] - names
+        if missing:
+            raise SystemExit(f"{company} runs {name} without {sorted(missing)} (D6)")
+
+
 def report_definitions():
     catalogue = load("report_catalogue")
     records = []
     for company, entity in ENTITIES.items():
-        for report in catalogue:
-            if runs(entity, report):
-                records.append({"company_code": company, **report})
+        chosen = [{"company_code": company, **r} for r in catalogue if runs(entity, r)]
+        check_prerequisites(company, chosen)
+        records.extend(chosen)
     return records
 
 

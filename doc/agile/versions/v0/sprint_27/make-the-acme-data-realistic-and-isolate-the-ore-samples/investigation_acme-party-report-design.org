@@ -120,7 +120,14 @@ A tick means the entity runs the report. A dash means it does not. The rule that
 | Intraday Risk Monitor | - | ✓ | ✓ | ✓ | D3 |
 | Headline Position | - | ✓ | ✓ | ✓ | D3 |
 
-Two notes on the table.
+Three notes on the table.
+
+- The generator checks D6 for the prerequisites the catalogue texts state, and
+  refuses a set that lacks one. It leaves Stressed VaR out of the check on
+  purpose. The Volatility Surfaces text calls a surface a prerequisite of
+  stressed VaR, but the Stressed VaR text says it uses full revaluation, and the
+  core set runs it without a surface (D7 and D8 together). A reviewer should
+  decide which text is right.
 
 - Leverage, liquidity and large exposures run at the holding company and at each trading entity. The entity files its own figure and the group files the consolidated one. Whether a Hong Kong trading subsidiary has its own liquidity requirement is /open/ and needs a regulatory view.
 - The seeded text says the market data builders feed all the analytics. D6 gives each trading entity its own builders for the currencies it trades. A central market data hub run once for the group is more realistic. I did not check whether a run can read another party's curves. If it can, a hub is better, and the builders move to London.

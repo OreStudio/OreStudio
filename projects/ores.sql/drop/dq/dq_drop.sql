@@ -117,6 +117,10 @@
 \ir ./dq_csas_artefact_drop.sql
 \ir ./dq_netting_sets_artefact_drop.sql
 \ir ./dq_netting_agreements_artefact_drop.sql
+\ir ./dq_party_contact_informations_artefact_drop.sql
+\ir ./dq_party_countries_artefact_drop.sql
+\ir ./dq_party_currencies_artefact_drop.sql
+\ir ./dq_party_counterparties_artefact_drop.sql
 \ir ./dq_tags_artefact_drop.sql
 
 -- Datasets

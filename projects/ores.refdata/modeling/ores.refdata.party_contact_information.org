@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B2497625-247E-4B80-A5D2-926A453FB338
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.party_contact_information
 #+description: Codegen entity model for the refdata =party_contact_information= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -255,6 +256,79 @@ session that set it.
     return idx % 4 == 0;
 }()
 #+end_src
+
+* Artefact columns
+
+A dataset of contacts is scoped to the party a publish names, so it carries no party. =ores_refdata_publish_party_contact_informations_from_dq_fn= supplies =party_id= and the row id, and a contact whose type the party already holds is left as it is.
+
+** contact_type
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** street_line_1
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** street_line_2
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** city
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** state
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** country_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** postal_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** phone
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** email
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** web_page
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** is_primary
+:PROPERTIES:
+:type: boolean
+:END:
 
 * SQL
 

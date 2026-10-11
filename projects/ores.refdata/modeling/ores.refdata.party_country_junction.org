@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BA74C9F6-DA2C-43F9-9EFA-4E9EFF7356E2
+:ores.sql.schema.junction_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.party_country
 #+description: Codegen junction model for party_countries.
@@ -62,6 +63,20 @@ References ores_refdata_countries_tbl.alpha2_code (soft FK).
 #+begin_src cpp :name generator
 std::string("US")
 #+end_src
+
+* Artefact columns
+
+The dataset is scoped to the party a publish names, so it stages the country only. A country the tenant does not hold is skipped.
+
+** country_alpha2_code
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
 
 * Columns
 

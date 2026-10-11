@@ -85,7 +85,7 @@ function render(
     nodes: readonly ReportingTreeNode[],
     unrooted = 0,
     me = '',
-    entry = '/hierarchy',
+    entry = '/organisation/hierarchy',
     parties: readonly ReportingTreeParty[] = [],
     holds: readonly string[] = ADMIN,
 ): string {
@@ -150,7 +150,7 @@ describe('Reporting lines', () => {
     });
 
     it('draws the org chart with a card for each person, joined as a tree', () => {
-        const html = render(TREE, 0, 'grace.hopper', '/hierarchy?tab=chart');
+        const html = render(TREE, 0, 'grace.hopper', '/organisation/hierarchy?tab=chart');
 
         expect(html).toContain('class="orgchart');
         expect(html).toContain('Ada Lovelace');
@@ -159,13 +159,13 @@ describe('Reporting lines', () => {
         expect(html).toContain('>You<');
         expect(html).not.toContain('Reporting tree');
         // Each card opens the person, and the chart stands alone: no card beside it.
-        expect(html).toContain('href="/people/alan.turing"');
-        expect(html).toContain('href="/people/ada.lovelace"');
+        expect(html).toContain('href="/organisation/people/alan.turing"');
+        expect(html).toContain('href="/organisation/people/ada.lovelace"');
         expect(html).not.toContain('Direct reports');
     });
 
     it('offers to zoom the org chart in and out, and to fit it to the window', () => {
-        const html = render(TREE, 0, 'grace.hopper', '/hierarchy?tab=chart');
+        const html = render(TREE, 0, 'grace.hopper', '/organisation/hierarchy?tab=chart');
 
         expect(html).toContain('aria-label="Zoom in"');
         expect(html).toContain('aria-label="Zoom out"');
@@ -181,11 +181,11 @@ describe('Reporting lines', () => {
         // Ada is the signed-in person, so the card opens on her: Grace and Edsger report to her.
         expect(html).toContain('Direct reports');
         expect(html).toContain('(2)');
-        expect(html).toContain('href="/people/grace.hopper"');
-        expect(html).toContain('href="/people/edsger.dijkstra"');
+        expect(html).toContain('href="/organisation/people/grace.hopper"');
+        expect(html).toContain('href="/organisation/people/edsger.dijkstra"');
         // Alan reports to Grace, not to Ada, so he is not a direct report here.
         const card = html.slice(html.indexOf('Direct reports'));
-        expect(card).not.toContain('href="/people/alan.turing"');
+        expect(card).not.toContain('href="/organisation/people/alan.turing"');
     });
 
     it('says when nobody reports to the selected person', () => {
@@ -281,7 +281,7 @@ describe('parties in the hierarchy', () => {
             IN_PARTIES,
             0,
             'ada.lovelace',
-            '/hierarchy?tab=chart',
+            '/organisation/hierarchy?tab=chart',
             [NORTH, SOUTH],
             ADMIN,
         );
@@ -322,7 +322,7 @@ describe('a member who reads the organisation and not the accounts', () => {
         const html = render(IN_PARTIES, 0, 'grace.hopper', '/hierarchy', [NORTH, SOUTH], MEMBER);
 
         expect(html).toContain('Ada Lovelace');
-        expect(html).not.toContain('href="/people/');
+        expect(html).not.toContain('href="/organisation/people/');
     });
 
     it('is told when a manager is out of view, and is not shown a person as having none', () => {

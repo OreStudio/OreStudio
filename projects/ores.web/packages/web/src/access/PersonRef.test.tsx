@@ -52,7 +52,7 @@ describe('PersonRef', () => {
             }),
         );
         expect(html).toContain('Adrian Vance (adrian.vance)');
-        expect(html).toContain('href="/people/adrian.vance"');
+        expect(html).toContain('href="/organisation/people/adrian.vance"');
     });
 
     it('finds a person by account id', () => {

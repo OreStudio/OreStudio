@@ -21,7 +21,7 @@
 
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { readPersonTimeline, readRequestStory } from '@ores/wire-protocol';
+import { readPartyTimeline, readPersonTimeline, readRequestStory } from '@ores/wire-protocol';
 import type { Timeline } from '@ores/wire-protocol';
 import { invalidRequest } from './errors.js';
 import type { LiveSession } from './sessions.js';
@@ -37,7 +37,7 @@ import type { LiveSession } from './sessions.js';
  */
 
 /** The subjects a timeline can be read for, as the reads name them. */
-export const TIMELINE_SUBJECTS = ['person', 'request'] as const;
+export const TIMELINE_SUBJECTS = ['person', 'party', 'request'] as const;
 export type TimelineSubject = (typeof TIMELINE_SUBJECTS)[number];
 
 const timelineQuerySchema = z
@@ -67,6 +67,9 @@ export function registerTimelineRoutes(
         const { subject, id: subjectId } = query.data;
         if (subject === 'person') {
             return await readPersonTimeline(session.client, subjectId);
+        }
+        if (subject === 'party') {
+            return await readPartyTimeline(session.client, subjectId);
         }
         if (subject === 'request') {
             const story = await readRequestStory(session.client, subjectId);

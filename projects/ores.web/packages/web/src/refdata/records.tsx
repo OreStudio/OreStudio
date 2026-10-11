@@ -20,9 +20,10 @@
  */
 
 import { AccessMark } from '../ui/AccessMark.js';
+import { Phrase, PersonRef, slot } from '../access/PersonRef.js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import { Link, Navigate, useNavigate } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
@@ -78,6 +79,13 @@ export interface FieldSpec {
     /** The field holds a code of this source, drawn with its flag. */
     readonly flag?: FlagSource;
     readonly when?: (values: FieldValues) => boolean;
+    /**
+     * The key of the field's label, when the common one does not fit: a party's
+     * picture is its logo, where a currency's is its flag.
+     */
+    readonly labelKey?: string;
+    /** Where a record named by this field is opened, so its name on a page is a link. */
+    readonly pathOf?: (value: string) => string;
 }
 
 function asked(spec: FieldSpec, values: FieldValues): boolean {
@@ -85,6 +93,11 @@ function asked(spec: FieldSpec, values: FieldValues): boolean {
 }
 
 export type FieldValues = Readonly<Record<string, string>>;
+
+/** The label of a field: the one the screen names for it, else the common one. */
+function labelOf(t: (key: string) => string, spec: FieldSpec): string {
+    return t(spec.labelKey ?? `refdata.fields.${spec.field}`);
+}
 
 /** A field's value as text; an absent value is empty. */
 export function show(value: unknown): string {
@@ -102,6 +115,31 @@ export function valuesFromHistory(
     version: HistoryVersion,
 ): FieldValues {
     return Object.fromEntries(specs.map((spec) => [spec.field, fieldValue(version, spec.history)]));
+}
+
+/** One field a revert would change: what it holds now, and what it would hold. */
+export interface RevertChange {
+    readonly label: string;
+    readonly from: string;
+    readonly to: string;
+}
+
+/** The fields whose value differs between the record as it stands and an older version. */
+export function revertChanges(
+    t: (key: string) => string,
+    specs: readonly FieldSpec[],
+    row: RecordRow,
+    version: HistoryVersion,
+): readonly RevertChange[] {
+    const now = valuesOf(specs, row);
+    const then = valuesFromHistory(specs, version);
+    return specs
+        .filter((spec) => (now[spec.field] ?? '') !== (then[spec.field] ?? ''))
+        .map((spec) => ({
+            label: labelOf(t, spec),
+            from: now[spec.field] ?? '',
+            to: then[spec.field] ?? '',
+        }));
 }
 
 /** A write from the form's values, typed as the server expects each field. */
@@ -247,7 +285,7 @@ export function FieldInput({
 }): ReactNode {
     const { t } = useTranslation();
     const choices = useChoices(spec.kind, spec.flag);
-    const label = t(`refdata.fields.${spec.field}`);
+    const label = labelOf(t, spec);
     if (spec.kind.kind === 'image') {
         return <ImageField label={label} imageId={value} disabled={disabled} onChange={onChange} />;
     }
@@ -479,6 +517,7 @@ export function RecordDialog({
         onSuccess: async (write) => {
             await queries.invalidateQueries({ queryKey: ['records'] });
             await queries.invalidateQueries({ queryKey: ['history'] });
+            await queries.invalidateQueries({ queryKey: ['timeline'] });
             await queries.invalidateQueries({ queryKey: ['image-map'] });
             onSaved?.(write);
             onClose();
@@ -545,7 +584,16 @@ export function RecordDialog({
                 {invalid.length > 0 && (
                     <p className="text-xs text-ink-faint">
                         {t('refdata.records.needs', {
-                            fields: invalid.map((field) => t(`refdata.fields.${field}`)).join(', '),
+                            fields: invalid
+                                .map((field) => {
+                                    const spec = specs.find(
+                                        (candidate) => candidate.field === field,
+                                    );
+                                    return spec === undefined
+                                        ? t(`refdata.fields.${field}`)
+                                        : labelOf(t, spec);
+                                })
+                                .join(', '),
                         })}
                     </p>
                 )}
@@ -571,9 +619,17 @@ export function LastChanged({ row }: { readonly row: RecordRow }): ReactNode {
         <p className="border-t border-line px-4 py-3 text-xs text-ink-muted">
             <span className="text-ink-faint">{t('refdata.records.lastChanged')}</span>{' '}
             {t('refdata.records.versionLabel', { version: String(row.version) })} ·{' '}
-            {modified === performed || performed === ''
-                ? modified
-                : t('refdata.records.modifiedFor', { modified, performed })}{' '}
+            {modified === performed || performed === '' ? (
+                <PersonRef who={modified} />
+            ) : (
+                <Phrase
+                    text={t('refdata.records.modifiedFor', {
+                        modified: slot(0),
+                        performed: slot(1),
+                    })}
+                    names={[<PersonRef who={modified} />, <PersonRef who={performed} />]}
+                />
+            )}{' '}
             · <RelativeTime at={show(row['recorded_at'])} /> ·{' '}
             <span className="font-mono">{show(row['change_reason_code'])}</span>
             {commentary !== '' && <> · “{commentary}”</>}
@@ -586,20 +642,43 @@ export function RecordDetails({
     specs,
     row,
     extra,
+    heading,
 }: {
     readonly specs: readonly FieldSpec[];
     readonly row: RecordRow;
     readonly extra?: readonly (readonly [string, ReactNode])[];
+    /**
+     * Makes the details a card of an entity page: a title with the version of
+     * the record beside it, and the Edit button of the card on the right. A
+     * card the person may not change shows the access mark instead.
+     */
+    readonly heading?: {
+        readonly title: string;
+        readonly onEdit: (() => void) | undefined;
+    };
 }): ReactNode {
     const { t } = useTranslation();
     return (
         <section className="rounded-md border border-line bg-surface-raised">
+            {heading !== undefined && (
+                <header className="flex items-center justify-between gap-3 border-b border-line px-4 py-2">
+                    <div className="flex items-baseline gap-2">
+                        <h3 className="text-sm font-medium">{heading.title}</h3>
+                        <span className="text-xs text-ink-faint">v{row.version}</span>
+                    </div>
+                    {heading.onEdit !== undefined ? (
+                        <Button icon="edit" onClick={heading.onEdit}>
+                            {t('refdata.records.edit')}
+                        </Button>
+                    ) : (
+                        <AccessMark canWrite={false} />
+                    )}
+                </header>
+            )}
             <dl className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
                 {specs.map((spec) => (
                     <div key={spec.field}>
-                        <dt className="text-xs text-ink-faint">
-                            {t(`refdata.fields.${spec.field}`)}
-                        </dt>
+                        <dt className="text-xs text-ink-faint">{labelOf(t, spec)}</dt>
                         <dd className="mt-0.5 text-sm">
                             <DetailValue spec={spec} value={row[spec.field]} />
                         </dd>
@@ -632,6 +711,9 @@ function DetailValue({
     if (spec.kind.kind === 'bool') {
         return <>{text === 'true' ? t('refdata.records.yes') : t('refdata.records.no')}</>;
     }
+    if (spec.kind.kind === 'record' && spec.flag === undefined) {
+        return <RecordValue kind={spec.kind} code={text} pathOf={spec.pathOf} />;
+    }
     if (spec.kind.kind === 'classification') {
         return <ClassifiedValue list={spec.kind.list} code={text} />;
     }
@@ -650,6 +732,35 @@ function DetailValue({
         return <>{t(`refdata.choices.${spec.field}.${text}`)}</>;
     }
     return <>{text}</>;
+}
+
+/**
+ * A value that names another record, drawn as that record's name, and as a link
+ * to its page when the field says where it opens. A name that cannot be found
+ * stays as the value, so a gap shows.
+ */
+function RecordValue({
+    kind,
+    code,
+    pathOf,
+}: {
+    readonly kind: Extract<FieldKind, { kind: 'record' }>;
+    readonly code: string;
+    readonly pathOf: ((value: string) => string) | undefined;
+}): ReactNode {
+    const records = useRecords(kind.resource);
+    const found = records.data?.find((candidate) => show(candidate[kind.value]) === code);
+    const name = found === undefined ? code : show(found[kind.label]);
+    return pathOf === undefined ? (
+        <>{name}</>
+    ) : (
+        <Link
+            to={pathOf(code)}
+            className="underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+        >
+            {name}
+        </Link>
+    );
 }
 
 /** A code of a classification list, drawn as its label when the list has labels. */
@@ -908,10 +1019,12 @@ export function RevertDialog({
     readonly onClose: () => void;
 }): ReactNode {
     const queries = useQueryClient();
+    const { t } = useTranslation();
     return (
         <RevertVersionDialog
             current={row.version}
             version={version}
+            changes={revertChanges(t, specs, row, version)}
             onClose={onClose}
             write={async (intent) => {
                 await api.saveRecord(resource, {
@@ -937,11 +1050,13 @@ export function RevertDialog({
 export function RevertVersionDialog({
     current,
     version,
+    changes,
     write,
     onClose,
 }: {
     readonly current: number;
     readonly version: HistoryVersion;
+    readonly changes: readonly RevertChange[];
     readonly write: (intent: WriteIntent) => Promise<void>;
     readonly onClose: () => void;
 }): ReactNode {
@@ -958,6 +1073,7 @@ export function RevertVersionDialog({
             }),
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['history'] });
+            await queries.invalidateQueries({ queryKey: ['timeline'] });
             onClose();
         },
     });
@@ -989,6 +1105,7 @@ export function RevertVersionDialog({
                         to: String(version.version),
                     })}
                 </p>
+                <RevertChanges changes={changes} />
                 <Field label={t('refdata.classifications.reason')}>
                     <Select
                         value={reason.code}
@@ -1004,6 +1121,34 @@ export function RevertVersionDialog({
                 {revert.isError && <Notice tone="error">{revert.error.message}</Notice>}
             </div>
         </Dialog>
+    );
+}
+
+/** The fields a revert would change, each from what it holds now to what it would hold. */
+function RevertChanges({ changes }: { readonly changes: readonly RevertChange[] }): ReactNode {
+    const { t } = useTranslation();
+    if (changes.length === 0) {
+        return <p className="text-sm text-muted">{t('refdata.records.revertNoChanges')}</p>;
+    }
+    return (
+        <div className="space-y-1">
+            <p className="text-sm font-medium">
+                {t('refdata.records.revertChanges', { count: String(changes.length) })}
+            </p>
+            <ul className="space-y-1 text-sm">
+                {changes.map((change) => (
+                    <li key={change.label}>
+                        <span className="font-medium">{change.label}</span>
+                        {': '}
+                        <del>
+                            {change.from === '' ? t('refdata.records.revertEmpty') : change.from}
+                        </del>
+                        {' → '}
+                        <ins>{change.to === '' ? t('refdata.records.revertEmpty') : change.to}</ins>
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
 }
 
@@ -1235,6 +1380,7 @@ export function PartsPanel({
     initial,
     lead,
     titles,
+    historyKey,
 }: {
     readonly resource: string;
     readonly entityType: string;
@@ -1254,6 +1400,11 @@ export function PartsPanel({
     readonly lead?: string;
     /** How the dialogs name one part: adding it, opening it, and deleting it. */
     readonly titles: { readonly add: string; readonly one: string; readonly remove: string };
+    /**
+     * The key the server reads a part's versions by, when it is not the part's
+     * identifier. A party's versions are kept under its short code, for one.
+     */
+    readonly historyKey?: (row: RecordRow) => string;
 }): ReactNode {
     const { t } = useTranslation();
     const may = useRecordPermissions(resource);
@@ -1384,7 +1535,7 @@ export function PartsPanel({
                 <Dialog title={titles.one} onClose={() => setOpen(null)} wide>
                     <HistoryPanel
                         entityType={entityType}
-                        entityId={open.id}
+                        entityId={historyKey === undefined ? open.id : historyKey(open.row)}
                         {...(may.write
                             ? {
                                   onRevert: (version: HistoryVersion) => {

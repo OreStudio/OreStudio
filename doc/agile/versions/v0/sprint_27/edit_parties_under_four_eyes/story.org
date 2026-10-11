@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 8493EF5E-F6D7-4CE4-B8AC-3C871FEF3059
+:END:
+#+title: Story: Edit a party on a standard entity page
+#+description: Replace the party wizards with a standard entity page for a party: a list, a page with cards and tabs, and dialogs, built from the shared record parts. A save writes directly for now. The four-eyes approval of party changes belongs to the story Build the four-eyes framework.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:refdata:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A party is edited on one standard entity page, in dialogs on its cards, like a currency. The wizards are gone, and the page is ready for the four-eyes approval that another story adds.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- The Parties list adds a party in a dialog, and a row opens the party page.
+- The party page has tabs for the details, the identifiers, the contacts, the memberships, the structure and the history, and each card is changed in a dialog.
+- The three party wizards, their routes and their cards are removed.
+- The page follows the entity screen specification and shares its parts with the other record screens.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4E67658D-2523-4DC8-8C72-309F9721E5A7][Scaffold story: Edit a party on a standard entity page]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:775FD373-90C1-469E-8FCA-0A5210858813][Edit a party on a standard entity page]] | BACKLOG | | | Build the party list, page and dialogs from the shared record parts, and remove the party wizards. |
+| [[id:29FD1A91-A43D-4909-9E84-4A3513E9606B][Label the party picture as a logo]] | BACKLOG | | | The Details card calls the party's picture Flag, which is the currency's word. A party's picture is its logo. |
+| [[id:D5732874-20A0-45C8-BDC2-8F191419121D][Show a party's history]] | BACKLOG | | | The History tab of a party is empty. The server keys a party's versions by its short code, and the page asked with the identifier. The identifiers, contacts and business units may be keyed in their own way too. |
+| [[id:0088AB86-1C0C-43E0-8244-6D806E7F4D47][Fix the Memberships tab and the missing strings]] | BACKLOG | | | The Memberships tab shows the heading Countries it operates in twice, and the Contacts tab shows the raw key refdata.parties.address for its Address column. Find why and fix both, and check every string the party page uses exists in English, French and Portuguese. |
+| [[id:8EFFAF78-1875-439B-A082-AEEC63284D4F][Split the Structure tab into Business centres and Counterparties]] | BACKLOG | | | The Structure tab holds the business units and the counterparties a party can see. Rename it to Business centres, and give the counterparties the party may trade with a tab of their own. |
+| [[id:BFC1673E-AF64-4743-9354-4132918528A8][Give party codenames a numeric suffix]] | BACKLOG | | | A party codename ends in letters, such as purple_dream_d, because the table forbids digits and the generator encodes its sequence in base 26. A codename should end in a number, such as purple_dream_4. |
+| [[id:131891BA-81DB-4C4A-B9EF-433804C16F2A][Give the Acme parties offices, countries and currencies]] | BACKLOG | | | The four Acme parties have no contact information, no countries and no currencies in the sample data, so the Contacts and Memberships tabs are empty. Add an office for each contact type to every party, and the countries and currencies each one operates in, to the Acme dataset and to the way it is published. |
+| [[id:C0BFF354-6F4C-48E3-897E-12C5ED500B8D][Give the Acme parties counterparties to trade with]] | BACKLOG | | | The Acme dataset links no counterparty to any party, so the Counterparties tab is empty. Add a set of counterparties and link each party to the ones it may trade with. |
+| [[id:763FF721-1EEB-4E37-BFD5-19FC1BFA528C][Page the lookups of the party link panels]] | BACKLOG | | | The Memberships and Counterparties tabs read every country, currency and counterparty to name the few a party links, and a tenant holds about 13000 counterparties. The panels should look up the few rows they draw and search the rest on the server, as the entity specification says. |
+
+* Decisions
+
+* Out of scope
+
+- The four-eyes gating of party changes, the request screens for them, and the apply. The story Build the four-eyes framework does them.
+- Counterparties. They follow the same pattern after parties are signed off.

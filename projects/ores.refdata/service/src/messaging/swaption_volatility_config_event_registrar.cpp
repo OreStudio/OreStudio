@@ -49,15 +49,18 @@ register_swaption_volatility_config_event_mapping(ev::service::postgres_event_so
         .register_entity_event_mapping<refdata::messaging::swaption_volatility_config_event>(
             "ores_refdata_swaption_volatility_configs");
 
-    return event_bus.subscribe<refdata::messaging::swaption_volatility_config_event>(
-        [&nats](const refdata::messaging::swaption_volatility_config_event& e) {
+    return event_bus.subscribe<
+        ev::domain::published_entity_event<refdata::messaging::swaption_volatility_config_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                refdata::messaging::swaption_volatility_config_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
                 ev::domain::event_subject<refdata::messaging::swaption_volatility_config_event>(
-                    e.action),
-                e);
+                    published.event.action),
+                published);
         });
 }
 

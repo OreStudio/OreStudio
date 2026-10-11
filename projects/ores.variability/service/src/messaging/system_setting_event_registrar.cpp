@@ -48,14 +48,19 @@ register_system_setting_event_mapping(ev::service::postgres_event_source& event_
     event_source.register_entity_event_mapping<variability::messaging::system_setting_event>(
         "ores_variability_system_settings");
 
-    return event_bus.subscribe<variability::messaging::system_setting_event>(
-        [&nats](const variability::messaging::system_setting_event& e) {
+    return event_bus.subscribe<
+        ev::domain::published_entity_event<variability::messaging::system_setting_event>>(
+        [&nats](
+            const ev::domain::published_entity_event<variability::messaging::system_setting_event>&
+                published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
                 nats,
-                ev::domain::event_subject<variability::messaging::system_setting_event>(e.action),
-                e);
+                ev::domain::event_subject<variability::messaging::system_setting_event>(
+                    published.event.action),
+                published);
         });
 }
 

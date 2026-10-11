@@ -24,6 +24,7 @@ import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { useAreaRoot } from '../shell/AreaTrail.js';
 import { Input, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { Crumbs, TOPICS, classificationsPath } from './shared.js';
 
@@ -35,6 +36,7 @@ import { Crumbs, TOPICS, classificationsPath } from './shared.js';
  */
 export function ClassificationsPage(): ReactNode {
     const { t } = useTranslation();
+    const root = useAreaRoot('refdata');
     const [search, setSearch] = useState('');
     const lists = useQuery({ queryKey: ['classifications'], queryFn: api.classificationLists });
 
@@ -61,12 +63,7 @@ export function ClassificationsPage(): ReactNode {
     return (
         <div className="space-y-6">
             <div>
-                <Crumbs
-                    parts={[
-                        { label: t('refdata.area.title'), to: '/refdata' },
-                        { label: t('refdata.classifications.title') },
-                    ]}
-                />
+                <Crumbs parts={[...root, { label: t('refdata.classifications.title') }]} />
                 <PageHeader
                     title={t('refdata.classifications.title')}
                     description={t('refdata.classifications.lead')}

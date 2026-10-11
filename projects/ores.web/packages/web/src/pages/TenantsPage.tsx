@@ -115,6 +115,7 @@ export function TenantsPage(): ReactNode {
             { kind: 'toggle', id: 'test', label: t('tenants.showTest') },
         ],
         mayAdd: true,
+        watches: [{ component: 'iam', entity: 'tenants' }],
     };
 
     return (

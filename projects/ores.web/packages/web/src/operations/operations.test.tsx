@@ -414,7 +414,7 @@ describe('the operations area', () => {
         for (const href of ['services', 'grid', 'bus', 'logs']) {
             expect(html).not.toContain(`href="/operations/${href}"`);
         }
-        expect(html).not.toContain('href="/audit"');
+        expect(html).not.toContain('href="/operations/sign-ins"');
     });
 
     it('draws Sign-ins for a person who may read sessions, in any mode', () => {
@@ -428,7 +428,7 @@ describe('the operations area', () => {
             ['iam::sessions:read'],
         );
 
-        expect(html).toContain('href="/audit"');
+        expect(html).toContain('href="/operations/sign-ins"');
     });
 
     it('is drawn in the menu of every mode', () => {
@@ -444,7 +444,7 @@ describe('the versions screen', () => {
             <VersionsPage session={sessionWith()} serverVersion={SESSION_VERSION} />,
         );
 
-        expect(html).toContain('Operations: versions and the database');
+        expect(html).toContain('Versions and the database');
         expect(fieldValue(section(html, 'Client'), 'Version')).toBe(__BUILD_RELEASE__);
         expect(fieldValue(section(html, 'Server'), 'Version')).toBe(SESSION_VERSION);
         expect(fieldValue(section(html, 'Database'), 'Fingerprint')).toBe('1109eccab21e8fe8');
@@ -503,7 +503,7 @@ describe('the versions screen', () => {
             <VersionsPage session={sessionWith()} serverVersion={SESSION_VERSION} />,
         );
 
-        expect(html).toContain('href="/audit"');
+        expect(html).toContain('href="/operations/sign-ins"');
         expect(html).toContain('See the running services');
         expect(html).toContain('Read the telemetry logs');
         expect(html).toContain('Watch the compute grid');
@@ -526,19 +526,19 @@ describe('the route to the versions screen', () => {
         ] as const) {
             const html = renderRoute('/operations/versions', sessionWith({ mode }));
 
-            expect({ mode, has: html.includes('Operations: versions and the database') }).toEqual({
+            expect({ mode, has: html.includes('Versions and the database') }).toEqual({
                 mode,
                 has: true,
             });
         }
     });
 
-    it('is offered from home in the modes with no operations menu entry', () => {
+    it('is reached from home through the Operations folder card, in every mode', () => {
         const tenant = renderRoute('/?tab=active', sessionWith({ mode: 'tenant-administration' }));
         const party = renderRoute('/', sessionWith({ mode: 'application' }));
 
-        expect(tenant).toContain('href="/operations/versions"');
-        expect(party).toContain('href="/operations/versions"');
+        expect(tenant).toContain('href="/operations"');
+        expect(party).toContain('href="/operations"');
     });
 
     it('is offered to system administration through the operations hub', () => {
@@ -694,7 +694,7 @@ describe('the services screen', () => {
         const html = withProviders(<ServicesPage />, '/', [rosterRow()]);
 
         expect(html).toContain('href="/operations/versions"');
-        expect(html).toContain('href="/audit"');
+        expect(html).toContain('href="/operations/sign-ins"');
         expect(html).toContain('href="/operations/grid"');
         expect(html).toContain('href="/operations/bus"');
         expect(html).toContain('href="/operations/logs"');
@@ -751,7 +751,7 @@ describe('the route to the services screen', () => {
     it('opens it, and renders through the shell', () => {
         const html = renderRoute('/operations/services', sessionWith(), [rosterRow()]);
 
-        expect(html).toContain('Operations: services');
+        expect(html).toContain('Running services');
         expect(html).toContain('ORE Studio');
         expect(html).toContain('Your account');
         expect(html).toContain(`Client: ${__BUILD_VERSION__}`);
@@ -799,7 +799,7 @@ describe('the compute grid screen', () => {
     it('states the counters with the sample time beside them', () => {
         const html = withProviders(<GridPage />);
 
-        expect(html).toContain('Operations: compute grid');
+        expect(html).toContain('Compute grid');
         // The counters mirror one stored sample, so the sample time sits beside
         // them, labelled UTC.
         expect(html).toContain('sampled 14:31:02 UTC');
@@ -996,7 +996,7 @@ describe('the route to the compute grid', () => {
     it('opens it, and renders through the shell', () => {
         const html = renderRoute('/operations/grid', sessionWith());
 
-        expect(html).toContain('Operations: compute grid');
+        expect(html).toContain('Compute grid');
         expect(html).toContain('ORE Studio');
         expect(html).toContain('Your account');
         expect(html).toContain(`Client: ${__BUILD_VERSION__}`);
@@ -1014,7 +1014,7 @@ describe('the message bus screen', () => {
     it('states the newest sample as the vitals, with its time beside them', () => {
         const html = withProviders(<BusPage />);
 
-        expect(html).toContain('Operations: message bus');
+        expect(html).toContain('Message bus');
         // The reading is dated, in UTC, because a reading without its age
         // cannot be trusted.
         expect(html).toContain('newest sample 14:31:45 UTC');
@@ -1136,7 +1136,7 @@ describe('the route to the message bus', () => {
     it('opens it, and renders through the shell', () => {
         const html = renderRoute('/operations/bus', sessionWith());
 
-        expect(html).toContain('Operations: message bus');
+        expect(html).toContain('Message bus');
         expect(html).toContain('ORE Studio');
         expect(html).toContain('Your account');
         expect(html).toContain(`Client: ${__BUILD_VERSION__}`);
@@ -1154,7 +1154,7 @@ describe('the telemetry logs screen', () => {
     it('states the filter bar in the prototype’s order', () => {
         const html = withProviders(<LogsPage />);
 
-        expect(html).toContain('Operations: telemetry logs');
+        expect(html).toContain('Telemetry logs');
         expect(html.indexOf('Range')).toBeLessThan(html.indexOf('Level'));
         expect(html.indexOf('Level')).toBeLessThan(html.indexOf('Source'));
         expect(html.indexOf('Source')).toBeLessThan(html.indexOf('Component'));
@@ -1254,7 +1254,7 @@ describe('the telemetry logs screen', () => {
         expect(html).toContain('href="/operations/services"');
         expect(html).toContain('href="/operations/grid"');
         expect(html).toContain('href="/operations/bus"');
-        expect(html).toContain('href="/audit"');
+        expect(html).toContain('href="/operations/sign-ins"');
         expect(html).toContain('href="/operations/versions"');
         expect(html.match(/Not built yet/g) ?? []).toHaveLength(0);
     });
@@ -1289,7 +1289,7 @@ describe('the route to the telemetry logs', () => {
     it('opens it, and renders through the shell', () => {
         const html = renderRoute('/operations/logs', sessionWith());
 
-        expect(html).toContain('Operations: telemetry logs');
+        expect(html).toContain('Telemetry logs');
         expect(html).toContain('ORE Studio');
         expect(html).toContain('Your account');
         expect(html).toContain(`Client: ${__BUILD_VERSION__}`);

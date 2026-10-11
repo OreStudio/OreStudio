@@ -55,6 +55,13 @@ role. The same run reproduced the guard's count of
 | A role-scoped cross-tenant read                     |     3 | =using (true)= granted to the market-data service role, keyed on neither tenant nor party |
 | *Total*                                             |   532 | every policy in =projects/ores.sql/create= |
 
+The count does not include the policy on accounts that limits a read to the
+parties the caller's account works in. *That policy is a special case and
+belongs to accounts alone.* It is hand-written, it names no system tenant
+function, and it only narrows a read the own-tenant policy already bounds. See
+[[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]], "The
+accounts exception".
+
 The guarded shape is the third. =check_rls_system_tenant_widenings.py=
 fails any new one, and its message is the rule: *"A service that needs a
 tenant's data acts inside that tenant, with a token for it (Token Exchange),

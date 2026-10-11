@@ -37,7 +37,7 @@ import { RecordDetails, RecordHeader } from '../refdata/records.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { Notice, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
-import { partyColumns } from './PartiesPage.js';
+import { partyColumns } from './partyColumns.js';
 import { displayName } from '../access/names.js';
 import { RemoveTenantDialog } from './RemoveTenantDialog.js';
 import { PaintedValue, SetupCell } from './TenantParts.js';
@@ -201,6 +201,7 @@ function TenantParties({ code }: { readonly code: string }): ReactNode {
             'business_center_code',
         ],
         mayAdd: false,
+        watches: [{ component: 'refdata', entity: 'parties' }],
     };
     return (
         <RecordTable
@@ -225,6 +226,7 @@ function TenantPeople({ code }: { readonly code: string }): ReactNode {
         search: false,
         sortable: [],
         mayAdd: false,
+        watches: [{ component: 'iam', entity: 'accounts' }],
     };
     return (
         <RecordTable

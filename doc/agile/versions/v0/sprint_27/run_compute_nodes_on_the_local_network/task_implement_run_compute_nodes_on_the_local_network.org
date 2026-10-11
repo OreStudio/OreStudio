@@ -26,11 +26,11 @@ Three machines on the local network, goedel (192.168.1.199), newton (192.168.1.2
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0FFD3EF1-9AF8-43BA-899C-C5018F10272E][Run compute nodes on the local network hosts]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -87,3 +87,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Goedel, the laptop and newton run compute wrappers that joined the serving
+environment's grid, 21 wrappers on top of the 5 on the serving machine. The
+deploy runs one wrapper per core but one on each host, skips a host that is
+down, starts the wrappers as Quadlet systemd services, and downloads each
+engine package once per host. The grid screen shows every node, grouped by
+machine, with the standard pager. The story page holds the host survey, the
+per-host results, the decisions and the open items.
+
+Proven on goedel: a killed wrapper restarts within 20 seconds, the wrappers come
+back after a reboot, and a deploy with an empty package cache unpacks the
+package whole and runs jobs. Not proven: the reboot on newton and the laptop,
+and a final job total for the later batches. The review of PR 3120 found one
+race in the package cache, which is fixed.

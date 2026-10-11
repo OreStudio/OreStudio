@@ -41,7 +41,7 @@ Three machines on the local network, goedel (192.168.1.199), newton (192.168.1.2
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:FD10984F-F6F6-44F7-9864-8BFFE58000B4][Scaffold story: Run compute nodes on the local network hosts]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:720AE70D-4CC9-4573-987F-9B7F9F8243A1][Survey the hosts and the existing deploy tooling]] | STARTED | 2026-10-11 | | Initial task for: Run compute nodes on the local network hosts |
+| [[id:720AE70D-4CC9-4573-987F-9B7F9F8243A1][Survey the hosts and the existing deploy tooling]] | DONE | 2026-10-11 | 2026-10-11 | Initial task for: Run compute nodes on the local network hosts |
 
 * Results, 2026-10-11
 

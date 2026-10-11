@@ -82,7 +82,7 @@ ORE reference results. The ACME data does not copy ORE's terms.
 | [[id:816DAA26-71D0-4AE3-AF13-FC52C3446B06][Retarget the ORE samples bundle to the import needs]] | DONE | 2026-10-10 | 2026-10-10 | Keep ore_samples, label every item as sample data, shrink it to the reference data the sample import needs, install it on every party, and land imports in a sandbox portfolio and book tree. |
 | [[id:6F2B9202-0F43-48E2-B115-86D321B01228][Describe the story and its tasks]] | DONE | 2026-10-10 | 2026-10-10 | Write the story that splits the ACME data from the ORE samples, with its decisions, its open questions and its three tasks, from a read of the netting and portfolio datasets, the acme_demo profile and the party keys. |
 | [[id:CF12FE09-6733-4B9A-9911-3B2052D03B5F][Place the ORE import in the sample sandbox]] | DONE | 2026-10-10 | 2026-10-11 | Make the ORE import create its portfolios and virtual books inside the party's sample sandbox instead of the official portfolio tree. |
-| [[id:95AAA0FE-4748-4830-B18E-8DCFEDE2EFE8][Default the import wizard and web to the sample sandbox]] | BACKLOG | | | Make the Qt import wizard and the web import choose the party's sample sandbox, so an import without a choice no longer enters the official tree. |
+| [[id:95AAA0FE-4748-4830-B18E-8DCFEDE2EFE8][Default the import wizard and web to the sample sandbox]] | DONE | 2026-10-11 | 2026-10-11 | Make the Qt import wizard and the web import choose the party's sample sandbox, so an import without a choice no longer enters the official tree. |
 
 * Decisions
 

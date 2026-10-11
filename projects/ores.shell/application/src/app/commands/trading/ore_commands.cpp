@@ -101,6 +101,7 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                              {{.name = "party-id", .requires_value = true},
                               {.name = "choices-file", .requires_value = true},
                               {.name = "parent-portfolio-name", .requires_value = true},
+                              {.name = "official"},
                               {.name = "timeout",
                                .requires_value = true,
                                .default_value = std::to_string(default_import_timeout.count())}});
@@ -112,7 +113,7 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                              fail(out)
                                  << "Usage: ore import <request_id> [--party-id <uuid>] "
                                     "[--parent-portfolio-name <name>] [--choices-file <path>] "
-                                    "[--timeout <seconds>]"
+                                    "[--official] [--timeout <seconds>]"
                                  << std::endl;
                              return;
                          }
@@ -130,11 +131,12 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                                         parsed->flag("party-id"),
                                         parsed->flag("choices-file"),
                                         parsed->flag("parent-portfolio-name"),
+                                        parsed->flag_set("official"),
                                         *timeout);
                      },
                      "Import an uploaded ORE tarball and wait for the workflow to finish",
                      {"request_id [--party-id <uuid>] [--parent-portfolio-name <name>] "
-                      "[--choices-file <path>] [--timeout <seconds>]"});
+                      "[--choices-file <path>] [--official] [--timeout <seconds>]"});
 
     ore_menu->Insert(
         "export",
@@ -257,6 +259,7 @@ void ore_commands::process_import(std::ostream& out,
                                   const std::string& party_id,
                                   const std::string& choices_file,
                                   const std::string& parent_portfolio_name,
+                                  bool official,
                                   std::chrono::seconds timeout) {
     ores::ore::planner::import_choices choices;
 
@@ -282,6 +285,9 @@ void ore_commands::process_import(std::ostream& out,
         choices.parent_portfolio_name = parent_portfolio_name;
         choices.create_parent_portfolio = true;
     }
+
+    if (official)
+        choices.official = true;
 
     const auto& party_ref = party_id.empty() ? session.auth().default_party_id : party_id;
     if (party_ref.empty()) {

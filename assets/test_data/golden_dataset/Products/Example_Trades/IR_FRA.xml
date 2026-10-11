@@ -15,7 +15,7 @@
       <Currency>EUR</Currency>
       <Index>EUR-EURIBOR-6M</Index>
       <LongShort>Long</LongShort>
-      <Strike>0.00499999989</Strike>
+      <Strike>0.005</Strike>
       <Notional>100000000</Notional>
     </ForwardRateAgreementData>
   </Trade>

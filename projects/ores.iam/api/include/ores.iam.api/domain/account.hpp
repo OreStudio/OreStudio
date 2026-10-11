@@ -187,6 +187,19 @@ struct account final {
     std::optional<boost::uuids::uuid> reports_to_account_id;
 
     /**
+     * @brief Whether every tenant may read this account. A shared account is owned by the system
+     * tenant: the service accounts, which write under their own name into the history of every
+     * tenant, and the super administrator. A history names its author for every reader only if the
+     * reader can read that author's account.
+     *
+     * The flag is the whole rule. The row-level policy admits a system tenant row to another tenant
+     * only when this column is true, so a later human account in the system tenant stays hidden
+     * until the flag is set. A tenant never writes a shared row, and the seed is the only writer of
+     * the flag.
+     */
+    bool shared = false;
+
+    /**
      * @brief Username of the person who last modified this account.
      */
     std::string modified_by;

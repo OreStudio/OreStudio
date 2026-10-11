@@ -152,11 +152,14 @@ describe('the Development menu entry', () => {
 });
 
 describe('the Tests tab', () => {
-    it('names the area and offers one tab for now, with none for the next story', () => {
+    it('names the area and offers the Tests, Board, Backlog and Charts tabs', () => {
         const html = screen({ scenarios: [] });
         expect(html).toContain('role="tablist"');
         expect(html).toContain('>Tests</button>');
-        for (const other of ['Done', 'Abandoned', 'Board', 'Stories', 'Tasks']) {
+        expect(html).toContain('>Board</button>');
+        expect(html).toContain('>Backlog</button>');
+        expect(html).toContain('>Charts</button>');
+        for (const other of ['Done', 'Abandoned', 'Stories', 'Tasks']) {
             expect(html).not.toContain(`>${other}</button>`);
         }
         expect(html).toContain('Development');

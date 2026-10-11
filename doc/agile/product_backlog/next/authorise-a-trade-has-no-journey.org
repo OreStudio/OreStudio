@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: B2C87018-BA73-4578-B6D0-601B91E1AC40
+:END:
+#+title: A trader or an operations user needs a journey to authorise …
+#+description: A trader or an operations user needs a journey to authorise a live trade. Operations releases a new or amended live trade, and can withdraw the release with a reason. The state machine and the trade versioning note define it as operational authorisation, which moves neither version. The trade journeys written in sprint 27 cover booking, amending, reviewing, importing, exporting, lifecycle events and structures, and none covers authorisation or the authorisation queue. The trade page prototype draws an Authorise button so that the state machine reads whole. Write the journey, and decide with the four-eyes framework story how the queue and the escalation of some reasons to a head of desk are drawn.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

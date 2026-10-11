@@ -28,11 +28,14 @@ import {
     agileDocResponseSchema,
     backlogSchema,
     boardResponseSchema,
+    workTreesResponseSchema,
+    chartsResponseSchema,
     sprintListSchema,
 } from '@ores/contracts';
 import type { OresClient } from '@ores/wire-protocol';
 import type { Config } from './config.js';
 import { buildServer, sessionCookieName } from './server.js';
+import type { WorkTreeSource } from './agile/work-trees.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
 
@@ -59,7 +62,7 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
     });
 }
 
-function buildTestServer(options: { docRoot?: string }) {
+function buildTestServer(options: { docRoot?: string; workTrees?: WorkTreeSource }) {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const client = {
         async callAuthenticated(): Promise<unknown> {
@@ -89,6 +92,7 @@ function buildTestServer(options: { docRoot?: string }) {
         site: siteConfiguration(),
         sessions,
         createClient: () => ({ client, connect: async () => undefined }),
+        ...(options.workTrees === undefined ? {} : { workTrees: options.workTrees }),
     });
     return { server, sessionId: session.id };
 }
@@ -110,6 +114,7 @@ const TASK = 'A1000000-0000-4000-8000-000000000002';
 const SPRINT = 'A1000000-0000-4000-8000-000000000003';
 const CAPTURE = 'A1000000-0000-4000-8000-000000000004';
 const SCENARIO = 'A1000000-0000-4000-8000-000000000005';
+const RECIPE = 'A1000000-0000-4000-8000-000000000006';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -162,6 +167,7 @@ function tree(): string {
     );
     write(root, 'agile/product_backlog/inbox/note.org', doc(CAPTURE, 'capture', 'A note'));
     write(root, 'agile/sprint_1_scenario.org', doc(SCENARIO, 'test_scenario', 'A scenario'));
+    write(root, 'agile/a_recipe.org', doc(RECIPE, 'recipe', 'A recipe'));
     return root;
 }
 
@@ -171,6 +177,8 @@ describe('the agile routes', () => {
         for (const url of [
             '/api/agile/sprints',
             '/api/agile/board',
+            '/api/agile/charts',
+            '/api/agile/trees',
             '/api/agile/backlog',
             `/api/agile/docs/${STORY}`,
         ]) {
@@ -221,6 +229,44 @@ describe('the agile routes', () => {
         expect(missing.statusCode).toBe(404);
     });
 
+    it('serve the charts of the newest sprint, and refuse a bad sprint name', async () => {
+        const { server, sessionId } = buildTestServer({ docRoot: tree() });
+        const response = await send(server, sessionId, '/api/agile/charts');
+        expect(response.statusCode).toBe(200);
+        const { charts } = chartsResponseSchema.parse(response.json());
+        expect(charts.velocity.map((point) => point.sprint)).toEqual(['sprint_1']);
+        expect(
+            (await send(server, sessionId, '/api/agile/charts?sprint=..%2Fetc')).statusCode,
+        ).toBe(400);
+        expect(
+            (await send(server, sessionId, '/api/agile/charts?sprint=sprint_9')).statusCode,
+        ).toBe(404);
+        const twice = await send(
+            server,
+            sessionId,
+            '/api/agile/charts?sprint=sprint_1&sprint=sprint_2',
+        );
+        expect(twice.statusCode).toBe(400);
+    });
+
+    it('serve the work trees from the source, and none without one', async () => {
+        const row = {
+            label: 'eager_maxwell',
+            branch: 'feature/x',
+            isSession: true,
+            current: null,
+        };
+        const { server, sessionId } = buildTestServer({
+            docRoot: tree(),
+            workTrees: { trees: async () => [row] },
+        });
+        const response = await send(server, sessionId, '/api/agile/trees');
+        expect(response.statusCode).toBe(200);
+        expect(workTreesResponseSchema.parse(response.json()).trees).toEqual([row]);
+        const bare = buildTestServer({});
+        expect((await send(bare.server, bare.sessionId, '/api/agile/trees')).statusCode).toBe(404);
+    });
+
     it('serve the backlog buckets', async () => {
         const { server, sessionId } = buildTestServer({ docRoot: tree() });
         const response = await send(server, sessionId, '/api/agile/backlog');
@@ -235,13 +281,14 @@ describe('the agile routes', () => {
         expect(backlog.buckets[0]?.items.map((i) => i.title)).toEqual(['A note']);
     });
 
-    it('serve a sprint, a story, a task and a capture by id', async () => {
+    it('serve a sprint, a story, a task, a capture and a scenario by id', async () => {
         const { server, sessionId } = buildTestServer({ docRoot: tree() });
         for (const [id, type] of [
             [SPRINT, 'sprint'],
             [STORY, 'story'],
             [TASK, 'task'],
             [CAPTURE, 'capture'],
+            [SCENARIO, 'test_scenario'],
         ] as const) {
             const response = await send(server, sessionId, `/api/agile/docs/${id}`);
             expect(response.statusCode).toBe(200);
@@ -251,7 +298,7 @@ describe('the agile routes', () => {
 
     it('do not serve a doc of another type, or an id that is a path', async () => {
         const { server, sessionId } = buildTestServer({ docRoot: tree() });
-        expect((await send(server, sessionId, `/api/agile/docs/${SCENARIO}`)).statusCode).toBe(404);
+        expect((await send(server, sessionId, `/api/agile/docs/${RECIPE}`)).statusCode).toBe(404);
         const path = await send(server, sessionId, '/api/agile/docs/..%2F..%2Fetc%2Fpasswd');
         expect([400, 404]).toContain(path.statusCode);
     });

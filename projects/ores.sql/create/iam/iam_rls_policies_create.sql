@@ -30,14 +30,46 @@
 -- -----------------------------------------------------------------------------
 alter table ores_iam_accounts_tbl enable row level security;
 
+-- Shared accounts. The service accounts and the super administrator belong to
+-- the system tenant, and the history of every tenant names them as the author
+-- of an entry. A system tenant row with shared set is therefore readable by
+-- every tenant, and nothing else of the system tenant is. This is the
+-- shared-reference shape: reads see the shared rows, and every write is
+-- confined to the tenant's own rows. It is one policy per command, because a
+-- single `for all` policy uses one USING clause for select, update and delete,
+-- and a tenant could then change or remove a shared row.
 drop policy if exists accounts_tenant_isolation_policy
     on ores_iam_accounts_tbl;
+drop policy if exists accounts_select_policy
+    on ores_iam_accounts_tbl;
+drop policy if exists accounts_insert_policy
+    on ores_iam_accounts_tbl;
+drop policy if exists accounts_update_policy
+    on ores_iam_accounts_tbl;
+drop policy if exists accounts_delete_policy
+    on ores_iam_accounts_tbl;
 
-create policy accounts_tenant_isolation_policy on ores_iam_accounts_tbl
-for all using (
+create policy accounts_select_policy on ores_iam_accounts_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or (tenant_id = ores_utility_system_tenant_id_fn() and shared)
+);
+
+create policy accounts_insert_policy on ores_iam_accounts_tbl
+for insert with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy accounts_update_policy on ores_iam_accounts_tbl
+for update using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
 with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy accounts_delete_policy on ores_iam_accounts_tbl
+for delete using (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
@@ -57,6 +89,11 @@ with check (
 -- An actor whose account has no party links gets no party set, and sees only its
 -- own account. A tenant administrator sees the tenant because its account is
 -- linked to every party of the tenant, and not because the policy names it.
+-- A shared account works in no party, so the party rule passes it and leaves
+-- the decision to the select policy above. A service actor passes too, because
+-- a service works in no party and needs the people of the tenant. Everyone in
+-- the system party of the tenant is seen by every person, as the product owner
+-- decided.
 --
 -- The function calls are wrapped in a select, so the planner runs each once per
 -- query and not once per row.
@@ -76,6 +113,39 @@ returns uuid[] as $$
       and a.valid_to = ores_utility_infinity_timestamp_fn();
 $$ language sql stable security definer set search_path = public, pg_temp;
 
+-- Whether the session's actor is a service account: a shared one of the system
+-- tenant, or one of the session's own tenant. A service acting inside a tenant works in no party, and it needs the
+-- people of the tenant to do its work: the run grant exchange reads the
+-- grantor, the role grant applier reads the account it grants to. The party rule
+-- is a rule about people, so it passes a service actor.
+--
+-- Security definer, so that reading the actor's own account does not apply the
+-- policy to itself.
+create or replace function ores_iam_actor_is_service_fn()
+returns boolean as $$
+    select exists (
+        select 1
+        from ores_iam_accounts_tbl a
+        where a.username = ores_iam_current_actor_fn()
+          and a.account_type = 'service'
+          and (a.tenant_id = ores_iam_current_tenant_id_fn()
+               or (a.tenant_id = ores_utility_system_tenant_id_fn() and a.shared))
+          and a.valid_to = ores_utility_infinity_timestamp_fn()
+    );
+$$ language sql stable security definer set search_path = public, pg_temp;
+
+-- The system party of the session's tenant. Every person sees the people who
+-- work in it. The body is plpgsql, so the refdata function is bound when the
+-- policy runs and not when this file is loaded.
+create or replace function ores_iam_system_party_id_fn()
+returns uuid as $$
+begin
+    return (select id
+            from ores_refdata_read_system_party_fn(ores_iam_current_tenant_id_fn())
+            limit 1);
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
 drop policy if exists accounts_party_visibility_policy
     on ores_iam_accounts_tbl;
 
@@ -84,6 +154,16 @@ as restrictive
 for select using (
     (select ores_iam_current_actor_fn()) is null
     or username = (select ores_iam_current_actor_fn())
+    or (tenant_id = ores_utility_system_tenant_id_fn() and shared)
+    or (select ores_iam_actor_is_service_fn())
+    or exists (
+        select 1
+        from ores_iam_account_parties_tbl sp
+        where sp.tenant_id = ores_iam_accounts_tbl.tenant_id
+          and sp.account_id = ores_iam_accounts_tbl.id
+          and sp.valid_to = ores_utility_infinity_timestamp_fn()
+          and sp.party_id = (select ores_iam_system_party_id_fn())
+    )
     or exists (
         select 1
         from ores_iam_account_parties_tbl ap
@@ -93,6 +173,35 @@ for select using (
           and ap.party_id = any((select ores_iam_actor_party_ids_fn())::uuid[])
     )
 );
+
+-- Existence of an account, for the soft foreign keys that point at one.
+--
+-- A record that names a person, such as a notice to a recipient or a portfolio
+-- right, checks that the account exists. A service writes that record, and the
+-- party rule hides every account from a service, because a service works in no
+-- party. The check needs the answer yes or no and no column, so it asks this
+-- function and not the table.
+--
+-- The function takes the account id and nothing else. It takes the tenant from
+-- the session, so a caller cannot name another tenant and the function is not
+-- an oracle across tenants. It answers true for an account of the session's
+-- tenant and for a shared account of the system tenant.
+--
+-- Security definer, with a fixed search_path. The owner is not subject to the
+-- row-level policies. Access is revoked from public and granted by name below.
+create or replace function ores_iam_account_exists_fn(p_account_id uuid)
+returns boolean as $$
+    select exists (
+        select 1
+        from ores_iam_accounts_tbl a
+        where a.id = p_account_id
+          and a.valid_to = ores_utility_infinity_timestamp_fn()
+          and (a.tenant_id = ores_iam_current_tenant_id_fn()
+               or (a.tenant_id = ores_utility_system_tenant_id_fn() and a.shared))
+    );
+$$ language sql stable security definer set search_path = public, pg_temp;
+
+revoke execute on function ores_iam_account_exists_fn(uuid) from public;
 
 -- -----------------------------------------------------------------------------
 -- Account Credentials

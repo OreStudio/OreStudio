@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 1D348CB0-B7BD-4AA8-B61A-34A17AC3BA20
+:END:
+#+title: Trade list and page prototype
+#+description: A clickable prototype of the trade list and the trade page: review, amendment, lifecycle events, and the doors to booking, ORE import and export, and structures.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:trading:ui:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+| Item          | Where |
+|---------------+-------|
+| Prototype     | [[file:trade-page/][the prototype]] |
+| Gemini review | none |
+| Group         | [[file:index.org][Trades prototypes]] |
+
+* Summary
+
+The trade list and the trade page are the entity screens of a trade. The prototype argues that they serve the journeys [[id:9E66EB4C-D456-41DB-AC46-8936B61FD80F][Review a trade]], [[id:93F08DE9-0843-40D8-8EE9-313A18AC581E][Amend a trade's economics]] and [[id:D763A432-443A-4CE1-BC00-75D4A9970EDF][Record a lifecycle event]], and that the Workflows menu is the door to [[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][Book a trade]], [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import from ORE]], [[id:65B02BD9-4633-490C-B8A3-F5680067054B][Export to ORE]] and [[id:3899F17C-232B-408C-B667-FA5C630BB71B][Group into a structure]].
+
+The prototype is throwaway. Everything on it is mock data: 38 trades, 7 of them written by hand. The trade types are the 121 of the trade type catalogue.
+
+* Detail
+
+** States
+
+#+ATTR_HTML: :class hug-leading
+| Query | What it shows |
+|-------+---------------|
+| (none) | The list, 15 rows a page. A Book a trade button, and the request line under the table, in the form of the standard entity protocol: a page, a stated order and a filter record |
+| =?state=stale= | The list or page after a change reached the browser: Refresh is gold and a row pulses |
+| =?state=loading=, =empty=, =error= | The in-place states of the list |
+| =?server=today= | The list as the server serves it today: filtered by trade id only |
+| =?trade=ACME-100201&tab=details= | The trade page. Tabs: details, instrument, identifiers, links, history |
+| =?digest=fixed= | The two digest gaps closed: exercise prices and composite legs move the external version |
+| =?state=conflict= | An Edit dialog that learns another person saved first |
+| =?as=trader=, =operations=, =reader= | Who is signed in. A control the person may not use is not drawn |
+
+** Journeys served
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Where |
+|---------+-------|
+| Review a trade and its history | The list, the page and its History tab |
+| Amend a trade's economics | Edit on the Instrument card. Choose the kind of change, edit the fields it allows, read what the change will do |
+| Record a lifecycle event | Workflows, Record a lifecycle event, as =operations=. Four steps: event, facts, effect, record |
+| Book, import, export, group | The Workflows menu of the list |
+
+** What the Edit dialog argues
+
+The save sends a standard =put= with the version the edit started from as its precondition, and the reason and the commentary as its change intent. The dialog shows it. The kind of change comes first, as [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] says. The dialog offers only the activity types the card allows. An economic amendment unlocks the economic fields, a change of reference details unlocks the rest, and a null amend locks all of them and is saved only when nothing changed. Under the fields the dialog says what the save will do: which version moves, and whether a confirmation is issued.
+
+Open the exercise prices card of ACME-100202 and change the strike. The dialog says the external version stays, because the digest does not read that table. This is the defect filed as a capture. Add =?digest=fixed= to see it closed.
+
+** What is fake
+
+- The data. The prices, the counterparties and the books are mock.
+- The server. A save waits in the browser until Refresh. State does not survive a reload, except trades booked or imported in the other prototypes.
+- The activity type codes, except the ones the model documents (new booking, draft capture, amendment, novation, termination, cancellation).
+
+** Where the code lives
+
+=doc/prototypes/trades/trade-page/=. =prototype.js= is this prototype. =common.js= and =prototype.css= are the same in all four prototypes of the group.
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]]
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] and [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the rules the dialog and the workflow follow.

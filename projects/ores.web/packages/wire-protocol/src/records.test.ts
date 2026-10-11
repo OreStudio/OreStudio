@@ -85,6 +85,9 @@ describe('the record registry', () => {
             'currency-countries',
             'currency-memberships',
             'pair-calendars',
+            'party-counterparties',
+            'party-countries',
+            'party-currencies',
         ]);
         for (const key of junctions) {
             expect(resource(key).listBy).toBeDefined();
@@ -119,6 +122,16 @@ describe('the record registry', () => {
             'currency-pairs': 'currency_pairs',
             'currency-pair-conventions': 'currency_pair_conventions',
             'pair-calendars': 'currency_pair_convention_calendars',
+            'business-unit-types': 'business_unit_types',
+            'business-units': 'business_units',
+            counterparties: 'counterparties',
+            parties: 'parties',
+            'party-contacts': 'party_contact_informations',
+            'party-counterparties': 'party_counterparties',
+            'party-countries': 'party_countries',
+            'party-currencies': 'party_currencies',
+            'party-id-schemes': 'party_id_schemes',
+            'party-identifiers': 'party_identifiers',
         });
     });
 });

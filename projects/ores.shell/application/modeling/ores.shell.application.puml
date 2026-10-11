@@ -295,13 +295,6 @@ namespace ores #F2F2F2 {
                     +process_upload(ostream& out, ores::nats::service::nats_client& session, const string& src_dir, const string& request_id) : void
                     +process_export(ostream& out, ores::nats::service::nats_client& session, const string& output_file, const string& node_id, uint32_t limit) : void
                 }
-                class rpa_instrument_commands {
-                    -lg() : auto&
-                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
-                    +process_get_rpa_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
-                    +process_delete_rpa_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
-                    +process_get_rpa_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
-                }
                 class scripted_instrument_commands {
                     -lg() : auto&
                     +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void

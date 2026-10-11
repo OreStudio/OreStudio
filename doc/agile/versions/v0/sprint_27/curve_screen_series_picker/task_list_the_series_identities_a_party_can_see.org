@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :curve_screen_series_picker:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/list-the-series-identities-a-party-can-see
+#+pr: 3126
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09ACD454-F923-46B8-9A23-96C226295CEA][Pick a curve from the series a party can see]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A caller reads which curves and surfaces its party can see, as typed identities 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:09ACD454-F923-46B8-9A23-96C226295CEA][Pick a curve from the series a party can see]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -41,9 +41,13 @@ A caller reads which curves and surfaces its party can see, as typed identities 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add one operation, =list_series_identities=, to the marketdata operations model. Its reply is a
+list of =listed_series=: the series id, the typed identity the curve reads take with the owning
+party stated, and the axes the series declares. A lister in =core/service= reads the series
+the caller's context can see, turns each URI into its typed identity through the codec, leaves
+out what a curve read cannot name, and reads every series' axes in one query. The handler checks
+=marketdata::market_series:read= and the registrar subscribes it. Tests cover the round trip to
+the resolver, party isolation under row-level security, the party filter, a fixing, and the axes.
 
 * Measurements
 
@@ -57,7 +61,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Lister suite | 7 cases, pass | =ores.marketdata.core.tests "[series_identity_lister]"= with =.env= sourced | 3a456483da plus the change |
+| The four read suites together | 28 cases, pass in 6 of 6 consecutive runs after the review fixes | the same binary with =[series_snapshot_reader],[series_evolution_reader],[series_slice_reader],[series_identity_lister]= | 3a456483da plus the change |
+| Marketdata component drift | none | =check_component_drift.py --component marketdata= | 3a456483da plus the change |
+| Party isolation, first attempt | failed: party A saw both parties' series | the isolation case read =market_series= | 3a456483da plus the change |
+| Row level security on =market_series= | tenant policy only | =grep -n -i "policy" marketdata_market_series_create.sql= | 3a456483da |
+| Row level security on the identity projection | tenant and party policies | =grep -n -i "policy" marketdata_market_series_identity_create.sql= | 3a456483da |
 
 * Notes
 
@@ -76,12 +85,43 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3126][#3126]] | [marketdata] List the series identities a party can see |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The cap is applied after the full read | lister | Accept | The header now says the cut bounds the answer and not the read. |
+| 2 | A large =IN= list is possible | lister | No change | The series and axis repositories build an =IN= list from the ids, as the resolver does. The header says so. |
+| 3 | The party filter runs after the read | lister | No change | Correct, because the projection is party-isolated. The header says so. |
+| 4 | The sort key is rebuilt on every comparison | lister | Accept | The key is built once per row. |
+| 5 | A truncated list differs between callers | lister | No change | Expected. The picker task shows =truncated= and says to narrow by party. |
+| 6 | The cut logs a warning on every call | lister | Accept | It logs at info. |
+| 7 | The header comment wraps oddly | header | Accept | Re-wrapped. |
+| 8 | A party spelled in capitals or braces matches nothing | lister | Accept | The party is parsed and compared as a UUID. A value that is no UUID is refused as a bad request. Two tests. |
+| 9 | The handler repeats =resolve= | handler | Decline | It matches the existing handlers. A shared helper is worth doing when a third method arrives. |
+| 10 | Test fixes are mixed in with the feature | tests | Decline | The new tests exposed the shared pairs, and the commit message and the PR body say so. |
+| - | The handler and registrar are untested over NATS | handler | Decline | Task 2 calls the operation through the BFF against the running stack. |
 
 * Result
+
+A caller can now list the series its party can see, as the typed identities the curve reads take.
+The operation is =marketdata.v1.ops.list_series_identities=. Each row carries the series id, the
+identity with the owning party stated, and the axes the series declares. An identity listed under a
+party names that party's series and no other's, so a picker cannot send a person to another party's
+data. The handler checks =marketdata::market_series:read=.
+
+*What the first attempt got wrong.* The lister first read =market_series= for visibility, and a
+party then saw another party's series. The series table is isolated by tenant only. The identity
+projection is the party-isolated table, which is why the resolver already behaved. The lister now
+takes visibility from the projection and the rows from the series table. The isolation test failed
+before the change and passes after it.
+
+*What the tests also caught.* The new axes test wrote a point into =NZD/PLN=, a surface another
+suite reads, and made that suite fail one run in several. The tests share one tenant and each file
+gives every test its own currency pair. The axes test now reads =SGD/THB=. The derived point test
+from the provenance task shared =NZD/CZK= with another test, and now reads =NZD/ZAR=. The four suites
+passed together in eight consecutive runs.
+
+Left for the BFF task: nothing in the browser calls this yet. The running stack still serves the old
+marketdata binary until it is restarted.

@@ -18,6 +18,8 @@
  *
  */
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
@@ -73,4 +75,16 @@ TEST_CASE("a leaf set in code is written as its float", tags) {
 
     CHECK(ores::ore::domain::save_data(document).find("<ShiftSize>0.00650000013</ShiftSize>") !=
           std::string::npos);
+}
+
+TEST_CASE("a credit money member written in a document is written back as it was", tags) {
+    ores::ore::domain::portfolio p;
+    ores::ore::domain::load_data(
+        ores::platform::filesystem::file::read_content(ores::testing::project_root::resolve(
+            "external/ore/examples/Products/Example_Trades/Credit_Index_CDS_Option.xml")),
+        p);
+    const auto text = ores::ore::domain::save_data(p);
+
+    CHECK(text.find("<Strike>1.0</Strike>") != std::string::npos);
+    CHECK(text.find("<UpfrontFee>0.0</UpfrontFee>") != std::string::npos);
 }

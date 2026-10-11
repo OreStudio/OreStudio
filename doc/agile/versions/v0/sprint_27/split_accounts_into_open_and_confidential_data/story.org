@@ -2,7 +2,7 @@
 :ID: ABA133C1-B8F3-4B13-999F-4C03400A8BCB
 :END:
 #+title: Story: Split accounts into open and confidential data
-#+description: Split the account into an open table and a confidential table, and share the open table across tenants with the standard shared-reference pattern, so a history can name a service account for every reader.
+#+description: Share the open rows of the accounts table across tenants with the standard shared-reference pattern, so a history can name a service account for every reader. The confidential data is already in its own tables.
 #+type: story
 #+level: s2
 #+filetags: :iam:security:multi_tenancy:web:sprint_27:v0:
@@ -31,7 +31,7 @@ Every tenant can read the open data of an account, such as the name, picture and
 * Acceptance
 
 - One written standard names the building blocks for data that every tenant reads. Reference data and the shared rows of the open account table use the same blocks.
-- The account is two tables. The open table holds the data a history needs to name an author. Only its shared rows, the service accounts and the super admin, are read by every tenant. The confidential table holds the rest and is never shared.
+- The accounts table is the open table, and no column moves. The confidential data stays in its own tables. The service accounts and the super admin are shared rows, read by every tenant. The people of a tenant stay tenant-owned.
 - A tenant administrator and a member see the name, picture and type of every service account in a history. The toggle that hides system activity works for them.
 - The party visibility rule no longer hides service accounts. Tenant setup completes the attach photos step. A service writes a record that names a person.
 - The authorised-reads rules, the multi-tenancy page and the UX standards describe the new pattern.
@@ -79,12 +79,12 @@ A restrictive policy only narrows. Both the tenant policy and the party policy m
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:0909D030-82D9-4BD5-AE4B-DF800D6FA36A][Scaffold story: Split accounts into open and confidential data]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:BE455602-97EE-46BD-9F3A-808E9CA22647][Design the split of accounts and the shared-read pattern]] | STARTED | 2026-10-11 | | Initial task for: Split accounts into open and confidential data |
+| [[id:BE455602-97EE-46BD-9F3A-808E9CA22647][Design the split of accounts and the shared-read pattern]] | DONE | 2026-10-11 | 2026-10-11 | Initial task for: Split accounts into open and confidential data |
 
 * Decisions
 
-- The split is by data domain, not by code path. Open data is what a reader needs to name and recognise an author. Confidential data is everything else. The columns of each table are decided in the design task.
-- The open table is a shared table. It follows the same building blocks as the shared reference tables, with no second mechanism. The confidential table is not shared and keeps the tenant policy and the party policy.
+- The split of confidential data already exists in the credential, contact information, sign-in and session tables. The accounts table is the open table, and no column moves. Decided 2026-10-11.
+- The shared rows follow the same building blocks as the shared reference tables, with no second mechanism.
 - A person sees everyone in the parties they have access to, and everyone in the system party. The super admin account stays a =user= account and every tenant may see it. The people of a tenant are not rows that every tenant may read; only system-owned rows are shared.
 - One standard covers all data read across tenants. Accounts do not get a second exception.
 - A soft foreign key checks that an account exists. It does not read the account. A security definer function that answers yes or no serves it, and the party rule does not apply.
@@ -93,5 +93,5 @@ A restrictive policy only narrows. Both the tenant policy and the party policy m
 * Out of scope
 
 - The hotfix for the step =attach_photos=. Another environment owns it.
-- A change to how the web code asks for the accounts of a tenant, apart from using the open table.
+- A change to how the web code asks for the accounts of a tenant, apart from the rows it now receives.
 - Credentials, contact information, sign-ins and sessions. They are other tables with their own codes and stay as they are.

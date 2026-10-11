@@ -15,7 +15,7 @@
       <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
       <ProtectionStart>2023-01-28</ProtectionStart>
       <UpfrontDate>2023-01-30</UpfrontDate>
-      <UpfrontFee>0</UpfrontFee>
+      <UpfrontFee>0.0</UpfrontFee>
       <LegData>
         <Payer>true</Payer>
         <LegType>Fixed</LegType>

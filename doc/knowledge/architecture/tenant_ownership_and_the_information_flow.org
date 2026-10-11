@@ -76,6 +76,10 @@ instead."*
 | =:tenant_read_scope: shared= | The read states no tenant predicate; the policy decides. | A read whose rows the policy already admits. |
 | =tenant_context::with_tenant=, or internal impersonation | Acts inside a tenant. | Reaching a tenant's data from outside it. |
 
+[[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]] states the
+building blocks of the second and third rows together, and the checklist for a new
+shared table.
+
 The last row has two forms because it serves two layers: =with_tenant= sets
 =app.current_tenant_id= for SQL, and
 [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal Actor Impersonation]]

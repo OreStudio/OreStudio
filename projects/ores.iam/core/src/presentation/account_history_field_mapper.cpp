@@ -54,6 +54,7 @@ std::vector<ores::diff::domain::field_value> render_account_fields(const domain:
                       .value = v.reports_to_account_id ?
                                    boost::uuids::to_string(*v.reports_to_account_id) :
                                    std::string{}});
+    fields.push_back({.name = "Shared", .value = v.shared ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

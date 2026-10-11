@@ -20,6 +20,7 @@
  */
 
 import type { IconName } from '../ui/Icon.js';
+import { DEPLOYMENT_READ } from '@ores/contracts';
 import { PATHS } from './paths.js';
 import type { MenuItem } from './areas.js';
 
@@ -31,7 +32,7 @@ import type { MenuItem } from './areas.js';
  * same line about it and the same glyph wherever it is offered. A screen that
  * needs a read says so here, and the read decides who sees the card.
  */
-export interface CardDef extends Pick<MenuItem, 'permission' | 'scope'> {
+export interface CardDef extends Pick<MenuItem, 'permission'> {
     readonly titleKey: string;
     readonly bodyKey: string;
     readonly to: string;
@@ -129,6 +130,31 @@ export const CARDS = {
         bodyKey: 'refdata.area.classificationsBody',
         to: '/refdata/classifications',
         icon: 'classification',
+        screenTitleKey: 'refdata.classifications.title',
+    },
+    fxFeeds: {
+        titleKey: 'marketdata.area.screens.fxFeeds',
+        bodyKey: 'marketdata.area.screens.fxFeedsBody',
+        to: '/market-data/fx-feeds',
+        icon: 'trend',
+        permission: 'synthetic::fx_spot_generation_configs:read',
+        screenTitleKey: 'marketdata.fxFeeds.title',
+    },
+    irFeeds: {
+        titleKey: 'marketdata.area.screens.irFeeds',
+        bodyKey: 'marketdata.area.screens.irFeedsBody',
+        to: '/market-data/ir-feeds',
+        icon: 'trend',
+        permission: 'synthetic::ir_curve_generation_configs:read',
+        screenTitleKey: 'marketdata.irFeeds.title',
+    },
+    curveEvolution: {
+        titleKey: 'market.evolution.title',
+        bodyKey: 'marketdata.area.screens.evolutionBody',
+        to: '/market-data/evolution',
+        icon: 'chart',
+        permission: 'marketdata::curve_snapshots:read',
+        screenTitleKey: 'market.evolution.title',
     },
     people: {
         titleKey: 'access.hub.staff',
@@ -167,7 +193,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.servicesBody',
         to: '/operations/services',
         icon: 'server',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.services.title',
     },
     grid: {
@@ -175,7 +201,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.gridBody',
         to: '/operations/grid',
         icon: 'apps',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.grid.title',
     },
     bus: {
@@ -183,7 +209,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.busBody',
         to: '/operations/bus',
         icon: 'bus',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.bus.title',
     },
     logs: {
@@ -191,7 +217,7 @@ export const CARDS = {
         bodyKey: 'operations.screens.logsBody',
         to: '/operations/logs',
         icon: 'log',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'operations.logs.title',
     },
     signIns: {
@@ -214,7 +240,7 @@ export const CARDS = {
         bodyKey: 'home.system.tenantsLead',
         to: '/tenants',
         icon: 'party',
-        scope: 'installation',
+        permission: DEPLOYMENT_READ,
         screenTitleKey: 'tenants.title',
     },
     myAccess: {
@@ -252,6 +278,7 @@ export const AREA_CARDS = {
         'conventions',
     ],
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
+    marketdata: ['fxFeeds', 'irFeeds', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
     tenants: ['tenants'],
 } as const satisfies Record<string, readonly CardId[]>;

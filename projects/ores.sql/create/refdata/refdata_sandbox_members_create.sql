@@ -88,12 +88,7 @@ begin
     end if;
 
     -- Validate account_id (soft FK to ores_iam_accounts_tbl)
-    if not exists (
-        select 1 from ores_iam_accounts_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.account_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
+    if not ores_iam_account_exists_fn(NEW.account_id) then
         raise exception 'Invalid account_id: %. No account found with this id.', NEW.account_id
             using errcode = '23503';
     end if;

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 1E6E9374-E57D-4D3D-BAF7-16FC23651F19
+:END:
+#+title: Split hot and cold data by usage
+#+description: Keep what the code reads together on the main path in one table and put rarely read data in its own table.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+Split the data by how it is used. Keep the fields the code reads and writes together on the main path in the header and the product fact table. Put rarely read data in its own table: the list children, the history, the audit and the change-reason cache. Drop a column that no mapper writes. A column belongs to the header only if it holds for every code of the family.
+
+*Why:* The credit table holds six columns that no mapper writes, and most of its other columns belong to one or two products. The split is what the bond and rates reworks did, and it keeps the main path narrow.
+
+*How to apply:* While you write the findings, make a use table: for each column, which code writes it and which code reads it. A column with no writer, or with a single product as writer, leaves the header. See axiom 4 and the core/cold split check in doc/knowledge/architecture/data_oriented_design.org.

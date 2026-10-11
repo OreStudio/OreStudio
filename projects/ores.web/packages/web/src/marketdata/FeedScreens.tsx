@@ -36,6 +36,7 @@ import {
     useRecords,
 } from '../refdata/records.js';
 import { RecordStoreProvider, syntheticStore } from '../refdata/store.js';
+import { useAreaParts, useAreaRoot } from '../shell/AreaTrail.js';
 import { Button, Notice } from '../ui/Primitives.js';
 import { FeedStatus, RunOutcomeText, useFeedRuns, useRunningFeeds } from './feedRuns.js';
 import { FeedHistory, type FeedPart } from './FeedHistory.js';
@@ -81,6 +82,7 @@ function FeedsList({ kind }: { readonly kind: FeedKind }): ReactNode {
         setChosen(new Map());
     };
     const words = `marketdata.${kind.words}`;
+    const trail = useAreaParts('marketdata', t(`${words}.title`));
     return (
         <>
             {runs.outcome !== undefined && (
@@ -118,10 +120,7 @@ function FeedsList({ kind }: { readonly kind: FeedKind }): ReactNode {
                     : {})}
                 title={t(`${words}.title`)}
                 lead={t(`${words}.lead`)}
-                crumbs={[
-                    { label: t('marketdata.area.title'), to: '/market-data' },
-                    { label: t(`${words}.title`) },
-                ]}
+                crumbs={trail}
                 pathOf={(row) => feedPath(kind, show(row['id']))}
                 addLabel={t(`${words}.add`)}
                 onAdd={() => setAdding(true)}
@@ -239,6 +238,7 @@ function FeedBody({
     const id = show(feed['id']);
     const name = kind.nameOf(feed);
     const words = `marketdata.${kind.words}`;
+    const root = useAreaRoot('marketdata');
     const may = useRecordPermissions(kind.resource);
     const check = kind.useCheck();
     const parts = useFeedParts(kind, id);
@@ -256,7 +256,7 @@ function FeedBody({
         <div className="space-y-4">
             <RecordHeader
                 crumbs={[
-                    { label: t('marketdata.area.title'), to: '/market-data' },
+                    ...root,
                     { label: t(`${words}.title`), to: feedPath(kind) },
                     { label: name },
                 ]}

@@ -645,7 +645,6 @@ export const en: SourceCatalogue = {
     },
 
     accounts: {
-        title: 'Accounts',
         description: 'Identities that can sign in or act as a service.',
         search: 'Search',
         searchPlaceholder: 'Username, name, or email',
@@ -1225,6 +1224,85 @@ export const en: SourceCatalogue = {
         tabs: {
             label: 'Development areas',
             tests: 'Tests',
+            board: 'Board',
+            backlog: 'Backlog',
+            charts: 'Charts',
+        },
+        backlog: {
+            buckets: {
+                inbox: 'Inbox',
+                next: 'Next',
+                deferred: 'Deferred',
+                discarded: 'Discarded',
+            },
+            empty: 'Nothing in this bucket.',
+            item: 'Item',
+            kind: 'Kind',
+            created: 'Created',
+            capture: 'Capture',
+            story: { one: 'Story, {count} task', other: 'Story, {count} tasks' },
+        },
+        charts: {
+            velocity: 'Velocity',
+            velocityNote: 'Stories done in each sprint.',
+            burnup: 'Burn-up',
+            burnupNote:
+                'Tasks done, added up by the day each was finished. The dashed line is every task of the sprint.',
+            perDay: 'Tasks done each day',
+            perDayNote: 'Tasks done on each day of the sprint. Days after today are faint.',
+            byState: 'Tasks by state',
+            byStateNote: 'Every task of the sprint, by its state.',
+            noDates: 'This sprint has no start date.',
+            noDone: 'No task has a finish date yet.',
+        },
+        board: {
+            current: 'Current',
+            trees: 'Work trees',
+            idle: 'Idle',
+            thisTree: 'This tree',
+            search: 'Search stories, tasks, environments',
+            searchLabel: 'Search the board',
+            clear: 'Clear',
+            nothing: 'Nothing here',
+            sprintLabel: 'Sprint',
+            day: 'Day {day} of {total}',
+            storyCount: { one: '{count} story', other: '{count} stories' },
+            refresh: 'Refresh',
+            tiles: {
+                stories: 'Stories',
+                inFlight: 'In flight',
+                blocked: 'Blocked',
+                tasksDone: 'Tasks done',
+            },
+            taskProgress: { one: '{total} task, {done} done', other: '{total} tasks, {done} done' },
+            detail: 'Story detail',
+            close: 'Close',
+            none: 'None',
+            fields: {
+                id: 'Id',
+                state: 'State',
+                environment: 'Environment',
+                epic: 'Epic',
+                created: 'Created',
+                updated: 'Updated',
+                branches: 'Branches',
+                branch: 'Branch',
+                pullRequests: 'Pull requests',
+                blockedOn: 'Blocked on',
+                doc: 'Doc',
+            },
+            openDoc: 'Open the doc',
+            tasks: 'Tasks',
+            noTasks: 'No tasks yet.',
+            states: {
+                DISCOVERED: 'Discovered',
+                BACKLOG: 'Backlog',
+                STARTED: 'Started',
+                BLOCKED: 'Blocked',
+                DONE: 'Done',
+                ABANDONED: 'Abandoned',
+                UNKNOWN: 'Unknown',
+            },
         },
         tests: {
             sprint: 'Sprint {number}',
@@ -1727,9 +1805,7 @@ export const en: SourceCatalogue = {
     },
 
     market: {
-        area: 'Market data',
         evolution: {
-            screen: 'Watch a curve evolve',
             title: 'Watch a curve or surface evolve',
             description:
                 'Name an object and a range. Read the instants by nodes over the range, and the object as it stands now.',
@@ -1785,7 +1861,15 @@ export const en: SourceCatalogue = {
                 derived: 'Derived',
                 manual: 'Manual',
             },
-            gap: 'No list of series is read yet, so the object is named by its identity.',
+            picker: {
+                label: 'Series',
+                placeholder: 'Choose a series, or type its identity below',
+                loading: 'Reading the series you can see...',
+                empty: 'Your party can see no series. Market data that provisioning seeded may not be listed until its identity is projected. You can still type an identity below.',
+                truncated:
+                    'The list holds the first {count} series your party can see. Work in a party that holds fewer series to see the rest.',
+                noShape: 'no shape declared',
+            },
         },
     },
 
@@ -3244,7 +3328,6 @@ export const en: SourceCatalogue = {
                 irFeeds: 'IR curve feeds',
                 irFeedsBody:
                     'Compose the synthetic IR curve feeds: the currency and index, the short-rate engine with its parameters, and the curve template.',
-                evolution: 'Watch a curve evolve',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
             },
@@ -3583,6 +3666,8 @@ export const en: SourceCatalogue = {
         rolesRead: 'read roles and their grants',
         rolesAssign: 'give roles to people',
         sessionsRead: "read people's sign-ins",
+        deploymentRead:
+            'see the whole deployment: its tenants, services, grid, message bus and logs',
         curveSnapshotsRead: 'see the market data curves',
         fxFeedsRead: 'see the synthetic FX price feeds',
         irFeedsRead: 'see the synthetic IR curve feeds',

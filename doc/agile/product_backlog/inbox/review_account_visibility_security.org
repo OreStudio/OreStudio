@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 3031045B-3A36-425B-8286-C368C9DFCB92
+:END:
+#+title: Review the security of account visibility across tenants
+#+description: A security review of the shared accounts model: the shared-row policies, the party rule with its service actor and system party clauses, the existence function, the delete rule, and the cross-tenant reads that system_tenant_visible allows.
+#+type: capture
+#+level: cross
+#+filetags: :security:iam:multi_tenancy:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Review the security of the account visibility model built in PR #3124. The review states a threat list, checks each item against the policies and the code, and records findings as tasks.
+
+Scope:
+
+- The shared rows: the column =shared=, =accounts_select_policy= and the three write policies. Check that a tenant never writes or closes a shared row, and that a later system tenant account stays hidden until its flag is set.
+- The party rule with its two new clauses: the service actor (=ores_iam_actor_is_service_fn=) and the system party (=ores_iam_system_party_id_fn=). Check what a service reads of the people of a tenant. Check that a tenant can create a service account only with rights it already holds, because a service account of a tenant now reads every person of that tenant.
+- The existence function =ores_iam_account_exists_fn=: the tenant comes from the session, the grants name the roles, and the answer is yes or no. Check for timing or error differences that tell a caller more than yes or no.
+- The delete rule. It runs with the owner's rights, so row-level security does not bind it. The template now limits it to the own tenant for entities that state =:system_tenant_visible: true=. Check the other entities that use that flag (the compute apps, versions and platforms) for the same hole, and regenerate them if they have it.
+- =:system_tenant_visible: true= on the account repository. It adds the system tenant to every generated read, including the reads by username, by id and by version. Check that no hand-written path takes a shared row for a tenant row.
+- The security definer functions: owner, =search_path=, and who may execute each one.
+- The People list and other lists now return the shared rows. Check that no list shows or acts on a shared row as if the tenant owned it.
+
+Method: write each threat as a pgTAP test or a C++ test where one does not exist, run the existing tests, and record what is left open.
+
+* Why
+
+The change widens what a tenant reads of the system tenant, and what a service reads of a tenant. The product owner asked for a proper security review once the test estate passed. PR #3124 found one hole by test (the delete rule), so the model should be reviewed on purpose and not only by accident.
+
+* References
+
+- [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]]: the six building blocks and the checklist.
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]: the accounts exception.
+- [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]: the read codes and the allow-list.
+- [[id:ABA133C1-B8F3-4B13-999F-4C03400A8BCB][Story: Split accounts into open and confidential data]].
+- =projects/ores.sql/test/iam_accounts_shared_visibility_test.sql=: the 15 assertions that exist.
+
+* See also
+
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]

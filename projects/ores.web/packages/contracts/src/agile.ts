@@ -124,6 +124,45 @@ export const sprintRefSchema = z.object({
 });
 export const sprintListSchema = z.object({ sprints: z.array(sprintRefSchema) });
 
+export const chartsSchema = z.object({
+    /** Stories done in each sprint, oldest first. */
+    velocity: z.array(z.object({ sprint: z.string(), done: z.number() })),
+    /** The running total of tasks done, by the date each was finished. */
+    burnup: z.array(z.object({ date: z.string(), done: z.number() })),
+    /** Every task of the sprint, which the burn-up is drawn against. */
+    scope: z.number(),
+    /** Tasks done on each day of the sprint. Empty when the sprint has no start date. */
+    perDay: z.array(
+        z.object({ date: z.string(), day: z.number(), done: z.number(), future: z.boolean() }),
+    ),
+    byState: z.array(z.object({ state: agileStateSchema, count: z.number() })),
+});
+export type Charts = z.infer<typeof chartsSchema>;
+export const chartsResponseSchema = z.object({ charts: chartsSchema });
+
+export const journalEntrySchema = z.object({
+    storyId: z.string(),
+    storyTitle: z.string(),
+    taskId: z.string(),
+    taskTitle: z.string(),
+    state: agileStateSchema,
+    branch: z.string(),
+    /** The pull request number, or zero when the entry has none. */
+    pr: z.number(),
+});
+
+export const workTreeSchema = z.object({
+    /** The directory name without the ores_dev_ prefix, as an environment is written. */
+    label: z.string(),
+    branch: z.string(),
+    /** The work tree the BFF reads the agile tree of. */
+    isSession: z.boolean(),
+    /** The work item of the tree, from its journal, or null when it has none. */
+    current: journalEntrySchema.nullable(),
+});
+export type WorkTree = z.infer<typeof workTreeSchema>;
+export const workTreesResponseSchema = z.object({ trees: z.array(workTreeSchema) });
+
 export const BACKLOG_BUCKET_IDS = ['inbox', 'next', 'deferred', 'discarded'] as const;
 
 export const backlogItemSchema = z.object({
@@ -143,6 +182,6 @@ export const backlogSchema = z.object({
 export type Backlog = z.infer<typeof backlogSchema>;
 
 /** The doc types the agile routes serve. The rest of the doc root stays unread. */
-export const AGILE_DOC_TYPES = ['sprint', 'story', 'task', 'capture'] as const;
+export const AGILE_DOC_TYPES = ['sprint', 'story', 'task', 'capture', 'test_scenario'] as const;
 
 export const agileDocResponseSchema = z.object({ doc: qaDocSchema });

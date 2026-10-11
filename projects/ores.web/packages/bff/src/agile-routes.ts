@@ -23,18 +23,19 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { AGILE_DOC_TYPES } from '@ores/contracts';
 import { HttpFailure, invalidRequest, notFound } from './errors.js';
 import { InvalidSprintNameError, type AgileStore } from './agile/agile-store.js';
+import type { WorkTreeSource } from './agile/work-trees.js';
 import { InvalidDocIdError, type DocText } from './scenarios/scenario-store.js';
 import type { LiveSession } from './sessions.js';
 
 /**
- * The agile browser routes: the sprints, one sprint's board, the backlog
+ * The agile browser routes: the sprints, one sprint's board and charts, the work trees, the backlog
  * buckets, and any agile doc by id.
  *
  * A route never touches a file. It asks the agile store, so a database store
  * can replace the files. With no store the browser is off and every route
  * answers not found. Every route needs a signed-in session. The doc route
- * serves sprints, stories, tasks and captures only, so the rest of the doc
- * root stays unread.
+ * serves sprints, stories, tasks, captures and test scenarios only, so the
+ * rest of the doc root stays unread.
  */
 
 const SERVED_TYPES: ReadonlySet<string> = new Set(AGILE_DOC_TYPES);
@@ -84,6 +85,7 @@ export function registerAgileRoutes(
     // The doc route reads through the scenario store's id index, so it reads the
     // same doc root as the file agile store only while both come from the config.
     readDoc: ((id: string) => Promise<DocText | null>) | undefined,
+    workTrees?: WorkTreeSource,
 ): void {
     const open = (request: FastifyRequest): AgileStore => {
         requireSession(request);
@@ -108,6 +110,22 @@ export function registerAgileRoutes(
         return { board };
     });
 
+    server.get('/api/agile/charts', async (request) => {
+        const agile = open(request);
+        const { sprint } = request.query as { sprint?: unknown };
+        if (sprint !== undefined && typeof sprint !== 'string') {
+            throw invalidRequest('Give one sprint name.');
+        }
+        const charts = await guarded(() => agile.charts(sprint === '' ? undefined : sprint));
+        if (charts === null) throw notFound('No sprint has this name.');
+        return { charts };
+    });
+
+    server.get('/api/agile/trees', async (request) => {
+        open(request);
+        return { trees: workTrees === undefined ? [] : await workTrees.trees() };
+    });
+
     server.get('/api/agile/backlog', async (request) => {
         const agile = open(request);
         return guarded(() => agile.backlog());
@@ -119,7 +137,7 @@ export function registerAgileRoutes(
         const { id } = request.params as { id: string };
         const doc = await guarded(() => readDoc(id));
         if (doc === null || doc.type === null || !SERVED_TYPES.has(doc.type)) {
-            throw notFound('No sprint, story, task or capture has this id.');
+            throw notFound('No sprint, story, task, capture or scenario has this id.');
         }
         return { doc };
     });

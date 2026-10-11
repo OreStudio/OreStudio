@@ -88,11 +88,11 @@ begin
     -- Create user account
     -- =========================================================================
     insert into ores_iam_accounts_tbl (
-        id, tenant_id, version, account_type, username, full_name, email,
+        id, tenant_id, version, account_type, username, full_name, email, shared,
         modified_by, performed_by, change_reason_code, change_commentary,
         valid_from, valid_to
     ) values (
-        v_account_id, v_system_tenant_id, 0, 'user', p_principal, p_full_name, p_email,
+        v_account_id, v_system_tenant_id, 0, 'user', p_principal, p_full_name, p_email, true,
         v_actor, v_actor,
         'system.initial_load', 'Initial system admin created during bootstrap',
         current_timestamp, ores_utility_infinity_timestamp_fn()

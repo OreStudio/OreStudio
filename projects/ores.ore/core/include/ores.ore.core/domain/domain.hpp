@@ -4346,14 +4346,16 @@ enum class longShort {
 
 ORES_ORE_CORE_EXPORT std::string to_string(longShort);
 
+struct moneyFloat : xsd::base<float> {};
+
 struct forwardRateAgreementData {
     domain::date StartDate{};
     domain::date EndDate{};
     domain::currencyCode Currency{};
     domain::forwardRateAgreementData_Index_t Index{};
     domain::longShort LongShort{};
-    float Strike{};
-    float Notional{};
+    domain::moneyFloat Strike{};
+    domain::moneyFloat Notional{};
 };
 
 struct fxForwardData {
@@ -4900,7 +4902,7 @@ struct creditDefaultSwapData {
     xsd::optional<domain::creditDefaultSwapData_ProtectionPaymentTime_t> ProtectionPaymentTime;
     xsd::optional<domain::date> ProtectionStart;
     xsd::optional<domain::date> UpfrontDate;
-    xsd::optional<float> UpfrontFee;
+    xsd::optional<domain::moneyFloat> UpfrontFee;
     xsd::optional<float> FixedRecoveryRate;
     domain::legData LegData{};
     xsd::optional<domain::date> TradeDate;
@@ -5216,7 +5218,7 @@ struct indexCreditDefaultSwapData {
     xsd::optional<domain::indexCreditDefaultSwapData_ProtectionPaymentTime_t> ProtectionPaymentTime;
     xsd::optional<domain::date> ProtectionStart;
     xsd::optional<domain::date> UpfrontDate;
-    xsd::optional<float> UpfrontFee;
+    xsd::optional<domain::moneyFloat> UpfrontFee;
     domain::legData LegData{};
     xsd::optional<domain::date> TradeDate;
     xsd::optional<uint64_t> CashSettlementDays;
@@ -5231,7 +5233,7 @@ enum class cdsOptionstrikeType {
 ORES_ORE_CORE_EXPORT std::string to_string(cdsOptionstrikeType);
 
 struct indexCreditDefaultSwapOptionData {
-    xsd::optional<float> Strike;
+    xsd::optional<domain::moneyFloat> Strike;
     xsd::optional<domain::bool_> KnockOut;
     xsd::optional<domain::indexCreditDefaultSwapOptionData_IndexTerm_t> IndexTerm;
     xsd::optional<domain::cdsOptionstrikeType> StrikeType;

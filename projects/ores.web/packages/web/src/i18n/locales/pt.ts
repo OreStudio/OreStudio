@@ -650,7 +650,6 @@ const pt: SourceCatalogue = {
     },
 
     accounts: {
-        title: 'Contas',
         description: 'Identidades que podem iniciar sessão ou atuar como serviço.',
         search: 'Pesquisar',
         searchPlaceholder: 'Nome de utilizador, nome ou email',
@@ -1228,6 +1227,89 @@ const pt: SourceCatalogue = {
         tabs: {
             label: 'Áreas de desenvolvimento',
             tests: 'Testes',
+            board: 'Quadro',
+            backlog: 'Backlog',
+            charts: 'Gráficos',
+        },
+        backlog: {
+            buckets: {
+                inbox: 'Caixa de entrada',
+                next: 'Seguinte',
+                deferred: 'Adiado',
+                discarded: 'Descartado',
+            },
+            empty: 'Nada neste grupo.',
+            item: 'Item',
+            kind: 'Tipo',
+            created: 'Criado',
+            capture: 'Captura',
+            story: { one: 'História, {count} tarefa', other: 'História, {count} tarefas' },
+        },
+        charts: {
+            velocity: 'Velocidade',
+            velocityNote: 'Histórias concluídas em cada sprint.',
+            burnup: 'Burn-up',
+            burnupNote:
+                'Tarefas concluídas, somadas pelo dia em que cada uma terminou. A linha tracejada conta todas as tarefas do sprint.',
+            perDay: 'Tarefas concluídas por dia',
+            perDayNote:
+                'Tarefas concluídas em cada dia do sprint. Os dias depois de hoje aparecem esbatidos.',
+            byState: 'Tarefas por estado',
+            byStateNote: 'Todas as tarefas do sprint, por estado.',
+            noDates: 'Este sprint não tem data de início.',
+            noDone: 'Nenhuma tarefa tem data de fim ainda.',
+        },
+        board: {
+            current: 'Atual',
+            trees: 'Árvores de trabalho',
+            idle: 'Parada',
+            thisTree: 'Esta árvore',
+            search: 'Pesquisar histórias, tarefas, ambientes',
+            searchLabel: 'Pesquisar no quadro',
+            clear: 'Limpar',
+            nothing: 'Nada aqui',
+            sprintLabel: 'Sprint',
+            day: 'Dia {day} de {total}',
+            storyCount: { one: '{count} história', other: '{count} histórias' },
+            refresh: 'Atualizar',
+            tiles: {
+                stories: 'Histórias',
+                inFlight: 'Em curso',
+                blocked: 'Bloqueadas',
+                tasksDone: 'Tarefas feitas',
+            },
+            taskProgress: {
+                one: '{total} tarefa, {done} feita',
+                other: '{total} tarefas, {done} feitas',
+            },
+            detail: 'Detalhe da história',
+            close: 'Fechar',
+            none: 'Nenhum',
+            fields: {
+                id: 'Id',
+                state: 'Estado',
+                environment: 'Ambiente',
+                epic: 'Épico',
+                created: 'Criado',
+                updated: 'Atualizado',
+                branches: 'Ramos',
+                branch: 'Ramo',
+                pullRequests: 'Pull requests',
+                blockedOn: 'Bloqueado por',
+                doc: 'Doc',
+            },
+            openDoc: 'Abrir o doc',
+            tasks: 'Tarefas',
+            noTasks: 'Ainda sem tarefas.',
+            states: {
+                DISCOVERED: 'Descoberto',
+                BACKLOG: 'Backlog',
+                STARTED: 'Iniciado',
+                BLOCKED: 'Bloqueado',
+                DONE: 'Concluído',
+                ABANDONED: 'Abandonado',
+                UNKNOWN: 'Desconhecido',
+            },
         },
         tests: {
             sprint: 'Sprint {number}',
@@ -1736,9 +1818,7 @@ const pt: SourceCatalogue = {
     },
 
     market: {
-        area: 'Dados de mercado',
         evolution: {
-            screen: 'Acompanhar a evolução de uma curva',
             title: 'Acompanhar a evolução de uma curva ou superfície',
             description:
                 'Indique um objeto e um período. Leia os instantes por nós no período e o objeto como está agora.',
@@ -1794,7 +1874,15 @@ const pt: SourceCatalogue = {
                 derived: 'Derivado',
                 manual: 'Manual',
             },
-            gap: 'Ainda não se lê nenhuma lista de séries, por isso o objeto é indicado pela sua identidade.',
+            picker: {
+                label: 'Série',
+                placeholder: 'Escolha uma série, ou escreva a sua identidade abaixo',
+                loading: 'A ler as séries que pode ver...',
+                empty: 'A sua parte não vê nenhuma série. Os dados de mercado semeados pelo provisionamento podem não constar até a sua identidade ser projetada. Pode escrever uma identidade abaixo.',
+                truncated:
+                    'A lista contém as primeiras {count} séries que a sua parte pode ver. Trabalhe numa parte com menos séries para ver as restantes.',
+                noShape: 'nenhuma forma declarada',
+            },
         },
     },
 
@@ -3267,7 +3355,6 @@ const pt: SourceCatalogue = {
                 irFeeds: 'Fluxos de curvas de taxas',
                 irFeedsBody:
                     'Componha os fluxos sintéticos de curvas de taxas: a moeda e o índice, o motor de taxa curta com os seus parâmetros e o modelo da curva.',
-                evolution: 'Acompanhar a evolução de uma curva',
                 evolutionBody:
                     'Ler uma curva ou superfície ao longo de um intervalo de instantes, e como está agora.',
             },
@@ -3609,6 +3696,8 @@ const pt: SourceCatalogue = {
         rolesRead: 'ler os papéis e as suas permissões',
         rolesAssign: 'atribuir papéis às pessoas',
         sessionsRead: 'ler as sessões das pessoas',
+        deploymentRead:
+            'ver toda a implantação: os seus inquilinos, serviços, grelha, barramento de mensagens e registos',
         curveSnapshotsRead: 'ver as curvas de dados de mercado',
         fxFeedsRead: 'ver os fluxos de preços FX sintéticos',
         irFeedsRead: 'ver os fluxos de curvas de taxas sintéticos',

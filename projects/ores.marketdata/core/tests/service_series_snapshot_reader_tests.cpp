@@ -299,14 +299,16 @@ TEST_CASE("a_derived_point_names_the_recipe_that_built_it", tags) {
 
     database_helper h;
     import(h,
-           "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/1Y/ATM 0.080\n"
-           "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/2Y/ATM 0.085\n");
+           "20170910 FX_OPTION/RATE_LNVOL/NZD/ZAR/1Y/ATM 0.080\n"
+           "20170910 FX_OPTION/RATE_LNVOL/NZD/ZAR/2Y/ATM 0.085\n");
 
-    const auto identity = fx_option_identity("NZD", "PLN");
+    const auto identity = fx_option_identity("NZD", "ZAR");
     const auto series =
         ores::marketdata::repository::market_series_identity_reader{}.read(h.context(), identity);
     REQUIRE(series.size() == 1);
     ores::marketdata::repository::market_observation_repository obs_repo;
+    // Every test in this file reads its own currency pair, so the surface holds
+    // the two points imported here and no other test's.
     const auto stored = obs_repo.read_latest_for_series(h.context(), series.front().id);
     REQUIRE(stored.size() == 2);
 

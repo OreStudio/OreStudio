@@ -127,12 +127,7 @@ begin
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 
     -- Validate account_id (soft FK to ores_iam_accounts_tbl)
-    if not exists (
-        select 1 from ores_iam_accounts_tbl
-        where tenant_id = new.tenant_id
-          and id = new.account_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
+    if not ores_iam_account_exists_fn(new.account_id) then
         raise exception 'Invalid account_id: %. No account found with this id.', new.account_id
             using errcode = '23503';
     end if;

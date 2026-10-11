@@ -29,6 +29,9 @@ const AREAS = {
     operations: { nameKey: 'shell.menu.operations', to: '/operations' },
     requests: { nameKey: 'shell.menu.requests', to: '/requests' },
     refdata: { nameKey: 'shell.menu.refdata', to: '/refdata' },
+    marketdata: { nameKey: 'shell.menu.marketdata', to: '/market-data' },
+    development: { nameKey: 'shell.menu.development', to: '/development' },
+    tenants: { nameKey: 'shell.menu.tenants', to: '/tenants' },
 } as const;
 
 export type AreaName = keyof typeof AREAS;
@@ -74,6 +77,15 @@ export function useAreaRoot(area: AreaName): readonly TrailStep[] {
         { label: t('shell.menu.home'), to: '/' },
         { label: t(AREAS[area].nameKey), to: AREAS[area].to },
     ];
+}
+
+/**
+ * The trail of a person's own page, which belongs to no area: Home, then the
+ * page. The account menu reaches these pages, so there is no area between.
+ */
+export function PageTrail({ screen }: { readonly screen: string }): ReactNode {
+    const { t } = useTranslation();
+    return <Crumbs parts={[{ label: t('shell.menu.home'), to: '/' }, { label: screen }]} />;
 }
 
 /** The trail of a screen that belongs to an area, drawn above its header. */

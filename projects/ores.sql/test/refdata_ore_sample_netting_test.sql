@@ -166,7 +166,7 @@ select results_eq(
        and nsi.id_scheme = 'ORE' and nsi.id_value = 'CPTY_B'
        and nsi.valid_to = ores_utility_infinity_timestamp_fn()
       where c.valid_to = ores_utility_infinity_timestamp_fn()$$,
-    $$values (true, 5000000::double precision, '2W'::text, 'EUR-EONIA'::text)$$,
+    $$values (true, 5000000::numeric, '2W'::text, 'EUR-EONIA'::text)$$,
     'the CPTY_B CSA carries ORE''s terms');
 
 select is(

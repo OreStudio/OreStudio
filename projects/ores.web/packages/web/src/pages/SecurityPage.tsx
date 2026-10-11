@@ -23,6 +23,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { api } from '../api/client.js';
 import { SignInFacts } from '../access/SignInFacts.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { PageTrail } from '../shell/AreaTrail.js';
 import { Button, Detail, Field, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
@@ -76,6 +77,7 @@ export function SecurityPage({ session }: { readonly session: SessionView }): Re
 
     return (
         <div className="mx-auto max-w-[1100px] space-y-6">
+            <PageTrail screen={t('security.title')} />
             <PageHeader title={t('security.title')} description={t('security.lead')} />
             {state.kind === 'loading' && <Notice tone="info">{t('security.reading')}</Notice>}
             {state.kind === 'failed' && <Notice tone="error">{state.reason}</Notice>}

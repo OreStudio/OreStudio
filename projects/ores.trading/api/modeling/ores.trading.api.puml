@@ -1427,16 +1427,6 @@ namespace ores #F2F2F2 {
                 +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
-            class rpa_instrument <<struct>> {
-                +identity : instrument_identity
-                +start_date : chrono::year_month_day
-                +maturity_date : chrono::year_month_day
-                +reference_counterparty : string
-                +participation_rate : double
-                +protection_fee : optional<double>
-                +description : string
-                +audit : ores::dq::domain::audit_record
-            }
             class scripted_instrument <<struct>> {
                 +identity : instrument_identity
                 +script_name : string
@@ -9917,120 +9907,6 @@ namespace ores #F2F2F2 {
             class get_return_type_version_response <<struct>> {
                 +result : ores::utility::domain::result
                 +version : optional<ores::trading::domain::return_type>
-            }
-            class rpa_instrument_key <<struct>> {
-                +trade_id : boost::uuids::uuid
-            }
-            class rpa_instrument_write <<struct>> {
-                +trade_id : boost::uuids::uuid
-                +start_date : chrono::year_month_day
-                +maturity_date : chrono::year_month_day
-                +reference_counterparty : string
-                +participation_rate : double
-                +protection_fee : optional<double>
-                +description : string
-            }
-            class rpa_instrument_change <<struct>> {
-                +write : rpa_instrument_write
-                +precondition : ores::utility::domain::precondition
-            }
-            class rpa_instrument_removal <<struct>> {
-                +key : rpa_instrument_key
-                +precondition : ores::utility::domain::precondition
-            }
-            class rpa_instrument_lookup <<struct>> {
-                +key : rpa_instrument_key
-                +rpa_instrument : optional<ores::trading::domain::rpa_instrument>
-            }
-            class rpa_instrument_event <<struct>> {
-                +event_id : boost::uuids::uuid
-                +key : rpa_instrument_key
-                +action : string
-                +version : uint32_t
-                +occurred_at : chrono::system_clock::time_point
-                +correlation_id : optional<string>
-            }
-            class rpa_instrument_version_key <<struct>> {
-                +rpa_instrument : rpa_instrument_key
-                +version : uint32_t
-            }
-            class rpa_instrument_versions_filter <<struct>> {
-                +version : optional<uint32_t>
-                +from_version : optional<uint32_t>
-                +to_version : optional<uint32_t>
-            }
-            class list_rpa_instruments_request <<struct>> {
-                +offset : uint32_t
-                +limit : uint32_t
-                +order : ores::utility::domain::order
-            }
-            class list_rpa_instruments_response <<struct>> {
-                +result : ores::utility::domain::result
-                +rpa_instruments : vector<ores::trading::domain::rpa_instrument>
-                +total : uint64_t
-            }
-            class get_rpa_instrument_request <<struct>> {
-                +key : rpa_instrument_key
-            }
-            class get_rpa_instrument_response <<struct>> {
-                +result : ores::utility::domain::result
-                +rpa_instrument : optional<ores::trading::domain::rpa_instrument>
-            }
-            class get_many_rpa_instruments_request <<struct>> {
-                +keys : vector<rpa_instrument_key>
-            }
-            class get_many_rpa_instruments_response <<struct>> {
-                +result : ores::utility::domain::result
-                +entries : vector<rpa_instrument_lookup>
-            }
-            class put_rpa_instrument_request <<struct>> {
-                +change : rpa_instrument_change
-                +intent : ores::utility::domain::change_intent
-            }
-            class put_rpa_instrument_response <<struct>> {
-                +result : ores::utility::domain::result
-                +rpa_instrument : optional<ores::trading::domain::rpa_instrument>
-            }
-            class put_many_rpa_instruments_request <<struct>> {
-                +changes : vector<rpa_instrument_change>
-                +intent : ores::utility::domain::change_intent
-            }
-            class put_many_rpa_instruments_response <<struct>> {
-                +result : ores::utility::domain::result
-                +rpa_instruments : vector<ores::trading::domain::rpa_instrument>
-            }
-            class delete_rpa_instrument_request <<struct>> {
-                +removal : rpa_instrument_removal
-                +intent : ores::utility::domain::change_intent
-            }
-            class delete_rpa_instrument_response <<struct>> {
-                +result : ores::utility::domain::result
-            }
-            class delete_many_rpa_instruments_request <<struct>> {
-                +removals : vector<rpa_instrument_removal>
-                +intent : ores::utility::domain::change_intent
-            }
-            class delete_many_rpa_instruments_response <<struct>> {
-                +result : ores::utility::domain::result
-            }
-            class list_rpa_instrument_versions_request <<struct>> {
-                +key : rpa_instrument_key
-                +offset : uint32_t
-                +limit : uint32_t
-                +order : ores::utility::domain::order
-                +filter : optional<rpa_instrument_versions_filter>
-            }
-            class list_rpa_instrument_versions_response <<struct>> {
-                +result : ores::utility::domain::result
-                +versions : vector<ores::trading::domain::rpa_instrument>
-                +total : uint64_t
-            }
-            class get_rpa_instrument_version_request <<struct>> {
-                +key : rpa_instrument_version_key
-            }
-            class get_rpa_instrument_version_response <<struct>> {
-                +result : ores::utility::domain::result
-                +version : optional<ores::trading::domain::rpa_instrument>
             }
             class scripted_instrument_key <<struct>> {
                 +trade_id : boost::uuids::uuid

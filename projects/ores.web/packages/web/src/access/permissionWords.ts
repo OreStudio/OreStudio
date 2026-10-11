@@ -43,6 +43,7 @@ const WORDS = {
     [PERMISSION.rolesRead]: 'permissionWords.rolesRead',
     [PERMISSION.rolesAssign]: 'permissionWords.rolesAssign',
     [PERMISSION.sessionsRead]: 'permissionWords.sessionsRead',
+    [PERMISSION.deploymentRead]: 'permissionWords.deploymentRead',
     [PERMISSION.curveSnapshotsRead]: 'permissionWords.curveSnapshotsRead',
     [PERMISSION.fxFeedsRead]: 'permissionWords.fxFeedsRead',
     [PERMISSION.irFeedsRead]: 'permissionWords.irFeedsRead',

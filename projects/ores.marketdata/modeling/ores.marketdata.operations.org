@@ -180,6 +180,108 @@ not an error: a scope may hold no series of that kind yet.
 :cpp_type: std::string
 :END:
 
+** list_series_identities_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.list_series_identities
+:response: list_series_identities_response
+:END:
+
+Requests the typed identity of every series the caller can see, so a screen can
+offer the series as a choice and pass the choice back to the curve reads without
+building or parsing an =oresmd_uri=.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Requests the typed identity of each series the caller can see.
+ *
+ * A party reads only its own series, so the list is the caller's view and not the
+ * tenant's. An empty `party_id` asks across the parties the caller can see.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Whose series are wanted. Empty asks across the parties the caller can see.
+
+** listed_series
+
+One series in the list, with the identity that names it to the curve reads.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One series in the list, with the typed identity that names it.
+ *
+ * The identity carries the owning party, so passing it to the snapshot, slice or
+ * evolution read names this series and no other party's series of the same kind.
+ */
+#+end_src
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The series' id.
+
+*** identity
+:PROPERTIES:
+:cpp_type: resolve_series_identity_request
+:END:
+
+The typed identity of the series, with its party stated.
+
+*** axes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The coordinate fields the series declares, in order. Empty when the series
+declares no shape, which the evolution and slice reads refuse.
+
+#+begin_src cpp :name comment
+/** The declared coordinate fields in order. Empty when no shape is declared. */
+#+end_src
+
+** list_series_identities_response
+
+The series the caller can see, in a stable order.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The series the caller can see, in a stable order.
+ *
+ * Only series a curve read can name are listed: a series whose URI carries an
+ * instrument type and a quote type. A fixing series is not.
+ */
+#+end_src
+
+*** series
+:PROPERTIES:
+:cpp_type: std::vector<listed_series>
+:END:
+
+*** truncated
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+True when the caller can see more series than the list holds.
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
 ** crm_rate_item
 
 One CRM rate: direct or triangulated, indistinguishable to the caller -- see

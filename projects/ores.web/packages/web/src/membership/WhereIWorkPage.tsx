@@ -25,6 +25,7 @@ import type { MyParty } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { AccountPicture } from '../ui/Images.js';
+import { PageTrail } from '../shell/AreaTrail.js';
 import { Button, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { displayName } from '../access/names.js';
 
@@ -110,6 +111,7 @@ export function WhereIWorkPage({
 
     return (
         <div className="space-y-6">
+            <PageTrail screen={t('membership.where.title')} />
             <PageHeader
                 title={t('membership.where.title')}
                 description={t('membership.where.lead', { tenant: tenantName })}

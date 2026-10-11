@@ -100,6 +100,7 @@ create table if not exists "ores_iam_accounts_tbl" (
     "picture_code" text null,
     "job_title" text null,
     "reports_to_account_id" uuid null,
+    "shared" boolean not null default false,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -241,12 +242,7 @@ begin
 
     -- Validate reports_to_account_id (optional soft FK to ores_iam_accounts_tbl)
     if NEW.reports_to_account_id is not null then
-        if not exists (
-            select 1 from ores_iam_accounts_tbl
-            where tenant_id = NEW.tenant_id
-              and id = NEW.reports_to_account_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
+        if not ores_iam_account_exists_fn(NEW.reports_to_account_id) then
             raise exception 'Invalid reports_to_account_id: %. Account must exist.', NEW.reports_to_account_id
                 using errcode = '23503';
         end if;
@@ -350,5 +346,10 @@ on delete to "ores_iam_accounts_tbl" do instead (
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
+      -- A tenant reads the shared rows of the system tenant, so OLD can be one.
+      -- The rule runs with the owner's rights, which row-level security does
+      -- not bind, so the rule states the own-tenant limit that the delete
+      -- policy cannot enforce here.
+      and tenant_id = ores_iam_current_tenant_id_fn()
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

@@ -255,7 +255,8 @@ own-tenant policy, so tenant isolation does not change.
 
 | Session | Sees |
 |---------+------|
-| A person | The accounts linked to a party that the person's own account is linked to, and the person's own account |
+| A person | The accounts linked to a party that the person's own account is linked to, the accounts linked to the system party of the tenant, the person's own account, and the shared accounts of the system tenant |
+| A service acting in a tenant | Every account of the tenant and the shared accounts of the system tenant, because a service works in no party |
 | A tenant administrator | Every account of the tenant, because its account is linked to every party of the tenant |
 | A session with no actor: a service acting as itself, or the sign-in lookup before a session exists | Every account of the tenant, as a session with no party set passes the party policy of other tables |
 
@@ -273,6 +274,25 @@ actor's account to find the links, and without that it would apply the policy to
 itself.
 The policy wraps its function calls in a =select=, so the planner runs each
 once per query and not once per row.
+
+The shared accounts are the second part of the exception. The service accounts and the
+super admin belong to the system tenant, and a service writes under its own name into
+the history of every tenant. The column =shared= marks the rows that every tenant may
+read. The select policy =accounts_select_policy= admits the current tenant and the
+system tenant rows with =shared= set. The party rule passes a shared row, because a
+shared account works in no party. The insert, update and delete policies admit the
+current tenant only, so no tenant writes a shared row. The super admin is a =user=
+account that humans sign in with, and it is shared by its flag and not by its type.
+The generated repository states =:system_tenant_visible: true=. The standard that
+every table read across tenants follows is
+[[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]].
+
+A record that names an account checks that it exists through
+=ores_iam_account_exists_fn(id)=. The party rule hides every account from a service,
+because a service works in no party, so a select on the accounts table fails for the
+inbox service. The function is security definer and returns yes or no. It takes the
+tenant from the session and answers for the current tenant and for the shared accounts
+of the system tenant.
 
 What the exception does not do:
 

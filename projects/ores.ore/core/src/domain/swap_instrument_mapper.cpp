@@ -401,16 +401,6 @@ currencyCode parse_currency_code(const std::string& s) {
 }
 
 /**
- * Sets a money leaf to a stored decimal. The leaf keeps the decimal's own
- * digits, so the exporter writes them and not the nearest float's.
- */
-template <typename Leaf>
-void set_exact(Leaf& leaf, const ores::utility::decimal::decimal& value) {
-    static_cast<float&>(leaf) = static_cast<float>(value.to_double());
-    leaf.lexical(value.to_string());
-}
-
-/**
  * One notional child of a leg, with the provenance every imported row carries.
  */
 trading::domain::swap_leg_amount make_leg_amount(int leg_number,
@@ -1654,7 +1644,7 @@ trade swap_instrument_mapper::reverse_fra(
     fra.StartDate = to_ore_date(header.start_date);
     fra.EndDate = to_ore_date(header.maturity_date);
     fra.Currency = parse_currency_code(instr.currency);
-    fra.Notional = static_cast<float>(instr.notional.to_double());
+    set_exact(fra.Notional, instr.notional);
 
     if (!legs.empty()) {
         const auto& tm = legs.front();
@@ -1662,13 +1652,13 @@ trade swap_instrument_mapper::reverse_fra(
         const auto fixed = std::find_if(
             rates.begin(), rates.end(), [](const auto& r) { return r.rate_role == "fixed"; });
         if (fixed != rates.end())
-            fra.Strike = static_cast<float>(fixed->value.to_double());
+            set_exact(fra.Strike, fixed->value);
         fra.LongShort = longShort::Long;
     }
     // The leg's own notional is the one the document stated on the leg; the
     // instrument's copy is the fallback for a row written before the children.
     if (!amounts.empty())
-        fra.Notional = static_cast<float>(amounts.front().amount.to_double());
+        set_exact(fra.Notional, amounts.front().amount);
 
     t.ForwardRateAgreementData = std::move(fra);
     return t;

@@ -5,7 +5,7 @@ xsdcpp emits xsd::base<T> as a bare T plus the parse helpers set_float and
 set_double, which throw away the document's own digits. A money leaf must
 survive the ORE boundary as the exact decimal the document wrote, so this
 project keeps the digits beside the parsed float. That change spans two
-generated files:
+generated files, plus the FRA's two bare-float members in a third:
 
   * domain_xsd.hpp grows a conditional lexical_form<T> base, and xsd::base<T>
     derives from it for floating-point T only.
@@ -43,6 +43,7 @@ DEFAULT_DOMAIN_XSD = (
     REPO_ROOT / "projects/ores.ore/core/include/ores.ore.core/domain/domain_xsd.hpp"
 )
 DEFAULT_DOMAIN_CPP = REPO_ROOT / "projects/ores.ore/core/src/domain/domain.cpp"
+DEFAULT_DOMAIN_HPP = REPO_ROOT / "projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp"
 
 
 class AnchorError(RuntimeError):
@@ -234,19 +235,276 @@ def unpatch_cpp(text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Money members that xsdcpp emits as a bare float
+# ---------------------------------------------------------------------------
+
+# A forward rate agreement states its strike and notional as plain xs:float
+# elements, which the binding holds as bare float members. A bare float has
+# nowhere to keep the document's digits, so the two members become a leaf that
+# does. The leaf is `moneyFloat`, a lexical xsd::base<float>, with its own
+# setter, element info and serializer.
+FRA_STRUCT_OLD = """struct forwardRateAgreementData {
+    domain::date StartDate{};
+    domain::date EndDate{};
+    domain::currencyCode Currency{};
+    domain::forwardRateAgreementData_Index_t Index{};
+    domain::longShort LongShort{};
+    float Strike{};
+    float Notional{};
+};
+"""
+FRA_STRUCT_NEW = """struct moneyFloat : xsd::base<float> {};
+
+struct forwardRateAgreementData {
+    domain::date StartDate{};
+    domain::date EndDate{};
+    domain::currencyCode Currency{};
+    domain::forwardRateAgreementData_Index_t Index{};
+    domain::longShort LongShort{};
+    domain::moneyFloat Strike{};
+    domain::moneyFloat Notional{};
+};
+"""
+
+MONEY_EXTERN_ANCHOR = "extern const xsdcpp::ElementInfo _forwardRateAgreementData_Info;\n"
+MONEY_EXTERN = "extern const xsdcpp::ElementInfo _moneyFloat_Info;\n"
+
+MONEY_SETTER_ANCHOR = "void _set_stFreeStyleNumber(domain::stFreeStyleNumber* obj,\n"
+MONEY_SETTER = """void _set_moneyFloat(domain::moneyFloat* obj, const xsdcpp::Position& pos, std::string&& val) {
+    float& base = *obj;
+    xsdcpp::set_float(&base, pos, std::move(val));
+    obj->lexical(val);
+}
+"""
+
+MONEY_INFO_ANCHOR = "const xsdcpp::ElementInfo _stFreeStyleNumber_Info = {\n"
+MONEY_INFO = """const xsdcpp::ElementInfo _moneyFloat_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_moneyFloat};
+"""
+
+FRA_CHILD_OLD = """     (xsdcpp::get_field_t)&_get_forwardRateAgreementData_Strike,
+     &domain::_float_Info,
+"""
+FRA_CHILD_NEW = """     (xsdcpp::get_field_t)&_get_forwardRateAgreementData_Strike,
+     &domain::_moneyFloat_Info,
+"""
+FRA_CHILD2_OLD = """     (xsdcpp::get_field_t)&_get_forwardRateAgreementData_Notional,
+     &domain::_float_Info,
+"""
+FRA_CHILD2_NEW = """     (xsdcpp::get_field_t)&_get_forwardRateAgreementData_Notional,
+     &domain::_moneyFloat_Info,
+"""
+
+MONEY_SER_DECL_ANCHOR = "void _serialize_float(xsdcpp::XmlWriter& w, const char* name, float v);\n"
+MONEY_SER_DECL = (
+    "void _serialize_moneyFloat(xsdcpp::XmlWriter& w, const char* name, "
+    "const domain::moneyFloat& v);\n"
+)
+MONEY_SER_DEF_ANCHOR = """XSDCPP_MAYBE_UNUSED void _serialize_float(xsdcpp::XmlWriter& w, const char* name, float v) {
+    w.startElement(name);
+    w.writeText(xsdcpp::get_string(v));
+    w.endElement(name);
+}
+
+"""
+MONEY_SER_DEF = """XSDCPP_MAYBE_UNUSED void
+_serialize_moneyFloat(xsdcpp::XmlWriter& w, const char* name, const domain::moneyFloat& v) {
+    w.startElement(name);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
+    w.endElement(name);
+}
+
+"""
+
+FRA_SER_OLD = """    _serialize_forwardRateAgreementData_Index_t(w, "Index", v.Index);
+    _serialize_longShort(w, "LongShort", v.LongShort);
+    _serialize_float(w, "Strike", v.Strike);
+    _serialize_float(w, "Notional", v.Notional);
+"""
+FRA_SER_NEW = """    _serialize_forwardRateAgreementData_Index_t(w, "Index", v.Index);
+    _serialize_longShort(w, "LongShort", v.LongShort);
+    _serialize_moneyFloat(w, "Strike", v.Strike);
+    _serialize_moneyFloat(w, "Notional", v.Notional);
+"""
+
+# (old, new) edits; each `old` must occur exactly once.
+_MONEY_HPP_EDITS = [(FRA_STRUCT_OLD, FRA_STRUCT_NEW)]
+_MONEY_CPP_EDITS = [
+    (MONEY_EXTERN_ANCHOR, MONEY_EXTERN_ANCHOR + MONEY_EXTERN),
+    (MONEY_SETTER_ANCHOR, MONEY_SETTER + MONEY_SETTER_ANCHOR),
+    (MONEY_INFO_ANCHOR, MONEY_INFO + MONEY_INFO_ANCHOR),
+    (FRA_CHILD_OLD, FRA_CHILD_NEW),
+    (FRA_CHILD2_OLD, FRA_CHILD2_NEW),
+    (MONEY_SER_DECL_ANCHOR, MONEY_SER_DECL_ANCHOR + MONEY_SER_DECL),
+    (MONEY_SER_DEF_ANCHOR, MONEY_SER_DEF_ANCHOR + MONEY_SER_DEF),
+    (FRA_SER_OLD, FRA_SER_NEW),
+]
+
+
+def _apply_edits(text: str, edits: list[tuple[str, str]], name: str) -> str:
+    done = [new in text for _, new in edits]
+    if all(done):
+        return text
+    if any(done):
+        raise AnchorError(
+            f"{name}: the money-member patch is half-applied; restore the file and run again"
+        )
+    for old, new in edits:
+        if text.count(old) != 1:
+            raise AnchorError(
+                f"{name}: the money-member anchor {old.splitlines()[0]!r} occurs "
+                f"{text.count(old)} times, not once; xsdcpp's output shape changed"
+            )
+        text = text.replace(old, new, 1)
+    return text
+
+
+def _revert_edits(text: str, edits: list[tuple[str, str]]) -> str:
+    for old, new in reversed(edits):
+        text = text.replace(new, old, 1)
+    return text
+
+
+# The credit products state some money members as bare floats too. Each entry
+# is (struct, member) of an `xsd::optional<float>` member. A money member is
+# turned into a `moneyFloat`, so the document's digits reach the mapper and
+# leave it again. A required plain `float` member is not handled: no credit
+# money member is one, and the patch refuses a shape it does not know.
+# A continuous quantity (a recovery rate, a tranche point, a participation
+# rate) stays a binary float: the data-oriented design rule keeps those as
+# floats, so they are not listed here.
+MONEY_MEMBERS = [
+    ("creditDefaultSwapData", "UpfrontFee"),
+    ("indexCreditDefaultSwapData", "UpfrontFee"),
+    ("indexCreditDefaultSwapOptionData", "Strike"),
+]
+
+
+def _struct_span(text: str, struct: str) -> tuple[int, int]:
+    m = re.search(r"^struct " + re.escape(struct) + r" \{\n.*?^\};\n", text, re.S | re.M)
+    if not m:
+        raise AnchorError(f"domain.hpp: the struct {struct} is missing")
+    return m.start(), m.end()
+
+
+def _serializer_span(text: str, struct: str) -> tuple[int, int]:
+    pattern = re.compile(r"_serialize_" + re.escape(struct) + r"\([^;{]*?\)\s*\{")
+    m = pattern.search(text)
+    if not m:
+        raise AnchorError(f"domain.cpp: the serializer of {struct} is missing")
+    end = text.index("\n}\n", m.end()) + 3
+    return m.start(), end
+
+
+def _member_forms(member: str) -> dict[str, tuple[str, str]]:
+    """The (old, new) text of each place an optional member appears."""
+    return {
+        "hpp": (
+            f"    xsd::optional<float> {member};\n",
+            f"    xsd::optional<domain::moneyFloat> {member};\n",
+        ),
+        "ser": (
+            f'_serialize_float(w, "{member}", *v.{member});',
+            f'_serialize_moneyFloat(w, "{member}", *v.{member});',
+        ),
+        "get": ("= float());", "= domain::moneyFloat());"),
+    }
+
+
+def _swap_in(text: str, span: tuple[int, int], old: str, new: str, what: str) -> str:
+    start, end = span
+    chunk = text[start:end]
+    if chunk.count(old) != 1:
+        raise AnchorError(f"{what}: the money-member anchor {old.strip()!r} occurs {chunk.count(old)} times")
+    return text[:start] + chunk.replace(old, new, 1) + text[end:]
+
+
+def _apply_members_hpp(text: str, reverse: bool = False) -> str:
+    for struct, member in MONEY_MEMBERS:
+        old, new = _member_forms(member)["hpp"]
+        if reverse:
+            old, new = new, old
+        start, end = _struct_span(text, struct)
+        chunk = text[start:end]
+        if reverse is False and old not in chunk and new in chunk:
+            continue
+        text = _swap_in(text, (start, end), old, new, f"domain.hpp {struct}.{member}")
+    return text
+
+
+def _apply_members_cpp(text: str, reverse: bool = False) -> str:
+    for struct, member in MONEY_MEMBERS:
+        forms = _member_forms(member)
+        ser_old, ser_new = forms["ser"]
+        if reverse:
+            ser_old, ser_new = ser_new, ser_old
+        span = _serializer_span(text, struct)
+        if not reverse and ser_old not in text[span[0]:span[1]] and ser_new in text[span[0]:span[1]]:
+            continue
+        text = _swap_in(text, span, ser_old, ser_new, f"domain.cpp {struct}.{member} serializer")
+
+        info_old = f"(xsdcpp::get_field_t)&_get_{struct}_{member},\n     &domain::_float_Info,\n"
+        info_new = f"(xsdcpp::get_field_t)&_get_{struct}_{member},\n     &domain::_moneyFloat_Info,\n"
+        if reverse:
+            info_old, info_new = info_new, info_old
+        if text.count(info_old) != 1:
+            raise AnchorError(f"domain.cpp: the element info of {struct}.{member} occurs {text.count(info_old)} times")
+        text = text.replace(info_old, info_new, 1)
+
+        m = re.search(
+            r"void\* _get_" + re.escape(struct) + "_" + re.escape(member) + r"\([^)]*\) \{\n.*?\n\}\n",
+            text,
+            re.S,
+        )
+        if not m:
+            raise AnchorError(f"domain.cpp: the getter of {struct}.{member} is missing")
+        g_old, g_new = forms["get"]
+        if reverse:
+            g_old, g_new = g_new, g_old
+        body = m.group(0)
+        if body.count(g_old) != 1:
+            raise AnchorError(f"domain.cpp: the getter of {struct}.{member} has an unknown shape")
+        text = text[: m.start()] + body.replace(g_old, g_new, 1) + text[m.end():]
+    return text
+
+
+def patch_money_hpp(text: str) -> str:
+    return _apply_members_hpp(_apply_edits(text, _MONEY_HPP_EDITS, "domain.hpp"))
+
+
+def unpatch_money_hpp(text: str) -> str:
+    return _revert_edits(_apply_members_hpp(text, reverse=True), _MONEY_HPP_EDITS)
+
+
+def patch_money_cpp(text: str) -> str:
+    return _apply_members_cpp(_apply_edits(text, _MONEY_CPP_EDITS, "domain.cpp"))
+
+
+def unpatch_money_cpp(text: str) -> str:
+    return _revert_edits(_apply_members_cpp(text, reverse=True), _MONEY_CPP_EDITS)
+
+
+# ---------------------------------------------------------------------------
 # Driver
 # ---------------------------------------------------------------------------
 
 
-def apply_patch(xsd_path: Path, cpp_path: Path, verbose: bool = True) -> dict[str, int]:
+def apply_patch(
+    xsd_path: Path, cpp_path: Path, hpp_path: Path = DEFAULT_DOMAIN_HPP, verbose: bool = True
+) -> dict[str, int]:
     xsd_text = xsd_path.read_text()
     cpp_text = cpp_path.read_text()
+    hpp_text = hpp_path.read_text()
     new_xsd = patch_xsd(xsd_text)
     new_cpp, counts = patch_cpp(cpp_text)
+    new_cpp = patch_money_cpp(new_cpp)
+    new_hpp = patch_money_hpp(hpp_text)
     if new_xsd != xsd_text:
         xsd_path.write_text(new_xsd)
     if new_cpp != cpp_text:
         cpp_path.write_text(new_cpp)
+    if new_hpp != hpp_text:
+        hpp_path.write_text(new_hpp)
     if verbose:
         xsd_state = "patched" if new_xsd != xsd_text else "already patched"
         cpp_state = "patched" if new_cpp != cpp_text else "already patched"
@@ -265,11 +523,17 @@ def self_test() -> int:
         tmp = Path(tmp)
         xsd = tmp / "domain_xsd.hpp"
         cpp = tmp / "domain.cpp"
+        hpp = tmp / "domain.hpp"
         shutil.copyfile(DEFAULT_DOMAIN_XSD, xsd)
         shutil.copyfile(DEFAULT_DOMAIN_CPP, cpp)
+        shutil.copyfile(DEFAULT_DOMAIN_HPP, hpp)
 
         xsd.write_text(unpatch_xsd(xsd.read_text()))
-        cpp.write_text(unpatch_cpp(cpp.read_text()))
+        cpp.write_text(unpatch_cpp(unpatch_money_cpp(cpp.read_text())))
+        hpp.write_text(unpatch_money_hpp(hpp.read_text()))
+        if "moneyFloat" in cpp.read_text() or "moneyFloat" in hpp.read_text():
+            print("SELF-TEST FAIL: un-patch left a money member behind", file=sys.stderr)
+            return 1
         if "struct lexical_form" in xsd.read_text():
             print("SELF-TEST FAIL: un-patch left lexical_form behind", file=sys.stderr)
             return 1
@@ -277,9 +541,10 @@ def self_test() -> int:
             print("SELF-TEST FAIL: un-patch left a lexical stash behind", file=sys.stderr)
             return 1
 
-        counts = apply_patch(xsd, cpp, verbose=False)
+        counts = apply_patch(xsd, cpp, hpp, verbose=False)
         restored_xsd = xsd.read_text()
         restored_cpp = cpp.read_text()
+        restored_hpp = hpp.read_text()
         if restored_xsd != DEFAULT_DOMAIN_XSD.read_text():
             print("SELF-TEST FAIL: domain_xsd.hpp was not restored byte for byte", file=sys.stderr)
             return 1
@@ -287,8 +552,16 @@ def self_test() -> int:
             print("SELF-TEST FAIL: domain.cpp was not restored byte for byte", file=sys.stderr)
             return 1
 
-        apply_patch(xsd, cpp, verbose=False)
-        if xsd.read_text() != restored_xsd or cpp.read_text() != restored_cpp:
+        if restored_hpp != DEFAULT_DOMAIN_HPP.read_text():
+            print("SELF-TEST FAIL: domain.hpp was not restored byte for byte", file=sys.stderr)
+            return 1
+
+        apply_patch(xsd, cpp, hpp, verbose=False)
+        if (
+            xsd.read_text() != restored_xsd
+            or cpp.read_text() != restored_cpp
+            or hpp.read_text() != restored_hpp
+        ):
             print("SELF-TEST FAIL: a second run was not idempotent", file=sys.stderr)
             return 1
         if counts["float_setters"] != 35 or counts["double_setters"] != 2:
@@ -300,7 +573,7 @@ def self_test() -> int:
             return 1
 
         print(
-            "SELF-TEST OK: un-patch -> reapply restored both files byte for byte; "
+            "SELF-TEST OK: un-patch -> reapply restored all three files byte for byte; "
             f"second run was a no-op; {counts['float_setters']} float and "
             f"{counts['double_setters']} double setter bodies stashed the lexical form"
         )
@@ -312,14 +585,17 @@ def self_test_missing_anchor() -> int:
         tmp = Path(tmp)
         xsd = tmp / "domain_xsd.hpp"
         cpp = tmp / "domain.cpp"
+        hpp = tmp / "domain.hpp"
         shutil.copyfile(DEFAULT_DOMAIN_XSD, xsd)
         shutil.copyfile(DEFAULT_DOMAIN_CPP, cpp)
+        shutil.copyfile(DEFAULT_DOMAIN_HPP, hpp)
         xsd.write_text(unpatch_xsd(xsd.read_text()))
-        cpp.write_text(unpatch_cpp(cpp.read_text()))
+        cpp.write_text(unpatch_cpp(unpatch_money_cpp(cpp.read_text())))
+        hpp.write_text(unpatch_money_hpp(hpp.read_text()))
 
         cpp.write_text(cpp.read_text().replace(CPP_DEF_ORIGINAL, "", 1))
         try:
-            apply_patch(xsd, cpp, verbose=False)
+            apply_patch(xsd, cpp, hpp, verbose=False)
         except AnchorError as e:
             print(f"SELF-TEST (missing anchor) OK: reapply refused with: {e}")
             return 0
@@ -333,6 +609,7 @@ def main() -> int:
     )
     parser.add_argument("--domain-xsd", type=Path, default=DEFAULT_DOMAIN_XSD)
     parser.add_argument("--domain-cpp", type=Path, default=DEFAULT_DOMAIN_CPP)
+    parser.add_argument("--domain-hpp", type=Path, default=DEFAULT_DOMAIN_HPP)
     parser.add_argument("--self-test", action="store_true", help="round-trip the patch on temp copies")
     parser.add_argument(
         "--self-test-missing-anchor",
@@ -347,7 +624,7 @@ def main() -> int:
         return self_test_missing_anchor()
 
     try:
-        apply_patch(args.domain_xsd, args.domain_cpp)
+        apply_patch(args.domain_xsd, args.domain_cpp, args.domain_hpp)
     except AnchorError as e:
         print(f"reapply_ore_lexical_form: FAILED: {e}", file=sys.stderr)
         return 1

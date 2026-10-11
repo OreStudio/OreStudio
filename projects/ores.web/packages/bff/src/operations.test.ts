@@ -29,6 +29,7 @@ import {
     type SessionMode,
 } from '@ores/wire-protocol';
 import type { Config } from './config.js';
+import { MY_ROLES_SUBJECT, myRolesAnswer } from './deployment-roles.testing.js';
 import { busStreamNames, busWindow, logWindow, secondsSinceReport } from './operations.js';
 import { resolveBroker } from './broker.js';
 import { buildServer, sessionCookieName } from './server.js';
@@ -165,10 +166,21 @@ function buildTestServer(
     serverSamples: readonly Record<string, unknown>[] = [],
     streamSamples: readonly Record<string, unknown>[] = [],
     logEntries: readonly Record<string, unknown>[] = [],
+    permissionCodes?: readonly string[],
 ) {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const calls: { subject: string; body: unknown }[] = [];
     const client = {
+        async callAuthenticated(
+            subject: string,
+            _body: unknown,
+            schema: { parse: (value: unknown) => unknown },
+        ): Promise<unknown> {
+            if (subject === MY_ROLES_SUBJECT) {
+                return schema.parse(myRolesAnswer(mode, permissionCodes));
+            }
+            throw new Error(`unexpected call ${subject}`);
+        },
         async serviceRoster(): Promise<readonly Record<string, unknown>[]> {
             calls.push({ subject: 'telemetry.v1.ops.get_service_roster', body: {} });
             return slots;
@@ -239,6 +251,53 @@ function buildTestServer(
     });
     return { server, cookies: { [SESSION_COOKIE]: session.id }, calls };
 }
+
+describe('the deployment read', () => {
+    it('is not granted by everything, even to a session in the system tenant', async () => {
+        const { server, cookies, calls } = buildTestServer(
+            'system-administration',
+            [wireSlot()],
+            wireGridStats(),
+            [wireHost()],
+            [],
+            [],
+            [],
+            ['*'],
+        );
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/services',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(403);
+        expect(calls).toEqual([]);
+    });
+
+    it('is granted by the installation wildcard', async () => {
+        const { server, cookies } = buildTestServer(
+            'system-administration',
+            [wireSlot()],
+            wireGridStats(),
+            [wireHost()],
+            [],
+            [],
+            [],
+            ['installation::*'],
+        );
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/services',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+    });
+});
 
 describe('GET /api/operations/services', () => {
     it('answers the roster with each row dated from the deployment clock', async () => {

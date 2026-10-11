@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 166AF4C7-3EFE-415A-908B-E3F2F1548B60
+:END:
+#+title: A structure that confirms as a whole is confirmed as one doc…
+#+description: A structure that confirms as a whole is confirmed as one document, so its external version belongs to the deal. The structure table is immutable and holds no version, and its internal version is read from the legs. The model does not say where the deal's external version is stored or computed. A package does not need one, because each leg carries its own. Decide where the external version of a strategy, a typed structure and a dynamic structure lives, and add the read the structure page needs. The structure page prototype shows the external version of the deal, and says the table has no column for it.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

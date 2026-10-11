@@ -37,12 +37,12 @@ select plan(6);
 
 insert into ores_synthetic_market_data_generation_configs_tbl
 (id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
-values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, null, 'tenant', 'bound', 'scope_test_tenant_wide', 'test', true, null, 'ores_prime_origin_ddl_user', 'ores_prime_origin_ddl_user', 'system.initial_load', 'seed', now(), 'infinity');
+values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, null, 'tenant', 'bound', 'scope_test_tenant_wide', 'test', true, null, current_user, current_user, 'system.initial_load', 'seed', now(), 'infinity');
 
 select throws_ok(
     $$insert into ores_synthetic_market_data_generation_configs_tbl
       (id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
-      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, gen_random_uuid(), 'party', 'bound', 'scope_test_party_narrower', 'test', true, null, 'ores_prime_origin_ddl_user', 'ores_prime_origin_ddl_user', 'system.initial_load', 'seed', now(), 'infinity')$$,
+      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, gen_random_uuid(), 'party', 'bound', 'scope_test_party_narrower', 'test', true, null, current_user, current_user, 'system.initial_load', 'seed', now(), 'infinity')$$,
     '23514',
     NULL,
     'party-scope bound config conflicting with an active tenant-scope bound config is rejected'
@@ -56,7 +56,7 @@ select throws_ok(
 select lives_ok(
     $$insert into ores_synthetic_market_data_generation_configs_tbl
       (id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
-      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, gen_random_uuid(), 'party', 'sandboxed', 'scope_test_party_sandbox', 'test', true, null, 'ores_prime_origin_ddl_user', 'ores_prime_origin_ddl_user', 'system.initial_load', 'seed', now(), 'infinity')$$,
+      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, gen_random_uuid(), 'party', 'sandboxed', 'scope_test_party_sandbox', 'test', true, null, current_user, current_user, 'system.initial_load', 'seed', now(), 'infinity')$$,
     'sandboxed config never conflicts with an active bound config at any scope'
 );
 
@@ -68,7 +68,7 @@ select lives_ok(
 select lives_ok(
     $$insert into ores_synthetic_market_data_generation_configs_tbl
       (id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
-      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, null, 'tenant', 'bound', 'scope_test_tenant_wide_disabled', 'test', false, null, 'ores_prime_origin_ddl_user', 'ores_prime_origin_ddl_user', 'system.initial_load', 'seed', now(), 'infinity')$$,
+      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, null, 'tenant', 'bound', 'scope_test_tenant_wide_disabled', 'test', false, null, current_user, current_user, 'system.initial_load', 'seed', now(), 'infinity')$$,
     'a disabled bound config at the same scope does not conflict'
 );
 
@@ -84,7 +84,7 @@ select lives_ok(
 select throws_ok(
     $$insert into ores_synthetic_market_data_generation_configs_tbl
       (id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
-      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, null, 'party', 'sandboxed', 'scope_test_malformed_party', 'test', true, null, 'ores_prime_origin_ddl_user', 'ores_prime_origin_ddl_user', 'system.initial_load', 'seed', now(), 'infinity')$$,
+      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, null, 'party', 'sandboxed', 'scope_test_malformed_party', 'test', true, null, current_user, current_user, 'system.initial_load', 'seed', now(), 'infinity')$$,
     '23514',
     NULL,
     'scope=party with a null party_id violates the scope/nullability check constraint'
@@ -93,7 +93,7 @@ select throws_ok(
 select throws_ok(
     $$insert into ores_synthetic_market_data_generation_configs_tbl
       (id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
-      values (gen_random_uuid(), null, 0, gen_random_uuid(), 'system', 'sandboxed', 'scope_test_malformed_system', 'test', true, null, 'ores_prime_origin_ddl_user', 'ores_prime_origin_ddl_user', 'system.initial_load', 'seed', now(), 'infinity')$$,
+      values (gen_random_uuid(), null, 0, gen_random_uuid(), 'system', 'sandboxed', 'scope_test_malformed_system', 'test', true, null, current_user, current_user, 'system.initial_load', 'seed', now(), 'infinity')$$,
     '23514',
     NULL,
     'scope=system with a non-null party_id violates the scope/nullability check constraint'
@@ -116,12 +116,12 @@ delete from ores_synthetic_market_data_generation_configs_tbl where name = 'scop
 
 insert into ores_synthetic_market_data_generation_configs_tbl
 (id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
-values ('44444444-4444-4444-4444-444444444444', ores_utility_system_tenant_id_fn(), 0, '55555555-5555-5555-5555-555555555555', 'party', 'bound', 'scope_test_same_party_first_container', 'test', true, null, 'ores_prime_origin_ddl_user', 'ores_prime_origin_ddl_user', 'system.initial_load', 'seed', now(), 'infinity');
+values ('44444444-4444-4444-4444-444444444444', ores_utility_system_tenant_id_fn(), 0, '55555555-5555-5555-5555-555555555555', 'party', 'bound', 'scope_test_same_party_first_container', 'test', true, null, current_user, current_user, 'system.initial_load', 'seed', now(), 'infinity');
 
 select lives_ok(
     $$insert into ores_synthetic_market_data_generation_configs_tbl
       (id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
-      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, '55555555-5555-5555-5555-555555555555', 'party', 'bound', 'scope_test_same_party_second_container', 'test', true, null, 'ores_prime_origin_ddl_user', 'ores_prime_origin_ddl_user', 'system.initial_load', 'seed', now(), 'infinity')$$,
+      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, '55555555-5555-5555-5555-555555555555', 'party', 'bound', 'scope_test_same_party_second_container', 'test', true, null, current_user, current_user, 'system.initial_load', 'seed', now(), 'infinity')$$,
     'a second enabled bound container for the same party does not conflict with the first'
 );
 

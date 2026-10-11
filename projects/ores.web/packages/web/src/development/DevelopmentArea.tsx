@@ -23,14 +23,18 @@ import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
 import { useTabs } from '../ui/Tabs.js';
+import { BacklogTab } from './BacklogTab.js';
+import { ChartsTab } from './ChartsTab.js';
+import { BoardTab } from './BoardTab.js';
 import { TestsQueue } from './TestsQueue.js';
 
 /**
  * The tabs of the area. Tests holds every scenario, by sprint, with the live
- * ones at the top of a sprint and the done ones below. Board, Stories and Tasks
- * join it with the next story.
+ * ones at the top of a sprint and the done ones below. Board shows the sprint's
+ * stories by state. Backlog lists the four buckets and opens a doc in the tab. Charts draws the
+ * sprint's velocity, burn-up and tasks by day and by state.
  */
-const TABS = ['tests'] as const;
+const TABS = ['tests', 'board', 'backlog', 'charts'] as const;
 
 /**
  * The development area: the work a team does on the product, starting with the
@@ -54,6 +58,9 @@ export function DevelopmentArea(): ReactNode {
             />
             {bar}
             {tab === 'tests' && <TestsQueue />}
+            {tab === 'board' && <BoardTab />}
+            {tab === 'backlog' && <BacklogTab />}
+            {tab === 'charts' && <ChartsTab />}
         </div>
     );
 }

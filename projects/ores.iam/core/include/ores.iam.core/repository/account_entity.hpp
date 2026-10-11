@@ -57,6 +57,7 @@ struct account_entity {
     std::optional<std::string> picture_code;
     std::optional<std::string> job_title;
     std::optional<std::string> reports_to_account_id;
+    bool shared = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

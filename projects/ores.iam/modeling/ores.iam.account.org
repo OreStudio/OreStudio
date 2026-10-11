@@ -252,6 +252,24 @@ The account this person reports to, capturing the functional reporting
 line. Soft self-reference to another row in this same table; unset means
 no reporting line is recorded.
 
+** shared
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether every tenant may read this account. A shared account is owned by the
+system tenant: the service accounts, which write under their own name into the
+history of every tenant, and the super administrator. A history names its
+author for every reader only if the reader can read that author's account.
+
+The flag is the whole rule. The row-level policy admits a system tenant row to
+another tenant only when this column is true, so a later human account in the
+system tenant stays hidden until the flag is set. A tenant never writes a
+shared row, and the seed is the only writer of the flag.
+
 
 * Artefact columns
 
@@ -382,7 +400,14 @@ refuses a write that would reach the row being written.
 :entity_plural_short:   accounts
 :entity_singular_words: account
 :entity_plural_words:   accounts
+:system_tenant_visible: true
 :END:
+
+The service accounts and the super administrator are shared rows of the system
+tenant. =:system_tenant_visible: true= makes the generated repository read own
+tenant OR system tenant rows on every read path. The row-level policy decides
+which system tenant rows a reader sees: only those with =shared= set. Mutations
+stay own-tenant scoped.
 
 ** Domain includes
 

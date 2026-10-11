@@ -100,6 +100,7 @@ create table if not exists "ores_iam_accounts_tbl" (
     "picture_code" text null,
     "job_title" text null,
     "reports_to_account_id" uuid null,
+    "shared" boolean not null default false,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -227,7 +228,6 @@ begin
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
     -- Validate image_id (optional soft FK to ores_assets_images_tbl)
-    if NEW.image_id is not null then
         if not exists (
             select 1 from ores_assets_images_tbl
             where tenant_id = NEW.tenant_id
@@ -240,13 +240,7 @@ begin
     end if;
 
     -- Validate reports_to_account_id (optional soft FK to ores_iam_accounts_tbl)
-    if NEW.reports_to_account_id is not null then
-        if not exists (
-            select 1 from ores_iam_accounts_tbl
-            where tenant_id = NEW.tenant_id
-              and id = NEW.reports_to_account_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
+        if not ores_iam_account_exists_fn(NEW.reports_to_account_id) then
             raise exception 'Invalid reports_to_account_id: %. Account must exist.', NEW.reports_to_account_id
                 using errcode = '23503';
         end if;

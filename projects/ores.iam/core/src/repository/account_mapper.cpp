@@ -67,6 +67,7 @@ domain::account account_mapper::map(const account_entity& v) {
         v.reports_to_account_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.reports_to_account_id)) :
             std::nullopt;
+    r.shared = v.shared;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -101,6 +102,7 @@ account_entity account_mapper::map(const domain::account& v) {
     r.reports_to_account_id = v.reports_to_account_id.has_value() ?
                                   std::optional(boost::uuids::to_string(*v.reports_to_account_id)) :
                                   std::nullopt;
+    r.shared = v.shared;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

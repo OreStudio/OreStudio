@@ -10,7 +10,7 @@
       </AdditionalFields>
     </Envelope>
     <IndexCreditDefaultSwapOptionData>
-      <Strike>1</Strike>
+      <Strike>1.0</Strike>
       <KnockOut>N</KnockOut>
       <IndexTerm>5Y</IndexTerm>
       <StrikeType>Price</StrikeType>
@@ -29,7 +29,7 @@
         <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
         <ProtectionStart>2025-07-27</ProtectionStart>
         <UpfrontDate></UpfrontDate>
-        <UpfrontFee>0</UpfrontFee>
+        <UpfrontFee>0.0</UpfrontFee>
         <LegData>
           <Payer>true</Payer>
           <LegType>Fixed</LegType>

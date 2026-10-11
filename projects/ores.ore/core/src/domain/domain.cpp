@@ -23523,7 +23523,7 @@ void* _get_creditDefaultSwapData_UpfrontDate(domain::creditDefaultSwapData* pare
     return &*(parent->UpfrontDate = domain::date());
 }
 void* _get_creditDefaultSwapData_UpfrontFee(domain::creditDefaultSwapData* parent) {
-    return &*(parent->UpfrontFee = float());
+    return &*(parent->UpfrontFee = domain::moneyFloat());
 }
 void* _get_creditDefaultSwapData_FixedRecoveryRate(domain::creditDefaultSwapData* parent) {
     return &*(parent->FixedRecoveryRate = float());
@@ -23601,7 +23601,7 @@ xsdcpp::ChildElementInfo _creditDefaultSwapData_Children[] = {
     {"UpfrontFee",
      9,
      (xsdcpp::get_field_t)&_get_creditDefaultSwapData_UpfrontFee,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      0,
      1},
     {"FixedRecoveryRate",
@@ -25298,7 +25298,7 @@ void* _get_indexCreditDefaultSwapData_UpfrontDate(domain::indexCreditDefaultSwap
     return &*(parent->UpfrontDate = domain::date());
 }
 void* _get_indexCreditDefaultSwapData_UpfrontFee(domain::indexCreditDefaultSwapData* parent) {
-    return &*(parent->UpfrontFee = float());
+    return &*(parent->UpfrontFee = domain::moneyFloat());
 }
 void* _get_indexCreditDefaultSwapData_LegData(domain::indexCreditDefaultSwapData* parent) {
     return &parent->LegData;
@@ -25365,7 +25365,7 @@ xsdcpp::ChildElementInfo _indexCreditDefaultSwapData_Children[] = {
     {"UpfrontFee",
      8,
      (xsdcpp::get_field_t)&_get_indexCreditDefaultSwapData_UpfrontFee,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      0,
      1},
     {"LegData",
@@ -25395,7 +25395,7 @@ xsdcpp::ChildElementInfo _indexCreditDefaultSwapData_Children[] = {
     {nullptr}};
 void* _get_indexCreditDefaultSwapOptionData_Strike(
     domain::indexCreditDefaultSwapOptionData* parent) {
-    return &*(parent->Strike = float());
+    return &*(parent->Strike = domain::moneyFloat());
 }
 void* _get_indexCreditDefaultSwapOptionData_KnockOut(
     domain::indexCreditDefaultSwapOptionData* parent) {
@@ -25429,7 +25429,7 @@ xsdcpp::ChildElementInfo _indexCreditDefaultSwapOptionData_Children[] = {
     {"Strike",
      0,
      (xsdcpp::get_field_t)&_get_indexCreditDefaultSwapOptionData_Strike,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      0,
      1},
     {"KnockOut",
@@ -71743,7 +71743,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_creditDefaultSwapData(xsdcpp::XmlWriter& w,
     if (v.UpfrontDate)
         _serialize_date(w, "UpfrontDate", *v.UpfrontDate);
     if (v.UpfrontFee)
-        _serialize_float(w, "UpfrontFee", *v.UpfrontFee);
+        _serialize_moneyFloat(w, "UpfrontFee", *v.UpfrontFee);
     if (v.FixedRecoveryRate)
         _serialize_float(w, "FixedRecoveryRate", *v.FixedRecoveryRate);
     _serialize_legData(w, "LegData", v.LegData);
@@ -72640,7 +72640,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_indexCreditDefaultSwapData(
     if (v.UpfrontDate)
         _serialize_date(w, "UpfrontDate", *v.UpfrontDate);
     if (v.UpfrontFee)
-        _serialize_float(w, "UpfrontFee", *v.UpfrontFee);
+        _serialize_moneyFloat(w, "UpfrontFee", *v.UpfrontFee);
     _serialize_legData(w, "LegData", v.LegData);
     if (v.TradeDate)
         _serialize_date(w, "TradeDate", *v.TradeDate);
@@ -72672,7 +72672,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_indexCreditDefaultSwapOptionData(
     xsdcpp::XmlWriter& w, const char* name, const domain::indexCreditDefaultSwapOptionData& v) {
     w.startElement(name);
     if (v.Strike)
-        _serialize_float(w, "Strike", *v.Strike);
+        _serialize_moneyFloat(w, "Strike", *v.Strike);
     if (v.KnockOut)
         _serialize_bool_(w, "KnockOut", *v.KnockOut);
     if (v.IndexTerm)

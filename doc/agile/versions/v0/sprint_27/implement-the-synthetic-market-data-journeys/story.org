@@ -40,10 +40,12 @@ A person authors an FX price feed, authors an IR curve feed, runs a collection a
 | [[id:0091F10A-AC68-4C12-8536-F72E371E4E61][Close M06, the synthetic TypeScript twin]] | DONE | 2026-10-09 | 2026-10-09 | Synthetic had no committed TypeScript protocol, so ores.web could not speak it. The twins are generated, the four operation surfaces are modelled so both sides generate, and the twin gate covers the component. |
 | [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] | DONE | 2026-10-10 | 2026-10-10 | The BFF has no route for any synthetic subject, and the web reaches the bus only through the BFF. |
 | [[id:2DCC5A20-11C5-4EDA-B8AA-386710F9F804][Build the yield curve process type screen]] | BACKLOG | | | Journey 4: the process types and their parameter definitions, as a record screen over the two catalogues. |
-| [[id:6E54699C-427C-471A-AA70-FCCCD27ABC85][Build the FX price feed screen]] | BACKLOG | | | Journey 1: the pair, the process, the GMM mixture and the sample paths, on the record-screen framework. |
+| [[id:6E54699C-427C-471A-AA70-FCCCD27ABC85][Build the FX price feed screen]] | DONE | 2026-10-10 | 2026-10-11 | Journey 1: the pair, the process, the GMM mixture and the sample paths, on the record-screen framework. |
 | [[id:1E325838-917A-4F74-B880-15DEF844CD90][Build the IR curve feed screen]] | BACKLOG | | | Journey 2: the identity, the short-rate process and its parameter values, the template ladder, and the shape and path previews. |
 | [[id:899404A9-FDF2-4BF6-B11D-B1F4240B2D4E][Build the synthetic collection screen]] | BACKLOG | | | Journey 3: the feed tree, the selection, the live chart and the folder-scoped start and stop. |
 | [[id:F8D3EEA7-E3A8-4CDE-BA1B-05C1F0031D8E][Close the gaps the synthetic journeys found]] | BACKLOG | | | No subject lists the vintages a price source offers; several lists filter on id_one_of where the screen needs the parent; the parameter definition's wire key drops the process type. |
+| [[id:3CD588CB-1B74-40BA-896F-75CFF8157EAF][Name a feed by its oresmd URI]] | BACKLOG | | | An FX feed names its datum by ORE key; it should hold the oresmd identity and derive the ORE key only for export. |
+| [[id:AACBF6DA-53E9-46F4-BBD7-A476625E1732][Give the mixture a simple mode]] | BACKLOG | | | The Qt FX editor has a simple mode, sliders for drift, volatility and jump frequency that write the mixture; the web edits only the raw table. |
 
 * Decisions
 
@@ -61,6 +63,22 @@ A person authors an FX price feed, authors an IR curve feed, runs a collection a
   types and the definitions live in the system tenant. The definitions are
   read only until their key names the process type, and the process types
   are writable from a system session alone.
+- *Feed screens follow one standard.* The FX price feed screen is the shape
+  of every feed screen, recorded in the
+  [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]]: the list
+  is the run dashboard; the process is edited as one set in a list with a
+  dialog per part, with marked unsaved changes and one Save that asks the
+  reason and offers a restart.
+- *The engine sits with the process, and the server converts.* The engine
+  decides what a part's numbers mean, so it is chosen on the process tab, and
+  a change asks the synthetic service to convert the draft
+  (=convert_fx_mixture=). Quant logic that decides a written value lives on
+  the server.
+- *A running feed keeps its process.* A feed reads its parts when it starts,
+  so a save tells the person and offers to restart the feed.
+- *The shared record parts take a store.* =RecordStore= gives the record
+  list, dialogs and history their routes, so a synthetic screen reuses the
+  refdata parts.
 
 * Out of scope
 

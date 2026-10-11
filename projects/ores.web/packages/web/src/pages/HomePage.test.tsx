@@ -712,7 +712,7 @@ describe("the tenant administrator's home", () => {
             seedTenant(),
             '/?tab=active',
         );
-        expect(active).toContain('href="/market-data/evolution"');
+        expect(active).toContain('href="/market-data"');
 
         const upcoming = home(
             'tenant-administration',

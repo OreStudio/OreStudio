@@ -61,10 +61,20 @@ function buildTestServer(
     readonly server: ReturnType<typeof buildServer>;
     readonly sessionId: string;
     readonly calls: { subject: string; body: unknown }[];
+    readonly publish: (subject: string, message: unknown) => void;
 } {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const calls: { subject: string; body: unknown }[] = [];
+    const listeners = new Map<string, (message: unknown) => void>();
     const client = {
+        subscribeToMessages(
+            subject: string,
+            schema: { parse: (value: unknown) => unknown },
+            onMessage: (message: unknown) => void,
+        ): () => void {
+            listeners.set(subject, (message) => onMessage(schema.parse(message)));
+            return () => listeners.delete(subject);
+        },
         async callAuthenticated(
             subject: string,
             body: unknown,
@@ -104,6 +114,7 @@ function buildTestServer(
         }),
         sessionId: session.id,
         calls,
+        publish: (subject, message) => listeners.get(subject)?.(message),
     };
 }
 
@@ -179,6 +190,77 @@ describe('synthetic resource routes', () => {
         expect(calls[0]?.body).toMatchObject({ filter: null, as_of: null, offset: 0 });
     });
 
+    it('reads one page searched and ordered on the server, with its total', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                total: 31,
+                fx_spot_generation_configs: [{ id: ID, base_currency_code: 'EUR' }],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/fx-feeds?offset=15&limit=15&search=eur&sort=source_name&descending=true',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            rows: [{ id: ID, base_currency_code: 'EUR' }],
+            total: 31,
+        });
+        expect(calls[0]?.body).toEqual({
+            offset: 15,
+            limit: 15,
+            order: { field: 'source_name', descending: true },
+            filter: { id_one_of: null, search: 'eur' },
+            as_of: null,
+        });
+    });
+
+    it('refuses an order or a search the model does not declare, before any call', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const order = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/fx-feeds?limit=15&sort=gmm_initial_price',
+        );
+        expect(order.statusCode).toBe(400);
+        const search = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/gmm-components?limit=15&search=calm',
+        );
+        expect(search.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it("reads one feed's mixture through its parent filter", async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.gmm_components.list': { result: ok, gmm_components: [COMPONENT] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/gmm-components/by/${OTHER}`,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json().rows).toEqual([COMPONENT]);
+        expect(calls[0]?.body).toMatchObject({
+            filter: { fx_spot_config_id: OTHER, id_one_of: null, fx_spot_config_id_one_of: null },
+        });
+    });
+
+    it('answers 404 for a parent read of a resource that has no parent', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'GET', `/api/synthetic/fx-feeds/by/${ID}`);
+        expect(response.statusCode).toBe(404);
+        expect(calls).toHaveLength(0);
+    });
+
     it('answers 404 for a resource the table does not name', async () => {
         const { server, sessionId, calls } = buildTestServer({});
         const response = await send(server, sessionId, 'GET', '/api/synthetic/stub-feeds');
@@ -201,6 +283,22 @@ describe('synthetic resource routes', () => {
         );
         expect(response.json().row.name).toBe('Vasicek');
         expect(calls[0]?.body).toMatchObject({ filter: { code_one_of: ['vasicek'] }, limit: 1 });
+        expect(Object.keys((calls[0]?.body as { filter: object }).filter)).toEqual(['code_one_of']);
+    });
+
+    it('reads one feed with every member of its filter, because the server refuses a missing one', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [{ id: ID }],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', `/api/synthetic/fx-feeds/key/${ID}`);
+        expect(response.statusCode).toBe(200);
+        expect((calls[0]?.body as { filter: unknown }).filter).toEqual({
+            id_one_of: [ID],
+            search: null,
+        });
     });
 
     it('reads a parameter definition by its id, never by the name types share', async () => {
@@ -455,6 +553,100 @@ describe('synthetic operations', () => {
         expect(response.json()).toEqual({ sourceNames: ['fx.EURUSD'] });
     });
 
+    it('keeps the ticks of each running feed and serves the newest ones for a feed the session reads', async () => {
+        const replies: Record<string, unknown> = {
+            'synthetic.v1.feed_configs.list': {
+                success: true,
+                running_source_names: ['live.eurusd'],
+            },
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [{ id: ID, source_name: 'live.eurusd' }],
+            },
+        };
+        const { server, sessionId, publish } = buildTestServer(replies);
+        await send(server, sessionId, 'GET', '/api/synthetic/running');
+
+        const subject = 'synthetic.v1.ops.tick.live.eurusd';
+        publish(subject, { value: '1.1', observation_time: '2026-10-11 09:00:00Z' });
+        publish(subject, { value: 'not a price', observation_time: '2026-10-11 09:00:30Z' });
+        publish(subject, { value: '1.2', observation_time: '2026-10-11 09:01:00Z' });
+        publish(subject, { value: '1.3', observation_time: '2026-10-11 09:02:00Z' });
+
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/feeds/${ID}/ticks?limit=2`,
+        );
+        expect(response.json()).toEqual({
+            sourceName: 'live.eurusd',
+            ticks: [
+                { at: '2026-10-11 09:01:00Z', value: 1.2 },
+                { at: '2026-10-11 09:02:00Z', value: 1.3 },
+            ],
+        });
+    });
+
+    it('forgets a run when its feed stops, so a later run under the name starts empty', async () => {
+        const replies: Record<string, unknown> = {
+            'synthetic.v1.feed_configs.list': {
+                success: true,
+                running_source_names: ['live.eurusd'],
+            },
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [{ id: ID, source_name: 'live.eurusd' }],
+            },
+        };
+        const { server, sessionId, publish } = buildTestServer(replies);
+        const subject = 'synthetic.v1.ops.tick.live.eurusd';
+        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        publish(subject, { value: '1.1', observation_time: '2026-10-11 09:00:00Z' });
+
+        replies['synthetic.v1.feed_configs.list'] = { success: true, running_source_names: [] };
+        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        publish(subject, { value: '9.9', observation_time: '2026-10-11 09:03:00Z' });
+        const stopped = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        expect(stopped.json().ticks).toEqual([]);
+
+        replies['synthetic.v1.feed_configs.list'] = {
+            success: true,
+            running_source_names: ['live.eurusd'],
+        };
+        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        publish(subject, { value: '1.5', observation_time: '2026-10-11 09:04:00Z' });
+        const again = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        expect(again.json().ticks).toEqual([{ at: '2026-10-11 09:04:00Z', value: 1.5 }]);
+    });
+
+    it('starts no listening when a feed that is not running is read', async () => {
+        const { server, sessionId, publish } = buildTestServer({
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [{ id: ID, source_name: 'live.eurusd' }],
+            },
+        });
+        await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        publish('synthetic.v1.ops.tick.live.eurusd', {
+            value: '1.1',
+            observation_time: '2026-10-11 09:00:00Z',
+        });
+        const response = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        expect(response.json().ticks).toEqual([]);
+    });
+
+    it('answers 404 for the ticks of a feed the session cannot read', async () => {
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        expect(response.statusCode).toBe(404);
+    });
+
     it('answers 409 with the server words when a feed start is refused', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.start_feed': {
@@ -575,6 +767,50 @@ describe('synthetic operations', () => {
         });
         expect(response.statusCode).toBe(400);
         expect(calls).toHaveLength(0);
+    });
+
+    it('converts a mixture to another engine through the synthetic service', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.convert_fx_mixture': {
+                success: true,
+                message: '',
+                gmm_means: [0],
+                gmm_stdevs: [0.001],
+                gmm_weights: [0.046],
+            },
+        });
+        const body = {
+            gmm_means: [0, 0],
+            gmm_stdevs: [0.0005, 0.002],
+            gmm_weights: [0.95, 0.05],
+            from_process_type: 'geometric',
+            to_process_type: 'ornstein_uhlenbeck',
+            initial_price: 2,
+            ticks_per_hour: 60,
+        };
+        const response = await send(server, sessionId, 'POST', '/api/synthetic/convert/fx', body);
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            gmm_means: [0],
+            gmm_stdevs: [0.001],
+            gmm_weights: [0.046],
+        });
+        expect(calls[0]?.body).toEqual(body);
+    });
+
+    it('refuses a conversion to an engine it does not know before it reaches the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', '/api/synthetic/convert/fx', {
+            gmm_means: [0],
+            gmm_stdevs: [0.001],
+            gmm_weights: [1],
+            from_process_type: 'geometric',
+            to_process_type: 'jump',
+            initial_price: 2,
+            ticks_per_hour: 60,
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
     });
 
     it('answers 400 with the server words when a preview is refused', async () => {

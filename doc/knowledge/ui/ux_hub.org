@@ -59,6 +59,14 @@ adds the tabs, the cards, people as links, the timeline, and the rule that the
 pager is the request. Where it and the record standard disagree, the record
 standard rules for one kind of record and this page rules for an entity.
 
+** How a screen of a feed behaves
+
+[[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] — the
+extension for a record that produces market data: the list as a dashboard,
+the process edited as one set with its engine and previews, saving with a
+reason and a restart, the ticks, and the quant help. It applies to every asset
+class. Where it and the record standard disagree, this page rules for a feed.
+
 ** What the screens are for
 
 [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the goal each

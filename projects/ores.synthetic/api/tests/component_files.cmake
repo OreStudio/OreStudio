@@ -24,6 +24,7 @@ set(files
     "domain_generation_options_tests.cpp"
     "domain_synthetic_catalog_tests.cpp"
     "feed_factory_tests.cpp"
+    "fx_mixture_conversion_tests.cpp"
     "main.cpp"
     "tick_clock_tests.cpp"
 )

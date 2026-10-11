@@ -72,7 +72,11 @@ const party = {
     businessCenterCode: 'GBLO',
 };
 
-function buildTestServer(tenantId: string, tenantName: string): ReturnType<typeof buildServer> {
+function buildTestServer(
+    tenantId: string,
+    tenantName: string,
+    kind: 'active' | 'party-selection-required' = 'active',
+): ReturnType<typeof buildServer> {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const client = {
         async bootstrapStatus(): Promise<unknown> {
@@ -80,7 +84,7 @@ function buildTestServer(tenantId: string, tenantName: string): ReturnType<typeo
         },
         async login(): Promise<unknown> {
             return {
-                kind: 'active',
+                kind,
                 token: 'token',
                 accountId: '11111111-1111-1111-1111-111111111111',
                 tenantId,
@@ -95,8 +99,9 @@ function buildTestServer(tenantId: string, tenantName: string): ReturnType<typeo
                 },
                 username: 'tenant_admin',
                 email: 'admin@northwind.example.com',
-                party,
+                party: kind === 'active' ? party : undefined,
                 availableParties: [party],
+                defaultPartyId: party.id,
                 accessLifetimeSeconds: 1800,
                 passwordResetRequired: false,
                 sessionId: '33333333-3333-3333-3333-333333333333',
@@ -157,6 +162,32 @@ describe('the mode a session is given', () => {
             outcome: 'active',
             session: { mode: 'application' },
         });
+
+        await server.close();
+    });
+
+    it('reads no session while the login waits on a party', async () => {
+        const server = buildTestServer(
+            northwindTenant,
+            'Northwind Capital',
+            'party-selection-required',
+        );
+
+        const login = await server.inject({
+            method: 'POST',
+            url: '/api/session',
+            payload: { username: 'tenant_admin@northwind.example.com', password: 'Secret-1!' },
+        });
+        expect(login.json()).toMatchObject({ outcome: 'party-required' });
+
+        const cookie = login.cookies[0];
+        const session = await server.inject({
+            method: 'GET',
+            url: '/api/session',
+            cookies: { [cookie?.name ?? SESSION_COOKIE]: cookie?.value ?? '' },
+        });
+
+        expect(session.statusCode).toBe(401);
 
         await server.close();
     });

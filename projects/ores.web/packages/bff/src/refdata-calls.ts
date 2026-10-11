@@ -33,6 +33,18 @@ export const PAGE = 1000;
 
 export const NO_ORDER = { field: '', descending: false } as const;
 
+/** One page of a list, as a screen asks for it: where it starts, how long, the search and the order. */
+export const pageQuerySchema = z.object({
+    offset: z.coerce.number().pipe(z.int().min(0)).default(0),
+    limit: z.coerce.number().pipe(z.int().min(1).max(1000)),
+    search: z.string().trim().max(256).default(''),
+    sort: z.string().max(100).default(''),
+    descending: z
+        .enum(['true', 'false'])
+        .default('false')
+        .transform((value) => value === 'true'),
+});
+
 export const resultSchema = z.object({
     outcome: z.enum(['ok', 'invalid', 'denied', 'missing', 'conflict', 'unavailable', 'failed']),
     code: z.string().default(''),

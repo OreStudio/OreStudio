@@ -74,6 +74,7 @@ struct fx_spot_generation_config_lookup {
 
 struct fx_spot_generation_configs_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::string> search;
 };
 
 struct fx_spot_generation_config_event {

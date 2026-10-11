@@ -32,6 +32,7 @@ import { registerClassificationRoutes } from './classifications.js';
 import { registerCounterpartyRoutes } from './counterparties.js';
 import { registerBookRoutes } from './books.js';
 import { registerConventionRoutes } from './conventions.js';
+import { FeedTickBuffers, marketTickSchema } from './feed-ticks.js';
 import { registerSyntheticRoutes } from './synthetic.js';
 import { registerCurveRoutes } from './curves.js';
 import { registerAuditRoutes } from './audit.js';
@@ -970,9 +971,17 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
     });
 
-    server.get('/api/session', async (request) =>
-        sessionResponse(await refreshTenantBootstrapping(requireSession(request))),
-    );
+    /*
+     * A login that still waits on a party has no session to show yet. The
+     * browser that reloads in that state signs in again and is asked again.
+     */
+    server.get('/api/session', async (request) => {
+        const session = requireSession(request);
+        if (session.party === undefined) {
+            throw notAuthenticated();
+        }
+        return sessionResponse(await refreshTenantBootstrapping(session));
+    });
 
     server.delete('/api/session', async (request, reply) => {
         const id = readSessionId(request);
@@ -2645,7 +2654,6 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerCounterpartyRoutes(server, requireSession);
     registerBookRoutes(server, requireSession);
     registerConventionRoutes(server, requireSession);
-    registerSyntheticRoutes(server, requireSession);
     registerCurveRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
@@ -2868,6 +2876,10 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         eventClient.client,
         server.log.child({ name: 'ores.web.bff.events' }),
     );
+    const feedTicks = new FeedTickBuffers((subject, onTick) =>
+        eventClient.client.subscribeToMessages(subject, marketTickSchema, onTick),
+    );
+    registerSyntheticRoutes(server, requireSession, feedTicks);
 
     server.get('/api/events', async (request, reply) => {
         const session = requireSession(request);
@@ -2969,6 +2981,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.addHook('onClose', async () => {
         closing = true;
         stopHeartbeat?.();
+        feedTicks.close();
         await sessions.destroyAll();
     });
 

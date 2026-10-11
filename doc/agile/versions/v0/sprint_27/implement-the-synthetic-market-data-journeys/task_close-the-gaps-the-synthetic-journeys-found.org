@@ -59,6 +59,12 @@ task and name that file in the Command column.
 
 * Notes
 
+- The FX feed screen needed two of these gaps closed, and
+  [[id:6E54699C-427C-471A-AA70-FCCCD27ABC85][Build the FX price feed screen]]
+  closed them: the GMM component list filters by =fx_spot_config_id=, and the
+  FX feed list searches its pair, source name and ORE key and sorts on them.
+  The other parent filters the journeys need are still open here.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

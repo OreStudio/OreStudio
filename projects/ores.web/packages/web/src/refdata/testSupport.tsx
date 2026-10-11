@@ -84,7 +84,7 @@ export function renderRecords(
     seed: (client: QueryClient) => void,
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['refdata-registry'], registry);
+    client.setQueryData(['registry', 'refdata'], registry);
     client.setQueryData(['labels'], { labels: [], domains: {} });
     seed(client);
     return renderToStaticMarkup(

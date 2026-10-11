@@ -23,34 +23,50 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { SYSTEM_TENANT_ID } from '@ores/wire-protocol';
 import { subjects as feedSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_config_protocol';
-import { subjects as folderSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/folder_protocol';
+import {
+    subjects as folderSubjects,
+    type FoldersFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/folder_protocol';
 import {
     subjects as fxFeedSubjects,
     type FxSpotGenerationConfigWrite,
+    type FxSpotGenerationConfigsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/fx_spot_generation_config_protocol';
 import {
     subjects as gmmSubjects,
     type GmmComponentWrite,
+    type GmmComponentsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/gmm_component_protocol';
 import {
     subjects as irFeedSubjects,
     type IrCurveGenerationConfigWrite,
+    type IrCurveGenerationConfigsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_generation_config_protocol';
 import { subjects as irOperationSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_operations_protocol';
 import {
     subjects as parameterValueSubjects,
     type IrCurveGenerationConfigProcessParameterValueWrite,
+    type IrCurveGenerationConfigProcessParameterValuesFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_generation_config_process_parameter_value_protocol';
 import {
     subjects as templateEntrySubjects,
     type IrCurveTemplateEntryWrite,
+    type IrCurveTemplateEntriesFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_template_entry_protocol';
-import { subjects as collectionSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/market_data_generation_config_protocol';
+import {
+    subjects as collectionSubjects,
+    type MarketDataGenerationConfigsFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/market_data_generation_config_protocol';
+import { subjects as fxConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_mixture_protocol';
 import { subjects as fxSimulateSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/simulate_fx_spot_paths_protocol';
-import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/yield_curve_process_parameter_definition_protocol';
+import {
+    subjects as definitionSubjects,
+    type YieldCurveProcessParameterDefinitionsFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/yield_curve_process_parameter_definition_protocol';
 import {
     subjects as processTypeSubjects,
     type YieldCurveProcessTypeWrite,
+    type YieldCurveProcessTypesFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/yield_curve_process_type_protocol';
 import { subjects as marketdataOperationSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
@@ -60,12 +76,14 @@ import {
     idSchema,
     input,
     intentSchema,
+    pageQuerySchema,
     paramId,
     readAll,
     refusal,
     resultSchema,
     row,
 } from './refdata-calls.js';
+import { TICK_CAPACITY, type FeedTickBuffers } from './feed-ticks.js';
 import type { LiveSession } from './sessions.js';
 
 const code = z.string().trim().min(1).max(100);
@@ -86,6 +104,14 @@ const text = z.string().max(2000);
  * A system-owned resource is one catalogue every tenant reads. The server
  * reads and writes it in the system tenant, so a write from a tenant session
  * would change every tenant's catalogue; only a system session writes it.
+ *
+ * `filter` is the list filter with every member empty. The server refuses a
+ * filter that leaves a member out, so every filtered read starts from it, and
+ * the generated filter type makes the compiler refuse one that misses a member.
+ *
+ * `search` and `sortable` say what the model made searchable and sortable, so
+ * a page asks the server only for what it can answer. `parentField` names the
+ * filter that reads the rows of one parent, such as one feed's mixture.
  */
 interface SyntheticResource {
     readonly key: string;
@@ -93,6 +119,7 @@ interface SyntheticResource {
     readonly keyField: 'id' | 'code';
     readonly oneOf: 'id_one_of' | 'code_one_of';
     readonly rows: string;
+    readonly filter: Readonly<Record<string, null>>;
     readonly subjects: {
         readonly list: string;
         readonly putMany: string;
@@ -102,6 +129,9 @@ interface SyntheticResource {
     readonly writes?: z.ZodType<Record<string, unknown>>;
     readonly readOnlyBecause?: string;
     readonly systemOwned?: true;
+    readonly search?: true;
+    readonly sortable?: readonly string[];
+    readonly parentField?: string;
 }
 
 /**
@@ -119,6 +149,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'folders',
+        filter: { id_one_of: null } satisfies FoldersFilter,
         subjects: {
             list: folderSubjects.list_folders_request,
             putMany: folderSubjects.put_many_folders_request,
@@ -133,6 +164,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'market_data_generation_configs',
+        filter: { id_one_of: null } satisfies MarketDataGenerationConfigsFilter,
         subjects: {
             list: collectionSubjects.list_market_data_generation_configs_request,
             putMany: collectionSubjects.put_many_market_data_generation_configs_request,
@@ -147,6 +179,15 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'fx_spot_generation_configs',
+        filter: { id_one_of: null, search: null } satisfies FxSpotGenerationConfigsFilter,
+        search: true,
+        sortable: [
+            'base_currency_code',
+            'quote_currency_code',
+            'source_name',
+            'ore_key',
+            'ticks_per_hour',
+        ],
         subjects: {
             list: fxFeedSubjects.list_fx_spot_generation_configs_request,
             putMany: fxFeedSubjects.put_many_fx_spot_generation_configs_request,
@@ -177,6 +218,12 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'gmm_components',
+        filter: {
+            fx_spot_config_id: null,
+            id_one_of: null,
+            fx_spot_config_id_one_of: null,
+        } satisfies GmmComponentsFilter,
+        parentField: 'fx_spot_config_id',
         subjects: {
             list: gmmSubjects.list_gmm_components_request,
             putMany: gmmSubjects.put_many_gmm_components_request,
@@ -199,6 +246,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'ir_curve_generation_configs',
+        filter: { id_one_of: null } satisfies IrCurveGenerationConfigsFilter,
         subjects: {
             list: irFeedSubjects.list_ir_curve_generation_configs_request,
             putMany: irFeedSubjects.put_many_ir_curve_generation_configs_request,
@@ -232,6 +280,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'process_parameter_values',
+        filter: { id_one_of: null } satisfies IrCurveGenerationConfigProcessParameterValuesFilter,
         subjects: {
             list: parameterValueSubjects.list_ir_curve_generation_config_process_parameter_values_request,
             putMany:
@@ -253,6 +302,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'ir_curve_template_entries',
+        filter: { id_one_of: null } satisfies IrCurveTemplateEntriesFilter,
         subjects: {
             list: templateEntrySubjects.list_ir_curve_template_entries_request,
             putMany: templateEntrySubjects.put_many_ir_curve_template_entries_request,
@@ -275,6 +325,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'code',
         oneOf: 'code_one_of',
         rows: 'process_types',
+        filter: { code_one_of: null } satisfies YieldCurveProcessTypesFilter,
         subjects: {
             list: processTypeSubjects.list_yield_curve_process_types_request,
             putMany: processTypeSubjects.put_many_yield_curve_process_types_request,
@@ -294,6 +345,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         keyField: 'id',
         oneOf: 'id_one_of',
         rows: 'parameter_definitions',
+        filter: { id_one_of: null } satisfies YieldCurveProcessParameterDefinitionsFilter,
         subjects: {
             list: definitionSubjects.list_yield_curve_process_parameter_definitions_request,
             putMany: definitionSubjects.put_many_yield_curve_process_parameter_definitions_request,
@@ -316,11 +368,47 @@ function resourceName(resource: SyntheticResource): string {
     return resource.subjects.list.split('.')[2] ?? '';
 }
 
+/** The FX feeds resource, which the tick read reads a feed through. */
+const FX_FEEDS = ((): SyntheticResource => {
+    const found = SYNTHETIC_RECORDS.find((candidate) => candidate.key === 'fx-feeds');
+    if (found === undefined) {
+        throw new Error('The synthetic resources have no fx-feeds.');
+    }
+    return found;
+})();
+
 function resourceFor(request: FastifyRequest): SyntheticResource {
     const { resource } = request.params as { resource: string };
     const found = SYNTHETIC_RECORDS.find((candidate) => candidate.key === resource);
     if (found === undefined) {
         throw notFound(`There is no synthetic resource ${resource}.`);
+    }
+    return found;
+}
+
+/** One row by its key, read as the session, or a 404 when the session cannot see it. */
+async function readByKey(
+    session: LiveSession,
+    resource: SyntheticResource,
+    key: string,
+): Promise<Record<string, unknown>> {
+    const reply = await session.client.callAuthenticated(
+        resource.subjects.list,
+        {
+            offset: 0,
+            limit: 1,
+            order: NO_ORDER,
+            filter: { ...resource.filter, [resource.oneOf]: [key] },
+            as_of: null,
+        },
+        z.looseObject({ result: resultSchema }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusal(reply.result);
+    }
+    const found = z.array(row).default([]).parse(reply[resource.rows])[0];
+    if (found === undefined) {
+        throw notFound(`There is no ${resource.key} row ${key}.`);
     }
     return found;
 }
@@ -472,6 +560,33 @@ const fxSimulateSchema = z
         { message: 'The mixture has one mean, one deviation and one weight per component.' },
     );
 
+/** The engines an FX feed runs, which the conversion reads between. */
+const fxEngine = z.enum(['geometric', 'arithmetic', 'ornstein_uhlenbeck']);
+
+const fxConvertSchema = z
+    .object({
+        gmm_means: z.array(z.number()).max(100),
+        gmm_stdevs: z.array(z.number()).max(100),
+        gmm_weights: z.array(z.number()).max(100),
+        from_process_type: fxEngine,
+        to_process_type: fxEngine,
+        initial_price: z.number().positive(),
+        ticks_per_hour: z.int().positive(),
+    })
+    .strict()
+    .refine(
+        (request) =>
+            request.gmm_means.length === request.gmm_stdevs.length &&
+            request.gmm_means.length === request.gmm_weights.length,
+        { message: 'The mixture has one mean, one deviation and one weight per component.' },
+    );
+
+const mixtureReplySchema = operationReplySchema.extend({
+    gmm_means: z.array(z.number()).default([]),
+    gmm_stdevs: z.array(z.number()).default([]),
+    gmm_weights: z.array(z.number()).default([]),
+});
+
 const irSimulateSchema = z.object({
     process_type: code,
     parameters: parameterSpecs,
@@ -506,6 +621,7 @@ const irShapeSchema = z.object({
 export function registerSyntheticRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
+    ticks: FeedTickBuffers,
 ): void {
     server.get('/api/synthetic', async (request) => {
         const session = requireSession(request);
@@ -518,6 +634,8 @@ export function registerSyntheticRoutes(
                     keyField: resource.keyField,
                     writable: because === undefined,
                     readOnlyBecause: because ?? null,
+                    search: resource.search === true,
+                    sortable: resource.sortable ?? [],
                     readPermission: `synthetic::${resourceName(resource)}:read`,
                     writePermission: `synthetic::${resourceName(resource)}:write`,
                     deletePermission: `synthetic::${resourceName(resource)}:delete`,
@@ -541,7 +659,25 @@ export function registerSyntheticRoutes(
             { success: reply.success, message: 'The running feeds could not be read.' },
             upstreamFailure,
         );
+        ticks.running(reply.running_source_names);
         return { sourceNames: reply.running_source_names };
+    });
+
+    /**
+     * The newest ticks of one FX feed's current run, oldest first. The feed is
+     * read as the session first, so a feed the session cannot see has no ticks
+     * to show. Reading starts no listening: what runs is learnt from the
+     * running read, which every feed screen makes.
+     */
+    server.get('/api/synthetic/feeds/:id/ticks', async (request) => {
+        const session = requireSession(request);
+        const { limit } = input(
+            z.object({ limit: z.coerce.number().int().min(1).max(TICK_CAPACITY).default(200) }),
+            request.query,
+        );
+        const feed = await readByKey(session, FX_FEEDS, paramId(request));
+        const sourceName = z.string().parse(feed['source_name']);
+        return { sourceName, ticks: ticks.ticks(sourceName, limit) };
     });
 
     /** Whether each vintage a feed draws from is still valid. */
@@ -556,12 +692,57 @@ export function registerSyntheticRoutes(
         return { entries: reply.entries };
     });
 
+    /**
+     * Every row of a resource, or one page of it with the server's total,
+     * searched and ordered on the server, when the request names a limit.
+     */
     server.get('/api/synthetic/:resource', async (request) => {
         const session = requireSession(request);
         const resource = resourceFor(request);
+        const query = request.query as Record<string, unknown>;
+        if (query['limit'] === undefined) {
+            return {
+                rows: await readAll(session, resource.subjects.list, resource.rows, {
+                    filter: null,
+                    as_of: null,
+                }),
+            };
+        }
+        const page = input(pageQuerySchema, query);
+        if (page.sort !== '' && !(resource.sortable ?? []).includes(page.sort)) {
+            throw invalidRequest(`${resource.key} cannot be ordered by ${page.sort}.`);
+        }
+        if (page.search !== '' && resource.search !== true) {
+            throw invalidRequest(`${resource.key} cannot be searched.`);
+        }
+        const reply = await session.client.callAuthenticated(
+            resource.subjects.list,
+            {
+                offset: page.offset,
+                limit: page.limit,
+                order: { field: page.sort, descending: page.descending },
+                filter: page.search === '' ? null : { ...resource.filter, search: page.search },
+                as_of: null,
+            },
+            z.looseObject({ result: resultSchema, total: z.int().nonnegative().default(0) }),
+        );
+        if (reply.result.outcome !== 'ok') {
+            throw refusal(reply.result);
+        }
+        return { rows: z.array(row).default([]).parse(reply[resource.rows]), total: reply.total };
+    });
+
+    /** The rows that belong to one parent, such as one feed's mixture. */
+    server.get('/api/synthetic/:resource/by/:parent', async (request) => {
+        const session = requireSession(request);
+        const resource = resourceFor(request);
+        if (resource.parentField === undefined) {
+            throw notFound(`${resource.key} is not read by a parent.`);
+        }
+        const parent = input(idSchema, (request.params as { parent: string }).parent);
         return {
             rows: await readAll(session, resource.subjects.list, resource.rows, {
-                filter: null,
+                filter: { ...resource.filter, [resource.parentField]: parent },
                 as_of: null,
             }),
         };
@@ -571,25 +752,7 @@ export function registerSyntheticRoutes(
         const session = requireSession(request);
         const resource = resourceFor(request);
         const key = input(keySchema(resource), (request.params as { key: string }).key);
-        const reply = await session.client.callAuthenticated(
-            resource.subjects.list,
-            {
-                offset: 0,
-                limit: 1,
-                order: NO_ORDER,
-                filter: { [resource.oneOf]: [key] },
-                as_of: null,
-            },
-            z.looseObject({ result: resultSchema }),
-        );
-        if (reply.result.outcome !== 'ok') {
-            throw refusal(reply.result);
-        }
-        const found = z.array(row).default([]).parse(reply[resource.rows])[0];
-        if (found === undefined) {
-            throw notFound(`There is no ${resource.key} row ${key}.`);
-        }
-        return { row: found };
+        return { row: await readByKey(session, resource, key) };
     });
 
     /** Writes one or many rows in one call, and answers with the rows as written. */
@@ -735,6 +898,25 @@ export function registerSyntheticRoutes(
         );
         refuseUnless(reply, invalidRequest);
         return { paths: reply.paths };
+    });
+
+    /**
+     * The mixture an engine change leaves, converted by the synthetic service,
+     * which knows how each engine reads the numbers. Nothing is stored.
+     */
+    server.post('/api/synthetic/convert/fx', async (request) => {
+        const session = requireSession(request);
+        const reply = await session.client.callAuthenticated(
+            fxConvertSubjects.convert_fx_mixture_request,
+            input(fxConvertSchema, request.body),
+            mixtureReplySchema,
+        );
+        refuseUnless(reply, invalidRequest);
+        return {
+            gmm_means: reply.gmm_means,
+            gmm_stdevs: reply.gmm_stdevs,
+            gmm_weights: reply.gmm_weights,
+        };
     });
 
     /** Sample short-rate paths from the process and parameters on the screen. */

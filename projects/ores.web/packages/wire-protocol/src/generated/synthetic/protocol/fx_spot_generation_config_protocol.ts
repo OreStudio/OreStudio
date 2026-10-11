@@ -67,6 +67,7 @@ export interface FxSpotGenerationConfigLookup {
 
 export interface FxSpotGenerationConfigsFilter {
     id_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface FxSpotGenerationConfigEvent {

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:
 #+created: 2026-10-09
-#+updated: 2026-10-09
+#+updated: 2026-10-10
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A quant composes one FX feed: the pair it quotes, the process that drives its ticks, the mixture of Gaussians it draws from, and the sample paths that say whether the choice is a price feed at all.
@@ -65,8 +65,8 @@ screen calls it the feed.
 5. *Edit the mixture.* The person adds, changes and removes the Gaussians the
    process draws from. Each row carries a zero-based index, a description, a
    mean log-return, a standard deviation and a weight. The system shows the raw
-   sum of the weights and says that the save normalises them; a sum that is not
-   one is a warning and not a refusal.
+   sum of the weights and says that the draw normalises them; a sum that is not
+   one is a warning and not a refusal. The save keeps the weights as typed.
 6. *Say where the initial price comes from.* The person chooses =fixed=, where
    the initial price is the one entered, or =vintage=, where the feed reads the
    opening price from a named market-data source and date. The system shows the
@@ -149,12 +149,12 @@ has a history, and the mixture is stored as rows and never as a blob.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Find the feed | List the FX feeds | =synthetic.v1.fx_spot_generation_configs.list= | exists |
+| Find the feed | List the FX feeds, one page searched and ordered | =synthetic.v1.fx_spot_generation_configs.list= | exists |
 | Find the feed | List the party's containers | =synthetic.v1.market_data_generation_configs.list= | exists |
 | Find the feed | List the folder tree | =synthetic.v1.folders.list= | exists |
 | Find the feed | Read one collection's row | =synthetic.v1.market_data_generation_configs.get= | exists |
 | Open or start a feed | Read one feed | =synthetic.v1.fx_spot_generation_configs.get= | exists |
-| Open or start a feed | List the feed's mixture | =synthetic.v1.gmm_components.list= | exists |
+| Open or start a feed | List the feed's mixture | =synthetic.v1.gmm_components.list=, filtered by =fx_spot_config_id= | exists |
 | Name the instrument | Fill the currency picker | =refdata.v1.currencies.list= | exists |
 | Name the instrument | Offer the quoted pairs | =refdata.v1.currency_pairs.list= | exists |
 | Set the price behaviour | Choose the engine and the tick rate | =synthetic.v1.fx_spot_generation_configs.put= | exists |
@@ -182,47 +182,45 @@ row.
 
 * What is missing
 
-1. *No screen exists.* No web page, HTTP route or shell verb reaches these
-   operations from a browser. The generated detail dialog for this config went
-   with the removed desktop client, and the shell files are codegen commands a
-   person runs by hand. The candidate is a web page and a route. Until then the
-   journey runs from the shell, with the previews unavailable.
-2. *The typed weight is not kept.* The save normalises the weights of a feed,
-   but nothing stores the values as typed, so the raw sum and the normalised
-   weights cannot be told apart after the save, and the screen that shows both
-   cannot be rebuilt from the row. The candidate is a decision on whether the
-   raw weight is stored beside the normalised one. Until then the mixture reads
-   back as the numbers the draw uses.
-3. *The engine picker does not select the mixture.* The screen presents three
+1. *The feed is not in the tree.* The web screen is *Market data*, then *FX
+   price feeds*: a paged list searched and ordered on the server, and a page
+   per feed with its details, its mixture and its history. The folder tree,
+   and starting and stopping a feed, belong to the collection screen, which
+   is not built. Until then a person finds a feed by its pair or its source
+   name in the list.
+2. *The engine picker does not select the mixture.* The screen presents three
    engines, while =process_type= holds =geometric=, =arithmetic= or
    =ornstein_uhlenbeck=, and the =gmm_component= rows are what the draw
    actually mixes. Nothing in the row says the mixture is the engine, so a
    saved feed does not reproduce what was previewed. The candidate is a process
    type that names the mixture, or a rule that a mixture is always the source
-   of the returns. Until then the screen says which engine the config holds and
-   draws the mixture regardless.
-4. *The preview does not name its feed.* The simulate request carries the
+   of the returns. The mean-reverting engine reuses the rows for other
+   numbers: it reads the first component's weight as the reversion speed κ and
+   its deviation as the volatility σ, and ignores the rest. Until then the
+   screen says which engine the config holds, draws the mixture for the two
+   mixing engines, and says how the mean-reverting engine reads the rows.
+3. *The preview does not name its feed.* The simulate request carries the
    mixture, the price and the seed, and no config id, so the paths a person
    judges are the screen's numbers and not the stored feed's. The candidate is
    a preview that reads a saved config by id. Until then the screen states that
    the preview uses the unsaved values.
-5. *A new feed has no folder.* =folder_id= is optional and only the
+4. *A new feed has no folder.* =folder_id= is optional and only the
    publish-from-dq path fills it, so a feed made by hand has no place in the
    tree and the person cannot find it where they left it. The candidate is a
    folder the editor resolves or creates on save. Until then the screen lists
    the feed under the collection that owns it.
-6. *Saving is not atomic.* The config and its mixture are separate generated
-   resources with separate =put= subjects, and no operation writes both. A
-   failure between the two writes leaves a feed with a partly updated mixture,
-   and the save is a transaction the caller must compose. The candidate is an
-   apply operation that writes the config and its mixture together. Until then
-   the screen saves the config first, then the mixture, and says what it wrote.
-7. *The pair is not validated against a declared reference.* The base and quote
+5. *The feed and its mixture are saved apart.* The mixture is written in one
+   =put_many=, so it lands whole or not at all. The config is a separate
+   resource with its own =put=, and no operation writes both. The screen
+   saves the config from its dialog and the mixture from its tab, and a new
+   feed opens on the Price behaviour tab after its config is saved. The candidate is
+   an apply operation that writes the config and its mixture together.
+6. *The pair is not validated against a declared reference.* The base and quote
    codes are text, the pair catalogue is read on the page, and no operation
    answers "is this pair quoted". The candidate is a declared reference or a
    validation call. Until then the screen marks a pair the catalogue does not
    hold and lets the save through.
-8. *No approval kind covers a feed.* A change to a feed that a running producer
+7. *No approval kind covers a feed.* A change to a feed that a running producer
    honours is written with no second pair of eyes and no comment. The candidate
    is an approval kind for the feed, with its decide permission. Until then a
    save takes effect at once and the history names the writer alone.

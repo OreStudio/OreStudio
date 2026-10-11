@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: 4a7963b8-b814-42b8-a93d-65226bc1b929
+:END:
+#+title: ores.synthetic.convert_fx_mixture
+#+description: Codegen operation model for converting an FX feed's mixture to another price-process engine.
+#+type: ores.codegen.operation
+#+component: synthetic
+#+subcomponent: api
+#+entity_singular: convert_fx_mixture
+#+namespace: ores::synthetic::messaging
+#+brief: FX mixture conversion between price-process engines.
+#+filetags: :model:operation:synthetic:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+The values an FX feed's mixture takes when its engine changes.
+
+The engines read the same three numbers of a component differently. The
+geometric engine reads μ and σ as log-returns; the arithmetic engine reads
+both in price units; the Ornstein-Uhlenbeck engine reads only the first
+component, its weight as the reversion speed κ and its σ in price units. A
+screen that changes a feed's engine asks here for the mixture the new engine
+should read, so the conversion is the service's, beside the engines it
+describes. Nothing is stored.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** convert_fx_mixture_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.convert_fx_mixture
+:response: convert_fx_mixture_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request the mixture an engine change leaves.
+ *
+ * Stateless: the caller names the mixture as it stands on its screen, so an
+ * unsaved mixture converts as readily as a saved one.
+ */
+#+end_src
+
+*** gmm_means
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief Component means; means, stdevs and weights have equal size. */
+#+end_src
+
+*** gmm_stdevs
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief Component standard deviations. */
+#+end_src
+
+*** gmm_weights
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief Component weights; the first is κ under the Ornstein-Uhlenbeck engine. */
+#+end_src
+
+*** from_process_type
+:PROPERTIES:
+:cpp_type: std::string
+:default: "geometric"
+:END:
+#+begin_src cpp :name comment
+/** @brief The engine the mixture is written for. */
+#+end_src
+
+*** to_process_type
+:PROPERTIES:
+:cpp_type: std::string
+:default: "geometric"
+:END:
+#+begin_src cpp :name comment
+/** @brief The engine the mixture is converted for. */
+#+end_src
+
+*** initial_price
+:PROPERTIES:
+:cpp_type: double
+:default: 1.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The price that scales between log-returns and price units. */
+#+end_src
+
+*** ticks_per_hour
+:PROPERTIES:
+:cpp_type: int
+:default: 3600
+:END:
+#+begin_src cpp :name comment
+/** @brief The feed's rate, which turns the default half-life into κ. */
+#+end_src
+
+** convert_fx_mixture_response
+#+begin_src cpp :name comment
+/**
+ * @brief The converted mixture, and why there is none when there is none.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** gmm_means
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The converted means, one per component the new engine reads. */
+#+end_src
+
+*** gmm_stdevs
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The converted standard deviations. */
+#+end_src
+
+*** gmm_weights
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The converted weights, κ first under the Ornstein-Uhlenbeck engine. */
+#+end_src

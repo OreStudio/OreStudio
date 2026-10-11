@@ -55,6 +55,7 @@ import type { PartyCurrencyWrite } from '@ores/wire-protocol/generated/refdata/p
 import type { PartyCounterpartyWrite } from '@ores/wire-protocol/generated/refdata/protocol/party_counterparty_protocol';
 import type { BusinessUnitWrite } from '@ores/wire-protocol/generated/refdata/protocol/business_unit_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
+import { pageQuerySchema } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 const code = z.string().trim().min(1).max(100);
@@ -309,17 +310,6 @@ const intentSchema = z.object({
 const saveBodySchema = intentSchema.extend({
     write: z.record(z.string(), z.unknown()),
     version: z.int().nonnegative().nullable(),
-});
-
-const pageQuerySchema = z.object({
-    offset: z.coerce.number().pipe(z.int().min(0)).default(0),
-    limit: z.coerce.number().pipe(z.int().min(1).max(1000)),
-    search: z.string().trim().max(256).default(''),
-    sort: z.string().max(100).default(''),
-    descending: z
-        .enum(['true', 'false'])
-        .default('false')
-        .transform((value) => value === 'true'),
 });
 
 const removeBodySchema = intentSchema.extend({

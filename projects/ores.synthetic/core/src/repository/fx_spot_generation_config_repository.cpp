@@ -70,7 +70,13 @@ std::string fx_spot_generation_config_repository::sql() {
 }
 
 bool fx_spot_generation_config_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "base_currency_code",
+        "quote_currency_code",
+        "source_name",
+        "ore_key",
+        "ticks_per_hour",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -107,6 +113,10 @@ filter_condition(const std::optional<messaging::fx_spot_generation_configs_filte
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
     }
+    if (filter->search && !filter->search->empty())
+        r.push_back(
+            contains_any({"base_currency_code", "quote_currency_code", "source_name", "ore_key"},
+                         *filter->search));
     return all_of(std::move(r));
 }
 

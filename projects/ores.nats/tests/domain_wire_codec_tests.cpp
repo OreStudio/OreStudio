@@ -84,6 +84,27 @@ TEST_CASE("wire_codec msgpack round-trips a byte-vector field natively, not as b
     CHECK(decoded->payload == original.payload);
 }
 
+TEST_CASE("wire_codec msgpack reads a whole number into a double field", tags) {
+    // A JavaScript client has one number type, so it writes a weight of 1 or
+    // a mean of -2 as a msgpack integer, never as a float.
+    struct whole_numbers {
+        std::int64_t weight = 0;
+        std::int64_t mean = 0;
+    };
+    struct doubles {
+        double weight = 0;
+        double mean = 0;
+    };
+    const ores::nats::wire_codec codec(ores::nats::wire_format::msgpack);
+
+    const auto bytes = codec.encode(whole_numbers{1, -2});
+    const auto decoded = codec.decode<doubles>(bytes);
+
+    REQUIRE(decoded.has_value());
+    CHECK(decoded->weight == 1.0);
+    CHECK(decoded->mean == -2.0);
+}
+
 TEST_CASE("wire_codec::format returns the format fixed at construction", tags) {
     CHECK(ores::nats::wire_codec(ores::nats::wire_format::json).format() ==
           ores::nats::wire_format::json);

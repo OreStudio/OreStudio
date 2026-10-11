@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: AACBF6DA-53E9-46F4-BBD7-A476625E1732
+:END:
+#+title: Task: Give the mixture a simple mode
+#+description: The Qt FX editor has a simple mode, sliders for drift, volatility and jump frequency that write the mixture; the web edits only the raw table.
+#+type: task
+#+level: s1
+#+filetags: :web:synthetic:implement-the-synthetic-market-data-journeys:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Qt FX rate editor offers a simple mode next to the raw component table: sliders for the global trend drift, the global volatility and the jump event frequency, which build the Gaussian mixture, and for the mean reverting engine a κ slider on a log scale with the half-life read out and a σ slider. A quant who does not think in μ, σ and w gets a feed that behaves as they describe. The web mixture tab has only the raw table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- The mixture tab offers Simple and Advanced, and the simple controls write the same components the table holds.
+- A mixture the simple controls cannot express is shown in Advanced only, with a note that says so.
+- The mean reverting engine gets its own simple controls: κ by half-life and σ.
+- The preview and the save work the same from either mode.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

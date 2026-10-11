@@ -37,6 +37,9 @@ import { imageUrl } from '../ui/Images.js';
 import { RecordPicker, type Choice } from './RecordPicker.js';
 import { HistoryPanel, fieldValue } from './HistoryPanel.js';
 import { Crumbs, ReasonFields, RowLabel, useLabelCatalogue, useReason } from './shared.js';
+import { refdataStore, useRecordStore, type RecordStore, type WriteIntent } from './store.js';
+
+export type { WriteIntent } from './store.js';
 
 /** The reason a new row is written with; no other reason applies to a new record. */
 export const NEW_RECORD_REASON = 'system.new_record';
@@ -56,7 +59,7 @@ const UNLINK_REASON = 'common.rectification';
 export type FieldKind =
     | { readonly kind: 'text'; readonly max?: number }
     | { readonly kind: 'int'; readonly min?: number; readonly max?: number }
-    | { readonly kind: 'decimal' }
+    | { readonly kind: 'decimal'; readonly positive?: boolean }
     | { readonly kind: 'bool' }
     | { readonly kind: 'image' }
     | { readonly kind: 'date' }
@@ -67,6 +70,8 @@ export type FieldKind =
           readonly resource: string;
           readonly value: string;
           readonly label: string;
+          /** Where the choices are read; reference data unless it says otherwise. */
+          readonly store?: RecordStore;
       };
 
 export interface FieldSpec {
@@ -86,6 +91,11 @@ export interface FieldSpec {
     readonly labelKey?: string;
     /** Where a record named by this field is opened, so its name on a page is a link. */
     readonly pathOf?: (value: string) => string;
+    /**
+     * The words that explain the field, shown under it. A choice is explained
+     * by its option: the key names a block with one entry for each.
+     */
+    readonly help?: string;
 }
 
 function asked(spec: FieldSpec, values: FieldValues): boolean {
@@ -194,25 +204,27 @@ export function useRecordTabs({
     return useTabs({ label, tabs, titleOf: (tab) => t(`refdata.records.tabs.${tab}`) });
 }
 
-export function useRegistry(): ReturnType<
-    typeof useQuery<Awaited<ReturnType<typeof api.refdataRegistry>>>
-> {
-    return useQuery({ queryKey: ['refdata-registry'], queryFn: api.refdataRegistry });
+/** The resources of the store in context, with what each searches, sorts and needs. */
+export function useRegistry() {
+    const store = useRecordStore();
+    return useQuery({ queryKey: ['registry', store.name], queryFn: store.registry });
 }
 
 /** One record, named by its key; the page of a record reads only that record. */
 export function useRecord(resource: string, key: string) {
+    const store = useRecordStore();
     return useQuery({
         queryKey: ['records', resource, 'key', key],
-        queryFn: () => api.record(resource, key),
+        queryFn: () => store.record(resource, key),
         retry: false,
     });
 }
 
 export function useRecords(resource: string, parent?: string) {
+    const store = useRecordStore();
     return useQuery({
         queryKey: parent === undefined ? ['records', resource] : ['records', resource, parent],
-        queryFn: () => api.records(resource, parent),
+        queryFn: () => store.records(resource, parent),
     });
 }
 
@@ -224,17 +236,21 @@ export function useRecordPermissions(resource: string): {
     readonly write: boolean;
     readonly remove: boolean;
 } {
+    const store = useRecordStore();
     const registry = useRegistry();
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
     const entry = registry.data?.find((candidate) => candidate.key === resource);
     const codes = new Set((access.data?.roles ?? []).flatMap((role) => role.permissionCodes));
     const holds = (code: string): boolean =>
-        codes.has('*') || codes.has('refdata::*') || codes.has(code);
+        codes.has('*') || codes.has(`${store.name}::*`) || codes.has(code);
     if (entry === undefined || !entry.writable) {
         return { write: false, remove: false };
     }
     return { write: holds(entry.writePermission), remove: holds(entry.deletePermission) };
 }
+
+/** A record named by an identifier rather than a code; the identifier is never shown. */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The choices of a picker: code and the words to show for it. */
 function useChoices(kind: FieldKind, flag?: FlagSource): readonly Choice[] {
@@ -246,7 +262,8 @@ function useChoices(kind: FieldKind, flag?: FlagSource): readonly Choice[] {
     });
     const records = useQuery({
         queryKey: ['records', kind.kind === 'record' ? kind.resource : ''],
-        queryFn: () => api.records(kind.kind === 'record' ? kind.resource : ''),
+        queryFn: () =>
+            kind.kind === 'record' ? (kind.store ?? refdataStore).records(kind.resource) : [],
         enabled: kind.kind === 'record',
     });
     if (kind.kind === 'classification') {
@@ -260,7 +277,9 @@ function useChoices(kind: FieldKind, flag?: FlagSource): readonly Choice[] {
             const value = show(row[kind.value]);
             return {
                 value,
-                label: `${show(row[kind.label])} (${value})`,
+                label: UUID.test(value)
+                    ? show(row[kind.label])
+                    : `${show(row[kind.label])} (${value})`,
                 image: flag === undefined || flag === 'pair' ? null : flags.flag(flag, value),
             };
         });
@@ -286,12 +305,23 @@ export function FieldInput({
     const { t } = useTranslation();
     const choices = useChoices(spec.kind, spec.flag);
     const label = labelOf(t, spec);
+    const help =
+        spec.help === undefined
+            ? {}
+            : {
+                  hint:
+                      spec.kind.kind === 'choice'
+                          ? value === ''
+                              ? ''
+                              : t(`${spec.help}.${value}`)
+                          : t(spec.help),
+              };
     if (spec.kind.kind === 'image') {
         return <ImageField label={label} imageId={value} disabled={disabled} onChange={onChange} />;
     }
     if (spec.kind.kind === 'record') {
         return (
-            <Field label={label} {...(error === undefined ? {} : { error })}>
+            <Field label={label} {...help} {...(error === undefined ? {} : { error })}>
                 <RecordPicker
                     value={value}
                     choices={choices}
@@ -307,7 +337,7 @@ export function FieldInput({
     }
     if (spec.kind.kind === 'classification') {
         return (
-            <Field label={label} {...(error === undefined ? {} : { error })}>
+            <Field label={label} {...help} {...(error === undefined ? {} : { error })}>
                 <Select
                     value={value}
                     disabled={disabled}
@@ -329,7 +359,7 @@ export function FieldInput({
     }
     if (spec.kind.kind === 'choice') {
         return (
-            <Field label={label}>
+            <Field label={label} {...help}>
                 <Select
                     value={value}
                     disabled={disabled}
@@ -347,7 +377,7 @@ export function FieldInput({
     }
     if (spec.kind.kind === 'bool') {
         return (
-            <Field label={label} {...(error === undefined ? {} : { error })}>
+            <Field label={label} {...help} {...(error === undefined ? {} : { error })}>
                 <Select
                     value={value}
                     disabled={disabled}
@@ -363,7 +393,7 @@ export function FieldInput({
     }
     const numeric = spec.kind.kind === 'int' || spec.kind.kind === 'decimal';
     return (
-        <Field label={label} {...(error === undefined ? {} : { error })}>
+        <Field label={label} {...help} {...(error === undefined ? {} : { error })}>
             <Input
                 value={value}
                 disabled={disabled}
@@ -400,7 +430,8 @@ export function invalidFields(specs: readonly FieldSpec[], values: FieldValues):
                 );
             }
             if (spec.kind.kind === 'decimal') {
-                return Number.isNaN(Number.parseFloat(raw));
+                const number = Number(raw);
+                return !Number.isFinite(number) || (spec.kind.positive === true && number <= 0);
             }
             return false;
         })
@@ -452,7 +483,9 @@ export function LeavingFooter({
  * correction needs one, and some reasons need a commentary too. `given`
  * holds the fields the screen sets rather than the person, such as the parent
  * a row belongs to; `initial` fills a new row's form. `after` runs once the
- * record is written, for a write that belongs with it.
+ * record is written, for a write that belongs with it. `complete` fills the
+ * fields that follow from the others, such as a key derived from two codes;
+ * `check` names the rules across fields the form breaks, and Save waits on them.
  */
 export function RecordDialog({
     title,
@@ -465,6 +498,8 @@ export function RecordDialog({
     onClose,
     onSaved,
     after,
+    complete,
+    check,
 }: {
     readonly title: string;
     readonly resource: string;
@@ -473,6 +508,8 @@ export function RecordDialog({
     readonly keep?: readonly string[];
     readonly given?: Readonly<Record<string, unknown>>;
     readonly initial?: FieldValues;
+    readonly complete?: (write: Readonly<Record<string, unknown>>) => Record<string, unknown>;
+    readonly check?: (values: FieldValues) => readonly string[];
     readonly onClose: () => void;
     readonly onSaved?: (write: Readonly<Record<string, unknown>>) => void;
     readonly after?: (
@@ -482,6 +519,7 @@ export function RecordDialog({
 }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
+    const store = useRecordStore();
     const [values, setValues] = useState<FieldValues>({ ...valuesOf(specs, row), ...initial });
     const [commentary, setCommentary] = useState('');
     const [touched, setTouched] = useState<ReadonlySet<string>>(new Set());
@@ -492,6 +530,7 @@ export function RecordDialog({
     const reason = useReason('amend', changed);
     const missing = editing && reason.needsCommentary && commentary.trim() === '';
     const invalid = invalidFields(specs, values);
+    const broken = check?.(values) ?? [];
     const dirty = editing
         ? changed || commentary.trim() !== ''
         : Object.values(values).some((value) => value !== '');
@@ -506,11 +545,12 @@ export function RecordDialog({
     };
     const save = useMutation({
         mutationFn: async () => {
-            const write = { ...kept(keep, row), ...given, ...writeOf(specs, values) };
+            const typed = { ...kept(keep, row), ...given, ...writeOf(specs, values) };
+            const write = complete === undefined ? typed : complete(typed);
             const intent = editing
                 ? { reasonCode: reason.code, commentary: commentary.trim() }
                 : { reasonCode: NEW_RECORD_REASON, commentary: '' };
-            await api.saveRecord(resource, { write, version: row?.version ?? null, ...intent });
+            await store.save(resource, { write, version: row?.version ?? null, ...intent });
             await after?.(write, intent);
             return write;
         },
@@ -542,7 +582,10 @@ export function RecordDialog({
                             icon={editing ? 'save' : 'add'}
                             pending={save.isPending}
                             disabled={
-                                invalid.length > 0 || missing || (editing && reason.code === '')
+                                invalid.length > 0 ||
+                                broken.length > 0 ||
+                                missing ||
+                                (editing && reason.code === '')
                             }
                             onClick={() => save.mutate()}
                         >
@@ -597,6 +640,11 @@ export function RecordDialog({
                         })}
                     </p>
                 )}
+                {broken.map((rule) => (
+                    <Notice key={rule} tone="warn">
+                        {rule}
+                    </Notice>
+                ))}
                 {save.isError && <Notice tone="error">{save.error.message}</Notice>}
             </div>
         </Dialog>
@@ -735,9 +783,9 @@ function DetailValue({
 }
 
 /**
- * A value that names another record, drawn as that record's name, and as a link
- * to its page when the field says where it opens. A name that cannot be found
- * stays as the value, so a gap shows.
+ * A value that names another record, drawn as the picker shows it, and as a
+ * link to its page when the field says where it opens. A value not read yet,
+ * or one the reader cannot see, stays as the value, so a gap shows.
  */
 function RecordValue({
     kind,
@@ -748,9 +796,8 @@ function RecordValue({
     readonly code: string;
     readonly pathOf: ((value: string) => string) | undefined;
 }): ReactNode {
-    const records = useRecords(kind.resource);
-    const found = records.data?.find((candidate) => show(candidate[kind.value]) === code);
-    const name = found === undefined ? code : show(found[kind.label]);
+    const choice = useChoices(kind).find((candidate) => candidate.value === code);
+    const name = choice?.label ?? code;
     return pathOf === undefined ? (
         <>{name}</>
     ) : (
@@ -877,6 +924,7 @@ export function LinkPanel({
     const flags = useFlags();
     const { t } = useTranslation();
     const queries = useQueryClient();
+    const store = useRecordStore();
     const navigate = useNavigate();
     const may = useRecordPermissions(junction);
     const links = useRecords(junction, readAll === true ? undefined : parentValue);
@@ -890,7 +938,7 @@ export function LinkPanel({
     };
     const add = useMutation({
         mutationFn: () =>
-            api.saveRecord(junction, {
+            store.save(junction, {
                 write: { [parentField]: parentValue, [childField]: adding },
                 version: null,
                 reasonCode: NEW_RECORD_REASON,
@@ -903,7 +951,7 @@ export function LinkPanel({
     });
     const remove = useMutation({
         mutationFn: (child: string) =>
-            api.removeRecord(junction, {
+            store.remove(junction, {
                 key: { [parentField]: parentValue, [childField]: child },
                 reasonCode: UNLINK_REASON,
                 commentary: '',
@@ -992,12 +1040,6 @@ export function LinkPanel({
     );
 }
 
-/** What a write carries to say why it was made. */
-export interface WriteIntent {
-    readonly reasonCode: string;
-    readonly commentary: string;
-}
-
 /**
  * Writes an older version's values back as a new version, against the
  * record's current version, so a change made since is refused rather than
@@ -1009,6 +1051,7 @@ export function RevertDialog({
     row,
     version,
     keep,
+    complete,
     onClose,
 }: {
     readonly resource: string;
@@ -1016,10 +1059,12 @@ export function RevertDialog({
     readonly row: RecordRow;
     readonly version: HistoryVersion;
     readonly keep?: readonly string[];
+    readonly complete?: (write: Readonly<Record<string, unknown>>) => Record<string, unknown>;
     readonly onClose: () => void;
 }): ReactNode {
     const queries = useQueryClient();
     const { t } = useTranslation();
+    const store = useRecordStore();
     return (
         <RevertVersionDialog
             current={row.version}
@@ -1027,11 +1072,12 @@ export function RevertDialog({
             changes={revertChanges(t, specs, row, version)}
             onClose={onClose}
             write={async (intent) => {
-                await api.saveRecord(resource, {
-                    write: {
-                        ...kept(keep, row),
-                        ...writeOf(specs, valuesFromHistory(specs, version)),
-                    },
+                const typed = {
+                    ...kept(keep, row),
+                    ...writeOf(specs, valuesFromHistory(specs, version)),
+                };
+                await store.save(resource, {
+                    write: complete === undefined ? typed : complete(typed),
                     version: row.version,
                     ...intent,
                 });
@@ -1173,6 +1219,7 @@ export function RemoveRecordDialog({
     readonly before?: (intent: WriteIntent) => Promise<void>;
 }): ReactNode {
     const queries = useQueryClient();
+    const store = useRecordStore();
     return (
         <DeleteDialog
             title={title}
@@ -1181,7 +1228,7 @@ export function RemoveRecordDialog({
             onRemoved={onRemoved}
             remove={async (intent) => {
                 await before?.(intent);
-                await api.removeRecord(resource, { key: recordKey, version, ...intent });
+                await store.remove(resource, { key: recordKey, version, ...intent });
                 await queries.invalidateQueries({ queryKey: ['records'] });
             }}
         />
@@ -1295,6 +1342,7 @@ export function RecordHeader({
     mark,
     access,
     subdued,
+    detail,
 }: {
     readonly crumbs: readonly { readonly label: string; readonly to?: string }[];
     readonly title: string;
@@ -1316,6 +1364,8 @@ export function RecordHeader({
     readonly access?: boolean | null;
     /** Draws the key and version line small, for a key that is an identifier. */
     readonly subdued?: boolean;
+    /** What else the key and version line says, such as a feed's engine. */
+    readonly detail?: string;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -1329,14 +1379,15 @@ export function RecordHeader({
                     : mark !== undefined
                       ? { mark }
                       : {})}
-                description={
+                description={[
                     version === null
                         ? recordKey
                         : t('refdata.records.lead', {
                               code: recordKey,
                               version: String(version),
-                          })
-                }
+                          }),
+                    ...(detail === undefined ? [] : [detail]),
+                ].join(' · ')}
                 actions={
                     <div className="flex items-center gap-2">
                         {access !== null && (

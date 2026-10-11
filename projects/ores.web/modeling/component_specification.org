@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ores.web:
 #+created: 2026-09-19
-#+updated: 2026-09-23
+#+updated: 2026-10-10
 
 This document specifies what =ores.web= contains today. Read
 =component_overview.org= for the component boundary, its inputs and its outputs.
@@ -187,9 +187,16 @@ The BFF serves these routes on =ORES_WEB_PORT=.
 | =PUT /api/refdata/:resource=, =DELETE /api/refdata/:resource= | Write one row, new or against the version read, and remove one named by exactly its key fields, each with a change reason. Each write is checked against the resource's own schema. |
 | =GET /api/refdata/calendars/:code/days= | The materialised days of one calendar in one year. The dates filter takes no range, so the BFF pages through the calendar's days until it passes the year. |
 | =POST /api/refdata/calendars/:code/rebuild= | Build one calendar's business days up to the end of a year. The server adds only the days it has not built. |
+| =GET /api/synthetic= | The synthetic resources the screens read and write, each with whether this session may write it and why not, what it searches and sorts, and the permissions the server checks. The resource keys are the BFF's authority: a key it does not name reaches nothing. |
+| =GET /api/synthetic/:resource=, =GET /api/synthetic/:resource/key/:key=, =GET /api/synthetic/:resource/by/:parent= | Every row of a resource, or one page of it with the total, searched and ordered on the server when the request names a limit; one row by its key; and the rows of one parent, such as one feed's mixture. |
+| =PUT /api/synthetic/:resource=, =DELETE /api/synthetic/:resource= | Write one or many rows in one call, each new or against the version read, and remove one row against its version or many unconditionally, each with a change reason. A write that states its party is refused: the party is the session's. |
+| =POST /api/synthetic/simulate/fx=, =POST /api/synthetic/simulate/ir=, =POST /api/synthetic/preview/ir-shape= | Sample paths and a curve shape drawn from the values on a screen; nothing is saved. |
+| =POST /api/synthetic/convert/fx= | The mixture an FX engine change leaves, converted by the synthetic service (=synthetic.v1.ops.convert_fx_mixture=): μ and σ scaled by the initial price between log-returns and price units, one component with κ from a 15 minute half-life into Ornstein-Uhlenbeck, and one with the whole weight out of it. Nothing is stored. |
+| =POST /api/synthetic/feeds/:id/start=, =POST /api/synthetic/feeds/:id/stop=, =POST /api/synthetic/folders/:id/start=, =POST /api/synthetic/folders/:id/stop=, =GET /api/synthetic/running=, =GET /api/synthetic/vintages= | Start and stop one feed or a folder's feeds, the feeds running now, and whether each vintage a feed draws from is valid. |
+| =GET /api/synthetic/feeds/:id/ticks= | The newest ticks of one FX feed's current run, oldest first, read after the feed is read as the session. The BFF listens on the tick subject of each feed the running read names and keeps the newest 500; a run's ticks go when it stops, because a source name is unique only within a tenant. |
 | =POST /api/classifications/:list/rows=, =PUT /api/classifications/:list/rows/:code=, =DELETE /api/classifications/:list/rows/:code= | Add a row, correct one against the version read, and remove one, each with a change reason. A list of ORE spellings is refused. |
 | =PUT /api/classifications/:list/order= | Write the new display order of the rows that moved, in one call. |
-| =GET /api/history= | Every version of one record, newest first, with the field-level changes in each. Served only for the entity types of the classification lists. |
+| =GET /api/history= | Every version of one record, newest first, with the field-level changes in each. Served only for the entity types the BFF names: the classification lists, the versioned reference data and synthetic records, and the tenant. |
 | =GET /api/events=, =POST /api/events/watch= | Change notifications. See =change_notification.org=. |
 
 The BFF also serves the built browser bundle from =packages/web/dist=.

@@ -2896,6 +2896,8 @@ export const en: SourceCatalogue = {
                 memberships: 'Memberships',
                 centres: 'Business centres',
                 counterparties: 'Counterparties',
+                behaviour: 'Price behaviour',
+                ticks: 'Ticks',
             },
         },
         fields: {
@@ -2975,8 +2977,34 @@ export const en: SourceCatalogue = {
             unit_code: 'Code',
             unit_type_id: 'Unit type',
             business_centre_code: 'Business centre',
+            config_id: 'Collection',
+            base_currency_code: 'Base currency',
+            quote_currency_code: 'Quote currency',
+            source_name: 'Source name',
+            ore_key: 'ORE key',
+            process_type: 'Engine',
+            ticks_per_hour: 'Ticks per hour',
+            price_source: 'Initial price from',
+            gmm_initial_price: 'Initial price',
+            vintage_source: 'Vintage source',
+            vintage_date: 'Vintage date',
+            enabled: 'Enabled',
+            auto_start: 'Starts with the service',
+            mean: 'Mean (μ)',
+            stdev: 'Deviation (σ)',
+            weight: 'Weight (w)',
+            component_index: 'Index',
         },
         choices: {
+            process_type: {
+                geometric: 'Geometric',
+                arithmetic: 'Arithmetic',
+                ornstein_uhlenbeck: 'Mean reverting (Ornstein-Uhlenbeck)',
+            },
+            price_source: {
+                fixed: 'A fixed price',
+                vintage: 'A market data vintage',
+            },
             kind: {
                 fixed_date: 'Fixed date',
                 nth_weekday_of_month: 'Nth weekday of the month',
@@ -3164,6 +3192,186 @@ export const en: SourceCatalogue = {
         },
     },
 
+    marketdata: {
+        area: {
+            title: 'Market data',
+            lead: 'The prices and curves the platform receives or generates.',
+            screens: {
+                fxFeeds: 'FX price feeds',
+                fxFeedsBody:
+                    'Compose the synthetic FX feeds: the pair, the engine and the mixture each one draws from.',
+                evolution: 'Watch a curve evolve',
+                evolutionBody:
+                    'Read a curve or surface over a range of instants, and as it stands now.',
+            },
+        },
+        fxFeeds: {
+            title: 'FX price feeds',
+            lead: 'The synthetic FX feeds of your party. A feed produces nothing until it is enabled and started.',
+            add: 'Add feed',
+            addTitle: 'Add an FX price feed',
+            pair: 'Pair',
+            samePair: 'The base and quote currencies must differ.',
+            help: {
+                ticks_per_hour: 'How many prices the feed makes in an hour. 3600 is one a second.',
+                price_source: {
+                    fixed: 'The feed starts from the initial price you give.',
+                    vintage:
+                        'The feed starts from the price an imported market data vintage holds for the pair.',
+                },
+                enabled: 'A feed that is not enabled cannot start.',
+                auto_start: 'The feed starts when the synthetic service starts.',
+            },
+            removeWarning:
+                'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',
+        },
+        runs: {
+            status: 'Status',
+            running: 'Running',
+            stopped: 'Stopped',
+            start: 'Start',
+            stop: 'Stop',
+            choose: 'Choose',
+            chooseFeed: 'Choose {feed}',
+            startChosen: 'Start chosen ({count})',
+            stopChosen: 'Stop chosen ({count})',
+            startedCount: 'Started {count} feeds.',
+            stoppedCount: 'Stopped {count} feeds.',
+            refused: '{feed}: {message}',
+        },
+        history: {
+            lead: "The feed and every component of its mixture, in one stream, newest first. Revert writes an older version's values back as a new version.",
+            gap: 'A component deleted from the mixture is not in this stream: the screen reads the history of the components the feed holds now.',
+        },
+        ticks: {
+            lead: 'The last prices the feed made, newest on the right. The web server keeps the last 500 of each running feed from when it began to listen, so a feed started before that shows only what came since.',
+            count: 'Ticks shown',
+            waiting: 'The feed runs. The plot shows when two ticks have arrived.',
+            notRunning: 'The feed is not running. Start it to see its prices.',
+            chart: 'The last prices of the feed',
+            last: 'Last price',
+            at: 'Time',
+            move: 'Move ({count} ticks)',
+            high: 'High:',
+            low: 'Low:',
+            ema: 'Moving average (EMA {period})',
+            export: 'Export CSV',
+            process: 'Process',
+            rate: '{rate} ticks per hour',
+            unnamed: 'Unnamed component',
+            weightSum: 'Weight sum, as typed',
+            title: '{pair} synthetic price path',
+        },
+        process: {
+            about: {
+                geometric:
+                    'Geometric: each update draws a log-return from the mixture, so the price stays positive. μ is the drift and σ the volatility of the log-return per update.',
+                arithmetic:
+                    'Arithmetic: each update draws an absolute price change from the mixture. The changes are symmetric and the price can go to zero or below, which an FX rate cannot do. Use it to test the process, not for realistic prices.',
+                ornstein_uhlenbeck:
+                    'Mean reverting (Ornstein-Uhlenbeck): the price is pulled back toward the initial price, its long-run level θ. One regime only: the engine reads the first component, its weight as the reversion speed κ and its σ as the volatility. μ is not used.',
+            },
+            columns: {
+                geometric: {
+                    mean: 'Drift (μ): the mean log-return per update. 0.0001 is 0.01% per update.',
+                    stdev: 'Volatility (σ): the standard deviation of the log-return per update. 0.001 is 0.1% per update.',
+                    weight: 'Weight: the share of this component when the mixture draws. The draw normalises the weights, so only their ratios count.',
+                },
+                arithmetic: {
+                    mean: 'Drift (μ): the mean price change per update, in price units, not a percentage.',
+                    stdev: 'Volatility (σ): the standard deviation of the price change per update, in price units.',
+                    weight: 'Weight: the share of this component when the mixture draws. The draw normalises the weights.',
+                },
+                ornstein_uhlenbeck: {
+                    mean: 'Not used by the mean reverting engine.',
+                    stdev: 'Volatility (σ): the size of each random push, before the reversion pulls the price back.',
+                    weight: 'Reversion speed (κ): the price halves its distance from θ in about ln(2)/κ updates. 0 does not revert.',
+                },
+            },
+            row: {
+                geometric:
+                    'A geometric component: μ is the trend and σ the noise of the log-return per update; its weight is its share of the draw. Two or more components make a regime mix, for example a calm one with a large weight and a volatile one with a small weight for jumps.',
+                arithmetic:
+                    'An arithmetic component: μ and σ are price changes per update, in price units; its weight is its share of the draw.',
+                ornstein_uhlenbeck:
+                    'A mean reverting component: its weight is κ and its σ the volatility. The band the price settles in is about σ/√(2κ) wide: a small κ with a larger σ gives a wider band.',
+            },
+            profile: 'Profile',
+            profileHelp: 'A preset that sets the volatility (σ). Custom keeps the value you typed.',
+            profiles: {
+                custom: 'Custom',
+                flat: 'Flat',
+                calm: 'Calm',
+                normal: 'Normal',
+                volatile: 'Volatile',
+            },
+            kappa: 'Reversion (κ)',
+            halfLife:
+                "Half-life t½: {minutes} minutes ({days} days) at this feed's ticks per hour.",
+            noReversion: 'κ is 0, so the price does not revert: it is a random walk with no drift.',
+            band: 'The price settles in a band about {band} wide around θ.',
+            firstOnly: 'The mean reverting engine reads only the first component.',
+        },
+        mixture: {
+            lead: 'The Gaussians the feed draws each return from. Change the values and read what they imply before you save them.',
+            none: 'No component yet. Add one to give the feed a process.',
+            add: 'Add',
+            sum: 'Weight sum {sum}. The weights stay as typed, and the draw normalises them.',
+            sumPending: 'Weight sum: waiting for every weight to be a number.',
+            problems: {
+                empty: 'The mixture needs at least one component.',
+                number: 'Every mean, deviation and weight must be a number.',
+                negative: 'A deviation or a weight cannot be negative.',
+                weights: 'The weights must add up to more than zero.',
+            },
+            discard: 'Discard',
+            addTitle: 'Add a component',
+            editTitle: 'Component {index}',
+            done: 'Done',
+            descriptionHint:
+                'A name, then a colon and a note, as in "Primary: calibrated to ~8% annualised vol." The name shows highlighted and the note subdued.',
+            upRow: 'Move component {index} up',
+            downRow: 'Move component {index} down',
+            saveButton: 'Save',
+            saveTitle: 'Save the mixture',
+            saveSummary: '{added} added, {changed} changed and {removed} deleted.',
+            runningNote: 'The feed is running on the old mixture.',
+            restart: 'Restart it to apply',
+            stoppedNote: 'The feed is stopped. It applies on start.',
+            share: 'Share',
+            clean: 'No unsaved changes.',
+            unsaved: '{count} unsaved changes',
+            undo: 'Undo',
+            marks: {
+                added: 'New',
+                changed: 'Changed',
+                moved: 'Moved',
+                deleted: 'Deleted',
+            },
+            converted: 'Converted from {from} to {to} at a price of {price}.',
+            convertedAtPreview: 'The feed has no fixed price, so the preview price was used.',
+            saveEngine: 'Engine: {from} → {to}.',
+        },
+        preview: {
+            distribution: 'Return distribution',
+            meanReverting:
+                'A mean-reverting engine reads the first component only: its weight is the reversion speed κ and its deviation is the volatility σ. The sample paths show the result.',
+            nothing:
+                'No component has a deviation above zero, so there is no distribution to draw.',
+            density:
+                'The solid line is the mixture, with the weights normalised. Each dashed line is one weighted component.',
+            paths: 'Sample paths',
+            initialPrice: 'Initial price',
+            ticks: 'Ticks per path',
+            pathCount: 'Paths',
+            seed: 'Seed',
+            reseed: 'Reseed',
+            waiting:
+                'The paths are drawn when the mixture can be saved, the price is above zero, the ticks are 2 to 5000 and the paths are 1 to 50.',
+            unsaved:
+                'The server draws these paths from the values on the screen, with the {process} engine. Nothing is saved.',
+        },
+    },
     membership: {
         where: {
             title: 'Where I work',
@@ -3241,6 +3449,7 @@ export const en: SourceCatalogue = {
         rolesAssign: 'give roles to people',
         sessionsRead: "read people's sign-ins",
         curveSnapshotsRead: 'see the market data curves',
+        fxFeedsRead: 'see the synthetic FX price feeds',
     },
 
     unavailable: {

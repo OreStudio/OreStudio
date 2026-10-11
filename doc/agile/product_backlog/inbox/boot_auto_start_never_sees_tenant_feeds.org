@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 83FF505F-F58B-4AA6-9FA6-98F4EE29A9B7
+:END:
+#+title: Boot auto-start never starts a tenant's feeds. The synthetic…
+#+description: Boot auto-start never starts a tenant's feeds. The synthetic service's boot pass (auto_start_feeds in service/src/app/application.cpp) lists feed targets with the service's own database context, which carries no tenant, so row-level security hides every tenant's fx_spot and ir_curve configs and the pass logs 'Auto-started 0 enabled feed(s).' on every boot. Seen on swift_curie on 2026-10-11: Acme holds 26 feeds with enabled and auto_start set, and none came back after a service restart; they had been started by a folder start request after the database was recreated. A restart of the synthetic service therefore stops every tenant feed until someone starts its folder again. The pass should walk each tenant (and party) whose feeds it may start, in that tenant's context, or the auto_start flag should say it means something narrower.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

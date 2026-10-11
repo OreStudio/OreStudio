@@ -91,7 +91,7 @@ function render(
     } = {},
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['refdata-registry'], REGISTRY);
+    client.setQueryData(['registry', 'refdata'], REGISTRY);
     client.setQueryData(['my-access'], everything);
     client.setQueryData(['labels'], { labels: [], domains: {} });
     client.setQueryData(['records', 'calendars'], [target, office, desk]);

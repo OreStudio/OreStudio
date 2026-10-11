@@ -70,6 +70,8 @@ uuid_gen()
 :type:     text
 :cpp_type: std::string
 :natural_key: true
+:sortable: true
+:searchable: true
 :END:
 
 Base currency ISO code of the FX spot pair (soft FK to currencies).
@@ -83,6 +85,8 @@ std::string("EUR")
 :type:     text
 :cpp_type: std::string
 :natural_key: true
+:sortable: true
+:searchable: true
 :END:
 
 Quote currency ISO code of the FX spot pair (soft FK to currencies).
@@ -96,6 +100,8 @@ std::string("USD")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
+:searchable: true
 :END:
 
 Stable source name carried as provenance of generated observations (e.g.
@@ -110,6 +116,8 @@ std::string("synthetic.") + std::string(faker::finance::currencyCode())
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
+:searchable: true
 :END:
 
 ORE market key identifying the FX spot rate produced (e.g. "FX/RATE/EUR/USD").
@@ -161,6 +169,7 @@ not real SQL NULL.
 :type:     integer
 :cpp_type: int
 :nullable: false
+:sortable: true
 :END:
 
 Number of synthetic ticks produced per hour.

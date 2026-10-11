@@ -29,7 +29,7 @@ import {
     type ReactNode,
 } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { api, type RecordRow } from '../api/client.js';
+import type { RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { FlagOf, type FlagSource } from '../images/flags.js';
 import { type WatchedEntity } from '../events/EntityEvents.js';
@@ -45,6 +45,7 @@ import { Button, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 import { show, useRecordPermissions, useRegistry } from './records.js';
 import { Crumbs } from './shared.js';
+import { useRecordStore } from './store.js';
 
 /** How long the search waits after the last keystroke before it asks the server. */
 const SEARCH_PAUSE_MS = 300;
@@ -145,18 +146,19 @@ export function pageKey(source: Pick<ListSource<unknown>, 'key' | 'scope'>, page
     return ['records', source.key, source.scope ?? '', 'page', page] as const;
 }
 
-/** The source of a refdata record kind: the registry says what it searches and sorts. */
+/** The source of a record kind of the store in context: the registry says what it searches and sorts. */
 export function useRecordSource(resource: string): ListSource<RecordRow> {
+    const store = useRecordStore();
     const registry = useRegistry();
     const may = useRecordPermissions(resource);
     const entry = registry.data?.find((candidate) => candidate.key === resource);
     return {
         key: resource,
-        read: (page) => api.recordPage(resource, page),
+        read: (page) => store.page(resource, page),
         search: entry?.search === true,
         sortable: entry?.sortable ?? [],
         mayAdd: may.write,
-        ...(entry === undefined ? {} : { watches: [entry.events] }),
+        ...(entry?.events === undefined ? {} : { watches: [entry.events] }),
         audit: (row, field) => (field === 'version' ? row.version : row[field]),
     };
 }

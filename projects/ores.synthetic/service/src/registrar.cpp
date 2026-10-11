@@ -20,6 +20,7 @@
 #include "registrar.hpp"
 #include "feed_config_handler.hpp"
 #include "folder_feed_control_handler.hpp"
+#include "fx_mixture_conversion_handler.hpp"
 #include "ir_curve_preview_handler.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
@@ -112,6 +113,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                                 nats, ctx, verifier, registry);
                                             h.preview_shape(std::move(msg), "ir_curve");
                                         }));
+
+    // The mixture an engine change leaves: FX only, gated by the FX kind.
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::convert_fx_mixture_request::nats_subject),
+        queue,
+        [&nats, ctx, verifier, &registry](ores::nats::message msg) {
+            fx_mixture_conversion_handler h(nats, ctx, verifier, registry);
+            h.convert(std::move(msg));
+        }));
 
     return subs;
 }

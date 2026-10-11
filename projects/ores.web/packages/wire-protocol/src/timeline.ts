@@ -227,7 +227,7 @@ async function orGap<T>(
  * arrived. The reason and the commentary are stamped on the version as fields,
  * which is why they are read back out of them here.
  */
-function recordEvents(
+export function recordEvents(
     entityType: string,
     entityId: string,
     versions: readonly {

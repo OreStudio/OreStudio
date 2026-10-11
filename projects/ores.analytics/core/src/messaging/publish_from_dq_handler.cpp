@@ -24,7 +24,6 @@
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
-#include <algorithm>
 #include <format>
 #include <rfl/json.hpp>
 #include <string>

@@ -5601,4 +5601,5 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 
 comment on function ores_refdata_publish_curve_configuration_from_dq_fn(uuid, uuid, text, jsonb) is
 'Publishes the curve configuration document a dataset stages for the target party,
- with its reporting configuration. Idempotent per row.';
+ with its reporting configuration. Idempotent per row. A publish only inserts, so the
+ mode has no effect.';

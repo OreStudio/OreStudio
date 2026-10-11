@@ -68,6 +68,13 @@ comment on function ores_dq_party_uuid_fn(uuid, uuid) is
  *                        ores_analytics_.
  * @param p_tables        the base table names, header first, children after in
  *                        the order they are written.
+ * @param p_external      the uuid columns that refer to something outside the
+ *                        document. They are copied as staged and not re-keyed,
+ *                        because a re-keyed value would point at nothing. Every
+ *                        other uuid column of every table is a key of the document.
+ *
+ * A publish only inserts. The mode a caller passes has no effect, and a staged row
+ * whose live id exists is left as it is, so a changed document needs new ids.
  */
 create or replace function ores_dq_publish_configuration_document_fn(
     p_dataset_id uuid,
@@ -76,7 +83,8 @@ create or replace function ores_dq_publish_configuration_document_fn(
     p_type_code text,
     p_component text,
     p_live_prefix text,
-    p_tables text[]
+    p_tables text[],
+    p_external text[] default array[]::text[]
 )
 returns table (action text, record_count bigint) as $$
 declare
@@ -107,6 +115,16 @@ begin
     v_commentary := 'Imported from DQ dataset: ' || v_dataset_name;
     v_header_staging := format('ores_dq_%s_artefact_tbl', v_header);
 
+    -- A header with no configuration would publish a document that no definition can
+    -- bind, so a dataset that stages one is refused.
+    execute format('select count(*) from %I where dataset_id = $1 and configuration_id is null',
+                   v_header_staging)
+        into v_n using p_dataset_id;
+    if v_n > 0 then
+        raise exception 'Dataset % stages % header(s) of % with no configuration_id.',
+            v_dataset_name, v_n, p_type_code;
+    end if;
+
     -- The reporting configuration each staged header stands for.
     execute format(
         'insert into ores_reporting_configurations_tbl (tenant_id, id, version, party_id, '
@@ -136,7 +154,7 @@ begin
         -- this function stamps. A uuid column is re-keyed, and any other column
         -- is copied as staged.
         select string_agg(format('%I', c.column_name), ', ' order by c.ordinal_position),
-               string_agg(case when c.data_type = 'uuid'
+               string_agg(case when c.data_type = 'uuid' and c.column_name <> all (p_external)
                     then format('ores_dq_party_uuid_fn(%L::uuid, a.%I)', p_party_id::text,
                                 c.column_name)
                     else format('a.%I', c.column_name) end,
@@ -178,7 +196,7 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-comment on function ores_dq_publish_configuration_document_fn(uuid, uuid, uuid, text, text, text, text[]) is
+comment on function ores_dq_publish_configuration_document_fn(uuid, uuid, uuid, text, text, text, text[], text[]) is
 'Copies a configuration document from its staging tables into the live tables of
  its owning component for one party, with its reporting configuration, re-keying
  every uuid per party. Idempotent per row.';

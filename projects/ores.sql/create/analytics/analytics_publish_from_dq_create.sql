@@ -59,7 +59,8 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 
 comment on function ores_analytics_publish_pricing_engines_from_dq_fn(uuid, uuid, text, jsonb) is
 'Publishes the pricing engines document a dataset stages for the target party, with
- its reporting configuration. Idempotent per row.';
+ its reporting configuration. Idempotent per row. A publish only inserts, so the
+ mode has no effect.';
 
 -- =============================================================================
 -- Today's market: analytics.v1.ops.publish_todays_market_from_dq
@@ -92,4 +93,5 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 
 comment on function ores_analytics_publish_todays_market_from_dq_fn(uuid, uuid, text, jsonb) is
 'Publishes the today''s market document a dataset stages for the target party, with
- its reporting configuration. Idempotent per row.';
+ its reporting configuration. Idempotent per row. A publish only inserts, so the
+ mode has no effect.';

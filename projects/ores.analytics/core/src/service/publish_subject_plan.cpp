@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.core/service/publish_subject_plan.hpp"
 #include <algorithm>
+#include <cctype>
 
 namespace ores::analytics::service {
 
@@ -32,7 +33,15 @@ std::string publish_from_dq_function(std::string_view subject) {
     if (pos == std::string_view::npos)
         return {};
     const auto operation = subject.substr(pos + ops.size());
-    if (operation.empty())
+    constexpr std::string_view suffix = "_from_dq";
+    if (operation.size() <= suffix.size() || !operation.ends_with(suffix))
+        return {};
+    // The name is put into SQL as an identifier, so it holds lower-case letters,
+    // digits and underscores and nothing else.
+    const auto plain = std::ranges::all_of(operation, [](const unsigned char c) {
+        return std::islower(c) || std::isdigit(c) || c == '_';
+    });
+    if (!plain)
         return {};
     return "ores_analytics_" + std::string(operation) + "_fn";
 }

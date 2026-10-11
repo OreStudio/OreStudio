@@ -192,6 +192,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The function name from the subject goes into SQL unchecked | publish_subject_plan.cpp | Accepted | A subject names a function only when its operation is lower-case letters, digits and underscores and ends in _from_dq. Negative tests added. |
+| 2 | Re-keying every uuid column can break a reference outside the document | dq_publish_configuration_document_create.sql | Accepted | The shared publish takes the columns that refer outside a document and copies them as staged. A test lists the uuid key columns of the three documents, all of which refer inside. |
+| 3 | The mode argument has no effect | dq_publish_configuration_document_create.sql | Accepted | Documented on the shared publish and on each document function: a publish only inserts. |
+| 4 | A header with no configuration publishes with no reporting configuration | dq_publish_configuration_document_create.sql | Accepted | The publish refuses such a header. Test added. |
+| 5 | The result counts are coarse | dq_publish_configuration_document_create.sql | Not changed | Minor. The totals are enough to see a partial publish. |
+| 6 | Unused includes, search path | publish_from_dq_handler.cpp | Accepted in part | The unused include is removed. The search path follows the existing publish functions. |
+| 7 | The seeder JSON should regenerate with no diff | generate_configuration_data.py | Answered | Regenerating the three generators leaves the tree unchanged. |
 
 * Result

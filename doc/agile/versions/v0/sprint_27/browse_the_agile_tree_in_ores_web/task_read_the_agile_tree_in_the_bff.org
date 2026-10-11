@@ -13,24 +13,24 @@
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give the BFF a store that reads the agile tree, so the board, the backlog and the charts have a source. The store reads, and never writes.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -40,9 +40,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Port the field rules of =ores.dsh_kanban/lib/agile.js= to a TypeScript model that reads text. Put a file store behind an interface, and test it on a temporary tree and on the real tree.
 
 * Measurements
 
@@ -59,6 +57,11 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The store gives the sprints, one sprint's board and the four backlog buckets. It leaves three things to later tasks. The doc route reads any doc by id, in the serve task. The work tree and the current story need git, in the work trees task. The charts need the history of each sprint, in the charts task.
+
+A test found that a story file that is a link was read. The store uses =lstat=, so a link is never a file.
+
 
 * Test Scenarios
 
@@ -84,3 +87,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The BFF has =FileAgileStore= behind =AgileStore=. It lists sprints newest first, builds a board with the columns, counts, filters and progress of the old contract, and lists the backlog buckets. It reads only regular files and real directories, and a sprint name must match =sprint_N=. 620 BFF tests pass.

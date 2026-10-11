@@ -1474,9 +1474,26 @@ const fr: SourceCatalogue = {
                 noSample:
                     'Aucun échantillon pour l’instant. Le déploiement ne stocke aucun résumé de grille, donc les compteurs ne peuvent pas être dessinés ; le tableau des nœuds ci-dessous tient seul.',
             },
+            machines: {
+                title: 'Machines',
+                summary: '{up} machines sur {total} en marche',
+                columns: {
+                    machine: 'Machine',
+                    status: 'État',
+                    nodes: 'Nœuds',
+                    tasksCompleted: 'Tâches terminées',
+                    tasksFailed: 'Échecs',
+                },
+                up: 'En marche',
+                down: 'Arrêtée',
+                unnamed: 'Machine sans nom',
+                nodes: '{running} sur {total}',
+                hint: 'Les nœuds qui n\'indiquent aucune machine sont regroupés ici.',
+            },
             nodes: {
                 title: 'Nœuds',
                 rows: '{count} lignes',
+                showing: '{first}–{last} sur {total} nœuds',
                 reported:
                     '{running} exécutants sur {total} se sont signalés au cours des {minutes} dernières minutes',
                 lost: '{count} perdus',
@@ -1949,8 +1966,8 @@ const fr: SourceCatalogue = {
 
     timeline: {
         hideSystem: "Masquer l'activité du système",
-        showSystem: "Afficher l’activité du système",
-        systemUnknown: "Votre accès ne montre pas quels comptes sont des services.",
+        showSystem: 'Afficher l’activité du système',
+        systemUnknown: 'Votre accès ne montre pas quels comptes sont des services.',
         empty: 'Rien ne lui est encore arrivé.',
         details: 'Détails',
         current: 'Version actuelle',
@@ -3296,7 +3313,8 @@ const fr: SourceCatalogue = {
         notAvailable: 'Cette page n’est pas disponible pour vous.',
         clear: 'Effacer',
         refresh: 'Actualiser',
-        changedElsewhere: 'Quelque chose a changé que cette page ne peut pas montrer. Actualisez pour le voir.',
+        changedElsewhere:
+            'Quelque chose a changé que cette page ne peut pas montrer. Actualisez pour le voir.',
         refreshStale: 'Les données ont changé sur le serveur. Actualisez pour les voir.',
         refreshStaleAt: 'Les données ont changé sur le serveur à {time}. Actualisez pour les voir.',
         loadedAt: 'Chargé : {time}',

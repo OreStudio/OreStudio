@@ -35,7 +35,7 @@
  * leaving the table.
  */
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fromWireTimestamp, isWireTimestamp } from '@ores/wire-protocol/browser';
 import type { GridNodeRow, GridView } from '@ores/wire-protocol/browser';
@@ -55,6 +55,7 @@ import {
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
+import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 
 /** The journeys that carry on from this one, in the order its page names them. */
 const JOURNEYS: readonly JourneyId[] = [
@@ -236,12 +237,116 @@ function RunnerInstance({ node }: { readonly node: GridNodeRow }): ReactNode {
     );
 }
 
+/** One computer: the nodes that report it, and whether any of them is running. */
+interface Machine {
+    readonly name: string;
+    readonly nodes: readonly GridNodeRow[];
+    readonly running: number;
+}
+
+/**
+ * The nodes grouped by the computer they say they run on, in name order.
+ *
+ * A computer is up when one of its nodes is running, which is the runner state
+ * the nodes table already shows. A node that names no machine is grouped under
+ * the empty name, which the panel labels.
+ */
+export function machinesOf(nodes: readonly GridNodeRow[]): readonly Machine[] {
+    const byName = new Map<string, GridNodeRow[]>();
+    for (const node of nodes) {
+        byName.set(node.machine, [...(byName.get(node.machine) ?? []), node]);
+    }
+    return [...byName.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([name, group]) => ({
+            name,
+            nodes: group,
+            running: group.filter((node) => node.state === 'running').length,
+        }));
+}
+
+/** One row per computer, so a computer that has gone down shows at a glance. */
+function MachinesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
+    const { t } = useTranslation();
+    const machines = machinesOf(nodes);
+    const up = machines.filter((machine) => machine.running > 0).length;
+    return (
+        <section className="card space-y-4 p-6">
+            <header className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="text-lg font-medium">{t('operations.grid.machines.title')}</h2>
+                <span className="text-xs text-ink-faint">
+                    {t('operations.grid.machines.summary', { up, total: machines.length })}
+                </span>
+            </header>
+            <table className="w-full text-sm">
+                <thead className="text-left text-xs text-ink-faint">
+                    <tr>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.machine')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.status')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.nodes')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.tasksCompleted')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.machines.columns.tasksFailed')}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-line-subtle">
+                    {machines.map((machine) => (
+                        <tr key={machine.name}>
+                            <td className="py-2 font-mono">
+                                {machine.name === ''
+                                    ? t('operations.grid.machines.unnamed')
+                                    : machine.name}
+                            </td>
+                            <td className="py-2">
+                                {machine.running > 0 ? (
+                                    <Tag tone="accent">{t('operations.grid.machines.up')}</Tag>
+                                ) : (
+                                    <Tag tone="warn">{t('operations.grid.machines.down')}</Tag>
+                                )}
+                            </td>
+                            <td className="py-2 font-mono">
+                                {t('operations.grid.machines.nodes', {
+                                    running: machine.running,
+                                    total: machine.nodes.length,
+                                })}
+                            </td>
+                            <td className="py-2 font-mono">
+                                {machine.nodes.reduce((sum, node) => sum + node.tasks_completed, 0)}
+                            </td>
+                            <td className="py-2 font-mono">
+                                {machine.nodes.reduce((sum, node) => sum + node.tasks_failed, 0)}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            {machines.some((machine) => machine.name === '') && (
+                <p className="text-xs text-ink-faint">{t('operations.grid.machines.hint')}</p>
+            )}
+        </section>
+    );
+}
+
 function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
     const { t } = useTranslation();
+    const [offset, setOffset] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const running = nodes.filter((node) => node.state === 'running');
     const lost = nodes.filter((node) => node.state === 'lost');
     const missing = nodes.filter((node) => node.state === 'missing');
     const newestVersion = newestVersionOf(running);
+    const start = Math.min(offset, Math.max(0, Math.floor((nodes.length - 1) / pageSize) * pageSize));
+    const page = nodes.slice(start, start + pageSize);
+    const { first, last } = pageBounds(start, page.length);
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
@@ -309,7 +414,7 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-line-subtle">
-                    {nodes.map((node) => {
+                    {page.map((node) => {
                         const quiet = node.seconds_since_hb > SERVICE_RUNNING_WINDOW_MINUTES * 60;
                         return (
                             <tr key={node.host_id}>
@@ -363,6 +468,22 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
                     })}
                 </tbody>
             </table>
+            <Pager
+                offset={start}
+                shown={page.length}
+                total={nodes.length}
+                pageSize={pageSize}
+                showing={t('operations.grid.nodes.showing', {
+                    first,
+                    last,
+                    total: nodes.length,
+                })}
+                onMove={setOffset}
+                onPageSize={(size) => {
+                    setPageSize(size);
+                    setOffset(0);
+                }}
+            />
             <p className="text-xs text-ink-faint">{t('operations.grid.nodes.hint')}</p>
             <div className="flex flex-wrap items-center gap-3">
                 <Button variant="secondary" disabled title={t('operations.grid.nodes.openHint')}>
@@ -438,6 +559,7 @@ export function GridPage(): ReactNode {
                 </section>
             )}
 
+            <MachinesPanel nodes={view.nodes} />
             <NodesPanel nodes={view.nodes} />
 
             <GapPanel gaps={gaps} />

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  "Agile browser": the Development area gains a Board tab, a Backlog tab and a
+  Charts tab that replace ores.dsh_kanban and ores.org-js. The board shows one
+  sprint as columns of stories, with a card detail, a filter bar, tiles and a
+  strip of work trees. The backlog lists the four buckets. Any doc opens by its
+  link inside the tab. Two arrangements of the board on one static page,
+  switched from the bar at the foot. Every panel states the gap the build must
+  close.
+-->
+<title>ORE Studio · Agile browser</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+/* Colour and type are the web app's tokens (projects/ores.web/packages/web/src/styles.css). */
+:root {
+  color-scheme: dark;
+  --bg: #121214; --raised: #1a1a1e; --overlay: #26262b;
+  --line-subtle: #21262d; --line: #30363d; --line-strong: #4a5568;
+  --ink: #e3e3e6; --ink-muted: #a1a1aa; --ink-faint: #71717a; --ink-inverse: #0d1117;
+  --accent: #58a6ff; --accent-bright: #8ab4f8; --accent-dim: #1b2a3d;
+  --up: #3fb950; --up-strong: #238636; --up-dim: #12261a;
+  --down: #f85149; --down-dim: #2d1517; --warn: #d29922; --purple: #8957e5;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --radius: 0.5rem;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); color: var(--ink); }
+body { margin: 0; font: 14px/1.5 var(--sans); padding-bottom: 8rem; }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--accent); text-decoration: none; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.01em; }
+h1 { font-size: 1.375rem; } h2 { font-size: 1rem; } h3 { font-size: 0.875rem; }
+p { margin: 0; }
+.muted { color: var(--ink-muted); } .faint { color: var(--ink-faint); }
+.code { font-family: var(--mono); font-size: 12px; }
+.mini { font-size: 12px; }
+
+.top { position: sticky; top: 0; z-index: 5; background: var(--raised); border-bottom: 1px solid var(--line); }
+.top-inner { max-width: 80rem; margin: 0 auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.brand { font-weight: 700; letter-spacing: 0.02em; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+.brand-mark { width: 1.25rem; height: 1.25rem; border-radius: 4px; background: linear-gradient(135deg, var(--accent), #1f6feb); }
+.place { font-size: 12px; color: var(--ink-muted); border-left: 1px solid var(--line); padding-left: 1rem; white-space: nowrap; }
+.menu { display: flex; gap: 0.25rem; flex-wrap: wrap; flex: 1; min-width: 0; }
+.menu span { padding: 0.375rem 0.625rem; border-radius: 6px; color: var(--ink-muted); }
+.menu span[aria-current="page"] { color: var(--ink); background: var(--overlay); }
+
+main { max-width: 80rem; margin: 0 auto; padding: 1.5rem 1rem; display: grid; gap: 1.25rem; }
+.crumbs { font-size: 12px; color: var(--ink-faint); display: flex; gap: 0.375rem; flex-wrap: wrap; }
+.tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 0.5rem 0.875rem; cursor: pointer; color: var(--ink-muted); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+section.card { background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); }
+.pad { padding: 1rem; }
+.grid { display: grid; gap: 1rem; }
+
+.chip { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 11px; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap; background: none; }
+button.chip { cursor: pointer; }
+button.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent-bright); background: var(--accent-dim); }
+.chip.env { font-family: var(--mono); }
+.chip.tree { border-color: var(--purple); color: #c4a7f5; }
+.state { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; }
+.state::before { content: ''; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--c); }
+.s-BACKLOG { --c: var(--ink-faint); } .s-STARTED { --c: var(--accent); } .s-BLOCKED { --c: var(--down); }
+.s-DONE { --c: var(--up); } .s-ABANDONED { --c: var(--ink-faint); }
+.btn { border: 1px solid var(--line); background: var(--raised); padding: 0.375rem 0.75rem; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: var(--line-strong); }
+.btn.small { padding: 0.25rem 0.5rem; font-size: 12px; }
+input[type=search] { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.375rem 0.625rem; min-width: 16rem; }
+
+.sprintline { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.strip { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.controls { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.75rem; }
+.tile { padding: 0.75rem 1rem; display: grid; gap: 0.125rem; }
+.tile .label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+.tile .value { font-size: 1.5rem; font-weight: 700; }
+
+.board { display: grid; grid-template-columns: repeat(5, minmax(14rem, 1fr)); gap: 0.75rem; align-items: start; overflow-x: auto; }
+.col { background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 0; min-width: 0; }
+.col > header { padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.col .cards { padding: 0.5rem; display: grid; gap: 0.5rem; }
+.story { text-align: left; background: var(--overlay); border: 1px solid var(--line); border-left: 3px solid var(--ec, var(--line-strong)); border-radius: 6px; padding: 0.5rem 0.625rem; cursor: pointer; display: grid; gap: 0.375rem; width: 100%; }
+.story:hover { border-color: var(--line-strong); }
+.story.current { outline: 2px solid var(--accent); }
+.story .title { font-weight: 600; }
+.progress { height: 0.375rem; border-radius: 999px; background: var(--line-subtle); overflow: hidden; }
+.progress > span { display: block; height: 100%; background: var(--up); }
+.row2 { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.layout.with-panel { grid-template-columns: minmax(0, 1fr) 24rem; align-items: start; }
+@media (max-width: 62rem) { .layout.with-panel { grid-template-columns: 1fr; } }
+.panel { position: sticky; top: 4rem; }
+.panel dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 0.75rem; }
+.panel dt { color: var(--ink-faint); font-size: 12px; }
+.panel dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.task { border-top: 1px solid var(--line-subtle); padding: 0.5rem 0; display: grid; gap: 0.25rem; cursor: pointer; }
+.task .more { color: var(--ink-muted); font-size: 12px; display: grid; gap: 0.125rem; padding-left: 0.5rem; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 0.5rem 0.875rem; border-bottom: 1px solid var(--line-subtle); vertical-align: middle; }
+th { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; }
+tbody tr.open { cursor: pointer; } tbody tr.open:hover { background: var(--overlay); }
+.table-wrap { overflow-x: auto; }
+
+.doc { display: grid; gap: 0.75rem; max-width: 52rem; }
+.doc h2 { font-size: 1.125rem; }
+.doc .path { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1rem; }
+.bars { display: flex; align-items: flex-end; gap: 0.5rem; height: 9rem; padding: 0.5rem 0; border-bottom: 1px solid var(--line); }
+.bars > div { flex: 1; background: var(--accent); border-radius: 3px 3px 0 0; position: relative; min-height: 2px; }
+.bars > div span { position: absolute; top: -1.25rem; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--ink-muted); }
+.labels { display: flex; gap: 0.5rem; font-size: 11px; color: var(--ink-faint); }
+.labels > span { flex: 1; text-align: center; }
+svg.line { width: 100%; height: 9rem; }
+
+.gaps { border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 1rem; display: grid; gap: 0.5rem; }
+.gaps ol { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.375rem; }
+.gaps li { color: var(--ink-muted); }
+
+.proto-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--overlay); border-top: 1px solid var(--line); display: flex; align-items: center; gap: 1rem; padding: 0.5rem 1rem; flex-wrap: wrap; }
+.proto-bar .who { font-weight: 600; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { background: none; border: 0; padding: 0.3rem 0.7rem; cursor: pointer; color: var(--ink-muted); }
+.seg button[aria-pressed="true"] { background: var(--accent-dim); color: var(--accent-bright); }
+</style>
+</head>
+<body>
+<header class="top"><div class="top-inner">
+  <div class="brand"><span class="brand-mark"></span>ORE Studio</div>
+  <div class="place">Acme Corporation</div>
+  <nav class="menu" aria-label="Main"><span>Trading</span><span>Market data</span><span aria-current="page">Development</span><span>Operations</span></nav>
+</div></header>
+
+<main>
+  <div class="crumbs"><span>Home</span><span>/</span><span>Development</span></div>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div id="view"></div>
+  <section class="gaps" aria-label="What the build must close">
+    <h3>Gaps this prototype leaves for the build</h3>
+    <ol>
+      <li>Every value is mock data. The build reads the agile tree of the work tree the BFF runs in, behind a store interface, and never calls compass.</li>
+      <li>Nothing here writes. Starting, closing and moving a story stay in compass.</li>
+      <li>The sprint is fixed here. The build lists the sprints, and opens the newest by default.</li>
+      <li>The work trees strip needs <code>git worktree list</code> on the server, and reads no other work tree's files.</li>
+      <li>Doc links open inside the tab. The build resolves a link by id and never takes a path from the browser.</li>
+    </ol>
+  </section>
+</main>
+
+<footer class="proto-bar">
+  <span class="who">Agile browser</span>
+  <span class="muted mini">Board layout</span>
+  <div class="seg" id="variant-seg" role="group" aria-label="Board layout"></div>
+  <span class="muted mini">Mock data. Nothing reads or writes the agile tree.</span>
+</footer>
+
+<script>
+(() => {
+  const STATES = ['BACKLOG', 'STARTED', 'BLOCKED', 'DONE', 'ABANDONED'];
+  const TITLES = { BACKLOG: 'Backlog', STARTED: 'Started', BLOCKED: 'Blocked', DONE: 'Done', ABANDONED: 'Abandoned' };
+  const EPIC_COLOUR = { Product: '#58a6ff', Hotfixes: '#f85149' };
+  const TODAY = '2026-10-11';
+
+  const T = (title, state, env, branch, pr, extra = {}) => ({ title, state, env, branch, pr, blockedOn: '', created: '2026-10-09', updated: '2026-10-11', ...extra });
+  const STORIES = [
+    { id: '79DA69BB', title: 'Bring the QA validation runner to ores.web', state: 'DONE', epic: 'Product', env: 'eager_maxwell', created: '2026-10-10', desc: 'A tester works through a test scenario in ores.web and the result is written into the doc.', tasks: [
+      T('Build the scenario runner', 'DONE', 'eager_maxwell', 'feature/build-the-scenario-runner', 3085),
+      T('Take pasted images for a step', 'DONE', 'eager_maxwell', 'feature/take-pasted-images-for-a-step', 3093),
+      T('Ask before the scenario runner drops unsaved marks', 'DONE', 'eager_maxwell', 'feature/leaving-the-scenario-runner', 3097) ] },
+    { id: '62313BC5', title: 'Browse the agile tree in ores.web', state: 'STARTED', epic: 'Product', env: 'eager_maxwell', created: '2026-10-11', desc: 'Kanban for the sprint, stories, tasks, the backlog buckets and any doc by link, then retire ores.dsh_kanban and ores.org-js.', tasks: [
+      T('Scaffold story: Browse the agile tree in ores.web', 'DONE', 'eager_maxwell', 'feature/browse-the-agile-tree-in-ores-web', 3116),
+      T('Prototype the agile browser', 'STARTED', 'eager_maxwell', 'feature/prototype-the-agile-browser', ''),
+      T('Read the agile tree in the BFF', 'BACKLOG', '', '', ''),
+      T('Build the sprint board', 'BACKLOG', '', '', '') ] },
+    { id: 'DFA36716', title: 'Build the four-eyes framework', state: 'STARTED', epic: 'Product', env: 'clever_dijkstra', created: '2026-10-08', desc: 'Grow the approval request so a change waits for a second person.', tasks: [
+      T('Start the apply on the last approval', 'STARTED', 'clever_dijkstra', 'feature/start-the-apply-on-the-last-approval', 3105),
+      T('Retry a stopped apply until the window ends', 'DONE', 'clever_dijkstra', 'feature/retry-a-stopped-apply', 3101) ] },
+    { id: '7F612088', title: 'Name the record in a change event', state: 'STARTED', epic: 'Product', env: 'brave_hopper', created: '2026-10-10', desc: 'A change event names no record, so a record page cannot know it is stale.', tasks: [
+      T('Tell the browser which records changed', 'DONE', 'brave_hopper', 'feature/name-the-record-in-a-change-event', 3111) ] },
+    { id: '86B6BF9C', title: 'Seed a relative-time trade population with the market data it needs', state: 'BLOCKED', epic: 'Product', env: 'bright_faraday', created: '2026-10-10', desc: 'A new ACME system has no trades dated relative to today.', tasks: [
+      T('Partition a run\'s trade population into trade sets', 'BLOCKED', 'bright_faraday', 'feature/partition-trade-sets', '', { blockedOn: 'The trade set model' }) ] },
+    { id: '4DE7AFB9', title: 'Keep the record screens up to date', state: 'BACKLOG', epic: 'Product', env: '', created: '2026-10-10', desc: 'Live updates from the server reach the open record screens.', tasks: [] },
+    { id: 'A194593B', title: 'Align the web palette with the reviewed scheme', state: 'DONE', epic: 'Product', env: 'festive_dijkstra', created: '2026-10-06', desc: 'One palette across the screens.', tasks: [
+      T('Replace the hard-coded colours', 'DONE', 'festive_dijkstra', 'feature/replace-colours', 3070) ] },
+    { id: 'DDC770CE', title: 'Hotfix: the audit events miss the sign-ins', state: 'DONE', epic: 'Hotfixes', env: 'solid_dirac', created: '2026-10-10', desc: 'A sign-in leaves no audit event.', tasks: [
+      T('Record the sign-in', 'DONE', 'solid_dirac', 'hotfix/audit-sign-ins', 3099) ] },
+    { id: '17C335A5', title: 'Hotfix: the seeded books have no purpose', state: 'BACKLOG', epic: 'Hotfixes', env: 'solid_dirac', created: '2026-10-11', desc: 'The book artefact lacks a purpose.', tasks: [
+      T('Scaffold story: Hotfix: the seeded books have no purpose', 'BACKLOG', 'solid_dirac', 'hotfix/seeded-books-purpose', '') ] },
+    { id: '2EFCD807', title: 'Split the ER diagram by group', state: 'ABANDONED', epic: 'Product', env: 'swift_curie', created: '2026-10-07', desc: 'Dropped for the sprint.', tasks: [] },
+  ];
+  const TREES = [
+    { label: 'eager_maxwell', task: 'Prototype the agile browser', state: 'STARTED', me: true },
+    { label: 'clever_dijkstra', task: 'Start the apply on the last approval', state: 'STARTED' },
+    { label: 'brave_hopper', task: 'Tell the browser which records changed', state: 'DONE' },
+    { label: 'bright_faraday', task: 'Partition a run\'s trade population into trade sets', state: 'BLOCKED' },
+    { label: 'solid_dirac', task: '', state: '' },
+  ];
+  const BUCKETS = {
+    inbox: [['Raise a notification for a scenario waiting for a tester', '2026-10-11'], ['Teach compass the ABANDONED scenario state', '2026-10-11'], ['A raw ../../ path in the web service answers 500', '2026-10-11'], ['Account lock reports success when nothing changed', '2026-10-09']],
+    next: [['QA Validation Runner follow-ups', '2026-08-06'], ['Rate history endpoint for charts', '2026-09-02'], ['Trade blotter', '2026-09-15']],
+    deferred: [['Move trade parse out of Qt', '2026-07-30'], ['Standard ORE message box', '2026-08-12']],
+    discarded: [['Warn unsaved scenario on client exit', '2026-10-10'], ['Auto crop screenshot to window', '2026-10-10']],
+  };
+  const SPRINTS = [
+    { name: 'Sprint 23', done: 7, scope: 9 }, { name: 'Sprint 24', done: 9, scope: 10 },
+    { name: 'Sprint 25', done: 11, scope: 14 }, { name: 'Sprint 26', done: 8, scope: 12 }, { name: 'Sprint 27', done: 6, scope: 23 },
+  ];
+
+  const q = new URLSearchParams(location.search);
+  const state = { tab: q.get('tab') || 'board', variant: q.get('variant') || 'a', open: null, openTask: null, text: '', epic: null, doc: null };
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const age = (d) => Math.max(0, Math.round((Date.parse(TODAY) - Date.parse(d)) / 86400000));
+  const done = (s) => s.tasks.filter((t) => t.state === 'DONE').length;
+  const st = (s) => `<span class="state s-${s}">${s.toLowerCase()}</span>`;
+
+  function visible() {
+    const t = state.text.toLowerCase();
+    return STORIES.filter((s) => (!state.epic || s.epic === state.epic) &&
+      (!t || [s.title, s.id, s.epic, s.env, ...s.tasks.flatMap((k) => [k.title, k.branch, k.env])].join(' ').toLowerCase().includes(t)));
+  }
+  const card = (s) => `<button class="story ${s.id === 'S27' ? 'current' : ''} ${s.tasks.some((t) => t.state === 'STARTED' && t.env === 'eager_maxwell') ? 'current' : ''}" style="--ec:${EPIC_COLOUR[s.epic]}" data-story="${s.id}">
+      <span class="title">${esc(s.title)}</span>
+      <span class="row2">${s.env ? `<span class="chip env">${esc(s.env)}</span>` : ''}<span class="chip">${esc(s.epic)}</span>${s.tasks.some((t) => t.env === 'eager_maxwell' && t.state === 'STARTED') ? '<span class="chip tree">current</span>' : ''}</span>
+      <span class="progress"><span style="width:${s.tasks.length ? (100 * done(s)) / s.tasks.length : 0}%"></span></span>
+      <span class="mini muted">${s.tasks.length} tasks · ${done(s)} done · open ${age(s.created)}d</span></button>`;
+
+  function sprintLine() {
+    return `<div class="sprintline"><span class="chip tree code">eager_maxwell</span><span class="code muted">feature/prototype-the-agile-browser</span>
+      <h2>Sprint 27</h2><span class="muted">Day 7 of 14</span><span class="muted">${STORIES.length} stories</span>
+      <span style="margin-left:auto"><button class="btn small" data-act="refresh">Refresh</button></span></div>
+      <div class="strip" aria-label="Work trees">${TREES.map((t) => `<span class="chip ${t.me ? 'tree' : ''}"><span class="code">${t.label}</span>${t.state ? st(t.state) : ''}<span>${t.task ? esc(t.task.slice(0, 28)) : 'idle'}</span>${t.me ? '<b>this tree</b>' : ''}</span>`).join('')}</div>`;
+  }
+  function controls() {
+    return `<div class="controls"><input type="search" id="q" placeholder="Search stories, tasks, environments" value="${esc(state.text)}" aria-label="Search">
+      ${Object.keys(EPIC_COLOUR).map((e) => `<button class="chip" data-epic="${e}" aria-pressed="${state.epic === e}">${e}</button>`).join('')}
+      ${state.text || state.epic ? '<button class="btn small" data-act="clear">Clear</button>' : ''}</div>`;
+  }
+  function tiles() {
+    const all = STORIES, tasks = all.flatMap((s) => s.tasks);
+    const t = [['stories', all.length], ['in flight', all.filter((s) => s.state === 'STARTED').length], ['blocked', all.filter((s) => s.state === 'BLOCKED').length], ['tasks done', `${tasks.filter((k) => k.state === 'DONE').length}/${tasks.length}`]];
+    return `<div class="tiles">${t.map(([l, v]) => `<section class="card tile"><span class="label">${l}</span><span class="value">${v}</span></section>`).join('')}</div>`;
+  }
+  function detail() {
+    const s = STORIES.find((x) => x.id === state.open);
+    if (!s) return '';
+    return `<aside class="card pad panel grid" aria-label="Story detail">
+      <div class="row2"><h2>${esc(s.title)}</h2><button class="btn small" data-act="close" style="margin-left:auto">Close</button></div>
+      <dl><dt>Id</dt><dd class="code">${s.id}</dd><dt>State</dt><dd>${st(s.state)}</dd><dt>Environment</dt><dd>${esc(s.env || 'none')}</dd><dt>Epic</dt><dd>${s.epic}</dd>
+      <dt>Created</dt><dd>${s.created}</dd><dt>Branches</dt><dd class="code">${[...new Set(s.tasks.map((t) => t.branch).filter(Boolean))].join('<br>') || 'none'}</dd>
+      <dt>Pull requests</dt><dd>${s.tasks.map((t) => t.pr).filter(Boolean).map((p) => `<a>#${p}</a>`).join(' ') || 'none'}</dd></dl>
+      <p class="muted">${esc(s.desc)}</p>
+      <p><a data-doc="${s.id}">Open the story doc</a></p>
+      <h3>Tasks</h3>${s.tasks.length ? s.tasks.map((t, i) => `<div class="task" data-task="${i}"><div class="row2">${st(t.state)}<span>${esc(t.title)}</span></div>
+        <div class="row2">${t.env ? `<span class="chip env">${t.env}</span>` : ''}${t.pr ? `<a>#${t.pr}</a>` : ''}</div>
+        ${state.openTask === i ? `<div class="more"><span>branch ${esc(t.branch || 'none')}</span><span>blocked on ${esc(t.blockedOn || 'nothing')}</span><span>created ${t.created} · updated ${t.updated}</span><span class="code">doc/agile/versions/v0/sprint_27/…/task_${i}.org</span></div>` : ''}</div>`).join('') : '<p class="muted">No tasks yet.</p>'}
+    </aside>`;
+  }
+  function boardA() {
+    const v = visible();
+    return `<div class="layout ${state.open ? 'with-panel' : ''}"><div class="board">${STATES.map((c) => {
+      const cards = v.filter((s) => s.state === c);
+      return `<section class="col"><header>${st(c)}<span class="muted">${cards.length}</span></header><div class="cards">${cards.map(card).join('') || '<span class="mini faint">Nothing here</span>'}</div></section>`;
+    }).join('')}</div>${detail()}</div>`;
+  }
+  function boardB() {
+    const v = visible();
+    return `<div class="layout ${state.open ? 'with-panel' : ''}"><section class="card"><div class="table-wrap"><table><thead><tr><th>Story</th><th>State</th><th>Environment</th><th>Epic</th><th>Tasks</th><th>Open</th></tr></thead><tbody>
+      ${STATES.flatMap((c) => v.filter((s) => s.state === c)).map((s) => `<tr class="open" data-story="${s.id}"><td><b>${esc(s.title)}</b></td><td>${st(s.state)}</td><td>${s.env ? `<span class="chip env">${s.env}</span>` : ''}</td><td>${s.epic}</td>
+      <td><span class="progress" style="display:block;min-width:5rem"><span style="width:${s.tasks.length ? (100 * done(s)) / s.tasks.length : 0}%"></span></span><span class="mini muted">${done(s)}/${s.tasks.length}</span></td><td>${age(s.created)}d</td></tr>`).join('')}
+      </tbody></table></div></section>${detail()}</div>`;
+  }
+  function board() {
+    return `<div class="grid">${sprintLine()}${tiles()}${controls()}${state.variant === 'a' ? boardA() : boardB()}</div>`;
+  }
+  function backlog() {
+    return `<div class="grid">${Object.entries(BUCKETS).map(([b, rows]) => `<section class="card"><div class="pad row2"><h2 style="text-transform:capitalize">${b}</h2><span class="chip">${rows.length}</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Capture</th><th>Created</th></tr></thead><tbody>${rows.map(([t, d]) => `<tr class="open" data-doc="${esc(t)}"><td>${esc(t)}</td><td class="muted">${d}</td></tr>`).join('')}</tbody></table></div></section>`).join('')}</div>`;
+  }
+  function charts() {
+    const max = Math.max(...SPRINTS.map((s) => s.done));
+    const pts = [0, 1, 2, 3, 4, 5, 6].map((d) => [d, [0, 1, 2, 3, 4, 5, 6][d] * 0.86]);
+    const path = pts.map(([d, v], i) => `${i ? 'L' : 'M'}${20 + d * 50},${130 - v * 20}`).join(' ');
+    return `<div class="charts"><section class="card pad grid"><h2>Velocity</h2><div class="bars">${SPRINTS.map((s) => `<div style="height:${(100 * s.done) / max}%"><span>${s.done}</span></div>`).join('')}</div><div class="labels">${SPRINTS.map((s) => `<span>${s.name.slice(7)}</span>`).join('')}</div><p class="mini muted">Stories done per sprint.</p></section>
+      <section class="card pad grid"><h2>Burn-up</h2><svg class="line" viewBox="0 0 340 140" role="img" aria-label="Burn-up"><line x1="20" y1="30" x2="330" y2="30" stroke="#4a5568" stroke-dasharray="4"/><path d="${path}" fill="none" stroke="#3fb950" stroke-width="2"/></svg><p class="mini muted">Stories done against the scope, by day of Sprint 27. The dashed line is the scope.</p></section></div>`;
+  }
+  function docView() {
+    const d = state.doc;
+    return `<div class="grid"><div><button class="btn small" data-act="back">Back</button></div><article class="card pad doc"><h2>${esc(d)}</h2><div class="path">doc/agile/versions/v0/sprint_27/…</div>
+      <p class="muted">The doc renders from org, as the Story and Task tabs of the scenario runner do. Its file header does not show. A link to another agile doc opens it here, and a link to anything else opens its site page.</p>
+      <p>See also <a data-doc="Bring the QA validation runner to ores.web">Bring the QA validation runner to ores.web</a>.</p></article></div>`;
+  }
+
+  function render() {
+    $('#tabs').innerHTML = [['board', 'Board'], ['backlog', 'Backlog'], ['charts', 'Charts'], ['tests', 'Tests']]
+      .map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${state.tab === k}">${l}</button>`).join('');
+    $('#view').innerHTML = state.doc ? docView() : state.tab === 'board' ? board() : state.tab === 'backlog' ? backlog() : state.tab === 'charts' ? charts() : '<p class="muted card pad">The Tests tab is the one the QA runner built.</p>';
+    $('#variant-seg').innerHTML = [['a', 'A · Columns'], ['b', 'B · List']].map(([k, l]) => `<button data-variant="${k}" aria-pressed="${state.variant === k}">${l}</button>`).join('');
+    const input = $('#q'); if (input) { input.addEventListener('input', (e) => { state.text = e.target.value; const p = e.target.selectionStart; render(); const n = $('#q'); n.focus(); n.setSelectionRange(p, p); }); }
+  }
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-tab],[data-variant],[data-story],[data-epic],[data-act],[data-task],[data-doc]');
+    if (!el) return;
+    const d = el.dataset;
+    if (d.tab) { state.tab = d.tab; state.doc = null; }
+    else if (d.variant) state.variant = d.variant;
+    else if (d.doc) state.doc = (STORIES.find((s) => s.id === d.doc) || {}).title || d.doc;
+    else if (d.story) { state.open = d.story; state.openTask = null; }
+    else if (d.epic) state.epic = state.epic === d.epic ? null : d.epic;
+    else if (d.task !== undefined) state.openTask = state.openTask === +d.task ? null : +d.task;
+    else if (d.act === 'clear') { state.text = ''; state.epic = null; }
+    else if (d.act === 'close') { state.open = null; }
+    else if (d.act === 'back') state.doc = null;
+    render();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.open) { state.open = null; render(); } });
+  render();
+})();
+</script>
+</body>
+</html>

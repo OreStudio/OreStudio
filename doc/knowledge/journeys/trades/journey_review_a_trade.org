@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 9E66EB4C-D456-41DB-AC46-8936B61FD80F
+:END:
+#+title: User Journey: Review a trade and its history
+#+description: A trader or an operations user reads a trade, its instrument, its parties and how it came to be in its present form.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:trading:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or an operations user reads a trade, its instrument, its parties and how it came to be in its present form.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint. These trade journeys are
+use cases, so they name the operations and messages each step needs and leave the
+screens to the UX standards.
+
+* Goal
+
+"I want to see this trade as it stands, who it is with, what it is, and how it came to be
+this way, so that I can answer a question about it without asking anyone." The journey is
+done when the person has read the trade and, if they asked, any earlier version of it.
+
+* Actor and trigger
+
+The actor is a trader or an operations user who may read the trade's party. The trigger
+is a question: a counterparty query, a break in a report, an audit request. The journey
+starts at a list of trades, or at a link from another record, and ends when the person
+leaves the trade.
+
+* Steps
+
+1. *Find the trade.* The person searches the trades by identifier, counterparty, book,
+   trade type, state or date. The system lists them a page at a time.
+2. *Read the trade.* The system shows the parties and the book, how the deal was
+   struck, the state, the instrument terms with their legs and schedules, the
+   identifiers, the party roles, the portfolios and the additional fields. Every other
+   record is a link to its own page.
+3. *Read the history.* The system lists every version of the trade, and every activity
+   that caused one, with who did it, when and why. The person sees the difference between
+   two versions.
+4. *Read the trade as it stood.* The person chooses a date. The system shows the trade as
+   of that date.
+5. *Follow a link.* The person goes to the counterparty, the book, a structure the trade
+   belongs to, or a linked trade.
+
+* Screens
+
+This journey is a use case. The standard screens serve it: the trade list, the trade page
+with a tab for each aspect, and the History timeline, all as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] and the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] describe. The Qt client had a detail dialog and a history dialog. They become
+a page and a tab, and the person reads one subject on one page.
+
+No wireframe is drawn here. The prototype story draws the screens, from the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =trade= | The trade's facts, version and external version | [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find | Search the trades by identifier, counterparty, book, state or date | =trading.v1.trades.list= filters only by trade id | missing |
+| Read | Read the trade and its instrument | =trading.v1.trades.get=, =trading.v1.<instrument>s.get= | exists |
+| Read | Read the booking and the state of a trade | =trading.v1.trade_bookings.list=, =trading.v1.trade_states.list= with =trade_id_one_of= | exists |
+| Read | Read the identifiers, party roles, portfolios, additional fields and the instrument's legs of a trade | =trade_identifiers.list=, =trade_party_roles.list=, =trade_portfolios.list=, =trade_additional_fields.list=, =bond_legs.list= and the other child tables: no by-trade filter | missing |
+| History | List the versions | =trading.v1.trades_versions.list=, =trading.v1.trades_versions.get= | exists |
+| History | List the activities of a trade | =trading.v1.trade_activities.list= filters only by activity id | missing |
+| As of | Read the trade and its parts as of a date | the =as_of= field of the list requests (checked on trades, trade states and the bond instrument) | exists |
+
+Status is one of =exists=, =partial=, or =missing=. A subject that contains
+=<instrument>= stands for the one instrument table the trade type routes to. The plural
+is written with a plain =s=. A table whose plural is irregular, such as
+=trade_activities=, has its own subject: check the protocol header, not the pattern.
+
+* What is missing
+
+- The trade list filters only by trade id (=trades_filter= has one field). A person
+  cannot search by identifier, counterparty, book, state or date. Each filter is a
+  server change. Until it exists, a screen cannot list trades usefully.
+- The identifier, party role, portfolio, additional field and instrument child lists
+  (checked on =bond_leg=) have no by-trade filter. They list the whole table. A trade
+  page cannot read its own parts without reading every trade's.
+- The activity list filters only by activity id. It cannot return the activities of one
+  trade, so the history cannot show what caused each version.
+- =as_of= exists on the reads checked above. It is not checked on every child table.
+- The list needs the paging rule of the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]]: the pager is the request.
+
+* Related journeys
+
+- [[id:93F08DE9-0843-40D8-8EE9-313A18AC581E][Amend a trade's economics]] — to change what the person has read.
+- [[id:D763A432-443A-4CE1-BC00-75D4A9970EDF][Record a lifecycle event on a trade]] — to record an event.
+- [[id:3899F17C-232B-408C-B667-FA5C630BB71B][Group trades into a structure]] — when the trade belongs to a deal.
+
+* Related knowledge
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

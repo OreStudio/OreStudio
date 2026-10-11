@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33
+:END:
+#+title: Trade journeys
+#+description: What a person does with a trade: book it, amend it, read it, bring it in from ORE and send it out, record what happens to it, and group trades into one deal.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:trading:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+A trade is an anchor that never changes, a booking and a state that do, and an
+instrument chosen by the trade type. Every change to the booking, the state or the
+instrument is caused by an activity, which is the record of one business event. The
+firm holds a trade exactly as agreed. When the agreed terms change, the trade's external
+version moves.
+
+These journeys are use cases. Each one names a goal, an actor, the operations it
+needs and what is missing. A journey does not define a screen. The screens come from the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]]. A trade is an entity, so one trade page with a tab for each aspect serves
+most of these journeys, and one journey can reach several screens. The Qt client was
+built around the trade as the entry. The prototypes keep that entry and use these
+journeys to decide the cards and the workflows on the page.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][Book a trade]] | trader | Record a new deal, live or as a draft, with its instrument terms |
+| [[id:93F08DE9-0843-40D8-8EE9-313A18AC581E][Amend a trade's economics]] | trader | Change the agreed terms, give the reason, and move the external version |
+| [[id:9E66EB4C-D456-41DB-AC46-8936B61FD80F][Review a trade and its history]] | trader, operations | Read a trade, its parts, and every version and activity |
+| [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] | operations | Bring an ORE portfolio file into a book, and roll it back |
+| [[id:65B02BD9-4633-490C-B8A3-F5680067054B][Export a portfolio to ORE]] | operations | Write trades out as the portfolio the engine reads |
+| [[id:D763A432-443A-4CE1-BC00-75D4A9970EDF][Record a lifecycle event on a trade]] | operations | Record an exercise, a termination or a novation |
+| [[id:3899F17C-232B-408C-B667-FA5C630BB71B][Group trades into a structure]] | trader | Hold several trades as one deal |
+
+* What blocks all of them
+
+- The BFF and the web app have no trading route.
+- The trade list filters only by trade id, and most child tables have no by-trade read.
+- No operation writes an activity together with the versions it causes, except booking.
+- The economic digest leaves out the option exercise prices and a composite trade's legs.
+
+* How the operations were checked
+
+Every full subject (for example =trading.v1.trade_types.list=) was checked by script
+against the protocol headers: 33 of 33 exist. A row that names a pattern, such as
+=trading.v1.<instrument>s.put=, or a short form, such as =trade_states.list=, was read
+by hand in the headers and cannot be checked by script. The filters, the =as_of= field
+and the by-trade reads were read in the protocol headers of =trade=, =trade_state=,
+=trade_activity=, =trade_identifier= and =bond_leg=. They were not read for every
+child table.
+
+* Related
+
+- [[id:A08424B7-E6D7-4993-955C-53AEC241ABA5][Books and portfolios]] — the books trades are booked into
+- [[id:86CB724A-66E3-4FB3-A943-3CE22D41213A][Parties]] — the counterparties on a trade
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions]] — the market terms an instrument uses
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

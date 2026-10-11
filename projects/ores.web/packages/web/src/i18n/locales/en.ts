@@ -1458,9 +1458,26 @@ export const en: SourceCatalogue = {
                 noSample:
                     'No sample yet. The deployment stores no grid summary, so the counters cannot be drawn; the node table below stands alone.',
             },
+            machines: {
+                title: 'Machines',
+                summary: '{up} of {total} machines up',
+                columns: {
+                    machine: 'Machine',
+                    status: 'Status',
+                    nodes: 'Nodes',
+                    tasksCompleted: 'Tasks done',
+                    tasksFailed: 'Failed',
+                },
+                up: 'Up',
+                down: 'Down',
+                unnamed: 'Unnamed machine',
+                nodes: '{running} of {total}',
+                hint: 'Nodes that report no machine are grouped here.',
+            },
             nodes: {
                 title: 'Nodes',
                 rows: '{count} rows',
+                showing: '{first}–{last} of {total} nodes',
                 reported: '{running} of {total} runners reported in the last {minutes} minutes',
                 lost: '{count} lost',
                 missing: '{count} missing',
@@ -1924,9 +1941,9 @@ export const en: SourceCatalogue = {
     },
 
     timeline: {
-        hideSystem: "Hide system activity",
-        showSystem: "Show system activity",
-        systemUnknown: "Your access does not show which accounts are services.",
+        hideSystem: 'Hide system activity',
+        showSystem: 'Show system activity',
+        systemUnknown: 'Your access does not show which accounts are services.',
         empty: 'Nothing has happened to this yet.',
         details: 'Details',
         current: 'Current version',

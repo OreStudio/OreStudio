@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: E140C8C6-4532-48D9-ABDF-7B81A21C9EE3
+:END:
+#+title: User Journey: Import a portfolio from ORE
+#+description: An operations user brings the trades of an ORE portfolio file into a book, and can roll the import back.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:trading:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An operations user brings the trades of an ORE portfolio file into a book, and can roll the import back.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint. These trade journeys are
+use cases, so they name the operations and messages each step needs and leave the
+screens to the UX standards.
+
+* Goal
+
+"I have an ORE portfolio file and I want its trades in the firm's books, exactly as the
+file states them, and I want to undo the import if it is wrong." The journey is done when
+the trades read in the chosen book, the ORE document still exports from them, and the
+person has seen what was and was not imported.
+
+* Actor and trigger
+
+The actor is an operations user. The trigger is a new ORE portfolio, a migration, or a
+test population. The journey starts with a file and a book and ends when the import is
+confirmed, rolled back or refused.
+
+* Steps
+
+1. *Choose the file and the book.* The person chooses an ORE portfolio file and the book
+   that receives the trades.
+2. *Read the file.* The system reads the file and lists the trades it holds with the
+   trade type of each. It names the trades it cannot read, and why.
+3. *Check the references.* The system checks each counterparty, netting set and
+   portfolio the file names. A counterparty name that matches no alias is refused. A
+   netting set that does not exist is created.
+4. *Confirm.* The person confirms. The system books each trade with its anchor, booking,
+   state, ORE identifier, envelope fields and instrument.
+5. *Read the result.* The system reports how many trades it imported, how many it refused
+   and why. A partial import is stated as partial.
+6. *Roll back.* The person may roll the import back. The system removes what the import
+   created.
+
+* Screens
+
+This journey is a use case. The workflow is the Import action in the Workflows menu of the
+trade list, as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] places workflows. It opens a dialog or a short sequence.
+The result is the trade list filtered to the trades the import created.
+
+No wireframe is drawn here. The prototype story draws the screens, from the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
+
+* Entities composed
+
+This journey adds no entity of its own. It reads and writes the trade and the records on its page.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Read the file | Plan the import | =workflow.v1.ops.ore_import= | exists |
+| Confirm | Execute the import | =ore.v1.ops.ore_import_execute= | exists |
+| Roll back | Roll the import back | =ore.v1.ops.ore_import_rollback= | exists |
+| Choose the book | Offer the books | =refdata.v1.books.list= | exists |
+
+Status is one of =exists=, =partial=, or =missing=. A subject that contains
+=<instrument>= stands for the one instrument table the trade type routes to. The plural
+is written with a plain =s=. A table whose plural is irregular, such as
+=trade_activities=, has its own subject: check the protocol header, not the pattern.
+
+* What is missing
+
+- The file reaches the server how? The old client read the file locally. A browser must
+  upload it, and the upload path for this journey is not defined.
+- The preview (the list of trades before confirm) is not an operation. The plan inside
+  =ore_import= may serve it. Check before the journey is built.
+- =BondForward= has no standalone round trip test. Add one before the import is relied
+  on for bond forwards.
+- The old wizard also imported currencies and books. This journey covers trades only.
+
+* Related journeys
+
+- [[id:9E66EB4C-D456-41DB-AC46-8936B61FD80F][Review a trade and its history]] — to read the imported trades.
+- [[id:65B02BD9-4633-490C-B8A3-F5680067054B][Export a portfolio to ORE]] — to write them back out.
+
+* Related knowledge
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

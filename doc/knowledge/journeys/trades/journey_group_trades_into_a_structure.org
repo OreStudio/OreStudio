@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 3899F17C-232B-408C-B667-FA5C630BB71B
+:END:
+#+title: User Journey: Group trades into a structure
+#+description: A trader links trades that make one deal, such as the legs of a package, so that they are read and managed together.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:trading:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader links trades that make one deal, such as the legs of a package, so that they are read and managed together.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint. These trade journeys are
+use cases, so they name the operations and messages each step needs and leave the
+screens to the UX standards.
+
+* Goal
+
+"These trades are one deal, and I want the firm to hold them as one deal, so that they
+are read, confirmed and managed together." The journey is done when the trades belong to
+a structure of the right kind and the structure reads as one.
+
+* Actor and trigger
+
+The actor is a trader. The trigger is a package, a strategy or a spread that was
+booked as separate trades. The journey starts with the trades, or with an existing
+structure, and ends when the structure is saved.
+
+* Steps
+
+1. *Choose the trades.* The person chooses the trades that make the deal. All must
+   share the party and the counterparty.
+2. *Choose the kind.* The person chooses a structure kind or a template. The system
+   offers the roles the template defines.
+3. *Assign the roles.* The person assigns each trade to a role.
+4. *Save.* The system writes the structure and the links. A trade moves from one
+   structure to another without being rewritten.
+5. *Read the structure.* The system shows the structure with its legs, and the version it
+   reads from them.
+6. *Unlink.* The person may unlink a trade.
+
+* Screens
+
+This journey is a use case. The structure is an entity with its own page, which lists
+its members and holds the Edit and Workflows actions of the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]]. The trade page
+links to the structure it belongs to.
+
+No wireframe is drawn here. The prototype story draws the screens, from the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =structure= | The deal: party, counterparty, kind, template, parent | [[id:09D7A25C-D2CB-4B60-AF3B-D7E0FA72D053][ores.trading.structure]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose | Offer kinds and templates | =trading.v1.structure_kinds.list=, =trading.v1.structure_templates.list= | exists |
+| Save | Write the structure | =trading.v1.structures.put= | exists |
+| Save | Write the members | =trading.v1.structure_members.put_many= | exists |
+| Save | Write trade links | =trading.v1.trade_links.put_many= | exists |
+| Read | List a structure and its members | =trading.v1.structures.get=, =trading.v1.structure_members.list= | exists |
+
+Status is one of =exists=, =partial=, or =missing=. A subject that contains
+=<instrument>= stands for the one instrument table the trade type routes to. The plural
+is written with a plain =s=. A table whose plural is irregular, such as
+=trade_activities=, has its own subject: check the protocol header, not the pattern.
+
+* What is missing
+
+- The rule that all members share the party and the counterparty is enforced by the
+  database. The client gets an error and no check beforehand.
+- A structure nests one level at most. The client gets the error from the insert trigger.
+- The structure's version is read from its legs and is not stored. No operation returns
+  it. The structure page needs one.
+- A composite trade's legs are not in the economic digest (capture linked in the amend
+  journey).
+
+* Related journeys
+
+- [[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][Book a trade]] — to book the trades before they are grouped.
+- [[id:9E66EB4C-D456-41DB-AC46-8936B61FD80F][Review a trade and its history]] — to read a member.
+
+* Related knowledge
+
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition ladder and the rules.
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

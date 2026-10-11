@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: B4B829FC-0015-4E93-AFF3-F5680C9789E8
+:END:
+#+title: Agile browser prototype
+#+description: The Development area gains a sprint board, a backlog and sprint charts that replace ores.dsh_kanban and ores.org-js: two ways to arrange the board, and the gaps each one states.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:testing:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+| Item          | Where                                        |
+|---------------+----------------------------------------------|
+| Prototype     | [[file:agile-browser/][the prototype]]               |
+| Gemini review | none                                         |
+| Group         | [[file:index.org][Testing prototypes]]               |
+| Journey       | none yet                                     |
+
+* Summary
+
+=ores.dsh_kanban= shows a sprint as a kanban board inside a DSH session. =ores.org-js=
+shows the agile tree and its charts as a static page. Both read the org tree and
+neither is part of ores.web. The prototype brings what they show to the
+Development area, beside the Tests tab: a Board tab, a Backlog tab and a Charts
+tab. Any agile doc opens by its link inside the tab.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data.
+
+Open the [[file:agile-browser/][prototype]].
+
+* Detail
+
+** The verdict
+
+Accepted on 2026-10-11: variant A, the columns. The list stays in the prototype,
+switchable from the bar at the foot of the page, as the layout for a narrow
+window if the build wants one.
+
+** The board
+
+One sprint, as columns of stories: Backlog, Started, Blocked, Done and Abandoned.
+The five columns are always there, so the board does not rearrange itself as
+cards move. Above the columns sit the sprint line (the work tree, its branch, the
+sprint, the day), a strip of the work trees and the work item each one is on,
+four tiles (stories, in flight, blocked, tasks done), and a search box with one
+chip for each epic. A card shows the title, the environment, the epic, a task
+progress bar and the age. The story the work tree is on carries an outline and a
+*current* marker. A click opens a detail panel with the id, the state, the
+branches, the pull requests, the description and every task. A task row expands
+to show what it is blocked on and its dates.
+
+** The two layouts
+
+| Variant | Shape | What it settles | What it gives up |
+|---------+-------+-----------------+------------------|
+| A · Columns | Five columns of cards, with the detail panel on the right | It is the board the old plugin drew, so the team reads it at once | It needs a wide window, and a long Done column pushes the page down |
+| B · List | One table, ordered by state, with the same detail panel | It fits a narrow window and sorts and scans well | It loses the column shape that shows flow at a glance |
+
+** The backlog and the charts
+
+The Backlog tab lists the four buckets, inbox, next, deferred and discarded, each
+with its count and its captures. A capture opens in the tab. The Charts tab shows
+velocity, the stories done in each sprint, and a burn-up of the current sprint
+against its scope. These are the series =ores.org-js= drew.
+
+** What the screens cannot do, and say
+
+1. *Nothing reads the agile tree.* The BFF has no agile store. It must read the
+   work tree it runs in, behind an interface, and never call compass.
+2. *Nothing writes.* Starting, closing and moving a story stay in compass.
+3. *One sprint.* The build lists the sprints and opens the newest.
+4. *The work trees strip needs git on the server.* It runs =git worktree list=
+   and reads no other work tree's files.
+5. *Links.* A doc opens by id. The browser never sends a path.
+
+* See also
+
+- [[file:index.org][Testing prototypes]] — the group page.
+- [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] — the story this answers.

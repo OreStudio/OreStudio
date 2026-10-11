@@ -59,6 +59,10 @@ struct node_stats_summary {
      */
     std::string host_id;
     /**
+     * @brief The computer the node runs on, empty when the node did not say.
+     */
+    std::string machine = "";
+    /**
      * @brief Tasks the node finished since its wrapper started.
      */
     int tasks_completed = 0;
@@ -193,6 +197,10 @@ struct node_sample_message {
      * @brief The reporting node.
      */
     std::string host_id;
+    /**
+     * @brief The computer the node runs on, empty when the node did not say.
+     */
+    std::string machine = "";
     /**
      * @brief ISO-8601 timestamp of the sample.
      */

@@ -1786,6 +1786,7 @@ export const gridStatsRequestSchema = z
 /** One node's measurements, as the grid read answers them. */
 export const nodeSummarySchema = z.object({
     host_id: z.string(),
+    machine: text,
     tasks_completed: z.int().nonnegative().default(0),
     tasks_failed: z.int().nonnegative().default(0),
     tasks_since_last: z.int().nonnegative().default(0),

@@ -47,6 +47,12 @@ std::string_view map_level(std::string_view ore_level) {
     return {};
 }
 
+/**
+ * ORE reports its memory use through the WARNING channel so that the line
+ * appears at any log mask. Each line ends with this fixed suffix.
+ */
+constexpr std::string_view memory_report_suffix = "(peakMemoryUsage (bytes) | memoryUsage (bytes))";
+
 std::string_view ltrim(std::string_view sv) {
     const auto pos = sv.find_first_not_of(" \t");
     return pos == std::string_view::npos ? std::string_view{} : sv.substr(pos);
@@ -129,10 +135,11 @@ std::optional<ore_log_line> parse_ore_log_line(std::string_view line) {
         return std::nullopt;
 
     ore_log_line result;
-    result.level = std::string(mapped);
+    result.message = std::string(line.substr(2));
+    const bool memory_report = mapped == "warn" && result.message.ends_with(memory_report_suffix);
+    result.level = std::string(memory_report ? "debug" : mapped);
     result.timestamp = timestamp;
     result.source = source;
-    result.message = std::string(line.substr(2));
     return result;
 }
 

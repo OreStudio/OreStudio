@@ -39,6 +39,10 @@ export interface NodeStatsSummary {
      */
     host_id: string;
     /**
+     * @brief The computer the node runs on, empty when the node did not say.
+     */
+    machine: string;
+    /**
      * @brief Tasks the node finished since its wrapper started.
      */
     tasks_completed: number;
@@ -165,6 +169,10 @@ export interface NodeSampleMessage {
      * @brief The reporting node.
      */
     host_id: string;
+    /**
+     * @brief The computer the node runs on, empty when the node did not say.
+     */
+    machine: string;
     /**
      * @brief ISO-8601 timestamp of the sample.
      */

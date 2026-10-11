@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: F7987581-7AED-499C-9EEA-000AFB1FA95A
+:END:
+#+title: User Journey: Book a trade
+#+description: A trader records a new deal: its trade type, its party and counterparty, its book, and its instrument terms.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:trading:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader records a new deal: its trade type, its party and counterparty, its book, and its instrument terms.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint. These trade journeys are
+use cases, so they name the operations and messages each step needs and leave the
+screens to the UX standards.
+
+* Goal
+
+"I have agreed a deal and I want the firm to hold it exactly as agreed, in the right
+book, against the right counterparty, so that it is valued, confirmed and reported from
+the first day." The journey is done when the trade reads back with its instrument, its
+booking, its first state and the activity that created it.
+
+* Actor and trigger
+
+The actor is a trader, or an operations user booking for a trader, inside one party of
+the tenant. The trigger is a deal agreed by voice, by chat or on a venue, or a draft the
+trader wants to capture before the deal is agreed. The journey starts with the choice of
+a trade type and ends when the trade is booked, saved as a draft, or refused.
+
+* Steps
+
+1. *Choose the trade type.* The person names the kind of deal. The system offers the
+   trade types from the catalogue. The trade type decides which instrument terms the deal
+   has, because each trade type routes to one instrument table.
+2. *Say who is on the deal.* The person names the party, the counterparty and the book.
+   The system offers only the counterparties the party may trade with. A book must be a
+   real book, unless the trade is a pre-agreement draft, a test or a hypothetical.
+3. *Say how it was struck.* The person gives the trade date, the execution time, the
+   booking nature, the entry channel and the counterparty scope. The system offers the
+   values each lookup holds.
+4. *Enter the instrument terms.* The person gives the terms the trade type needs:
+   notional, dates, rates, legs and so on. The system shows the fields for that trade
+   type and no others.
+5. *Add what identifies and classifies the trade.* The person adds identifiers (the
+   firm's own, a venue's, ORE's trade id), party roles, portfolios and additional fields.
+   All are optional.
+6. *Choose live or draft.* The person books a live trade (activity =new_booking=) or
+   captures a draft (activity =draft_capture=).
+7. *Confirm.* The system writes the anchor, the booking, the first state and the
+   activity in one transaction. The system then writes the instrument. It reports the
+   trade, its state and its version.
+8. *Handle a refusal.* The system refuses a trade id that is already booked, a book that
+   is not allowed, and a field that fails the trade type's checks. The system keeps what
+   the person entered and says what was refused.
+
+* Screens
+
+This journey is a use case. It has no screen of its own. Booking starts from the trade
+list and opens a new trade page, which is the page of one trade in the
+[[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]]. The page holds the trade's cards (parties and book, how it was struck,
+instrument terms, identifiers) and the person fills them in. A guided sequence of
+steps is the one allowed exception in that specification, and it is allowed only if it
+makes booking easier or quicker. A prototype decides that. The prototype must also keep
+the trade as the subject: the person must be able to leave the sequence and land on the
+same trade page.
+
+No wireframe is drawn here. The prototype story draws the screens, from the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =trade= | The anchor and the wide trade: party, counterparty, trade type, classification, origin | [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose the type | Offer the trade types | =trading.v1.trade_types.list= | exists |
+| Say who | Offer counterparties and books | =refdata.v1.counterparties.list=, =refdata.v1.books.list= | exists |
+| Say how | Offer booking natures, entry channels and counterparty scopes | =trading.v1.booking_nature_types.list=, =trading.v1.entry_channel_types.list=, =trading.v1.counterparty_scope_types.list= | exists |
+| Instrument terms | Offer the lookups the trade type's fields use | =trading.v1.<lookup>.list= for each lookup | exists |
+| Identify | Write identifiers, party roles, portfolios and additional fields | =trading.v1.trade_identifiers.put_many=, =trade_party_roles.put_many=, =trade_portfolios.put_many=, =trade_additional_fields.put_many= | exists |
+| Confirm | Book the anchor, the booking, the first state and the activity | =trading.v1.ops.book_trade= | partial |
+| Confirm | Write the instrument and its child rows | =trading.v1.<instrument>s.put=, then each child table's =put_many= | partial |
+
+Status is one of =exists=, =partial=, or =missing=. A subject that contains
+=<instrument>= stands for the one instrument table the trade type routes to. The plural
+is written with a plain =s=. A table whose plural is irregular, such as
+=trade_activities=, has its own subject: check the protocol header, not the pattern.
+
+* What is missing
+
+- =book_trade= does not write the instrument. A trade is booked, and for a moment has no
+  instrument, until a second write. One operation must write both, or the order and the
+  repair of a half-booked trade must be defined.
+- No operation tells a client which fields a trade type needs. The client would have to
+  read the model. A catalogue read would remove that.
+- The web app and the BFF have no trading route. Nothing here is reachable from a browser
+  yet.
+- The four-eyes rule for a trade, if any, is not stated for booking. The activity types
+  carry a =requires_confirmation= flag, and no journey says who confirms. The story [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] owns the approval rule.
+
+* Related journeys
+
+- [[id:9E66EB4C-D456-41DB-AC46-8936B61FD80F][Review a trade and its history]] — to read the trade after it is booked.
+- [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] — when the trades already exist in an ORE file.
+- [[id:3899F17C-232B-408C-B667-FA5C630BB71B][Group trades into a structure]] — when the deal is made of several trades.
+
+* Related knowledge
+
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — how a deal is built from its parts.
+
+* See also
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

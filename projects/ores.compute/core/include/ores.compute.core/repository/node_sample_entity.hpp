@@ -46,6 +46,7 @@ struct node_sample_entity {
     sqlgen::PrimaryKey<std::string> sampled_at;
     std::string tenant_id;
     std::string host_id;
+    std::string machine;
     int tasks_completed = 0;
     int tasks_failed = 0;
     int tasks_since_last = 0;

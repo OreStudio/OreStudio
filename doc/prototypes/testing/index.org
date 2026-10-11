@@ -11,10 +11,10 @@
 
 * Summary
 
-Working through a test scenario in the browser, and seeing what waits for a
-tester.
+Working through a test scenario in the browser, seeing what waits for a
+tester, and browsing the agile tree.
 
-1 prototype answers to this group. Each one is a static page under
+2 prototypes answer to this group. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -28,6 +28,7 @@ generated alternative kept beside the agreed design, never instead of it.
 | Prototype | What it argues | Open it | Review |
 |-----------+----------------+---------+--------|
 | [[file:test-scenarios.org][Test scenarios]] | A tester's two screens: the queue of scenarios waiting and done, and the runner that works through one. The runner is steps beside the detail, one step at a time, or the whole scenario as a document. Every variant states that nothing reads or writes a scenario yet. | [[file:test-scenarios/][prototype]] | none |
+| [[file:agile-browser.org][Agile browser]] | The Development area gains a sprint board, a backlog and sprint charts. The board is columns of stories or a list, with a card detail, a filter bar, tiles and a strip of work trees. Any doc opens by its link. Every variant states that nothing reads the agile tree yet. | [[file:agile-browser/][prototype]] | none |
 
 * Adding a prototype
 

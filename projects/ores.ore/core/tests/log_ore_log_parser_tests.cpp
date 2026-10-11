@@ -84,6 +84,28 @@ TEST_CASE("parse_warning_level_maps_to_warn", tags) {
     CHECK(result->timestamp == make_utc(2024, 12, 31, 23, 59, 59, 123456));
 }
 
+TEST_CASE("parse_memory_report_sent_as_warning_maps_to_debug", tags) {
+    const auto result = parse_ore_log_line(
+        "WARNING  [2026-Oct-11 09:54:13.735791]    (OREAnalytics/orea/app/oreapp.cpp:257) : "
+        "Starting OREApp::analytics(): 52359168|52514816 (peakMemoryUsage (bytes) | memoryUsage "
+        "(bytes))");
+
+    REQUIRE(result.has_value());
+    CHECK(result->level == "debug");
+    CHECK(result->message ==
+          "Starting OREApp::analytics(): 52359168|52514816 (peakMemoryUsage (bytes) | memoryUsage "
+          "(bytes))");
+}
+
+TEST_CASE("parse_other_warning_mentioning_memory_stays_warn", tags) {
+    const auto result = parse_ore_log_line(
+        "WARNING  [2026-Oct-11 09:54:13.735791]    (ored/main.cpp:10) : low memory, "
+        "peakMemoryUsage is high");
+
+    REQUIRE(result.has_value());
+    CHECK(result->level == "warn");
+}
+
 TEST_CASE("parse_error_level_maps_to_error", tags) {
     const auto result = parse_ore_log_line(
         "ERROR    [2024-Jun-15 12:00:00.500000]    (pricing/model.cpp:200) : pricing failed");

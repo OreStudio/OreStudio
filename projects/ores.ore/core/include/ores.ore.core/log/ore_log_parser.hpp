@@ -52,7 +52,8 @@ struct ore_log_line {
      * ORE level mapping:
      * - DATA    → "debug"
      * - NOTICE  → "info"
-     * - WARNING → "warn"
+     * - WARNING → "warn", except ORE's memory-use reports, which it sends
+     *   through WARNING so that they show at any log mask. Those are "debug".
      * - ERROR   → "error"
      * - ALERT   → "error"
      */

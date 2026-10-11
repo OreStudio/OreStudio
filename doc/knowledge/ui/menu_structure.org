@@ -156,23 +156,25 @@ The test for a screen is one question: which topic would a person look in?
 | Trades | What does the tenant hold, and what happens to it? |
 | Requests | What is waiting for an answer? |
 | Operations | How is the installation running, and who has signed in? |
+| Development | What is the team doing to the product, and what can a tester run? |
 | Tenants | Which tenants does this installation hold? |
 
 ** The areas
 
 #+begin_src text
-  Home   Reference data   Organisation   Market data   Trades   Requests   Operations   Tenants
+  Home   Reference data   Organisation   Market data   Trades   Requests   Operations   Development   Tenants
 #+end_src
 
 | Area | Screens | Drawn when the person holds the read of |
 |------+---------+------------------------------------------|
 | Home | The dashboard, Active modules, Upcoming modules | Always |
 | Reference data | The cards below | Always |
-| Organisation | People (Staff for a member), Hierarchy, Roles and Rescue access | Any one of those screens |
+| Organisation | Staff, Hierarchy, Roles and Rescue access | Any one of those screens |
 | Market data | The prices and curves the platform receives or generates: the FX price feeds and the curve evolution | Any one of those screens |
 | Trades | Trades, and Structures and packages, with the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
-| Operations | Services, the compute grid, the message queue, telemetry, versions, the database and Sign-ins | Any one of those screens |
+| Operations | Running services, Compute grid, Message bus, Telemetry logs, Versions and the database, and Sign-ins | Any one of those screens |
+| Development | The tests a tester can run, the board and the backlog, and the documents they open | Always |
 | Tenants | The tenants, their parties and people, and onboarding | Any tenant screen |
 
 Requests is the one entry that is not a topic. It is an inbox: the work that
@@ -230,6 +232,10 @@ rail. It is one page in tabs, and the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41]
 The account menu stands in the header with the notification bell. It holds My
 profile, My access, Where I work, Security and signing out. These are not
 areas. A person reaches each in one place, as the entity specification says.
+Each has a breadcrumb of Home, then the page, because it belongs to no area.
+
+Every screen has a breadcrumb. Home is the one page without one, because it is
+the first step of every trail.
 
 ** Where a screen belongs
 
@@ -238,10 +244,11 @@ areas. A person reaches each in one place, as the entity specification says.
 | Parties, and its workflows Onboard a party and Onboard a counterparty | Reference data | A party is reference data. The journeys group it with the countries, currencies and business centres it connects to |
 | Shape the book structure, Define instrument conventions | Reference data | They are workflows on shared lists |
 | Currencies, Currency pairs, Desk groups, Holiday calendars, Classifications | Reference data | They are the shared lists |
-| People (Staff for a member), Hierarchy | Organisation | They are about the people of the tenant |
+| Staff, Hierarchy | Organisation | They are about the people of the tenant |
 | Roles | Organisation | A role is held by a person |
 | Rescue access | Organisation | It acts on one person's account |
 | Sign-ins | Operations | It reads sessions and failed sign-ins. It is the Audit of how the installation is used |
+| Tests, Board, Backlog | Development | They are the work a team does on the product, not how an installation runs |
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
 | FX price feeds | Market data | A feed generates the prices that market data holds |
@@ -263,11 +270,14 @@ the same thing. A screen has one address.
 | Shape the book structure | =/refdata/books/structure= |
 | Define instrument conventions | =/refdata/conventions= |
 | Classifications | =/refdata/classifications= |
-| People | =/organisation/people= |
+| Staff | =/organisation/people= |
 | Hierarchy | =/organisation/hierarchy= |
 | Roles | =/organisation/roles= |
 | Rescue access | =/organisation/rescue= |
 | Sign-ins | =/operations/sign-ins= |
+| Development, with its tabs Tests, Board and Backlog | =/development= |
+| A test scenario | =/development/tests/:id= |
+| A document | =/development/docs/:id= |
 | Trades | =/trades= |
 | Book a trade | =/trades/new= |
 | A trade's page | =/trades/:id= |

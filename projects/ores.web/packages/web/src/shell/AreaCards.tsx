@@ -67,9 +67,9 @@ export function AreaCards({
 export function ActiveCards({ mode }: { readonly mode: SessionMode }): ReactNode {
     const { t } = useTranslation();
     const holds = useHeld();
-    const folders: Tile[] = FOLDERS.flatMap((folder) => {
-        const entry = MENU.find((item) => item.to === folder.to);
-        return entry !== undefined && offered(entry, holds, mode)
+    const folders: Tile[] = MENU.flatMap((entry) => {
+        const folder = FOLDERS.find((candidate) => candidate.to === entry.to);
+        return folder !== undefined && offered(entry, holds, mode)
             ? [
                   {
                       title: t(entry.nameKey),

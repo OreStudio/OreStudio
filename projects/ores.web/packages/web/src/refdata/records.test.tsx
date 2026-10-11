@@ -31,7 +31,7 @@ import { CURRENCY_FIELDS, CurrenciesPage, CurrencyPage } from './currencies.js';
 import { CurrencyPairPage } from './currencyPairs.js';
 import { DeskGroupPage } from './deskGroups.js';
 import { FIRST_PAGE, pageKey } from './RecordList.js';
-import { valuesFromHistory, writeOf, type FieldSpec } from './records.js';
+import { revertChanges, valuesFromHistory, writeOf, type FieldSpec } from './records.js';
 import { reasonsFor } from './shared.js';
 import { accessOf, resourceView } from './testSupport.js';
 import { parseTimestamp, relativeTime } from '../ui/Time.js';
@@ -361,5 +361,34 @@ describe('a relative time', () => {
         const now = new Date('2026-10-05T12:00:00Z');
         expect(relativeTime(parseTimestamp('2026-10-05 10:00:00Z'), now, 'en')).toBe('2 hours ago');
         expect(relativeTime(parseTimestamp('2026-10-04 12:00:00Z'), now, 'en')).toBe('yesterday');
+    });
+});
+
+describe('what a revert would change', () => {
+    const specs: readonly FieldSpec[] = [
+        { field: 'short_code', history: 'Short Code', kind: { kind: 'text' } },
+        { field: 'full_name', history: 'Full Name', kind: { kind: 'text' } },
+    ];
+    const row: RecordRow = { version: 3, short_code: 'ACME', full_name: 'Acme Holdings' };
+    const older = (name: string): HistoryVersion => ({
+        version: 1,
+        modifiedBy: 'ana',
+        recordedAt: '2026-10-01 10:00:00Z',
+        fields: [
+            { name: 'Short Code', value: 'ACME' },
+            { name: 'Full Name', value: name },
+        ],
+        changes: [],
+    });
+    const label = (key: string): string => key;
+
+    it('lists the fields whose value differs, from what they hold now to what they would hold', () => {
+        expect(revertChanges(label, specs, row, older('Acme Limited'))).toEqual([
+            { label: 'refdata.fields.full_name', from: 'Acme Holdings', to: 'Acme Limited' },
+        ]);
+    });
+
+    it('lists nothing when the older version holds the same values', () => {
+        expect(revertChanges(label, specs, row, older('Acme Holdings'))).toEqual([]);
     });
 });

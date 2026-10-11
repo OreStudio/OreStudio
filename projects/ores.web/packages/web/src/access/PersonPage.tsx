@@ -360,6 +360,12 @@ function Person({
             {reverting !== null && (
                 <PersonRevertDialog
                     event={reverting}
+                    now={(story.data?.events ?? []).find(
+                        (e) =>
+                            e.entityType === reverting.entityType &&
+                            e.version ===
+                                latestVersion(story.data?.events ?? [], reverting.entityType),
+                    )}
                     current={latestVersion(story.data?.events ?? [], reverting.entityType)}
                     username={account.username}
                     accountId={account.id}

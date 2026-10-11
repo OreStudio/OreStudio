@@ -117,6 +117,31 @@ export function valuesFromHistory(
     return Object.fromEntries(specs.map((spec) => [spec.field, fieldValue(version, spec.history)]));
 }
 
+/** One field a revert would change: what it holds now, and what it would hold. */
+export interface RevertChange {
+    readonly label: string;
+    readonly from: string;
+    readonly to: string;
+}
+
+/** The fields whose value differs between the record as it stands and an older version. */
+export function revertChanges(
+    t: (key: string) => string,
+    specs: readonly FieldSpec[],
+    row: RecordRow,
+    version: HistoryVersion,
+): readonly RevertChange[] {
+    const now = valuesOf(specs, row);
+    const then = valuesFromHistory(specs, version);
+    return specs
+        .filter((spec) => (now[spec.field] ?? '') !== (then[spec.field] ?? ''))
+        .map((spec) => ({
+            label: labelOf(t, spec),
+            from: now[spec.field] ?? '',
+            to: then[spec.field] ?? '',
+        }));
+}
+
 /** A write from the form's values, typed as the server expects each field. */
 export function writeOf(specs: readonly FieldSpec[], values: FieldValues): Record<string, unknown> {
     const write: Record<string, unknown> = {};
@@ -994,10 +1019,12 @@ export function RevertDialog({
     readonly onClose: () => void;
 }): ReactNode {
     const queries = useQueryClient();
+    const { t } = useTranslation();
     return (
         <RevertVersionDialog
             current={row.version}
             version={version}
+            changes={revertChanges(t, specs, row, version)}
             onClose={onClose}
             write={async (intent) => {
                 await api.saveRecord(resource, {
@@ -1023,11 +1050,13 @@ export function RevertDialog({
 export function RevertVersionDialog({
     current,
     version,
+    changes,
     write,
     onClose,
 }: {
     readonly current: number;
     readonly version: HistoryVersion;
+    readonly changes: readonly RevertChange[];
     readonly write: (intent: WriteIntent) => Promise<void>;
     readonly onClose: () => void;
 }): ReactNode {
@@ -1076,6 +1105,7 @@ export function RevertVersionDialog({
                         to: String(version.version),
                     })}
                 </p>
+                <RevertChanges changes={changes} />
                 <Field label={t('refdata.classifications.reason')}>
                     <Select
                         value={reason.code}
@@ -1091,6 +1121,34 @@ export function RevertVersionDialog({
                 {revert.isError && <Notice tone="error">{revert.error.message}</Notice>}
             </div>
         </Dialog>
+    );
+}
+
+/** The fields a revert would change, each from what it holds now to what it would hold. */
+function RevertChanges({ changes }: { readonly changes: readonly RevertChange[] }): ReactNode {
+    const { t } = useTranslation();
+    if (changes.length === 0) {
+        return <p className="text-sm text-muted">{t('refdata.records.revertNoChanges')}</p>;
+    }
+    return (
+        <div className="space-y-1">
+            <p className="text-sm font-medium">
+                {t('refdata.records.revertChanges', { count: String(changes.length) })}
+            </p>
+            <ul className="space-y-1 text-sm">
+                {changes.map((change) => (
+                    <li key={change.label}>
+                        <span className="font-medium">{change.label}</span>
+                        {': '}
+                        <del>
+                            {change.from === '' ? t('refdata.records.revertEmpty') : change.from}
+                        </del>
+                        {' → '}
+                        <ins>{change.to === '' ? t('refdata.records.revertEmpty') : change.to}</ins>
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
 }
 

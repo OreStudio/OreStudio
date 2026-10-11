@@ -1082,9 +1082,11 @@ public:
      *
      * A read of the tenant's own roster, which names no tenant: row-level
      * security bounds what it can see. A caller with =iam::accounts:read= reads
-     * the tenant. A caller with =iam::organisation:read= and not that code reads
-     * the parties their own account works in. The node carries no email or contact
-     * detail, so the narrower code grants no account data.
+     * the accounts the account policy admits: those that work in a party the
+     * caller's own account works in, which is the whole tenant for a tenant
+     * administrator. A caller with =iam::organisation:read= and not that code
+     * reads the parties their own account works in, and the people who report to
+     * them. The node carries no email or contact detail.
      */
     void get_reporting_tree(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
@@ -1099,9 +1101,9 @@ public:
                 return;
             const auto& [account_id, ctx] = *scope;
             // The scope follows what the caller holds: the accounts permission
-            // reads the tenant, the organisation permission reads the parties
-            // the caller's own account works in, and a caller with neither is
-            // refused.
+            // reads what the account policy admits, the organisation permission
+            // reads the parties the caller's own account works in, and a caller
+            // with neither is refused.
             const bool tenant_wide = has_permission(ctx, "iam::accounts:read");
             if (!tenant_wide && !has_permission(ctx, "iam::organisation:read")) {
                 error_reply(nats_, msg, ores::service::error_code::forbidden);

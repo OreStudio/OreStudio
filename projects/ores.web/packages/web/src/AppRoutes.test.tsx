@@ -394,15 +394,21 @@ describe('the route table once the flag is clear', () => {
     });
 
     it('opens the staff list and the hierarchy at their own routes', () => {
-        const staff = render('/organisation/people', ready, authenticated, {}, [], (client) =>
+        const staff = render('/organisation/people', ready, authenticated, {}, [], (client) => {
+            client.setQueryData(['my-access'], {
+                roles: [{ roleId: 'r', permissionCodes: ['iam::accounts:read'] }],
+            });
             client.setQueryData(['records', 'people', '', 'page', 0], {
                 accounts: [],
                 totalCount: 0,
-            }),
-        );
+            });
+        });
         expect(staff).toContain('>Staff<');
 
-        const tree = render('/organisation/hierarchy', ready, authenticated, {}, [], (client) =>
+        const tree = render('/organisation/hierarchy', ready, authenticated, {}, [], (client) => {
+            client.setQueryData(['my-access'], {
+                roles: [{ roleId: 'r', permissionCodes: ['iam::organisation:read'] }],
+            });
             client.setQueryData(['reporting-tree'], {
                 unrooted: 0,
                 nodes: [
@@ -420,8 +426,8 @@ describe('the route table once the flag is clear', () => {
                     },
                 ],
                 parties: [],
-            }),
-        );
+            });
+        });
         expect(tree).toContain('>Hierarchy<');
         expect(tree).toContain('Ada Lovelace');
     });

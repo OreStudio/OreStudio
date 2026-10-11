@@ -48,13 +48,19 @@ register_notification_event_mapping(ev::service::postgres_event_source& event_so
     event_source.register_entity_event_mapping<inbox::messaging::notification_event>(
         "ores_inbox_notifications");
 
-    return event_bus.subscribe<inbox::messaging::notification_event>(
-        [&nats](const inbox::messaging::notification_event& e) {
-            // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
-            ev::service::publish_entity_event(
-                nats, ev::domain::event_subject<inbox::messaging::notification_event>(e.action), e);
-        });
+    return event_bus
+        .subscribe<ev::domain::published_entity_event<inbox::messaging::notification_event>>(
+            [&nats](const ev::domain::published_entity_event<inbox::messaging::notification_event>&
+                        published) {
+                // One payload is addressed by three subjects, so the subject is
+                // the collection's prefix and the action the event reports. The
+                // tenant and the party travel in the headers, not in the payload.
+                ev::service::publish_entity_event(
+                    nats,
+                    ev::domain::event_subject<inbox::messaging::notification_event>(
+                        published.event.action),
+                    published);
+            });
 }
 
 }

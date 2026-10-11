@@ -21,17 +21,47 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client.js';
+import { meets, type Needs, type Permission } from './permissions.js';
+
+/** Whether a set of permission codes holds one, counting everything and an area's wildcard. */
+export function holdsFrom(codes: ReadonlySet<string>): (code: string) => boolean {
+    return (code) =>
+        codes.has('*') || codes.has(`${code.split('::')[0] ?? ''}::*`) || codes.has(code);
+}
+
+/**
+ * What the signed-in person may do, and whether that is known yet.
+ *
+ * Until the roles have been read nothing is held, so a screen that decided
+ * anyway would decide wrongly. `ready` is false until they are known, and a
+ * screen waits for it instead of guessing.
+ */
+export function usePermissions(): {
+    readonly ready: boolean;
+    readonly can: (needs: Needs) => boolean;
+} {
+    const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
+    const codes = new Set((access.data?.roles ?? []).flatMap((role) => role.permissionCodes));
+    const holds = holdsFrom(codes);
+    return { ready: !access.isPending, can: (needs) => meets(holds, needs) };
+}
 
 /**
  * Whether the signed-in person holds a permission, from the roles they hold.
  * A screen asks this only to decide what it offers; the server checks every
- * call again. Everything (`*`) and an area's wildcard (`iam::*`) count.
+ * call again. Prefer {@link usePermissions} with a declared {@link Needs}.
  */
-export function useHolds(): (code: string) => boolean {
+export function useHolds(): (code: Permission) => boolean {
+    return useHeld();
+}
+
+/**
+ * Like {@link useHolds}, for a caller that holds codes written as data, such as a
+ * menu entry, and so cannot name them from {@link Permission}.
+ */
+export function useHeld(): (code: string) => boolean {
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
-    const codes = new Set((access.data?.roles ?? []).flatMap((role) => role.permissionCodes));
-    return (code) =>
-        codes.has('*') || codes.has(`${code.split('::')[0] ?? ''}::*`) || codes.has(code);
+    return holdsFrom(new Set((access.data?.roles ?? []).flatMap((role) => role.permissionCodes)));
 }
 
 /** How the read of the person's permissions stands, for the screen that must say so. */

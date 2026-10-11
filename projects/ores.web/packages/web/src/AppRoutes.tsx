@@ -27,6 +27,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from './api/client.js';
 import { useTranslation } from './i18n/Provider.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
+import { EntityEventsProvider } from './events/EntityEvents.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
 import { useSite } from './session/SiteProvider.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
@@ -67,7 +68,12 @@ import { MyAccessPage } from './access/MyAccessPage.js';
 import { WhereIWorkPage } from './membership/WhereIWorkPage.js';
 import { ReportingLinesPage } from './membership/ReportingLinesPage.js';
 import { OrganisationPage } from './access/OrganisationPage.js';
+import { RouteTrail } from './log/RouteTrail.js';
 import { PeoplePage } from './access/PeoplePage.js';
+import { FirstAvailable, Requires } from './access/Requires.js';
+import { RefusalGuard } from './access/RefusalGuard.js';
+import { NEEDS } from './access/screens.js';
+import { StaffOfMyParties } from './membership/StaffOfMyParties.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
@@ -641,7 +647,9 @@ export function AppRoutes({
             <Route
                 path={PATHS.hierarchy}
                 element={signedIn(gate.version, session, shell, (view) => (
-                    <ReportingLinesPage me={view.username} />
+                    <Requires needs={NEEDS.hierarchy} screen={t('access.hub.hierarchy')}>
+                        <ReportingLinesPage me={view.username} />
+                    </Requires>
                 ))}
             />
             <Route
@@ -663,7 +671,13 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <PeoplePage mode={view.mode} />
+                        <FirstAvailable
+                            screen={t('access.hub.staff')}
+                            variants={[
+                                { needs: NEEDS.people, screen: <PeoplePage mode={view.mode} /> },
+                                { needs: NEEDS.staffOfMyParties, screen: <StaffOfMyParties /> },
+                            ]}
+                        />
                     ),
                     'workspace',
                 )}
@@ -836,7 +850,9 @@ export function AppRoutes({
                     session,
                     shell,
                     () => (
-                        <RolesPage />
+                        <Requires needs={NEEDS.roles} screen={t('shell.menu.roles')}>
+                            <RolesPage />
+                        </Requires>
                     ),
                     'workspace',
                 )}
@@ -848,7 +864,9 @@ export function AppRoutes({
                     session,
                     shell,
                     () => (
-                        <RolePage />
+                        <Requires needs={NEEDS.roles} screen={t('shell.menu.roles')}>
+                            <RolePage />
+                        </Requires>
                     ),
                     'workspace',
                 )}
@@ -1169,19 +1187,22 @@ function signedIn(
      */
     const version = view.version !== '' ? view.version : serverVersion;
     return (
-        <AppShell
-            username={view.username}
-            tenantName={view.tenantName}
-            partyName={view.party.name}
-            mode={view.mode}
-            width={width}
-            serverVersion={version}
-            environment={shell.environment}
-            onSignOut={shell.onSignOut}
-            self={shell.self}
-        >
-            {screen(view, version)}
-        </AppShell>
+        <EntityEventsProvider>
+            <RouteTrail />
+            <AppShell
+                username={view.username}
+                tenantName={view.tenantName}
+                partyName={view.party.name}
+                mode={view.mode}
+                width={width}
+                serverVersion={version}
+                environment={shell.environment}
+                onSignOut={shell.onSignOut}
+                self={shell.self}
+            >
+                <RefusalGuard>{screen(view, version)}</RefusalGuard>
+            </AppShell>
+        </EntityEventsProvider>
     );
 }
 

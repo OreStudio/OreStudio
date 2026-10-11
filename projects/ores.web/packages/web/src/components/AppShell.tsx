@@ -28,7 +28,7 @@ import { headerMark } from '../assets/brand.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { Button } from '../ui/Primitives.js';
 import { useDismiss } from '../ui/useDismiss.js';
-import { useHolds } from '../access/holds.js';
+import { useHeld } from '../access/holds.js';
 import { displayName } from '../access/names.js';
 import { NotificationBell } from '../inbox/NotificationBell.js';
 import { AccessNotice } from '../shell/AccessNotice.js';
@@ -97,7 +97,7 @@ export function AppShell({
     children,
 }: AppShellProps): ReactNode {
     const { t } = useTranslation();
-    const holds = useHolds();
+    const holds = useHeld();
     const menu = MENU.filter((item) => offered(item, holds, mode));
 
     return (

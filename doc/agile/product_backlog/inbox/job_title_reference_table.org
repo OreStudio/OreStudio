@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 16FC4C33-50AC-4E6E-9132-F2B96C445978
+:END:
+#+title: A reference table of job titles
+#+description: Make the job title an entity that a person selects from a list, not a free-text column.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a table of job titles. A job title is an entity that a person selects from a list. It is not free text.
+
+The entity has a code, a name and a description. An account refers to a job title by key, in place of the =job_title= text column. The screens show the field as a list. The existing titles in the Acme account data become rows of the table.
+
+* Why
+
+Today =job_title= is a nullable free-text column on the accounts table. Free text gives spelling variants, so the same title appears in many forms. A report cannot group by title, and a screen cannot offer a list to choose from.
+
+* References
+
+- =projects/ores.sql/create/iam/iam_accounts_create.sql=, the =job_title= column.
+- =projects/ores.sql/populate/acme/=, the account data that holds the current titles.
+
+* See also
+
+-

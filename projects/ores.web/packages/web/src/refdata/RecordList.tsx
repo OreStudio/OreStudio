@@ -19,7 +19,7 @@
  *
  */
 
-import { keepPreviousData, useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     useEffect,
     useRef,
@@ -32,6 +32,10 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { FlagOf, type FlagSource } from '../images/flags.js';
+import { type WatchedEntity } from '../events/EntityEvents.js';
+import { useChangedRows } from './changedRows.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { useLoadState } from '../events/useLoadState.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Icon } from '../ui/Icon.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
@@ -75,6 +79,8 @@ export interface ListSource<Row> {
     readonly sortable: readonly string[];
     readonly filters?: readonly ListFilter[];
     readonly mayAdd: boolean;
+    /** The entities the rows come from, so the list can say when they changed on the server. */
+    readonly watches?: readonly WatchedEntity[];
     /** Reads a row's audit field by its server name; a source without one shows no audit columns. */
     readonly audit?: (row: Row, field: string) => unknown;
 }
@@ -143,6 +149,7 @@ export function useRecordSource(resource: string): ListSource<RecordRow> {
         search: entry?.search === true,
         sortable: entry?.sortable ?? [],
         mayAdd: may.write,
+        ...(entry === undefined ? {} : { watches: [entry.events] }),
         audit: (row, field) => (field === 'version' ? row.version : row[field]),
     };
 }
@@ -311,7 +318,9 @@ export function RecordList<Row>({
     const { t } = useTranslation();
     const queries = useQueryClient();
     const state = useListState(source.filters);
-    const fetching = useIsFetching({ queryKey: ['records', source.key] }) > 0;
+    // The pages are read by the table below, so the load is read from the cache.
+    const load = useLoadState([['records', source.key]]);
+    const news = useEntityChanges(source.watches ?? [], load);
     const add =
         source.mayAdd && onAdd !== undefined && addLabel !== undefined
             ? { label: addLabel, onAdd }
@@ -331,7 +340,7 @@ export function RecordList<Row>({
                     description={lead}
                     actions={
                         <div className="flex gap-2">
-                            <RefreshButton onClick={refresh} pending={fetching} />
+                            <RefreshButton onClick={refresh} load={load} news={news} />
                             {actions}
                             {add !== undefined && (
                                 <Button variant="primary" icon="add" onClick={add.onAdd}>
@@ -401,6 +410,15 @@ export function RecordTable<Row>({
         queryFn: () => source.read(page),
         placeholderData: keepPreviousData,
     });
+
+    const rowKey = (row: Row, index: number): string =>
+        keyOf?.(row) ?? pathOf?.(row) ?? String(index);
+    const changed = useChangedRows(
+        JSON.stringify(pageKey(source, page)),
+        rows.data?.rows ?? [],
+        rowKey,
+        { dataUpdatedAt: rows.dataUpdatedAt, isPlaceholder: rows.isPlaceholderData },
+    );
 
     const find = useRef(state.find);
     find.current = state.find;
@@ -596,13 +614,14 @@ export function RecordTable<Row>({
                         )}
                         {(data?.rows ?? []).map((row, index) => (
                             <tr
-                                key={keyOf?.(row) ?? pathOf?.(row) ?? String(index)}
+                                key={rowKey(row, index)}
                                 {...(open === undefined
-                                    ? { className: 'border-b border-line-subtle last:border-b-0' }
+                                    ? {
+                                          className: `border-b border-line-subtle last:border-b-0${changed.has(rowKey(row, index)) ? ' row-changed' : ''}`,
+                                      }
                                     : {
                                           tabIndex: 0,
-                                          className:
-                                              'cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover focus:bg-surface-hover focus:outline-none',
+                                          className: `cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover focus:bg-surface-hover focus:outline-none${changed.has(rowKey(row, index)) ? ' row-changed' : ''}`,
                                           onClick: (event: MouseEvent) => {
                                               if (!fromControl(event)) {
                                                   open(row);

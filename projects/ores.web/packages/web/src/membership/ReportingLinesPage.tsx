@@ -30,12 +30,16 @@ import {
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ReportingLineDialog } from '../access/PersonForms.js';
-import { useHolds } from '../access/holds.js';
+import { useHolds, usePermissions } from '../access/holds.js';
+import { PERMISSION } from '../access/permissions.js';
+import { tabsFor } from '../access/screens.js';
 import { actorPathFor } from '../access/PeoplePage.js';
 import { useActorPictures } from '../access/PersonRef.js';
 import { Crumbs } from '../refdata/shared.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { Button, Detail, Field, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { TREE_WATCHES } from './treeWatches.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
 import { Badges, NameLink, NodeAvatar, PartyLine, TENANT_ADMIN, nameOf } from './NodeParts.js';
@@ -101,6 +105,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
     const holds = useHolds();
+    const { can } = usePermissions();
     const mayReadAccounts = holds('iam::accounts:read');
     const actorPicture = useActorPictures();
     const mayChange = holds('iam::accounts:update');
@@ -111,11 +116,19 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
     const [party, setParty] = useState('');
     const { tab, bar } = useTabs({
         label: t('access.hub.hierarchy'),
-        tabs: mayReadAccounts ? ['tree', 'chart', 'history'] : ['tree', 'chart'],
+        tabs: tabsFor(
+            [
+                { name: 'tree' },
+                { name: 'chart' },
+                { name: 'history', needs: { all: [PERMISSION.accountsRead] } },
+            ],
+            can,
+        ),
         titleOf: (part) => t(`membership.reporting.tabs.${part}`),
     });
 
     const tree = useQuery({ queryKey: ['reporting-tree'], queryFn: () => api.reportingTree() });
+    const news = useEntityChanges(TREE_WATCHES, tree);
     const reasons = useQuery({
         queryKey: ['amend-reasons'],
         queryFn: api.amendReasons,
@@ -268,7 +281,7 @@ export function ReportingLinesPage({ me }: { readonly me: string }): ReactNode {
                 <PageHeader
                     title={t('access.hub.hierarchy')}
                     description={t('membership.reporting.lead')}
-                    actions={<RefreshButton onClick={refresh} pending={tree.isFetching} />}
+                    actions={<RefreshButton onClick={refresh} load={tree} news={news} />}
                 />
             </div>
 

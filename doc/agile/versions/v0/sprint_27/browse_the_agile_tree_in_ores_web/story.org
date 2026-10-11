@@ -40,7 +40,7 @@ Story 2 of the QA runner arc. Add kanban for the sprint, stories, tasks, the bac
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:94820929-77DC-47B2-89D3-40B485AEA36B][Scaffold story: Browse the agile tree in ores.web]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:8C548640-2CBD-4CCF-B357-62E15136459C][Prototype the agile browser]] | STARTED | 2026-10-11 | | Show the sprint board, the card detail, the backlog buckets and the charts, and get the layout accepted before any code is built. |
+| [[id:8C548640-2CBD-4CCF-B357-62E15136459C][Prototype the agile browser]] | DONE | 2026-10-11 | 2026-10-11 | Show the sprint board, the card detail, the backlog buckets and the charts, and get the layout accepted before any code is built. |
 | [[id:F086CAB7-0F85-46CD-8EC7-890DB00A26AF][Read the agile tree in the BFF]] | BACKLOG | | | Add an agile store to the BFF that reads sprints, stories, tasks and the backlog buckets from the work tree, behind an interface, following the ores.dsh_kanban contract for fields and states. |
 | [[id:C84DB54C-6712-44E9-900F-B776C4F8B21B][Serve the agile tree from the BFF]] | BACKLOG | | | Add BFF routes for the sprints, one sprint's board, the backlog buckets and any doc by id, behind the session check. |
 | [[id:C425A6C4-CE11-4917-89D5-AA11038A6E7E][Build the sprint board]] | BACKLOG | | | Add the Board tab to the Development area: the sprint line, tiles, epic and text filters, columns, cards with progress, and the card detail panel. |

@@ -31,6 +31,12 @@ Open the [[file:agile-browser/][prototype]].
 
 * Detail
 
+** The verdict
+
+Accepted on 2026-10-11: variant A, the columns. The list stays in the prototype,
+switchable from the bar at the foot of the page, as the layout for a narrow
+window if the build wants one.
+
 ** The board
 
 One sprint, as columns of stories: Backlog, Started, Blocked, Done and Abandoned.

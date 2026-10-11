@@ -187,7 +187,14 @@ export function NowPanel({
                     })}
                 </span>
             </header>
-            {snapshot.warning !== '' && <Notice tone="warn">{snapshot.warning}</Notice>}
+            {snapshot.warning && (
+                <Notice tone="warn">
+                    {t('market.evolution.now.mixed', {
+                        oldest: formatAge(snapshot.oldest_age_seconds),
+                        spread: formatAge(snapshot.spread_seconds),
+                    })}
+                </Notice>
+            )}
             <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                     <thead className="text-left text-xs text-ink-faint">

@@ -1631,6 +1631,7 @@ const pt: SourceCatalogue = {
                 age: 'Idade',
                 source: 'Origem',
                 detail: 'Detalhe',
+                mixed: 'Estes valores vêm de vários estados de mercado. O mais antigo tem {oldest}, e abrangem {spread}.',
                 summary: 'O valor mais antigo tem {oldest}. Os valores abrangem {spread}.',
             },
             source: {

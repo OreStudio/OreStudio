@@ -1622,6 +1622,7 @@ export const en: SourceCatalogue = {
                 age: 'Age',
                 source: 'Source',
                 detail: 'Detail',
+                mixed: 'These values come from several market states. The oldest is {oldest} old, and they span {spread}.',
                 summary: 'The oldest value is {oldest} old. The values span {spread}.',
             },
             source: {

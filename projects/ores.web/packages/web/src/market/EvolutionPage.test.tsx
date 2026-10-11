@@ -92,7 +92,7 @@ const snapshot: CurveSnapshot = {
     ],
     oldest_age_seconds: 10800,
     spread_seconds: 0,
-    warning: '',
+    warning: false,
 };
 
 describe('MatrixPanel', () => {
@@ -151,14 +151,14 @@ describe('NowPanel', () => {
         expect(asked).toContain('12345678 v3');
     });
 
-    it('shows the warning the server states', () => {
+    it('says in words when the values mix several market states, and says nothing otherwise', () => {
         const html = render(
-            <NowPanel
-                snapshot={{ ...snapshot, warning: 'The values span two days.' }}
-                provenance={false}
-            />,
+            <NowPanel snapshot={{ ...snapshot, warning: true }} provenance={false} />,
         );
-        expect(html).toContain('The values span two days.');
+        expect(html).toContain('These values come from several market states.');
+        expect(html).toContain('The oldest is 3h old');
+        const quiet = render(<NowPanel snapshot={snapshot} provenance={false} />);
+        expect(quiet).not.toContain('several market states');
     });
 });
 

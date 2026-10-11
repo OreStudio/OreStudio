@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :name_the_record_in_a_change_event:sprint_27:v0:
 #+owner: marco
-#+branch: feature/keep-the-record-screens-up-to-date
+#+branch: feature/name-the-record-in-a-change-event
 #+pr:
 #+blocked_on:
 #+blocked_since:

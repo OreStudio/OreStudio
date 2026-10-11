@@ -1,43 +1,44 @@
 :PROPERTIES:
 :ID: 34293B98-59B2-4A67-AB11-290CBAE2BBD1
 :END:
-#+title: Task: Carry the record key on every entity event
+#+title: Task: Prove the record key is on every entity event
 #+description: Task for: Name the record in a change event
 #+type: task
 #+level: s1
 #+filetags: :name_the_record_in_a_change_event:sprint_27:v0:
 #+owner: marco
-#+branch: feature/keep-the-record-screens-up-to-date
+#+branch: feature/name-the-record-in-a-change-event
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F612088-182C-415D-8B47-00D3C66B7A38][Name the record in a change event]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Add the key of the changed row to the typed entity event, from the database notification to the NATS payload, for every entity. Change the codegen templates and regenerate. Decide and document whether the key travels in the payload or in a header.
+The typed entity event already carries the key of the changed row, and so does the NATS payload. Prove it for every entity, and make a key that cannot be read visible. The generated =from_notification= leaves the key empty without a word when it cannot read it, and a screen would read an empty key as /many/. No codegen change is expected beyond a log line.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7F612088-182C-415D-8B47-00D3C66B7A38][Name the record in a change event]] |
-| Now          | Not yet started.                       |
+| Now          | Found that the key is already on the payload. Re-scoped. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
 
-- Every generated event type carries the key as the model declares it.
-- The registrar publishes it and the integration test asserts it.
+- A test asserts that the payload published for an entity event holds the entity's declared key.
+- A key that cannot be read from a notification is logged at warn, with the entity and the event id.
 - The drift gate passes for every component.
+
 
 * Plan
 

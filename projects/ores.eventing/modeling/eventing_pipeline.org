@@ -165,7 +165,9 @@ Tenancy of an event). The web server holds one subscription per entity for all t
 sessions watching it and relays the events to each browser on =GET /api/events=; see
 [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]]. The registry listens on the
 wildcard of each collection's prefix, such as =iam.v1.accounts_events.>=, and
-relays the time of the change. It tells a session only of an event whose tenant
+relays the time of the change and the key of the record, which the typed event
+carries in its =key= field. It joins close events into one message and names up
+to 20 records; see Change notification. It tells a session only of an event whose tenant
 is the session's own or the system tenant's, and, for a member, whose party the
 member works in. An event with no tenant header is told to nobody. The broker
 does not enforce this, so the rule is kept by the subscriber.

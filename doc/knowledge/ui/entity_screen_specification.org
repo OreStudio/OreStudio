@@ -536,6 +536,12 @@ lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notific
   registry states these, so no screen guesses a plural.
 - The news is a time and not a list. A thousand changes in one import make a
   screen stale once.
+- The news may name the records that changed, when there are few (up to 20 in
+  one message). A list ignores them. A record page names its record in its watch
+  (={ component, entity, record: { username } }=) and goes stale only when the
+  news names its record or names none. It does not pulse for another person's
+  change. A page that cannot state its record's key leaves the record out and
+  goes stale for any change to the entity.
 - A screen is stale when a change reached the browser after the load that
   produced its data began. The comparison uses the browser's clock at both ends,
   because the server's clock differs. A change that arrives while a load is in

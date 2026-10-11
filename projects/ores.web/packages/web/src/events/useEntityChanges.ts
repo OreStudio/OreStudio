@@ -52,7 +52,7 @@ export function isStale(changeArrivedAt: number | undefined, loadStartedAt: numb
 }
 
 /** One change as the screen heard it. */
-interface HeardEvent {
+export interface HeardEvent {
     readonly arrivedAt: number;
     readonly at: string;
     readonly keys: readonly RecordKey[] | undefined;
@@ -60,6 +60,23 @@ interface HeardEvent {
 
 /** The changes a screen keeps by name; past it the screen only knows that something changed. */
 const MAX_EVENTS = 200;
+
+/**
+ * Adds a change to the ones a screen keeps.
+ *
+ * A change from before the load that produced the data on screen is already in
+ * that data, so it is dropped first. Only the changes since the load count toward
+ * the limit; past it, the one that arrives stands for them all and names no record.
+ */
+export function remember(
+    before: readonly HeardEvent[],
+    event: HeardEvent,
+    loadStartedAt: number,
+    limit: number = MAX_EVENTS,
+): readonly HeardEvent[] {
+    const since = before.filter((heard) => isStale(heard.arrivedAt, loadStartedAt));
+    return since.length < limit ? [...since, event] : [{ ...event, keys: undefined }];
+}
 
 /**
  * Tells a screen that the entities it shows have changed on the server.
@@ -91,16 +108,16 @@ export function useEntityChanges(
         wasFetching.current = load.isFetching;
     }, [load.isFetching]);
 
+    const loadStartedAtNow = useRef(loadStartedAt);
+    loadStartedAtNow.current = loadStartedAt;
+
     useEffect(() => {
         setLoadStartedAt(inFlightSince.current);
     }, [load.dataUpdatedAt]);
 
     useEntityChangeEvents(watches, (change) => {
         const event: HeardEvent = { arrivedAt: Date.now(), at: change.at, keys: change.keys };
-        // Past the limit the oldest are dropped, and a change without keys stands for them.
-        setEvents((before) =>
-            before.length < MAX_EVENTS ? [...before, event] : [{ ...event, keys: undefined }],
-        );
+        setEvents((before) => remember(before, event, loadStartedAtNow.current));
     });
 
     const newest = events.at(-1);

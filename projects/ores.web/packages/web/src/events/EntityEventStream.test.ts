@@ -111,6 +111,26 @@ describe('the entity event stream', () => {
         expect(heard).toEqual([[{ username: 'diane.kay' }], undefined]);
     });
 
+    it('names no record when a key is not an object of text', () => {
+        const fake = fakeSource();
+        const stream = new EntityEventStream(fake.factory, async () => undefined);
+        const heard: unknown[] = [];
+        stream.watch('iam', 'accounts', (change) => heard.push(change.keys));
+        fake.emit('entity-changed', {
+            component: 'iam',
+            entity: 'accounts',
+            at: 't1',
+            keys: [{ username: 'diane.kay' }, null],
+        });
+        fake.emit('entity-changed', {
+            component: 'iam',
+            entity: 'accounts',
+            at: 't2',
+            keys: [{ username: 4 }],
+        });
+        expect(heard).toEqual([undefined, undefined]);
+    });
+
     it('ignores news it cannot read', () => {
         const fake = fakeSource();
         const stream = new EntityEventStream(fake.factory, async () => undefined);

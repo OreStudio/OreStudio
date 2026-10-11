@@ -170,7 +170,9 @@ passes it on:
 
 - The BFF joins the events of one entity that arrive within 150 ms into one
   message for each session that may hear them, so a bulk import is one message and
-  not a thousand.
+  not a thousand. The window is
+  fixed from the first event and is not extended, so a very long burst is a series
+  of messages, one for each 150 ms, and not one.
 - A message names up to 20 records. With more, or when any event had an empty
   key, it names none. =keys= is then left out, and a reader treats every record
   as changed.

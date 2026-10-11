@@ -163,6 +163,8 @@ export function eventSubject(component: string, entity: string): string {
 
 /** The part of a logger the registry writes through: a record of facts and a message. */
 export interface EventLog {
+    /** Whether a level is written; a log that cannot say is taken as writing every level. */
+    isLevelEnabled?(level: string): boolean;
     debug(fields: Record<string, unknown>, message: string): void;
     warn(fields: Record<string, unknown>, message: string): void;
 }
@@ -317,6 +319,8 @@ export class ChangeEventRegistry {
                     if (waiting.size > 0 && timer === undefined) {
                         timer = setTimeout(flush, this.#windowMs);
                     }
+                    // The key is text built for the line, so a bulk import builds none when debug is off.
+                    if (this.#log.isLevelEnabled?.('debug') === false) return;
                     this.#log.debug(
                         {
                             component: watch.component,

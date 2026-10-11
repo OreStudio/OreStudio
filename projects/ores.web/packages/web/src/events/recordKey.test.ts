@@ -43,6 +43,11 @@ describe('whether a change concerns a record', () => {
         expect(mayConcern([{ tenant: 't1', code: 'USD', extra: 'x' }], key)).toBe(true);
     });
 
+    it('may concern a record when the key it names is of another shape', () => {
+        expect(mayConcern([{ id: '42' }], diane)).toBe(true);
+        expect(mayConcern([{ tenant: 't1' }], { tenant: 't1', code: 'USD' })).toBe(true);
+    });
+
     it('concerns no record when it names an empty list', () => {
         expect(mayConcern([], diane)).toBe(false);
     });

@@ -144,6 +144,21 @@ describe('the change registry', () => {
         expect(lines.map((line) => line.message)).toContain('session watch declared');
     });
 
+    it('builds no log line for an event when debug is off', () => {
+        const { client, open } = fakeClient();
+        const lines: string[] = [];
+        const registry = new ChangeEventRegistry(client, {
+            isLevelEnabled: () => false,
+            debug: (_fields, message) => lines.push(message),
+            warn: (_fields, message) => lines.push(message),
+        });
+        registry.attach('s1', () => undefined);
+        registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
+        open.get('iam.v1.accounts_events.>')?.(change('t1'));
+        endWindow();
+        expect(lines).not.toContain('change event received');
+    });
+
     it('warns when an event names no tenant, and tells nobody', () => {
         const { client, open } = fakeClient();
         const warnings: string[] = [];

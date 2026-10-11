@@ -144,6 +144,20 @@ function split(key: string): { component: string; entity: string } {
     return { component, entity };
 }
 
+/** Whether a value is a list of keys, each a plain object of text; anything else names no record. */
+function isKeyList(value: unknown): value is readonly RecordKey[] {
+    return (
+        Array.isArray(value) &&
+        value.every(
+            (key) =>
+                typeof key === 'object' &&
+                key !== null &&
+                !Array.isArray(key) &&
+                Object.values(key).every((column) => typeof column === 'string'),
+        )
+    );
+}
+
 function parse(data: string | undefined): EntityChange | undefined {
     if (data === undefined) return undefined;
     try {
@@ -156,7 +170,7 @@ function parse(data: string | undefined): EntityChange | undefined {
             return undefined;
         }
         const change = { component: value.component, entity: value.entity, at: value.at };
-        return Array.isArray(value.keys) ? { ...change, keys: value.keys } : change;
+        return isKeyList(value.keys) ? { ...change, keys: value.keys } : change;
     } catch {
         return undefined;
     }

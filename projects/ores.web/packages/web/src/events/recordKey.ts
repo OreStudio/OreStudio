@@ -30,13 +30,19 @@ export type RecordKey = Readonly<Record<string, string>>;
  * that is told "something changed" and finds nothing new has lost one click, and
  * a screen that is told nothing has lost the news.
  *
- * A change that names records concerns a record only when one of them has every
- * column the record's key states.
+ * A change that names records concerns a record when one of them has every
+ * column the record's key states with the same values. A key that lacks one of
+ * those columns is from an entity keyed another way, so the screen cannot tell and
+ * takes the change as its own.
  */
 export function mayConcern(keys: readonly RecordKey[] | undefined, record: RecordKey): boolean {
     if (keys === undefined) return true;
-    return keys.some((key) =>
-        Object.entries(record).every(([column, value]) => key[column] === value),
+    const columns = Object.entries(record);
+    return keys.some(
+        (key) =>
+            // A key that states none of a column cannot say the record is not its own.
+            columns.some(([column]) => !(column in key)) ||
+            columns.every(([column, value]) => key[column] === value),
     );
 }
 

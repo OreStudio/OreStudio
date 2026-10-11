@@ -23,9 +23,9 @@ A person opens the curve evolution screen and chooses the curve or surface from 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | The marketdata operation that lists the series identities a party can see is done. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Route the list through the BFF, then offer it as a picker. |
 | Last touched  | 2026-10-11                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ A person opens the curve evolution screen and chooses the curve or surface from 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:4920F67A-14E2-4AFD-95BE-C74FDC3ECF5D][List the series identities a party can see]] | BACKLOG | | | Add a marketdata operation that returns the typed identity of each series the caller's party can see. |
+| [[id:4920F67A-14E2-4AFD-95BE-C74FDC3ECF5D][List the series identities a party can see]] | DONE | 2026-10-11 | 2026-10-11 | Add a marketdata operation that returns the typed identity of each series the caller's party can see. |
 | [[id:341A268D-EBD6-426B-8B26-97EDB0EC48C9][Route the series list through the BFF]] | BACKLOG | | | Give the BFF a session-guarded route for the series identity list, with tests. |
 | [[id:4D270BB2-621E-4B60-BEA8-0A6AFDDD4CB6][Pick the curve on the evolution screen]] | BACKLOG | | | Offer the series list as a picker on the evolution screen, filling the identity from the chosen row. |
 | [[id:777A5AFE-0D38-4E9B-BA97-8B1715BF1BF0][Scaffold story: Pick a curve from the series a party can see]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: the story, its sprint row and its three tasks. |

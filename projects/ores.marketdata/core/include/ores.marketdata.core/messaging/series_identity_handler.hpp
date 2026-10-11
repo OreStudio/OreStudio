@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
+#include "ores.marketdata.core/service/series_identity_lister.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -102,6 +103,40 @@ public:
                 << msg.subject << " rejected: " << e.what();
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(series_identity_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        BOOST_LOG_SEV(series_identity_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void list(ores::nats::message msg) {
+        BOOST_LOG_SEV(series_identity_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_series:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+
+        auto req = decode<list_series_identities_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(series_identity_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        list_series_identities_response resp;
+        try {
+            resp = service::series_identity_lister::list(req_ctx, *req);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(series_identity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

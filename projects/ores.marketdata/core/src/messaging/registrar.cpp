@@ -141,6 +141,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             h.resolve(std::move(msg));
                                         }));
 
+    // The series a party can see, each as the typed identity the curve reads take.
+    subs.push_back(nats.queue_subscribe(std::string(list_series_identities_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            series_identity_handler h(nats, ctx, verifier);
+                                            h.list(std::move(msg));
+                                        }));
+
     // Import
     subs.push_back(
         nats.queue_subscribe(std::string(import_market_data_request::nats_subject),

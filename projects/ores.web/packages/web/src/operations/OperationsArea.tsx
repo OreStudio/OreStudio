@@ -32,7 +32,7 @@
 
 import type { ReactNode } from 'react';
 import type { SessionMode } from '@ores/wire-protocol/browser';
-import { useHolds } from '../access/holds.js';
+import { useHeld } from '../access/holds.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { offered, type MenuItem } from '../shell/areas.js';
 import { PageHeader } from '../ui/Primitives.js';
@@ -43,7 +43,7 @@ type Screen = Tile & Pick<MenuItem, 'permission' | 'scope'>;
 
 export function OperationsArea({ mode }: { readonly mode: SessionMode }): ReactNode {
     const { t } = useTranslation();
-    const holds = useHolds();
+    const holds = useHeld();
     const screens: readonly Screen[] = [
         {
             title: t('operations.screens.services'),

@@ -37,9 +37,13 @@ import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { FlagOf, FlaggedCode } from '../images/flags.js';
 import { managerCandidates } from '../membership/managers.js';
 import { Button, Detail, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
+import { useEntityChangeEvents } from '../events/EntityEvents.js';
+import { NewerVersionNotice, useNewerVersion } from './newerVersion.js';
+import { useRecordEdit, type EditOutcome } from './useRecordEdit.js';
 import { displayName } from './names.js';
 import { personPath } from './PeoplePage.js';
-import { useHolds } from './holds.js';
+import { useHolds, usePermissions } from './holds.js';
+import { PERMISSION } from './permissions.js';
 /**
  * The forms of a person's account: who they are and how to reach them.
  *
@@ -96,15 +100,7 @@ export function useReasonChoice(
 }
 
 /** What a panel's last save decided, as the panel draws it. */
-interface PanelOutcome {
-    readonly ok: boolean;
-    readonly message: string;
-    readonly fields: readonly {
-        readonly field: string;
-        readonly code: string;
-        readonly message: string;
-    }[];
-}
+type PanelOutcome = EditOutcome;
 
 /** The link that sends mail to an address, present only when there is an address to send to. */
 function mailto(address: string): { readonly href?: string } {
@@ -463,12 +459,34 @@ function IdentityDialog({
     readonly onSaved: () => Promise<unknown>;
 }): ReactNode {
     const { t } = useTranslation();
+    const queries = useQueryClient();
     const [edits, setEdits] = useState<
         Partial<{ fullName: string; jobTitle: string; imageId: string }>
     >({});
+    // The record is read again as the server announces a change, so a newer
+    // version is known while this form is open. The form itself is not reloaded.
+    const edit = useRecordEdit({
+        form: 'person.identity',
+        onClose,
+        onSaved,
+    });
+    useEntityChangeEvents([{ component: 'iam', entity: 'accounts' }], () => {
+        if (edit.saving.current) return;
+        void queries.invalidateQueries({ queryKey: ['account', username] });
+    });
+    const news = useNewerVersion(
+        account,
+        {
+            [t('profile.identity.fullName')]: (record) => record.fullName,
+            [t('profile.identity.jobTitle')]: (record) => record.jobTitle,
+            [t('profile.identity.choosePhoto')]: (record) => record.imageId ?? '',
+        },
+        () => setEdits({}),
+        queries.getQueryState(['account', username])?.dataUpdatedAt,
+    );
+    const expectedVersion = news.expectedVersion === null ? '' : String(news.expectedVersion);
     const [commentary, setCommentary] = useState('');
-    const [busy, setBusy] = useState(false);
-    const [outcome, setOutcome] = useState<PanelOutcome | undefined>(undefined);
+    const { busy, outcome } = edit;
 
     const draft = {
         fullName: edits.fullName ?? account.fullName,
@@ -486,42 +504,41 @@ function IdentityDialog({
         reasonCode !== '' && !(chosen?.requiresCommentary === true && commentary.trim() === '');
     const name = displayName({ fullName: draft.fullName }, account.username);
 
-    const save = async (): Promise<void> => {
-        setBusy(true);
-        setOutcome(undefined);
-        try {
+    const save = (): Promise<void> =>
+        edit.run(async () => {
             if (me) {
-                const view = await api.saveMyProfile({ ...draft, reasonCode, commentary });
+                const view = await api.saveMyProfile({
+                    ...draft,
+                    reasonCode,
+                    commentary,
+                    expectedVersion,
+                });
                 if (view.result.outcome !== 'ok') {
-                    setOutcome({
+                    return {
                         ok: false,
                         message:
                             view.result.code === 'field_not_self_writable'
                                 ? t('profile.refused.notYours')
                                 : view.result.message,
                         fields: view.result.fields,
-                    });
-                    return;
+                    };
                 }
-            } else {
-                await api.saveAccountProfile(username, { ...draft, reasonCode, commentary });
+                return undefined;
             }
-            await onSaved();
-            onClose();
-        } catch (error) {
-            setOutcome({
-                ok: false,
-                message: error instanceof Error ? error.message : t('profile.saved.failed'),
-                fields: [],
+            await api.saveAccountProfile(username, {
+                ...draft,
+                reasonCode,
+                commentary,
+                expectedVersion,
             });
-        } finally {
-            setBusy(false);
-        }
-    };
+            return undefined;
+        });
 
     return (
         <Dialog
             title={t('profile.identity.editTitle')}
+            name="person.identity"
+            loadedAt={news.loadedAt}
             onClose={onClose}
             wide
             footer={
@@ -542,6 +559,14 @@ function IdentityDialog({
             }
         >
             <div className="space-y-4">
+                {news.newer !== undefined && (
+                    <NewerVersionNotice
+                        newer={news.newer}
+                        by={news.newer.record.modifiedBy}
+                        onKeep={news.keepMine}
+                        onTake={news.takeTheirs}
+                    />
+                )}
                 <div className="flex flex-wrap items-start gap-5">
                     <PhotoPicker
                         name={name}
@@ -616,12 +641,38 @@ export function ReportingLineDialog({
     const tree = useQuery({ queryKey: ['reporting-tree'], queryFn: () => api.reportingTree() });
     const [managerId, setManagerId] = useState<string | undefined>(undefined);
     const [commentary, setCommentary] = useState('');
-    const [busy, setBusy] = useState(false);
-    const [outcome, setOutcome] = useState<PanelOutcome | undefined>(undefined);
 
     const nodes = tree.data?.nodes ?? [];
     const self = nodes.find((node) => node.accountId === account.id);
     const candidates = self === undefined ? [] : managerCandidates(nodes, self);
+    const edit = useRecordEdit({
+        form: 'person.reporting_line',
+        onClose,
+        onSaved: async () => {
+            await queries.invalidateQueries({ queryKey: ['reporting-tree'] });
+            await queries.invalidateQueries({ queryKey: ['accounts'] });
+            await queries.invalidateQueries({ queryKey: ['timeline', 'person', account.username] });
+            await onSaved();
+        },
+    });
+    const { busy, outcome } = edit;
+    useEntityChangeEvents([{ component: 'iam', entity: 'accounts' }], () => {
+        if (edit.saving.current) return;
+        void queries.invalidateQueries({ queryKey: ['account', account.username] });
+    });
+    const nameOfManager = (id: string | null): string =>
+        id === null
+            ? ''
+            : displayName(nodes.find((node) => node.accountId === id) ?? { fullName: '' }, id);
+    const news = useNewerVersion(
+        account,
+        {
+            [t('membership.reporting.reportsTo')]: (record) =>
+                nameOfManager(record.reportsToAccountId),
+        },
+        () => setManagerId(undefined),
+        queries.getQueryState(['account', account.username])?.dataUpdatedAt,
+    );
     const chosenManager = managerId ?? account.reportsToAccountId ?? '';
     const changed = chosenManager !== (account.reportsToAccountId ?? '');
     const choice = useReasonChoice(reasons, changed);
@@ -634,35 +685,22 @@ export function ReportingLineDialog({
         reasonCode !== '' &&
         !(chosen?.requiresCommentary === true && commentary.trim() === '');
 
-    const save = async (to: string): Promise<void> => {
-        setBusy(true);
-        setOutcome(undefined);
-        try {
+    const save = (to: string): Promise<void> =>
+        edit.run(async () => {
             await api.setReportingLine(account.id, {
                 reportsToAccountId: to,
-                expectedVersion: String(account.version),
+                expectedVersion: String(news.expectedVersion ?? account.version),
                 reasonCode,
                 commentary,
             });
-            await queries.invalidateQueries({ queryKey: ['reporting-tree'] });
-            await queries.invalidateQueries({ queryKey: ['accounts'] });
-            await queries.invalidateQueries({ queryKey: ['timeline', 'person', account.username] });
-            await onSaved();
-            onClose();
-        } catch (error) {
-            setOutcome({
-                ok: false,
-                message: error instanceof Error ? error.message : t('profile.saved.failed'),
-                fields: [],
-            });
-        } finally {
-            setBusy(false);
-        }
-    };
+            return undefined;
+        });
 
     return (
         <Dialog
             title={t('profile.identity.changeLine')}
+            name="person.reporting_line"
+            loadedAt={news.loadedAt}
             onClose={onClose}
             footer={
                 <>
@@ -693,6 +731,14 @@ export function ReportingLineDialog({
         >
             <div className="space-y-4">
                 {tree.isError && <Notice tone="error">{tree.error.message}</Notice>}
+                {news.newer !== undefined && (
+                    <NewerVersionNotice
+                        newer={news.newer}
+                        by={news.newer.record.modifiedBy}
+                        onKeep={news.keepMine}
+                        onTake={news.takeTheirs}
+                    />
+                )}
                 <Field label={t('membership.reporting.reportsTo')}>
                     <Select
                         value={chosenManager}
@@ -1059,10 +1105,37 @@ function ContactDialog({
     readonly onSaved: () => Promise<unknown>;
 }): ReactNode {
     const { t } = useTranslation();
+    const queries = useQueryClient();
     const [edits, setEdits] = useState<Partial<ContactDraft>>({});
+    const edit = useRecordEdit({
+        form: 'person.contact',
+        onClose,
+        onSaved,
+    });
+    useEntityChangeEvents([{ component: 'iam', entity: 'account_contact_informations' }], () => {
+        if (edit.saving.current) return;
+        void queries.invalidateQueries({
+            queryKey: ['contact-information', me ? 'me' : accountId],
+        });
+    });
+    const news = useNewerVersion(
+        contact,
+        {
+            [t('profile.contact.streetLine1')]: (record) => record.streetLine1,
+            [t('profile.contact.streetLine2')]: (record) => record.streetLine2,
+            [t('profile.contact.city')]: (record) => record.city,
+            [t('profile.contact.state')]: (record) => record.state,
+            [t('profile.contact.postalCode')]: (record) => record.postalCode,
+            [t('profile.contact.country')]: (record) => record.countryCode,
+            [t('profile.contact.phone')]: (record) => record.phone,
+            [t('profile.contact.email')]: (record) => record.email,
+            [t('profile.contact.webPage')]: (record) => record.webPage,
+        },
+        () => setEdits({}),
+        queries.getQueryState(['contact-information', me ? 'me' : accountId])?.dataUpdatedAt,
+    );
     const [commentary, setCommentary] = useState('');
-    const [busy, setBusy] = useState(false);
-    const [outcome, setOutcome] = useState<PanelOutcome | undefined>(undefined);
+    const { busy, outcome } = edit;
 
     const base: ContactDraft = {
         streetLine1: contact?.streetLine1 ?? '',
@@ -1089,52 +1162,41 @@ function ContactDialog({
         (event: ChangeEvent<HTMLInputElement>): void =>
             setEdits({ ...edits, [field]: event.target.value });
 
-    const save = async (): Promise<void> => {
-        setBusy(true);
-        setOutcome(undefined);
-        try {
-            const view = me
-                ? await api.saveMyContactInformation({ ...draft, reasonCode, commentary })
-                : await api.saveAccountContactInformation(accountId, {
-                      ...draft,
-                      version: contact?.version ?? null,
-                      reasonCode,
-                      commentary,
-                  });
-            if (view.result.outcome === 'ok') {
-                await onSaved();
-                onClose();
-                return;
-            }
-            setOutcome({
-                ok: false,
-                /*
-                 * The sentence about a moved record belongs to the server's
-                 * conflict answer alone. Any other refusal -- a permission, a
-                 * field it would not take -- travels with its own words and
-                 * nothing added.
-                 */
-                message:
-                    !me && view.result.outcome === 'conflict'
-                        ? `${view.result.message} ${t('profile.refused.recordChanged')}`
-                        : view.result.message,
-                fields: view.result.fields,
-            });
-            if (!me) await onSaved();
-        } catch (error) {
-            setOutcome({
-                ok: false,
-                message: error instanceof Error ? error.message : t('profile.saved.failed'),
-                fields: [],
-            });
-        } finally {
-            setBusy(false);
-        }
-    };
+    const save = (): Promise<void> =>
+        edit.run(
+            async () => {
+                const view = me
+                    ? await api.saveMyContactInformation({ ...draft, reasonCode, commentary })
+                    : await api.saveAccountContactInformation(accountId, {
+                          ...draft,
+                          version: news.expectedVersion,
+                          reasonCode,
+                          commentary,
+                      });
+                if (view.result.outcome === 'ok') return undefined;
+                return {
+                    ok: false,
+                    /*
+                     * The sentence about a moved record belongs to the server's
+                     * conflict answer alone. Any other refusal -- a permission, a
+                     * field it would not take -- travels with its own words and
+                     * nothing added.
+                     */
+                    message:
+                        !me && view.result.outcome === 'conflict'
+                            ? `${view.result.message} ${t('profile.refused.recordChanged')}`
+                            : view.result.message,
+                    fields: view.result.fields,
+                };
+            },
+            { readAfterRefusal: !me },
+        );
 
     return (
         <Dialog
             title={t('profile.contact.editTitle')}
+            name="person.contact"
+            loadedAt={news.loadedAt}
             onClose={onClose}
             wide
             footer={
@@ -1155,6 +1217,14 @@ function ContactDialog({
             }
         >
             <div className="space-y-4">
+                {news.newer !== undefined && (
+                    <NewerVersionNotice
+                        newer={news.newer}
+                        by={news.newer.record.modifiedBy}
+                        onKeep={news.keepMine}
+                        onTake={news.takeTheirs}
+                    />
+                )}
                 <div className="grid gap-4 sm:grid-cols-2">
                     <Field label={t('profile.contact.streetLine1')}>
                         <Input value={draft.streetLine1} onChange={set('streetLine1')} />
@@ -1284,13 +1354,11 @@ export function useAccountWrites(): {
     readonly accounts: boolean;
     readonly contacts: boolean;
 } {
-    const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
-    const granted = access.data?.roles.flatMap((role) => role.permissionCodes) ?? [];
-    const everything = granted.includes('*');
+    const { ready, can } = usePermissions();
     return {
-        pending: access.isPending,
-        accounts: everything || granted.includes('iam::accounts:update'),
-        contacts: everything || granted.includes('iam::account_contact_informations:write'),
+        pending: !ready,
+        accounts: can({ all: [PERMISSION.accountsUpdate] }),
+        contacts: can({ all: [PERMISSION.contactsWrite] }),
     };
 }
 

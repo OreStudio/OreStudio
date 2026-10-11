@@ -33,6 +33,7 @@ declare
     changed_leg_number integer;
     changed_key jsonb;
     changed_tenant_id text;
+    changed_party_id text;
 begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
@@ -40,6 +41,7 @@ begin
         changed_leg_number := OLD.leg_number;
         changed_version := OLD.version;
         changed_tenant_id := OLD.tenant_id::text;
+        changed_party_id := OLD.party_id::text;
     elsif TG_OP = 'UPDATE' then
         -- A versioned table's update is the internal close of the current
         -- row; the insert that follows it carries the change. Announcing
@@ -58,6 +60,7 @@ begin
         changed_trade_id := NEW.trade_id;
         changed_leg_number := NEW.leg_number;
         changed_tenant_id := NEW.tenant_id::text;
+        changed_party_id := NEW.party_id::text;
     end if;
 
     changed_key := jsonb_build_object('trade_id', changed_trade_id, 'leg_number', changed_leg_number);
@@ -70,7 +73,8 @@ begin
         'version', changed_version,
         'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
         'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
-        'tenant_id', changed_tenant_id
+        'tenant_id', changed_tenant_id,
+        'party_id', changed_party_id
     );
 
     perform pg_notify('ores_trading_swap_legs', notification_payload::text);

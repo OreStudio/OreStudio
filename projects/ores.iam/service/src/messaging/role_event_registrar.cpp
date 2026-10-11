@@ -47,12 +47,15 @@ register_role_event_mapping(ev::service::postgres_event_source& event_source,
     // what it says into this entity's event.
     event_source.register_entity_event_mapping<iam::messaging::role_event>("ores_iam_roles");
 
-    return event_bus.subscribe<iam::messaging::role_event>(
-        [&nats](const iam::messaging::role_event& e) {
+    return event_bus.subscribe<ev::domain::published_entity_event<iam::messaging::role_event>>(
+        [&nats](const ev::domain::published_entity_event<iam::messaging::role_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
-                nats, ev::domain::event_subject<iam::messaging::role_event>(e.action), e);
+                nats,
+                ev::domain::event_subject<iam::messaging::role_event>(published.event.action),
+                published);
         });
 }
 

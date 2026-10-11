@@ -25,6 +25,8 @@ import { PageHeader } from '../ui/Primitives.js';
 import { Tiles, type Tile } from '../ui/Tiles.js';
 import { Crumbs } from '../refdata/shared.js';
 import { useHolds } from './holds.js';
+import { meets } from './permissions.js';
+import { NEEDS } from './screens.js';
 
 /** Where the organisation area lives. */
 export const ORGANISATION_PATH = '/organisation';
@@ -45,7 +47,7 @@ export function OrganisationPage(): ReactNode {
     // A member does not read accounts, so their staff list is the people of
     // their parties, which the organisation read answers.
     const tiles: readonly Tile[] = [
-        ...(holds('iam::accounts:read') || holds('iam::organisation:read')
+        ...(meets(holds, NEEDS.staff)
             ? ([
                   {
                       title: t('access.hub.staff'),

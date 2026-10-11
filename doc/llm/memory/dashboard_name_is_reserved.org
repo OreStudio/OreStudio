@@ -12,6 +12,6 @@
 
 Do not name anything 'dashboard' in this repo. ores-dashboard.el, an emacs mode in projects/ores.lisp/src/, already owns that name.
 
-*Why:* Marco chose ores.org-js (2026-06-06) over ores.agile for the browser agile UI, because 'dashboard' was already taken by the emacs mode. The agile browser is now the Development area of ores.web, and ores.org-js is gone (2026-10-11). The rule about the name stays.
+*Why:* The emacs mode ores-dashboard.el took the name first, and a second 'dashboard' would be ambiguous.
 
 *How to apply:* When naming a new file or component, never use 'dashboard'. Browse the agile tree in the Development area of ores.web.

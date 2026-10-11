@@ -19,14 +19,15 @@
  *
  */
 
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
+/** The width drawn before the chart has measured its box, and on a server render. */
 const WIDTH = 600;
 const HEIGHT = 240;
 const TOP = 8;
 const BOTTOM = 24;
 /** The margin on the side that carries the value labels, and on the other side. */
-const AXIS_MARGIN = 48;
+const AXIS_MARGIN = 64;
 const BARE_MARGIN = 8;
 /** How many value levels a gridded chart draws and labels, the low and high ends included. */
 const GRID_LEVELS = 5;
@@ -80,6 +81,7 @@ export function LineChart({
     readonly label: string;
     readonly price?: boolean;
 }): ReactNode {
+    const width = useWidth();
     const length = xs?.length ?? series[0]?.points.length ?? 0;
     if (length < 2) {
         return null;
@@ -92,7 +94,7 @@ export function LineChart({
     const high = Math.max(...values);
     const xLow = xAt[0] ?? 0;
     const xHigh = xAt[length - 1] ?? 1;
-    const xOf = (i: number): number => scale(xAt[i] ?? i, xLow, xHigh, left, WIDTH - right);
+    const xOf = (i: number): number => scale(xAt[i] ?? i, xLow, xHigh, left, width.value - right);
     const yOf = (value: number): number => scale(value, low, high, HEIGHT - BOTTOM, TOP);
     const pathOf = (points: readonly number[]): string =>
         points
@@ -110,20 +112,22 @@ export function LineChart({
               (_, i) => low + ((high - low) * i) / (GRID_LEVELS - 1),
           )
         : [low, high];
-    const axisX = price ? WIDTH - right : left;
+    const axisX = price ? width.value - right : left;
     return (
         <svg
+            ref={width.ref}
             role="img"
             aria-label={label}
-            className="h-auto w-full"
-            viewBox={`0 0 ${String(WIDTH)} ${String(HEIGHT)}`}
+            className="w-full"
+            height={HEIGHT}
+            viewBox={`0 0 ${String(width.value)} ${String(HEIGHT)}`}
         >
             {price &&
                 levels.map((level) => (
                     <line
                         key={level}
                         x1={left}
-                        x2={WIDTH - right}
+                        x2={width.value - right}
                         y1={yOf(level)}
                         y2={yOf(level)}
                         stroke="var(--color-line-subtle)"
@@ -140,32 +144,32 @@ export function LineChart({
             />
             <line
                 x1={left}
-                x2={WIDTH - right}
+                x2={width.value - right}
                 y1={HEIGHT - BOTTOM}
                 y2={HEIGHT - BOTTOM}
                 stroke="var(--color-line)"
                 vectorEffect="non-scaling-stroke"
             />
-            <g fill="var(--color-ink-faint)" fontSize="8" fontFamily="monospace">
+            <g fill="var(--color-ink-faint)" className="font-mono text-xs">
                 {levels.map((level) => (
                     <text
                         key={level}
-                        x={price ? axisX + 4 : axisX - 4}
-                        y={Math.min(Math.max(yOf(level) + 3, TOP + 8), HEIGHT - BOTTOM)}
+                        x={price ? axisX + 6 : axisX - 6}
+                        y={Math.min(Math.max(yOf(level) + 4, TOP + 10), HEIGHT - BOTTOM)}
                         textAnchor={price ? 'start' : 'end'}
                     >
                         {format(level)}
                     </text>
                 ))}
-                <text x={left} y={HEIGHT - 10}>
+                <text x={left} y={HEIGHT - 6}>
                     {showX(xLow)}
                 </text>
                 {price && (
-                    <text x={(left + WIDTH - right) / 2} y={HEIGHT - 10} textAnchor="middle">
+                    <text x={(left + width.value - right) / 2} y={HEIGHT - 6} textAnchor="middle">
                         {showX((xLow + xHigh) / 2)}
                     </text>
                 )}
-                <text x={WIDTH - right} y={HEIGHT - 10} textAnchor="end">
+                <text x={width.value - right} y={HEIGHT - 6} textAnchor="end">
                     {showX(xHigh)}
                 </text>
             </g>
@@ -193,4 +197,30 @@ export function LineChart({
             ))}
         </svg>
     );
+}
+
+/**
+ * The chart's own width in pixels, so the chart is drawn at the size it is
+ * shown and its labels keep the page's type size at any width.
+ */
+function useWidth(): {
+    readonly ref: (element: SVGSVGElement | null) => void;
+    readonly value: number;
+} {
+    const [element, setElement] = useState<SVGSVGElement | null>(null);
+    const [value, setValue] = useState(WIDTH);
+    useEffect(() => {
+        if (element === null || typeof ResizeObserver === 'undefined') {
+            return undefined;
+        }
+        const observer = new ResizeObserver(([entry]) => {
+            const measured = entry?.contentRect.width ?? 0;
+            if (measured > 0) {
+                setValue(Math.round(measured));
+            }
+        });
+        observer.observe(element);
+        return () => observer.disconnect();
+    }, [element]);
+    return { ref: setElement, value };
 }

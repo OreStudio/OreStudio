@@ -3278,14 +3278,15 @@ const fr: SourceCatalogue = {
             last: 'Dernier prix',
             at: 'Heure',
             move: 'Variation ({count} cotations)',
-            high: 'Haut',
-            low: 'Bas',
+            high: 'Haut :',
+            low: 'Bas :',
             ema: 'Moyenne mobile (EMA {period})',
             export: 'Exporter en CSV',
             process: 'Processus',
             rate: '{rate} cotations par heure',
             unnamed: 'Composante sans nom',
             weightSum: 'Somme des poids, telle que saisie',
+            title: '{pair} — trajectoire de prix synthétique',
         },
         process: {
             about: {

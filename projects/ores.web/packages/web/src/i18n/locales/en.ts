@@ -3230,14 +3230,15 @@ export const en: SourceCatalogue = {
             last: 'Last price',
             at: 'Time',
             move: 'Move ({count} ticks)',
-            high: 'High',
-            low: 'Low',
+            high: 'High:',
+            low: 'Low:',
             ema: 'Moving average (EMA {period})',
             export: 'Export CSV',
             process: 'Process',
             rate: '{rate} ticks per hour',
             unnamed: 'Unnamed component',
             weightSum: 'Weight sum, as typed',
+            title: '{pair} synthetic price path',
         },
         process: {
             about: {

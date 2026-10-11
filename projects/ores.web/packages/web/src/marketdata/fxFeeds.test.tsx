@@ -324,8 +324,9 @@ describe('the FX feed screens', () => {
         expect(html).toContain('>09:02:00<');
         expect(html).toContain('Move (3 ticks)');
         expect(html).toContain('+0.00300');
-        expect(html).toContain('>High<');
-        expect(html).toContain('>1.08000<');
+        expect(html).toContain('EUR/USD synthetic price path');
+        expect(html).toContain('High: <strong class="text-ink">1.08300</strong>');
+        expect(html).toContain('Low: <strong class="text-ink">1.08000</strong>');
         expect(html).toContain('<svg');
         expect(html).toContain('fill-opacity="0.08"');
         expect(html).toContain('Moving average (EMA 20)');

@@ -3253,14 +3253,15 @@ const pt: SourceCatalogue = {
             last: 'Último preço',
             at: 'Hora',
             move: 'Variação ({count} cotações)',
-            high: 'Máximo',
-            low: 'Mínimo',
+            high: 'Máximo:',
+            low: 'Mínimo:',
             ema: 'Média móvel (EMA {period})',
             export: 'Exportar CSV',
             process: 'Processo',
             rate: '{rate} cotações por hora',
             unnamed: 'Componente sem nome',
             weightSum: 'Soma dos pesos, como escrita',
+            title: '{pair} — trajetória de preço sintética',
         },
         process: {
             about: {

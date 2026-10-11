@@ -139,8 +139,6 @@ export function TicksPanel({
                             >
                                 {`${stats.move >= 0 ? '+' : ''}${price(stats.move)}`}
                             </Stat>
-                            <Stat label={t('marketdata.ticks.high')}>{price(stats.high)}</Stat>
-                            <Stat label={t('marketdata.ticks.low')}>{price(stats.low)}</Stat>
                         </>
                     )}
                     <div className="ml-auto flex items-center gap-3">
@@ -168,7 +166,26 @@ export function TicksPanel({
                             : t('marketdata.ticks.notRunning')}
                     </Notice>
                 ) : (
-                    <div className="rounded-md border border-line p-3">
+                    <div className="space-y-2 rounded-md border border-line p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-ink-muted">
+                            <span className="font-semibold text-ink">
+                                {t('marketdata.ticks.title', {
+                                    pair: `${show(feed['base_currency_code'])}/${show(feed['quote_currency_code'])}`,
+                                })}
+                            </span>
+                            {stats !== undefined && (
+                                <span className="flex gap-4">
+                                    <span>
+                                        {t('marketdata.ticks.high')}{' '}
+                                        <strong className="text-ink">{price(stats.high)}</strong>
+                                    </span>
+                                    <span>
+                                        {t('marketdata.ticks.low')}{' '}
+                                        <strong className="text-ink">{price(stats.low)}</strong>
+                                    </span>
+                                </span>
+                            )}
+                        </div>
                         <LineChart
                             price
                             label={t('marketdata.ticks.chart')}

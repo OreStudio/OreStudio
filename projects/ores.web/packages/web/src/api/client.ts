@@ -1146,7 +1146,7 @@ export const api = {
      * request it opened. Which rows make up the story is the server's to
      * decide, so the browser never names an entity type here.
      */
-    async timeline(subject: 'person' | 'request', id: string): Promise<Timeline> {
+    async timeline(subject: 'person' | 'party' | 'request', id: string): Promise<Timeline> {
         const query = new URLSearchParams({ subject, id });
         const answer = await request(`/api/timeline?${query.toString()}`, { method: 'GET' });
         return timelineSchema.parse(answer);

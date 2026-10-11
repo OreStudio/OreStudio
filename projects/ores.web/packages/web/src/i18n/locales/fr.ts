@@ -1852,6 +1852,22 @@ const fr: SourceCatalogue = {
             refreshed: 'Session renouvelée',
             noticed: 'Enregistré',
         },
+        gaps: 'Ce que cet historique ne peut pas montrer',
+        gapFor: {
+            party_country:
+                'Les pays où elle opère n’ont pas de versions, donc l’ajout ou le retrait d’un pays n’apparaît pas.',
+            party_currency:
+                'Les devises dans lesquelles elle opère n’ont pas de versions, donc l’ajout ou le retrait d’une devise n’apparaît pas.',
+            party_counterparty:
+                'Les contreparties avec lesquelles elle peut traiter n’ont pas de versions, donc l’ajout ou le retrait d’une contrepartie n’apparaît pas.',
+            account_party:
+                'Les parties où une personne travaille n’ont pas de versions, donc l’arrivée ou le départ n’apparaît pas.',
+            account_role:
+                'Un rôle retiré n’apparaît pas, seuls les rôles détenus aujourd’hui apparaissent.',
+            auth_event:
+                'Seules les connexions les plus récentes sont conservées, donc les plus anciennes n’apparaissent pas.',
+            unread: 'Une partie de cet historique n’a pas pu être lue, donc elle n’apparaît pas.',
+        },
     },
 
     validation: {
@@ -3046,6 +3062,12 @@ const fr: SourceCatalogue = {
             },
             logo: 'Logo',
             address: 'Adresse',
+            record: {
+                party: 'Partie',
+                identifier: 'Identifiant',
+                contact: 'Contact',
+                unit: 'Unité d’affaires',
+            },
         },
     },
 

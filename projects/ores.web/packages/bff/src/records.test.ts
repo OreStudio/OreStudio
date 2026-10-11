@@ -809,3 +809,50 @@ describe('a party write', () => {
         expect(calls).toHaveLength(0);
     });
 });
+
+describe('GET /api/timeline for a party', () => {
+    it('reads the party and answers its story with the junctions stated as gaps', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.parties.list': {
+                result: ok,
+                parties: [{ version: 2, id: PARTY_ID, short_code: 'ACME_UK' }],
+                total: 1,
+            },
+            'refdata.v1.history.get': {
+                success: true,
+                message: '',
+                versions: [
+                    {
+                        version: 1,
+                        modified_by: 'priya',
+                        recorded_at: '2026-10-04 10:00:00Z',
+                        fields: [
+                            { name: 'ID', value: PARTY_ID },
+                            { name: 'Short Code', value: 'ACME_UK' },
+                        ],
+                        changes: { entries: [] },
+                    },
+                ],
+            },
+            'refdata.v1.party_identifiers.list_by_party_id': { result: ok, party_identifiers: [] },
+            'refdata.v1.party_contact_informations.list_by_party_id': {
+                result: ok,
+                party_contact_informations: [],
+            },
+            'refdata.v1.business_units.list_by_party_id': { result: ok, business_units: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/timeline?subject=party&id=${PARTY_ID}`,
+        );
+        expect(response.statusCode).toBe(200);
+        const story = response.json() as {
+            events: { kind: string }[];
+            gaps: { entity: string }[];
+        };
+        expect(story.events.map((event) => event.kind)).toEqual(['raised']);
+        expect(story.gaps.map((gap) => gap.entity)).toContain('ores.refdata.party_country');
+    });
+});

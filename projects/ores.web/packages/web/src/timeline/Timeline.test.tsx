@@ -160,7 +160,7 @@ describe('the timeline', () => {
         expect(html).not.toContain('<mark');
     });
 
-    it('never names an internal entity or an unread source to the reader', () => {
+    it('says a gap in the reader’s words and never names an internal entity or an unread source', () => {
         const html = render({
             subject: 'person',
             id: 'ana',
@@ -173,12 +173,14 @@ describe('the timeline', () => {
 
         /*
          * A gap is the server's honest record of what the stream could not
-         * draw, and it is not the reader's business: it names tables, reads and
-         * refusals. The screen tells the reader what happened, not which of the
-         * deployment's own reads were tried.
+         * draw. It names tables, reads and refusals, which are not the reader's
+         * business, so the screen says the gap in its own words and never in the
+         * server's.
          */
         expect(html).not.toContain('ores.iam.');
         expect(html).not.toContain('refused this caller');
+        expect(html).toContain('A role that was taken away is not shown');
+        expect(html).toContain('Only the most recent sign-ins are kept');
     });
 
     it('draws the author’s picture beside the time, and their initials when they have none', () => {

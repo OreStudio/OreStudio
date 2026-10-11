@@ -1830,6 +1830,20 @@ export const en: SourceCatalogue = {
             refreshed: 'Session renewed',
             noticed: 'Recorded',
         },
+        gaps: 'What this history cannot show',
+        gapFor: {
+            party_country:
+                'The countries it works in keep no versions, so adding or removing one is not shown.',
+            party_currency:
+                'The currencies it works in keep no versions, so adding or removing one is not shown.',
+            party_counterparty:
+                'The counterparties it may trade with keep no versions, so adding or removing one is not shown.',
+            account_party:
+                'The parties a person works in keep no versions, so joining or leaving one is not shown.',
+            account_role: 'A role that was taken away is not shown, only the roles held now.',
+            auth_event: 'Only the most recent sign-ins are kept, so older ones are not shown.',
+            unread: 'Part of this history could not be read, so it is not shown.',
+        },
     },
 
     validation: {
@@ -3004,6 +3018,12 @@ export const en: SourceCatalogue = {
             },
             logo: 'Logo',
             address: 'Address',
+            record: {
+                party: 'Party',
+                identifier: 'Identifier',
+                contact: 'Contact',
+                unit: 'Business unit',
+            },
         },
     },
 

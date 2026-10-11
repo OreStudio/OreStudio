@@ -492,6 +492,7 @@ export function RecordDialog({
         onSuccess: async (write) => {
             await queries.invalidateQueries({ queryKey: ['records'] });
             await queries.invalidateQueries({ queryKey: ['history'] });
+            await queries.invalidateQueries({ queryKey: ['timeline'] });
             await queries.invalidateQueries({ queryKey: ['image-map'] });
             onSaved?.(write);
             onClose();
@@ -1043,6 +1044,7 @@ export function RevertVersionDialog({
             }),
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['history'] });
+            await queries.invalidateQueries({ queryKey: ['timeline'] });
             onClose();
         },
     });

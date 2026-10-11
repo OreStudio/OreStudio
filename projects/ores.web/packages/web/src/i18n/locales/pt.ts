@@ -1845,6 +1845,22 @@ const pt: SourceCatalogue = {
             refreshed: 'Sessão renovada',
             noticed: 'Registado',
         },
+        gaps: 'O que este histórico não pode mostrar',
+        gapFor: {
+            party_country:
+                'Os países em que opera não têm versões, por isso não se mostra quando um é adicionado ou removido.',
+            party_currency:
+                'As moedas em que opera não têm versões, por isso não se mostra quando uma é adicionada ou removida.',
+            party_counterparty:
+                'As contrapartes com que pode negociar não têm versões, por isso não se mostra quando uma é adicionada ou removida.',
+            account_party:
+                'As partes em que uma pessoa trabalha não têm versões, por isso não se mostra quando entra ou sai de uma.',
+            account_role:
+                'Um papel que foi retirado não se mostra, apenas os papéis detidos agora.',
+            auth_event:
+                'Só se guardam os inícios de sessão mais recentes, por isso os mais antigos não se mostram.',
+            unread: 'Parte deste histórico não pôde ser lida, por isso não se mostra.',
+        },
     },
 
     validation: {
@@ -3025,6 +3041,12 @@ const pt: SourceCatalogue = {
             },
             logo: 'Logótipo',
             address: 'Morada',
+            record: {
+                party: 'Parte',
+                identifier: 'Identificador',
+                contact: 'Contacto',
+                unit: 'Unidade de negócio',
+            },
         },
     },
 

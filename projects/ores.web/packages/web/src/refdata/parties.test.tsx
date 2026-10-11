@@ -224,24 +224,98 @@ describe('a party page', () => {
         expect(words).not.toContain('Flag');
     });
 
-    it('asks for the versions of a party under its short code', () => {
-        const words = textOf(
-            page(`/refdata/parties/${ID}?tab=history`, ['refdata::parties:read'], (client) =>
-                client.setQueryData(
-                    ['history', 'ores.refdata.party', 'ACME_UK'],
-                    [
-                        {
-                            version: 7,
-                            modifiedBy: 'priya',
-                            recordedAt: '2026-10-04 22:10:00Z',
-                            fields: [{ name: 'Full Name', value: 'Acme UK Limited' }],
-                        },
+    describe('on the History tab', () => {
+        const story = {
+            subject: 'party',
+            id: ID,
+            events: [
+                {
+                    entityType: 'ores.refdata.party',
+                    entityId: ID,
+                    kind: 'changed',
+                    at: '2026-10-05 10:00:00Z',
+                    actor: 'priya',
+                    version: 7,
+                    reasonCode: 'common.rectification',
+                    commentary: 'Fixed the name',
+                    fields: [
+                        { name: 'Short Code', value: 'ACME_UK' },
+                        { name: 'Full Name', value: 'Acme UK Limited' },
                     ],
-                ),
-            ),
-        );
+                },
+                {
+                    entityType: 'ores.refdata.party_identifier',
+                    entityId: '33333333-3333-4333-8333-333333333333',
+                    kind: 'raised',
+                    at: '2026-10-04 10:00:00Z',
+                    actor: 'ores_refdata_service',
+                    version: 1,
+                    reasonCode: 'system.new_record',
+                    commentary: '',
+                    fields: [{ name: 'ID Value', value: '5493001KJTIIGC8Y1R12' }],
+                },
+                {
+                    entityType: 'ores.refdata.party',
+                    entityId: ID,
+                    kind: 'raised',
+                    at: '2026-10-03 10:00:00Z',
+                    actor: 'ores_refdata_service',
+                    version: 6,
+                    reasonCode: 'system.new_record',
+                    commentary: '',
+                    fields: [
+                        { name: 'Short Code', value: 'ACME_UK' },
+                        { name: 'Full Name', value: 'Acme UK' },
+                    ],
+                },
+            ],
+            gaps: [
+                {
+                    entity: 'ores.refdata.party_country',
+                    reason: 'The countries it works in are a junction with no versions.',
+                },
+                {
+                    entity: 'ores.refdata.party_identifier',
+                    reason: 'The server refused this caller the identifier read.',
+                },
+            ],
+        };
+        const history = (codes: string[]): string =>
+            page(`/refdata/parties/${ID}?tab=history`, codes, (client) =>
+                client.setQueryData(['timeline', 'party', ID], story),
+            );
 
-        expect(words).toContain('v7');
+        it('draws one rail for the party and its identifiers, by name, with the author', () => {
+            const words = textOf(history(['refdata::parties:read']));
+
+            expect(words).toContain('Party ACME_UK');
+            expect(words).toContain('Identifier 5493001KJTIIGC8Y1R12');
+            expect(words).toContain('priya');
+            expect(words).toContain('Fixed the name');
+        });
+
+        it('states what the history cannot show, in words', () => {
+            const words = textOf(history(['refdata::parties:read']));
+
+            expect(words).toContain('What this history cannot show');
+            expect(words).toContain(
+                'The countries it works in keep no versions, so adding or removing one is not shown.',
+            );
+            expect(words).toContain('Part of this history could not be read, so it is not shown.');
+            expect(words).not.toContain('junction');
+            expect(words).not.toContain('refused');
+        });
+
+        it('offers to write an older version of the party back, and not the newest', () => {
+            const words = textOf(history(['refdata::parties:read', 'refdata::parties:write']));
+
+            expect(words).toContain('Revert to v6');
+            expect(words).not.toContain('Revert to v7');
+        });
+
+        it('offers no revert to a person who may not write the party', () => {
+            expect(textOf(history(['refdata::parties:read']))).not.toContain('Revert');
+        });
     });
 
     it('is reached from Home through Reference data and the list', () => {

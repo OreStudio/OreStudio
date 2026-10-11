@@ -21,8 +21,15 @@
 
 import { useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
-import type { HistoryVersion } from '@ores/wire-protocol/browser';
+import type { HistoryVersion, TimelineEvent } from '@ores/wire-protocol/browser';
+import { useQuery } from '@tanstack/react-query';
 import type { RecordRow } from '../api/client.js';
+import { api } from '../api/client.js';
+import { useHolds } from '../access/holds.js';
+import { actorPathFor } from '../access/PeoplePage.js';
+import { useActorPictures } from '../access/PersonRef.js';
+import { Timeline } from '../timeline/Timeline.js';
+import { Button, Notice } from '../ui/Primitives.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Flag, FlaggedCode } from '../images/flags.js';
 import { useAreaParts, useAreaRoot } from '../shell/AreaTrail.js';
@@ -30,7 +37,6 @@ import { PATHS } from '../shell/paths.js';
 import { WorkflowMenu } from '../shell/WorkflowMenu.js';
 import { imageUrl } from '../ui/Images.js';
 import { mailtoLink, webLink } from '../ui/links.js';
-import { HistoryPanel } from './HistoryPanel.js';
 import { RecordList, useRecordSource } from './RecordList.js';
 import {
     ClassifiedValue,
@@ -325,6 +331,80 @@ function TradingCounterparties({ partyId }: { readonly partyId: string }): React
     );
 }
 
+/** The record a party's history entry came from, by name and not by identifier. */
+const RECORD_KEYS: Readonly<Record<string, { readonly name: string; readonly field: string }>> = {
+    'ores.refdata.party': { name: 'party', field: 'Short Code' },
+    'ores.refdata.party_identifier': { name: 'identifier', field: 'ID Value' },
+    'ores.refdata.party_contact_information': { name: 'contact', field: 'Contact Type' },
+    'ores.refdata.business_unit': { name: 'unit', field: 'Unit Name' },
+};
+
+/** A timeline entry as the version the revert dialog names. */
+function versionOf(event: TimelineEvent): HistoryVersion {
+    return {
+        version: event.version,
+        modifiedBy: event.actor,
+        recordedAt: event.at,
+        fields: [...event.fields],
+        changes: [],
+    };
+}
+
+/**
+ * The story of a party: one rail for the party, its identifiers, its contacts
+ * and its business units, under a chart of the events over time, with the
+ * author's photo and link on each entry. A version of the party can be written
+ * back by a person who may write it; the newest says it is the current one.
+ */
+function PartyHistory({
+    row,
+    onRevert,
+}: {
+    readonly row: RecordRow;
+    readonly onRevert: ((version: HistoryVersion) => void) | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    const holds = useHolds();
+    const pictureOf = useActorPictures();
+    const id = show(row['id']);
+    const story = useQuery({
+        queryKey: ['timeline', 'party', id],
+        queryFn: () => api.timeline('party', id),
+    });
+    if (story.isPending) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    if (story.isError) {
+        return <Notice tone="error">{story.error.message}</Notice>;
+    }
+    return (
+        <Timeline
+            timeline={story.data}
+            actorPath={actorPathFor(holds('iam::accounts:read'))}
+            actorPicture={pictureOf}
+            recordName={(event) => {
+                const record = RECORD_KEYS[event.entityType];
+                if (record === undefined) return undefined;
+                const named = event.fields.find((field) => field.name === record.field)?.value;
+                return [t(`refdata.parties.record.${record.name}`), named]
+                    .filter((part) => part !== undefined && part !== '')
+                    .join(' ');
+            }}
+            renderActions={(event) =>
+                onRevert !== undefined &&
+                event.entityType === 'ores.refdata.party' &&
+                event.version < row.version ? (
+                    <div className="mt-2 flex justify-end">
+                        <Button size="sm" onClick={() => onRevert(versionOf(event))}>
+                            {t('history.revertTo', { version: String(event.version) })}
+                        </Button>
+                    </div>
+                ) : undefined
+            }
+        />
+    );
+}
+
 function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
     const { t } = useTranslation();
     const id = show(row['id']);
@@ -525,12 +605,9 @@ function PartyBody({ row }: { readonly row: RecordRow }): ReactNode {
             )}
             {tab === 'counterparties' && <TradingCounterparties partyId={id} />}
             {tab === 'history' && (
-                <HistoryPanel
-                    entityType="ores.refdata.party"
-                    entityId={show(row['short_code'])}
-                    {...(may.write
-                        ? { onRevert: (version: HistoryVersion) => setReverting(version) }
-                        : {})}
+                <PartyHistory
+                    row={row}
+                    onRevert={may.write ? (version) => setReverting(version) : undefined}
                 />
             )}
             {editing && (

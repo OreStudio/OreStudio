@@ -114,7 +114,7 @@ export function TicksPanel({
                             {t('marketdata.ticks.count')}
                         </span>
                         <Select
-                            className="max-w-24 min-w-24"
+                            className="w-24"
                             value={String(count)}
                             onChange={(event) => setCount(Number(event.target.value))}
                         >

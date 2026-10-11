@@ -58,12 +58,6 @@ with check (
 -- own account. A tenant administrator sees the tenant because its account is
 -- linked to every party of the tenant, and not because the policy names it.
 --
--- An actor with no account in the tenant being read is not restricted either.
--- It is an administrator of another tenant acting across the boundary, such as
--- the tenant administrator whose setup run attaches a picture to a service
--- account of the system tenant, and the rule has no party set to compare with.
--- The tenant isolation policy still stops it at the tenant's edge.
---
 -- The function calls are wrapped in a select, so the planner runs each once per
 -- query and not once per row.
 --
@@ -82,19 +76,6 @@ returns uuid[] as $$
       and a.valid_to = ores_utility_infinity_timestamp_fn();
 $$ language sql stable security definer set search_path = public, pg_temp;
 
--- Whether the actor has an account in the tenant being read. Security definer,
--- for the same reason as the function above.
-create or replace function ores_iam_actor_has_account_here_fn()
-returns boolean as $$
-    select exists (
-        select 1
-        from ores_iam_accounts_tbl a
-        where a.username = ores_iam_current_actor_fn()
-          and a.tenant_id = ores_iam_current_tenant_id_fn()
-          and a.valid_to = ores_utility_infinity_timestamp_fn()
-    );
-$$ language sql stable security definer set search_path = public, pg_temp;
-
 drop policy if exists accounts_party_visibility_policy
     on ores_iam_accounts_tbl;
 
@@ -103,7 +84,6 @@ as restrictive
 for select using (
     (select ores_iam_current_actor_fn()) is null
     or username = (select ores_iam_current_actor_fn())
-    or not (select ores_iam_actor_has_account_here_fn())
     or exists (
         select 1
         from ores_iam_account_parties_tbl ap

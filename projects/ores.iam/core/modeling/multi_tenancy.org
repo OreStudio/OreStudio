@@ -258,7 +258,6 @@ own-tenant policy, so tenant isolation does not change.
 | A person | The accounts linked to a party that the person's own account is linked to, and the person's own account |
 | A tenant administrator | Every account of the tenant, because its account is linked to every party of the tenant |
 | A session with no actor: a service acting as itself, or the sign-in lookup before a session exists | Every account of the tenant, as a session with no party set passes the party policy of other tables |
-| An actor with no account in the tenant being read: an administrator of another tenant acting across the boundary | Every account of the tenant the own-tenant policy lets it read, as it has no party set to compare with |
 
 A person whose account has no party links gets no party set, so they see their
 own account and no other. This includes a tenant administrator: the
@@ -266,16 +265,6 @@ administrator sees the tenant because its account is linked to every party of
 the tenant, and not because the policy names the role. A tenant provisioned
 without party links would show its administrator only the administrator's own
 account until the links exist.
-
-The last row is the case a tenant setup run meets. The tenant administrator's
-run attaches a picture to a service account of the system tenant, so the request
-reads the system tenant's accounts as an actor whose account is in another
-tenant. Without the row the policy gave that actor no party set and so no
-accounts, and the step failed with "Account does not exist". The function
-=ores_iam_actor_has_account_here_fn()= says whether the actor has an account in
-the tenant being read, and a policy that finds no account lets the read through.
-The own-tenant policy is unchanged, so this opens nothing across the tenant
-boundary.
 
 The function =ores_iam_actor_party_ids_fn()= returns the parties the actor's
 account is linked to. The actor is =app.current_actor=, which every user

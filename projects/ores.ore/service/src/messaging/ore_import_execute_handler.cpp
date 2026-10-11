@@ -452,7 +452,8 @@ std::string write_imported_components(Nats& nats,
 template <typename Nats>
 std::string book_imported_trade(Nats& nats,
                                 ores::ore::xml::trade_import_item& item,
-                                const resolved_envelope& resolved) {
+                                const resolved_envelope& resolved,
+                                bool into_sandbox) {
     using namespace ores::trading::domain;
     using ores::utility::domain::outcome;
 
@@ -462,7 +463,9 @@ std::string book_imported_trade(Nats& nats,
     book_req.anchor.counterparty_id = resolved.counterparty_id;
     book_req.anchor.counterparty_scope =
         resolved.counterparty_id ? counterparty_scope::external : counterparty_scope::intra_entity;
-    book_req.anchor.booking_nature = booking_nature::actual;
+    // A virtual book of a sandbox holds only drafts, tests and hypotheticals,
+    // so a trade imported into a sandbox is a test, not an actual deal.
+    book_req.anchor.booking_nature = into_sandbox ? booking_nature::test : booking_nature::actual;
     book_req.anchor.entry_channel = entry_channel::stp;
     book_req.booking = item.booking;
     book_req.booking.netting_set_id = resolved.netting_set_id;
@@ -1900,6 +1903,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         choices = std::move(*parsed_choices);
     }
 
+    const bool into_sandbox = choices.sandbox_id.has_value();
+
     ores::ore::planner::ore_import_plan plan;
     try {
         ores::ore::planner::ore_import_planner planner(
@@ -2126,7 +2131,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         // The booking is written first: it checks the trade's book, counterparty
         // and netting set against one another, so a trade it refuses leaves
         // nothing behind.
-        const auto booking_error = book_imported_trade(delegated_nats, item, resolved);
+        const auto booking_error =
+            book_imported_trade(delegated_nats, item, resolved, into_sandbox);
         if (!booking_error.empty()) {
             BOOST_LOG_SEV(lg(), warn)
                 << "ore.import.execute trade booking failed | corr=" << req.correlation_id

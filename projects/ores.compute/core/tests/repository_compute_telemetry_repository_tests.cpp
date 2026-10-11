@@ -304,3 +304,135 @@ TEST_CASE("grid_series_refuses_a_bad_bucket_and_a_range_that_needs_too_many", ta
     CHECK_THROWS_AS(telemetry.grid_series_in_range(h.context(), t0, t0 + seconds(6000 * 60), 60),
                     std::invalid_argument);
 }
+
+namespace {
+
+node_sample node_sample_at(const node_sample& model,
+                           const tenant_id& tenant,
+                           const boost::uuids::uuid& host,
+                           const std::string& machine,
+                           std::chrono::system_clock::time_point at,
+                           int completed,
+                           int failed,
+                           int since_last,
+                           std::int64_t avg_ms,
+                           std::int64_t max_ms,
+                           std::int64_t fetched,
+                           std::int64_t uploaded) {
+    auto row = model;
+    row.id = random_uuid();
+    row.tenant_id = tenant;
+    row.host_id = host;
+    row.machine = machine;
+    row.sampled_at = at;
+    row.tasks_completed = completed;
+    row.tasks_failed = failed;
+    row.tasks_since_last = since_last;
+    row.avg_task_duration_ms = avg_ms;
+    row.max_task_duration_ms = max_ms;
+    row.input_bytes_fetched = fetched;
+    row.output_bytes_uploaded = uploaded;
+    return row;
+}
+
+} // namespace
+
+TEST_CASE("node_series_sums_the_interval_counters_and_orders_the_nodes_by_machine", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto model = generate_synthetic_node_sample(gen);
+
+    auto provision_ctx = h.context();
+    const auto third =
+        tenant_id::from_string(
+            test_database_manager::provision_test_tenant(
+                provision_ctx,
+                test_database_manager::generate_test_tenant_code("ores.compute.telemetry"),
+                "compute telemetry third tenant"))
+            .value();
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+    const auto own = h.tenant_id();
+
+    const auto beta_node = random_uuid();
+    const auto alpha_node = random_uuid();
+    const auto hidden_node = random_uuid();
+
+    // The beta node has two samples in bucket 0, the first naming no machine,
+    // and one in bucket 2. The alpha node has one sample in bucket 1. A third
+    // tenant's node reports in bucket 0 and the policy hides it.
+    node_sample_repository repo;
+    repo.write(
+        h.context(),
+        node_sample_at(model, own, beta_node, "", t0 + seconds(10), 5, 1, 2, 100, 150, 10, 1));
+    repo.write(
+        h.context(),
+        node_sample_at(model, own, beta_node, "beta", t0 + seconds(40), 7, 1, 3, 200, 400, 20, 2));
+    repo.write(
+        h.context(),
+        node_sample_at(model, own, beta_node, "beta", t0 + seconds(125), 9, 2, 2, 50, 60, 5, 5));
+    repo.write(h.context(),
+               node_sample_at(
+                   model, own, alpha_node, "alpha", t0 + seconds(70), 4, 0, 4, 10, 20, 100, 200));
+    repo.write(
+        h.context().with_tenant(third, h.db_user()),
+        node_sample_at(model, third, hidden_node, "gamma", t0 + seconds(15), 1, 0, 1, 1, 1, 1, 1));
+
+    compute_telemetry_repository telemetry;
+    const auto series = telemetry.node_series_in_range(h.context(), t0, t0 + seconds(180), 60);
+
+    BOOST_LOG_SEV(lg, info) << "The node series lists " << series.nodes.size() << " node(s) over "
+                            << series.bucket_count << " bucket(s).";
+
+    REQUIRE(series.bucket_count == 3);
+    REQUIRE(series.nodes.size() == 2);
+    // Ordered by machine: alpha before beta, and the hidden node absent.
+    CHECK(series.nodes[0].host_id == boost::uuids::to_string(alpha_node));
+    CHECK(series.nodes[0].machine == "alpha");
+    CHECK(series.nodes[1].host_id == boost::uuids::to_string(beta_node));
+    CHECK(series.nodes[1].machine == "beta");
+
+    REQUIRE(series.samples.size() == 6);
+    // Row 0 is alpha: a sample in bucket 1 only.
+    CHECK(series.samples == std::vector<int>{0, 1, 0, 2, 0, 1});
+    CHECK(series.tasks_since_last == std::vector<int>{0, 4, 0, 5, 0, 2});
+    CHECK(series.input_bytes_fetched == std::vector<std::int64_t>{0, 100, 0, 30, 0, 5});
+    CHECK(series.output_bytes_uploaded == std::vector<std::int64_t>{0, 200, 0, 3, 0, 5});
+    // The counters that count from the wrapper's start take the newest value.
+    CHECK(series.tasks_completed == std::vector<int>{0, 4, 0, 7, 0, 9});
+    CHECK(series.tasks_failed == std::vector<int>{0, 0, 0, 1, 0, 2});
+    // The longest task is the maximum, and the mean is weighted by the tasks:
+    // (100 * 2 + 200 * 3) / 5 = 160.
+    CHECK(series.max_task_duration_ms == std::vector<std::int64_t>{0, 20, 0, 400, 0, 60});
+    CHECK(series.avg_task_duration_ms == std::vector<std::int64_t>{0, 10, 0, 160, 0, 50});
+}
+
+TEST_CASE("node_series_of_an_empty_range_lists_no_nodes", tags) {
+    database_helper h;
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    compute_telemetry_repository telemetry;
+    const auto series = telemetry.node_series_in_range(h.context(), t0, t0 + seconds(600), 60);
+
+    CHECK(series.bucket_count == 10);
+    CHECK(series.nodes.empty());
+    CHECK(series.samples.empty());
+}
+
+TEST_CASE("node_series_refuses_a_bad_bucket_and_an_empty_range", tags) {
+    database_helper h;
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    compute_telemetry_repository telemetry;
+    CHECK_THROWS_AS(telemetry.node_series_in_range(h.context(), t0, t0 + seconds(600), 0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(telemetry.node_series_in_range(h.context(), t0 + seconds(60), t0, 60),
+                    std::invalid_argument);
+}

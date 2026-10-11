@@ -106,6 +106,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         get_grid_series_request::nats_subject,
         "ores.compute.service",
         [th](ores::nats::message msg) { th->get_grid_series(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_node_series_request::nats_subject,
+        "ores.compute.service",
+        [th](ores::nats::message msg) { th->get_node_series(std::move(msg)); }));
     // Node sample publishes are fire-and-forget from wrapper nodes.
     subs.push_back(nats.subscribe(node_sample_message::nats_subject, [th](ores::nats::message msg) {
         th->ingest_node_sample(std::move(msg));

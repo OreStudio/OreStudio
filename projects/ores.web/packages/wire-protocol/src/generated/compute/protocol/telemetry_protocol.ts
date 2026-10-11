@@ -267,6 +267,115 @@ export interface GetGridSeriesResponse {
 }
 
 /**
+ * @brief Asks for the stored node samples over a time range, as columns.
+ *
+ * The read serves the whole installation and needs the permission that
+ * get_grid_stats needs. The range widens to whole buckets, counted from the
+ * Unix epoch. A range that needs more than 5000 buckets, or more than 200000
+ * cells of nodes times buckets, is refused, so the caller widens the bucket and
+ * never pulls raw rows.
+ */
+export interface GetNodeSeriesRequest {
+    /**
+     * @brief ISO-8601 start of the range, inclusive.
+     */
+    start_time: string;
+    /**
+     * @brief ISO-8601 end of the range, exclusive.
+     */
+    end_time: string;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    bucket_seconds: number;
+}
+
+/**
+ * @brief One node that reported in the range.
+ */
+export interface NodeSeriesNode {
+    /**
+     * @brief The node's host id.
+     */
+    host_id: string;
+    /**
+     * @brief The computer the node runs on, from its newest sample that names one. Empty when none did.
+     */
+    machine: string;
+}
+
+/**
+ * @brief The node samples of the range as columns on a regular time axis.
+ *
+ * Bucket j starts at start_time plus j times bucket_seconds, as in the grid
+ * series. The nodes are listed once, ordered by machine and then host id, so the
+ * nodes of one computer sit together. Every column below has
+ * nodes.size() times bucket_count entries, row-major: the cell of node i in
+ * bucket j is at i times bucket_count plus j. A cell with no sample has
+ * samples 0 and zeros in every column, so a caller must read samples before it
+ * draws a value: a gap is not a measurement of zero. Only nodes with a sample in
+ * the range are listed.
+ */
+export interface GetNodeSeriesResponse {
+    /**
+     * @brief Whether the series was read.
+     */
+    success: boolean;
+    /**
+     * @brief Why it was not, when it was not.
+     */
+    message: string;
+    /**
+     * @brief ISO-8601 start of the first bucket.
+     */
+    start_time: string;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    bucket_seconds: number;
+    /**
+     * @brief Number of buckets.
+     */
+    bucket_count: number;
+    /**
+     * @brief The nodes that reported in the range.
+     */
+    nodes: NodeSeriesNode[];
+    /**
+     * @brief Samples in each cell. 0 marks a gap.
+     */
+    samples: number[];
+    /**
+     * @brief Tasks finished since the wrapper started, at the cell's newest sample.
+     */
+    tasks_completed: number[];
+    /**
+     * @brief Tasks that failed since the wrapper started, at the cell's newest sample.
+     */
+    tasks_failed: number[];
+    /**
+     * @brief Tasks finished in the cell, summed over its samples.
+     */
+    tasks_since_last: number[];
+    /**
+     * @brief Mean task duration in the cell, weighted by the tasks of each sample. 0 when the cell finished none.
+     */
+    avg_task_duration_ms: number[];
+    /**
+     * @brief Longest task in the cell.
+     */
+    max_task_duration_ms: number[];
+    /**
+     * @brief Bytes fetched in the cell, summed over its samples.
+     */
+    input_bytes_fetched: number[];
+    /**
+     * @brief Bytes uploaded in the cell, summed over its samples.
+     */
+    output_bytes_uploaded: number[];
+}
+
+/**
  * @brief One node's report, published fire-and-forget from a wrapper.
  *
  * It carries no response, so the wrapper does not wait for one. The
@@ -327,6 +436,7 @@ export interface NodeSampleMessage {
 export const subjects = {
     get_grid_stats_request: 'compute.v1.ops.get_grid_stats',
     get_grid_series_request: 'compute.v1.ops.get_grid_series',
+    get_node_series_request: 'compute.v1.ops.get_node_series',
     node_sample_message: 'compute.v1.ops.node_sample',
 } as const;
 /**
@@ -337,5 +447,6 @@ export const subjects = {
 export const requiresSession = {
     get_grid_stats_request: true,
     get_grid_series_request: true,
+    get_node_series_request: true,
     node_sample_message: false,
 } as const;

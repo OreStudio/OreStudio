@@ -26,6 +26,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <chrono>
+#include <cstdint>
+#include <string>
 #include <vector>
 
 namespace ores::compute::repository {
@@ -61,6 +63,38 @@ struct grid_series {
     std::vector<int> outcomes_no_reply;
 };
 
+/// The most cells of nodes times buckets one node series read returns.
+inline constexpr long long max_node_series_cells = 200000;
+
+/// One node that reported in a node series.
+struct node_series_node {
+    std::string host_id;
+    std::string machine;
+};
+
+/**
+ * @brief The node samples of a range as columns on a regular time axis.
+ *
+ * The nodes are listed once, ordered by machine and then host id. Every column
+ * has nodes.size() times bucket_count entries, row-major, so the cell of node i
+ * in bucket j is at i times bucket_count plus j. A cell with no sample has
+ * samples 0 and zeros in every column.
+ */
+struct node_series {
+    std::chrono::system_clock::time_point start;
+    int bucket_seconds = 0;
+    int bucket_count = 0;
+    std::vector<node_series_node> nodes;
+    std::vector<int> samples;
+    std::vector<int> tasks_completed;
+    std::vector<int> tasks_failed;
+    std::vector<int> tasks_since_last;
+    std::vector<std::int64_t> avg_task_duration_ms;
+    std::vector<std::int64_t> max_task_duration_ms;
+    std::vector<std::int64_t> input_bytes_fetched;
+    std::vector<std::int64_t> output_bytes_uploaded;
+};
+
 /**
  * @brief The telemetry reads no generated repository expresses.
  *
@@ -73,8 +107,8 @@ struct grid_series {
  *   grid's newest, so one row per node is a third shape.
  * - The live summary is a call to ores_compute_grid_stats_fn, a SQL function
  *   the codegen has no expression for.
- * - The grid samples over a range are grouped into buckets, which the
- *   generated paged read does not express.
+ * - The grid samples and the node samples over a range are grouped into
+ *   buckets, which the generated paged read does not express.
  */
 class ORES_COMPUTE_CORE_EXPORT compute_telemetry_repository {
 private:
@@ -122,6 +156,25 @@ public:
      * range is empty, or the range needs more than max_grid_series_buckets.
      */
     grid_series grid_series_in_range(context ctx,
+                                     std::chrono::system_clock::time_point start,
+                                     std::chrono::system_clock::time_point end,
+                                     int bucket_seconds);
+
+    /**
+     * @brief Return the stored node samples of a range as columns.
+     *
+     * The axis is the grid series' axis. The interval counters are summed over
+     * a cell, the counters that count from the wrapper's start take the newest
+     * value, the longest task is the maximum, and the mean duration is weighted
+     * by the tasks of each sample. Only nodes with a sample in the range are
+     * listed. The read states no tenant predicate: the row-level-security
+     * policy decides.
+     *
+     * @throws std::invalid_argument for a bad bucket or range, a range that
+     * needs more than max_grid_series_buckets, or one whose nodes times
+     * buckets exceed max_node_series_cells.
+     */
+    node_series node_series_in_range(context ctx,
                                      std::chrono::system_clock::time_point start,
                                      std::chrono::system_clock::time_point end,
                                      int bucket_seconds);

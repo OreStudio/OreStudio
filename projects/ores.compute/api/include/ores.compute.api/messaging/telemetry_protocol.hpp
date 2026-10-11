@@ -296,6 +296,126 @@ struct get_grid_series_response {
 };
 
 /**
+ * @brief Asks for the stored node samples over a time range, as columns.
+ *
+ * The read serves the whole installation and needs the permission that
+ * get_grid_stats needs. The range widens to whole buckets, counted from the
+ * Unix epoch. A range that needs more than 5000 buckets, or more than 200000
+ * cells of nodes times buckets, is refused, so the caller widens the bucket and
+ * never pulls raw rows.
+ */
+struct get_node_series_request {
+    using response_type = struct get_node_series_response;
+    static constexpr std::string_view nats_subject = "compute.v1.ops.get_node_series";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief ISO-8601 start of the range, inclusive.
+     */
+    std::string start_time;
+    /**
+     * @brief ISO-8601 end of the range, exclusive.
+     */
+    std::string end_time;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    int bucket_seconds = 60;
+};
+
+/**
+ * @brief One node that reported in the range.
+ */
+struct node_series_node {
+    /**
+     * @brief The node's host id.
+     */
+    std::string host_id;
+    /**
+     * @brief The computer the node runs on, from its newest sample that names one. Empty when none
+     * did.
+     */
+    std::string machine;
+};
+
+/**
+ * @brief The node samples of the range as columns on a regular time axis.
+ *
+ * Bucket j starts at start_time plus j times bucket_seconds, as in the grid
+ * series. The nodes are listed once, ordered by machine and then host id, so the
+ * nodes of one computer sit together. Every column below has
+ * nodes.size() times bucket_count entries, row-major: the cell of node i in
+ * bucket j is at i times bucket_count plus j. A cell with no sample has
+ * samples 0 and zeros in every column, so a caller must read samples before it
+ * draws a value: a gap is not a measurement of zero. Only nodes with a sample in
+ * the range are listed.
+ */
+struct get_node_series_response {
+    /**
+     * @brief Whether the series was read.
+     */
+    bool success = false;
+    /**
+     * @brief Why it was not, when it was not.
+     */
+    std::string message;
+    /**
+     * @brief ISO-8601 start of the first bucket.
+     */
+    std::string start_time;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    int bucket_seconds = 0;
+    /**
+     * @brief Number of buckets.
+     */
+    int bucket_count = 0;
+    /**
+     * @brief The nodes that reported in the range.
+     */
+    std::vector<node_series_node> nodes;
+    /**
+     * @brief Samples in each cell. 0 marks a gap.
+     */
+    std::vector<int> samples;
+    /**
+     * @brief Tasks finished since the wrapper started, at the cell's newest sample.
+     */
+    std::vector<int> tasks_completed;
+    /**
+     * @brief Tasks that failed since the wrapper started, at the cell's newest sample.
+     */
+    std::vector<int> tasks_failed;
+    /**
+     * @brief Tasks finished in the cell, summed over its samples.
+     */
+    std::vector<int> tasks_since_last;
+    /**
+     * @brief Mean task duration in the cell, weighted by the tasks of each sample. 0 when the cell
+     * finished none.
+     */
+    std::vector<std::int64_t> avg_task_duration_ms;
+    /**
+     * @brief Longest task in the cell.
+     */
+    std::vector<std::int64_t> max_task_duration_ms;
+    /**
+     * @brief Bytes fetched in the cell, summed over its samples.
+     */
+    std::vector<std::int64_t> input_bytes_fetched;
+    /**
+     * @brief Bytes uploaded in the cell, summed over its samples.
+     */
+    std::vector<std::int64_t> output_bytes_uploaded;
+};
+
+/**
  * @brief One node's report, published fire-and-forget from a wrapper.
  *
  * It carries no response, so the wrapper does not wait for one. The

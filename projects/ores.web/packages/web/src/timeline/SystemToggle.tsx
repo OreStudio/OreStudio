@@ -21,6 +21,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
+import { Button } from '../ui/Primitives.js';
 
 /** Whether an entry by this actor is drawn, given whether service entries are hidden. */
 export function showsActor(
@@ -68,21 +69,15 @@ export function SystemToggle({
 }): ReactNode {
     const { t } = useTranslation();
     return (
-        <button
-            type="button"
+        <Button
+            variant="primary"
+            size="sm"
             aria-pressed={hiding}
             disabled={!canTell}
             title={canTell ? undefined : t('timeline.systemUnknown')}
-            className={
-                !canTell
-                    ? 'rounded-md border border-line px-3 py-1 text-sm text-ink-muted opacity-50'
-                    : hiding
-                    ? 'rounded-md border border-line bg-surface-overlay px-3 py-1 text-sm text-ink'
-                    : 'rounded-md border border-line px-3 py-1 text-sm text-ink-muted hover:text-ink'
-            }
             onClick={() => onChange(!hiding)}
         >
             {hiding ? t('timeline.showSystem') : t('timeline.hideSystem')}
-        </button>
+        </Button>
     );
 }

@@ -300,7 +300,7 @@ describe('kindTone', () => {
             const html = withKinds(undefined);
 
             expect(html).toContain('Hide system activity');
-            expect(html).toContain('disabled');
+            expect(html).toContain('disabled=""');
             expect(html).toContain('Your access does not show which accounts are services.');
         });
 
@@ -308,7 +308,7 @@ describe('kindTone', () => {
             const html = withKinds(() => false);
 
             expect(html).toContain('Hide system activity');
-            expect(html).not.toContain('disabled');
+            expect(html).not.toContain('disabled=""');
         });
 
         it('hides a service and keeps the tenant and super administrators, who are people', () => {

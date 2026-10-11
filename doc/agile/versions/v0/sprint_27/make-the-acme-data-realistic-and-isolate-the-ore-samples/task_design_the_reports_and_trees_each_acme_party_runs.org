@@ -163,3 +163,16 @@ via its "Verifies task" field.
 | 4 | The holding company branch is hard to read | generate_report_data.py | Accepted | One expression with the rule numbers beside it. |
 
 * Result
+
+Partly delivered in PR 3128. The task stays STARTED.
+
+Shipped: the design of which reports each Acme party runs, with the justification
+and rejected alternative for every decision, and its results on the pages that
+own them. Each Acme party now publishes its own report definitions, and the
+generic set no longer reaches the Acme parties or the system party. The Acme
+generator matches the hand edits made to its scripts.
+
+Not shipped, and moved: the configuration documents, their bindings and the
+risk configurations belong to the story Publish the ACME reports ready to run.
+The portfolio trees, the currencies, the market data feeds and the removal of
+count comments in the seeds stay with this task.

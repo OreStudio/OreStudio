@@ -1229,6 +1229,21 @@ const pt: SourceCatalogue = {
             label: 'Áreas de desenvolvimento',
             tests: 'Testes',
             board: 'Quadro',
+            backlog: 'Backlog',
+        },
+        backlog: {
+            buckets: {
+                inbox: 'Caixa de entrada',
+                next: 'Seguinte',
+                deferred: 'Adiado',
+                discarded: 'Descartado',
+            },
+            empty: 'Nada neste grupo.',
+            item: 'Item',
+            kind: 'Tipo',
+            created: 'Criado',
+            capture: 'Captura',
+            story: { one: 'História, {count} tarefa', other: 'História, {count} tarefas' },
         },
         board: {
             search: 'Pesquisar histórias, tarefas, ambientes',

@@ -1226,6 +1226,21 @@ export const en: SourceCatalogue = {
             label: 'Development areas',
             tests: 'Tests',
             board: 'Board',
+            backlog: 'Backlog',
+        },
+        backlog: {
+            buckets: {
+                inbox: 'Inbox',
+                next: 'Next',
+                deferred: 'Deferred',
+                discarded: 'Discarded',
+            },
+            empty: 'Nothing in this bucket.',
+            item: 'Item',
+            kind: 'Kind',
+            created: 'Created',
+            capture: 'Capture',
+            story: { one: 'Story, {count} task', other: 'Story, {count} tasks' },
         },
         board: {
             search: 'Search stories, tasks, environments',

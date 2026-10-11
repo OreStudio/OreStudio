@@ -110,6 +110,7 @@ const TASK = 'A1000000-0000-4000-8000-000000000002';
 const SPRINT = 'A1000000-0000-4000-8000-000000000003';
 const CAPTURE = 'A1000000-0000-4000-8000-000000000004';
 const SCENARIO = 'A1000000-0000-4000-8000-000000000005';
+const RECIPE = 'A1000000-0000-4000-8000-000000000006';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -162,6 +163,7 @@ function tree(): string {
     );
     write(root, 'agile/product_backlog/inbox/note.org', doc(CAPTURE, 'capture', 'A note'));
     write(root, 'agile/sprint_1_scenario.org', doc(SCENARIO, 'test_scenario', 'A scenario'));
+    write(root, 'agile/a_recipe.org', doc(RECIPE, 'recipe', 'A recipe'));
     return root;
 }
 
@@ -235,13 +237,14 @@ describe('the agile routes', () => {
         expect(backlog.buckets[0]?.items.map((i) => i.title)).toEqual(['A note']);
     });
 
-    it('serve a sprint, a story, a task and a capture by id', async () => {
+    it('serve a sprint, a story, a task, a capture and a scenario by id', async () => {
         const { server, sessionId } = buildTestServer({ docRoot: tree() });
         for (const [id, type] of [
             [SPRINT, 'sprint'],
             [STORY, 'story'],
             [TASK, 'task'],
             [CAPTURE, 'capture'],
+            [SCENARIO, 'test_scenario'],
         ] as const) {
             const response = await send(server, sessionId, `/api/agile/docs/${id}`);
             expect(response.statusCode).toBe(200);
@@ -251,7 +254,7 @@ describe('the agile routes', () => {
 
     it('do not serve a doc of another type, or an id that is a path', async () => {
         const { server, sessionId } = buildTestServer({ docRoot: tree() });
-        expect((await send(server, sessionId, `/api/agile/docs/${SCENARIO}`)).statusCode).toBe(404);
+        expect((await send(server, sessionId, `/api/agile/docs/${RECIPE}`)).statusCode).toBe(404);
         const path = await send(server, sessionId, '/api/agile/docs/..%2F..%2Fetc%2Fpasswd');
         expect([400, 404]).toContain(path.statusCode);
     });

@@ -8,12 +8,12 @@
 #+filetags: :browse_the_agile_tree_in_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/browse-the-backlog-and-any-doc-by-link
-#+pr:
+#+pr: 3130
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -74,12 +74,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3130][#3130]] | [web] Browse the backlog and any doc by link |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The doc query key says qa but reads the agile route | queries.ts | Fix | The key is now agile-doc. |
+| 2 | A header comment line is too long | agile-routes.ts | Fix | Re-wrapped. |
+| 3 | A JSDoc line is too long | queries.ts | Fix | Wrapped. |
+| 4 | The doc stack is local, so a doc has no shareable address inside the tab | BacklogTab.tsx | Note | Intended. The row link points at /development/docs/:id, which exists in AppRoutes, so a modified click opens the doc on its own page. |
+| 5 | Backlog and Récit in French and Portuguese | locales | Note | For the speaker who reads the translations. |
+| 6 | No test clicks a row, a link or Back | BacklogTab.test.tsx | Note | The repo has no DOM test library. A follow-up. |
+| 7 | /api/qa/docs has no client left | qa.ts | Note | A follow-up task can remove it. |
 
 * Result
+
+The Development area has a Backlog tab. It lists the four buckets (inbox, next, deferred, discarded) with the captures and stories in each, newest first. A row opens its doc inside the tab, and a link in that doc opens the next one, with a Back button that returns to the list. Every doc read now goes through =/api/agile/docs/:id=, which also serves test scenarios, so the story and task tabs of the scenario runner and the board's doc links share one route. The old =qa.doc= client call is gone, and the =/api/qa/docs= route stays on the server for now. The French and Portuguese text is my translation and needs a speaker. The tests cover the buckets, the rows, the empty and loading states, and the widened doc route. I did not click through the tab in a browser.

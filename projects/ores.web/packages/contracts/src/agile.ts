@@ -143,6 +143,6 @@ export const backlogSchema = z.object({
 export type Backlog = z.infer<typeof backlogSchema>;
 
 /** The doc types the agile routes serve. The rest of the doc root stays unread. */
-export const AGILE_DOC_TYPES = ['sprint', 'story', 'task', 'capture'] as const;
+export const AGILE_DOC_TYPES = ['sprint', 'story', 'task', 'capture', 'test_scenario'] as const;
 
 export const agileDocResponseSchema = z.object({ doc: qaDocSchema });

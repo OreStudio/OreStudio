@@ -239,8 +239,8 @@ meaning of the saved process, so the screen converts the draft with it:
   subdued, its weight in the part's colour, and its other numbers.
 - A running feed's ticks are read again every two seconds.
 - The tab says what it can and cannot show. The web server keeps the last 500
-  ticks of each running feed from when it began to listen, so the lead says
-  so.
+  ticks of each running feed from when it began to listen, and forgets a run
+  when the feed stops, so the lead says so.
 
 ** History
 

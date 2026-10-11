@@ -52,61 +52,63 @@ export const TICK_CAPACITY = 500;
  *
  * A feed's ticks are published, not stored where a read can reach them without
  * the feed's series identity, so the BFF listens and keeps the newest ones, as
- * the Qt market simulator does. Listening starts when the BFF learns a feed is
- * running and stops when it learns the feed stopped. The ticks heard are kept
- * after a stop, so a stopped feed still shows the run it made.
+ * the Qt market simulator does. The synthetic service answers what runs for
+ * the whole process, so every session states the same set: listening starts
+ * when a feed appears in it and ends when the feed leaves it.
  *
- * Buffers are keyed by source name. A caller reads one only after the server
- * has shown it the feed, so the key is never a way to see another's feed.
+ * A buffer holds one run and goes when the run ends. A source name is unique
+ * only within a tenant, and the service lets one feed run under a name at a
+ * time, so a buffer kept past its run could later be read through another
+ * tenant's feed of the same name. Ending with the run closes that, and bounds
+ * the buffers by the feeds running. A caller reads a buffer only after the
+ * server has shown it the feed.
  */
 export class FeedTickBuffers {
     readonly #subscribe: TickSubscriber;
     readonly #capacity: number;
-    readonly #ticks = new Map<string, FeedTick[]>();
-    readonly #listening = new Map<string, () => void>();
+    readonly #runs = new Map<string, { readonly ticks: FeedTick[]; readonly stop: () => void }>();
 
     constructor(subscribe: TickSubscriber, capacity = TICK_CAPACITY) {
         this.#subscribe = subscribe;
         this.#capacity = capacity;
     }
 
-    /** Listens to each feed in the set that is not heard yet. */
-    listen(sourceNames: readonly string[]): void {
-        for (const name of sourceNames) {
-            if (this.#listening.has(name)) continue;
-            const ticks = this.#ticks.get(name) ?? [];
-            this.#ticks.set(name, ticks);
+    /** States every feed running now: a new one is heard from, and one that left is forgotten. */
+    running(sourceNames: readonly string[]): void {
+        const now = new Set(sourceNames);
+        for (const [name, run] of this.#runs) {
+            if (!now.has(name)) {
+                run.stop();
+                this.#runs.delete(name);
+            }
+        }
+        for (const name of now) {
+            if (this.#runs.has(name)) continue;
+            const ticks: FeedTick[] = [];
             const stop = this.#subscribe(tickSubjectFor(name), (tick) => {
                 const value = Number(tick.value);
                 if (!Number.isFinite(value)) return;
                 ticks.push({ at: tick.observation_time, value });
                 if (ticks.length > this.#capacity) ticks.splice(0, ticks.length - this.#capacity);
             });
-            this.#listening.set(name, stop);
+            this.#runs.set(name, { ticks, stop });
         }
     }
 
-    /** States every feed running now: the others stop being heard. */
-    running(sourceNames: readonly string[]): void {
-        const now = new Set(sourceNames);
-        for (const [name, stop] of this.#listening) {
-            if (!now.has(name)) {
-                stop();
-                this.#listening.delete(name);
-            }
-        }
-        this.listen(sourceNames);
-    }
-
-    /** The newest ticks heard from one feed, at most `limit`, oldest first. */
+    /** The newest ticks of a feed's current run, at most `limit`, oldest first. */
     ticks(sourceName: string, limit: number): readonly FeedTick[] {
-        const ticks = this.#ticks.get(sourceName) ?? [];
+        const ticks = this.#runs.get(sourceName)?.ticks ?? [];
         return ticks.slice(Math.max(0, ticks.length - limit));
+    }
+
+    /** How many runs are heard from, which is what a test asserts on. */
+    get size(): number {
+        return this.#runs.size;
     }
 
     /** Stops listening to everything, for a server that is closing. */
     close(): void {
-        for (const stop of this.#listening.values()) stop();
-        this.#listening.clear();
+        for (const run of this.#runs.values()) run.stop();
+        this.#runs.clear();
     }
 }

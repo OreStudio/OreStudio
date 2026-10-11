@@ -3253,8 +3253,7 @@ const pt: SourceCatalogue = {
             lead: 'Os últimos preços do fluxo, os mais recentes à direita. O servidor web guarda os últimos 500 de cada fluxo em execução desde que começou a ouvir, por isso um fluxo arrancado antes mostra só o que veio depois.',
             count: 'Cotações mostradas',
             waiting: 'O fluxo está em execução. O gráfico aparece quando chegarem duas cotações.',
-            notRunning:
-                'O fluxo não está em execução, e não chegou nenhuma cotação. Arranque o fluxo para ver os seus preços.',
+            notRunning: 'O fluxo não está em execução. Arranque-o para ver os seus preços.',
             chart: 'Os últimos preços do fluxo',
             last: 'Último preço',
             at: 'Hora',

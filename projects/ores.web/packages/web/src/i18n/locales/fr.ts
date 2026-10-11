@@ -3278,8 +3278,7 @@ const fr: SourceCatalogue = {
             count: 'Cotations affichées',
             waiting:
                 "Le flux est en marche. Le graphique s'affiche quand deux cotations sont arrivées.",
-            notRunning:
-                "Le flux n'est pas en marche, et aucune cotation n'a été reçue. Démarrez le flux pour voir ses prix.",
+            notRunning: 'Le flux n’est pas en marche. Démarrez-le pour voir ses prix.',
             chart: 'Les derniers prix du flux',
             last: 'Dernier prix',
             at: 'Heure',

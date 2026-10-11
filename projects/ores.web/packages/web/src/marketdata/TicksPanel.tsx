@@ -79,7 +79,7 @@ function Stat({
 /**
  * The last ticks of one feed as a price chart, with a strip of what they say
  * and, beside them, the mixture that made them. A running feed is read again
- * every two seconds; a stopped one keeps the ticks of its last run.
+ * every two seconds; a stopped one has none, because a run's ticks go with it.
  */
 export function TicksPanel({
     feed,

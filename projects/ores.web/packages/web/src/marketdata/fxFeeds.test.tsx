@@ -364,7 +364,7 @@ describe('the FX feed screens', () => {
         expect(html).toContain('σ 0.01');
     });
 
-    it('says a stopped feed with no ticks heard must be started', () => {
+    it('says a stopped feed must be started to show ticks', () => {
         const html = render(`/market-data/fx-feeds/${FEED_ID}?tab=ticks`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(['synthetic-running'], []);
@@ -374,7 +374,7 @@ describe('the FX feed screens', () => {
             });
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
-        expect(html).toContain('Start the feed to see its prices.');
+        expect(html).toContain('The feed is not running. Start it to see its prices.');
     });
 
     it('explains the geometric engine and names the profile of each deviation', () => {

@@ -586,14 +586,54 @@ describe('synthetic operations', () => {
                 { at: '2026-10-11 09:02:00Z', value: 1.3 },
             ],
         });
+    });
+
+    it('forgets a run when its feed stops, so a later run under the name starts empty', async () => {
+        const replies: Record<string, unknown> = {
+            'synthetic.v1.feed_configs.list': {
+                success: true,
+                running_source_names: ['live.eurusd'],
+            },
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [{ id: ID, source_name: 'live.eurusd' }],
+            },
+        };
+        const { server, sessionId, publish } = buildTestServer(replies);
+        const subject = 'synthetic.v1.ops.tick.live.eurusd';
+        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        publish(subject, { value: '1.1', observation_time: '2026-10-11 09:00:00Z' });
 
         replies['synthetic.v1.feed_configs.list'] = { success: true, running_source_names: [] };
         await send(server, sessionId, 'GET', '/api/synthetic/running');
         publish(subject, { value: '9.9', observation_time: '2026-10-11 09:03:00Z' });
         const stopped = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
-        expect(stopped.json().ticks.map((tick: { value: number }) => tick.value)).toEqual([
-            1.1, 1.2, 1.3,
-        ]);
+        expect(stopped.json().ticks).toEqual([]);
+
+        replies['synthetic.v1.feed_configs.list'] = {
+            success: true,
+            running_source_names: ['live.eurusd'],
+        };
+        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        publish(subject, { value: '1.5', observation_time: '2026-10-11 09:04:00Z' });
+        const again = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        expect(again.json().ticks).toEqual([{ at: '2026-10-11 09:04:00Z', value: 1.5 }]);
+    });
+
+    it('starts no listening when a feed that is not running is read', async () => {
+        const { server, sessionId, publish } = buildTestServer({
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [{ id: ID, source_name: 'live.eurusd' }],
+            },
+        });
+        await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        publish('synthetic.v1.ops.tick.live.eurusd', {
+            value: '1.1',
+            observation_time: '2026-10-11 09:00:00Z',
+        });
+        const response = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        expect(response.json().ticks).toEqual([]);
     });
 
     it('answers 404 for the ticks of a feed the session cannot read', async () => {

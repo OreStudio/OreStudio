@@ -664,10 +664,10 @@ export function registerSyntheticRoutes(
     });
 
     /**
-     * The newest ticks heard from one FX feed, oldest first. The feed is read
-     * as the session first, so a feed the session cannot see has no ticks to
-     * show. Asking starts the listening, so a feed opened before any list
-     * asked what runs is heard from then on.
+     * The newest ticks of one FX feed's current run, oldest first. The feed is
+     * read as the session first, so a feed the session cannot see has no ticks
+     * to show. Reading starts no listening: what runs is learnt from the
+     * running read, which every feed screen makes.
      */
     server.get('/api/synthetic/feeds/:id/ticks', async (request) => {
         const session = requireSession(request);
@@ -677,7 +677,6 @@ export function registerSyntheticRoutes(
         );
         const feed = await readByKey(session, FX_FEEDS, paramId(request));
         const sourceName = z.string().parse(feed['source_name']);
-        ticks.listen([sourceName]);
         return { sourceName, ticks: ticks.ticks(sourceName, limit) };
     });
 

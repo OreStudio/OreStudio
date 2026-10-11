@@ -3230,8 +3230,7 @@ export const en: SourceCatalogue = {
             lead: 'The last prices the feed made, newest on the right. The web server keeps the last 500 of each running feed from when it began to listen, so a feed started before that shows only what came since.',
             count: 'Ticks shown',
             waiting: 'The feed runs. The plot shows when two ticks have arrived.',
-            notRunning:
-                'The feed is not running, and no ticks were heard. Start the feed to see its prices.',
+            notRunning: 'The feed is not running. Start it to see its prices.',
             chart: 'The last prices of the feed',
             last: 'Last price',
             at: 'Time',

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-11T21:24:50.900683Z
+' Generated: 2026-10-11T22:47:22.562262Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1500,6 +1500,7 @@ package "dq_staging" #F3E5F5 {
         * price_source : text
           vintage_source : text
           vintage_date : text
+          provider_code : text
     }
 
     note right of ores_dq_synthetic_fx_spot_configs_artefact_tbl
@@ -1549,6 +1550,7 @@ package "dq_staging" #F3E5F5 {
           vintage_source : text
           vintage_date : text
           vintage_series_uri : text
+          provider_code : text
     }
 
     note right of ores_dq_synthetic_ir_curve_configs_artefact_tbl

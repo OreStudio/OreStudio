@@ -8,7 +8,7 @@
 #+filetags: :split_accounts_into_open_and_confidential_data:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-split-accounts-into-open-and-confidential-data
-#+pr:
+#+pr: 3115
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -150,7 +150,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3115][#3115]] | [agile] Design the split of accounts and the shared-read standard |
 
 * Review
 

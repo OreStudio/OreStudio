@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 0D0F526D-FE2B-43F2-965F-FBB4E86C50FE
+:END:
+#+title: Task: Mark each timeline entry with the kind of its actor
+#+description: Initial task for: Hide what system accounts did in a history
+#+type: task
+#+level: s1
+#+filetags: :hide_system_actions_in_history:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:57749440-463B-4F2D-99AC-B1348F4507C3][Hide what system accounts did in a history]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A history shows a toggle that hides or shows the entries made by service accounts. Tenant admin and super admin are people, so the toggle never hides them. The server classifies the actor, because the web directory only names the accounts the caller may read, and cannot tell a service from a person it may not see.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:57749440-463B-4F2D-99AC-B1348F4507C3][Hide what system accounts did in a history]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- Every timeline entry carries the kind of its actor, set by the server for any caller who may read the timeline.
+- Every history screen shows a toggle that hides or shows the entries made by service accounts, and the toggle is on by default.
+- Tenant admin and super admin entries stay visible when the toggle hides services.
+- The toggle is one shared part of the Timeline and the version history panel, not one copy per screen.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

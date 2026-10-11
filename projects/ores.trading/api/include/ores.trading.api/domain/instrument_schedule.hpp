@@ -29,8 +29,10 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -290,6 +292,45 @@ struct instrument_schedule final {
      */
     friend bool operator==(const instrument_schedule&, const instrument_schedule&) = default;
 };
+
+/**
+ * @brief The members of instrument_schedule the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view instrument_schedule_economic_fields[] = {
+    "owner_role",
+    "owner_number",
+    "schedule_role",
+    "sequence_number",
+    "schedule_kind",
+    "start_date",
+    "end_date",
+    "adjust_end_date_to_previous_month_end",
+    "tenor",
+    "calendar",
+    "convention",
+    "term_convention",
+    "rule",
+    "end_of_month",
+    "end_of_month_convention",
+    "first_date",
+    "last_date",
+    "remove_first_date",
+    "remove_last_date",
+    "include_duplicate_dates",
+};
+
+/**
+ * @brief Names the members of instrument_schedule that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<instrument_schedule>) {
+    return instrument_schedule_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for instrument_schedule, e.g. for the

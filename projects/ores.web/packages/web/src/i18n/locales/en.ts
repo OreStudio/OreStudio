@@ -73,7 +73,9 @@ export const en: SourceCatalogue = {
             'tenant-administration': 'Tenant administration',
             application: 'Application',
         },
+        account: 'Your account',
         menu: {
+            marketdata: 'Market data',
             home: 'Home',
             accounts: 'Accounts',
             tenants: 'Tenants',
@@ -369,8 +371,6 @@ export const en: SourceCatalogue = {
         never: 'Never',
         failed: 'Failed attempts',
         state: 'State',
-        locked: 'Locked',
-        notLocked: 'Not locked',
         passwordDue: 'Password change due',
         noSessions: 'No sessions are recorded for this account.',
         started: 'Started',
@@ -388,10 +388,9 @@ export const en: SourceCatalogue = {
     },
 
     auditSignIns: {
-        title: 'Audit: sign-ins',
+        title: 'Sign-ins',
         description: 'Who is signed in, what they are doing, and who is failing to get in.',
         readAt: 'Read at {at}',
-        refresh: 'Refresh',
         tabs: 'Audit readings',
         filterNote:
             'The period narrows the events and the statistics on the server, and the open sessions in this browser. No version, diff or revert control appears here: this screen is an event log, not a versioned entity.',
@@ -413,6 +412,8 @@ export const en: SourceCatalogue = {
             login_failure: 'login failed',
             logout: 'logout',
             token_refresh: 'token refresh',
+            account_locked: 'account locked',
+            account_unlocked: 'account unlocked',
         },
         column: {
             started: 'Started',
@@ -469,10 +470,10 @@ export const en: SourceCatalogue = {
             failed: 'Failed',
             lastAddress: 'Last address',
             lastSignIn: 'Last sign-in',
-            locked: 'Locked',
-            notLocked: 'Not locked',
             never: 'Never',
             neverSignedIn: 'Never signed in',
+            hideNeverSignedIn: 'Signed in only',
+            allHidden: 'Every record is hidden. Clear the filter to see them.',
         },
         events: {
             title: 'Authentication events',
@@ -689,6 +690,102 @@ export const en: SourceCatalogue = {
      * The profile screen: one page with a panel per record, so each panel
      * saves on its own and reports on its own.
      */
+    signInFacts: {
+        lastSignIn: 'Last sign-in',
+        never: 'Never signed in',
+        from: 'From',
+        unknown: 'Unknown',
+        failed: 'Failed attempts',
+        none: 'This account has no sign-in record yet.',
+        locked: 'Locked',
+        notLocked: 'Not locked',
+    },
+    security: {
+        title: 'Security',
+        lead: 'Your password, and the places your account is signed in.',
+        reading: 'Reading your account…',
+        readFailed: 'The read failed.',
+        sessions: {
+            title: 'Where you are signed in',
+            caveat: 'No sign-out writes an end time, so this list holds every session of the account. An old session looks the same as a live one.',
+            empty: 'No sessions are recorded for your account.',
+            started: 'Started',
+            client: 'Client',
+            address: 'Address',
+            country: 'Country',
+            traffic: 'Sent / received',
+            unknownClient: 'Unknown client',
+            noAddress: 'No address',
+            unknownCountry: 'Unknown',
+        },
+        password: {
+            title: 'Password',
+            lead: 'Change the password you sign in with. The server checks the current password first.',
+            current: 'Current password',
+            currentHint: 'Proves the request is yours.',
+            new: 'New password',
+            submit: 'Change password',
+            changed: 'The password is changed. Use it at your next sign-in.',
+            refused: 'The change was refused.',
+        },
+        state: {
+            title: 'Sign-in state',
+            lead: 'Read only. The server writes it when you sign in.',
+            resetRequired: 'Password change required',
+            account: 'Account',
+        },
+    },
+    rescue: {
+        title: 'Rescue access',
+        lead: 'Get one colleague back into the system, or shut the account down.',
+        find: 'Pick the colleague who asked for help.',
+        another: 'Choose another colleague',
+        reading: 'Reading the account…',
+        readFailed: 'The read failed.',
+        missing:
+            'No account in this tenant is named {username}. It may have been renamed or removed.',
+        diagnosis: {
+            title: 'What the state suggests',
+            never: '{username} has never signed in, so there is no count of attempts and no lock state.',
+            locked: {
+                one: 'Failed attempts locked this account. Unlock it when the colleague only forgot the password.',
+                other: 'Failed attempts locked this account. Unlock it when the colleague only forgot the password.',
+            },
+            open: 'The account is not locked. Failed attempts lock it only when they reach the limit of the server.',
+            failed: {
+                one: '{count} failed attempt',
+                other: '{count} failed attempts',
+            },
+            online: 'Session open',
+            offline: 'No session',
+        },
+        lock: {
+            title: 'Lock the account',
+            lead: 'A locked account cannot sign in. Unlocking clears the count of failed attempts.',
+            sideLocked: 'Locked',
+            sideUnlocked: 'Unlocked',
+            locked: 'The account is locked. Its open sessions stay open.',
+            unlocked: 'The account is unlocked, and its count of failed attempts is cleared.',
+            refused: 'The change was refused.',
+            lockTitle: 'Lock this account',
+            unlockTitle: 'Unlock this account',
+            lockAction: 'Lock the account',
+            unlockAction: 'Unlock the account',
+            lockBody:
+                '{username} cannot sign in after this. Sessions that are already open stay open until they expire.',
+            unlockBody:
+                '{username} can sign in again, and the count of failed attempts is cleared.',
+        },
+    },
+    accessRead: {
+        slow: 'The server is slow to answer. The menu and the home may be missing parts until it does.',
+        failed: 'Your access could not be read, so parts of the menu and the home are missing.',
+    },
+    cardKind: {
+        workflow: 'Workflow',
+        workflows: 'Workflows',
+    },
+
     profile: {
         reason: {
             system_update: 'Ordinary change',
@@ -1083,11 +1180,8 @@ export const en: SourceCatalogue = {
             lead: 'Signed in as {name}',
             parties: 'Parties',
             partiesBody: 'The companies and branches in your group, and how they relate.',
-            newParty: 'Add party',
+            newParty: 'Onboard a party',
             newPartyBody: 'Add a company or a branch to your group.',
-            partyDetails: 'Correct a party',
-            partyDetailsBody:
-                'Correct the record, the identifiers and the structure of a legal entity.',
             counterpartyOnboard: 'Onboard a counterparty',
             counterpartyOnboardBody: 'Bring a legal entity you trade with on board.',
             bookStructure: 'Shape the book structure',
@@ -1095,14 +1189,14 @@ export const en: SourceCatalogue = {
                 'Place books in portfolios, classify them and read who may see them.',
             conventions: 'Define instrument conventions',
             conventionsBody: 'Author the terms ORE uses for one instrument.',
-            rescue: 'Lock or unlock an account',
+            rescue: 'Rescue access',
             rescueBody: 'Help someone who cannot sign in, or stop an account from being used.',
             audit: 'Sign-ins',
             auditBody: 'Who is signed in now, and the sign-ins that failed.',
             versions: 'Versions and the database',
             versionsBody:
                 'What this browser runs, what the deployment runs, and what the database stores.',
-            security: 'Your password and sign-ins',
+            security: 'Security',
             securityBody: 'Change your password and see where you are signed in.',
         },
         party: {
@@ -1116,7 +1210,7 @@ export const en: SourceCatalogue = {
             tradingBody: 'Book, amend and review trades.',
             reporting: 'Reporting',
             reportingBody: 'Risk and P&L reports for your books.',
-            security: 'Your password and sign-ins',
+            security: 'Security',
             securityBody: 'Change your password and see where you are signed in.',
         },
     },
@@ -1127,15 +1221,22 @@ export const en: SourceCatalogue = {
      * from Home as well as from this area's hub.
      */
     development: {
+        lead: 'The work a team does on the product, starting with the tests a tester can run.',
         tabs: {
             label: 'Development areas',
             tests: 'Tests',
         },
         tests: {
-            waiting: 'Waiting',
+            sprint: 'Sprint {number}',
+            noSprint: 'No sprint',
+            created: 'Created',
+            empty: 'There are no test scenarios.',
+            active: 'Active',
             done: 'Done',
-            nothingWaiting: 'Nothing is waiting.',
-            nothingDone: 'Nothing has been tested yet.',
+            abandoned: 'Abandoned',
+            activeCount: '{count} active',
+            doneCount: '{count} done',
+            abandonedCount: '{count} abandoned',
             scenario: 'Scenario',
             target: 'Target',
             progress: 'Progress',
@@ -1147,20 +1248,37 @@ export const en: SourceCatalogue = {
                 inProgress: 'In progress',
                 passed: 'Passed',
                 failed: 'Failed',
+                abandoned: 'Abandoned',
             },
         },
         scenario: {
             tabsLabel: 'Scenario views',
             tabs: {
                 steps: 'Steps',
+                report: 'Report',
                 story: 'Story',
                 task: 'Task',
             },
             noStory: 'This scenario names no story.',
             noTask: 'This scenario names no task.',
         },
+        leave: {
+            title: 'Leave without saving?',
+            body: 'You have marks or notes that are not saved. Leaving drops them.',
+            stay: 'Stay',
+            leave: 'Leave',
+        },
+        report: {
+            instructions: 'Instructions',
+            notMarked: 'Not marked.',
+            noSteps: 'This scenario has no steps.',
+            build: 'Build',
+            glance: 'Steps at a glance',
+            count: '{count} {status}',
+        },
         docs: {
             title: 'Doc',
+            back: 'Back',
             unresolved:
                 'No story, task or scenario has the id {id}. The link may point at a doc the runner does not show.',
         },
@@ -1169,6 +1287,7 @@ export const en: SourceCatalogue = {
                 PENDING: 'Pending',
                 PASSED: 'Passed',
                 FAILED: 'Failed',
+                ABANDONED: 'Abandoned',
             },
             stepStates: {
                 PENDING: 'Pending',
@@ -1182,6 +1301,8 @@ export const en: SourceCatalogue = {
             lastSaved: 'Last saved',
             retest: 'Retest',
             closedHelp: 'This scenario is closed. A retest clears every step and starts again.',
+            abandonedHelp:
+                'This scenario is abandoned and will not be run. A retest clears every step and brings it back.',
             save: 'Save',
             saveHelp: "Save writes each step's result and the overall state into the scenario doc.",
             back: 'Back to the tests',
@@ -1202,6 +1323,13 @@ export const en: SourceCatalogue = {
             imageSaving: 'Saving the image...',
             imageNotImage: 'Only PNG, JPEG, GIF and WebP images can be attached.',
             imageTooLarge: 'That image is over {limit} MB.',
+            pasteButton: 'Paste from clipboard',
+            clipboard: {
+                unavailable:
+                    'This browser cannot read the clipboard from this page. Paste with Ctrl+V instead.',
+                denied: 'The browser did not let this page read the clipboard. Allow it in the address bar, or paste with Ctrl+V.',
+                empty: 'The clipboard holds no image. Take a screenshot to the clipboard first.',
+            },
             savedClosed: 'Saved and closed as {state}.',
             savedOpen: 'Saved. {pending} steps are still to mark. The scenario stays open.',
         },
@@ -1239,6 +1367,9 @@ export const en: SourceCatalogue = {
             },
         },
         screens: {
+            signIns: 'Sign-ins',
+            signInsBody:
+                'Who is signed in now, the sign-ins that failed, and the events behind them.',
             versions: 'Versions and the database',
             versionsBody:
                 'The client build, the deployment build, and the fingerprint of the database.',
@@ -1252,11 +1383,10 @@ export const en: SourceCatalogue = {
             logsBody: 'The lines the services wrote, newest first.',
         },
         services: {
-            title: 'Operations: services',
+            title: 'Running services',
             description:
                 'Every service the registry expects, met by the instances that report. The compute runners belong to the grid screen.',
             updated: 'Updated {at}',
-            refresh: 'Refresh',
             skew: 'Version skew: {services} run {versions} while the rest run {newest}. The comparison is between releases, because a heartbeat states the release and not the build.',
             instances: {
                 title: 'Instances',
@@ -1296,11 +1426,10 @@ export const en: SourceCatalogue = {
             },
         },
         grid: {
-            title: 'Operations: compute grid',
+            title: 'Compute grid',
             description:
                 "The installation's host and work summary, one row per machine, carrying the runner that reports for it.",
             updated: 'Updated {at}',
-            refresh: 'Refresh',
             units: {
                 gib: '{value} GiB',
                 mib: '{value} MiB',
@@ -1371,7 +1500,7 @@ export const en: SourceCatalogue = {
             },
         },
         bus: {
-            title: 'Operations: message bus',
+            title: 'Message bus',
             description: "The NATS server's vitals and one row per stream.",
             range: {
                 label: 'Range',
@@ -1438,7 +1567,7 @@ export const en: SourceCatalogue = {
             },
         },
         logs: {
-            title: 'Operations: telemetry logs',
+            title: 'Telemetry logs',
             description:
                 'The lines behind a symptom, found by time, level, source, component, tag or message.',
             readAt: 'Read at {at}',
@@ -1518,7 +1647,7 @@ export const en: SourceCatalogue = {
             },
         },
         versions: {
-            title: 'Operations: versions and the database',
+            title: 'Versions and the database',
             description:
                 'What this browser runs, what the deployment runs, and what the deployment stores.',
             unknown: 'unknown',
@@ -1613,7 +1742,8 @@ export const en: SourceCatalogue = {
                 node: 'Node',
                 status: 'Change',
                 hole: 'No point',
-                noNodes: 'The object declares no node.',
+                noNodes:
+                    'No series with this identity is visible in the party you work for. Check the identity, or switch party.',
                 noInstants: 'The object holds no instant in this range.',
                 neverQuoted: '{count} nodes hold no value at any instant of this range.',
             },
@@ -1630,6 +1760,7 @@ export const en: SourceCatalogue = {
                 age: 'Age',
                 source: 'Source',
                 detail: 'Detail',
+                mixed: 'These values come from several market states. The oldest is {oldest} old, and they span {spread}.',
                 summary: 'The oldest value is {oldest} old. The values span {spread}.',
             },
             source: {
@@ -1808,8 +1939,24 @@ export const en: SourceCatalogue = {
             signed_in: 'Signed in',
             sign_in_failed: 'Sign-in refused',
             signed_out: 'Signed out',
+            locked: 'Account locked',
+            unlocked: 'Account unlocked',
             refreshed: 'Session renewed',
             noticed: 'Recorded',
+        },
+        gaps: 'What this history cannot show',
+        gapFor: {
+            party_country:
+                'The countries it works in keep no versions, so adding or removing one is not shown.',
+            party_currency:
+                'The currencies it works in keep no versions, so adding or removing one is not shown.',
+            party_counterparty:
+                'The counterparties it may trade with keep no versions, so adding or removing one is not shown.',
+            account_party:
+                'The parties a person works in keep no versions, so joining or leaving one is not shown.',
+            account_role: 'A role that was taken away is not shown, only the roles held now.',
+            auth_event: 'Only the most recent sign-ins are kept, so older ones are not shown.',
+            unread: 'Part of this history could not be read, so it is not shown.',
         },
     },
 
@@ -2294,153 +2441,6 @@ export const en: SourceCatalogue = {
             },
         },
 
-        partyDetails: {
-            noShortCode: 'No short code',
-            none: 'Open a party from the list first.',
-            pickFailed: 'The lists the form draws from could not be read. {message}',
-            step: {
-                list: 'Parties',
-                overview: 'Overview',
-                identifiers: 'Identifiers',
-                contacts: 'Contacts',
-                memberships: 'Memberships',
-                structure: 'Structure',
-                review: 'Review',
-                outcome: 'Outcome',
-                history: 'History',
-            },
-            list: {
-                title: 'Parties',
-                lead: 'The legal entities of this tenant. Choose one to correct it.',
-                search: 'Search by name, short code or codename',
-                empty: 'No party matches.',
-                total: '{shown} of {total} shown',
-                readFailed: 'The parties could not be read. {message}',
-                columns: {
-                    code: 'Short code',
-                    name: 'Name',
-                    type: 'Type',
-                    status: 'Status',
-                    centre: 'Business center',
-                    version: 'Version',
-                    modifiedBy: 'Modified by',
-                },
-            },
-            overview: {
-                title: 'Overview',
-                lead: 'Correct the party record. The party keeps its id and its codename.',
-                correction:
-                    'This corrects the party. It does not replace it, and each change adds a version.',
-                shortCode: 'Short code',
-                fullName: 'Full name',
-                transliteratedName: 'Transliterated name',
-                partyType: 'Party type',
-                status: 'Status',
-                businessCenter: 'Business center',
-                parent: 'Parent party id',
-                noParent: 'No parent',
-                registrationDefault: 'Registration default',
-                codename: 'Codename',
-                category: 'Category',
-                readOnly: 'The codename and the category cannot be changed.',
-            },
-            identifiers: {
-                title: 'Identifiers',
-                lead: 'One row per scheme value. A changed value retires the old row and writes a new one.',
-                nameChange: 'A change of legal name edits one field of the party.',
-                idChange: 'A change of identifier retires the old value and writes the new one.',
-                none: 'This party has no identifier.',
-                value: 'Value',
-                description: 'Description',
-                retire: 'Retire',
-                undo: 'Keep',
-                scheme: 'Scheme',
-                choose: 'Choose a scheme',
-                cardinality: '{scheme} holds {max} value at most.',
-                add: 'Add identifier',
-            },
-            contacts: {
-                title: 'Contacts',
-                lead: 'One row per contact type. Mark one row primary.',
-                none: 'This party has no contact.',
-                primary: 'Primary',
-                markPrimary: 'Make primary',
-                add: 'Add {type}',
-                street1: 'Street',
-                street2: 'Street 2',
-                city: 'City',
-                state: 'State',
-                country: 'Country',
-                postal: 'Postal code',
-                phone: 'Phone',
-                email: 'Email',
-                web: 'Web page',
-            },
-            memberships: {
-                title: 'Memberships',
-                lead: 'The countries and the currencies this party works in.',
-                closeNote:
-                    'Closing a membership hides it from this party only. The country or currency stays defined for the tenant, and you can link it again.',
-                countries: 'Countries',
-                currencies: 'Currencies',
-                none: 'None linked.',
-                open: 'Open',
-                closing: 'To close',
-                close: 'Close',
-                reopen: 'Keep open',
-                choose: 'Choose to link',
-                link: 'Link',
-                noHistory:
-                    'A membership has no history of its own yet. The party history is the only trail.',
-            },
-            structure: {
-                title: 'Structure',
-                lead: 'The counterparties this party can see and the type of each business unit.',
-                counterparties: 'Counterparties',
-                units: 'Business units',
-                noUnits: 'This party has no business unit.',
-                noType: 'No type',
-                levelBreach:
-                    'Unit {unit} has level {level}. Its parent {parent} has level {parentLevel}. A unit must be deeper than its parent.',
-            },
-            review: {
-                title: 'Review',
-                lead: 'Nothing is written until you confirm.',
-                nothing: 'Nothing has changed yet.',
-                columns: {
-                    what: 'What changes',
-                    before: 'Before',
-                    after: 'After',
-                    operation: 'Operation',
-                },
-                reason: 'Reason',
-                commentary: 'Commentary',
-                commentaryRequired: 'This reason needs a commentary.',
-                confirm: 'Confirm changes',
-            },
-            refusal: {
-                heading: 'The server refused the change.',
-                kept: 'Your changes are kept.',
-                nothingWritten: 'Nothing was written.',
-                partial: 'Already written: {calls}.',
-                walkBack: 'Go to the step',
-            },
-            outcome: {
-                title: 'Outcome',
-                lead: 'The party now reads as corrected.',
-                written: '{name} is now at version {version}.',
-                history: 'See the history',
-                done: 'Leave the party',
-            },
-            history: {
-                title: 'History',
-                lead: 'Every version of the party and what changed in each.',
-                none: 'Open a party to see its history.',
-                revertNote:
-                    'Revert loads an older version into the review. Nothing is written until you confirm.',
-            },
-        },
-
         counterparty: {
             noShortCode: 'No short code yet',
             pickFailed: 'The lists the form draws from could not be read. {message}',
@@ -2837,6 +2837,9 @@ export const en: SourceCatalogue = {
             link: 'Add',
             revertTitle: 'Revert to version {version}?',
             revertBody: 'Restores v{to} as a new version.',
+            revertChanges: 'Fields that will change ({count})',
+            revertNoChanges: 'No field differs from the current version.',
+            revertEmpty: 'empty',
             refresh: 'Refresh',
             search: 'Search…',
             columns: 'Columns',
@@ -2868,6 +2871,11 @@ export const en: SourceCatalogue = {
                 exceptions: 'Exceptions',
                 events: 'Diary events',
                 days: 'Business days',
+                identifiers: 'Identifiers',
+                contacts: 'Contacts',
+                memberships: 'Memberships',
+                centres: 'Business centres',
+                counterparties: 'Counterparties',
             },
         },
         fields: {
@@ -2921,6 +2929,32 @@ export const en: SourceCatalogue = {
             is_business_day: 'Business day',
             event_date: 'Date',
             diary_entry_type: 'Entry type',
+            short_code: 'Short code',
+            full_name: 'Full name',
+            transliterated_name: 'Transliterated name',
+            codename: 'Codename',
+            party_category: 'Category',
+            party_type: 'Type',
+            parent_party_id: 'Parent party',
+            business_center_code: 'Business centre',
+            status: 'Status',
+            is_registration_default: 'Registration default',
+            id_scheme: 'Scheme',
+            id_value: 'Value',
+            contact_type: 'Contact type',
+            street_line_1: 'Street',
+            street_line_2: 'Street, second line',
+            city: 'City',
+            state: 'State or region',
+            postal_code: 'Postal code',
+            phone: 'Phone',
+            email: 'Email',
+            web_page: 'Web page',
+            is_primary: 'Primary contact',
+            unit_name: 'Name',
+            unit_code: 'Code',
+            unit_type_id: 'Unit type',
+            business_centre_code: 'Business centre',
         },
         choices: {
             kind: {
@@ -3074,6 +3108,40 @@ export const en: SourceCatalogue = {
             removeWarning:
                 'Removing the pair removes its convention too. Nothing checks whether trades still use the pair.',
         },
+        parties: {
+            card: 'Party',
+            editTitle: 'Edit {name}',
+            identifiersLead:
+                'The schemes this party is known by. Changing a value retires the old one and records the new one.',
+            unitsLead:
+                'The business units of this party, and the business centre each one works from.',
+            countries: 'Countries it operates in',
+            currencies: 'Currencies it operates in',
+            counterparties: 'Counterparties it may trade with',
+            addPart: {
+                'party-identifiers': 'Add identifier',
+                'party-contacts': 'Add contact',
+                'business-units': 'Add business unit',
+            },
+            editPart: {
+                'party-identifiers': 'Identifier',
+                'party-contacts': 'Contact',
+                'business-units': 'Business unit',
+            },
+            removePart: {
+                'party-identifiers': 'Delete identifier',
+                'party-contacts': 'Delete contact',
+                'business-units': 'Delete business unit',
+            },
+            logo: 'Logo',
+            address: 'Address',
+            record: {
+                party: 'Party',
+                identifier: 'Identifier',
+                contact: 'Contact',
+                unit: 'Business unit',
+            },
+        },
     },
 
     membership: {
@@ -3172,6 +3240,8 @@ export const en: SourceCatalogue = {
     },
 
     common: {
+        locked: 'Locked',
+        unlocked: 'Unlocked',
         loading: 'Loading...',
         notAvailable: 'This is not available to you.',
         clear: 'Clear',
@@ -3187,6 +3257,8 @@ export const en: SourceCatalogue = {
         apply: 'Apply',
         back: 'Back',
         continue: 'Continue',
+        retry: 'Retry',
+        cancel: 'Cancel',
     },
 };
 

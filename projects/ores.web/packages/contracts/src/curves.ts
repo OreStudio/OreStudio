@@ -74,7 +74,8 @@ export const curveSnapshotSchema = z.object({
     provenance: z.array(pointProvenanceSchema),
     oldest_age_seconds: z.number(),
     spread_seconds: z.number(),
-    warning: z.string(),
+    /** Whether the values mix several market states, so a view must not draw them silently. */
+    warning: z.boolean(),
 });
 export type CurveSnapshot = z.infer<typeof curveSnapshotSchema>;
 

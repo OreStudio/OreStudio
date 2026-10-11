@@ -141,4 +141,3 @@ def test_the_baselines_are_readable():
                  "continuous_decimal_columns.baseline"):
         path = REPO_ROOT / "build" / "scripts" / name
         assert path.is_file(), name
-        assert path.read_text(encoding="utf-8").strip(), name

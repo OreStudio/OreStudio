@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { formatDateTime, isZeroTimestamp } from './Time.js';
+import { formatDateTime, isZeroTimestamp, parseTimestamp } from './Time.js';
 
 /**
  * A moment a server states is drawn with its time, and not only its date.
@@ -67,5 +67,24 @@ describe('isZeroTimestamp', () => {
 
     it('states a real moment as a moment', () => {
         expect(isZeroTimestamp('2026-09-29 21:03:00Z')).toBe(false);
+    });
+});
+
+describe('parseTimestamp', () => {
+    it('reads an offset the database states as whole hours', () => {
+        expect(parseTimestamp('2026-10-11 00:30:20+00').getTime()).toBe(
+            Date.UTC(2026, 9, 11, 0, 30, 20),
+        );
+        expect(parseTimestamp('2026-10-11 02:30:20+02').getTime()).toBe(
+            Date.UTC(2026, 9, 11, 0, 30, 20),
+        );
+    });
+
+    it('reads the forms it read before, and a bare date is not an offset', () => {
+        expect(parseTimestamp('2026-10-11 00:30:20Z').getTime()).toBe(
+            Date.UTC(2026, 9, 11, 0, 30, 20),
+        );
+        expect(Number.isNaN(parseTimestamp('2026-10-11').getTime())).toBe(false);
+        expect(Number.isNaN(parseTimestamp('not a time').getTime())).toBe(true);
     });
 });

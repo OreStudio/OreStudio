@@ -136,6 +136,16 @@ BEGIN
         'Cron expression for the job that warns the deciders of approval requests close to their deadline. Default is once a day at eight.'
     );
 
+    -- An approved request whose apply stopped is resumed on this schedule
+    -- until its kind's window ends. A failure that can pass is usually a service
+    -- that comes back within minutes, so the default is every five minutes.
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'inbox.apply_retry.schedule',
+        '*/5 * * * *',
+        'string',
+        'Cron expression for the job that resumes approved requests whose apply stopped, and ends the ones whose window ran out. Default is every five minutes.'
+    );
+
     -- How far ahead of its deadline a request is warned about. The window says
     -- what 'close' means, and an installation with a longer queue or slower
     -- administrators sets it longer.

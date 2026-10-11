@@ -28,8 +28,10 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -153,6 +155,29 @@ struct swaption_instrument final {
      */
     friend bool operator==(const swaption_instrument&, const swaption_instrument&) = default;
 };
+
+/**
+ * @brief The members of swaption_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view swaption_instrument_economic_fields[] = {
+    "expiry_date",
+    "exercise_type",
+    "settlement_type",
+    "long_short",
+};
+
+/**
+ * @brief Names the members of swaption_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<swaption_instrument>) {
+    return swaption_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for swaption_instrument, e.g. for the

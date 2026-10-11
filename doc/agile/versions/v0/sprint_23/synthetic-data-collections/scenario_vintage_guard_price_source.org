@@ -8,9 +8,9 @@
 #+filetags: :synthetic-data-collections:sprint_23:v0:
 #+target_dialog: Market Data > Synthetic > Market Simulator
 #+created: 2026-07-08
-#+updated: 2026-07-08
+#+updated: 2026-10-11
 #+environment: merry_newton
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 
 This page documents a test scenario verifying [[id:E468C540-0CE0-4F89-870D-7ED2CFCDF219][Vintage-availability guard in ores.synthetic]] in [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
 
@@ -22,7 +22,7 @@ This page documents a test scenario verifying [[id:E468C540-0CE0-4F89-870D-7ED2C
 | Parent story  | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]]   |
 | Target dialog | Market Data > Synthetic > Market Simulator |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Prerequisites
 
@@ -106,3 +106,5 @@ date=...". No feeds are started by this action.
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: a legacy scenario for the Qt client, which is no longer used. It is kept for the record and will not be run. A retest brings it back.

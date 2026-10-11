@@ -89,6 +89,7 @@ The activity that wrote this version.
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 Variance observation start date (ISO 8601 date string).
@@ -102,6 +103,7 @@ std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 Variance observation end date (ISO 8601 date string).
@@ -117,6 +119,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Settlement currency.
@@ -132,6 +135,7 @@ std::string("USD")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 FX pair or index identifier (e.g. TR20H-EUR-USD).
@@ -145,6 +149,7 @@ std::string("TR20H-EUR-USD")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Position direction: Long or Short.
@@ -161,6 +166,7 @@ std::string("Long")
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
+:economic:      true
 :END:
 
 Fixed variance or volatility strike. Must be positive.
@@ -174,6 +180,7 @@ Fixed variance or volatility strike. Must be positive.
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Notional amount for PnL scaling. Must be positive.
@@ -187,6 +194,7 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Whether the product is a Variance or Volatility swap.
@@ -202,6 +210,7 @@ std::string("Variance")
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

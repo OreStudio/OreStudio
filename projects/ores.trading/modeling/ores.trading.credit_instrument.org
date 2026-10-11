@@ -107,6 +107,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Name or identifier of the reference entity.
@@ -120,6 +121,7 @@ std::string("ACME Corp")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ISO 4217 currency code (e.g. USD).
@@ -135,6 +137,7 @@ std::string("USD")
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Notional amount of the credit instrument. Must be positive.
@@ -149,6 +152,7 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :default_value: ores::utility::decimal::decimal{}
+:economic:      true
 :END:
 
 Credit spread in basis points (e.g. 100.0 for 100 bps).
@@ -163,6 +167,7 @@ Credit spread in basis points (e.g. 100.0 for 100 bps).
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
+:economic:      true
 :END:
 
 Recovery rate as a decimal (e.g. 0.4 for 40%).
@@ -176,6 +181,7 @@ Recovery rate as a decimal (e.g. 0.4 for 40%).
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Tenor of the instrument (e.g. "5Y", "3Y").
@@ -189,6 +195,7 @@ std::string("5Y")
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 Start date (ISO 8601 date string, e.g. 2026-01-15).
@@ -202,6 +209,7 @@ std::chrono::year_month_day{std::chrono::year{2026}/1/15}
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 Maturity date (ISO 8601 date string, e.g. 2031-01-15).
@@ -215,6 +223,7 @@ std::chrono::year_month_day{std::chrono::year{2031}/1/15}
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Day count convention code (e.g. Actual365Fixed, Thirty360).
@@ -230,6 +239,7 @@ std::string("Actual365Fixed")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Payment frequency code (e.g. Quarterly, SemiAnnual).
@@ -245,6 +255,7 @@ std::string("Quarterly")
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Optional index name for CDSIndex trades (e.g. "CDX.NA.IG").
@@ -257,6 +268,7 @@ Empty for non-index products.
 :cpp_type:      std::optional<int>
 :nullable:      true
 :default_value: std::nullopt
+:economic:      true
 :END:
 
 Optional index series number for CDSIndex trades.
@@ -268,6 +280,7 @@ Null when the trade states no series.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Optional seniority (e.g. "Senior", "Subordinated").
@@ -279,6 +292,7 @@ Empty when not applicable.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Optional restructuring clause (e.g. "MM", "MR", "CR", "XR").
@@ -290,6 +304,7 @@ Empty when not applicable.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.
@@ -299,6 +314,7 @@ Optional free-text description.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Call or Put for CreditDefaultSwapOption; empty otherwise.
@@ -310,6 +326,7 @@ Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionTy
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Option expiry date (ISO 8601) for CDS options. Empty otherwise.
@@ -323,6 +340,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :type:          numeric(38, 12)
 :cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic:      true
 :END:
 
 Option strike spread in bps for CDS options. Null when not set.
@@ -332,6 +350,7 @@ Option strike spread in bps for CDS options. Null when not set.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Reference asset code for CreditLinkedSwap. Empty otherwise.
@@ -341,6 +360,7 @@ Reference asset code for CreditLinkedSwap. Empty otherwise.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<double>
 :nullable: true
+:economic: true
 :END:
 
 CBO tranche attachment point as decimal. Null when not set.
@@ -350,6 +370,7 @@ CBO tranche attachment point as decimal. Null when not set.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<double>
 :nullable: true
+:economic: true
 :END:
 
 CBO tranche detachment point as decimal. Null when not set.

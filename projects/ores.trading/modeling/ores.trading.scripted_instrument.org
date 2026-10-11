@@ -108,6 +108,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Name of the ORE script that defines the payoff.
@@ -123,6 +124,7 @@ std::string("Autocallable")
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Optional embedded ORE script body. Empty when the trade names a library
@@ -133,6 +135,7 @@ script instead.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Optional JSON array of event schedule entries. Empty when not applicable.
@@ -142,6 +145,7 @@ Optional JSON array of event schedule entries. Empty when not applicable.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Optional JSON array of underlying asset codes. Empty when not applicable.
@@ -151,6 +155,7 @@ Optional JSON array of underlying asset codes. Empty when not applicable.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Optional JSON object of script parameters. Empty when not applicable.
@@ -160,6 +165,7 @@ Optional JSON object of script parameters. Empty when not applicable.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

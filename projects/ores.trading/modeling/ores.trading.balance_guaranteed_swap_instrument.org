@@ -44,6 +44,7 @@ only the product's own fields, and joins the header by =trade_id=.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :nullable:    false
+:economic:    false
 :END:
 
 The trade this instrument belongs to, and the instrument's own key.
@@ -57,6 +58,7 @@ trade it names gives the instrument its scope.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -66,6 +68,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 The security the swap's balance follows.
@@ -83,6 +86,7 @@ std::string("ISIN:XS0983610930")
 :cpp_type:      std::optional<int>
 :nullable:      true
 :default_value: std::nullopt
+:economic:      true
 :END:
 
 Optional lockout period in days.

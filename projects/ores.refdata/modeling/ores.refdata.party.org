@@ -285,7 +285,7 @@ Everything below is consumed by the SQL codegen pipeline only.
 | expression                                            |
 |--------------------------------------------------------|
 | length("codename") <= 32                                |
-| "codename" = '' or "codename" ~ '^[a-z][a-z_]+$'         |
+| "codename" = '' or "codename" ~ '^[a-z][a-z_]+_[0-9]{4}$' |
 
 ** Indexes
 
@@ -301,18 +301,20 @@ Everything below is consumed by the SQL codegen pipeline only.
 :PROPERTIES:
 :END:
 
-Sequence used to generate a unique base-26 suffix for auto-generated
-codenames. =nextval()= is outside MVCC: it advances even within a
-multi-row INSERT statement, so every row in a batch gets a different
-suffix, avoiding duplicate-key collisions that a NOT EXISTS loop
-cannot prevent due to the statement-level snapshot in READ COMMITTED.
+Sequence used to generate a unique auto-generated codename. =nextval()= is
+outside MVCC: it advances even within a multi-row INSERT statement, so every
+row in a batch gets a different value, avoiding duplicate-key collisions that a
+NOT EXISTS loop cannot prevent due to the statement-level snapshot in READ
+COMMITTED. =ores_utility_whimsical_codename_fn= turns each value into a
+whimsical name and a four-digit number, such as =silent_meadow_4217=, so two
+different values never give the same codename.
 
 #+begin_src sql :name extra_ddl :implements 92432102-d405-46fc-911a-111dfed27358
--- Sequence used to generate a unique base-26 suffix for auto-generated
--- codenames.  nextval() is outside MVCC: it advances even within a
--- multi-row INSERT statement, so every row in a batch gets a different
--- suffix, avoiding duplicate-key collisions that a NOT EXISTS loop cannot
--- prevent due to the statement-level snapshot in READ COMMITTED.
+-- Sequence used to generate a unique auto-generated codename.  nextval() is
+-- outside MVCC: it advances even within a multi-row INSERT statement, so every
+-- row in a batch gets a different value, avoiding duplicate-key collisions that
+-- a NOT EXISTS loop cannot prevent due to the statement-level snapshot in READ
+-- COMMITTED.
 create sequence if not exists ores_refdata_party_codename_seq;
 #+end_src
 
@@ -336,24 +338,24 @@ rather than letting a client-supplied value silently overwrite it.
 
 ** Codename generation and queue provisioning (insert path)
 
-Auto-generates =codename= (whimsical name + a globally-unique base-26
-sequence suffix) when the client leaves it blank, validates the final
-format, and provisions the per-party report-event queue -- all only on
+Auto-generates =codename= (a whimsical name and a four-digit number, from a
+globally-unique sequence value) when the client leaves it blank, validates the
+final format, and provisions the per-party report-event queue -- all only on
 first insert, since codename is immutable thereafter (see above).
 
 #+begin_src sql :name codename_generate_and_provision :implements 8697C751-ECD5-4501-AF06-77AD9A8985AB
-        -- Auto-generate codename using whimsical name + sequence suffix.
-        -- The sequence suffix is outside MVCC (nextval always advances),
-        -- so every row in a multi-row INSERT gets a distinct suffix, making
-        -- the codename globally unique without relying on a NOT EXISTS
-        -- check that cannot see sibling rows in the same statement.
+        -- Auto-generate the codename from a sequence value: a whimsical name
+        -- and a four-digit number. The sequence is outside MVCC (nextval
+        -- always advances), so every row in a multi-row INSERT gets a
+        -- distinct value, and distinct values give distinct codenames
+        -- without a NOT EXISTS check that cannot see sibling rows.
         if NEW.codename = '' or NEW.codename is null then
-            NEW.codename := ores_utility_generate_whimsical_name_fn() || '_' ||
-                ores_utility_to_base26_fn(nextval('ores_refdata_party_codename_seq'));
+            NEW.codename := ores_utility_whimsical_codename_fn(
+                nextval('ores_refdata_party_codename_seq'));
         end if;
         -- Validate the final codename.
-        if NEW.codename !~ '^[a-z][a-z_]+$' then
-            raise exception 'codename must match ^[a-z][a-z_]+$ got: %', NEW.codename
+        if NEW.codename !~ '^[a-z][a-z_]+_[0-9]{4}$' then
+            raise exception 'codename must match ^[a-z][a-z_]+_[0-9]{4}$ got: %', NEW.codename
                 using errcode = '23514';
         end if;
         -- Provision the per-party report event queue.

@@ -30,8 +30,10 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -167,6 +169,31 @@ struct bond_leg_amount final {
      */
     friend bool operator==(const bond_leg_amount&, const bond_leg_amount&) = default;
 };
+
+/**
+ * @brief The members of bond_leg_amount the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view bond_leg_amount_economic_fields[] = {
+    "leg_role",
+    "leg_number",
+    "amount_role",
+    "sequence_number",
+    "value",
+    "start_date",
+};
+
+/**
+ * @brief Names the members of bond_leg_amount that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<bond_leg_amount>) {
+    return bond_leg_amount_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for bond_leg_amount, e.g. for the

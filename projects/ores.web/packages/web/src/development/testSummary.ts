@@ -28,6 +28,8 @@ export function summary(overrides: Partial<ScenarioSummary> = {}): ScenarioSumma
         title: 'A scenario',
         description: '',
         path: 'a/scenario.org',
+        sprint: null,
+        created: '',
         state: 'PENDING',
         phase: 'waiting',
         target: 'CurrencyDetailDialog',

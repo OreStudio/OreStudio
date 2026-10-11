@@ -24,6 +24,7 @@ import { useState, type ReactNode } from 'react';
 import type { AccountSignIns } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
+import { AccountLockBadge } from '../ui/AccountLockBadge.js';
 import { Notice, Tag } from '../ui/Primitives.js';
 import { isZeroTimestamp } from '../ui/Time.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
@@ -120,11 +121,7 @@ function SignInsView({
                 <div>
                     <dt className="text-xs text-ink-faint">{t('signIns.state')}</dt>
                     <dd className="mt-0.5 flex flex-wrap gap-1">
-                        {loginInfo?.locked === true ? (
-                            <Tag tone="warn">{t('signIns.locked')}</Tag>
-                        ) : (
-                            <Tag tone="muted">{t('signIns.notLocked')}</Tag>
-                        )}
+                        <AccountLockBadge locked={loginInfo?.locked === true} />
                         {loginInfo?.passwordResetRequired === true && (
                             <Tag tone="warn">{t('signIns.passwordDue')}</Tag>
                         )}

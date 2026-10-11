@@ -22,10 +22,12 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.core/export.hpp"
+#include "ores.inbox.core/service/approval_apply_retry.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <chrono>
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -47,7 +49,8 @@ public:
                       ores::database::context ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier,
                       std::chrono::seconds answered_window,
-                      std::chrono::seconds reminder_window);
+                      std::chrono::seconds reminder_window,
+                      std::shared_ptr<service::apply_engine> engine);
 };
 
 }

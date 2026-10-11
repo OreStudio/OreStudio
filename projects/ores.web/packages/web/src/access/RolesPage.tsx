@@ -29,6 +29,8 @@ import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { AreaFilter } from './PermissionAreas.js';
 import { roleLabel } from './words.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { rolePath } from '../shell/paths.js';
+import { RefreshQueries } from '../ui/RefreshButton.js';
 
 /** How long typing pauses before a search is sent to the server. */
 const SEARCH_PAUSE_MS = 300;
@@ -101,9 +103,12 @@ export function RolesPage(): ReactNode {
                     title={t('access.roles.title')}
                     description={t('access.roles.lead')}
                     actions={
-                        <Button variant="primary" onClick={() => setCreating(true)}>
-                            {t('access.roles.new')}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <RefreshQueries keys={[['roles-page']]} />
+                            <Button variant="primary" onClick={() => setCreating(true)}>
+                                {t('access.roles.new')}
+                            </Button>
+                        </div>
                     }
                 />
             </div>
@@ -159,9 +164,7 @@ export function RolesPage(): ReactNode {
                             <tr
                                 key={role.id}
                                 className="cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover"
-                                onClick={() =>
-                                    void navigate(`/roles/${encodeURIComponent(role.id)}`)
-                                }
+                                onClick={() => void navigate(rolePath(role.id))}
                             >
                                 <td className="px-4 py-2">
                                     <span className="block font-medium">
@@ -216,7 +219,7 @@ function NewRoleDialog({ onClose }: { readonly onClose: () => void }): ReactNode
         onSuccess: async (id) => {
             await queries.invalidateQueries({ queryKey: ['roles'] });
             await queries.invalidateQueries({ queryKey: ['roles-page'] });
-            void navigate(`/roles/${encodeURIComponent(id)}`);
+            void navigate(rolePath(id));
         },
     });
     return (

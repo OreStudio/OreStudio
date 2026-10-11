@@ -28,6 +28,7 @@
 ** rates
 :PROPERTIES:
 :cpp_type: std::vector<bond_float_data>
+:economic: true
 :END:
 
 The fixed rates the document states, one bond_float_data row each.

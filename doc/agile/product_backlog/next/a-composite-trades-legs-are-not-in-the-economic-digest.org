@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: E8835866-EE2D-4C13-802B-A5A22C6C0111
+:END:
+#+title: A composite trade's legs are not in the economic digest
+#+description: The economic digest of a composite trade folds only the composite instrument row, which declares no economic field, so a change to a leg leaves the digest alone.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The catalogue lists =composite_instrument= as the only component of the composite family, and its model declares every column =:economic: false=. The family's economics sit in =composite_leg=, which no reader in the digest shape reads.
+
+Declare =composite_leg= economic, give it a reader by trade id, and list it under =composite_instrument= in =* Digest/Instrument components=. Then tighten the catalogue loader so that a listed component with no =:economic: true= column is refused.
+
+* Why
+
+A composite trade's digest is constant, so an amendment to any of its legs does not move the external version. The loader accepts the listing today because refusing it would change what the digest covers.
+
+* References
+
+- [[id:30FDE60C-DBDB-47DA-9C9D-D4262A948AC4][Declare the economic fields]] — the task whose shape declaration made the omission visible.
+- =ores.trading.trade_type_catalogue.org=, section =* Digest=.
+
+
+* See also
+
+- [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] — the story whose digest this widens.

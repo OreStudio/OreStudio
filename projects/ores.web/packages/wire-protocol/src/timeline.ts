@@ -43,6 +43,7 @@ import { readAccountAccess } from './access.js';
 import { readEntityHistory } from './classifications.js';
 import { readAccount, readAuthEvents } from './credentials.js';
 import { readContactInformation } from './profile-operations.js';
+import { listRecords, readRecord, recordResource, type RecordRow } from './records.js';
 
 /** One field of one entry in a timeline, as a screen draws it. */
 export const timelineFieldSchema = z.object({
@@ -191,6 +192,8 @@ const SIGN_IN_KINDS: Readonly<Record<string, string>> = {
     login_failure: 'sign_in_failed',
     logout: 'signed_out',
     token_refresh: 'refreshed',
+    account_locked: 'locked',
+    account_unlocked: 'unlocked',
 };
 
 /**
@@ -372,6 +375,142 @@ export async function readPersonTimeline(
             ...contactEvents,
             ...grantEvents,
             ...signInEvents,
+        ]),
+        gaps,
+    };
+}
+
+/** The entity types whose versions make up a party's story. */
+export const PARTY_ENTITY = 'ores.refdata.party';
+export const PARTY_IDENTIFIER_ENTITY = 'ores.refdata.party_identifier';
+export const PARTY_CONTACT_ENTITY = 'ores.refdata.party_contact_information';
+export const BUSINESS_UNIT_ENTITY = 'ores.refdata.business_unit';
+
+/**
+ * The kinds of record that belong to a party, each with the resource that lists
+ * them by party and the key its history is read by.
+ *
+ * A history provider resolves a row by the key its model declares, which is not
+ * always the row's id: an identifier by its value, a contact by its type and a
+ * unit by its code. The id is what ties a version to its row, so the versions
+ * read are kept only when they carry the id of the row asked for.
+ */
+const PARTY_PARTS: readonly {
+    readonly resource: string;
+    readonly entityType: string;
+    readonly key: (row: RecordRow) => string;
+    readonly name: string;
+}[] = [
+    {
+        resource: 'party-identifiers',
+        entityType: PARTY_IDENTIFIER_ENTITY,
+        key: (row) => String(row['id_value'] ?? ''),
+        name: 'identifier',
+    },
+    {
+        resource: 'party-contacts',
+        entityType: PARTY_CONTACT_ENTITY,
+        key: (row) => String(row['contact_type'] ?? ''),
+        name: 'contact',
+    },
+    {
+        resource: 'business-units',
+        entityType: BUSINESS_UNIT_ENTITY,
+        key: (row) => String(row['unit_code'] ?? ''),
+        name: 'business unit',
+    },
+];
+
+/** The versions of a history that belong to the row asked for. */
+function versionsOfRow<T extends { readonly fields: readonly TimelineField[] }>(
+    versions: readonly T[],
+    id: string,
+): readonly T[] {
+    return versions.filter((version) => fieldValue(version.fields, 'ID') === id);
+}
+
+/**
+ * One party's whole story, newest first.
+ *
+ * A party is made of several kinds of record, so its story is the party's own
+ * versions, merged with those of its identifiers, its contacts and its business
+ * units. The countries and the currencies it works in and the counterparties it
+ * may trade with are junctions, which keep no versions: opening or closing one
+ * is not in the stream, and the stream says so as a gap.
+ *
+ * A party nothing holds answers with an empty stream, as the party page does.
+ */
+export async function readPartyTimeline(
+    caller: AuthenticatedCaller,
+    partyId: string,
+): Promise<Timeline> {
+    const parties = recordResource('parties');
+    const party = parties === undefined ? undefined : await readRecord(caller, parties, partyId);
+    if (party === undefined) {
+        return { subject: 'party', id: partyId, events: [], gaps: [] };
+    }
+
+    const gaps: TimelineGap[] = [];
+    const partyVersions = await orGap(
+        gaps,
+        PARTY_ENTITY,
+        'The party’s own versions need the party read, which this caller does not hold.',
+        () => readEntityHistory(caller, PARTY_ENTITY, String(party['short_code'] ?? '')),
+        [],
+    );
+
+    const partEvents = await Promise.all(
+        PARTY_PARTS.map(async (part) => {
+            const resource = recordResource(part.resource);
+            if (resource === undefined) return [];
+            const rows = await orGap(
+                gaps,
+                part.entityType,
+                `The ${part.name}s of this party could not be read, so their versions are not shown.`,
+                () => listRecords(caller, resource, partyId),
+                [] as readonly RecordRow[],
+            );
+            const perRow = await Promise.all(
+                rows.map(async (row) => {
+                    const id = String(row['id'] ?? '');
+                    const versions = await orGap(
+                        gaps,
+                        part.entityType,
+                        `The versions of a ${part.name} could not be read, so they are not shown.`,
+                        () => readEntityHistory(caller, part.entityType, part.key(row)),
+                        [],
+                    );
+                    const own = versionsOfRow(versions, id);
+                    if (own.length === 0 && versions.length > 0) {
+                        gaps.push({
+                            entity: part.entityType,
+                            reason: `The history of a ${part.name} is read by a key that other parties may share, and the server answered with another party’s row, so this one’s versions are not shown.`,
+                        });
+                    }
+                    return recordEvents(part.entityType, id, own);
+                }),
+            );
+            return perRow.flat();
+        }),
+    );
+
+    for (const [entity, what] of [
+        ['ores.refdata.party_country', 'countries it works in'],
+        ['ores.refdata.party_currency', 'currencies it works in'],
+        ['ores.refdata.party_counterparty', 'counterparties it may trade with'],
+    ] as const) {
+        gaps.push({
+            entity,
+            reason: `The ${what} are a junction the protocol declares to have no versions and no events, so adding or closing one is not in the stream.`,
+        });
+    }
+
+    return {
+        subject: 'party',
+        id: partyId,
+        events: orderTimeline([
+            ...recordEvents(PARTY_ENTITY, partyId, versionsOfRow(partyVersions, partyId)),
+            ...partEvents.flat(),
         ]),
         gaps,
     };

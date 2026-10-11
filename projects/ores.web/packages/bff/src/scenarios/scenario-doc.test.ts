@@ -26,6 +26,7 @@ import {
     AmbiguousStepError,
     DuplicateOutcomeError,
     parseScenario,
+    plainText,
     recordRun,
     ScenarioFormatError,
     UnknownStepError,
@@ -131,6 +132,24 @@ describe('reading a multi-client scenario', () => {
         const first = scenario.steps[0];
         expect(first?.instructions.join('\n')).toContain('tenant_admin@barclays_plc');
         expect(first?.instructions.join('\n')).not.toContain('Result');
+    });
+});
+
+describe('the date a scenario was created', () => {
+    it('is read from the #+created: line', () => {
+        expect(parseScenario(multi).created).toBe('2026-07-13');
+        expect(parseScenario(single).created).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it('is empty when the doc has no such line', () => {
+        const without = multi.replace(/^#\+created:.*\n/m, '');
+        expect(without).not.toBe(multi);
+        expect(parseScenario(without).created).toBe('');
+    });
+
+    it('is the date of the current template', () => {
+        if (!existsSync(template)) return;
+        expect(parseScenario(fromTemplate()).created).toBe('2026-10-11');
     });
 });
 
@@ -460,5 +479,68 @@ describe('every scenario doc in the repository', () => {
             ).toBe(true);
             expect(back.state, file).toBe('PASSED');
         }
+    });
+});
+
+describe('the target of a test as a person reads it', () => {
+    it('drops the org markup that wraps a word', () => {
+        expect(plainText('=CounterpartyDetailDialog= / =CounterpartyHistoryDialog=')).toBe(
+            'CounterpartyDetailDialog / CounterpartyHistoryDialog',
+        );
+        expect(plainText('The shell, then *My access* in =ores.web=.')).toBe(
+            'The shell, then My access in ores.web.',
+        );
+        expect(plainText('use ~git status~ here')).toBe('use git status here');
+    });
+
+    it('leaves plain text, a path and a lone marker as they are', () => {
+        expect(plainText('Menu: Reference Data > Counterparties')).toBe(
+            'Menu: Reference Data > Counterparties',
+        );
+        expect(plainText('a/b/c and 2 * 3')).toBe('a/b/c and 2 * 3');
+        expect(plainText('x = y')).toBe('x = y');
+        expect(plainText('')).toBe('');
+    });
+
+    it('is applied to the target a scenario reports', () => {
+        const text = multi.replace(
+            /\| Target dialog \|.*\n/,
+            '| Target dialog | =CounterpartyDetailDialog= / *History* |\n',
+        );
+        expect(parseScenario(text).target).toBe('CounterpartyDetailDialog / History');
+    });
+});
+
+describe('an abandoned scenario', () => {
+    const abandoned = (text: string) => text.replace(/(\| State\s+\| )\w+/, '$1ABANDONED');
+
+    it('is read from the State row', () => {
+        const text = abandoned(single);
+        expect(text).toMatch(/\| State\s+\| ABANDONED/);
+        expect(parseScenario(text).state).toBe('ABANDONED');
+    });
+
+    it('stays abandoned when the Results table still says PASSED, because a person said so', () => {
+        expect(single).toMatch(/\| Status\s+\| PASSED/);
+        expect(parseScenario(abandoned(single)).state).toBe('ABANDONED');
+    });
+
+    it('keeps its steps and their marks, so nothing is lost by abandoning it', () => {
+        const back = parseScenario(abandoned(multi));
+        expect(back.steps).toHaveLength(13);
+        expect(back.steps.find((s) => s.title === 'Create')?.status).toBe('FAIL');
+    });
+
+    it('is brought back by a save, which works the state out from the steps', () => {
+        const title = parseScenario(single).steps[0]?.title ?? '';
+        const done = recordRun(abandoned(single), run([outcome(null, title, 'PENDING')]));
+        expect(done.state).toBe('PENDING');
+        expect(parseScenario(done.text).state).toBe('PENDING');
+        expect(done.text).toMatch(/\| State\s+\| PENDING/);
+    });
+
+    it('is read in any case', () => {
+        const text = single.replace(/(\| State\s+\| )\w+/, '$1abandoned (the Qt client is gone)');
+        expect(parseScenario(text).state).toBe('ABANDONED');
     });
 });

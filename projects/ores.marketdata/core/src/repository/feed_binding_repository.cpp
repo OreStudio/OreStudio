@@ -221,12 +221,18 @@ feed_binding_repository::read_latest_by_source_name(context ctx, const std::stri
                        where("tenant_id"_c == tid && "source_name"_c == source_name &&
                              "valid_to"_c == max.value());
 
-    return execute_read_query<feed_binding_entity, domain::feed_binding>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one. A
+    // finder with a parent column is pinned to its parent's party already.
+    auto found = execute_read_query<feed_binding_entity, domain::feed_binding>(
         ctx,
         query,
         [](const auto& entities) { return feed_binding_mapper::map(entities); },
         lg(),
         "Reading latest feed binding by source_name.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::feed_binding>

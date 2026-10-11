@@ -8,9 +8,9 @@
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+target_dialog:
 #+created: 2026-07-10
-#+updated: 2026-07-10
+#+updated: 2026-10-11
 #+environment:
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 
 This page documents a test scenario verifying [[id:5E8C3909-3BCD-4BBD-9748-2B551054A3B9][Document currency pairs and conventions in the user manual]] in [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
 
@@ -22,7 +22,7 @@ This page documents a test scenario verifying [[id:5E8C3909-3BCD-4BBD-9748-2B551
 | Parent story  | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]   |
 | Target dialog | CurrencyPairMdiWindow, CurrencyPairDetailDialog, CurrencyPairConventionMdiWindow, CurrencyPairConventionDetailDialog |
 | Clients       |                                         |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Context
 
@@ -152,4 +152,7 @@ correct in the PDF's own rendering.
 | Worktree      | prime_origin |
 
 * Notes
+
+Abandoned on 2026-10-11: a legacy scenario for the Qt client, which is no longer used. It is kept for the record and will not be run. A retest brings it back.
+
 [[file:scenario_currency-pair-manual-screenshots_20260710_091044.png]]

@@ -123,6 +123,8 @@ class MemoryStore implements ScenarioStore {
                 title: s.title,
                 description: s.description,
                 path: docs.get(id)?.path ?? '',
+                sprint: null,
+                created: s.created,
                 state: s.state,
                 phase: s.state === 'PENDING' ? 'waiting' : 'done',
                 target: s.target,
@@ -158,6 +160,15 @@ class MemoryStore implements ScenarioStore {
     }
 
     readonly images: { id: string; step: number; bytes: Uint8Array }[] = [];
+    readonly files = new Map<string, Uint8Array>();
+
+    async readImage(id: string, name: string) {
+        const key = this.check(id);
+        if (docs.get(key)?.type !== 'test_scenario') return null;
+        const bytes = this.files.get(name);
+        const kind = bytes === undefined ? null : detectImage(bytes);
+        return bytes === undefined || kind === null ? null : { bytes, kind };
+    }
 
     async saveImage(id: string, step: number, bytes: Uint8Array): Promise<SavedImage> {
         const key = this.check(id);
@@ -556,6 +567,93 @@ describe('uploading a screenshot of a step', () => {
         });
         expect(response.statusCode).toBe(413);
         expect(response.json().code).toBe('invalid-request');
+    });
+});
+
+describe('reading an image kept beside a scenario', () => {
+    const url = (id: string, name: string) => `/api/qa/scenarios/${id}/files/${name}`;
+
+    it('serves the image with the headers that keep a browser from reading it as anything else', async () => {
+        const store = new MemoryStore();
+        store.files.set('shot.png', PNG_BYTES);
+        const { server, sessionId } = buildTestServer({ store });
+        const response = await send(server, sessionId, 'GET', url(MULTI, 'shot.png'));
+        expect(response.statusCode).toBe(200);
+        expect(response.headers['content-type']).toBe('image/png');
+        expect(response.headers['x-content-type-options']).toBe('nosniff');
+        expect(response.headers['content-security-policy']).toContain("default-src 'none'");
+        expect(response.headers['cache-control']).toContain('private');
+        expect(response.rawPayload).toEqual(PNG_BYTES);
+    });
+
+    it('serves each kind with its own media type', async () => {
+        const store = new MemoryStore();
+        store.files.set('a.jpg', Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1]));
+        store.files.set('b.gif', Buffer.from('GIF89a12'));
+        const { server, sessionId } = buildTestServer({ store });
+        expect(
+            (await send(server, sessionId, 'GET', url(MULTI, 'a.jpg'))).headers['content-type'],
+        ).toBe('image/jpeg');
+        expect(
+            (await send(server, sessionId, 'GET', url(MULTI, 'b.gif'))).headers['content-type'],
+        ).toBe('image/gif');
+    });
+
+    it('answers 404 for a file that is not there, and for bytes that are not an image', async () => {
+        const store = new MemoryStore();
+        store.files.set('fake.png', Buffer.from('<script>1</script>'));
+        const { server, sessionId } = buildTestServer({ store });
+        for (const name of ['missing.png', 'fake.png']) {
+            const response = await send(server, sessionId, 'GET', url(MULTI, name));
+            expect(response.statusCode, name).toBe(404);
+            expect(response.json().code).toBe('not-found');
+        }
+    });
+
+    it('needs a session', async () => {
+        const store = new MemoryStore();
+        store.files.set('shot.png', PNG_BYTES);
+        const { server } = buildTestServer({ store });
+        const response = await send(server, null, 'GET', url(MULTI, 'shot.png'));
+        expect(response.statusCode).toBe(401);
+    });
+
+    it('refuses an id that is not a document id', async () => {
+        const { server, sessionId } = buildTestServer({ store: new MemoryStore() });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/qa/scenarios/..%2F..%2Fetc/files/a.png',
+        );
+        expect(response.statusCode).toBe(400);
+    });
+
+    it('reads an image beside the real file, through the doc root', async () => {
+        const root = mkdtempSync(join(tmpdir(), 'ores-qa-'));
+        mkdirSync(join(root, 'sprint'));
+        writeFileSync(
+            join(root, 'sprint/scenario_single.org'),
+            fixture('single_client_scenario.org'),
+        );
+        writeFileSync(join(root, 'sprint/scenario_single_step1_20261011_000000.png'), PNG_BYTES);
+        const { server, sessionId } = buildTestServer({ docRoot: root });
+        const ok = await send(
+            server,
+            sessionId,
+            'GET',
+            url(SINGLE, 'scenario_single_step1_20261011_000000.png'),
+        );
+        expect(ok.statusCode).toBe(200);
+        expect(ok.rawPayload).toEqual(PNG_BYTES);
+        const outside = await send(
+            server,
+            sessionId,
+            'GET',
+            url(SINGLE, '..%2F..%2Fscenario_single.org'),
+        );
+        expect(outside.statusCode).toBe(404);
+        rmSync(root, { recursive: true, force: true });
     });
 });
 

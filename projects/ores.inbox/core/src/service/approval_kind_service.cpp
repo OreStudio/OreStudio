@@ -103,6 +103,8 @@ domain::approval_kind to_domain(const messaging::approval_kind_write& write) {
     v.allows_hold = write.allows_hold;
     v.comment_on_approve = write.comment_on_approve;
     v.expires_after_days = write.expires_after_days;
+    v.apply_workflow_type = write.apply_workflow_type;
+    v.apply_window_hours = write.apply_window_hours;
     v.approvals_required = write.approvals_required;
     v.display_order = write.display_order;
     return v;

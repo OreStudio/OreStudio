@@ -8,9 +8,9 @@
 #+filetags: :commission_business_centre:sprint_23:v0:
 #+target_dialog:
 #+created: 2026-07-13
-#+updated: 2026-07-13
+#+updated: 2026-10-11
 #+environment:
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 #+startup: inlineimages
 
 This page documents a test scenario verifying [[id:15F0D21E-EDE0-4834-9963-D32953CCF9A1][Verify business_centre Qt UI end-to-end post-NATS]] in [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
@@ -23,7 +23,7 @@ This page documents a test scenario verifying [[id:15F0D21E-EDE0-4834-9963-D3295
 | Parent story  | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]]   |
 | Target dialog | RefdataPlugin (Reference Data menu: Business Centres), PartyPlugin (Reference Data menu: Parties, Counterparties, Business Units) |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Prerequisites
 
@@ -93,3 +93,5 @@ ERROR-level line.
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: a legacy scenario for the Qt client, which is no longer used. It is kept for the record and will not be run. A retest brings it back.

@@ -51,6 +51,7 @@ boundary converts, as the family's =end_date= does.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :supplied_by:  user
+:economic:    false
 :END:
 
 The trade whose document stated this option block.
@@ -60,6 +61,7 @@ The trade whose document stated this option block.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -69,6 +71,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Whether the holder is long or short the option.
@@ -87,6 +90,7 @@ std::string("Long")
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The option's type, as the document spelled it.
@@ -98,6 +102,7 @@ Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionTy
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The payoff the option settles to (ORE =optionData.PayoffType=).
@@ -112,6 +117,7 @@ tightens the soft reference into a real foreign key.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The second payoff, for the products that state two (ORE =optionData.PayoffType2=).
@@ -126,6 +132,7 @@ tightens the soft reference into a real foreign key.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Exercise style, for example European or American.
@@ -135,6 +142,7 @@ Exercise style, for example European or American.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Notice period the holder must give before exercising.
@@ -144,6 +152,7 @@ Notice period the holder must give before exercising.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Calendar the notice period is counted against.
@@ -153,6 +162,7 @@ Calendar the notice period is counted against.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Date convention the notice period rolls under.
@@ -162,6 +172,7 @@ Date convention the notice period rolls under.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Flag saying the option may be exercised between coupons.
@@ -171,6 +182,7 @@ Flag saying the option may be exercised between coupons.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Settlement type the option pays under.
@@ -180,6 +192,7 @@ Settlement type the option pays under.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Method the settlement takes, for example cash or physical.
@@ -189,6 +202,7 @@ Method the settlement takes, for example cash or physical.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Flag saying the payoff falls due at expiry.
@@ -198,6 +212,7 @@ Flag saying the payoff falls due at expiry.
 :type:     numeric(28, 10)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Premium amount for the single-premium spelling.
@@ -211,6 +226,7 @@ premium table.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Currency the single premium pays in.
@@ -220,6 +236,7 @@ Currency the single premium pays in.
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Date the single premium pays on.
@@ -232,6 +249,7 @@ column is a date.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Period an exercise fee settles over.
@@ -241,6 +259,7 @@ Period an exercise fee settles over.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Calendar an exercise fee settles against.
@@ -250,6 +269,7 @@ Calendar an exercise fee settles against.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Date convention an exercise fee settles under.
@@ -259,6 +279,7 @@ Date convention an exercise fee settles under.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Flag saying the option exercises itself when it is in the money.
@@ -271,6 +292,7 @@ keeps the document's own spelling rather than a canonical one.
 :type:     boolean
 :cpp_type: bool
 :nullable: false
+:economic: true
 :END:
 
 True when the document stated an exercise block, whether or not the
@@ -285,6 +307,7 @@ true
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Date the exercise block names.
@@ -302,6 +325,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Price the exercise block states, when it states one.
@@ -311,6 +335,7 @@ Price the exercise block states, when it states one.
 :type:     boolean
 :cpp_type: bool
 :nullable: false
+:economic: true
 :END:
 
 True when the document stated a payment-dates block.
@@ -324,6 +349,7 @@ true
 :type:     integer
 :cpp_type: std::optional<std::int64_t>
 :nullable: true
+:economic: true
 :END:
 
 Number of days the payment dates are derived forward by.
@@ -333,6 +359,7 @@ Number of days the payment dates are derived forward by.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Calendar the payment dates roll against.
@@ -342,6 +369,7 @@ Calendar the payment dates roll against.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Date convention the payment dates roll under.
@@ -351,6 +379,7 @@ Date convention the payment dates roll under.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The date the payment dates are measured from.
@@ -360,6 +389,7 @@ The date the payment dates are measured from.
 :type:     boolean
 :cpp_type: bool
 :nullable: false
+:economic: true
 :END:
 
 True when the document stated a settlement block.
@@ -373,6 +403,7 @@ true
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Currency the settlement block pays in.
@@ -382,6 +413,7 @@ Currency the settlement block pays in.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 FX index the settlement block fixes against.
@@ -391,6 +423,7 @@ FX index the settlement block fixes against.
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Date the settlement block fixes on, when the document states one.

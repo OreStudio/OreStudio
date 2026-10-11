@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: C8A0C6B3-2C6A-4946-A306-5C16A5769057
+:END:
+#+title: Task: Ask before the scenario runner drops unsaved marks
+#+description: Leaving the scenario runner by the Back link, a breadcrumb, a menu entry, a link in the Story or Task tab, a reload or a typed address drops every unsaved mark and note without a word. Ask first, and keep a link in a doc inside the tab.
+#+type: task
+#+level: s1
+#+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
+#+owner: marco
+#+branch: feature/leaving-the-scenario-runner-with-unsaved-marks-loses-them
+#+pr: 3097
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tester never loses a mark or a note by leaving the runner page without meaning to. The runner asks before it is left with something unsaved, and a link in the story or the task opens inside the tab, so the page is not left at all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- A move inside the app that leaves the runner page, by the Back link, a breadcrumb or a menu entry, asks *Leave without saving?* when a mark or a note is not saved, and offers Stay and Leave.
+- A reload, a close or a typed address makes the browser ask when something is not saved.
+- Nothing is asked when nothing is unsaved, after a save, or for a change of tab, which stays on the page.
+- A link inside the Story or Task tab opens the linked doc in the tab, with a Back button, so the runner page and its marks stay as they are.
+- A scenario for the QA runner covers the question and the links.
+- A scenario can be abandoned, with =ABANDONED= in its State row. It leaves the Tests tab and shows on its own Abandoned tab, and a retest brings it back. The 12 waiting scenarios for the Qt client, created before September, are abandoned, each with a dated note saying why.
+- A step has a button that pastes an image from the clipboard, because a screenshot taken to the clipboard, such as one from GNOME, can be pasted with Ctrl+V only when a field has the focus. The images a note links show as thumbnails under it, and a click opens the picture.
+- The Tests queue groups the scenarios by sprint, newest sprint first. In a sprint the live scenarios, which wait for a tester, are the Active bucket at the top, and the done scenarios are the Done bucket below them. The abandoned scenarios are a bucket of their own that is closed, at the bottom. There is no Done tab. A sprint is open when something in it is active, and the newest sprint is always open.
+- Save, or Retest for a closed scenario, sits above the step, in the card with the step navigation, with the way back to the tests. The message about a save is directly under it. A tester sees it without scrolling to the end of a long step.
+- A scenario can be read as a report, on a Report tab beside the Steps tab. It shows every step on one page, in order, with the mark, the note the tester wrote and the screenshots as large pictures with their file names. A summary at the top gives the state, the count of each status, the target, the dates and the build, and a strip of numbered markers, coloured by status, jumps to a step. A scenario that is closed opens on the report, so a reviewer reads what the tester did. A scenario that is open opens on its steps.
+- Within a bucket the scenarios run from the newest created date to the oldest, and each row shows the created date.
+
+* Plan
+
+- =isDirty= in =runner.ts= says whether the working copy differs from the scenario as the server last answered it, in the status or the note of any step. A save makes the answer the new baseline, so a saved page is clean.
+- =UnsavedGuard= asks in two ways. A blocker, with the =LeaveDialog= to ask, covers a move inside the app, and it blocks only a change of path, because a tab of the page changes the query and stays on the page. A =beforeunload= handler covers a reload, a close and a typed address.
+- A blocker works only under a data router, and the app used a plain =BrowserRouter=. =main.tsx= now builds one data router with a single route that takes every address and renders =ConnectedApp=, which keeps its own route table. Under a plain router, as in a test that renders markup, the guard asks nothing in the app and the unload guard still works.
+- =Context= in the scenario page keeps a stack of the docs followed in a tab, in =docStack.ts=. A link opens a doc on top, and Back takes it off, so a link never leaves the page. The page that shows a doc by its address stays for a link that is opened in a new tab or typed.
+- The QA reads moved to =queries.ts=, and each says =meta: { quiet: true }=. The screen of each states the failure itself, so the app's banner for a request that did not finish only repeated a dead link, which is an expected answer.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- A pasted screenshot was uploaded twice. The clipboard gives the same image in its items and in its files, as two File objects, and the page kept both because it compared the objects. Each of the three pairs in the first run was byte-identical, and was saved in the same second as =name.png= and =name_2.png=. The items are read first now, and the files only when there are none. The first browser run missed it, because a test event made with =DataTransfer= shares one object. A real Ctrl+V on a real clipboard in headless Chrome made two uploads with the old rule and one with the fix.
+- The first run of the scenario is committed as the record: all 17 steps passed, and the six screenshots are the ones pasted on steps 2 and 13. Only the screenshot of step 13 is linked from a note, so the report shows one picture.
+- The report was checked in the real app with a real sign-in. It opened the finished scenario on its Report tab, loaded the screenshot of step 13 as a real picture, and a marker scrolled to its step.
+
+- The Abandoned status is a state a person sets in the doc. The runner never sets it. Compass does not know it yet, and the scenario template still says =PENDING | PASSED FAILED=. The 12 legacy docs have it in their =#+todo:= line.
+- The abandoned set is the 12 scenarios that waited and were created before 2026-09-01. Four more wait, and they are not legacy: three were created on 2026-10-06 to 2026-10-08 for stories that are DONE, and one is dated 2026-09-29 for a web journey. They are left for a decision, and so is the scenario that is being run.
+- A saved image is served by =GET /api/qa/scenarios/:id/files/:name=. It serves a file only when its name is a plain picture name, it is a regular file beside the scenario's doc, not a link, and its bytes are a PNG, JPEG, GIF or WebP image. An SVG is never served. The headers keep a browser from reading it as anything else.
+- The paste button reads the clipboard through the browser, which asks the tester for leave the first time. Under plain HTTP on an address that is not local the browser has no clipboard to read, and the page says to paste with Ctrl+V.
+
+- This task took in the fixes found by running the scenario, as the work meant to do: it is one branch and one pull request. Running the scenario showed that the queue listed 135 scenarios from six sprints in two long cards. The server now reads the sprint folder from a scenario's path and its =#+created:= date from the doc, all 135 of which have one. The queue groups by sprint, with an Active and a Done bucket in each sprint, and sorts a bucket by created date. A first version had a Done tab, and the tester asked for buckets in the sprint instead, because the sprint grouping already keeps the old scenarios out of the way.
+- The old scenarios mark up their target in org, such as =CounterpartyDetailDialog= and *My access*, and the queue showed the markers. The reader of the doc now gives the target as plain text.
+- The real tree has 135 scenarios: 17 wait, in five sprints (27: 5, 26: 1, 25: 1, 23: 9, 22: 1), and 118 are done, in four.
+- A browser run of the new screen against the real summaries of the doc tree checked the sections, their order, their open state, the counts and the sort.
+- The running service was not rebuilt or restarted for this change, because that signs the tester out of a live run. The bundle and the service need a build and a restart together.
+
+- A browser run found two faults that no test of markup could. The blocker blocked a switch to the Story tab, because a tab changes the query of the address, so it now blocks only a change of path. The real story has links to docs the runner does not show, and each showed the app's red banner on top of the message in the tab, so the QA reads are quiet now.
+- The guard drops nothing silently. A tester who chooses Leave drops what is not saved, as before, and a tester who reloads, or closes the tab, is asked by the browser.
+- A harness that is not committed mounted the page under a data router and drove it in headless Chrome. A second run signed in to the real app as the tenant admin, opened the real scenario from the real doc tree, and drove the question, the tab and the links. It never pressed Save, so it changed no file.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:BE03EF33-C2A7-4B0B-A444-BDA37F4663AE][Test the QA validation runner in the browser]] | PENDING | Steps 10 and 11 cover the links in a tab and the question before leaving. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3097][#3097]] | [web] Ask before the scenario runner drops unsaved marks |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | UNSAFE_DataRouterContext is an unstable export | UnsavedGuard.tsx | Fix | A test pins that the context still exists, and the comment says why. A release that removes it fails a test. |
+| 2 | A forced sign-out shows the Leave dialog | UnsavedGuard.tsx | Accept | Stay cannot restore an expired session, and what is not saved is lost either way. The tester can only choose to leave. Noted. |
+| 3 | The doc trail resets when a tab is left | ScenarioPage.tsx | Accept | The stack lives in the tab. It costs a click to find the place again, and it touches no mark, because the marks live in the runner. |
+| 4 | leavesPage ignores the query | UnsavedGuard.tsx | Fix | The comment says the rule looks at the path only, and what to do if the runner keeps state in the query. |
+| 5 | The French and Portuguese text needs a read | locales | Note | My translation, as the pull request says. It needs a speaker before a release. |
+| 6 | The inbox entry removed with the capture | inbox.org | Confirm | The capture was promoted to this task, which removes its file and its row. |
+| 7 | A clipboard error other than a refusal shows as an empty clipboard | images.ts | Fix | A DataError or NotFoundError says the clipboard was empty. Any other error says the clipboard cannot be read. A test covers three error names. |
+| 8 | The image read checks the file, then reads it | file-scenario-store.ts | Fix | The file is opened once with O_NOFOLLOW, and the open handle is checked and read. A link fails to open. |
+| 9 | sprintOf takes the first sprint folder | file-scenario-store.ts | Fix | The comment says so. |
+| 10 | The image cache can show an old picture | qa.ts | Fix | The cache lifetime is now 300 seconds, not 3600. |
+| 11 | The marker scroll ignores reduced motion | ScenarioReport.tsx | Fix | A tester who asks for less motion jumps at once. A test covers the rule. |
+| 12 | Compass and the template do not know ABANDONED | compass | Note | A follow-up. The state is set by hand in the doc for now. |
+| 13 | The French and Portuguese text needs a speaker | locales | Note | Same as item 5. |
+
+* Result
+
+The scenario runner asks before it drops unsaved marks. Fixes found while running the QA scenario are on the same branch: the tests queue by sprint with Active and Done buckets, the ABANDONED state, the clipboard button, images served and shown, the report view, and the double paste fix. Two Claude reviews are addressed. The suites pass: web 944, BFF 561, contracts 10.

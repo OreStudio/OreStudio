@@ -230,12 +230,18 @@ configuration_repository::read_latest_by_name(context ctx, const std::string& na
         sqlgen::read<std::vector<configuration_entity>> |
         where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value());
 
-    return execute_read_query<configuration_entity, domain::configuration>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one. A
+    // finder with a parent column is pinned to its parent's party already.
+    auto found = execute_read_query<configuration_entity, domain::configuration>(
         ctx,
         query,
         [](const auto& entities) { return configuration_mapper::map(entities); },
         lg(),
         "Reading latest configuration by name.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::configuration>

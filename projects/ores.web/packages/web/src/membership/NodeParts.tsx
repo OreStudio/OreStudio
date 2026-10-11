@@ -22,7 +22,7 @@
 import type { ReactNode } from 'react';
 import type { ReportingTreeNode, ReportingTreeParty } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
-import { personPath } from '../access/PeoplePage.js';
+import { personPath } from '../shell/paths.js';
 import { roleLabel } from '../access/words.js';
 import { Link } from 'react-router';
 import { Avatar, imageUrl } from '../ui/Images.js';

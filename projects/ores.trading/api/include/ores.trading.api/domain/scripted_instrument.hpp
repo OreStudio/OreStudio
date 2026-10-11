@@ -28,8 +28,10 @@
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <chrono>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -105,6 +107,30 @@ struct scripted_instrument final {
      */
     friend bool operator==(const scripted_instrument&, const scripted_instrument&) = default;
 };
+
+/**
+ * @brief The members of scripted_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view scripted_instrument_economic_fields[] = {
+    "script_name",
+    "script_body",
+    "events_json",
+    "underlyings_json",
+    "parameters_json",
+};
+
+/**
+ * @brief Names the members of scripted_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<scripted_instrument>) {
+    return scripted_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for scripted_instrument, e.g. for the

@@ -25,7 +25,11 @@ import { Crumbs } from '../refdata/shared.js';
 import { useTabs } from '../ui/Tabs.js';
 import { TestsQueue } from './TestsQueue.js';
 
-/** The tabs of the area. Board, Stories and Tasks join them with the next story. */
+/**
+ * The tabs of the area. Tests holds every scenario, by sprint, with the live
+ * ones at the top of a sprint and the done ones below. Board, Stories and Tasks
+ * join it with the next story.
+ */
 const TABS = ['tests'] as const;
 
 /**

@@ -30,8 +30,10 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -168,6 +170,33 @@ struct instrument_option_premium final {
     friend bool operator==(const instrument_option_premium&,
                            const instrument_option_premium&) = default;
 };
+
+/**
+ * @brief The members of instrument_option_premium the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view instrument_option_premium_economic_fields[] = {
+    "sequence_number",
+    "amount",
+    "currency",
+    "pay_date",
+    "has_settlement",
+    "settlement_pay_currency",
+    "settlement_fx_index",
+    "settlement_fixing_date",
+};
+
+/**
+ * @brief Names the members of instrument_option_premium that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<instrument_option_premium>) {
+    return instrument_option_premium_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for instrument_option_premium, e.g. for the

@@ -28,7 +28,7 @@ The same economic quantity is typed the same way in every family.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] |
-| Now          | **Done and verified.** All 35 columns are converted, both baselines are empty, and the whole suite passes after a database recreate. 12 of 37 money columns converted. The slice is proven end to end on the live environment at the numeric(38, 12) scale. A second scan found 10 continuous columns typed exact, so the remaining batch is 35, not 25. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. The baselines are empty, so a new offender now fails the check. |
 | Last touched | 2026-10-09                               |

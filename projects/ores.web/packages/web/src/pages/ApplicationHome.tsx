@@ -19,6 +19,8 @@
  *
  */
 
+import { PATHS } from '../shell/paths.js';
+import { ActiveCards } from '../shell/AreaCards.js';
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useHolds } from '../access/holds.js';
@@ -251,7 +253,7 @@ export function ApplicationHome({
             {tab === 'dashboard' && (
                 <Dashboard data={data} translator={translator} visible={visible} />
             )}
-            {tab === 'active' && <ActiveModules holds={holds} />}
+            {tab === 'active' && <ActiveModules />}
             {tab === 'upcoming' && <UpcomingModules holds={holds} />}
         </div>
     );
@@ -325,7 +327,7 @@ function PeoplePanel({ data, translator }: PanelProps): ReactNode {
                     tone={
                         rows === undefined ? 'neutral' : lockedAccounts(rows) > 0 ? 'bad' : 'good'
                     }
-                    to="/rescue"
+                    to={PATHS.rescue}
                 />
                 <Metric
                     value={count(
@@ -347,7 +349,7 @@ function SignInsPanel({ data, translator }: PanelProps): ReactNode {
     return (
         <Panel
             title={t('home.tenantDashboard.signIns.title')}
-            to="/audit"
+            to={PATHS.signIns}
             status={signInsStatus(data, translator)}
             footer={<ReadAt at={data.sessions.dataUpdatedAt} t={t} />}
         >
@@ -399,13 +401,13 @@ function PartiesPanel({ data, translator }: PanelProps): ReactNode {
     return (
         <Panel
             title={t('home.tenant.parties')}
-            to="/parties"
+            to={PATHS.parties}
             status={partiesStatus(data, translator)}
             footer={
                 <>
                     <ReadAt at={data.parties.dataUpdatedAt} t={t} />
                     {holds(PERMISSION.partiesWrite) && (
-                        <LinkButton to="/parties/new" size="sm">
+                        <LinkButton to={PATHS.newParty} size="sm">
                             {t('home.tenant.newParty')}
                         </LinkButton>
                     )}
@@ -428,91 +430,8 @@ function PartiesPanel({ data, translator }: PanelProps): ReactNode {
  * The run is built rather than written out, so a member sees the few screens
  * that are theirs and a tenant administrator sees the administration as well.
  */
-function ActiveModules({ holds }: { readonly holds: (code: Permission) => boolean }): ReactNode {
-    const { t } = useTranslation();
-    const maybe = (allowed: boolean, tile: Tile): readonly Tile[] => (allowed ? [tile] : []);
-    const active: Tile[] = [
-        ...maybe(holds(PERMISSION.partiesRead), {
-            title: t('home.tenant.parties'),
-            body: t('home.tenant.partiesBody'),
-            to: '/parties',
-            icon: 'party',
-        }),
-        ...maybe(holds(PERMISSION.accountsRead) || holds(PERMISSION.organisationRead), {
-            title: t('home.tenant.organisation'),
-            body: t('home.tenant.organisationBody'),
-            to: '/organisation',
-            icon: 'people',
-        }),
-        ...maybe(holds(PERMISSION.rolesRead), {
-            title: t('home.tenant.roles'),
-            body: t('home.tenant.rolesBody'),
-            to: '/roles',
-            icon: 'access',
-        }),
-        ...maybe(holds(PERMISSION.curveSnapshotsRead), {
-            title: t('home.party.marketdata'),
-            body: t('home.party.marketdataBody'),
-            to: '/market-data/evolution',
-            icon: 'chart',
-        }),
-        {
-            title: t('home.party.refdata'),
-            body: t('home.party.refdataBody'),
-            to: '/refdata',
-            icon: 'database',
-        },
-        ...maybe(holds(PERMISSION.partiesWrite), {
-            title: t('home.tenant.newParty'),
-            body: t('home.tenant.newPartyBody'),
-            to: '/parties/new',
-            icon: 'add',
-        }),
-        ...maybe(holds(PERMISSION.partiesWrite), {
-            title: t('home.tenant.partyDetails'),
-            body: t('home.tenant.partyDetailsBody'),
-            to: '/parties/details',
-            icon: 'party',
-        }),
-        ...maybe(holds(PERMISSION.counterpartiesWrite), {
-            title: t('home.tenant.counterpartyOnboard'),
-            body: t('home.tenant.counterpartyOnboardBody'),
-            to: '/counterparties/onboard',
-            icon: 'people',
-        }),
-        ...maybe(holds(PERMISSION.accountsLock), {
-            title: t('home.tenant.rescue'),
-            body: t('home.tenant.rescueBody'),
-            to: '/rescue',
-            icon: 'unlock',
-        }),
-        ...maybe(holds(PERMISSION.sessionsRead) || holds(PERMISSION.loginInfoRead), {
-            title: t('home.tenant.audit'),
-            body: t('home.tenant.auditBody'),
-            to: '/audit',
-            icon: 'record',
-        }),
-        {
-            title: t('home.tenant.access'),
-            body: t('home.tenant.accessBody'),
-            to: '/access',
-            icon: 'person',
-        },
-        {
-            title: t('home.tenant.versions'),
-            body: t('home.tenant.versionsBody'),
-            to: '/operations/versions',
-            icon: 'history',
-        },
-        {
-            title: t('home.party.security'),
-            body: t('home.party.securityBody'),
-            to: '/security',
-            icon: 'locked',
-        },
-    ];
-
-    return <Tiles tiles={active} />;
+function ActiveModules(): ReactNode {
+    return <ActiveCards mode="application" />;
 }
 
 function UpcomingModules({ holds }: { readonly holds: (code: Permission) => boolean }): ReactNode {

@@ -41,6 +41,7 @@ null.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :supplied_by:  user
+:economic:    false
 :END:
 
 The trade the forward bond fact row belongs to.
@@ -50,6 +51,7 @@ The trade the forward bond fact row belongs to.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -59,6 +61,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Flag saying the holder is long the forward.
@@ -71,6 +74,7 @@ the container came from a row set rather than from a document.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Maturity date of the forward.
@@ -88,6 +92,7 @@ because the schema declares it the block's one required member.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Date the forward settles on.
@@ -99,6 +104,7 @@ The column is text for the same reason as the maturity date beside it.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Settlement type the forward pays under.
@@ -108,6 +114,7 @@ Settlement type the forward pays under.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Amount the forward settles for.
@@ -117,6 +124,7 @@ Amount the forward settles for.
 :type:          numeric(38, 12)
 :cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic:      true
 :END:
 
 Rate the forward's value is locked at.
@@ -126,6 +134,7 @@ Rate the forward's value is locked at.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Sensitivity the document states alongside the lock rate.
@@ -135,6 +144,7 @@ Sensitivity the document states alongside the lock rate.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Day counter the lock rate accrues under.
@@ -144,6 +154,7 @@ Day counter the lock rate accrues under.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Flag saying the settlement is dirty.
@@ -157,6 +168,7 @@ what export re-emits.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Amount of the forward's premium.
@@ -170,6 +182,7 @@ both not null, because the schema declares the two required together.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Date the forward's premium pays on.

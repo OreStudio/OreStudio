@@ -8,9 +8,9 @@
 #+filetags: :qt:badges:refdata:badge-colour-scheme-support:sprint_23:v0:
 #+target_dialog: CodeDomainDetailDialog (System > Configuration > Code Domains > double-click a row)
 #+created: 2026-07-16
-#+updated: 2026-07-16
+#+updated: 2026-10-11
 #+environment:
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 #+startup: inlineimages
 
 This page documents a test scenario verifying [[id:98AC38DD-E800-4961-A6BE-9F018097DAB2][Add a badge_mapping browser UI]] in [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
@@ -23,7 +23,7 @@ This page documents a test scenario verifying [[id:98AC38DD-E800-4961-A6BE-9F018
 | Parent story  | [[id:1744E882-3141-4EAE-ABC0-C79CD3DA0767][Improve badge colour scheme support]]   |
 | Target dialog | CodeDomainDetailDialog                  |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Prerequisites
 
@@ -83,3 +83,5 @@ reappears with the same three rows, not duplicated or stale.
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: a legacy scenario for the Qt client, which is no longer used. It is kept for the record and will not be run. A retest brings it back.

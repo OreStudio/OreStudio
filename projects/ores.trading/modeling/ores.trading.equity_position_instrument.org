@@ -96,6 +96,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Name of the underlying equity.
@@ -109,6 +110,7 @@ std::string("ACME Corp")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ISO 4217 currency code.
@@ -127,6 +129,7 @@ std::string("USD")
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
+:economic:      true
 :END:
 
 Number of shares / contracts held.
@@ -140,6 +143,7 @@ Number of shares / contracts held.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Entry price; absent for market-price positions.
@@ -149,6 +153,7 @@ Entry price; absent for market-price positions.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

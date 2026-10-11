@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { detectImage } from './image.js';
+import { detectImage, isImageName, mediaTypeOf } from './image.js';
 
 const bytes = (...values: number[]): Uint8Array => Uint8Array.from(values);
 const ascii = (text: string): number[] => [...text].map((c) => c.charCodeAt(0));
@@ -54,5 +54,48 @@ describe('detecting an image from its bytes', () => {
 
     it('does not take a name or a media type into account', () => {
         expect(detectImage(bytes(...ascii('not an image.png')))).toBeNull();
+    });
+});
+
+describe('the name of an image beside a scenario doc', () => {
+    it('is a plain file name with a picture extension, in any case', () => {
+        for (const name of [
+            'scenario_x_step2_20261011_014118.png',
+            'a-b.c_d.JPG',
+            'shot.jpeg',
+            'x.gif',
+            'x.WEBP',
+            '1.png',
+        ]) {
+            expect(isImageName(name), name).toBe(true);
+        }
+    });
+
+    it('is not a path, a hidden file, another kind of file or an SVG', () => {
+        for (const name of [
+            '../secret.png',
+            'a/b.png',
+            'a\\b.png',
+            '.hidden.png',
+            '.png',
+            'notes.txt',
+            'x.svg',
+            'x.png.exe',
+            'x.png ',
+            ' x.png',
+            'x',
+            '',
+            '%2e%2e%2fx.png',
+            'x\0.png',
+        ]) {
+            expect(isImageName(name), JSON.stringify(name)).toBe(false);
+        }
+    });
+
+    it('gives each kind its media type', () => {
+        expect(mediaTypeOf('png')).toBe('image/png');
+        expect(mediaTypeOf('jpg')).toBe('image/jpeg');
+        expect(mediaTypeOf('gif')).toBe('image/gif');
+        expect(mediaTypeOf('webp')).toBe('image/webp');
     });
 });

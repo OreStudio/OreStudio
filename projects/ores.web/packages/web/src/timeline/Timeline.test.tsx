@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { Timeline as Stream, TimelineEvent } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { Timeline } from './Timeline.js';
+import { Timeline, kindTone } from './Timeline.js';
 
 function event(over: Partial<TimelineEvent>): TimelineEvent {
     return {
@@ -160,7 +160,7 @@ describe('the timeline', () => {
         expect(html).not.toContain('<mark');
     });
 
-    it('never names an internal entity or an unread source to the reader', () => {
+    it('says a gap in the reader’s words and never names an internal entity or an unread source', () => {
         const html = render({
             subject: 'person',
             id: 'ana',
@@ -173,12 +173,14 @@ describe('the timeline', () => {
 
         /*
          * A gap is the server's honest record of what the stream could not
-         * draw, and it is not the reader's business: it names tables, reads and
-         * refusals. The screen tells the reader what happened, not which of the
-         * deployment's own reads were tried.
+         * draw. It names tables, reads and refusals, which are not the reader's
+         * business, so the screen says the gap in its own words and never in the
+         * server's.
          */
         expect(html).not.toContain('ores.iam.');
         expect(html).not.toContain('refused this caller');
+        expect(html).toContain('A role that was taken away is not shown');
+        expect(html).toContain('Only the most recent sign-ins are kept');
     });
 
     it('draws the author’s picture beside the time, and their initials when they have none', () => {
@@ -247,5 +249,20 @@ describe('the timeline', () => {
         });
 
         expect(html.match(/uppercase/g)?.length).toBeGreaterThanOrEqual(2);
+    });
+});
+
+describe('kindTone', () => {
+    it('tints a refused sign-in red, a lock amber and an unlock green', () => {
+        expect(kindTone('sign_in_failed')).toBe('down');
+        expect(kindTone('locked')).toBe('warn');
+        expect(kindTone('unlocked')).toBe('up');
+    });
+
+    it('keeps the tints the other kinds had', () => {
+        expect(kindTone('granted')).toBe('up');
+        expect(kindTone('decided')).toBe('warn');
+        expect(kindTone('changed')).toBe('accent');
+        expect(kindTone('signed_in')).toBe('muted');
     });
 });

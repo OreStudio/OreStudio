@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -23,10 +23,10 @@ Hold every money quantity as an exact decimal, read the ORE boundary without los
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Every acceptance criterion is met and verified. The boundary reads the document's own digits, all 35 remaining columns are converted with both baselines empty, the digest folds the 29 instrument families, and an amendment moves the external version. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing required. The shape-carrying request remains a stronger design than the reason-based boundary and is recorded in the ADR as a follow-up. |
-| Last touched  | 2026-10-09                               |
+| Last touched  | 2026-10-11                               |
 
 * Acceptance
 
@@ -42,7 +42,7 @@ Hold every money quantity as an exact decimal, read the ORE boundary without los
 | [[id:B06A7058-C406-42E8-98E2-4A7E929C6261][Read the ORE boundary as text]] | DONE | | | The XML binding keeps the document's lexical form so a money value is parsed exactly. |
 | [[id:A1358CC9-3EA3-4D2A-97DF-AE6E27A83DCF][Make money exact by role across families]] | DONE | | | Money columns are exact decimals at numeric(38, 12); the money gate passes. |
 | [[id:37651D1D-7929-4813-AC5B-5D47A3512D03][Add the trade external version]] | DONE | | | The trade carries the version the customer's records match, moved only by economic change. The column, the domain field, the protocol, the history projection and the fold that moves it are in. |
-| [[id:30FDE60C-DBDB-47DA-9C9D-D4262A948AC4][Declare the economic fields]] | BACKLOG | | | The model states which fields are economic and which components make up an instrument's shape. Not started: the digest task ships a name-based first cut in its place, and this task replaces it. |
+| [[id:30FDE60C-DBDB-47DA-9C9D-D4262A948AC4][Declare the economic fields]] | DONE | 2026-10-11 | 2026-10-11 | The model states which fields are economic and which components make up an instrument's shape. The digest reads the declaration, and the name rule is gone. |
 | [[id:87305402-9907-4C0D-8463-3FE03C9A1785][Digest the instrument shape and fold it up]] | DONE | | | An economic digest computed where the whole shape exists, stored as text, folded from components to the trade. The digest, the write-path fold and a test for every instrument family are in. |
 
 * Decisions

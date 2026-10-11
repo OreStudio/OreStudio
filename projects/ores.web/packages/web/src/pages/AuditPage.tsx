@@ -21,6 +21,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { Link } from 'react-router';
 import { isWireTimestamp } from '@ores/wire-protocol/browser';
 import type {
     AuthEvent,
@@ -31,8 +32,16 @@ import type {
 import { api, type AuditPeriod } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
+import { actorPathFor } from '../access/PeoplePage.js';
+import { Icon } from '../ui/Icon.js';
+import { Avatar, imageUrl } from '../ui/Images.js';
+import { Timeline, kindTone } from '../timeline/Timeline.js';
+import type { Timeline as TimelineStream } from '@ores/wire-protocol/browser';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
+import { rescuePath } from '../shell/paths.js';
+import { AccountLockBadge } from '../ui/AccountLockBadge.js';
+import { RefreshNow } from '../ui/RefreshButton.js';
+import { Button, LinkButton, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { isZeroTimestamp } from '../ui/Time.js';
 
@@ -77,6 +86,8 @@ export const AUDIT_EVENT_TYPES = [
     'login_failure',
     'logout',
     'token_refresh',
+    'account_locked',
+    'account_unlocked',
 ] as const;
 
 /** The filter the screen opens on: the last day, with every event. */
@@ -164,6 +175,31 @@ export function orderLoginRecords(rows: readonly LoginInfo[]): readonly LoginInf
     });
 }
 
+/** The way from a locked account to the screen that unlocks it. */
+function RescueLink({ username }: { readonly username: string | undefined }): ReactNode {
+    const { t } = useTranslation();
+    if (username === undefined || username === '') {
+        return null;
+    }
+    return (
+        <LinkButton
+            size="sm"
+            className="w-8 px-0!"
+            to={rescuePath(username)}
+            title={t('shell.menu.rescue')}
+            aria-label={t('shell.menu.rescue')}
+        >
+            <Icon name="unlock" size={16} />
+        </LinkButton>
+    );
+}
+
+/** What a panel needs to draw an account: the name and the photo. */
+export interface AuditPerson {
+    readonly username: string;
+    readonly imageId: string | null;
+}
+
 /**
  * An account as the audit names it.
  *
@@ -173,38 +209,94 @@ export function orderLoginRecords(rows: readonly LoginInfo[]): readonly LoginInf
  */
 function AccountCell({
     accountId,
-    username,
     nameOf,
 }: {
     readonly accountId: string;
-    readonly username?: string;
-    readonly nameOf: ReadonlyMap<string, string>;
+    readonly nameOf: ReadonlyMap<string, AuditPerson>;
 }): ReactNode {
     if (accountId === '') {
-        return <span>{username === undefined || username === '' ? '—' : username}</span>;
+        return <span>—</span>;
     }
-    const name =
-        username !== undefined && username !== '' ? username : (nameOf.get(accountId) ?? '');
+    const person = nameOf.get(accountId);
+    const name = person?.username ?? '';
+    const personPath = actorPathFor(true)(name);
     return (
-        <div className="space-y-0.5">
-            {name !== '' && <div>{name}</div>}
-            <div className="font-mono text-xs text-ink-faint">{accountId}</div>
+        <div className="flex items-center gap-2">
+            {name !== '' && (
+                <Avatar
+                    name={name}
+                    size="sm"
+                    src={
+                        person === undefined || person.imageId === null
+                            ? null
+                            : imageUrl(person.imageId)
+                    }
+                />
+            )}
+            <div className="space-y-0.5">
+                {name !== '' && (
+                    <div>
+                        {personPath === undefined ? (
+                            <span>{name}</span>
+                        ) : (
+                            <Link className="text-accent-bright hover:underline" to={personPath}>
+                                {name}
+                            </Link>
+                        )}
+                    </div>
+                )}
+                <div className="font-mono text-xs text-ink-faint">{accountId}</div>
+            </div>
         </div>
     );
 }
 
-/** The tone one event type is painted with, for the types the log stores. */
-export function eventTone(eventType: string): 'neutral' | 'warn' | 'muted' | 'up' {
-    if (eventType === 'login_success') {
-        return 'up';
-    }
-    if (eventType === 'login_failure' || eventType === 'signup_failure') {
-        return 'warn';
-    }
-    if (eventType === 'logout') {
-        return 'muted';
-    }
-    return 'neutral';
+/** The kind of timeline entry each event type the log stores is drawn as. */
+const EVENT_KIND: Readonly<Record<string, string>> = {
+    login_success: 'signed_in',
+    login_failure: 'sign_in_failed',
+    signup_failure: 'sign_in_failed',
+    logout: 'signed_out',
+    token_refresh: 'refreshed',
+    account_locked: 'locked',
+    account_unlocked: 'unlocked',
+};
+
+/** The kind of timeline entry an event type is drawn as; an unknown type is just recorded. */
+export function eventKind(eventType: string): string {
+    return EVENT_KIND[eventType] ?? 'noticed';
+}
+
+/**
+ * The authentication events as a timeline stream, in the order the read gives
+ * them: newest first.
+ *
+ * The person is the username the event carries, because a refused sign-in has
+ * no session and may have no account, and the account list names the rest.
+ */
+export function authEventsAsStream(
+    events: readonly AuthEvent[],
+    people: ReadonlyMap<string, AuditPerson>,
+): TimelineStream {
+    return {
+        subject: 'authentication',
+        id: '',
+        gaps: [],
+        events: events.map((event) => ({
+            entityType: 'iam.auth_event',
+            entityId: event.id,
+            kind: eventKind(event.eventType),
+            at: event.eventTime,
+            actor:
+                event.username !== ''
+                    ? event.username
+                    : (people.get(event.accountId)?.username ?? ''),
+            version: 0,
+            reasonCode: '',
+            commentary: event.errorDetail,
+            fields: [],
+        })),
+    };
 }
 
 /**
@@ -289,7 +381,7 @@ function SessionsPanel({
     onEnd,
 }: {
     readonly sessions: readonly Session[];
-    readonly accountNames: ReadonlyMap<string, string>;
+    readonly accountNames: ReadonlyMap<string, AuditPerson>;
     readonly pending: boolean;
     readonly error: Error | null;
     readonly endingId: string;
@@ -479,7 +571,7 @@ function StatisticsPanel({
     accountNames,
 }: {
     readonly query: UseQueryResult<readonly SessionStatisticsRow[]>;
-    readonly accountNames: ReadonlyMap<string, string>;
+    readonly accountNames: ReadonlyMap<string, AuditPerson>;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -542,28 +634,58 @@ function StatisticsPanel({
     );
 }
 
+const FAILURE_TEXT = { plain: '', warn: 'text-warn', down: 'text-down' } as const;
+
+/**
+ * The tone a count of failed attempts is drawn in: plain up to two, warning
+ * above two and alarm above five.
+ */
+export function failureTone(failed: number): 'plain' | 'warn' | 'down' {
+    if (failed > 5) {
+        return 'down';
+    }
+    return failed > 2 ? 'warn' : 'plain';
+}
+
+/** The login records of accounts that have signed in at least once. */
+export function withoutNeverSignedIn(rows: readonly LoginInfo[]): readonly LoginInfo[] {
+    return rows.filter((row) => !isZeroTimestamp(row.lastLogin));
+}
+
 /**
  * The failed attempts, and the lock state beside them.
  *
  * A locked account explains a support call and a run of attempts explains an
  * incident, so the count and the state travel together.
  */
-function FailuresPanel({
+export function FailuresPanel({
     query,
     accountNames,
+    hideNeverSignedInAtStart = true,
 }: {
     readonly query: UseQueryResult<{
         readonly loginInfo: readonly LoginInfo[];
         readonly totalCount: number;
     }>;
-    readonly accountNames: ReadonlyMap<string, string>;
+    readonly accountNames: ReadonlyMap<string, AuditPerson>;
+    readonly hideNeverSignedInAtStart?: boolean;
 }): ReactNode {
     const { t } = useTranslation();
-    const ordered = orderLoginRecords(query.data?.loginInfo ?? []);
+    const [hideNeverSignedIn, setHideNeverSignedIn] = useState(hideNeverSignedInAtStart);
+    const records = query.data?.loginInfo ?? [];
+    const ordered = orderLoginRecords(hideNeverSignedIn ? withoutNeverSignedIn(records) : records);
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-medium">{t('auditSignIns.failures.title')}</h2>
+                <Button
+                    size="sm"
+                    variant={hideNeverSignedIn ? 'primary' : 'secondary'}
+                    aria-pressed={hideNeverSignedIn}
+                    onClick={() => setHideNeverSignedIn(!hideNeverSignedIn)}
+                >
+                    {t('auditSignIns.failures.hideNeverSignedIn')}
+                </Button>
                 {query.data !== undefined && (
                     <span className="text-xs text-ink-faint">
                         {t('auditSignIns.failures.count', {
@@ -580,7 +702,11 @@ function FailuresPanel({
                     {failureReason(query.error, t('auditSignIns.failures.notAllowed'))}
                 </Notice>
             ) : ordered.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('auditSignIns.failures.empty')}</p>
+                <p className="text-sm text-ink-muted">
+                    {records.length > 0
+                        ? t('auditSignIns.failures.allHidden')
+                        : t('auditSignIns.failures.empty')}
+                </p>
             ) : (
                 <table className="w-full text-left text-sm">
                     <thead className="text-left text-xs text-ink-faint">
@@ -604,7 +730,14 @@ function FailuresPanel({
                                 <td className="py-2">
                                     <AccountCell accountId={row.accountId} nameOf={accountNames} />
                                 </td>
-                                <td className="py-2 tabular-nums">{row.failedLogins}</td>
+                                <td
+                                    className={cx(
+                                        'py-2 tabular-nums',
+                                        FAILURE_TEXT[failureTone(row.failedLogins)],
+                                    )}
+                                >
+                                    {row.failedLogins}
+                                </td>
                                 <td className="py-2">
                                     {isZeroAddress(row.lastAttemptIp) ? (
                                         <span className="text-xs text-ink-faint">
@@ -626,11 +759,14 @@ function FailuresPanel({
                                     )}
                                 </td>
                                 <td className="py-2">
-                                    <Tag tone={row.locked ? 'warn' : 'muted'}>
-                                        {row.locked
-                                            ? t('auditSignIns.failures.locked')
-                                            : t('auditSignIns.failures.notLocked')}
-                                    </Tag>
+                                    <span className="flex flex-wrap items-center gap-2">
+                                        <AccountLockBadge locked={row.locked} />
+                                        {row.locked && (
+                                            <RescueLink
+                                                username={accountNames.get(row.accountId)?.username}
+                                            />
+                                        )}
+                                    </span>
                                 </td>
                             </tr>
                         ))}
@@ -641,15 +777,67 @@ function FailuresPanel({
     );
 }
 
-/** The authentication event log, newest first. */
+/** The photo address of a person named by username, or null for their initials. */
+function pictureOf(username: string, people: ReadonlyMap<string, AuditPerson>): string | null {
+    for (const person of people.values()) {
+        if (person.username === username) {
+            return person.imageId === null ? null : imageUrl(person.imageId);
+        }
+    }
+    return null;
+}
+
+/** What an entry of the event log says beside the person: the kind, the type and the session. */
+function EventHead({
+    event,
+    kind,
+    actor,
+}: {
+    readonly event: AuthEvent;
+    readonly kind: string;
+    readonly actor: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const path = actor === '' ? undefined : actorPathFor(true)(actor);
+    return (
+        <div className="flex flex-wrap items-baseline gap-2">
+            <Tag tone={kindTone(kind)}>{t(`timeline.kind.${kind}`)}</Tag>
+            {actor !== '' &&
+                (path === undefined ? (
+                    <span className="text-sm font-semibold text-ink">{actor}</span>
+                ) : (
+                    <Link
+                        to={path}
+                        className="text-sm font-semibold text-ink underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+                    >
+                        {actor}
+                    </Link>
+                ))}
+            <span className="font-mono text-[0.72rem] text-ink-faint">{event.eventType}</span>
+            {event.accountId !== '' && (
+                <span className="font-mono text-[0.72rem] text-ink-faint">{event.accountId}</span>
+            )}
+            {event.sessionId !== '' && (
+                <span className="font-mono text-[0.72rem] text-ink-faint">
+                    {t('auditSignIns.events.session')} {event.sessionId}
+                </span>
+            )}
+        </div>
+    );
+}
+
+/** The authentication event log, newest first, as a timeline with its chart. */
 function EventsPanel({
     query,
     accountNames,
 }: {
     readonly query: UseQueryResult<readonly AuthEvent[]>;
-    readonly accountNames: ReadonlyMap<string, string>;
+    readonly accountNames: ReadonlyMap<string, AuditPerson>;
 }): ReactNode {
     const { t } = useTranslation();
+    const events = query.data ?? [];
+    const stream = authEventsAsStream(events, accountNames);
+    const byId = new Map(events.map((event) => [event.id, event] as const));
     return (
         <section className="card space-y-4 p-6">
             <header className="space-y-1">
@@ -665,42 +853,17 @@ function EventsPanel({
             ) : query.data.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('auditSignIns.events.empty')}</p>
             ) : (
-                <table className="w-full text-left text-sm">
-                    <thead className="text-left text-xs text-ink-faint">
-                        <tr>
-                            <th className="py-1 font-normal">{t('auditSignIns.events.time')}</th>
-                            <th className="py-1 font-normal">{t('auditSignIns.events.event')}</th>
-                            <th className="py-1 font-normal">{t('auditSignIns.column.account')}</th>
-                            <th className="py-1 font-normal">{t('auditSignIns.events.session')}</th>
-                            <th className="py-1 font-normal">{t('auditSignIns.events.detail')}</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-line-subtle">
-                        {query.data.map((row) => (
-                            <tr key={row.id}>
-                                <td className="whitespace-nowrap py-2 font-mono text-xs">
-                                    {row.eventTime}
-                                </td>
-                                <td className="py-2">
-                                    <Tag tone={eventTone(row.eventType)}>{row.eventType}</Tag>
-                                </td>
-                                <td className="py-2">
-                                    <AccountCell
-                                        accountId={row.accountId}
-                                        username={row.username}
-                                        nameOf={accountNames}
-                                    />
-                                </td>
-                                <td className="py-2 font-mono text-xs">
-                                    {row.sessionId === '' ? '—' : row.sessionId}
-                                </td>
-                                <td className="py-2 text-ink-muted">
-                                    {row.errorDetail === '' ? '—' : row.errorDetail}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <Timeline
+                    timeline={stream}
+                    actorPath={actorPathFor(true)}
+                    actorPicture={(username) => pictureOf(username, accountNames)}
+                    renderHead={(entry) => {
+                        const event = byId.get(entry.entityId);
+                        return event === undefined ? null : (
+                            <EventHead event={event} kind={entry.kind} actor={entry.actor} />
+                        );
+                    }}
+                />
             )}
         </section>
     );
@@ -753,7 +916,9 @@ export function AuditPage(): ReactNode {
      * map empty and each panel falls back to the identifier alone.
      */
     const accountNames = new Map(
-        (accounts.data?.accounts ?? []).map((row) => [row.id, row.username] as const),
+        (accounts.data?.accounts ?? []).map(
+            (row) => [row.id, { username: row.username, imageId: row.imageId }] as const,
+        ),
     );
 
     const { tab, bar } = useTabs({
@@ -818,9 +983,7 @@ export function AuditPage(): ReactNode {
                                 {t('auditSignIns.readAt', { at: readAt })}
                             </span>
                         )}
-                        <Button variant="secondary" onClick={refresh}>
-                            {t('auditSignIns.refresh')}
-                        </Button>
+                        <RefreshNow onClick={refresh} />
                     </div>
                 }
             />

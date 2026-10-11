@@ -28,7 +28,7 @@ A money element's own digits survive the XML binding, so the mapper parses them 
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] |
-| Now          | Landed and verified: the binding keeps the lexical form, the mapper reads it, and the four new cases pass. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing on this task. The full ORE core suite is still to be run by the agent that owns it. |
 | Last touched | 2026-10-09                               |

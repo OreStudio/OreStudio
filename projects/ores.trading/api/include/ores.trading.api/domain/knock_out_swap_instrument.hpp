@@ -29,8 +29,10 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -138,6 +140,28 @@ struct knock_out_swap_instrument final {
     friend bool operator==(const knock_out_swap_instrument&,
                            const knock_out_swap_instrument&) = default;
 };
+
+/**
+ * @brief The members of knock_out_swap_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view knock_out_swap_instrument_economic_fields[] = {
+    "barrier_start_date",
+    "barrier_level",
+    "barrier_type",
+};
+
+/**
+ * @brief Names the members of knock_out_swap_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<knock_out_swap_instrument>) {
+    return knock_out_swap_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for knock_out_swap_instrument, e.g. for the

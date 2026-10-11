@@ -59,6 +59,7 @@ the block at most once at each end of the leg.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :supplied_by:  user
+:economic:    false
 :END:
 
 The trade this rate block belongs to.
@@ -68,6 +69,7 @@ The trade this rate block belongs to.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -77,6 +79,7 @@ The activity that wrote this version.
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:economic:    true
 :END:
 
 Which leg list of the trade the leg holding this rate block
@@ -87,6 +90,7 @@ belongs to: =trs_funding=, =repo= or =ascot_swap=.
 :type:        integer
 :cpp_type:    int
 :primary_key: true
+:economic:    true
 :END:
 
 Ordinal of the leg within its list, counting from one.
@@ -96,6 +100,7 @@ Ordinal of the leg within its list, counting from one.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Which arm of the schema's rate group the document engaged: =fixed=,
@@ -110,6 +115,7 @@ std::string("floating")
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Index the arm's coupons accrue on.
@@ -123,6 +129,7 @@ unset.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the arm's coupons accrue in arrears.
@@ -132,6 +139,7 @@ True when the arm's coupons accrue in arrears.
 :type:     bigint
 :cpp_type: std::optional<std::int64_t>
 :nullable: true
+:economic: true
 :END:
 
 Number of days before a coupon period ends that its index fixes.
@@ -145,6 +153,7 @@ reader treats a value as required.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Calendar the formula arm's fixings are taken against.
@@ -156,6 +165,7 @@ Only the formula arm states this member.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Tenor of the floating arm's last recent period.
@@ -165,6 +175,7 @@ Tenor of the floating arm's last recent period.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Calendar the last recent period is measured against.
@@ -174,6 +185,7 @@ Calendar the last recent period is measured against.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Tenor the floating arm looks back over when it fixes.
@@ -183,6 +195,7 @@ Tenor the floating arm looks back over when it fixes.
 :type:     bigint
 :cpp_type: std::optional<std::int64_t>
 :nullable: true
+:economic: true
 :END:
 
 Number of days before a period ends after which the floating arm stops
@@ -193,6 +206,7 @@ fixing.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the floating arm averages its fixings over the period.
@@ -202,6 +216,7 @@ True when the floating arm averages its fixings over the period.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the floating arm divides a period into sub-periods.
@@ -211,6 +226,7 @@ True when the floating arm divides a period into sub-periods.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the floating arm applies its spread to the fixings.
@@ -220,6 +236,7 @@ True when the floating arm applies its spread to the fixings.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the floating arm's cross-currency leg does not reset.
@@ -229,6 +246,7 @@ True when the floating arm's cross-currency leg does not reset.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the floating arm's caps and floors are taken without the
@@ -239,6 +257,7 @@ underlying.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the floating arm's caps and floors apply to the local
@@ -249,6 +268,7 @@ index rather than to the compounded rate.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the floating arm prices its stubs from the original curve.
@@ -258,6 +278,7 @@ True when the floating arm prices its stubs from the original curve.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the floating arm shifts its observations by the lookback.
@@ -267,6 +288,7 @@ True when the floating arm shifts its observations by the lookback.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Short index the floating arm's front stub interpolates between.
@@ -276,6 +298,7 @@ Short index the floating arm's front stub interpolates between.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Long index the floating arm's front stub interpolates between.
@@ -285,6 +308,7 @@ Long index the floating arm's front stub interpolates between.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Rounding the front stub's interpolated rate is rounded by.
@@ -296,6 +320,7 @@ Soft FK to ores_refdata_rounding_types_tbl: the values are the closed ORE roundi
 :type:     bigint
 :cpp_type: std::optional<std::int64_t>
 :nullable: true
+:economic: true
 :END:
 
 Decimal places the front stub's rounding keeps.
@@ -305,6 +330,7 @@ Decimal places the front stub's rounding keeps.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Short index the floating arm's back stub interpolates between.
@@ -314,6 +340,7 @@ Short index the floating arm's back stub interpolates between.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Long index the floating arm's back stub interpolates between.
@@ -323,6 +350,7 @@ Long index the floating arm's back stub interpolates between.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Rounding the back stub's interpolated rate is rounded by.
@@ -334,6 +362,7 @@ Soft FK to ores_refdata_rounding_types_tbl: the values are the closed ORE roundi
 :type:     bigint
 :cpp_type: std::optional<std::int64_t>
 :nullable: true
+:economic: true
 :END:
 
 Decimal places the back stub's rounding keeps.

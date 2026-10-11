@@ -30,8 +30,10 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -202,6 +204,45 @@ struct credit_instrument final {
      */
     friend bool operator==(const credit_instrument&, const credit_instrument&) = default;
 };
+
+/**
+ * @brief The members of credit_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view credit_instrument_economic_fields[] = {
+    "reference_entity",
+    "currency",
+    "notional",
+    "spread",
+    "recovery_rate",
+    "tenor",
+    "start_date",
+    "maturity_date",
+    "day_count_fraction_code",
+    "payment_frequency_code",
+    "index_name",
+    "index_series",
+    "seniority",
+    "restructuring",
+    "option_type",
+    "option_expiry_date",
+    "option_strike",
+    "linked_asset_code",
+    "tranche_attachment",
+    "tranche_detachment",
+};
+
+/**
+ * @brief Names the members of credit_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<credit_instrument>) {
+    return credit_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for credit_instrument, e.g. for the

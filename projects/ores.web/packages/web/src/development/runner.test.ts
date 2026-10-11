@@ -22,6 +22,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Scenario, StepStatus } from '@ores/contracts';
 import {
+    isDirty,
     markedCount,
     openRunner,
     outcomeOf,
@@ -37,6 +38,7 @@ function scenario(statuses: StepStatus[], overrides: Partial<Scenario> = {}): Sc
         id: '11111111-1111-4111-8111-111111111111',
         title: 'A scenario',
         description: '',
+        created: '',
         state: 'PENDING',
         target: 'Dialog',
         story: null,
@@ -272,5 +274,50 @@ describe('attaching an image to a step', () => {
     it('reaches the save in the note, so the doc records the name', () => {
         const runner = reduce(fresh(2), { type: 'attach', index: 1, name: 'a.png' });
         expect(saveRequest(runner).steps[1]?.notes).toBe('[[file:a.png]]');
+    });
+});
+
+describe('what has not been saved', () => {
+    const saved = scenario(['PASS', 'PENDING', 'PENDING']);
+
+    it('is nothing when the working copy is the scenario as the server has it', () => {
+        expect(isDirty(openRunner(saved), saved)).toBe(false);
+    });
+
+    it('is a mark', () => {
+        expect(isDirty(reduce(openRunner(saved), { type: 'mark', mark: 'PASS' }), saved)).toBe(
+            true,
+        );
+    });
+
+    it('is a note, and an attached image link', () => {
+        const base = openRunner(saved);
+        expect(isDirty(reduce(base, { type: 'note', notes: 'x' }), saved)).toBe(true);
+        expect(isDirty(reduce(base, { type: 'attach', index: 1, name: 'a.png' }), saved)).toBe(
+            true,
+        );
+    });
+
+    it('is nothing again once a mark is cleared or a note is taken back', () => {
+        let runner = reduce(openRunner(saved), { type: 'mark', mark: 'FAIL' });
+        runner = reduce(runner, { type: 'mark', mark: 'PENDING' });
+        expect(isDirty(runner, saved)).toBe(false);
+        const noted = reduce(openRunner(saved), { type: 'note', notes: 'x' });
+        expect(isDirty(reduce(noted, { type: 'note', notes: '' }), saved)).toBe(false);
+    });
+
+    it('is nothing after a save, because the server answer is the new baseline', () => {
+        const marked = reduce(openRunner(saved), { type: 'mark', mark: 'PASS' });
+        const answer = scenario(['PASS', 'PASS', 'PENDING']);
+        expect(isDirty(reduce(marked, { type: 'saved', scenario: answer }), answer)).toBe(false);
+    });
+
+    it('is nothing for moving between steps, which marks and writes nothing', () => {
+        const moved = reduce(reduce(openRunner(saved), { type: 'next' }), { type: 'previous' });
+        expect(isDirty(moved, saved)).toBe(false);
+    });
+
+    it('is something when the scenario has a different number of steps', () => {
+        expect(isDirty(openRunner(saved), scenario(['PASS', 'PENDING']))).toBe(true);
     });
 });

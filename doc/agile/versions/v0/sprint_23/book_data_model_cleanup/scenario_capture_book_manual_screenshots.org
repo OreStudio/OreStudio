@@ -8,9 +8,9 @@
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+target_dialog:
 #+created: 2026-07-09
-#+updated: 2026-07-09
+#+updated: 2026-10-11
 #+environment:
-#+todo: PENDING | PASSED FAILED
+#+todo: PENDING | PASSED FAILED ABANDONED
 
 This page documents a test scenario verifying [[id:CAC82ABE-5306-4B01-841A-0A98B25CD674][Fix is_trading_book domain type from int to bool]] in [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
 
@@ -22,7 +22,7 @@ This page documents a test scenario verifying [[id:CAC82ABE-5306-4B01-841A-0A98B
 | Parent story  | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]   |
 | Target dialog | BookMdiWindow, BookDetailDialog         |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Steps
 
@@ -115,3 +115,5 @@ transition label is legible at the PDF's normal zoom level.
 | Worktree      |       |
 
 * Notes
+
+Abandoned on 2026-10-11: a legacy scenario for the Qt client, which is no longer used. It is kept for the record and will not be run. A retest brings it back.

@@ -20,7 +20,9 @@
  */
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router';
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router';
+import { CardScreen } from './shell/CardScreen.js';
+import { MOVED, PATHS } from './shell/paths.js';
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api/client.js';
 import { useTranslation } from './i18n/Provider.js';
@@ -41,8 +43,6 @@ import { ConventionJourney } from './journeys/ConventionJourney.js';
 import { useConventionsServer } from './journeys/conventionsServer.js';
 import { BookStructureJourney } from './journeys/BookStructureJourney.js';
 import { useBooksServer } from './journeys/booksServer.js';
-import { PartyDetailsJourney } from './journeys/PartyDetailsJourney.js';
-import { usePartyDetailsServer } from './journeys/partyDetailsServer.js';
 import { SignUpJourney } from './journeys/SignUpJourney.js';
 import { TenantSetupJourney } from './journeys/TenantSetupJourney.js';
 import { AppShell } from './components/AppShell.js';
@@ -87,7 +87,7 @@ import { CalendarPage, CalendarsPage } from './refdata/calendars.js';
 import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
-import { PartiesPage } from './pages/PartiesPage.js';
+import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { TenantPage } from './pages/TenantPage.js';
 import { TenantRunPage } from './pages/TenantRunPage.js';
@@ -167,7 +167,6 @@ export interface AppRoutesProps {
      * It is a route for the same reason the counterparty screen is: the session
      * already names the tenant.
      */
-    readonly partyDetailsJourney: ReactNode;
     /**
      * The book structure screen, which a tenant administrator runs to place
      * books in portfolios and classify them.
@@ -221,7 +220,6 @@ export function AppRoutes({
     newTenantJourney,
     newPartyJourney,
     counterpartyJourney,
-    partyDetailsJourney,
     bookStructureJourney,
     conventionJourney,
     signUpJourney,
@@ -426,7 +424,7 @@ export function AppRoutes({
              * own.
              */}
             <Route
-                path="/rescue"
+                path={PATHS.rescue}
                 element={signedIn(gate.version, session, shell, () => (
                     <RescuePage />
                 ))}
@@ -438,7 +436,7 @@ export function AppRoutes({
              * the tenant and not the member.
              */}
             <Route
-                path="/audit"
+                path={PATHS.signIns}
                 element={signedIn(gate.version, session, shell, () => (
                     <AuditPage />
                 ))}
@@ -604,13 +602,25 @@ export function AppRoutes({
                 ))}
             />
             <Route
-                path="/parties"
+                path={PATHS.parties}
                 element={signedIn(
                     gate.version,
                     session,
                     shell,
                     () => (
                         <PartiesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.parties}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <PartyPage />
                     ),
                     'workspace',
                 )}
@@ -642,9 +652,8 @@ export function AppRoutes({
                     />
                 ))}
             />
-            <Route path="/reporting-lines" element={<Navigate to="/hierarchy" replace />} />
             <Route
-                path="/hierarchy"
+                path={PATHS.hierarchy}
                 element={signedIn(gate.version, session, shell, (view) => (
                     <Requires needs={NEEDS.hierarchy} screen={t('access.hub.hierarchy')}>
                         <ReportingLinesPage me={view.username} />
@@ -652,7 +661,19 @@ export function AppRoutes({
                 ))}
             />
             <Route
-                path="/staff"
+                path="/organisation"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    (view) => (
+                        <OrganisationPage mode={view.mode} />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.people}
                 element={signedIn(
                     gate.version,
                     session,
@@ -670,36 +691,7 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/organisation"
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <OrganisationPage />
-                    ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path="/people"
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    (view) =>
-                        view.mode === 'system-administration' ? (
-                            <Requires needs={NEEDS.people} screen={t('shell.menu.accounts')}>
-                                <PeoplePage mode={view.mode} />
-                            </Requires>
-                        ) : (
-                            <Navigate to="/organisation" replace />
-                        ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path="/people/:username"
+                path={`${PATHS.people}/:username`}
                 element={signedIn(
                     gate.version,
                     session,
@@ -716,8 +708,8 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    () => (
-                        <RefdataPage />
+                    (view) => (
+                        <RefdataPage mode={view.mode} />
                     ),
                     'workspace',
                 )}
@@ -860,7 +852,7 @@ export function AppRoutes({
             />
             <Route path="/classifications/:list" element={<ClassificationsRedirect />} />
             <Route
-                path="/roles"
+                path={PATHS.roles}
                 element={signedIn(
                     gate.version,
                     session,
@@ -874,7 +866,7 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/roles/:roleId"
+                path={`${PATHS.roles}/:roleId`}
                 element={signedIn(
                     gate.version,
                     session,
@@ -922,32 +914,39 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    (view) => (
-                        <RequestStoryPage me={view.username} />
+                    () => (
+                        <RequestStoryPage />
                     ),
                     'workspace',
                 )}
             />
             <Route
-                path="/parties/new"
-                element={signedIn(gate.version, session, shell, () => newPartyJourney)}
+                path={PATHS.newParty}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="newParty">{newPartyJourney}</CardScreen>
+                ))}
             />
             <Route
-                path="/counterparties/onboard"
-                element={signedIn(gate.version, session, shell, () => counterpartyJourney)}
+                path={PATHS.onboardCounterparty}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="onboardCounterparty">{counterpartyJourney}</CardScreen>
+                ))}
             />
             <Route
-                path="/parties/details"
-                element={signedIn(gate.version, session, shell, () => partyDetailsJourney)}
+                path={PATHS.bookStructure}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="bookStructure">{bookStructureJourney}</CardScreen>
+                ))}
             />
             <Route
-                path="/books/structure"
-                element={signedIn(gate.version, session, shell, () => bookStructureJourney)}
+                path={PATHS.conventions}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="conventions">{conventionJourney}</CardScreen>
+                ))}
             />
-            <Route
-                path="/conventions"
-                element={signedIn(gate.version, session, shell, () => conventionJourney)}
-            />
+            {MOVED.map(([from, to]) => (
+                <Route key={from} path={from} element={<Moved to={to} />} />
+            ))}
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
@@ -961,7 +960,6 @@ export function ConnectedApp(): ReactNode {
     const { t } = useTranslation();
     const server = useJourneyServer();
     const counterpartyServer = useCounterpartyServer();
-    const partyDetailsServer = usePartyDetailsServer();
     const booksServer = useBooksServer();
     const conventionsServer = useConventionsServer();
     const navigate = useNavigate();
@@ -1116,12 +1114,6 @@ export function ConnectedApp(): ReactNode {
                             onFinished={() => navigate('/')}
                         />
                     }
-                    partyDetailsJourney={
-                        <PartyDetailsJourney
-                            server={partyDetailsServer}
-                            onFinished={() => navigate('/')}
-                        />
-                    }
                     bookStructureJourney={
                         <BookStructureJourney
                             server={booksServer}
@@ -1214,6 +1206,16 @@ function Centred({ children }: { readonly children: ReactNode }): ReactNode {
 }
 
 /** The first build's address for one list, kept so a saved link still opens it. */
+/** An address a screen had before it moved under its area: go to the new one, keeping what followed it. */
+function Moved({ to }: { readonly to: string }): ReactNode {
+    const params = useParams();
+    const { search } = useLocation();
+    const target = to.replace(/:(\w+)/g, (_, name: string) =>
+        encodeURIComponent(params[name] ?? ''),
+    );
+    return <Navigate to={`${target}${search}`} replace />;
+}
+
 function ClassificationsRedirect(): ReactNode {
     const { list } = useParams();
     return <Navigate to={`/refdata/classifications/${encodeURIComponent(list ?? '')}`} replace />;

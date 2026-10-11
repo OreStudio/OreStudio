@@ -461,3 +461,65 @@ TEST_CASE("plan_trade_defaults_override_parsed_values", tags) {
         CHECK(item.activity_type_code == "novation");
     }
 }
+
+// An import into a sandbox puts everything it creates in the sandbox: the
+// wrapping portfolio, the portfolios of the tree and the books, which are
+// virtual books that never reach the ledger.
+TEST_CASE("plan_into_a_sandbox_creates_only_sandbox_portfolios_and_virtual_books", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
+    if (!std::filesystem::exists(source)) {
+        SUCCEED("No Cash_BondRepo_and_Bond.xml — skipping");
+        return;
+    }
+    const auto root = stage_document(source, "Books/portfolio_nested.xml");
+    const auto sr = scan_one_portfolio(root, "Books/portfolio_nested.xml");
+
+    const auto sandbox_id = boost::uuids::random_generator()();
+    auto choices = default_choices(root);
+    choices.sandbox_id = sandbox_id;
+    ore_import_planner planner(sr, {}, choices);
+    const auto plan = planner.plan();
+
+    REQUIRE(!plan.portfolios.empty());
+    REQUIRE(!plan.books.empty());
+    for (const auto& p : plan.portfolios) {
+        CHECK(p.sandbox_id == sandbox_id);
+    }
+    for (const auto& b : plan.books) {
+        CHECK(b.sandbox_id == sandbox_id);
+        CHECK(b.book_purpose_type == "Test");
+        CHECK(b.ledger_feed_type == "None");
+    }
+
+    std::error_code ec;
+    std::filesystem::remove_all(root, ec);
+}
+
+TEST_CASE("plan_without_a_sandbox_creates_official_portfolios_and_books", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
+    if (!std::filesystem::exists(source)) {
+        SUCCEED("No Cash_BondRepo_and_Bond.xml — skipping");
+        return;
+    }
+    const auto root = stage_document(source, "Books/portfolio_nested.xml");
+    const auto sr = scan_one_portfolio(root, "Books/portfolio_nested.xml");
+
+    ore_import_planner planner(sr, {}, default_choices(root));
+    const auto plan = planner.plan();
+
+    REQUIRE(!plan.books.empty());
+    for (const auto& p : plan.portfolios) {
+        CHECK(!p.sandbox_id.has_value());
+    }
+    for (const auto& b : plan.books) {
+        CHECK(!b.sandbox_id.has_value());
+        CHECK(b.book_purpose_type == "Trading");
+    }
+
+    std::error_code ec;
+    std::filesystem::remove_all(root, ec);
+}

@@ -30,8 +30,10 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -104,6 +106,32 @@ struct equity_forward_instrument final {
     friend bool operator==(const equity_forward_instrument&,
                            const equity_forward_instrument&) = default;
 };
+
+/**
+ * @brief The members of equity_forward_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view equity_forward_instrument_economic_fields[] = {
+    "underlying_name",
+    "currency",
+    "quantity",
+    "forward_price",
+    "expiry_date",
+    "long_short",
+    "settlement_type",
+};
+
+/**
+ * @brief Names the members of equity_forward_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<equity_forward_instrument>) {
+    return equity_forward_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for equity_forward_instrument, e.g. for the

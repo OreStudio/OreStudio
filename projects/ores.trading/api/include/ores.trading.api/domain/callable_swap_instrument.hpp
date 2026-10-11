@@ -28,7 +28,9 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <span>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -127,6 +129,17 @@ struct callable_swap_instrument final {
     friend bool operator==(const callable_swap_instrument&,
                            const callable_swap_instrument&) = default;
 };
+
+/**
+ * @brief Names the members of callable_swap_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<callable_swap_instrument>) {
+    return {};
+}
 
 /**
  * @brief Dispatch-key identifier for callable_swap_instrument, e.g. for the

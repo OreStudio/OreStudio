@@ -209,6 +209,18 @@ values
     (ores_utility_system_tenant_id_fn(), 'risk_report_configs', 0, 'Risk Report Configs', 'The run settings a seeded report definition resolves, published as the risk report config and its root portfolio scope',
      'dq_risk_report_configs_artefact_tbl', 'reporting_risk_report_configs_tbl', 'reporting.v1.ops.publish_risk_report_configs_from_dq', 69,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'party_contact_informations', 0, 'Party Contact Informations', 'The offices of a party by contact type, with their address, phone, email and web page, published to the party a publish names',
+     'dq_party_contact_informations_artefact_tbl', 'refdata_party_contact_informations_tbl', 'refdata.v1.ops.publish_party_contact_informations_from_dq', 70,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'party_countries', 0, 'Party Countries', 'The countries a party works in, published to the party a publish names',
+     'dq_party_countries_artefact_tbl', 'refdata_party_countries_tbl', 'refdata.v1.ops.publish_party_countries_from_dq', 71,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'party_currencies', 0, 'Party Currencies', 'The currencies a party works in, published to the party a publish names',
+     'dq_party_currencies_artefact_tbl', 'refdata_party_currencies_tbl', 'refdata.v1.ops.publish_party_currencies_from_dq', 72,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'party_counterparties', 0, 'Party Counterparties', 'The counterparties a party may trade with, keyed by counterparty LEI and published to the party a publish names',
+     'dq_party_counterparties_artefact_tbl', 'refdata_party_counterparties_tbl', 'refdata.v1.ops.publish_party_counterparties_from_dq', 73,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     -- One artefact type owns 24 artefact tables, one per convention kind. The
     -- publish function dispatches by name transform rather than by a
     -- per-kind body, so the artefact_table and target_table lists are

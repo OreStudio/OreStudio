@@ -38,6 +38,11 @@ Decisions=): JSON only — no SQL, no server-side wiring yet.
 | =netting_sets.json=       | ores_dq_netting_sets_artefact_tbl shape — 23 sets, one per collateral regime |
 | =csas.json=               | ores_dq_csas_artefact_tbl shape — 14 credit support annexes          |
 | =netting_methodology.txt= | How the netting data is built from the ORE sample shape              |
+| =generate_party_data.py=  | Party design table; re-run to regenerate the four party JSON files below |
+| =party_contacts.json=     | ores_dq_party_contact_informations_artefact_tbl shape — four offices for each entity |
+| =party_countries.json=    | ores_dq_party_countries_artefact_tbl shape — the countries each entity works in |
+| =party_currencies.json=   | ores_dq_party_currencies_artefact_tbl shape — the currencies each entity works in |
+| =party_counterparties.json= | ores_dq_party_counterparties_artefact_tbl shape — the counterparties each entity may trade with, by LEI |
 | =manifest.json=           | Dataset/catalog descriptor following the crafted-dataset convention |
 | =methodology.txt=         | Full generation approach and how to extend (add an office/desk)    |
 

@@ -42,6 +42,10 @@ The full template source. Edit here and re-tangle with
 {{#has_audit_columns}}
 #include <chrono>
 {{/has_audit_columns}}
+{{#has_economic_declaration}}
+#include <span>
+#include <type_traits>
+{{/has_economic_declaration}}
 {{^has_domain_groups}}
 {{^has_identity_group}}
 {{#has_tenant_id}}
@@ -183,6 +187,37 @@ struct {{entity_singular}} final {
     friend bool operator==(const {{entity_singular}}&, const {{entity_singular}}&) = default;
 };
 
+{{#has_economic_declaration}}
+{{#has_economic_fields}}
+/**
+ * @brief The members of {{entity_singular}} the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view {{entity_singular}}_economic_fields[] = {
+{{#economic_fields}}
+    "{{.}}",
+{{/economic_fields}}
+};
+
+{{/has_economic_fields}}
+/**
+ * @brief Names the members of {{entity_singular}} that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<{{entity_singular}}>) {
+{{#has_economic_fields}}
+    return {{entity_singular}}_economic_fields;
+{{/has_economic_fields}}
+{{^has_economic_fields}}
+    return {};
+{{/has_economic_fields}}
+}
+
+{{/has_economic_declaration}}
 /**
  * @brief Dispatch-key identifier for {{entity_singular}}, e.g. for the
  * generic history-diff request and action registries. Single source

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :exact_numbers_and_economic_change:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/declare-the-economic-fields
+#+pr: 3109
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Which fields a customer agreed to, and which rows make up an instrument, are mod
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-09                               |
+| Next         | Review comments, then merge.           |
+| Last touched | 2026-10-11                               |
 
 * Acceptance
 
@@ -40,33 +40,47 @@ Which fields a customer agreed to, and which rows make up an instrument, are mod
 
 * Plan
 
-*Not started.* The digest task ships without this one, using a name-based rule
-in =ores.trading.api/domain/economic_digest.hpp=: a fixed list of identity and
-audit names, an =_id= suffix rule, and a small allow-list of =*_id= names that
-are external identifiers rather than foreign keys. That rule lives in code, so
-it is the very thing this task exists to replace.
+The name rule lived in =ores.trading.api/domain/economic_digest.hpp=: a fixed
+list of identity and audit names, an =_id= suffix rule, and a small allow-list
+of =*_id= names that are external identifiers. That rule lived in code, so it
+was the thing this task replaces. Two things it could not do: tell a money
+field from a continuous one that shares a name shape, and tell an external
+identifier from a foreign key when neither was in the allow-list.
 
-Two things the code rule cannot do, with a worked reason for each:
+What the task built, in order:
 
-- It cannot tell a money field from a continuous one that shares a name shape.
-  A field called =amount= is economic, and a field called =accrual_amount= is
-  too, but the rule sees only the token.
-- It cannot tell an external identifier from a foreign key when neither is in
-  the allow-list. =security_id= is in it today because a trade re-pointed at a
-  different security is a change the customer agreed to; the next such field
-  needs another line of C++.
+1. A =:economic: true= or =:economic: false= property on a column, in entity
+   models and field-group models. Codegen requires a struct to declare all of
+   its members or none, and refuses a value that is not a boolean.
+2. Codegen writes =economic_fields_of(std::type_identity<T>)= beside each
+   declared struct. It takes the type, so the digest asks it at compile time
+   and a member that is not economic is never rendered.
+3. =economic_digest= reads the declaration. The name list, the =_id= rule and
+   the allow-list are deleted. A type with no declaration fails the build.
+4. =scripts/declare_economic_fields.py= wrote the declaration once, from the old
+   rule, over 51 models and 479 columns. The declaration matched the old rule on
+   the 35 types the digest read at that point, before the rule was deleted, and
+   on all 51 declared types afterwards.
+5. The trade-type catalogue gained a =* Digest= section. =Instrument
+   components= lists the rows that make up each routed instrument's shape, and
+   =Shared components= lists the rows every instrument shares, with their
+   readers. A new archetype, =ores.cpp.trade_type.digest=, generates
+   =instrument_economic_shape.hpp= from it, and =read_instrument_digests= calls
+   the generated readers instead of 22 hand-written cases.
 
-What the task adds, in order:
+Design choices, and what they replaced:
 
-1. A =:economic:= knob on a column in the entity model, and a way to state the
-   components that make up a shape.
-2. Codegen that emits the declaration — a per-entity list of economic field
-   names the digest can consume.
-3. The models declare it, so =economic_digest= stops consulting a name list.
+| Choice | Alternative | Why |
+|--------+-------------+-----|
+| A property on each column | A list of names per entity | The column is where a person adds a field, so the declaration is in front of them |
+| All members or none | A default for the undeclared | A default is the name rule again under another name |
+| An overload on the type | A trait specialisation in a shared header | The generated header is self-contained, and ADL finds it |
+| The overload takes the type | Taking a value | A value forces the digest to render every member, including types such as =tenant_id= that have no canonical form |
+| Shape in the catalogue | A =:shape:= property on each entity | The catalogue already owns the routing, and the shape is a property of the routing |
 
-The knob is also where a per-field =economic= marking closes the gap recorded
-in =doc/knowledge/architecture/exact_numbers_and_economic_change.org=, if the
-two turn out to be the same declaration.
+Found while declaring the shape: the option's exercise prices are an economic
+table that the digest has never read. They are not listed, because listing them
+changes what the digest covers. That is a capture, not part of this task.
 
 * Measurements
 
@@ -80,7 +94,27 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Columns declared by the lever | 479 over 51 models | =python3 scripts/declare_economic_fields.py= over the digested models, then the shared children | 056c3074e0 |
+| Types where the declaration differs from the old name rule | 0 of 51 | =python3 doc/agile/versions/v0/sprint_27/exact_numbers_and_economic_change/evidence/economic_declaration_parity.py= from the repository root | 34f8b8a532 |
+| Instrument components in the catalogue | 30 rows over 22 routed instruments | the =* Digest/Instrument components= table of =ores.trading.trade_type_catalogue.org= | c98bef737d |
+| Shared components in the catalogue | 12 | the =* Digest/Shared components= table | c98bef737d |
+| Cases in =ores.trading.api.tests= | 101 cases, 402 assertions | =ctest --preset linux-clang-debug-make -R ores.trading.api.tests= | 34f8b8a532 |
+| =ores.trading.core.digest.tests= | passes, with a case per instrument family | the same ctest preset | 34f8b8a532 |
+| Declaration tests | 12 in =test_economic_declaration.py=, 6 in =test_declare_economic_fields.py= | =pytest projects/ores.codegen/tests/test_economic_declaration.py projects/ores.codegen/tests/test_declare_economic_fields.py= | 34f8b8a532 |
+| Full codegen suite | 1371 pass, 1 fails | =pytest projects/ores.codegen/tests= | 34f8b8a532 |
+| Full ctest | 88 of 93 pass | =ctest --preset linux-clang-debug-make -j4= after =db recreate= | 34f8b8a532 |
+
+The one codegen failure is =test_domain_includes=, on =flexi_swap_instrument.hpp=,
+which this branch does not touch. The five ctest failures are
+=ores.inbox.core.tests= and =ores.iam.core.tests= (account validation),
+=ores.refdata.core.tests= (a table permission), =ores.marketdata.core.tests= (a
+row count) and =ores.web.tests= (a stale record registry). None names the digest
+or the declaration, and this branch does not touch the code they exercise. They
+were not run on a clean =origin/main=, so that is an inference.
+
+The declaration test was proved by mutation: declaring =amount= instead of
+=counterparty_id= in the test struct fails both of its assertions, and
+restoring it passes.
 
 * Notes
 
@@ -99,12 +133,38 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3109][#3109]] | [trading,codegen] Declare the economic fields in the model |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Important: the catalogue refuses a digest component whose model declares nothing on its own columns, so a grouped entity, which declares through its field groups, would be refused wrongly. | =org_loader.py= | Accepted | Fixed with a test. No component is grouped today. |
+| 2 | Minor: the digest never reads an option's exercise prices, so a change to one leaves the digest alone. | =ores.trading.trade_type_catalogue.org= | Declined | Listing them changes what the digest covers. Filed as capture =the-option-exercise-prices-are-not-in-the-digest=. |
+| 3 | Minor: the lever and the parity script carry the old rule, which is now documentation only. | =scripts/declare_economic_fields.py= | Declined | The lever still proposes a declaration for a model that gains columns, and the parity script is the evidence for the measurement. |
+| 4 | Misspell check over the files this change writes. | n/a | None found | =misspell-fixer= exit 0. |
+| 5 | PR review 1: the capture file kept template placeholders. | =the-option-exercise-prices-are-not-in-the-digest.org= | Accepted | Body rewritten. |
+| 6 | PR review 2: the exercise-prices gap ships unfixed and sits in the inbox. | same | Accepted | Filed to next with links to the story and task. The check that was asked for found a second gap, composite legs, filed the same way. |
+| 7 | PR review 3: the component check is textual and one declaration satisfies it. | =org_loader.py= | Partly accepted | Tightening it to require a true column fails on =composite_instrument=, a real component, so the case is documented and tested instead. A parse is not possible without the generation pipeline's flags. |
+| 8 | PR review 4: say that an empty declaration is valid. | =org_loader.py= | Accepted | Docstring updated. |
+| 9 | PR review 5: compile-time cost of the linear find. | =economic_digest.hpp= | Noted | Nothing to change now. |
+| 10 | PR review 6: run the red suites on a clean =origin/main=. | n/a | Done in part | The two codegen tests, the ores.sql physical inventory, the entity-writes ratchet and the recipe inventory are red on a clean =origin/main=. The five C++ suites were not run there: main's own CI stops at Validate SQL Schema. |
+| 11 | PR review 7: build the CSA step and the web bundle. | n/a | Declined | The full build, which includes every component that reads these headers, passed. The CSA web step reads none of them. |
+
+Verdict: ready to merge. Five ctest suites and one codegen test are red on this
+branch for reasons outside it; see Measurements.
 
 * Result
+
+A column's economic status is now a model declaration, and the digest follows
+it. The name rule, the =_id= suffix rule and the five-name allow-list are gone
+from the C++. A field added later is economic or not because its model says so,
+and a model that declares only some of its columns is refused at generation.
+
+The rows that make up an instrument's shape are declared in the trade-type
+catalogue and read by generated code, so the 22-case switch and the shared
+reader list are gone. The generated switch has no default, so a routed table the
+catalogue omits fails the build.
+
+Left for later, and filed: the option's exercise prices are an economic table
+the digest has never read.

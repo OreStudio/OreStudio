@@ -112,6 +112,7 @@ The activity that wrote this version.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 UUID of the bond issue this instrument trades (FK to
@@ -131,6 +132,7 @@ ctx.generate_uuid()
 :type:          numeric(38, 12)
 :cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable:      true
+:economic:      true
 :END:
 
 The trade's own amount for its bond, which ORE holds on =bondData= and

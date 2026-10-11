@@ -510,8 +510,17 @@ void ensure_package(const fs::path& pkg_cache_dir,
                                  " -- refusing to run a corrupted or tampered package");
     }
 
-    fs::create_directories(pkg_cache_dir);
-    ores::storage::filesystem::archiver::extract(pkg_archive, pkg_cache_dir);
+    // Unpack beside the final directory and rename it into place, so that
+    // manifest.json exists only in a finished package. A wrapper that checks for
+    // it without the lock, or after a crash during the unpack, never sees half a
+    // package.
+    const fs::path unpack_dir = pkg_cache_dir.string() + ".tmp";
+    std::error_code ignored;
+    fs::remove_all(unpack_dir, ignored);
+    fs::create_directories(unpack_dir);
+    ores::storage::filesystem::archiver::extract(pkg_archive, unpack_dir);
+    fs::remove_all(pkg_cache_dir, ignored);
+    fs::rename(unpack_dir, pkg_cache_dir);
 }
 
 /**

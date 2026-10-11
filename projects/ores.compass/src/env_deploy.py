@@ -766,7 +766,7 @@ def _cmd_deploy_all(argv, project_root):
             deploy_argv.append("--stop")
         try:
             code = _cmd_deploy(deploy_argv, project_root)
-        except (subprocess.CalledProcessError, RuntimeError) as e:
+        except (subprocess.CalledProcessError, RuntimeError, OSError, SystemExit) as e:
             print(f"  failed: {e}", file=sys.stderr)
             outcomes[alias] = "failed"
             continue

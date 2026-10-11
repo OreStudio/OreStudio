@@ -26,12 +26,12 @@ if [[ "$ROLE" == "compute" ]]; then
     echo "=== Stopping compute nodes '$container*' ==="
     export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
     unit_dir="${XDG_CONFIG_HOME:-$HOME/.config}/containers/systemd"
-    systemctl --user stop "$container-*.service" >/dev/null 2>&1 || true
-    for old_unit in "$unit_dir/$container"-*.container; do
+    systemctl --user stop "$container-[0-9]*.service" >/dev/null 2>&1 || true
+    for old_unit in "$unit_dir/$container"-[0-9]*.container; do
         [[ -e "$old_unit" ]] && rm -f "$old_unit"
     done
     systemctl --user daemon-reload >/dev/null 2>&1 || true
-    for old in $(podman ps -aq --filter "name=^${container}" 2>/dev/null); do
+    for old in $(podman ps -aq --filter "name=^${container}(-[0-9]+)?$" 2>/dev/null); do
         podman rm -f "$old" >/dev/null 2>&1 || true
     done
 else

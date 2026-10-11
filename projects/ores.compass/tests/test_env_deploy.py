@@ -519,6 +519,24 @@ class TestDeployAll:
         assert env_deploy.run(["all"], tmp_path) == 1
         assert seen == ["goedel", "newton"]
 
+    def test_an_exit_inside_one_deploy_does_not_stop_the_others(
+            self, tmp_path, monkeypatch):
+        self._profiles(tmp_path)
+        seen = []
+
+        def deploy(argv, root):
+            seen.append(argv[0])
+            if argv[0] == "goedel":
+                raise SystemExit(2)
+            return 0
+
+        monkeypatch.setattr(env_deploy, "_reachable",
+                            lambda host, timeout=5: True)
+        monkeypatch.setattr(env_deploy, "_cmd_deploy", deploy)
+
+        assert env_deploy.run(["all"], tmp_path) == 1
+        assert seen == ["goedel", "newton"]
+
     def test_succeeds_when_every_host_deploys(self, tmp_path, monkeypatch):
         self._profiles(tmp_path)
         monkeypatch.setattr(env_deploy, "_reachable",

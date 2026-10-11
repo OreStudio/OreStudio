@@ -89,7 +89,7 @@ if [[ "$ROLE" == "compute" ]]; then
     mkdir -p "$unit_dir"
     user_manager="$(systemctl --user is-system-running 2>&1 || true)"
     case "$user_manager" in
-        running | degraded) ;;
+        running | degraded | starting) ;;
         *)
             echo "Error: the systemd user manager is not running for $(whoami) ($user_manager)." >&2
             echo "  Run: loginctl enable-linger $(whoami)  (as root), then retry." >&2
@@ -97,14 +97,25 @@ if [[ "$ROLE" == "compute" ]]; then
             ;;
     esac
 
+    # Check what the new deploy needs before the old one is removed.
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "Error: python3 is required on this host to derive the wrapper host ids." >&2
+        exit 1
+    fi
+    podman_version="$(podman --version | awk '{print $3}')"
+    if [[ "$(printf '%s\n4.4\n' "$podman_version" | sort -V | head -n1)" != "4.4" ]]; then
+        echo "Error: Quadlet needs podman 4.4 or later (this host: $podman_version)." >&2
+        exit 1
+    fi
+
     echo "=== Replacing $replicas compute node unit(s) '$container-N' ==="
     # Remove the units and containers of an earlier deploy, including a
     # single-container deploy from before replicas existed.
-    systemctl --user stop "$container-*.service" >/dev/null 2>&1 || true
-    for old_unit in "$unit_dir/$container"-*.container; do
+    systemctl --user stop "$container-[0-9]*.service" >/dev/null 2>&1 || true
+    for old_unit in "$unit_dir/$container"-[0-9]*.container; do
         [[ -e "$old_unit" ]] && rm -f "$old_unit"
     done
-    for old in $(podman ps -aq --filter "name=^${container}" 2>/dev/null); do
+    for old in $(podman ps -aq --filter "name=^${container}(-[0-9]+)?$" 2>/dev/null); do
         podman rm -f "$old" >/dev/null 2>&1 || true
     done
 

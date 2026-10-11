@@ -479,6 +479,25 @@ and below it a rail of entries, newest first.
 - The shared =Timeline= draws the toggle. A screen gives it =isService=, which
   =usePeopleDirectory= supplies.
 
+*** Links
+
+A party works in countries and currencies, and may trade with counterparties. A
+person works in parties. Each of these is a link, and the timeline draws a link
+as a record of its own.
+
+- A link is named by what it points at: "Country GB", "Currency EUR",
+  "Counterparty Globex Corporation". A counterparty or a party is said by its
+  name, and its id stands only when the name cannot be read.
+- The opening of a link is a "Created" entry. A change to a link, where it has a
+  column of its own, is a "Moved" entry with the difference.
+- The closing of a link is a "Closed" entry. It carries the time the link ended.
+  It has no author, because the store records when a link ended and not who ended
+  it. The entry does not say that it has none.
+- A link that was closed and opened again is one record in two runs. The second
+  run counts from one again.
+- The timeline names a gap for a kind of link only when that kind could not be
+  read. A kind that read and holds no link states nothing.
+
 *** The author
 
 - The author's photo stands at the left of the entry, beside the header and the

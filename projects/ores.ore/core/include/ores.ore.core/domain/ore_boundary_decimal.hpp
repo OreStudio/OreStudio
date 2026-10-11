@@ -79,7 +79,6 @@ inline ores::utility::decimal::decimal exact_decimal(double v) {
     return ores::utility::decimal::decimal{};
 }
 
-
 /**
  * @brief Sets a money leaf to a stored decimal.
  *

@@ -119,6 +119,11 @@ via its "Verifies task" field.
 | 1 | The first version treated the recovery rate and the tranche fraction as money | credit_instrument.org, domain.cpp | accept | They are continuous quantities and stay binary floats. The unit was corrected. |
 | 2 | The design, memory and runbook carried the same classification | design.org, the memory, the runbook | accept | Corrected, and the runbook gains a classify-each-column step. |
 | 3 | The tranche columns were =numeric= while the domain type was =double= | credit_instrument.org | accept | The columns are =double precision=. |
+| 4 | A double blank line before =set_exact= | ore_boundary_decimal.hpp | accept | Removed. |
+| 5 | The =required=True= branches of the member patch never run | reapply_ore_lexical_form.py | accept | Removed; the patch handles optional members and refuses another shape. |
+| 6 | The reverse patch is not idempotent | reapply_ore_lexical_form.py | decline | The un-patch runs only in the self-test, on a patched file. |
+| 7 | The binding test reads the external submodule | xml_lexical_form_export_tests.cpp | decline | The golden, mapper and corpus tests already read it, and the ORE suite needs it. |
+| 8 | The tranche column change needs a migration | credit_instrument.org | decline | The project recreates the database; no migration is written. |
 
 * Result
 

@@ -402,6 +402,287 @@ the reply, so it would be a second command for one read.
  */
 #+end_src
 
+** get_grid_series_request
+:PROPERTIES:
+:subject: compute.v1.ops.get_grid_series
+:response: get_grid_series_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the stored grid samples over a time range, as columns.
+ *
+ * The read serves the whole installation and needs the permission that
+ * get_grid_stats needs. The range widens to whole buckets, counted from the
+ * Unix epoch. A range that needs more than 5000 buckets is refused, so the
+ * caller widens the bucket and never pulls raw rows.
+ */
+#+end_src
+
+*** start_time
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief ISO-8601 start of the range, inclusive.
+ */
+#+end_src
+
+*** end_time
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief ISO-8601 end of the range, exclusive.
+ */
+#+end_src
+
+*** bucket_seconds
+:PROPERTIES:
+:cpp_type: int
+:default:  60
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Width of a bucket in seconds.
+ */
+#+end_src
+
+** get_grid_series_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The grid samples of the range as columns on a regular time axis.
+ *
+ * Bucket i starts at start_time plus i times bucket_seconds, so the axis is
+ * implicit and every column has bucket_count entries. A column holds the value
+ * of the newest sample in the bucket. A bucket with no sample has samples[i]
+ * equal to 0 and zeros in every column, so a caller must read samples before
+ * it draws a value: a gap is not a measurement of zero. The outcome counts and
+ * results_done are totals that only grow, so a caller draws throughput as the
+ * difference between two buckets.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the series was read.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was not, when it was not.
+ */
+#+end_src
+
+*** start_time
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief ISO-8601 start of the first bucket.
+ */
+#+end_src
+
+*** bucket_seconds
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Width of a bucket in seconds.
+ */
+#+end_src
+
+*** bucket_count
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Number of buckets, and the length of every column.
+ */
+#+end_src
+
+*** samples
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Samples in each bucket. 0 marks a gap.
+ */
+#+end_src
+
+*** total_hosts
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Hosts registered, per bucket.
+ */
+#+end_src
+
+*** online_hosts
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Hosts online, per bucket.
+ */
+#+end_src
+
+*** idle_hosts
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Hosts online with no work, per bucket.
+ */
+#+end_src
+
+*** results_inactive
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results not yet sendable, per bucket.
+ */
+#+end_src
+
+*** results_unsent
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results waiting for a node, per bucket.
+ */
+#+end_src
+
+*** results_in_progress
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results a node is running, per bucket.
+ */
+#+end_src
+
+*** results_done
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results finished, a total that only grows, per bucket.
+ */
+#+end_src
+
+*** total_workunits
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Work units, per bucket.
+ */
+#+end_src
+
+*** total_batches
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Batches, per bucket.
+ */
+#+end_src
+
+*** active_batches
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Batches with work left, per bucket.
+ */
+#+end_src
+
+*** outcomes_success
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results that ended in success, a total that only grows, per bucket.
+ */
+#+end_src
+
+*** outcomes_client_error
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results that ended in a client error, a total that only grows, per bucket.
+ */
+#+end_src
+
+*** outcomes_no_reply
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Results that ended with no reply, a total that only grows, per bucket.
+ */
+#+end_src
+
 ** node_sample_message
 :PROPERTIES:
 :subject: compute.v1.ops.node_sample

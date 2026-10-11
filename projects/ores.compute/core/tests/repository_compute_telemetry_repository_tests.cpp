@@ -32,6 +32,8 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <random>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -181,4 +183,124 @@ TEST_CASE("read_newest_grid_sample_returns_a_system_row_not_a_newer_third_tenant
     CHECK(newest->id != own_row.id);
     CHECK(newest->id != third_row.id);
     CHECK(newest->tenant_id == system);
+}
+
+namespace {
+
+/// A bucket-aligned instant at random in the past, so no other row or test shares the range.
+///
+/// The rows a test writes stay in the database, and a row in the future would
+/// become the newest sample that other tests read. So the range lies between
+/// 1990 and 2010, and a repeated run draws another range.
+std::chrono::system_clock::time_point random_past_bucket_start(std::chrono::seconds bucket) {
+    static std::mt19937_64 engine{std::random_device{}()};
+    constexpr long long from_1990 = 631152000;
+    constexpr long long twenty_years = 20LL * 365 * 24 * 3600;
+    const long long secs = from_1990 + static_cast<long long>(engine() % twenty_years);
+    const long long aligned = secs / bucket.count() * bucket.count();
+    return std::chrono::system_clock::time_point(std::chrono::seconds(aligned));
+}
+
+grid_sample sample_at(const grid_sample& model,
+                      const tenant_id& tenant,
+                      std::chrono::system_clock::time_point at,
+                      int results_done) {
+    auto row = model;
+    row.id = random_uuid();
+    row.tenant_id = tenant;
+    row.sampled_at = at;
+    row.results_done = results_done;
+    return row;
+}
+
+} // namespace
+
+TEST_CASE("grid_series_holds_the_newest_sample_of_each_bucket_and_marks_the_gaps", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto model = generate_synthetic_grid_sample(gen);
+
+    auto provision_ctx = h.context();
+    const auto third =
+        tenant_id::from_string(
+            test_database_manager::provision_test_tenant(
+                provision_ctx,
+                test_database_manager::generate_test_tenant_code("ores.compute.telemetry"),
+                "compute telemetry third tenant"))
+            .value();
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    // Bucket 0 holds three samples, bucket 1 none, bucket 2 one, bucket 3 none.
+    // A third tenant's newer row sits in bucket 2 and the policy hides it. One
+    // more row lies past the end of the range.
+    grid_sample_repository repo;
+    const auto own = h.tenant_id();
+    repo.write(h.context(), sample_at(model, own, t0 + seconds(5), 1));
+    repo.write(h.context(), sample_at(model, own, t0 + seconds(35), 3));
+    repo.write(h.context(), sample_at(model, own, t0 + seconds(20), 2));
+    repo.write(h.context(), sample_at(model, own, t0 + seconds(130), 7));
+    repo.write(h.context().with_tenant(third, h.db_user()),
+               sample_at(model, third, t0 + seconds(150), 99));
+    repo.write(h.context(), sample_at(model, own, t0 + seconds(300), 50));
+
+    compute_telemetry_repository telemetry;
+    const auto series = telemetry.grid_series_in_range(h.context(), t0, t0 + seconds(240), 60);
+
+    BOOST_LOG_SEV(lg, info) << "The series has " << series.bucket_count
+                            << " bucket(s); each column must hold the newest sample of its "
+                               "bucket, and the empty buckets must say they hold no sample.";
+
+    CHECK(series.start == t0);
+    CHECK(series.bucket_seconds == 60);
+    REQUIRE(series.bucket_count == 4);
+    REQUIRE(series.samples.size() == 4);
+    REQUIRE(series.results_done.size() == 4);
+    CHECK(series.samples == std::vector<int>{3, 0, 1, 0});
+    CHECK(series.results_done == std::vector<int>{3, 0, 7, 0});
+}
+
+TEST_CASE("grid_series_widens_the_range_to_whole_buckets", tags) {
+    database_helper h;
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    compute_telemetry_repository telemetry;
+    const auto series =
+        telemetry.grid_series_in_range(h.context(), t0 + seconds(30), t0 + seconds(150), 60);
+
+    CHECK(series.start == t0);
+    CHECK(series.bucket_count == 3);
+}
+
+TEST_CASE("grid_series_of_an_empty_range_says_every_bucket_holds_no_sample", tags) {
+    database_helper h;
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    compute_telemetry_repository telemetry;
+    const auto series = telemetry.grid_series_in_range(h.context(), t0, t0 + seconds(600), 60);
+
+    REQUIRE(series.bucket_count == 10);
+    CHECK(series.samples == std::vector<int>(10, 0));
+}
+
+TEST_CASE("grid_series_refuses_a_bad_bucket_and_a_range_that_needs_too_many", tags) {
+    database_helper h;
+
+    using std::chrono::seconds;
+    const auto t0 = random_past_bucket_start(seconds(60));
+
+    compute_telemetry_repository telemetry;
+    CHECK_THROWS_AS(telemetry.grid_series_in_range(h.context(), t0, t0 + seconds(600), 0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(telemetry.grid_series_in_range(h.context(), t0 + seconds(60), t0, 60),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(telemetry.grid_series_in_range(h.context(), t0, t0 + seconds(6000 * 60), 60),
+                    std::invalid_argument);
 }

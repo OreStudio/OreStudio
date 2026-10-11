@@ -61,6 +61,16 @@ task and name that file in the Command column.
 
 * Notes
 
+The reply follows the grid series (see the story's Decisions). It carries the
+start, the bucket width and the bucket count once. A =nodes= list holds each
+node's host id and machine once. Each metric is a flat array of nodes times
+buckets, row-major, and a =samples= array of the same size marks the cells that
+hold no sample. The interval counters (tasks since the last sample, bytes
+fetched and uploaded) are summed over a bucket. The counters that count from
+the wrapper's start (tasks completed, tasks failed) take the newest value in the
+bucket. The longest task is the maximum, and the mean duration is weighted by
+the tasks of each sample.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

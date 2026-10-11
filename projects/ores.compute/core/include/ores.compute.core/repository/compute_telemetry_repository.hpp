@@ -25,9 +25,41 @@
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
 #include <vector>
 
 namespace ores::compute::repository {
+
+/// The most buckets one grid series read returns.
+inline constexpr int max_grid_series_buckets = 5000;
+
+/**
+ * @brief The grid samples of a range as columns on a regular time axis.
+ *
+ * Bucket i starts at start plus i times bucket_seconds, so every column has
+ * bucket_count entries and the axis is implicit. samples says how many
+ * samples each bucket held, and 0 marks a gap that the zeros in the columns do
+ * not measure.
+ */
+struct grid_series {
+    std::chrono::system_clock::time_point start;
+    int bucket_seconds = 0;
+    int bucket_count = 0;
+    std::vector<int> samples;
+    std::vector<int> total_hosts;
+    std::vector<int> online_hosts;
+    std::vector<int> idle_hosts;
+    std::vector<int> results_inactive;
+    std::vector<int> results_unsent;
+    std::vector<int> results_in_progress;
+    std::vector<int> results_done;
+    std::vector<int> total_workunits;
+    std::vector<int> total_batches;
+    std::vector<int> active_batches;
+    std::vector<int> outcomes_success;
+    std::vector<int> outcomes_client_error;
+    std::vector<int> outcomes_no_reply;
+};
 
 /**
  * @brief The telemetry reads no generated repository expresses.
@@ -41,6 +73,8 @@ namespace ores::compute::repository {
  *   grid's newest, so one row per node is a third shape.
  * - The live summary is a call to ores_compute_grid_stats_fn, a SQL function
  *   the codegen has no expression for.
+ * - The grid samples over a range are grouped into buckets, which the
+ *   generated paged read does not express.
  */
 class ORES_COMPUTE_CORE_EXPORT compute_telemetry_repository {
 private:
@@ -74,6 +108,23 @@ public:
      * without loading full tables into memory. Sets sampled_at to now().
      */
     domain::grid_sample compute_grid_stats(context ctx);
+
+    /**
+     * @brief Return the stored grid samples of a range as columns.
+     *
+     * The range widens to whole buckets of bucket_seconds, counted from the
+     * Unix epoch. Each column holds the newest sample of the bucket, and a
+     * bucket with no sample has samples 0 and zeros in every column. The read
+     * states no tenant predicate: the row-level-security policy decides, as
+     * for the newest sample.
+     *
+     * @throws std::invalid_argument when the bucket is under a second, the
+     * range is empty, or the range needs more than max_grid_series_buckets.
+     */
+    grid_series grid_series_in_range(context ctx,
+                                     std::chrono::system_clock::time_point start,
+                                     std::chrono::system_clock::time_point end,
+                                     int bucket_seconds);
 };
 
 }

@@ -174,6 +174,128 @@ struct get_grid_stats_response {
 };
 
 /**
+ * @brief Asks for the stored grid samples over a time range, as columns.
+ *
+ * The read serves the whole installation and needs the permission that
+ * get_grid_stats needs. The range widens to whole buckets, counted from the
+ * Unix epoch. A range that needs more than 5000 buckets is refused, so the
+ * caller widens the bucket and never pulls raw rows.
+ */
+struct get_grid_series_request {
+    using response_type = struct get_grid_series_response;
+    static constexpr std::string_view nats_subject = "compute.v1.ops.get_grid_series";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief ISO-8601 start of the range, inclusive.
+     */
+    std::string start_time;
+    /**
+     * @brief ISO-8601 end of the range, exclusive.
+     */
+    std::string end_time;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    int bucket_seconds = 60;
+};
+
+/**
+ * @brief The grid samples of the range as columns on a regular time axis.
+ *
+ * Bucket i starts at start_time plus i times bucket_seconds, so the axis is
+ * implicit and every column has bucket_count entries. A column holds the value
+ * of the newest sample in the bucket. A bucket with no sample has samples[i]
+ * equal to 0 and zeros in every column, so a caller must read samples before
+ * it draws a value: a gap is not a measurement of zero. The outcome counts and
+ * results_done are totals that only grow, so a caller draws throughput as the
+ * difference between two buckets.
+ */
+struct get_grid_series_response {
+    /**
+     * @brief Whether the series was read.
+     */
+    bool success = false;
+    /**
+     * @brief Why it was not, when it was not.
+     */
+    std::string message;
+    /**
+     * @brief ISO-8601 start of the first bucket.
+     */
+    std::string start_time;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    int bucket_seconds = 0;
+    /**
+     * @brief Number of buckets, and the length of every column.
+     */
+    int bucket_count = 0;
+    /**
+     * @brief Samples in each bucket. 0 marks a gap.
+     */
+    std::vector<int> samples;
+    /**
+     * @brief Hosts registered, per bucket.
+     */
+    std::vector<int> total_hosts;
+    /**
+     * @brief Hosts online, per bucket.
+     */
+    std::vector<int> online_hosts;
+    /**
+     * @brief Hosts online with no work, per bucket.
+     */
+    std::vector<int> idle_hosts;
+    /**
+     * @brief Results not yet sendable, per bucket.
+     */
+    std::vector<int> results_inactive;
+    /**
+     * @brief Results waiting for a node, per bucket.
+     */
+    std::vector<int> results_unsent;
+    /**
+     * @brief Results a node is running, per bucket.
+     */
+    std::vector<int> results_in_progress;
+    /**
+     * @brief Results finished, a total that only grows, per bucket.
+     */
+    std::vector<int> results_done;
+    /**
+     * @brief Work units, per bucket.
+     */
+    std::vector<int> total_workunits;
+    /**
+     * @brief Batches, per bucket.
+     */
+    std::vector<int> total_batches;
+    /**
+     * @brief Batches with work left, per bucket.
+     */
+    std::vector<int> active_batches;
+    /**
+     * @brief Results that ended in success, a total that only grows, per bucket.
+     */
+    std::vector<int> outcomes_success;
+    /**
+     * @brief Results that ended in a client error, a total that only grows, per bucket.
+     */
+    std::vector<int> outcomes_client_error;
+    /**
+     * @brief Results that ended with no reply, a total that only grows, per bucket.
+     */
+    std::vector<int> outcomes_no_reply;
+};
+
+/**
  * @brief One node's report, published fire-and-forget from a wrapper.
  *
  * It carries no response, so the wrapper does not wait for one. The

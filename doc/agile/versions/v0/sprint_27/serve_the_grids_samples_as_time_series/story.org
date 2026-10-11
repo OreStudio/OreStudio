@@ -42,7 +42,7 @@ A system administrator picks last hour, day or week and reads how the grid's loa
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:25074FA7-2489-40BF-AFD7-8562BD99462A][Scaffold story: Serve the grid's samples as time series]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:109AD3A6-9F4B-40DA-9965-F7791460B746][Read the grid samples over a range]] | BACKLOG | | | Initial task for: Serve the grid's samples as time series |
+| [[id:109AD3A6-9F4B-40DA-9965-F7791460B746][Read the grid samples over a range]] | STARTED | 2026-10-11 | | Initial task for: Serve the grid's samples as time series |
 | [[id:06CBD19C-E786-4F13-B037-62CD8609E2A1][Read the node samples over a range]] | BACKLOG | | | One series per node over a range, bucketed on the server, with the failure fields and the machine name. |
 | [[id:C18E61DD-04F3-4F80-8C6F-FEF9A8108801][Serve the series through the BFF]] | BACKLOG | | | A BFF route for the grid and node series, with the range presets of the other operations screens. |
 | [[id:F4472843-743E-42F1-8E14-948D27A498D9][Draw load, fleet, throughput and outcomes]] | BACKLOG | | | The first panels of the Watch the grid journey on one shared time axis. |
@@ -109,8 +109,18 @@ Measured on 60 jobs unpacked from storage, each a 20 year interest rate swap.
 
 * Decisions
 
-- The reads bucket on the server with =time_bucket=, and the caller asks for the
-  width. The browser never receives raw rows for a week.
+- The reads bucket on the server, and the caller asks for the width. The bucket
+  is plain SQL on the epoch, so the read runs on a PostgreSQL without
+  TimescaleDB. The browser never receives raw rows for a week.
+- A series travels as columns on a regular time axis, not as a list of rows. The
+  reply carries the start, the bucket width and the bucket count once, then one
+  integer array per counter. A chart reads one column at a time, the time axis
+  is implicit, and no field name or timestamp repeats per point. A =samples=
+  column says how many samples each bucket held, and 0 marks a gap, so a gap is
+  never read as a measured zero.
+- The node series uses the same time axis. The nodes are listed once, and each
+  metric is one flat array of nodes times buckets, row-major, which is the shape
+  the heatmap draws.
 - The engine run time and peak memory come from =runtimes.csv= and the memory
   lines in the wrapper, and not from the telemetry log rows. A structured file
   is read once per job, and a log line can change its wording.

@@ -154,6 +154,119 @@ export interface GetGridStatsResponse {
 }
 
 /**
+ * @brief Asks for the stored grid samples over a time range, as columns.
+ *
+ * The read serves the whole installation and needs the permission that
+ * get_grid_stats needs. The range widens to whole buckets, counted from the
+ * Unix epoch. A range that needs more than 5000 buckets is refused, so the
+ * caller widens the bucket and never pulls raw rows.
+ */
+export interface GetGridSeriesRequest {
+    /**
+     * @brief ISO-8601 start of the range, inclusive.
+     */
+    start_time: string;
+    /**
+     * @brief ISO-8601 end of the range, exclusive.
+     */
+    end_time: string;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    bucket_seconds: number;
+}
+
+/**
+ * @brief The grid samples of the range as columns on a regular time axis.
+ *
+ * Bucket i starts at start_time plus i times bucket_seconds, so the axis is
+ * implicit and every column has bucket_count entries. A column holds the value
+ * of the newest sample in the bucket. A bucket with no sample has samples[i]
+ * equal to 0 and zeros in every column, so a caller must read samples before
+ * it draws a value: a gap is not a measurement of zero. The outcome counts and
+ * results_done are totals that only grow, so a caller draws throughput as the
+ * difference between two buckets.
+ */
+export interface GetGridSeriesResponse {
+    /**
+     * @brief Whether the series was read.
+     */
+    success: boolean;
+    /**
+     * @brief Why it was not, when it was not.
+     */
+    message: string;
+    /**
+     * @brief ISO-8601 start of the first bucket.
+     */
+    start_time: string;
+    /**
+     * @brief Width of a bucket in seconds.
+     */
+    bucket_seconds: number;
+    /**
+     * @brief Number of buckets, and the length of every column.
+     */
+    bucket_count: number;
+    /**
+     * @brief Samples in each bucket. 0 marks a gap.
+     */
+    samples: number[];
+    /**
+     * @brief Hosts registered, per bucket.
+     */
+    total_hosts: number[];
+    /**
+     * @brief Hosts online, per bucket.
+     */
+    online_hosts: number[];
+    /**
+     * @brief Hosts online with no work, per bucket.
+     */
+    idle_hosts: number[];
+    /**
+     * @brief Results not yet sendable, per bucket.
+     */
+    results_inactive: number[];
+    /**
+     * @brief Results waiting for a node, per bucket.
+     */
+    results_unsent: number[];
+    /**
+     * @brief Results a node is running, per bucket.
+     */
+    results_in_progress: number[];
+    /**
+     * @brief Results finished, a total that only grows, per bucket.
+     */
+    results_done: number[];
+    /**
+     * @brief Work units, per bucket.
+     */
+    total_workunits: number[];
+    /**
+     * @brief Batches, per bucket.
+     */
+    total_batches: number[];
+    /**
+     * @brief Batches with work left, per bucket.
+     */
+    active_batches: number[];
+    /**
+     * @brief Results that ended in success, a total that only grows, per bucket.
+     */
+    outcomes_success: number[];
+    /**
+     * @brief Results that ended in a client error, a total that only grows, per bucket.
+     */
+    outcomes_client_error: number[];
+    /**
+     * @brief Results that ended with no reply, a total that only grows, per bucket.
+     */
+    outcomes_no_reply: number[];
+}
+
+/**
  * @brief One node's report, published fire-and-forget from a wrapper.
  *
  * It carries no response, so the wrapper does not wait for one. The
@@ -213,6 +326,7 @@ export interface NodeSampleMessage {
 
 export const subjects = {
     get_grid_stats_request: 'compute.v1.ops.get_grid_stats',
+    get_grid_series_request: 'compute.v1.ops.get_grid_series',
     node_sample_message: 'compute.v1.ops.node_sample',
 } as const;
 /**
@@ -222,5 +336,6 @@ export const subjects = {
  */
 export const requiresSession = {
     get_grid_stats_request: true,
+    get_grid_series_request: true,
     node_sample_message: false,
 } as const;

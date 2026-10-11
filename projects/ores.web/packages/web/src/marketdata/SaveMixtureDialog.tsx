@@ -113,7 +113,7 @@ export function SaveMixtureDialog({
                         disabled={missing || (!onlyNew && reason.code === '')}
                         onClick={() => save.mutate()}
                     >
-                        {t('marketdata.mixture.save')}
+                        {t('marketdata.mixture.saveButton')}
                     </Button>
                 </>
             }

@@ -3331,7 +3331,6 @@ const pt: SourceCatalogue = {
                 negative: 'Um desvio padrão ou um peso não pode ser negativo.',
                 weights: 'A soma dos pesos tem de ser maior que zero.',
             },
-            save: 'Guardar mistura',
             discard: 'Descartar alterações',
             addTitle: 'Adicionar uma componente',
             editTitle: 'Componente {index}',
@@ -3340,15 +3339,12 @@ const pt: SourceCatalogue = {
                 'Um nome, depois dois pontos e uma nota, como "Principal: calibrada para ~8% de volatilidade anualizada". O nome aparece destacado e a nota atenuada.',
             upRow: 'Subir a componente {index}',
             downRow: 'Descer a componente {index}',
-            saveButton: 'Guardar…',
+            saveButton: 'Guardar',
             saveTitle: 'Guardar a mistura',
             saveSummary: '{added} adicionadas, {changed} alteradas e {removed} apagadas.',
-            runningNote:
-                'O fluxo está em execução, e um fluxo em execução mantém a mistura com que arrancou. Só tira da mistura guardada quando arrancar de novo.',
-            restart:
-                'Reiniciar o fluxo depois de guardar, para que use a nova mistura a partir daí',
-            stoppedNote:
-                'O fluxo não está em execução. Tira da mistura guardada da próxima vez que arrancar.',
+            runningNote: 'O fluxo corre com a mistura antiga.',
+            restart: 'Reiniciar para aplicar',
+            stoppedNote: 'O fluxo está parado. Aplica-se ao arrancar.',
             share: 'Parte',
             clean: 'Sem alterações por guardar.',
             unsaved: '{count} alterações por guardar',

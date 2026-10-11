@@ -3356,7 +3356,6 @@ const fr: SourceCatalogue = {
                 negative: 'Un écart type ou un poids ne peut pas être négatif.',
                 weights: 'La somme des poids doit être supérieure à zéro.',
             },
-            save: 'Enregistrer le mélange',
             discard: 'Annuler les modifications',
             addTitle: 'Ajouter une composante',
             editTitle: 'Composante {index}',
@@ -3365,15 +3364,12 @@ const fr: SourceCatalogue = {
                 'Un nom, puis deux-points et une note, comme « Principale : calibrée à ~8 % de volatilité annualisée ». Le nom est mis en avant et la note atténuée.',
             upRow: 'Monter la composante {index}',
             downRow: 'Descendre la composante {index}',
-            saveButton: 'Enregistrer…',
+            saveButton: 'Enregistrer',
             saveTitle: 'Enregistrer le mélange',
             saveSummary: '{added} ajoutées, {changed} modifiées et {removed} supprimées.',
-            runningNote:
-                'Le flux est en marche, et un flux en marche garde le mélange avec lequel il a démarré. Il ne tire du mélange enregistré qu’une fois redémarré.',
-            restart:
-                'Redémarrer le flux après l’enregistrement, pour qu’il utilise le nouveau mélange dès lors',
-            stoppedNote:
-                'Le flux n’est pas en marche. Il tirera du mélange enregistré à son prochain démarrage.',
+            runningNote: 'Le flux tourne avec l’ancien mélange.',
+            restart: 'Le redémarrer pour appliquer',
+            stoppedNote: 'Le flux est arrêté. Appliqué au démarrage.',
             share: 'Part',
             clean: 'Aucune modification non enregistrée.',
             unsaved: '{count} modifications non enregistrées',

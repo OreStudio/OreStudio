@@ -47,8 +47,8 @@ precedent. Managed by the system tenant.
 :primary_key: true
 :END:
 
-Unique provider code, lower case, used as the provider segment of a source
-name.
+Unique provider code: lower case letters, digits, underscores and hyphens,
+starting with a letter. It is the provider segment of a source name.
 
 Examples: 'generic', 'bloomberg', 'refinitiv', 'cme'.
 
@@ -121,7 +121,7 @@ faker::number::integer(1, 100)
 
 | expression                                                          |
 |---------------------------------------------------------------------|
-| "code" ~ '^[a-z][a-z0-9_]*$'                                         |
+| "code" ~ '^[a-z][a-z0-9_-]*$'                                        |
 | "kind" in ('data_vendor', 'exchange', 'broker', 'generic')           |
 | "name" <> ''                                                        |
 

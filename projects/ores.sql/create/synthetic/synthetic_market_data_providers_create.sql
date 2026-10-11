@@ -63,7 +63,7 @@ create table if not exists "ores_synthetic_market_data_providers_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
-    check ("code" ~ '^[a-z][a-z0-9_]*$'),
+    check ("code" ~ '^[a-z][a-z0-9_-]*$'),
     check ("kind" in ('data_vendor', 'exchange', 'broker', 'generic')),
     check ("name" <> '')
 );

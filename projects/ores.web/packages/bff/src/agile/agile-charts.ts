@@ -26,6 +26,10 @@ import { parseSprint, parseTask, type AgileState, type StoryFiles } from './agil
  * The series of the sprint charts. They replace the panels of ores.org-js:
  * stories done in each sprint, tasks done by day with their running total
  * against the scope, and tasks by state. Nothing here touches the disk.
+ *
+ * The end dates of the tasks live only in the \`* Tasks\` table of a story, so
+ * the burn-up and the day bars read that table. The scope and the states count
+ * the task docs. The two can differ when a row has no doc or a doc has no row.
  */
 
 export interface VelocityPoint {
@@ -67,6 +71,11 @@ export interface Charts {
 }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** A date of the form 2026-10-04 that is also a day on the calendar, so 2026-13-45 is not. */
+function isDay(value: string): boolean {
+    return ISO_DATE.test(value) && Number.isFinite(Date.parse(`${value}T00:00:00Z`));
+}
 const DAY_MS = 86_400_000;
 /** A sprint longer than this draws no day bars, so a bad date cannot make a huge series. */
 const MAX_DAYS = 31;
@@ -94,7 +103,7 @@ export function doneDates(storyText: string): string[] {
         for (const row of table.rows) {
             const state = (row[1] ?? '').trim().toUpperCase();
             const end = (row[3] ?? '').trim();
-            if (state === 'DONE' && ISO_DATE.test(end)) out.push(end);
+            if (state === 'DONE' && isDay(end)) out.push(end);
         }
     }
     return out;
@@ -113,7 +122,12 @@ export interface ChartsInput {
 
 export function buildCharts(input: ChartsInput): Charts {
     const sprint = parseSprint(input.sprint);
-    const ends = input.stories.flatMap((files) => doneDates(files.story)).sort();
+    // A task finished before the sprint began is an old date in a promoted story.
+    // It would stretch the burn-up axis, so the burn-up starts at the sprint.
+    const ends = input.stories
+        .flatMap((files) => doneDates(files.story))
+        .filter((date) => !isDay(sprint.startDate) || date >= sprint.startDate)
+        .sort();
     const byDate = new Map<string, number>();
     for (const end of ends) byDate.set(end, (byDate.get(end) ?? 0) + 1);
     let running = 0;
@@ -127,8 +141,8 @@ export function buildCharts(input: ChartsInput): Charts {
         count: tasks.filter((task) => task.state === state).length,
     })).filter((entry) => entry.count > 0);
 
-    const startOk = ISO_DATE.test(sprint.startDate);
-    const endOk = ISO_DATE.test(sprint.endDate);
+    const startOk = isDay(sprint.startDate);
+    const endOk = isDay(sprint.endDate);
     const length = startOk
         ? endOk
             ? Math.round(

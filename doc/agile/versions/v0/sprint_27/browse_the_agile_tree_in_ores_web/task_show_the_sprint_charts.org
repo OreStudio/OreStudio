@@ -80,7 +80,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Burn-up and scope come from different sources | agile-charts.ts | Note | The end dates live only in a story's Tasks table, so the burn-up and the day bars read it. The scope and the states count task docs. A comment says the two can differ. |
+| 2 | A date such as 2026-13-45 breaks the series | agile-charts.ts | Fix | A date must be a real day. A bad done date is skipped, and a bad sprint date gives no day bars. Two tests cover it. |
+| 3 | Every request reads every sprint's stories | file-agile-store.ts | Note | A cold read is 1.7 s on the real tree and the cache makes a warm read cheap. A cache of the velocity is a follow-up if it grows. |
+| 4 | Early dates stretch the burn-up axis | agile-charts.ts | Fix | A task finished before the sprint began is left out of the burn-up. A test covers it. |
+| 5 | today is in UTC | file-agile-store.ts | Note | Fine for a development dashboard. |
+| 6 | The two reverse calls repeat | file-agile-store.ts | Fix | One oldestFirst list. |
+| 7 | View the tab in a browser | | Done in part | I drew the four charts from the real tree as SVG and viewed them at 420 and 1000 pixels wide. Labels, the dashed scope line and the axis text were clear. The page used my own small stylesheet and not the app's theme, so colours and the tab frame are not checked. |
 
 * Result
 

@@ -54,6 +54,24 @@ describe('doneDates', () => {
     });
 });
 
+describe('a bad date', () => {
+    it('is skipped in the done dates', () => {
+        const text = story(['| A | DONE | 2026-10-01 | 2026-13-45 | x |']).story;
+        expect(doneDates(text)).toEqual([]);
+    });
+
+    it('does not break the series when the sprint dates are not days', () => {
+        const charts = buildCharts({
+            sprint: '#+title: S\n#+start_date: 2026-13-45\n#+end_date: 2026-10-07\n',
+            stories: [story(['| A | DONE | 2026-10-01 | 2026-10-02 | x |'])],
+            velocity: [],
+            today: '2026-10-03',
+        });
+        expect(charts.perDay).toEqual([]);
+        expect(charts.burnup).toEqual([{ date: '2026-10-02', done: 1 }]);
+    });
+});
+
 describe('buildCharts', () => {
     const stories = [
         story(
@@ -101,6 +119,21 @@ describe('buildCharts', () => {
             { state: 'STARTED', count: 1 },
             { state: 'DONE', count: 3 },
         ]);
+    });
+
+    it('leaves out a task finished before the sprint began', () => {
+        const old = buildCharts({
+            sprint: SPRINT,
+            stories: [
+                story([
+                    '| A | DONE | 2026-07-01 | 2026-07-02 | x |',
+                    '| B | DONE | 2026-10-01 | 2026-10-02 | x |',
+                ]),
+            ],
+            velocity: [],
+            today: '2026-10-03',
+        });
+        expect(old.burnup).toEqual([{ date: '2026-10-02', done: 1 }]);
     });
 
     it('passes the velocity through', () => {

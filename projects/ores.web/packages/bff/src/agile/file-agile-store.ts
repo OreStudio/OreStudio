@@ -138,12 +138,14 @@ export class FileAgileStore implements AgileStore {
         const dir = join(this.root, 'agile', 'versions', found.version, found.name);
         const sprintText = await this.readText(join(dir, 'sprint.org'));
         if (sprintText === null) return null;
+        const oldestFirst = [...all].reverse();
         const done = await Promise.all(
-            [...all].reverse().map((ref) => this.storiesDone(ref.version, ref.name)),
+            oldestFirst.map((ref) => this.storiesDone(ref.version, ref.name)),
         );
-        const velocity: VelocityPoint[] = [...all]
-            .reverse()
-            .map((ref, index) => ({ sprint: ref.name, done: done[index] ?? 0 }));
+        const velocity: VelocityPoint[] = oldestFirst.map((ref, index) => ({
+            sprint: ref.name,
+            done: done[index] ?? 0,
+        }));
         return buildCharts({
             sprint: sprintText,
             stories: await this.stories(found.version, found.name),

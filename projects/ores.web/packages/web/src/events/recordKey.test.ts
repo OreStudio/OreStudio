@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { mayConcern } from './recordKey.js';
+import { NOTHING_HEARD, hear, mayConcern, whereChanged } from './recordKey.js';
 
 describe('whether a change concerns a record', () => {
     const diane = { username: 'diane.kay' };
@@ -45,5 +45,59 @@ describe('whether a change concerns a record', () => {
 
     it('concerns no record when it names an empty list', () => {
         expect(mayConcern([], diane)).toBe(false);
+    });
+});
+
+describe('what a screen has heard', () => {
+    const rows = [{ u: 'a' }, { u: 'b' }, { u: 'c' }];
+    const recordOf = (row: { u: string }) => ({ username: row.u });
+
+    it('joins the records of several changes without repeating one', () => {
+        const heard = hear(hear(NOTHING_HEARD, [{ username: 'a' }]), [
+            { username: 'a' },
+            { username: 'b' },
+        ]);
+        expect(heard).toEqual({ keys: [{ username: 'a' }, { username: 'b' }] });
+    });
+
+    it('cannot tell which once a change names none', () => {
+        const heard = hear(hear(NOTHING_HEARD, [{ username: 'a' }]), undefined);
+        expect(heard).toBe('unknown');
+        expect(hear(heard, [{ username: 'a' }])).toBe('unknown');
+    });
+
+    it('cannot tell which once there are too many to keep', () => {
+        const many = Array.from({ length: 101 }, (_, i) => ({ username: `u${i}` }));
+        expect(hear(NOTHING_HEARD, many)).toBe('unknown');
+    });
+
+    it('points at the rows on the page that a change named', () => {
+        const where = whereChanged({ keys: [{ username: 'b' }] }, rows, recordOf);
+        expect([...where.rows]).toEqual([1]);
+        expect(where.elsewhere).toBe(false);
+    });
+
+    it('says something changed elsewhere when a named record is off the page', () => {
+        const where = whereChanged({ keys: [{ username: 'b' }, { username: 'z' }] }, rows, recordOf);
+        expect([...where.rows]).toEqual([1]);
+        expect(where.elsewhere).toBe(true);
+    });
+
+    it('says something changed elsewhere when the changes were too many to name', () => {
+        const where = whereChanged('unknown', rows, recordOf);
+        expect(where.rows.size).toBe(0);
+        expect(where.elsewhere).toBe(true);
+    });
+
+    it('says something changed elsewhere when the list cannot tell its rows apart', () => {
+        const where = whereChanged({ keys: [{ username: 'a' }] }, rows, undefined);
+        expect(where.rows.size).toBe(0);
+        expect(where.elsewhere).toBe(true);
+    });
+
+    it('says nothing when nothing was heard', () => {
+        const where = whereChanged(NOTHING_HEARD, rows, recordOf);
+        expect(where.rows.size).toBe(0);
+        expect(where.elsewhere).toBe(false);
     });
 });

@@ -21,6 +21,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useEntityChangeEvents, type WatchedEntity } from './EntityEvents.js';
+import { NOTHING_HEARD, hear, type Heard, type RecordKey } from './recordKey.js';
 
 /** The part of a query the hook needs to know when the screen last loaded. */
 export interface LoadState {
@@ -50,6 +51,16 @@ export function isStale(changeArrivedAt: number | undefined, loadStartedAt: numb
     return changeArrivedAt !== undefined && changeArrivedAt > loadStartedAt;
 }
 
+/** One change as the screen heard it. */
+interface HeardEvent {
+    readonly arrivedAt: number;
+    readonly at: string;
+    readonly keys: readonly RecordKey[] | undefined;
+}
+
+/** The changes a screen keeps by name; past it the screen only knows that something changed. */
+const MAX_EVENTS = 200;
+
 /**
  * Tells a screen that the entities it shows have changed on the server.
  *
@@ -62,8 +73,13 @@ export function isStale(changeArrivedAt: number | undefined, loadStartedAt: numb
 export function useEntityChanges(
     watches: readonly WatchedEntity[],
     load: LoadState,
-): { readonly stale: boolean; readonly changedAt: string | undefined } {
-    const [heard, setHeard] = useState<{ arrivedAt: number; at: string } | undefined>();
+): {
+    readonly stale: boolean;
+    readonly changedAt: string | undefined;
+    /** The records the changes since the load named, or that they named none. */
+    readonly heard: Heard;
+} {
+    const [events, setEvents] = useState<readonly HeardEvent[]>([]);
     const inFlightSince = useRef(Date.now());
     const [loadStartedAt, setLoadStartedAt] = useState(inFlightSince.current);
     const wasFetching = useRef(load.isFetching);
@@ -80,11 +96,18 @@ export function useEntityChanges(
     }, [load.dataUpdatedAt]);
 
     useEntityChangeEvents(watches, (change) => {
-        setHeard({ arrivedAt: Date.now(), at: change.at });
+        const event: HeardEvent = { arrivedAt: Date.now(), at: change.at, keys: change.keys };
+        // Past the limit the oldest are dropped, and a change without keys stands for them.
+        setEvents((before) =>
+            before.length < MAX_EVENTS ? [...before, event] : [{ ...event, keys: undefined }],
+        );
     });
 
+    const newest = events.at(-1);
+    const sinceLoad = events.filter((event) => isStale(event.arrivedAt, loadStartedAt));
     return {
-        stale: isStale(heard?.arrivedAt, loadStartedAt),
-        changedAt: heard?.at,
+        stale: isStale(newest?.arrivedAt, loadStartedAt),
+        changedAt: newest?.at,
+        heard: sinceLoad.reduce<Heard>((all, event) => hear(all, event.keys), NOTHING_HEARD),
     };
 }

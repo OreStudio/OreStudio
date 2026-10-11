@@ -3176,6 +3176,7 @@ export const en: SourceCatalogue = {
         notAvailable: 'This is not available to you.',
         clear: 'Clear',
         refresh: 'Refresh',
+        changedElsewhere: 'Something changed that this page cannot show. Refresh to see it.',
         refreshStale: 'The data changed on the server. Refresh to see it.',
         refreshStaleAt: 'The data changed on the server at {time}. Refresh to see it.',
         loadedAt: 'Loaded {time}',

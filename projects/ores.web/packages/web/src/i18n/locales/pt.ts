@@ -3198,6 +3198,7 @@ const pt: SourceCatalogue = {
         notAvailable: 'Esta página não está disponível para si.',
         clear: 'Limpar',
         refresh: 'Atualizar',
+        changedElsewhere: 'Algo mudou que esta página não pode mostrar. Atualize para ver.',
         refreshStale: 'Os dados mudaram no servidor. Atualize para os ver.',
         refreshStaleAt: 'Os dados mudaram no servidor às {time}. Atualize para os ver.',
         loadedAt: 'Carregado: {time}',

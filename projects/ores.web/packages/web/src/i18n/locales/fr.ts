@@ -3221,6 +3221,7 @@ const fr: SourceCatalogue = {
         notAvailable: 'Cette page n’est pas disponible pour vous.',
         clear: 'Effacer',
         refresh: 'Actualiser',
+        changedElsewhere: 'Quelque chose a changé que cette page ne peut pas montrer. Actualisez pour le voir.',
         refreshStale: 'Les données ont changé sur le serveur. Actualisez pour les voir.',
         refreshStaleAt: 'Les données ont changé sur le serveur à {time}. Actualisez pour les voir.',
         loadedAt: 'Chargé : {time}',

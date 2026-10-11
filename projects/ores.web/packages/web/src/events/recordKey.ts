@@ -39,3 +39,59 @@ export function mayConcern(keys: readonly RecordKey[] | undefined, record: Recor
         Object.entries(record).every(([column, value]) => key[column] === value),
     );
 }
+
+/** The most records a screen keeps by name; past it, it only knows that something changed. */
+const MAX_HEARD = 100;
+
+/**
+ * What a screen has heard since it last loaded: the records the changes named,
+ * or that it cannot tell which, because a change named none.
+ */
+export type Heard = { readonly keys: readonly RecordKey[] } | 'unknown';
+
+/** Nothing heard yet. */
+export const NOTHING_HEARD: Heard = { keys: [] };
+
+const sameKey = (a: RecordKey, b: RecordKey): boolean => {
+    const columns = Object.keys(a);
+    return columns.length === Object.keys(b).length && columns.every((c) => a[c] === b[c]);
+};
+
+/** Adds the records one change named to what was heard. A change that named none leaves it unknown. */
+export function hear(before: Heard, keys: readonly RecordKey[] | undefined): Heard {
+    if (before === 'unknown' || keys === undefined) return 'unknown';
+    const merged = [...before.keys];
+    for (const key of keys) {
+        if (!merged.some((known) => sameKey(known, key))) merged.push(key);
+    }
+    return merged.length > MAX_HEARD ? 'unknown' : { keys: merged };
+}
+
+/** Whether a key names a record: it has every column the record's key states. */
+const names = (key: RecordKey, record: RecordKey): boolean =>
+    Object.entries(record).every(([column, value]) => key[column] === value);
+
+/**
+ * Where what was heard falls on the page on screen.
+ *
+ * `rows` are the positions of the rows a change named. `elsewhere` is true when
+ * something changed that the page cannot point at: a change named a record that
+ * is not on the page, the changes were too many to name, or the list cannot say
+ * which record a row is.
+ */
+export function whereChanged<Row>(
+    heard: Heard,
+    rows: readonly Row[],
+    recordOf: ((row: Row) => RecordKey) | undefined,
+): { readonly rows: ReadonlySet<number>; readonly elsewhere: boolean } {
+    if (heard === 'unknown') return { rows: new Set(), elsewhere: true };
+    if (heard.keys.length === 0) return { rows: new Set(), elsewhere: false };
+    if (recordOf === undefined) return { rows: new Set(), elsewhere: true };
+    const records = rows.map(recordOf);
+    const named = new Set<number>();
+    records.forEach((record, index) => {
+        if (heard.keys.some((key) => names(key, record))) named.add(index);
+    });
+    const elsewhere = heard.keys.some((key) => !records.some((record) => names(key, record)));
+    return { rows: named, elsewhere };
+}

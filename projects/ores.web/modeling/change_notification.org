@@ -174,7 +174,8 @@ passes it on:
 - A message names up to 20 records. With more, or when any event had an empty
   key, it names none. =keys= is then left out, and a reader treats every record
   as changed.
-- A list ignores =keys=, so it behaves as before: stale once, for any change.
+- A list is stale once, for any change, as before. It also uses =keys= to say
+  where the change fell; see the section [[*Where a list shows a change]].
 - A record page names its record in its watch, by the entity's declared key, such
   as ={ username }=. It goes stale when the message names its record or names
   none.
@@ -184,6 +185,27 @@ passes it on:
 A watch that cannot state its record's key before it has read it, such as a
 contact record that is keyed by its email, leaves =record= out and stays stale for
 any change.
+
+** Where a list shows a change
+
+A list goes stale for any change to its entity, because a record that is not on
+the page can still move a row onto it or off it, through the sort, the search or
+the total. A stale Refresh does not tell the reader where to look, so the list
+uses the keys to place the change. It keeps the keys of the changes heard since its
+load, and compares them with the rows on the page, which it identifies by the
+source's =recordKey=:
+
+| What the list heard                          | What it shows                           |
+|----------------------------------------------+-----------------------------------------|
+| A few records, all on the page               | Those rows pulse.                       |
+| A record that is not on the page             | A strip along the top of the table.     |
+| Changes too many to name (no keys)           | The same strip.                         |
+| A list whose rows cannot be told apart       | The same strip.                         |
+
+The strip says that something changed which the page cannot show. When the
+changes name rows on the page and a record off it, both show. A list keeps at most
+100 records by name, and past that it only knows that something changed. The
+Refresh button stays gold in every case, and the list never reloads by itself.
 
 ** Subscriptions are shared, and routed
 

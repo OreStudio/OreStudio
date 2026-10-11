@@ -171,7 +171,8 @@ button.stale-mark {
   }
 }
 
-.row-changed {
+.row-changed,
+.row-news {
   animation: row-changed 900ms ease-in-out 3;
   box-shadow: inset 3px 0 0 var(--color-stale);
 }
@@ -179,7 +180,34 @@ button.stale-mark {
 /* A person who asked their system for less motion gets the mark without the
    movement. The information is the same. */
 @media (prefers-reduced-motion: reduce) {
-  .row-changed {
+  .row-changed,
+  .row-news {
+    animation: none;
+  }
+}
+
+/*
+ * The strip along the top of a list that says something changed which the page
+ * cannot show. It pulses a few times and then stays, tinted, until the list is
+ * read again.
+ */
+@keyframes stale-strip {
+  0%,
+  100% {
+    background-color: color-mix(in oklab, var(--color-stale) 8%, transparent);
+  }
+  50% {
+    background-color: color-mix(in oklab, var(--color-stale) 24%, transparent);
+  }
+}
+
+.stale-strip {
+  background-color: color-mix(in oklab, var(--color-stale) 8%, transparent);
+  animation: stale-strip 1.8s ease-in-out 4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stale-strip {
     animation: none;
   }
 }

@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 import {
     openFromRow,
     percentDone,
-    sprintGroups,
+    sprintBuckets,
     sprintNumber,
     stateOf,
     stepsDone,
@@ -87,41 +87,51 @@ describe('the number of a sprint', () => {
 describe('grouping the queue by sprint', () => {
     const at = (id: string, sprint: string | null, created: string, extra = {}) =>
         summary({ id, title: id, sprint, created, ...extra });
+    const done = { phase: 'done', state: 'PASSED' } as const;
+    const gone = { phase: 'abandoned', state: 'ABANDONED' } as const;
+    const ids = (rows: readonly { id: string }[]) => rows.map((r) => r.id);
 
     it('puts the newest sprint first and the scenarios outside any sprint last', () => {
-        const groups = sprintGroups(
-            [
-                at('a', 'sprint_9', '2026-01-01'),
-                at('b', null, '2026-05-01'),
-                at('c', 'sprint_27', '2026-10-01'),
-                at('d', 'sprint_23', '2026-07-01'),
-            ],
-            'waiting',
-        );
+        const groups = sprintBuckets([
+            at('a', 'sprint_9', '2026-01-01'),
+            at('b', null, '2026-05-01'),
+            at('c', 'sprint_27', '2026-10-01'),
+            at('d', 'sprint_23', '2026-07-01'),
+        ]);
         expect(groups.map((g) => g.sprint)).toEqual(['sprint_27', 'sprint_23', 'sprint_9', null]);
     });
 
     it('orders sprints by number, not by name', () => {
-        const groups = sprintGroups(
-            [at('a', 'sprint_9', ''), at('b', 'sprint_10', ''), at('c', 'sprint_2', '')],
-            'waiting',
-        );
+        const groups = sprintBuckets([
+            at('a', 'sprint_9', ''),
+            at('b', 'sprint_10', ''),
+            at('c', 'sprint_2', ''),
+        ]);
         expect(groups.map((g) => g.number)).toEqual([10, 9, 2]);
     });
 
-    it('sorts a sprint by created date, newest first, with undated scenarios last, then by title', () => {
-        const groups = sprintGroups(
-            [
-                at('old', 'sprint_1', '2026-01-01'),
-                at('undated-b', 'sprint_1', ''),
-                at('new', 'sprint_1', '2026-09-30'),
-                at('undated-a', 'sprint_1', ''),
-                at('same-b', 'sprint_1', '2026-05-05'),
-                at('same-a', 'sprint_1', '2026-05-05'),
-            ],
-            'waiting',
-        );
-        expect(groups[0]?.scenarios.map((s) => s.id)).toEqual([
+    it('splits a sprint into the active, the done and the abandoned scenarios', () => {
+        const [sprint] = sprintBuckets([
+            at('w1', 'sprint_27', '2026-10-01'),
+            at('d1', 'sprint_27', '2026-10-02', done),
+            at('a1', 'sprint_27', '2026-10-03', gone),
+            at('w2', 'sprint_27', '2026-10-04'),
+        ]);
+        expect(ids(sprint?.active ?? [])).toEqual(['w2', 'w1']);
+        expect(ids(sprint?.done ?? [])).toEqual(['d1']);
+        expect(ids(sprint?.abandoned ?? [])).toEqual(['a1']);
+    });
+
+    it('sorts each bucket by created date, newest first, with undated scenarios last, then by title', () => {
+        const [sprint] = sprintBuckets([
+            at('old', 'sprint_1', '2026-01-01'),
+            at('undated-b', 'sprint_1', ''),
+            at('new', 'sprint_1', '2026-09-30'),
+            at('undated-a', 'sprint_1', ''),
+            at('same-b', 'sprint_1', '2026-05-05'),
+            at('same-a', 'sprint_1', '2026-05-05'),
+        ]);
+        expect(ids(sprint?.active ?? [])).toEqual([
             'new',
             'same-a',
             'same-b',
@@ -131,42 +141,15 @@ describe('grouping the queue by sprint', () => {
         ]);
     });
 
-    it('takes only the phase asked for, and drops a sprint that has none of it', () => {
-        const all = [
-            at('w1', 'sprint_27', '2026-10-01'),
-            at('d1', 'sprint_27', '2026-10-02', { phase: 'done', state: 'PASSED' }),
-            at('d2', 'sprint_22', '2026-06-02', { phase: 'done', state: 'FAILED' }),
-        ];
-        expect(sprintGroups(all, 'waiting').map((g) => [g.sprint, g.scenarios.length])).toEqual([
-            ['sprint_27', 1],
-        ]);
-        expect(sprintGroups(all, 'done').map((g) => [g.sprint, g.scenarios.length])).toEqual([
-            ['sprint_27', 1],
-            ['sprint_22', 1],
-        ]);
-    });
-
-    it('keeps an abandoned scenario out of waiting and done, and groups it on its own', () => {
-        const all = [
-            at('w', 'sprint_27', '2026-10-01'),
-            at('d', 'sprint_27', '2026-10-02', { phase: 'done', state: 'PASSED' }),
-            at('a1', 'sprint_23', '2026-07-01', { phase: 'abandoned', state: 'ABANDONED' }),
-            at('a2', 'sprint_23', '2026-07-09', { phase: 'abandoned', state: 'ABANDONED' }),
-        ];
-        expect(sprintGroups(all, 'waiting').flatMap((g) => g.scenarios.map((s) => s.id))).toEqual([
-            'w',
-        ]);
-        expect(sprintGroups(all, 'done').flatMap((g) => g.scenarios.map((s) => s.id))).toEqual([
-            'd',
-        ]);
-        expect(sprintGroups(all, 'abandoned').flatMap((g) => g.scenarios.map((s) => s.id))).toEqual(
-            ['a2', 'a1'],
-        );
+    it('keeps a sprint that has only done scenarios, with an empty active bucket', () => {
+        const groups = sprintBuckets([at('d', 'sprint_22', '2026-06-01', done)]);
+        expect(groups).toHaveLength(1);
+        expect(groups[0]?.active).toEqual([]);
+        expect(ids(groups[0]?.done ?? [])).toEqual(['d']);
     });
 
     it('is empty for no scenarios', () => {
-        expect(sprintGroups([], 'waiting')).toEqual([]);
-        expect(sprintGroups([], 'done')).toEqual([]);
+        expect(sprintBuckets([])).toEqual([]);
     });
 });
 

@@ -57,8 +57,18 @@ export function openFromRow(event: { readonly defaultPrevented: boolean }, open:
     if (!event.defaultPrevented) open();
 }
 
-/** Whether a scenario waits for a tester, is finished, or has been abandoned. */
-export type Phase = ScenarioSummary['phase'];
+/**
+ * The scenarios of one sprint, or of no sprint when `sprint` is null, in three
+ * buckets: the active ones that wait for a tester, the done ones, and the
+ * abandoned ones.
+ */
+export interface SprintBuckets {
+    readonly sprint: string | null;
+    readonly number: number | null;
+    readonly active: readonly ScenarioSummary[];
+    readonly done: readonly ScenarioSummary[];
+    readonly abandoned: readonly ScenarioSummary[];
+}
 
 /** The number in a sprint folder name such as `sprint_27`, or null. */
 export function sprintNumber(sprint: string | null): number | null {
@@ -66,26 +76,16 @@ export function sprintNumber(sprint: string | null): number | null {
     return match?.[1] === undefined ? null : Number(match[1]);
 }
 
-/** The scenarios of one sprint, or of no sprint when `sprint` is null. */
-export interface SprintGroup {
-    readonly sprint: string | null;
-    readonly number: number | null;
-    readonly scenarios: readonly ScenarioSummary[];
-}
-
 /**
- * The scenarios of one phase, grouped by sprint, newest sprint first, with the
- * scenarios outside any sprint last. Inside a sprint they run from the newest
- * created date to the oldest, and a scenario with no date comes last, then by
- * title. The created dates are ISO dates, so a text comparison orders them.
+ * The scenarios grouped by sprint, newest sprint first, with the scenarios
+ * outside any sprint last. In each sprint they fall in three buckets, and each
+ * bucket runs from the newest created date to the oldest, with a scenario that
+ * has no date last, then by title. The created dates are ISO dates, so a text
+ * comparison orders them.
  */
-export function sprintGroups(
-    scenarios: readonly ScenarioSummary[],
-    phase: Phase,
-): readonly SprintGroup[] {
+export function sprintBuckets(scenarios: readonly ScenarioSummary[]): readonly SprintBuckets[] {
     const bySprint = new Map<string | null, ScenarioSummary[]>();
     for (const scenario of scenarios) {
-        if (scenario.phase !== phase) continue;
         const group = bySprint.get(scenario.sprint) ?? [];
         group.push(scenario);
         bySprint.set(scenario.sprint, group);
@@ -100,11 +100,15 @@ export function sprintGroups(
         }
         return b.created.localeCompare(a.created) || a.title.localeCompare(b.title);
     };
+    const bucket = (group: readonly ScenarioSummary[], phase: ScenarioSummary['phase']) =>
+        group.filter((s) => s.phase === phase).sort(newestFirst);
     return [...bySprint]
         .map(([sprint, group]) => ({
             sprint,
             number: sprintNumber(sprint),
-            scenarios: [...group].sort(newestFirst),
+            active: bucket(group, 'waiting'),
+            done: bucket(group, 'done'),
+            abandoned: bucket(group, 'abandoned'),
         }))
         .sort((a, b) => {
             if (a.number === null || b.number === null) {

@@ -33,7 +33,6 @@ import { QA_SCENARIOS_KEY } from './TestsQueue.js';
 function screen(options: {
     readonly scenarios?: readonly ScenarioSummary[];
     readonly failure?: string;
-    readonly tab?: 'tests' | 'done' | 'abandoned';
 }): string {
     const client = new QueryClient({
         defaultOptions: { queries: { retry: false, retryOnMount: false } },
@@ -133,7 +132,17 @@ const GONE = summary({
     sprint: 'sprint_23',
     created: '2026-07-08',
 });
-const ALL = [PASSED, IDLE, FAILED, WAITING, OLDER, LOOSE, ANCIENT, GONE];
+const DONE27 = summary({
+    id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    title: 'A scenario finished in sprint 27',
+    phase: 'done',
+    state: 'PASSED',
+    steps: { total: 2, pending: 0, pass: 2, fail: 0, dropped: 0 },
+    completedAt: '2026-10-10T10:00:00Z',
+    sprint: 'sprint_27',
+    created: '2026-10-01',
+});
+const ALL = [PASSED, IDLE, FAILED, WAITING, OLDER, LOOSE, ANCIENT, GONE, DONE27];
 
 describe('the Development menu entry', () => {
     it('is in the menu for everybody, with no permission and no scope', () => {
@@ -143,67 +152,84 @@ describe('the Development menu entry', () => {
 });
 
 describe('the Tests tab', () => {
-    it('names the area, offers Tests, Done and Abandoned, and draws no tab for the next story', () => {
+    it('names the area and offers one tab for now, with none for the next story', () => {
         const html = screen({ scenarios: [] });
         expect(html).toContain('role="tablist"');
         expect(html).toContain('>Tests</button>');
-        expect(html).toContain('>Done</button>');
-        expect(html).toContain('>Abandoned</button>');
-        expect(html).toContain('Development');
-        for (const later of ['Board', 'Stories', 'Tasks']) {
-            expect(html).not.toContain(`>${later}</button>`);
+        for (const other of ['Done', 'Abandoned', 'Board', 'Stories', 'Tasks']) {
+            expect(html).not.toContain(`>${other}</button>`);
         }
+        expect(html).toContain('Development');
     });
 
-    it('says nothing is waiting for an empty queue', () => {
+    it('says there are no scenarios for an empty queue', () => {
         const html = screen({ scenarios: [] });
-        expect(html).toContain('Nothing is waiting.');
+        expect(html).toContain('There are no test scenarios.');
         expect(html).not.toContain('<details');
     });
 
-    it('shows only what waits, and none of what is done', () => {
-        const html = screen({ scenarios: ALL });
-        for (const title of [
-            'Retake the currency screenshots',
-            'Open the books tree',
-            'Check the party list',
-            'A scenario outside a sprint',
-        ]) {
-            expect(html).toContain(title);
-        }
-        for (const title of [
-            'Create a counterparty',
-            'Delete a counterparty',
-            'An old finished scenario',
-        ]) {
-            expect(html).not.toContain(title);
-        }
-    });
-
-    it('groups what waits by sprint, the newest sprint first, and what is outside a sprint last', () => {
+    it('groups by sprint, the newest sprint first, and what is outside a sprint last', () => {
         const html = screen({ scenarios: ALL });
         const at = (text: string) => html.indexOf(text);
         expect(at('Sprint 27')).toBeGreaterThan(-1);
-        expect(at('Sprint 27')).toBeLessThan(at('Sprint 23'));
-        expect(at('Sprint 23')).toBeLessThan(at('No sprint'));
-        expect(at('Retake the currency screenshots')).toBeLessThan(at('Sprint 23'));
-        expect(at('Check the party list')).toBeGreaterThan(at('Sprint 23'));
-        expect(at('A scenario outside a sprint')).toBeGreaterThan(at('No sprint'));
+        expect(at('Sprint 27')).toBeLessThan(at('Sprint 25'));
+        expect(at('Sprint 25')).toBeLessThan(at('Sprint 23'));
+        expect(at('Sprint 23')).toBeLessThan(at('Sprint 22'));
+        expect(at('Sprint 22')).toBeLessThan(at('No sprint'));
     });
 
-    it('counts the scenarios in the heading of a sprint', () => {
+    it('counts what is active, done and abandoned in the heading of a sprint', () => {
         const html = screen({ scenarios: ALL });
-        expect(html).toMatch(/Sprint 27<span[^>]*>2<\/span>/);
-        expect(html).toMatch(/Sprint 23<span[^>]*>1<\/span>/);
+        expect(html).toContain('2 active');
+        expect(html).toContain('1 done');
+        expect(html).toContain('1 abandoned');
+        expect(html).toMatch(/Sprint 27[\s\S]*?2 active[\s\S]*?1 done/);
     });
 
-    it('opens every sprint that has something waiting', () => {
+    it('puts the active scenarios of a sprint at the top and the done ones below them', () => {
         const html = screen({ scenarios: ALL });
-        expect(html.match(/<details[^>]*open=""/g)?.length).toBe(3);
-        expect(html.match(/<details/g)?.length).toBe(3);
+        const at = (text: string) => html.indexOf(text);
+        expect(at('Retake the currency screenshots')).toBeGreaterThan(-1);
+        expect(at('Retake the currency screenshots')).toBeLessThan(at('Open the books tree'));
+        expect(at('Open the books tree')).toBeLessThan(at('A scenario finished in sprint 27'));
+        expect(at('A scenario finished in sprint 27')).toBeLessThan(at('Sprint 25'));
     });
 
-    it('sorts a sprint by created date, newest first, and shows the date', () => {
+    it('labels the buckets, and shows the completion time only for the done one', () => {
+        const html = screen({ scenarios: ALL });
+        expect(html).toMatch(/>Active<span/);
+        expect(html).toMatch(/>Done<span/);
+        expect(html.match(/>Completed<\/th>/g)?.length).toBe(3);
+        expect(html).toContain('2026-10-10T10:00:00Z');
+        expect(html).toContain('2026-10-01T10:00:00Z');
+    });
+
+    it('opens a sprint that has something active and the newest sprint, and closes the rest', () => {
+        const html = screen({ scenarios: ALL });
+        const sprints = html.match(/<details [^>]*class="group[^>]*>/g) ?? [];
+        expect(sprints).toHaveLength(5);
+        const open = sprints.filter((tag) => tag.includes('open=""'));
+        expect(open).toHaveLength(3);
+    });
+
+    it('opens the newest sprint even when nothing in it is active', () => {
+        const html = screen({ scenarios: [PASSED, FAILED] });
+        const sprints = html.match(/<details [^>]*class="group[^>]*>/g) ?? [];
+        expect(sprints.map((tag) => tag.includes('open=""'))).toEqual([true, false]);
+    });
+
+    it('keeps the abandoned scenarios in a bucket of their own that is closed', () => {
+        const html = screen({ scenarios: ALL });
+        expect(html).toContain('A scenario for the Qt client');
+        const nested = html.match(/<details [^>]*class="border-t[^>]*>/g) ?? [];
+        expect(nested).toHaveLength(1);
+        expect(nested[0]).not.toContain('open=""');
+        expect(html.indexOf('A scenario for the Qt client')).toBeGreaterThan(
+            html.indexOf('Sprint 23'),
+        );
+    });
+
+    it('sorts a bucket by created date, newest first, and shows the date', () => {
         const html = screen({ scenarios: ALL });
         expect(html.indexOf('Retake the currency screenshots')).toBeLessThan(
             html.indexOf('Open the books tree'),
@@ -224,8 +250,11 @@ describe('the Tests tab', () => {
         expect(html).toContain('In progress');
     });
 
-    it('draws no column for the completion time, which a waiting scenario has none of', () => {
-        expect(screen({ scenarios: [WAITING] })).not.toContain('>Completed</th>');
+    it('shows the state of a done and an abandoned scenario', () => {
+        const html = screen({ scenarios: ALL });
+        expect(html).toContain('Passed');
+        expect(html).toContain('Failed');
+        expect(html).toContain('>Abandoned</span>');
     });
 
     it('opens the runner of the scenario from its row', () => {
@@ -234,85 +263,17 @@ describe('the Tests tab', () => {
     });
 
     it('has no heading of its own', () => {
-        const html = screen({ scenarios: [WAITING] });
-        expect(html).not.toMatch(/<h1/);
+        expect(screen({ scenarios: [WAITING] })).not.toMatch(/<h1/);
     });
 
     it('shows the reason when the load fails', () => {
         const html = screen({ failure: 'The QA validation runner is off.' });
         expect(html).toContain('role="alert"');
         expect(html).toContain('The QA validation runner is off.');
-        expect(html).not.toContain('Nothing is waiting.');
+        expect(html).not.toContain('There are no test scenarios.');
     });
 
     it('says it is loading before the first answer', () => {
         expect(screen({})).toContain('Loading...');
-    });
-});
-
-describe('the Done tab', () => {
-    it('shows only what is finished, and none of what waits', () => {
-        const html = screen({ scenarios: ALL, tab: 'done' });
-        for (const title of [
-            'Create a counterparty',
-            'Delete a counterparty',
-            'An old finished scenario',
-        ]) {
-            expect(html).toContain(title);
-        }
-        expect(html).not.toContain('Retake the currency screenshots');
-        expect(html).not.toContain('Check the party list');
-    });
-
-    it('groups by sprint, newest first, and opens only the newest sprint', () => {
-        const html = screen({ scenarios: ALL, tab: 'done' });
-        expect(html.indexOf('Sprint 25')).toBeLessThan(html.indexOf('Sprint 22'));
-        expect(html.match(/<details/g)?.length).toBe(2);
-        expect(html.match(/<details[^>]*open=""/g)?.length).toBe(1);
-    });
-
-    it('shows the completion time as well as the created date, and the state', () => {
-        const html = screen({ scenarios: ALL, tab: 'done' });
-        expect(html).toContain('>Completed</th>');
-        expect(html).toContain('2026-10-01T10:00:00Z');
-        expect(html).toContain('2026-09-01');
-        expect(html).toContain('Passed');
-        expect(html).toContain('Failed');
-    });
-
-    it('sorts a sprint by created date, newest first', () => {
-        const html = screen({ scenarios: ALL, tab: 'done' });
-        expect(html.indexOf('Delete a counterparty')).toBeLessThan(
-            html.indexOf('An old finished scenario'),
-        );
-    });
-
-    it('says nothing has been tested yet when nothing is done', () => {
-        const html = screen({ scenarios: [WAITING], tab: 'done' });
-        expect(html).toContain('Nothing has been tested yet.');
-        expect(html).not.toContain('<details');
-    });
-});
-
-describe('the Abandoned tab', () => {
-    it('shows only what has been abandoned', () => {
-        const html = screen({ scenarios: ALL, tab: 'abandoned' });
-        expect(html).toContain('A scenario for the Qt client');
-        for (const title of ['Retake the currency screenshots', 'Create a counterparty']) {
-            expect(html).not.toContain(title);
-        }
-    });
-
-    it('groups by sprint, marks the state, and draws no completion column', () => {
-        const html = screen({ scenarios: ALL, tab: 'abandoned' });
-        expect(html).toContain('Sprint 23');
-        expect(html).toContain('>Abandoned</span>');
-        expect(html).not.toContain('>Completed</th>');
-    });
-
-    it('says nothing has been abandoned when nothing has', () => {
-        const html = screen({ scenarios: [WAITING], tab: 'abandoned' });
-        expect(html).toContain('Nothing has been abandoned.');
-        expect(html).not.toContain('<details');
     });
 });

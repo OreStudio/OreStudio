@@ -29,12 +29,11 @@ import { QA_SCENARIOS_KEY, qaQueries } from './queries.js';
 import {
     openFromRow,
     percentDone,
-    sprintGroups,
+    sprintBuckets,
     stateOf,
     stepsDone,
-    type Phase,
     type QueueState,
-    type SprintGroup,
+    type SprintBuckets,
 } from './queue.js';
 
 export { QA_SCENARIOS_KEY };
@@ -48,22 +47,22 @@ const TONES = {
 } as const satisfies Record<QueueState, 'neutral' | 'accent' | 'up' | 'down' | 'muted'>;
 
 /**
- * The width of each column, so the tables of the sprints line up under one
+ * The width of each column, so the tables of the buckets line up under one
  * another. A date and a time stay on one line.
  */
-const WAITING_WIDTHS = ['w-[38%]', 'w-[30%]', 'w-[14%]', 'w-[10%]', 'w-[8%]'] as const;
-const DONE_WIDTHS = ['w-[30%]', 'w-[25%]', 'w-[12%]', 'w-[9%]', 'w-[9%]', 'w-[15%]'] as const;
+const WIDTHS = ['w-[30%]', 'w-[25%]', 'w-[12%]', 'w-[9%]', 'w-[9%]', 'w-[15%]'] as const;
 
 /**
- * The scenarios of one phase, grouped by sprint. The Tests tab shows the
- * scenarios that wait for a tester, which is what a tester comes for. The Done
- * tab shows the finished ones, and the Abandoned tab the ones that will not be
- * run. They are rarely wanted, so only the newest sprint is open there. A sprint is a section that opens and closes, with the
- * number of its scenarios in its heading. A row opens the scenario's runner.
+ * The scenarios, grouped by sprint, newest sprint first. In a sprint the live
+ * scenarios, which wait for a tester, are at the top and the done ones are
+ * below them. The abandoned ones are in a bucket of their own that is closed,
+ * at the bottom. A sprint is a section that opens and closes. It is open when
+ * something in it is active, and the newest sprint is always open. A row opens
+ * the scenario's runner.
  *
  * The tab names this screen, so it carries no heading of its own.
  */
-export function TestsQueue({ phase }: { readonly phase: Phase }): ReactNode {
+export function TestsQueue(): ReactNode {
     const { t } = useTranslation();
     const scenarios = useQuery(qaQueries.scenarios());
 
@@ -73,26 +72,21 @@ export function TestsQueue({ phase }: { readonly phase: Phase }): ReactNode {
     if (scenarios.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
-    const groups = sprintGroups(scenarios.data, phase);
-    if (groups.length === 0) {
+    const sprints = sprintBuckets(scenarios.data);
+    if (sprints.length === 0) {
         return (
             <p className="rounded-md border border-line bg-surface-raised px-4 py-3 text-sm text-ink-muted">
-                {phase === 'waiting'
-                    ? t('development.tests.nothingWaiting')
-                    : phase === 'done'
-                      ? t('development.tests.nothingDone')
-                      : t('development.tests.nothingAbandoned')}
+                {t('development.tests.empty')}
             </p>
         );
     }
     return (
         <div className="space-y-4">
-            {groups.map((group, index) => (
+            {sprints.map((sprint, index) => (
                 <Sprint
-                    key={group.sprint ?? 'none'}
-                    group={group}
-                    phase={phase}
-                    open={phase === 'waiting' || index === 0}
+                    key={sprint.sprint ?? 'none'}
+                    sprint={sprint}
+                    open={sprint.active.length > 0 || index === 0}
                 />
             ))}
         </div>
@@ -100,72 +94,122 @@ export function TestsQueue({ phase }: { readonly phase: Phase }): ReactNode {
 }
 
 function Sprint({
-    group,
-    phase,
+    sprint,
     open,
 }: {
-    readonly group: SprintGroup;
-    readonly phase: Phase;
+    readonly sprint: SprintBuckets;
     readonly open: boolean;
 }): ReactNode {
     const { t } = useTranslation();
-    const done = phase === 'done';
     return (
         <details open={open} className="group rounded-md border border-line bg-surface-raised">
-            <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-medium text-ink">
-                {group.number === null
+            <summary className="flex cursor-pointer flex-wrap items-center gap-2 px-4 py-3 text-sm font-medium text-ink">
+                {sprint.number === null
                     ? t('development.tests.noSprint')
-                    : t('development.tests.sprint', { number: group.number })}
-                <Tag small>{group.scenarios.length}</Tag>
+                    : t('development.tests.sprint', { number: sprint.number })}
+                {sprint.active.length > 0 && (
+                    <Tag small tone="accent">
+                        {t('development.tests.activeCount', { count: sprint.active.length })}
+                    </Tag>
+                )}
+                {sprint.done.length > 0 && (
+                    <Tag small tone="muted">
+                        {t('development.tests.doneCount', { count: sprint.done.length })}
+                    </Tag>
+                )}
+                {sprint.abandoned.length > 0 && (
+                    <Tag small tone="muted">
+                        {t('development.tests.abandonedCount', { count: sprint.abandoned.length })}
+                    </Tag>
+                )}
             </summary>
-            <div className="overflow-x-auto">
-                <table className="w-full table-fixed text-left text-sm">
-                    <colgroup>
-                        {(done ? DONE_WIDTHS : WAITING_WIDTHS).map((width) => (
-                            <col key={width} className={width} />
-                        ))}
-                    </colgroup>
-                    <thead>
-                        <tr className="border-y border-line text-xs text-ink-muted">
-                            <th className="px-4 py-2 font-medium">
-                                {t('development.tests.scenario')}
-                            </th>
-                            <th className="px-4 py-2 font-medium">
-                                {t('development.tests.target')}
-                            </th>
-                            <th className="px-4 py-2 font-medium">
-                                {t('development.tests.progress')}
-                            </th>
-                            <th className="px-4 py-2 font-medium">
-                                {t('development.tests.state')}
-                            </th>
-                            <th className="px-4 py-2 font-medium">
-                                {t('development.tests.created')}
-                            </th>
-                            {done && (
-                                <th className="px-4 py-2 font-medium">
-                                    {t('development.tests.completed')}
-                                </th>
-                            )}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {group.scenarios.map((scenario) => (
-                            <Row key={scenario.id} scenario={scenario} done={done} />
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            {sprint.active.length > 0 && (
+                <Bucket title={t('development.tests.active')} rows={sprint.active} />
+            )}
+            {sprint.done.length > 0 && (
+                <Bucket title={t('development.tests.done')} rows={sprint.done} showCompleted />
+            )}
+            {sprint.abandoned.length > 0 && (
+                <details className="border-t border-line">
+                    <summary className="cursor-pointer px-4 py-2.5 text-xs font-medium tracking-wide text-ink-faint uppercase">
+                        {t('development.tests.abandoned')}
+                        <span className="ml-2">
+                            <Tag small tone="muted">
+                                {sprint.abandoned.length}
+                            </Tag>
+                        </span>
+                    </summary>
+                    <Table rows={sprint.abandoned} showCompleted={false} />
+                </details>
+            )}
         </details>
+    );
+}
+
+function Bucket({
+    title,
+    rows,
+    showCompleted = false,
+}: {
+    readonly title: string;
+    readonly rows: readonly ScenarioSummary[];
+    readonly showCompleted?: boolean;
+}): ReactNode {
+    return (
+        <section className="border-t border-line">
+            <h3 className="flex items-center gap-2 px-4 pt-3 pb-1 text-xs font-medium tracking-wide text-ink-faint uppercase">
+                {title}
+                <Tag small>{rows.length}</Tag>
+            </h3>
+            <Table rows={rows} showCompleted={showCompleted} />
+        </section>
+    );
+}
+
+function Table({
+    rows,
+    showCompleted,
+}: {
+    readonly rows: readonly ScenarioSummary[];
+    readonly showCompleted: boolean;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <div className="overflow-x-auto">
+            <table className="w-full table-fixed text-left text-sm">
+                <colgroup>
+                    {WIDTHS.map((width) => (
+                        <col key={width} className={width} />
+                    ))}
+                </colgroup>
+                <thead>
+                    <tr className="border-b border-line text-xs text-ink-muted">
+                        <th className="px-4 py-2 font-medium">{t('development.tests.scenario')}</th>
+                        <th className="px-4 py-2 font-medium">{t('development.tests.target')}</th>
+                        <th className="px-4 py-2 font-medium">{t('development.tests.progress')}</th>
+                        <th className="px-4 py-2 font-medium">{t('development.tests.state')}</th>
+                        <th className="px-4 py-2 font-medium">{t('development.tests.created')}</th>
+                        <th className="px-4 py-2 font-medium">
+                            {showCompleted ? t('development.tests.completed') : null}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((scenario) => (
+                        <Row key={scenario.id} scenario={scenario} showCompleted={showCompleted} />
+                    ))}
+                </tbody>
+            </table>
+        </div>
     );
 }
 
 function Row({
     scenario,
-    done,
+    showCompleted,
 }: {
     readonly scenario: ScenarioSummary;
-    readonly done: boolean;
+    readonly showCompleted: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -219,11 +263,9 @@ function Row({
             <td className="px-4 py-2.5 text-xs whitespace-nowrap text-ink-muted">
                 {scenario.created}
             </td>
-            {done && (
-                <td className="px-4 py-2.5 text-xs whitespace-nowrap text-ink-muted">
-                    {scenario.completedAt}
-                </td>
-            )}
+            <td className="px-4 py-2.5 text-xs whitespace-nowrap text-ink-muted">
+                {showCompleted ? scenario.completedAt : ''}
+            </td>
         </tr>
     );
 }

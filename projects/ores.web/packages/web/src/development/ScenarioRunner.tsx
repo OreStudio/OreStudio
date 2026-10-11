@@ -125,50 +125,17 @@ export function ScenarioRunner(props: ScenarioRunnerProps): ReactNode {
                 </dl>
             </section>
 
-            {runner.steps.length > 0 && (
-                <div className="mx-auto w-full max-w-xl space-y-4">
-                    <Progress {...props} />
-                    <StepCard {...props} />
-                </div>
-            )}
-
-            {props.outcome !== null && <OutcomeNotice outcome={props.outcome} />}
-
-            <section className="card flex flex-wrap items-center gap-3 p-4">
-                {runner.closed ? (
-                    <>
-                        <Button type="button" onClick={props.onAskRetest}>
-                            {t('development.runner.retest')}
-                        </Button>
-                        <span className="text-xs text-ink-muted">
-                            {abandoned
-                                ? t('development.runner.abandonedHelp')
-                                : t('development.runner.closedHelp')}
-                        </span>
-                    </>
+            <div className="mx-auto w-full max-w-xl space-y-4">
+                {runner.steps.length > 0 ? (
+                    <Progress {...props} abandoned={abandoned} />
                 ) : (
-                    <>
-                        <Button
-                            type="button"
-                            variant="primary"
-                            pending={props.saving}
-                            // A save while a file is uploading would replace the working
-                            // copy before the link for that file is in it.
-                            disabled={props.imageBusy}
-                            onClick={props.onSave}
-                        >
-                            {t('development.runner.save')}
-                        </Button>
-                        <span className="text-xs text-ink-muted">
-                            {t('development.runner.saveHelp')}
-                        </span>
-                    </>
+                    <section className="card p-4">
+                        <Actions {...props} abandoned={abandoned} />
+                    </section>
                 )}
-                <span className="flex-1" />
-                <Link to="/development" className="text-sm text-accent hover:text-accent-bright">
-                    {t('development.runner.back')}
-                </Link>
-            </section>
+                {props.outcome !== null && <OutcomeNotice outcome={props.outcome} />}
+                {runner.steps.length > 0 && <StepCard {...props} />}
+            </div>
 
             {props.confirmingRetest && (
                 <Dialog
@@ -207,7 +174,53 @@ function Fact({
     );
 }
 
-function Progress({ runner, dispatch }: ScenarioRunnerProps): ReactNode {
+/**
+ * Save, or Retest for a closed scenario, with what it does and the way back to
+ * the tests. It sits above the step, beside the step navigation, so a tester
+ * sees it without scrolling to the end of a long step.
+ */
+function Actions(props: ScenarioRunnerProps & { readonly abandoned: boolean }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-wrap items-center gap-3">
+            {props.runner.closed ? (
+                <>
+                    <Button type="button" onClick={props.onAskRetest}>
+                        {t('development.runner.retest')}
+                    </Button>
+                    <span className="min-w-0 flex-1 text-xs text-ink-muted">
+                        {props.abandoned
+                            ? t('development.runner.abandonedHelp')
+                            : t('development.runner.closedHelp')}
+                    </span>
+                </>
+            ) : (
+                <>
+                    <Button
+                        type="button"
+                        variant="primary"
+                        pending={props.saving}
+                        // A save while a file is uploading would replace the working
+                        // copy before the link for that file is in it.
+                        disabled={props.imageBusy}
+                        onClick={props.onSave}
+                    >
+                        {t('development.runner.save')}
+                    </Button>
+                    <span className="min-w-0 flex-1 text-xs text-ink-muted">
+                        {t('development.runner.saveHelp')}
+                    </span>
+                </>
+            )}
+            <Link to="/development" className="text-sm text-accent hover:text-accent-bright">
+                {t('development.runner.back')}
+            </Link>
+        </div>
+    );
+}
+
+function Progress(props: ScenarioRunnerProps & { readonly abandoned: boolean }): ReactNode {
+    const { runner, dispatch } = props;
     const { t } = useTranslation();
     const failed = stateNow(runner) === 'FAILED';
     return (
@@ -247,6 +260,9 @@ function Progress({ runner, dispatch }: ScenarioRunnerProps): ReactNode {
                 >
                     {t('development.runner.skip')}
                 </Button>
+            </div>
+            <div className="border-t border-line pt-3">
+                <Actions {...props} />
             </div>
         </section>
     );

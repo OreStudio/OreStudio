@@ -26,10 +26,11 @@ import { useTabs } from '../ui/Tabs.js';
 import { TestsQueue } from './TestsQueue.js';
 
 /**
- * The tabs of the area. Tests holds what waits for a tester, Done holds what is
- * finished, and Abandoned holds what will not be run. Board, Stories and Tasks join them with the next story.
+ * The tabs of the area. Tests holds every scenario, by sprint, with the live
+ * ones at the top of a sprint and the done ones below. Board, Stories and Tasks
+ * join it with the next story.
  */
-const TABS = ['tests', 'done', 'abandoned'] as const;
+const TABS = ['tests'] as const;
 
 /**
  * The development area: the work a team does on the product, starting with the
@@ -52,9 +53,7 @@ export function DevelopmentArea(): ReactNode {
                 ]}
             />
             {bar}
-            {tab === 'tests' && <TestsQueue phase="waiting" />}
-            {tab === 'done' && <TestsQueue phase="done" />}
-            {tab === 'abandoned' && <TestsQueue phase="abandoned" />}
+            {tab === 'tests' && <TestsQueue />}
         </div>
     );
 }

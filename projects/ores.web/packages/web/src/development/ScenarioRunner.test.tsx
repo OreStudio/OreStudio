@@ -281,6 +281,44 @@ describe('a screenshot for a step', () => {
     });
 });
 
+describe('where the actions are', () => {
+    it('puts Save above the step, beside the step navigation', () => {
+        const html = screen(fresh());
+        const save = html.indexOf('>Save</button>');
+        expect(save).toBeGreaterThan(-1);
+        expect(save).toBeLessThan(html.indexOf('Open tab 1'));
+        expect(save).toBeGreaterThan(html.indexOf('>Skip</button>') - 2500);
+        expect(save).toBeGreaterThan(html.indexOf('role="progressbar"'));
+    });
+
+    it('puts the way back to the tests with Save, and not at the end of the page', () => {
+        const html = screen(fresh());
+        const back = html.indexOf('Back to the tests');
+        expect(back).toBeGreaterThan(-1);
+        expect(back).toBeLessThan(html.indexOf('Open tab 1'));
+    });
+
+    it('puts Retest above the step for a closed scenario', () => {
+        const done = scenario(['PASS', 'FAIL'], { state: 'FAILED' });
+        const html = screen(openRunner(done), { scenario: done });
+        expect(html.indexOf('>Retest</button>')).toBeLessThan(html.indexOf('Open tab 1'));
+    });
+
+    it('puts the message about a save under Save and above the step', () => {
+        const html = screen(fresh(), { outcome: { kind: 'open', pending: 2 } });
+        const message = html.indexOf('Saved. 2 steps are still to mark.');
+        expect(message).toBeGreaterThan(html.indexOf('>Save</button>'));
+        expect(message).toBeLessThan(html.indexOf('Open tab 1'));
+    });
+
+    it('shows the actions for a scenario with no steps', () => {
+        const none = scenario([]);
+        const html = screen(openRunner(none), { scenario: none });
+        expect(html).toContain('>Save</button>');
+        expect(html).toContain('Back to the tests');
+    });
+});
+
 describe('after a save', () => {
     it('says what is left when the save leaves the scenario open', () => {
         const html = screen(run(fresh(), { type: 'mark', mark: 'PASS' }), {

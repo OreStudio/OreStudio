@@ -8,7 +8,7 @@
 #+filetags: :synthetic:refdata:sql:codegen:organise-feeds-by-provider-and-scope:sprint_27:v0:
 #+owner: marco
 #+branch: feature/model-providers-and-feed-scope
-#+pr:
+#+pr: 3151
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3151][#3151]] | [synthetic] Model market data providers and feed scope, and set up the ACME feeds with Bloomberg |
 
 * Review
 

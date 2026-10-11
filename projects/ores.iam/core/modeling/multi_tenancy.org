@@ -233,6 +233,50 @@ Reaching a tenant's data from outside it is not a fourth shape: it is a session
 inside that tenant, by
 [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] or =with_tenant()=.
 
+** The accounts exception: party visibility through membership
+
+*This is a special case. It applies to the accounts table and to no other
+table.* Do not copy it to another entity. A party-owned entity takes the
+party-isolation shape, which keys on its own =party_id= column and on the
+session's visible party set. That shape is the rule, and accounts are the one
+reviewed exception to it.
+
+An account has no =party_id= column, because a person works in several
+parties. The links in =ores_iam_account_parties_tbl= say which. The party
+column shape therefore cannot scope accounts, and the visible party set is the
+wrong scope: it holds the party the session acts for and the parties below it,
+while an account works in the parties it is linked to. A head of group linked
+to several parties would lose the parties it does not act for.
+
+The policy is =accounts_party_visibility_policy= in
+=projects/ores.sql/create/iam/iam_rls_policies_create.sql=. It is hand-written,
+not generated. It is a restrictive policy on reads. It is ANDed with the
+own-tenant policy, so tenant isolation does not change.
+
+| Session | Sees |
+|---------+------|
+| A person | The accounts linked to a party that the person's own account is linked to, and the person's own account |
+| A tenant administrator | Every account of the tenant, because its account is linked to every party of the tenant |
+| A session with no actor: a service acting as itself, or the sign-in lookup before a session exists | Every account of the tenant, as a session with no party set passes the party policy of other tables |
+
+The function =ores_iam_actor_party_ids_fn()= returns the parties the actor's
+account is linked to. The actor is =app.current_actor=, which every user
+request sets from the token. The function is =security definer=. It reads the
+actor's account to find the links, and without that it would apply the policy to
+itself.
+
+What the exception does not do:
+
+- It does not limit writes. A write needs the write code of the operation, and
+  the own-tenant policy still bounds it.
+- It does not reach the other IAM tables. Credentials, contact information,
+  sign-ins and sessions are separate tables. Each has its own policy and its own
+  permission code.
+- It does not make =iam::accounts:read= a read of the tenant. The permission
+  says that a caller may read accounts. The policy says which accounts.
+  Member holds the permission for this reason; see
+  [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
+
 * Database Context
 
 ** =context= Class

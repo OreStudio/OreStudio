@@ -29,9 +29,13 @@ import { PERMISSION, type Needs } from './permissions.js';
  * and a link that is drawn is a link that works.
  */
 export const NEEDS = {
-    /** The whole directory of the tenant. */
+    /**
+     * The accounts the reader may read. Row-level security decides which: the
+     * whole tenant for an administrator, the people of the reader's parties for
+     * a member.
+     */
     people: { all: [PERMISSION.accountsRead] },
-    /** The people of the parties the reader works in. */
+    /** The people of the parties the reader works in, for a reader without the account read. */
     staffOfMyParties: { all: [PERMISSION.organisationRead] },
     /** Either list, whichever the reader can use. */
     staff: { any: [PERMISSION.accountsRead, PERMISSION.organisationRead] },

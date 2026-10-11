@@ -2997,7 +2997,7 @@ function isApiPath(url: string): boolean {
  * One account by username, reading the caller's own through the self read.
  *
  * A request that names the signed-in person's own username is answered by the
- * operation that takes no account id, so a member who holds no account
+ * operation that takes no account id, so an account that holds no account
  * permission still reads their own name, picture and job title. The service
  * enforces that the self read can answer only the caller; this only chooses
  * the operation. Any other username is the ordinary read, which needs

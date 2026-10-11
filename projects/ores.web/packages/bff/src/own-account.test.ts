@@ -31,8 +31,8 @@ import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
 /**
  * A person reads their own account without holding any account permission.
  *
- * A plain member holds no iam::accounts:read, so the ordinary account read
- * refuses them even for themselves. The screens ask for an account by
+ * An account that holds no iam::accounts:read is refused by the ordinary
+ * account read, even for itself. The screens ask for an account by
  * username, so the server answers a request that names the signed-in person's
  * own username with the self read, which takes no account id, and any other
  * username with the ordinary read. These cases pin which operation each

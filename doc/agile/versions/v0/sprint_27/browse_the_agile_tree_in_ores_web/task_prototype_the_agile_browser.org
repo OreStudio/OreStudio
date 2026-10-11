@@ -8,7 +8,7 @@
 #+filetags: :browse_the_agile_tree_in_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/prototype-the-agile-browser
-#+pr:
+#+pr: 3118
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3118][#3118]] | [agile] Prototype the agile browser |
 
 * Review
 

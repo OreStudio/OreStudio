@@ -111,7 +111,7 @@ export function BoardTab(): ReactNode {
                 board={data}
                 names={names ?? [data.sprint.name]}
                 onSprint={pickSprint}
-                onRefresh={() => void board.refetch()}
+                onRefresh={() => void Promise.all([board.refetch(), trees.refetch()])}
             />
             {trees.data !== undefined && trees.data.length > 0 && <TreeStrip trees={trees.data} />}
             <Tiles board={data} />

@@ -8,7 +8,7 @@
 #+filetags: :raise_a_notification_for_a_scenario_waiting_for_a_tester:sprint_27:v0:
 #+owner: marco
 #+branch: feature/raise-a-notification-for-a-scenario-waiting-for-a-tester
-#+pr:
+#+pr: 3148
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3148][#3148]] | [agile] Scaffold story: Raise a notification for a scenario waiting for a tester |
 
 * Review
 

@@ -63,8 +63,9 @@ function jumpTo(index: number): void {
 
 /**
  * A scenario as a report, for the person who reviews a run. Every step is on
- * the page, one after the other, with what the tester marked, what the tester
- * wrote and the screenshots as pictures. It shows the scenario as the server
+ * the page, one after the other, with the instructions, what the tester marked,
+ * what the tester wrote and the screenshots as pictures. Nothing is folded away,
+ * because a reviewer reads it all by scrolling. It shows the scenario as the server
  * has it, so what a reviewer reads is what was saved.
  */
 export function ScenarioReport({ scenario }: { readonly scenario: Scenario }): ReactNode {
@@ -165,14 +166,12 @@ export function ScenarioReport({ scenario }: { readonly scenario: Scenario }): R
                         )}
                         <AttachedImages scenarioId={scenario.id} notes={step.notes} large />
                         {step.instructions.length > 0 && (
-                            <details className="rounded-md border border-line-subtle">
-                                <summary className="cursor-pointer px-3 py-2 text-xs text-ink-muted">
+                            <div>
+                                <h3 className="mb-0.5 text-[11px] tracking-wide text-ink-faint uppercase">
                                     {t('development.report.instructions')}
-                                </summary>
-                                <div className="px-3 pb-3">
-                                    <OrgText source={step.instructions.join('\n')} />
-                                </div>
-                            </details>
+                                </h3>
+                                <OrgText source={step.instructions.join('\n')} />
+                            </div>
                         )}
                     </section>
                 );

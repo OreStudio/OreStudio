@@ -164,11 +164,18 @@ describe('a scenario read as a report', () => {
         expect(html.match(/Not marked\./g)?.length).toBe(1);
     });
 
-    it('keeps the instructions of a step closed, to read when wanted', () => {
+    it('always shows the instructions of a step, with nothing folded away', () => {
         const html = report(scenario());
-        expect(html).toContain('>Instructions</summary>');
+        expect(html).toContain('>Instructions</h3>');
         expect(html).toContain('<strong>General</strong>');
-        expect(html).not.toMatch(/<details[^>]*open=""/);
+        expect(html).toContain('field 2');
+        expect(html).not.toContain('<details');
+        expect(html).not.toContain('<summary');
+    });
+
+    it('shows no Instructions label for a step that has none', () => {
+        const html = report(scenario());
+        expect(html.match(/>Instructions<\/h3>/g)?.length).toBe(2);
     });
 
     it('shows the client of a step', () => {

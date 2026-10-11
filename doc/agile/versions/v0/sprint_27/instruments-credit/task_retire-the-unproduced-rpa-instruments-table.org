@@ -118,6 +118,9 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | The diagrams still named the table | the five diagram sources and their images | accept | Stripped and re-rendered. |
 | 2 | The inbox capture would stay open | doc/agile/product_backlog/inbox | accept | Filed as discarded with a note that this task did the work. |
+| 3 | The removal commit names the wrong task in its trailer | the removal commit | decline | A follow-up commit records the right task; the project merges with merge commits, so both messages stay visible. |
+| 4 | A database from an earlier build keeps the old table | the SQL drop scripts | decline | The project recreates the database and writes no migrations. |
+| 5 | The deleted recipe may leave dead links | doc/recipes/shell | decline | No file links to the recipe's id, and its index line is removed; CI doc-lint confirms. |
 
 * Result
 

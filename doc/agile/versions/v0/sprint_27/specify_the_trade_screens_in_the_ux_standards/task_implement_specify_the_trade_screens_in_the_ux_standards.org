@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: EA454CCD-B716-4DDC-A16C-6DAA06B75579
+:END:
+#+title: Task: Update the menu page, the entity specification and the trade prototypes
+#+description: Initial task for: Specify the trade screens in the UX standards
+#+type: task
+#+level: s1
+#+filetags: :specify_the_trade_screens_in_the_ux_standards:sprint_27:v0:
+#+owner: marco
+#+branch: feature/implement-specify-the-trade-screens-in-the-ux-standards
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:281AE643-2EAF-42B9-801C-C87874409C07][Specify the trade screens in the UX standards]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The menu page and the entity screen specification state how the trade screens look and behave, including the standard entity protocol they read and write through. The trade prototypes follow both.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:281AE643-2EAF-42B9-801C-C87874409C07][Specify the trade screens in the UX standards]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- The menu page names the Trades area, its screens, its addresses and where each screen belongs.
+- The entity screen specification covers the trade page, booking, the structure and package screens, and the entity protocol.
+- Booking is one page in tabs, with a combo box for the trade type and a tab for each part of the instrument.
+- The trade list filters through the standard filter record, and the prototypes show the request.
+
+* Plan
+
+Read the menu page, the entity specification and the NATS entity protocol. Add the Trades area to the menu page. Add the trade, the structure and the package, and the entity protocol, to the entity specification. Change the prototypes: Book a trade becomes the Add button, the trade type a combo box, booking one page in tabs with a tab for each part of the instrument, and the list a standard filter record. Remove authorisation from the prototypes and the journeys.
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The menu page now names the Trades area, its screens, its addresses and where each screen belongs. The entity screen specification covers the trade page, booking, the structure and package screens, and the entity protocol the screens read and write through. The prototypes follow both. Authorisation is out of scope and is drawn nowhere. Its capture waits in the backlog.
+
+The reading of the NATS entity protocol showed that the trade list needs model changes and no new operation: a search member, and filterable columns for the counterparty, the trade type and the state. The trades of a book are the standard scoped read =list_by_book_id= with the subtree scope.

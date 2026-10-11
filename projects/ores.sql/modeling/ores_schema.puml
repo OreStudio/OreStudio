@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-10T18:43:39.230749Z
+' Generated: 2026-10-11T10:09:54.355611Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -26,7 +26,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-500 tables in 21 groups.
+504 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -296,6 +296,10 @@ entity "dq_staging" as dq_staging {
   ores_dq_netting_sets_artefact_tbl
   ores_dq_ois_conventions_artefact_tbl
   ores_dq_overnight_index_conventions_artefact_tbl
+  ores_dq_party_contact_informations_artefact_tbl
+  ores_dq_party_counterparties_artefact_tbl
+  ores_dq_party_countries_artefact_tbl
+  ores_dq_party_currencies_artefact_tbl
   ores_dq_party_relationships_artefact_tbl
   ores_dq_party_roles_artefact_tbl
   ores_dq_payment_frequencies_artefact_tbl
@@ -321,7 +325,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-83 tables — ores_schema.dq_staging.puml
+87 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {

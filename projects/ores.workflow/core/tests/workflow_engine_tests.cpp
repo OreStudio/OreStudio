@@ -857,8 +857,12 @@ TEST_CASE("a retry is confined to the caller's own tenant", tags) {
 
     // A caller in another tenant is told the run does not exist, not that it
     // exists and is not theirs: the answer must not disclose the run.
+    const auto stranger =
+        ores::utility::uuid::tenant_id::from_string(boost::uuids::to_string(
+                                                        boost::uuids::random_generator{}()))
+            .value();
     const auto refused = f.engine->retry_instance(
-        boost::uuids::string_generator{}(instance_id), "", f.service_context().tenant_id());
+        boost::uuids::string_generator{}(instance_id), "", stranger);
     CHECK_FALSE(refused.resumed);
     CHECK(refused.reason == "Workflow instance not found.");
 
@@ -870,6 +874,35 @@ TEST_CASE("a retry is confined to the caller's own tenant", tags) {
     CHECK(accepted.resumed);
     CHECK(accepted.step_index == 0);
     BOOST_LOG_SEV(lg, debug) << "Retry confined to the caller's tenant.";
+}
+
+TEST_CASE("a retry from the system tenant reaches a run of any tenant", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f(engine_tenant::service);
+    f.register_steps("test_retry_system_workflow", {"one", "two"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto run_tenant = f.tenant();
+    REQUIRE(run_tenant != f.service_tenant_id());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_retry_system_workflow", run_tenant, instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    const auto rows = steps.read_latest_by_workflow_id(f.service_context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    f.engine->on_step_completed(as_message(completion_for(
+        instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "one broke")));
+
+    // The scheduled retry of a stopped apply runs as a service in the system
+    // tenant and resumes the run of whichever tenant asked for it.
+    const auto resumed = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "", f.service_context().tenant_id());
+    CHECK(resumed.resumed);
+    CHECK(resumed.step_index == 0);
+    BOOST_LOG_SEV(lg, debug) << "A system tenant caller resumed another tenant's run.";
 }
 
 TEST_CASE("a definition that declares compensate still rolls its work back", tags) {
@@ -1300,7 +1333,8 @@ TEST_CASE("workflow_handler retries a run only for a permitted caller in its ten
     CHECK(malformed.message == "Invalid workflow_instance_id.");
 
     // Another tenant cannot resume this tenant's run.
-    const auto elsewhere = decode(send(f.service_tenant_id(), {"workflow::*"}, instance_id));
+    const auto elsewhere = decode(
+        send(boost::uuids::to_string(boost::uuids::random_generator{}()), {"workflow::*"}, instance_id));
     CHECK_FALSE(elsewhere.success);
 
     // The run's own tenant, with the grant, resumes it from the failed step.

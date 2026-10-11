@@ -498,6 +498,9 @@ BEGIN
     -- it fires. Reading first is what stops a restart adding a second job.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'InboxService', 'scheduler::job_definitions:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'InboxService', 'scheduler::job_definitions:write');
+    -- The inbox resumes an apply that stopped, so it asks the engine to retry
+    -- the run.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'InboxService', 'workflow::workflow_instances:write');
 
     -- Trading service: full own-component + all refdata reads + change reasons
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'TradingService', 'Trading domain service', false);

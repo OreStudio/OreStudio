@@ -233,7 +233,10 @@ public:
      *                      failed.
      * @param caller_tenant The caller's tenant. The engine reads runs of every
      *                      tenant, so this is what confines a retry to the
-     *                      caller's own.
+     *                      caller's own. A caller in the system tenant is not
+     *                      confined: a service that sweeps every tenant runs
+     *                      there, and the permission the verb checks limits who
+     *                      may call it.
      */
     [[nodiscard]] retry_outcome retry_instance(const boost::uuids::uuid& instance_id,
                                                const std::string& step_name,

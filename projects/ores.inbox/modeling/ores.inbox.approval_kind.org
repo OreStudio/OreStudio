@@ -134,6 +134,18 @@ The workflow is started with the request's id as its request, which is
 ={"request_id": "<id>"}=. Each definition reads that shape, so the inbox starts
 any kind's workflow without knowing what the kind changes.
 
+** apply_window_hours
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The number of hours after approval during which a stopped apply is retried, or
+null when the kind names no apply workflow. When the window ends, the request
+moves to apply_failed with the reason "could not apply" and the person who asked
+is told, so a request never retries forever.
+
 ** approvals_required
 :PROPERTIES:
 :type:     integer

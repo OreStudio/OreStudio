@@ -108,6 +108,14 @@ struct approval_kind final {
     std::optional<std::string> apply_workflow_type;
 
     /**
+     * @brief The number of hours after approval during which a stopped apply is retried, or null
+     * when the kind names no apply workflow. When the window ends, the request moves to
+     * apply_failed with the reason "could not apply" and the person who asked is told, so a request
+     * never retries forever.
+     */
+    std::optional<int> apply_window_hours;
+
+    /**
      * @brief How many approvals, each by a different person, close a request as approved.
      */
     int approvals_required = 0;

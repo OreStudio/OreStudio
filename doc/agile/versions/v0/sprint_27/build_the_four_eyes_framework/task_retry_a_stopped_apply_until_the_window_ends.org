@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/retry-a-stopped-apply-until-the-window-ends
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
 #+updated: 2026-10-10
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A stopped apply resumes until the kind's window ends, and a request never retrie
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-10                               |
 
 * Acceptance
@@ -48,6 +48,12 @@ A stopped apply resumes until the kind's window ends, and a request never retrie
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+- Add a nullable =apply_window_hours= column to the approval kind. The kind owns the window, as it owns the workflow. The book change kind retries for 24 hours after approval.
+- Add a security-definer function that lists the approved requests whose kind names an apply workflow, across every tenant, with a flag for a window that has ended. The moment it compares against is a parameter, so a test can ask about a later one.
+- Add one scheduler-fired operation, =inbox.v1.ops.retry_stalled_applies=, on its own schedule (=inbox.apply_retry.schedule=, every five minutes). For each request inside its window it publishes the same start again and asks the engine to resume the run. For each request past its window it moves the request to apply_failed with the reason "could not apply" and tells the person who asked.
+- Reach the engine through an interface the tests replace, and through the service's own token in the running service.
+- Let a caller in the system tenant retry a run of any tenant, since the sweep runs there. The permission the verb checks still limits who may call it, and the inbox service role gains it.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -63,6 +69,15 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The start repairs a lost start, and a resume repairs a stopped run. Both are safe to repeat: a start that names a run the engine holds changes nothing, and the engine refuses a resume of a run that has not stopped. So one pass needs no record of which case a request is in.
+- A run that stopped on a refusal is never retried. The refusal moves its request to apply_failed, and only approved requests are listed.
+- A run the sweep starts is attributed to the inbox service, not to the person who approved, because the sweep holds no token of theirs.
+- The window runs from the moment the request became approved, which is when its current row began.
+- The engine change is the one place a caller reaches across tenants. The existing tests named the system tenant as the foreign caller. They now name a tenant that owns nothing, and a new case proves the system tenant reaches any run.
+- The refdata service role could not read the account-party links that main's new account visibility policy needs, so the service-user tests failed after main moved. The registry now grants that read to the refdata service.
+- Not done by this task: a test against a running engine and scheduler. The screens that show a run are the existing workflow screens. This task does not change them, and I did not open them.
+- Failing on main after the account visibility policy (258ef6a1b4), not caused by this task: three cases in =notification_center_tests.cpp= and =the_refdata_service_user_moves_a_refused_request_to_apply_failed=. The policy lets an actor see only accounts that share a party, so the check that a notice's recipient exists fails for an actor who shares no party with the recipient. I read this off the policy and the identical error text in the inbox cases; I did not run these cases on a clean main. Two web cases in =queries.test.ts= (QA validation runner) also fail and do not touch this change.
 
 * Test Scenarios
 
@@ -88,3 +103,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A scheduled sweep resumes an apply that stopped and ends one that ran out of time.
+
+- =apply_window_hours= is a nullable column of the approval kind. =refdata.book_change= names 24, and =iam.role_grant= names none.
+- =ores_inbox_stalled_applies_fn= lists approved requests whose kind names a workflow, with whether the window has ended.
+- =retry_stalled_applies= starts the run again, asks the engine to resume it, and past the window moves the request to apply_failed with "could not apply" and tells the person who asked. It runs on =inbox.apply_retry.schedule=.
+- The engine lets a system tenant caller retry any tenant's run, and the inbox service role holds =workflow::workflow_instances:write=.
+
+Evidence: six new cases in =approval_apply_retry_tests.cpp= pass (in window, engine refuses, past window, other states, no workflow, engine down). The whole =ores.workflow.core.tests= binary passes with the new system tenant case, =ores.shell.inbox.tests= passes, and the web typecheck is clean. The refdata binary passes except one case, and the inbox binary passes except three cases; all four fail on main for the reason in Notes. The cmake source, handler permission, populate reference, test case reachability, pasted block symbol and derived-model checks pass, the strict ER parse is clean, the catalogue drift sweep is clean and misspell is clean.
+
+Not done here: a test against a running engine and scheduler.

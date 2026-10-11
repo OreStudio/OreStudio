@@ -333,6 +333,51 @@ struct remind_expiring_approvals_response {
 };
 
 /**
+ * @brief Resumes the applies that stopped, and ends the ones that ran out of
+ * time.
+ *
+ * An approved request whose kind names an apply workflow stays approved until
+ * the workflow applies it. When the run stopped on a failure that can pass, or
+ * the start was lost, nothing moves it on. This finds those requests, starts
+ * the run again (a repeated start names the same run, so it changes nothing when
+ * the run exists) and asks the engine to resume a stopped run. A run that
+ * stopped on a refusal never reaches here: the refusal moves its request to
+ * apply_failed.
+ *
+ * When the kind's window ends, the request moves to apply_failed with the
+ * reason "could not apply", and the person who asked is told, so a request never
+ * retries forever.
+ *
+ * A scheduler firing is a plain publish with no token, so this carries no
+ * session: it takes no input, and it only acts on requests that are already
+ * approved.
+ */
+struct retry_stalled_applies_request {
+    using response_type = struct retry_stalled_applies_response;
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.retry_stalled_applies";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
+};
+
+struct retry_stalled_applies_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The requests whose stopped run the engine resumed, as UUID strings.
+     */
+    std::vector<std::string> resumed;
+    /**
+     * @brief The requests that moved to apply_failed because the window ended, as
+     * UUID strings.
+     */
+    std::vector<std::string> gave_up;
+};
+
+/**
  * @brief One field of a request at one version, as a screen names and draws it.
  *
  * The value is text whatever its type: the renderer that fills this in is the

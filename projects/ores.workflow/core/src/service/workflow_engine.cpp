@@ -1232,8 +1232,11 @@ workflow_engine::retry_instance(const boost::uuids::uuid& instance_id,
         return {.reason = "Workflow instance not found."};
 
     const auto instance = found_instances.front();
-    // The engine reaches every tenant's runs; the caller reaches only its own.
-    if (instance.tenant_id != caller_tenant)
+    // The engine reaches every tenant's runs; the caller reaches only its own,
+    // except a caller in the system tenant. A service that sweeps every tenant,
+    // such as the scheduled retry of a stopped apply, runs there, and the
+    // permission the verb checks is what limits who may call it.
+    if (instance.tenant_id != caller_tenant && caller_tenant != utility::uuid::tenant_id::system())
         return {.reason = "Workflow instance not found."};
 
     if (instance.state_id != instance_states_.require("failed"))

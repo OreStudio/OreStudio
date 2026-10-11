@@ -243,6 +243,7 @@ export type {
     LoginRejected,
     OresClientOptions,
     PartySelectionRequired,
+    RecordKey,
     Timeouts,
 } from './client.js';
 

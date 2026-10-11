@@ -124,7 +124,7 @@ is specified here and not yet declared:
 This is the decision that matters most, and it is the one that keeps a bulk import
 from becoming a denial of service on the interface.
 
-/A change notification says "this collection changed at time T". It does not say which records./ A person cannot act on a list of a thousand identifiers, and the interface cannot do anything with them that it cannot do better itself. What it actually needs to know is one thing: /is what I am showing older than what exists?/ A time answers that. A list does not.
+/A change notification says "this collection changed at time T". For a list, it does not say which records./ A person cannot act on a list of a thousand identifiers, and the interface cannot do anything with them that it cannot do better itself. A record page is different, and the section [[*A few keys, for a record page]] says how. What it actually needs to know is one thing: /is what I am showing older than what exists?/ A time answers that. A list does not.
 
 So the payload carries the time of the change. The server's clock and the
 browser's differ, so the client does not compare that time with its own. It
@@ -153,6 +153,37 @@ page read before: a row that was not there, or whose content is not what it was,
 is marked. It uses no clock, and the first read of a page marks nothing. The
 events name a collection, so the records are identified from the data rather than
 from the notification.
+
+** A few keys, for a record page
+
+A list shows many records and goes stale for any change to its entity. A record
+page shows one, and a pulse for another person's record teaches the reader to
+ignore the pulse. Found in the live test: Diane changed her job title, and
+Hazel's own page pulsed.
+
+Every event already carries the key of its record in the payload. The BFF now
+passes it on:
+
+#+begin_src ts
+{ event: 'entity-changed', data: { component, entity, at, keys?: [{ username: 'diane.kay' }] } }
+#+end_src
+
+- The BFF joins the events of one entity that arrive within 150 ms into one
+  message for each session that may hear them, so a bulk import is one message and
+  not a thousand.
+- A message names up to 20 records. With more, or when any event had an empty
+  key, it names none. =keys= is then left out, and a reader treats every record
+  as changed.
+- A list ignores =keys=, so it behaves as before: stale once, for any change.
+- A record page names its record in its watch, by the entity's declared key, such
+  as ={ username }=. It goes stale when the message names its record or names
+  none.
+- The tenant and party filter is unchanged. The keys of a message are only those
+  of events the session may hear.
+
+A watch that cannot state its record's key before it has read it, such as a
+contact record that is keyed by its email, leaves =record= out and stays stale for
+any change.
 
 ** Subscriptions are shared, and routed
 

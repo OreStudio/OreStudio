@@ -470,7 +470,7 @@ function IdentityDialog({
         onClose,
         onSaved,
     });
-    useEntityChangeEvents([{ component: 'iam', entity: 'accounts' }], () => {
+    useEntityChangeEvents([{ component: 'iam', entity: 'accounts', record: { username } }], () => {
         if (edit.saving.current) return;
         void queries.invalidateQueries({ queryKey: ['account', username] });
     });
@@ -656,10 +656,13 @@ export function ReportingLineDialog({
         },
     });
     const { busy, outcome } = edit;
-    useEntityChangeEvents([{ component: 'iam', entity: 'accounts' }], () => {
-        if (edit.saving.current) return;
-        void queries.invalidateQueries({ queryKey: ['account', account.username] });
-    });
+    useEntityChangeEvents(
+        [{ component: 'iam', entity: 'accounts', record: { username: account.username } }],
+        () => {
+            if (edit.saving.current) return;
+            void queries.invalidateQueries({ queryKey: ['account', account.username] });
+        },
+    );
     const nameOfManager = (id: string | null): string =>
         id === null
             ? ''

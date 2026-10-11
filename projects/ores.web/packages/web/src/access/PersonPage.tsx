@@ -35,6 +35,7 @@ import { roleLabel } from './words.js';
 import { ContactTab, IdentityTab, useAccountWrites } from './PersonForms.js';
 import { ACCOUNT_ENTITY, PersonRevertDialog, isRevertable, latestVersion } from './PersonRevert.js';
 import { Timeline, timelineEntryKey } from '../timeline/Timeline.js';
+import type { WatchedEntity } from '../events/EntityEvents.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { useChangedRows } from '../refdata/changedRows.js';
@@ -79,14 +80,25 @@ export function PersonPage({ me }: { readonly me: string }): ReactNode {
     return <Person account={account.data} self={account.data.username === me} />;
 }
 
-/** What a person's page shows: the account, the contact record, the roles, the sign-ins and the history. */
-const PERSON_WATCHES = [
-    { component: 'iam', entity: 'accounts' },
-    { component: 'iam', entity: 'account_contact_informations' },
-    { component: 'iam', entity: 'roles' },
-    { component: 'iam', entity: 'login_info' },
-    { component: 'iam', entity: 'sessions' },
-] as const;
+/**
+ * What a person's page shows: the account, the contact record, the roles, the
+ * sign-ins and the history.
+ *
+ * The account is named by its username, so another person's change to their own
+ * account does not make this page stale. The others are not named: a contact
+ * record is keyed by its email, a role by its name, and a session by its id,
+ * none of which the page can state before it has read them, so they stay stale
+ * for any change to the entity.
+ */
+function personWatches(account: Account): readonly WatchedEntity[] {
+    return [
+        { component: 'iam', entity: 'accounts', record: { username: account.username } },
+        { component: 'iam', entity: 'account_contact_informations' },
+        { component: 'iam', entity: 'roles' },
+        { component: 'iam', entity: 'login_info' },
+        { component: 'iam', entity: 'sessions' },
+    ];
+}
 
 /** The reads that make up a person's page, named by the start of their keys. */
 function personQueries(account: Account): readonly (readonly string[])[] {
@@ -146,7 +158,7 @@ function Person({
      * Refresh stale, and one Refresh reads the cards and the history again.
      */
     const load = useLoadState(personQueries(account));
-    const news = useEntityChanges(PERSON_WATCHES, load);
+    const news = useEntityChanges(personWatches(account), load);
     const newEntries = useChangedRows(
         'person-history',
         story.data?.events ?? [],

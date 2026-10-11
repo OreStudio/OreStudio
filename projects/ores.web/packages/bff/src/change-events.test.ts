@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import type { OresClient } from '@ores/wire-protocol';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { OresClient, RecordKey } from '@ores/wire-protocol';
 import {
+    BATCH_WINDOW_MS,
+    MAX_KEYS,
     ChangeEventRegistry,
     eventSubject,
     isWatchable,
@@ -12,6 +14,7 @@ type Published = (change: {
     at: string;
     tenantId: string | undefined;
     partyId: string | undefined;
+    key: RecordKey;
 }) => void;
 
 const SYSTEM = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
@@ -41,8 +44,14 @@ function change(
     tenantId: string | undefined,
     partyId?: string,
     at = '2026-10-10T12:00:03Z',
+    key: RecordKey = {},
 ): Parameters<Published>[0] {
-    return { at, tenantId, partyId };
+    return { at, tenantId, partyId, key };
+}
+
+/** Lets the window that gathers a burst of changes end. */
+function endWindow(): void {
+    vi.advanceTimersByTime(BATCH_WINDOW_MS);
 }
 
 describe('the subject a watch listens on', () => {
@@ -89,6 +98,13 @@ describe('who may hear an event', () => {
 });
 
 describe('the change registry', () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+    });
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     it('hands a published change to the sessions watching that entity', () => {
         const { client, open } = fakeClient();
         const registry = new ChangeEventRegistry(client);
@@ -96,6 +112,7 @@ describe('the change registry', () => {
         registry.attach('s1', (c) => heard.push(`${c.entity}@${c.at}`));
         registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
         open.get('iam.v1.accounts_events.>')?.(change('t1'));
+        endWindow();
         expect(heard).toEqual(['accounts@2026-10-10T12:00:03Z']);
     });
 
@@ -112,6 +129,7 @@ describe('the change registry', () => {
         registry.watch('s1', audience({ tenantId: 't1' }), watch);
         registry.watch('s2', audience({ tenantId: 't2' }), watch);
         open.get('iam.v1.accounts_events.>')?.(change('t1', undefined, 'first'));
+        endWindow();
 
         const received = lines.find((line) => line.message === 'change event received');
         expect(received?.fields).toMatchObject({
@@ -137,8 +155,102 @@ describe('the change registry', () => {
         registry.attach('s1', (c) => heard.push(c.at));
         registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
         open.get('iam.v1.accounts_events.>')?.(change(undefined));
+        endWindow();
         expect(warnings).toEqual(['change event without a tenant, told to nobody']);
         expect(heard).toEqual([]);
+    });
+
+    describe('naming the records that changed', () => {
+        function setup(): {
+            readonly told: { at: string; keys?: readonly RecordKey[] }[];
+            readonly publish: (key: RecordKey, at?: string, tenant?: string) => void;
+        } {
+            const { client, open } = fakeClient();
+            const registry = new ChangeEventRegistry(client);
+            const told: { at: string; keys?: readonly RecordKey[] }[] = [];
+            registry.attach('s1', (c) =>
+                told.push({ at: c.at, ...(c.keys === undefined ? {} : { keys: c.keys }) }),
+            );
+            registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
+            return {
+                told,
+                publish: (key, at = 'a', tenant = 't1') =>
+                    open.get('iam.v1.accounts_events.>')?.(change(tenant, undefined, at, key)),
+            };
+        }
+
+        it('names the record of one change', () => {
+            const { told, publish } = setup();
+            publish({ username: 'diane.kay' }, 'a');
+            endWindow();
+            expect(told).toEqual([{ at: 'a', keys: [{ username: 'diane.kay' }] }]);
+        });
+
+        it('joins the changes of one window into one message with the newest time', () => {
+            const { told, publish } = setup();
+            publish({ username: 'diane.kay' }, 'first');
+            publish({ username: 'hazel.jennings' }, 'second');
+            publish({ username: 'diane.kay' }, 'third');
+            endWindow();
+            expect(told).toEqual([
+                {
+                    at: 'third',
+                    keys: [{ username: 'diane.kay' }, { username: 'hazel.jennings' }],
+                },
+            ]);
+        });
+
+        it('tells a session again when a later change comes after the window', () => {
+            const { told, publish } = setup();
+            publish({ username: 'a' }, 'first');
+            endWindow();
+            publish({ username: 'b' }, 'second');
+            endWindow();
+            expect(told.map((entry) => entry.at)).toEqual(['first', 'second']);
+        });
+
+        it('names no record once a change could not name its own', () => {
+            const { told, publish } = setup();
+            publish({ username: 'diane.kay' }, 'first');
+            publish({}, 'second');
+            endWindow();
+            expect(told).toEqual([{ at: 'second' }]);
+        });
+
+        it('names no record once a bulk change passes the limit', () => {
+            const { told, publish } = setup();
+            for (let i = 0; i <= MAX_KEYS; i += 1) publish({ username: `u${i}` }, `t${i}`);
+            endWindow();
+            expect(told).toHaveLength(1);
+            expect(told[0]?.keys).toBeUndefined();
+        });
+
+        it('still names the records at the limit', () => {
+            const { told, publish } = setup();
+            for (let i = 0; i < MAX_KEYS; i += 1) publish({ username: `u${i}` });
+            endWindow();
+            expect(told[0]?.keys).toHaveLength(MAX_KEYS);
+        });
+
+        it('does not name the records of another tenant to the session', () => {
+            const { told, publish } = setup();
+            publish({ username: 'stranger' }, 'x', 't2');
+            publish({ username: 'diane.kay' }, 'y');
+            endWindow();
+            expect(told).toEqual([{ at: 'y', keys: [{ username: 'diane.kay' }] }]);
+        });
+
+        it('tells nobody once the last watcher has left', () => {
+            const { client, open } = fakeClient();
+            const registry = new ChangeEventRegistry(client);
+            const heard: string[] = [];
+            registry.attach('s1', (c) => heard.push(c.at));
+            registry.watch('s1', audience(), [{ component: 'iam', entity: 'accounts' }]);
+            open.get('iam.v1.accounts_events.>')?.(change('t1', undefined, 'late', { a: '1' }));
+            registry.forget('s1');
+            endWindow();
+            expect(heard).toEqual([]);
+        });
     });
 
     it('logs a watch it ignores because no stream is attached yet', () => {
@@ -163,8 +275,11 @@ describe('the change registry', () => {
         registry.watch('s1', audience({ tenantId: 't1' }), watch);
         registry.watch('s2', audience({ tenantId: 't2' }), watch);
         open.get('iam.v1.accounts_events.>')?.(change('t1', undefined, 'first'));
+        endWindow();
         open.get('iam.v1.accounts_events.>')?.(change('t2', undefined, 'second'));
+        endWindow();
         open.get('iam.v1.accounts_events.>')?.(change(SYSTEM, undefined, 'shared'));
+        endWindow();
         expect(one).toEqual(['first', 'shared']);
         expect(two).toEqual(['second', 'shared']);
     });
@@ -180,8 +295,10 @@ describe('the change registry', () => {
         ]);
         const publish = open.get('refdata.v1.party_identifiers_events.>');
         publish?.(change('t1', 'p2', 'before'));
+        endWindow();
         parties = new Set(['p2']);
         publish?.(change('t1', 'p2', 'after'));
+        endWindow();
         expect(heard).toEqual(['after']);
     });
 

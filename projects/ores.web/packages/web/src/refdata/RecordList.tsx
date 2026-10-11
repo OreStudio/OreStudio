@@ -158,7 +158,7 @@ export function useRecordSource(resource: string): ListSource<RecordRow> {
         search: entry?.search === true,
         sortable: entry?.sortable ?? [],
         mayAdd: may.write,
-        ...(entry === undefined ? {} : { watches: [entry.events] }),
+        ...(entry?.events === undefined ? {} : { watches: [entry.events] }),
         audit: (row, field) => (field === 'version' ? row.version : row[field]),
     };
 }

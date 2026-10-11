@@ -21,6 +21,7 @@
 
 import type { ReactNode } from 'react';
 import { useHolds } from '../access/holds.js';
+import { PERMISSION } from '../access/permissions.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
 import { PageHeader } from '../ui/Primitives.js';
@@ -33,7 +34,13 @@ const BUILT = [
         screen: 'fxFeeds',
         to: fxFeedPath(),
         icon: 'trend',
-        read: 'synthetic::fx_spot_generation_configs:read',
+        read: PERMISSION.fxFeedsRead,
+    },
+    {
+        screen: 'evolution',
+        to: '/market-data/evolution',
+        icon: 'chart',
+        read: PERMISSION.curveSnapshotsRead,
     },
 ] as const;
 

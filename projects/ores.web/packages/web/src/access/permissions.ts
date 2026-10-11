@@ -37,6 +37,7 @@ export const PERMISSION = {
     partiesWrite: 'refdata::parties:write',
     counterpartiesWrite: 'refdata::counterparties:write',
     curveSnapshotsRead: 'marketdata::curve_snapshots:read',
+    fxFeedsRead: 'synthetic::fx_spot_generation_configs:read',
     contactsRead: 'iam::account_contact_informations:read',
     contactsWrite: 'iam::account_contact_informations:write',
     organisationRead: 'iam::organisation:read',

@@ -88,7 +88,6 @@ export const en: SourceCatalogue = {
             organisation: 'Organisation',
             roles: 'Roles',
             refdata: 'Reference data',
-            marketdata: 'Market data',
             access: 'My access',
             whereIWork: 'Where I work',
             profile: 'My profile',
@@ -1925,9 +1924,9 @@ export const en: SourceCatalogue = {
     },
 
     timeline: {
-        hideSystem: "Hide system activity",
-        showSystem: "Show system activity",
-        systemUnknown: "Your access does not show which accounts are services.",
+        hideSystem: 'Hide system activity',
+        showSystem: 'Show system activity',
+        systemUnknown: 'Your access does not show which accounts are services.',
         empty: 'Nothing has happened to this yet.',
         details: 'Details',
         current: 'Current version',
@@ -3184,6 +3183,9 @@ export const en: SourceCatalogue = {
                 fxFeeds: 'FX price feeds',
                 fxFeedsBody:
                     'Compose the synthetic FX feeds: the pair, the engine and the mixture each one draws from.',
+                evolution: 'Watch a curve evolve',
+                evolutionBody:
+                    'Read a curve or surface over a range of instants, and as it stands now.',
             },
         },
         fxFeeds: {
@@ -3431,6 +3433,7 @@ export const en: SourceCatalogue = {
         rolesAssign: 'give roles to people',
         sessionsRead: "read people's sign-ins",
         curveSnapshotsRead: 'see the market data curves',
+        fxFeedsRead: 'see the synthetic FX price feeds',
     },
 
     unavailable: {

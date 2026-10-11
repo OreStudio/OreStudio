@@ -82,7 +82,6 @@ const fr: SourceCatalogue = {
             organisation: 'Organisation',
             roles: 'Rôles',
             refdata: 'Données de référence',
-            marketdata: 'Données de marché',
             access: 'Mes accès',
             whereIWork: 'Où je travaille',
             profile: 'Mon profil',
@@ -1950,8 +1949,8 @@ const fr: SourceCatalogue = {
 
     timeline: {
         hideSystem: "Masquer l'activité du système",
-        showSystem: "Afficher l’activité du système",
-        systemUnknown: "Votre accès ne montre pas quels comptes sont des services.",
+        showSystem: 'Afficher l’activité du système',
+        systemUnknown: 'Votre accès ne montre pas quels comptes sont des services.',
         empty: 'Rien ne lui est encore arrivé.',
         details: 'Détails',
         current: 'Version actuelle',
@@ -3230,6 +3229,9 @@ const fr: SourceCatalogue = {
                 fxFeeds: 'Flux de prix FX',
                 fxFeedsBody:
                     'Composez les flux FX synthétiques : la paire, le moteur et le mélange de chacun.',
+                evolution: 'Suivre l’évolution d’une courbe',
+                evolutionBody:
+                    'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },
         },
         fxFeeds: {
@@ -3482,6 +3484,7 @@ const fr: SourceCatalogue = {
         rolesAssign: 'attribuer des rôles aux personnes',
         sessionsRead: 'lire les connexions des personnes',
         curveSnapshotsRead: 'voir les courbes de données de marché',
+        fxFeedsRead: 'voir les flux de prix FX synthétiques',
     },
 
     unavailable: {
@@ -3507,7 +3510,8 @@ const fr: SourceCatalogue = {
         notAvailable: 'Cette page n’est pas disponible pour vous.',
         clear: 'Effacer',
         refresh: 'Actualiser',
-        changedElsewhere: 'Quelque chose a changé que cette page ne peut pas montrer. Actualisez pour le voir.',
+        changedElsewhere:
+            'Quelque chose a changé que cette page ne peut pas montrer. Actualisez pour le voir.',
         refreshStale: 'Les données ont changé sur le serveur. Actualisez pour les voir.',
         refreshStaleAt: 'Les données ont changé sur le serveur à {time}. Actualisez pour les voir.',
         loadedAt: 'Chargé : {time}',

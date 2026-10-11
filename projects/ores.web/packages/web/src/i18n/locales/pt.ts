@@ -87,7 +87,6 @@ const pt: SourceCatalogue = {
             organisation: 'Organização',
             roles: 'Papéis',
             refdata: 'Dados de referência',
-            marketdata: 'Dados de mercado',
             access: 'O meu acesso',
             whereIWork: 'Onde trabalho',
             profile: 'O meu perfil',
@@ -1940,9 +1939,9 @@ const pt: SourceCatalogue = {
     },
 
     timeline: {
-        hideSystem: "Ocultar a atividade do sistema",
-        showSystem: "Mostrar a atividade do sistema",
-        systemUnknown: "O seu acesso não mostra quais contas são serviços.",
+        hideSystem: 'Ocultar a atividade do sistema',
+        showSystem: 'Mostrar a atividade do sistema',
+        systemUnknown: 'O seu acesso não mostra quais contas são serviços.',
         empty: 'Ainda nada lhe aconteceu.',
         details: 'Detalhes',
         current: 'Versão atual',
@@ -3207,6 +3206,9 @@ const pt: SourceCatalogue = {
                 fxFeeds: 'Fluxos de preços FX',
                 fxFeedsBody:
                     'Componha os fluxos FX sintéticos: o par, o motor e a mistura de cada um.',
+                evolution: 'Acompanhar a evolução de uma curva',
+                evolutionBody:
+                    'Ler uma curva ou superfície ao longo de um intervalo de instantes, e como está agora.',
             },
         },
         fxFeeds: {
@@ -3457,6 +3459,7 @@ const pt: SourceCatalogue = {
         rolesAssign: 'atribuir papéis às pessoas',
         sessionsRead: 'ler as sessões das pessoas',
         curveSnapshotsRead: 'ver as curvas de dados de mercado',
+        fxFeedsRead: 'ver os fluxos de preços FX sintéticos',
     },
 
     unavailable: {

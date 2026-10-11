@@ -30,6 +30,8 @@ export interface StoreResource {
     readonly sortable: readonly string[];
     readonly writePermission: string;
     readonly deletePermission: string;
+    /** Where the services announce changes to the resource, when they do. */
+    readonly events?: { readonly component: string; readonly entity: string };
 }
 
 /** What a write carries to say why it was made. */

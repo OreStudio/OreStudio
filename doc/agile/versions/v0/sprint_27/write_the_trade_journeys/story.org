@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: BDAA2DD8-E268-4BC4-87B4-0E60EC181B23
+:END:
+#+title: Story: Write the trade journeys
+#+description: Seven use cases for trades: book, amend, review, import, export, record a lifecycle event and group into a structure. Each states the person's goal and the operations it needs; the prototypes that follow serve them with entity pages, not step-by-step screens.
+#+type: story
+#+level: s2
+#+filetags: :trading:ux:journeys:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The trade journeys exist as use cases under doc/knowledge/journeys/trades/. Each names the actor, the goal, the operations it reaches and what is missing. A later story builds prototypes that serve them as entity pages under the UX standards.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- The inventory table lists every trade operation with its actor and NATS subject.
+- Every legacy Qt trade action has a disposition: kept, changed or dropped.
+- Seven journey documents exist under doc/knowledge/journeys/trades/ with coverage tables. They draw no wireframes: a journey is a use case, and the prototype story draws the screens from the UX standards.
+- The trade group is on the journeys index and its subjects are checked against the protocol headers.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3F0CCD97-DB0C-42FE-8AF3-FEBD8C42F0E1][Scaffold story: Write the trade journeys]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:417033FE-69BB-4AE3-9075-CA1A2621ADA7][Inventory the trade operations and the legacy Qt trade screens]] | DONE | 2026-10-11 | 2026-10-11 | Initial task for: Write the trade journeys |
+
+* Decisions
+
+- A journey is a use case and names no screen. The screens come from the UX
+  standards, and a trade is an entity, so one trade page serves most journeys.
+- The journeys draw no wireframes. The prototype story draws the screens.
+- The Qt lifecycle event window maintained a lookup. A per-trade event is a trade
+  activity, so the lifecycle journey records an activity.
+- An amendment is a booked activity, not a bare write to the trade.
+- The reading found gaps that block every screen. They are listed on the hub page
+  and for the owner to plan: no web trading route, a trade list that filters only by
+  id, child tables with no by-trade read, no write of an activity with its versions,
+  and the two digest gaps.
+
+* Out of scope
+
+- The prototypes. They are the next story and follow the UX standards, including
+  the older =trade-entry= prototype under the books group.
+- Fixing any gap the journeys list.

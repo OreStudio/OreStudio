@@ -83,7 +83,11 @@ describe('what a screen has heard', () => {
     });
 
     it('says something changed elsewhere when a named record is off the page', () => {
-        const where = whereChanged({ keys: [{ username: 'b' }, { username: 'z' }] }, rows, recordOf);
+        const where = whereChanged(
+            { keys: [{ username: 'b' }, { username: 'z' }] },
+            rows,
+            recordOf,
+        );
         expect([...where.rows]).toEqual([1]);
         expect(where.elsewhere).toBe(true);
     });

@@ -57,11 +57,17 @@ begin
         parent_portfolio_id, owner_unit_id, purpose_type, aggregation_ccy, is_virtual
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b47aff75-fda3-5c47-bd47-392914198fdb', 0, 'ACME Corporation HK Ltd Global Markets', null, '87610f63-6cca-525a-b311-65b163df00ed', 'Risk', 'HKD', true),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'fc3eedfe-5176-5a81-8ee0-d78d502a12bd', 0, 'IR Swaps Hong Kong Portfolio', 'b47aff75-fda3-5c47-bd47-392914198fdb', '1b46ae4a-d742-5e50-a01c-570e51808fcd', 'Risk', 'HKD', true),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9baf7c4a-7745-5271-8893-86db933a393c', 0, 'JPY Rates Portfolio', 'fc3eedfe-5176-5a81-8ee0-d78d502a12bd', '1b46ae4a-d742-5e50-a01c-570e51808fcd', 'Risk', 'HKD', false),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '695b6f3f-350e-571f-b16f-faedddefbfd4', 0, 'Credit Trading Hong Kong Portfolio', 'b47aff75-fda3-5c47-bd47-392914198fdb', 'b7ff0eaf-cc12-5f7f-8155-29ca83fdbdbc', 'Risk', 'HKD', true),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '23a0b5ee-ee06-59aa-9bc6-e081187248aa', 0, 'IG Credit APAC Portfolio', '695b6f3f-350e-571f-b16f-faedddefbfd4', 'b7ff0eaf-cc12-5f7f-8155-29ca83fdbdbc', 'Risk', 'HKD', false),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '94115253-8f1d-5d49-8912-3657b14a3530', 0, 'FX Rates Hong Kong Portfolio', 'b47aff75-fda3-5c47-bd47-392914198fdb', 'd4191374-ae29-5672-afae-62f15a8d2ca1', 'Risk', 'HKD', true),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '62ef27bf-b2a1-5802-98c8-d1d867087a56', 0, 'G10 FX APAC Portfolio', '94115253-8f1d-5d49-8912-3657b14a3530', 'd4191374-ae29-5672-afae-62f15a8d2ca1', 'Risk', 'HKD', false);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b47aff75-fda3-5c47-bd47-392914198fdb', 0, 'Global Portfolio', null, '87610f63-6cca-525a-b311-65b163df00ed', 'Risk', 'HKD', true),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9b6b218b-c034-5343-b696-a6a7fe5c1908', 0, 'Trading Book', 'b47aff75-fda3-5c47-bd47-392914198fdb', '87610f63-6cca-525a-b311-65b163df00ed', 'Risk', 'HKD', true),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'fc3eedfe-5176-5a81-8ee0-d78d502a12bd', 0, 'IR Swaps Hong Kong Portfolio', '9b6b218b-c034-5343-b696-a6a7fe5c1908', '1b46ae4a-d742-5e50-a01c-570e51808fcd', 'Risk', 'HKD', true),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9baf7c4a-7745-5271-8893-86db933a393c', 0, 'JPY Rates Portfolio', 'fc3eedfe-5176-5a81-8ee0-d78d502a12bd', '1b46ae4a-d742-5e50-a01c-570e51808fcd', 'Risk', 'JPY', false),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd594877a-aeff-5414-84a0-2618ada10853', 0, 'HKD Rates Portfolio', 'fc3eedfe-5176-5a81-8ee0-d78d502a12bd', '1b46ae4a-d742-5e50-a01c-570e51808fcd', 'Risk', 'HKD', false),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '695b6f3f-350e-571f-b16f-faedddefbfd4', 0, 'Credit Trading Hong Kong Portfolio', '9b6b218b-c034-5343-b696-a6a7fe5c1908', 'b7ff0eaf-cc12-5f7f-8155-29ca83fdbdbc', 'Risk', 'HKD', true),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '23a0b5ee-ee06-59aa-9bc6-e081187248aa', 0, 'IG Credit APAC Portfolio', '695b6f3f-350e-571f-b16f-faedddefbfd4', 'b7ff0eaf-cc12-5f7f-8155-29ca83fdbdbc', 'Risk', 'USD', false),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '94115253-8f1d-5d49-8912-3657b14a3530', 0, 'FX Rates Hong Kong Portfolio', '9b6b218b-c034-5343-b696-a6a7fe5c1908', 'd4191374-ae29-5672-afae-62f15a8d2ca1', 'Risk', 'HKD', true),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '372d2f70-0b8f-5dee-9811-49ae9c0986e5', 0, 'G10 FX APAC Portfolio', '94115253-8f1d-5d49-8912-3657b14a3530', 'd4191374-ae29-5672-afae-62f15a8d2ca1', 'Risk', 'USD', false),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9d267f9c-60fd-5efa-b0b6-629364eaf8c2', 0, 'Asia EM FX Portfolio', '94115253-8f1d-5d49-8912-3657b14a3530', 'd4191374-ae29-5672-afae-62f15a8d2ca1', 'Risk', 'USD', false),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '0c385bf9-a2e7-5fd2-a762-45b26f9470b1', 0, 'Banking Book', 'b47aff75-fda3-5c47-bd47-392914198fdb', 'd75397e4-49f6-5a9b-8355-09170ae14a3b', 'Risk', 'HKD', true),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ab31236b-458a-579b-a1e4-c40a43331492', 0, 'Liquidity Buffer Portfolio', '0c385bf9-a2e7-5fd2-a762-45b26f9470b1', 'd75397e4-49f6-5a9b-8355-09170ae14a3b', 'Risk', 'HKD', false),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f15731ad-fe87-5611-b2d1-a5e2cb3b1da2', 0, 'Cash Management Portfolio', '0c385bf9-a2e7-5fd2-a762-45b26f9470b1', 'd75397e4-49f6-5a9b-8355-09170ae14a3b', 'Risk', 'HKD', false);
 end $$;

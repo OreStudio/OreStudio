@@ -57,7 +57,12 @@ begin
         book_purpose_type, ledger_feed_type
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '10da1d97-1e96-53db-a3cc-6f6bf96b1cda', 0, 'JPY Rates Book', '9baf7c4a-7745-5271-8893-86db933a393c', 'HKD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '3ee05afa-0fb2-5d9a-9bce-88a8b46777e7', 0, 'IG Credit APAC Book', '23a0b5ee-ee06-59aa-9bc6-e081187248aa', 'HKD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '92fb437d-12f9-5112-8d48-dd0c6a6ccfa5', 0, 'G10 FX APAC Book', '62ef27bf-b2a1-5802-98c8-d1d867087a56', 'HKD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd9bf9a94-d668-52de-8a3c-237a979c3d3e', 0, 'JPY Vanilla Swaps', '9baf7c4a-7745-5271-8893-86db933a393c', 'JPY', 'GL-RATES-001', 'CC-HK-RATES', 'Active', 'Trading', false, 'JPTO', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b3afdc79-1a75-5463-841e-60efeba4ed10', 0, 'HKD Vanilla Swaps', 'd594877a-aeff-5414-84a0-2618ada10853', 'HKD', 'GL-RATES-002', 'CC-HK-RATES', 'Active', 'Trading', false, 'HKHK', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e9588269-eba8-50ef-9a7c-307e8c4c49b1', 0, 'IG CDS APAC', '23a0b5ee-ee06-59aa-9bc6-e081187248aa', 'USD', 'GL-CREDIT-001', 'CC-HK-CREDIT', 'Active', 'Trading', false, 'HKHK', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4282b503-fcef-5a45-b1b7-bbd62416804f', 0, 'G10 APAC Spot Forward', '372d2f70-0b8f-5dee-9811-49ae9c0986e5', 'USD', 'GL-FX-001', 'CC-HK-FX', 'Active', 'Trading', false, 'HKHK', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1762a42e-5813-534e-b202-68fbd5f9a462', 0, 'Asia EM Spot Forward', '9d267f9c-60fd-5efa-b0b6-629364eaf8c2', 'USD', 'GL-FX-002', 'CC-HK-FX', 'Active', 'Trading', false, 'HKHK', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4be94f90-623f-5e30-925b-f7ab9b9e41a6', 0, 'Asia EM NDF', '9d267f9c-60fd-5efa-b0b6-629364eaf8c2', 'USD', 'GL-FX-003', 'CC-HK-FX', 'Active', 'Trading', false, 'HKHK', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 0, 'Liquidity Buffer Bonds', 'ab31236b-458a-579b-a1e4-c40a43331492', 'HKD', 'GL-TREAS-001', 'CC-HK-TREAS', 'Active', 'Banking', false, 'HKHK', 'Funding', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e1ad81c0-2a14-5b98-a0dc-54c9861ca234', 0, 'HKD Cash Management Sweep', 'f15731ad-fe87-5611-b2d1-a5e2cb3b1da2', 'HKD', 'GL-TREAS-002', 'CC-HK-TREAS', 'Active', 'Banking', true, 'HKHK', 'SweepTarget', 'Automatic');
 end $$;

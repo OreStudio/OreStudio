@@ -70,6 +70,9 @@ Steps:
    publishing side of three of the four documents does not exist yet, so this
    step needs its own tasks.
 4. Rework the portfolio tree, the root portfolio and the currencies per party.
+   Done: one Global Portfolio per trading entity with a trading branch and a
+   banking branch, the books by market convention, an XVA desk in London, and
+   the party currencies from the books.
 5. Add the market data feeds for the currencies the new books need.
 6. Remove the count comments from the seeds the task touches.
 7. Prove on a clean provision, and record what was not proved.
@@ -88,9 +91,25 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Report definitions per party after a clean provision | Group 10, UK 24, US 22, HK 22, both system parties 0 | =compass sql= count of =ores_reporting_report_definitions_tbl= by party, after =compass db recreate -y -k= and =bootstrap setup --profile acme_demo= | the commit that adds the per-party datasets |
 | Definitions each party must not hold | System Health only at the group. Strategic reports only at the group. MiFID II only UK, CFTC only US, HKMA only HK. Vega and Volatility Surfaces only UK. Stressed VaR and P&L Attribution at the three trading entities | the same query, with a filter on the report name | the same commit |
-| Roots of the official portfolio tree after the same provision | Group 1, UK 2, US 1, HK 1 | =compass sql= count of portfolios with no parent, by party | the same commit |
+| Roots of the official portfolio tree after the first change | Group 1, UK 2, US 1, HK 1 | =compass sql= count of portfolios with no parent, by party | the same commit |
 
 * Notes
+
+Tree and currency rework, 2026-10-11.
+
+- The three trading entities share one builder. London's tree no longer
+  replicates the test fixture: its Americas and APAC portfolios, its risk
+  management units and its Regulatory Capital root are gone. The staff keep their
+  usernames and photos, and only the unit code of the three London desks moved.
+- After a clean provision each trading entity has one root named Global
+  Portfolio with two branches, in its own currency: GBP, USD and HKD. The holding
+  company keeps its treasury portfolio as its root. Every sample sandbox
+  anchors under the root.
+- The sweep books moved to the banking branch, because a sweep is cash
+  management and not trading intent. The IG bond books became the liquidity
+  buffer, also in the banking branch.
+- The party currencies follow the books and the FX pairs. The market data feeds
+  for the currencies the synthetic themes do not cover are still to add.
 
 Audit of the local database and the publish functions, 2026-10-11. The
 database schema was stale against the checkout, so the functions were read from

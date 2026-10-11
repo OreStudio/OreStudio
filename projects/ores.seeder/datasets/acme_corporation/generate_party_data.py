@@ -78,10 +78,17 @@ COUNTRIES = {
     "acme_hk": ["HK", "SG", "JP"],
 }
 
+# The currencies of an entity are its functional currency, the currencies its
+# rates books are named for, and every currency in the pairs its FX books trade
+# (OFFICE_TREE in generate_data.py): Cable and Sterling, the G10 majors, the
+# Scandies and the emerging markets in London, the G10 and Latin America in New
+# York, and the G10 and Asia in Hong Kong. Hong Kong trades the offshore
+# renminbi, CNH.
 CURRENCIES = {
-    "acme_uk": ["GBP", "EUR", "USD"],
-    "acme_us": ["USD", "CAD"],
-    "acme_hk": ["HKD", "USD", "CNY", "JPY"],
+    "acme_uk": ["GBP", "EUR", "USD", "CHF", "JPY", "CAD", "AUD", "NZD", "SEK", "NOK", "DKK",
+                "ZAR", "TRY", "PLN", "CZK", "HUF", "ILS"],
+    "acme_us": ["USD", "CAD", "EUR", "GBP", "JPY", "MXN", "BRL", "CLP", "COP"],
+    "acme_hk": ["HKD", "USD", "JPY", "AUD", "NZD", "CNH", "SGD", "KRW", "INR", "TWD"],
 }
 
 # Banks a treasury approves besides those it holds a master agreement with.

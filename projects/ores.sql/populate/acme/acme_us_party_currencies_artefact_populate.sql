@@ -53,5 +53,12 @@ begin
     )
     values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'USD', 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'CAD', 0);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'CAD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'EUR', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'GBP', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'JPY', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'MXN', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'BRL', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'CLP', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'COP', 0);
 end $$;

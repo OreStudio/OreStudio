@@ -57,8 +57,12 @@ begin
         book_purpose_type, ledger_feed_type
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '903faedb-3469-582b-88b9-348985ec7b01', 0, 'USD Rates Book', 'f2463388-54ed-599a-989c-68771cb69657', 'USD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd3903f8f-725c-53b0-a7fa-178053c668f8', 0, 'CAD Rates Book', '35341151-b72b-521f-b317-d52f7d6af62b', 'USD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f7d3eb2e-1b8e-5ceb-abc8-b8b8f252120c', 0, 'IG Credit Americas Book', '51f0bcc5-2491-5218-80eb-3ceda562f5f7', 'USD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e22051d0-3099-5c8f-ac49-3f0d2cc83a9c', 0, 'G10 FX Americas Book', '0a89e240-4d74-5275-b74b-bef6776e712c', 'USD', null, null, 'Active', 'Trading', false, null, 'Trading', 'None');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1527465b-d190-5808-8795-baa728637d17', 0, 'USD Vanilla Swaps', 'f2463388-54ed-599a-989c-68771cb69657', 'USD', 'GL-RATES-001', 'CC-US-RATES', 'Active', 'Trading', false, 'USNY', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'cb65873c-1a62-50bd-9bd3-f44ca16770ab', 0, 'CAD Swaps', '35341151-b72b-521f-b317-d52f7d6af62b', 'CAD', 'GL-RATES-002', 'CC-US-RATES', 'Active', 'Trading', false, 'CATO', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '536492af-72d4-5c53-ad0b-65aad3bdc183', 0, 'IG CDS Americas', '51f0bcc5-2491-5218-80eb-3ceda562f5f7', 'USD', 'GL-CREDIT-001', 'CC-US-CREDIT', 'Active', 'Trading', false, 'USNY', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a945777d-9b6f-5c85-97ec-aeb665a6e9d0', 0, 'G10 Americas Spot Forward', '880a83b7-05c3-5160-a00d-8ff6092844a2', 'USD', 'GL-FX-001', 'CC-US-FX', 'Active', 'Trading', false, 'USNY', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '430901a0-7313-50a0-8502-1fb0a95a53b7', 0, 'LatAm Spot Forward', '002482e9-6e12-5951-8f34-2b5d58c31ec4', 'USD', 'GL-FX-002', 'CC-US-FX', 'Active', 'Trading', false, 'USNY', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1ae4ac0e-418a-5d9a-a701-17bdacb7b2ad', 0, 'LatAm NDF', '002482e9-6e12-5951-8f34-2b5d58c31ec4', 'USD', 'GL-FX-003', 'CC-US-FX', 'Active', 'Trading', false, 'USNY', 'Trading', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b6019678-726e-5ca1-a4bb-036507a3f78b', 0, 'Liquidity Buffer Bonds', 'e2b428ce-6d29-533e-adcd-e14f1ccced5a', 'USD', 'GL-TREAS-001', 'CC-US-TREAS', 'Active', 'Banking', false, 'USNY', 'Funding', 'Automatic'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ee4012ac-649d-5f5c-be97-f89109e3767a', 0, 'USD Cash Management Sweep', '6a451993-3411-5630-b413-8d760004b041', 'USD', 'GL-TREAS-002', 'CC-US-TREAS', 'Active', 'Banking', true, 'USNY', 'SweepTarget', 'Automatic');
 end $$;

@@ -51,7 +51,7 @@ generate_synthetic_rate_instrument(utility::generation::generation_context& ctx)
     r.start_date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.maturity_date =
-        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+        std::chrono::year_month_day{std::chrono::sys_days{*r.start_date} + std::chrono::days{365}};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

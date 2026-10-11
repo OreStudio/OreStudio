@@ -137,6 +137,7 @@ ISO 8601 date string (YYYY-MM-DD).
 :nullable: true
 :common_date: maturity_date
 :economic: true
+:generator_expr: std::chrono::year_month_day{std::chrono::sys_days{*r.start_date} + std::chrono::days{365}}
 :END:
 
 The instrument's maturity date. A forward rate agreement's end date is this

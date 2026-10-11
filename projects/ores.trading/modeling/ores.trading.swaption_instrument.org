@@ -187,6 +187,7 @@ is immutable.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_swaption_instruments_tbl
+:party_scoped_writes: true
 :rls_tenant_isolation: true
 :END:
 

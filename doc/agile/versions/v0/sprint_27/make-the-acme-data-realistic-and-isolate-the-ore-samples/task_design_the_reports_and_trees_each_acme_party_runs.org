@@ -63,8 +63,12 @@ Steps:
    set reaching the Acme parties. Done: the tier and jurisdiction filter cannot
    express the design, so the generic set moved to its own bundle and the Acme
    office bundles carry the per-party datasets.
-3. Add the configuration for each chosen report, including a base currency that
-   matches the party.
+3. Craft and publish each party's configuration documents (pricing engines,
+   today's market, curve configuration, conventions), then publish the bindings
+   from each report definition to them, then the risk report configurations
+   with a base currency that matches the party (design rules D15 to D17). The
+   publishing side of three of the four documents does not exist yet, so this
+   step needs its own tasks.
 4. Rework the portfolio tree, the root portfolio and the currencies per party.
 5. Add the market data feeds for the currencies the new books need.
 6. Remove the count comments from the seeds the task touches.

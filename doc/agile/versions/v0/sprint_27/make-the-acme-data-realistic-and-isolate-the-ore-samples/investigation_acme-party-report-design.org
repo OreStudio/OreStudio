@@ -133,7 +133,20 @@ Two notes on the table.
 | D9 | A report's base currency is its entity's functional currency: GBP for the holding company and London, USD for New York, HKD for Hong Kong. | An entity reports its regulatory and management figures in its own currency. The group consolidates in GBP, the currency of the holding company. | USD for every entity, which is what the root portfolios carry today. A London entity reporting in dollars is not realistic. Keep GBP everywhere, as the seed does today. The Hong Kong and New York filings would be in the wrong currency. |
 | D10 | A report names its scope. A trading report reads the entity's trading branch. A liquidity or leverage report reads both branches (D13). The holding company's consolidation reports read the treasury portfolio and the entities' results. | A definition names no scope today, and an empty scope means everything the tenant can see. That would let one entity's report read another entity's data. | Leave the scope empty. Wrong across parties. Scope each report to one desk. Too narrow for the capital and exposure reports. |
 
-The four ORE documents a risk run needs (pricing engines, today's market, curve configuration and conventions) come from an import of an ORE example run. Each entity needs its own set, drawn from the example nearest to the report, as the earlier task on the ORE examples did for the seeded configurations. The configuration step of the task chooses the example for each report in the table.
+*The configurations are Acme's own.* A risk report needs four configuration documents: pricing engines, today's market, curve configuration and conventions. Acme crafts these itself, for its own reports, inspired by the ORE samples. They are not ORE import data. Publishing leaves every report ready to run. Exporting the configuration to ORE happens when a job runs, and it is not part of publishing. My first draft of this page said the documents come from an import of an ORE example run. That was wrong, and the product owner corrected it on 2026-10-11.
+
+#+ATTR_HTML: :class hug-leading
+| Rule | Statement | Justification | Alternative rejected |
+|------+-----------+---------------+----------------------|
+| D15 | Each Acme party publishes its own pricing engines, today's market, curve configuration and conventions documents, crafted for the reports that party runs. | The reports must be ready to run after publishing. The documents belong to the reports, so they follow the same per-party design (D1 to D8). | Import ORE example runs onto the definitions. That ties the demonstration data to the ORE samples and makes publishing depend on a runtime import. |
+| D16 | Publishing runs in this order: the configuration documents, then the report definitions with their bindings to those documents, then the risk report configurations. Each dataset declares its dependency on the one before. | A binding names a document, so the document must exist first. The dataset dependency mechanism already orders such publications. | Publish the definitions first and attach documents later. That is the order the current publish assumes, and it leaves a report unready until a person does the attaching. |
+| D17 | Exporting to ORE is out of scope for publishing. | The export happens at run time, from the published rows. | Build the export into the publish. It would make publishing depend on the engine. |
+
+*What exists and what is missing.* The tables exist for all four documents: the pricing model configuration with its products and parameters, the today's market configuration with its entries and collections, the curve configuration with its sections and curve configs, and the instrument conventions. The binding table links a definition to a document, and the report type states which four document kinds it requires. All of these tables hold no rows. What is missing is the publishing side:
+
+- The conventions already travel as a published dataset. The pricing engines, today's market and curve configuration documents have no dataset, no staging table and no publish function.
+- The risk report configuration publish skips a definition that lacks the four bindings, and its header says the documents come from an ORE import. That is the assumption this page rejects (D15).
+- Nothing publishes the bindings.
 
 ** Portfolio trees and currencies
 

@@ -39,6 +39,7 @@ only the product's own fields, and joins the header by =trade_id=.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :nullable:    false
+:economic:    false
 :END:
 
 The trade this instrument belongs to, and the instrument's own key.
@@ -52,6 +53,7 @@ trade it names gives the instrument its scope.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -61,6 +63,7 @@ The activity that wrote this version.
 :type:     integer
 :cpp_type: std::optional<int>
 :nullable: true
+:economic: true
 :END:
 
 Optional settlement lag in business days.

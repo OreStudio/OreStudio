@@ -41,6 +41,7 @@ type is not null here and the rest are nullable.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :supplied_by:  user
+:economic:    false
 :END:
 
 The trade this amortization belongs to.
@@ -50,6 +51,7 @@ The trade this amortization belongs to.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -59,6 +61,7 @@ The activity that wrote this version.
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:economic:    true
 :END:
 
 Which leg list of the trade the leg holding this step belongs to:
@@ -69,6 +72,7 @@ Which leg list of the trade the leg holding this step belongs to:
 :type:        integer
 :cpp_type:    int
 :primary_key: true
+:economic:    true
 :END:
 
 Ordinal of the leg within its list, counting from one.
@@ -78,6 +82,7 @@ Ordinal of the leg within its list, counting from one.
 :type:        integer
 :cpp_type:    int
 :primary_key: true
+:economic:    true
 :END:
 
 Ordinal of this step within the leg's amortization list.
@@ -87,6 +92,7 @@ Ordinal of this step within the leg's amortization list.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 How the step amortizes, as the document spells it.
@@ -102,6 +108,7 @@ std::string("FixedAmount")
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 The amount the step amortizes by.
@@ -111,6 +118,7 @@ The amount the step amortizes by.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 First date of the step's window (ISO 8601 date string).
@@ -120,6 +128,7 @@ First date of the step's window (ISO 8601 date string).
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Last date of the step's window (ISO 8601 date string).
@@ -129,6 +138,7 @@ Last date of the step's window (ISO 8601 date string).
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 How often the step's amount applies within its window.
@@ -138,6 +148,7 @@ How often the step's amount applies within its window.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the step allows the notional to fall below zero.

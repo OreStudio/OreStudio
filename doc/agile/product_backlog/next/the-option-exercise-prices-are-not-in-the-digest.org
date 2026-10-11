@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: BDFB3544-363B-4EC3-82AF-3369AA7483AC
+:END:
+#+title: The option's exercise prices are not in the economic digest
+#+description: The economic digest never reads an option's exercise prices, so a change to one leaves the trade's digest and external version alone.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The digest folds an instrument's option, premium, exercise fee and payment date rows. It does not read the option's exercise prices, although =read_option_exercise_prices_by_trade_ids= exists and the table is economic.
+
+Add =instrument_option_exercise_price= to the =* Digest/Shared components= table with that reader, and add a digest test that changes an exercise price and expects the digest to move.
+
+* Why
+
+A change to an exercise price is a change the customer agreed to, so it must move the external version. That is the failure the two-version rule exists to prevent.
+
+Listing the table changes what the digest covers, so every stored digest changes once. Land it before anyone relies on a stored digest.
+
+* References
+
+- [[id:30FDE60C-DBDB-47DA-9C9D-D4262A948AC4][Declare the economic fields]] — the task whose shape declaration made the omission visible.
+- =ores.trading.trade_type_catalogue.org=, section =* Digest=.
+
+
+* See also
+
+- [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] — the story whose digest this widens.

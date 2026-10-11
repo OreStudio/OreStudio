@@ -5364,6 +5364,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # check is scoped to its render.
         if target_template == 'domain_types.ts.mustache':
             _reject_silent_entity_domain_ts_gap(model_path, domain_entity)
+        # Which members of the struct the customer agreed to, as the model
+        # declares it. The domain header states the list beside the struct, so
+        # the economic digest reads it and decides nothing by a field's name.
+        from .org_loader import entity_economic_declaration
+        _declared, _economic = entity_economic_declaration(model_path, domain_entity)
+        domain_entity['has_economic_declaration'] = _declared
+        domain_entity['economic_fields'] = _economic
+        domain_entity['has_economic_fields'] = bool(_economic)
         # The standard CRUD message list, derived once so the TypeScript
         # twin renders from the same shapes the C++ entity block states. The
         # component's other entities are read here because the versions

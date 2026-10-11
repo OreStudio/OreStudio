@@ -39,6 +39,7 @@ only the product's own fields, and joins the header by =trade_id=.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :nullable:    false
+:economic:    false
 :END:
 
 The trade this instrument belongs to, and the instrument's own key.
@@ -52,6 +53,7 @@ trade it names gives the instrument its scope.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -61,6 +63,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Inflation index code.
@@ -76,6 +79,7 @@ std::string("UKRPI")
 :type:          double precision
 :cpp_type: std::optional<double>
 :nullable: true
+:economic:      true
 :END:
 
 Optional base CPI value at inception.
@@ -87,6 +91,7 @@ Used to calculate the inflation accrual. Must be positive if set.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Optional CPI lag convention.

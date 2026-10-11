@@ -29,8 +29,10 @@
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -123,6 +125,34 @@ struct equity_swap_instrument final {
      */
     friend bool operator==(const equity_swap_instrument&, const equity_swap_instrument&) = default;
 };
+
+/**
+ * @brief The members of equity_swap_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view equity_swap_instrument_economic_fields[] = {
+    "underlying_name",
+    "basket_json",
+    "currency",
+    "notional",
+    "return_type",
+    "start_date",
+    "maturity_date",
+    "long_short",
+    "payment_frequency_code",
+};
+
+/**
+ * @brief Names the members of equity_swap_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<equity_swap_instrument>) {
+    return equity_swap_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for equity_swap_instrument, e.g. for the

@@ -30,8 +30,10 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -229,6 +231,42 @@ struct bond_issue final {
      */
     friend bool operator==(const bond_issue&, const bond_issue&) = default;
 };
+
+/**
+ * @brief The members of bond_issue the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view bond_issue_economic_fields[] = {
+    "security_id",
+    "issuer",
+    "face_value",
+    "issue_date",
+    "settlement_days",
+    "calendar",
+    "credit_curve_id",
+    "reference_curve_id",
+    "income_curve_id",
+    "credit_group",
+    "volatility_curve_id",
+    "price_quote_method",
+    "price_quote_base_value",
+    "sub_type",
+    "price_type",
+    "payer",
+    "credit_risk",
+};
+
+/**
+ * @brief Names the members of bond_issue that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<bond_issue>) {
+    return bond_issue_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for bond_issue, e.g. for the

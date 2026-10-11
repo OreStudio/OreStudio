@@ -94,6 +94,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ORE equity Name identifier.
@@ -107,6 +108,7 @@ std::string(".STOXX50")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ISO 4217 currency code.
@@ -122,6 +124,7 @@ std::string("EUR")
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Strike price.
@@ -135,6 +138,7 @@ ores::utility::decimal::decimal::from_string("4000").value()
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Per-fixing accumulation amount. Must be positive.
@@ -148,6 +152,7 @@ ores::utility::decimal::decimal::from_string("30").value()
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 Start date (ISO 8601 date string).
@@ -161,6 +166,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/2/5}
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 Expiry date (ISO 8601 date string).
@@ -174,6 +180,7 @@ std::chrono::year_month_day{std::chrono::year{2026}/2/5}
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 e.g. Daily, Weekly, Monthly.
@@ -187,6 +194,7 @@ std::string("Monthly")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Position direction: Long or Short.
@@ -200,6 +208,7 @@ std::string("Long")
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Knock-out barrier; absent when not specified.
@@ -209,6 +218,7 @@ Knock-out barrier; absent when not specified.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 TaRF only: target profit level.
@@ -222,6 +232,7 @@ std::nullopt
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 TaRF: TargetFull or TargetExact, the ORE =optionData.PayoffType= values the
@@ -237,6 +248,7 @@ real foreign key.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 One of the ORE =optionData.PayoffType= values; an accumulator or TaRF states
@@ -257,6 +269,7 @@ std::string("Decumulator")
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

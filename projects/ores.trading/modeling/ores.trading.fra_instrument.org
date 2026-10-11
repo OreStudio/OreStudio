@@ -39,6 +39,7 @@ only the product's own fields, and joins the header by =trade_id=.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :nullable:    false
+:economic:    false
 :END:
 
 The trade this instrument belongs to, and the instrument's own key.
@@ -52,6 +53,7 @@ trade it names gives the instrument its scope.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -61,6 +63,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ISO 4217 currency code.
@@ -78,6 +81,7 @@ std::string("USD")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Floating rate index code.
@@ -93,6 +97,7 @@ std::string("SOFR")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Position direction: Long or Short.
@@ -111,6 +116,7 @@ std::string("Long")
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :default_value: ores::utility::decimal::decimal{}
+:economic:      true
 :END:
 
 Fixed contract rate.
@@ -126,6 +132,7 @@ Expressed as a decimal fraction.
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Notional principal amount.

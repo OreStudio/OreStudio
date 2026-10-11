@@ -90,6 +90,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Settlement currency (domestic side).
@@ -105,6 +106,7 @@ std::string("USD")
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Per-fixing notional amount. Must be positive.
@@ -119,6 +121,7 @@ ores::utility::decimal::decimal::from_string("100000").value()
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
 :default_value: ores::utility::decimal::decimal{}
+:economic:      true
 :END:
 
 Fixed strike rate. Must be positive.
@@ -132,6 +135,7 @@ Fixed strike rate. Must be positive.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 FX pair or index identifier (e.g. TR20H-EUR-JPY).
@@ -145,6 +149,7 @@ std::string("TR20H-EUR-JPY")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Position direction: Long or Short.
@@ -160,6 +165,7 @@ std::string("Long")
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 Accumulation start date (ISO 8601 date string).
@@ -173,6 +179,7 @@ std::chrono::year_month_day{std::chrono::year{2024}/6/15}
 :type:          numeric(38, 12)
 :cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic:      true
 :END:
 
 Primary UpAndOut knock-out barrier level. Absent when no barrier.
@@ -182,6 +189,7 @@ Primary UpAndOut knock-out barrier level. Absent when no barrier.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

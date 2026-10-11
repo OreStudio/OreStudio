@@ -29,8 +29,10 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -128,6 +130,27 @@ struct trade_identifier final {
      */
     friend bool operator==(const trade_identifier&, const trade_identifier&) = default;
 };
+
+/**
+ * @brief The members of trade_identifier the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view trade_identifier_economic_fields[] = {
+    "id_type",
+    "id_value",
+};
+
+/**
+ * @brief Names the members of trade_identifier that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<trade_identifier>) {
+    return trade_identifier_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for trade_identifier, e.g. for the

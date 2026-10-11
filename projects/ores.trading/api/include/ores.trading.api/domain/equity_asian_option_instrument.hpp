@@ -29,8 +29,10 @@
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -135,6 +137,36 @@ struct equity_asian_option_instrument final {
     friend bool operator==(const equity_asian_option_instrument&,
                            const equity_asian_option_instrument&) = default;
 };
+
+/**
+ * @brief The members of equity_asian_option_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view equity_asian_option_instrument_economic_fields[] = {
+    "underlying_name",
+    "currency",
+    "notional",
+    "option_type",
+    "strike",
+    "expiry_date",
+    "exercise_type",
+    "long_short",
+    "average_type",
+    "averaging_start_date",
+    "averaging_end_date",
+};
+
+/**
+ * @brief Names the members of equity_asian_option_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<equity_asian_option_instrument>) {
+    return equity_asian_option_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for equity_asian_option_instrument, e.g. for the

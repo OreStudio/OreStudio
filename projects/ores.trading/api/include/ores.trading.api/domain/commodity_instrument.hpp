@@ -30,8 +30,10 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -226,6 +228,50 @@ struct commodity_instrument final {
      */
     friend bool operator==(const commodity_instrument&, const commodity_instrument&) = default;
 };
+
+/**
+ * @brief The members of commodity_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view commodity_instrument_economic_fields[] = {
+    "commodity_code",
+    "currency",
+    "quantity",
+    "unit",
+    "start_date",
+    "maturity_date",
+    "fixed_price",
+    "option_type",
+    "strike_price",
+    "exercise_type",
+    "average_type",
+    "averaging_start_date",
+    "averaging_end_date",
+    "spread_commodity_code",
+    "spread_amount",
+    "strip_frequency_code",
+    "variance_strike",
+    "accumulation_amount",
+    "knock_out_barrier",
+    "barrier_type",
+    "lower_barrier",
+    "upper_barrier",
+    "day_count_fraction_code",
+    "payment_frequency_code",
+    "swaption_expiry_date",
+};
+
+/**
+ * @brief Names the members of commodity_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<commodity_instrument>) {
+    return commodity_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for commodity_instrument, e.g. for the

@@ -30,8 +30,10 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -127,6 +129,35 @@ struct equity_digital_option_instrument final {
     friend bool operator==(const equity_digital_option_instrument&,
                            const equity_digital_option_instrument&) = default;
 };
+
+/**
+ * @brief The members of equity_digital_option_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view equity_digital_option_instrument_economic_fields[] = {
+    "underlying_name",
+    "currency",
+    "notional",
+    "option_type",
+    "strike",
+    "barrier_level",
+    "barrier_type",
+    "expiry_date",
+    "long_short",
+    "payout_amount",
+};
+
+/**
+ * @brief Names the members of equity_digital_option_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<equity_digital_option_instrument>) {
+    return equity_digital_option_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for equity_digital_option_instrument, e.g. for the

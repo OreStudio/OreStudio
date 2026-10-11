@@ -27,6 +27,16 @@ readable.
 Each rule names the shared part that carries it, so a new feed screen gets the
 rule by using the part.
 
+Feeds have two scopes. A /system feed/ simulates a real provider, such as
+Bloomberg, Refinitiv or an exchange; it is run once for the installation and a
+tenant consumes it through a feed binding. A /test feed/ is one a tenant or a
+party creates for itself. Today every feed is a party's test feed, and the FX
+price feed screen lists one party's FX feeds. In the organisation that
+[[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]]
+brings, a feed browser organises system feeds by provider and kind and holds
+the per-kind screens of this page as its leaves, at a scale of many thousands
+of feeds.
+
 * Detail
 
 ** Where this standard applies

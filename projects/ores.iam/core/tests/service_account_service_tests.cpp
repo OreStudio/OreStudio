@@ -30,6 +30,7 @@
 #include "ores.iam.core/repository/account_contact_information_repository.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.iam.core/repository/auth_event_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
@@ -623,6 +624,121 @@ TEST_CASE("unlock_nonexistent_account_returns_false", tags) {
     BOOST_LOG_SEV(lg, info) << "Attempting to unlock nonexistent account: " << non_existent_id;
 
     CHECK(sut.unlock_account(non_existent_id) == false);
+}
+
+namespace {
+
+/** The events of one type the log holds for an account, newest first. */
+std::vector<repository::auth_event_entity> lock_events(const ores::database::context& ctx,
+                                                       const boost::uuids::uuid& account_id,
+                                                       const std::string& event_type) {
+    return repository::auth_event_repository(ctx).read_events(
+        ctx, ctx.tenant_id().to_string(), boost::uuids::to_string(account_id), event_type, "", "",
+        100, 0);
+}
+
+}
+
+TEST_CASE("lock_account_records_an_event_with_its_reason", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto account = generate_synthetic_account(ctx);
+    const auto generated = sut.create_account(
+        account.username, account.email, faker::internet::password(), account.modified_by);
+
+    CHECK(sut.lock_account(generated.id, "Locked by an administrator") == true);
+
+    const auto events = lock_events(h.context(), generated.id, "account_locked");
+    REQUIRE(events.size() == 1);
+    CHECK(events.front().username == generated.username);
+    CHECK(events.front().error_detail == "Locked by an administrator");
+}
+
+TEST_CASE("locking_a_locked_account_records_nothing_more", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto account = generate_synthetic_account(ctx);
+    const auto generated = sut.create_account(
+        account.username, account.email, faker::internet::password(), account.modified_by);
+
+    sut.lock_account(generated.id);
+    sut.lock_account(generated.id);
+
+    CHECK(lock_events(h.context(), generated.id, "account_locked").size() == 1);
+}
+
+TEST_CASE("failed_attempts_that_lock_an_account_record_the_lock", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto account = generate_synthetic_account(ctx);
+    const auto generated = sut.create_account(
+        account.username, account.email, faker::internet::password(), account.modified_by);
+
+    auto ip = internet::ipv4();
+    for (int i = 0; i < 5; ++i) {
+        try {
+            sut.login(account.username, "wrong_password", ip);
+        } catch (...) {
+        }
+    }
+
+    const auto events = lock_events(h.context(), generated.id, "account_locked");
+    REQUIRE(events.size() == 1);
+    CHECK(events.front().error_detail == "5 failed login attempts");
+}
+
+TEST_CASE("unlock_account_records_an_event_with_the_attempts_it_cleared", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto account = generate_synthetic_account(ctx);
+    const auto generated = sut.create_account(
+        account.username, account.email, faker::internet::password(), account.modified_by);
+
+    auto ip = internet::ipv4();
+    for (int i = 0; i < 5; ++i) {
+        try {
+            sut.login(account.username, "wrong_password", ip);
+        } catch (...) {
+        }
+    }
+
+    CHECK(sut.unlock_account(generated.id, "Unlocked by an administrator") == true);
+
+    const auto events = lock_events(h.context(), generated.id, "account_unlocked");
+    REQUIRE(events.size() == 1);
+    CHECK(events.front().error_detail == "Unlocked by an administrator; 5 failed attempts cleared");
+}
+
+TEST_CASE("unlocking_an_account_that_is_not_locked_records_nothing", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto account = generate_synthetic_account(ctx);
+    const auto generated = sut.create_account(
+        account.username, account.email, faker::internet::password(), account.modified_by);
+
+    CHECK(sut.unlock_account(generated.id) == true);
+
+    CHECK(lock_events(h.context(), generated.id, "account_unlocked").empty());
 }
 
 TEST_CASE("delete_nonexistent_account_throws", tags) {

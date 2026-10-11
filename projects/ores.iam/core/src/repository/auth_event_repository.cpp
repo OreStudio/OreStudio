@@ -133,6 +133,24 @@ void auth_event_repository::record_tenant_left(
     insert("tenant_left", event_time, tenant_id, account_id, username, session_id, party_id, "");
 }
 
+void auth_event_repository::record_account_locked(
+    const std::chrono::system_clock::time_point& event_time,
+    const std::string& tenant_id,
+    const std::string& account_id,
+    const std::string& username,
+    const std::string& error_detail) {
+    insert("account_locked", event_time, tenant_id, account_id, username, "", "", error_detail);
+}
+
+void auth_event_repository::record_account_unlocked(
+    const std::chrono::system_clock::time_point& event_time,
+    const std::string& tenant_id,
+    const std::string& account_id,
+    const std::string& username,
+    const std::string& error_detail) {
+    insert("account_unlocked", event_time, tenant_id, account_id, username, "", "", error_detail);
+}
+
 void auth_event_repository::record_signup_success(
     const std::chrono::system_clock::time_point& event_time,
     const std::string& tenant_id,

@@ -50,6 +50,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <format>
 #include <chrono>
 #include <memory>
 #include <stdexcept>
@@ -402,7 +403,7 @@ public:
         boost::uuids::string_generator sg;
         for (const auto& id : req->account_ids) {
             try {
-                svc.lock_account(sg(id));
+                svc.lock_account(sg(id), std::format("Locked by {}", ctx.actor()));
                 resp.results.push_back({.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(account_handler_lg(), error)
@@ -437,7 +438,7 @@ public:
         boost::uuids::string_generator sg;
         for (const auto& id : req->account_ids) {
             try {
-                svc.unlock_account(sg(id));
+                svc.unlock_account(sg(id), std::format("Unlocked by {}", ctx.actor()));
                 resp.results.push_back({.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(account_handler_lg(), error)

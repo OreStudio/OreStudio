@@ -9,7 +9,7 @@
 #+created: 2026-10-11
 #+updated: 2026-10-11
 
-A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into What a link table records, what it lacks to show a history, and how a party or person timeline could draw it. Covers all 21 junction models..
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into what a link table records, what it lacks to show a history, and how a party or person timeline could draw it. It covers all 21 junction models.
 
 It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
 

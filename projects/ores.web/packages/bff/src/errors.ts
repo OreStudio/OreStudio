@@ -174,6 +174,13 @@ export function tooManyRequests(what: string): HttpFailure {
  * Returns the original failure when it already is one, so a route can throw a
  * specific status and have it preserved.
  */
+/** What the caller is told when the framework refuses a request, by status. */
+const REFUSAL_BY_STATUS: Readonly<Record<number, string>> = {
+    400: 'The request could not be read.',
+    413: 'The request is too large.',
+    415: 'That content type is not accepted.',
+};
+
 export function toHttpFailure(error: unknown): HttpFailure {
     if (error instanceof HttpFailure) {
         return error;
@@ -230,11 +237,16 @@ export function toHttpFailure(error: unknown): HttpFailure {
     /*
      * The framework's own refusal of a request it could not read, such as a body
      * that is not JSON, carries the status it means. Reporting it as an internal
-     * failure hides a client mistake behind a server one.
+     * failure hides a client mistake behind a server one. The caller is told a
+     * fixed sentence for the status and never the framework's own text, which
+     * can quote what was sent; the text stays in the server log.
      */
     const status = (error as { statusCode?: unknown } | null)?.statusCode;
     if (typeof status === 'number' && status >= 400 && status < 500 && error instanceof Error) {
-        return new HttpFailure(status, { code: 'invalid-request', message: error.message });
+        return new HttpFailure(status, {
+            code: 'invalid-request',
+            message: REFUSAL_BY_STATUS[status] ?? 'The request was refused.',
+        });
     }
     return new HttpFailure(500, {
         code: 'internal',

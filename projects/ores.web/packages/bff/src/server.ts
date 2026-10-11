@@ -614,8 +614,9 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     /*
      * Every failure is logged with the route it came from, so a refusal can be
      * found from the screen that showed it. A 4xx is a warning with the reason
-     * the caller was given; a 5xx is an error with the stack. The credential
-     * and the body are never logged.
+     * the caller was given, which is a fixed sentence and never a quotation of
+     * the request; a 5xx is an error with the stack. The credential and the body
+     * are never logged.
      */
     server.setErrorHandler(async (error, request, reply) => {
         const failure = error instanceof HttpFailure ? error : toHttpFailure(error);
@@ -626,7 +627,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             url: request.url,
             route: request.routeOptions.url,
             accountId: liveSession(request)?.accountId,
-            reason: error instanceof Error ? error.message : String(error),
+            reason: failure.body.message,
         };
         if (failure.status >= 500) {
             request.log.error({ err: error, ...context }, 'request failed');

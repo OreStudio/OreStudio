@@ -158,6 +158,24 @@ describe('POST /api/accounts/:accountId/lock', () => {
         await server.close();
     });
 
+    it('keeps the body limit on the JSON parser', async () => {
+        const { server, sessionId } = buildTestServer({
+            'iam.v1.ops.lock_account': { results: [{ success: true, message: '' }] },
+        });
+
+        const response = await server.inject({
+            method: 'POST',
+            url: `/api/accounts/${ACCOUNT_ID}/lock`,
+            headers: { 'content-type': 'application/json' },
+            payload: JSON.stringify({ padding: 'x'.repeat(2 * 1024 * 1024) }),
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+
+        expect(response.statusCode).toBe(413);
+
+        await server.close();
+    });
+
     it('answers a body that is not JSON as a bad request, not as an internal failure', async () => {
         const { server, sessionId } = buildTestServer({
             'iam.v1.ops.lock_account': { results: [{ success: true, message: '' }] },
@@ -172,7 +190,11 @@ describe('POST /api/accounts/:accountId/lock', () => {
         });
 
         expect(response.statusCode).toBe(400);
-        expect(response.json()).toMatchObject({ code: 'invalid-request' });
+        expect(response.json()).toEqual({
+            code: 'invalid-request',
+            message: 'The request could not be read.',
+        });
+        expect(response.body).not.toContain('not json');
 
         await server.close();
     });

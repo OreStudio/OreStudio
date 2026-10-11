@@ -381,8 +381,9 @@ function shortId(id: string): string {
  * subject that draws its own header tints from here too, so one act does not
  * read as two colours on two screens.
  */
-export function kindTone(kind: string): 'accent' | 'up' | 'warn' | 'muted' | 'neutral' {
+export function kindTone(kind: string): 'accent' | 'up' | 'warn' | 'down' | 'muted' | 'neutral' {
     if (kind === 'granted') return 'up';
+    if (kind === 'sign_in_failed') return 'down';
     if (kind === 'decided') return 'warn';
     if (kind === 'changed' || kind === 'raised' || kind === 'asked') return 'accent';
     return 'muted';
@@ -393,6 +394,7 @@ const DOT: Readonly<Record<string, string>> = {
     accent: 'border-accent bg-accent/15',
     up: 'border-up bg-up/15',
     warn: 'border-warn bg-warn/15',
+    down: 'border-down bg-down/15',
     muted: 'border-line bg-surface-overlay',
     neutral: 'border-line bg-surface-overlay',
 };

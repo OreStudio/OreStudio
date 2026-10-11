@@ -42,7 +42,8 @@ import {
     AuditPage,
     FailuresPanel,
     failureTone,
-    eventTone,
+    authEventsAsStream,
+    eventKind,
     formatReadAt,
     isZeroAddress,
     orderLoginRecords,
@@ -127,7 +128,7 @@ function authEvent(overrides: Partial<AuthEvent> = {}): AuthEvent {
         eventTime: '2026-10-01 22:14:00Z',
         accountId: ACCOUNT_ID,
         eventType: 'login_failure',
-        username: 'jonas.lindqvist',
+        username: USERNAME,
         sessionId: '',
         partyId: '',
         errorDetail: 'bad password',
@@ -154,6 +155,7 @@ function render(
     path = '/audit',
     loginRecords: readonly LoginInfo[] = [loginInfo()],
     people: readonly Account[] = [account()],
+    events: readonly AuthEvent[] = [authEvent()],
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData([AUDIT_SESSIONS_QUERY_KEY], [session()]);
@@ -161,7 +163,7 @@ function render(
         loginInfo: loginRecords,
         totalCount: 25,
     });
-    client.setQueryData([AUDIT_EVENTS_QUERY_KEY, 'day', ''], [authEvent()]);
+    client.setQueryData([AUDIT_EVENTS_QUERY_KEY, 'day', ''], events);
     client.setQueryData([AUDIT_STATISTICS_QUERY_KEY, 'day'], [statisticsRow()]);
     client.setQueryData([AUDIT_ACCOUNTS_QUERY_KEY], {
         accounts: people,
@@ -337,9 +339,11 @@ describe('the audit sign-ins screen', () => {
         const html = render('/audit?tab=events');
 
         expect(html).toContain('Authentication events');
+        expect(html).toContain('Sign-in refused');
         expect(html).toContain('login_failure');
-        expect(html).toContain('jonas.lindqvist');
+        expect(html).toContain(USERNAME);
         expect(html).toContain('bad password');
+        expect(html).toContain('data-timeline');
     });
 
     it('opens the reading the query parameter names, and no other', () => {
@@ -397,10 +401,34 @@ describe('the audit helpers', () => {
         ).toEqual([accountB.accountId, accountC.accountId, accountA.accountId]);
     });
 
-    it('paints the event types the log stores', () => {
-        expect(eventTone('login_success')).toBe('up');
-        expect(eventTone('login_failure')).toBe('warn');
-        expect(eventTone('logout')).toBe('muted');
-        expect(eventTone('token_refresh')).toBe('neutral');
+    it('draws each event type the log stores as a kind of timeline entry', () => {
+        expect(eventKind('login_success')).toBe('signed_in');
+        expect(eventKind('login_failure')).toBe('sign_in_failed');
+        expect(eventKind('signup_failure')).toBe('sign_in_failed');
+        expect(eventKind('logout')).toBe('signed_out');
+        expect(eventKind('token_refresh')).toBe('refreshed');
+        expect(eventKind('select_party_only')).toBe('noticed');
+    });
+
+    it('links and pictures the person of an event that has no session', () => {
+        const photo = '5b8e0a52-7c1d-4f43-9a6b-0d2f6e3a9c11';
+        const html = render(
+            '/audit?tab=events',
+            [loginInfo()],
+            [account({ imageId: photo })],
+            [authEvent({ accountId: '', sessionId: '', username: USERNAME })],
+        );
+
+        expect(html).toContain(`href="/people/${USERNAME}"`);
+        expect(html).toContain(`/api/images/${photo}`);
+    });
+
+    it('names the person of an event that has no account or session by its username', () => {
+        const stream = authEventsAsStream(
+            [authEvent({ accountId: '', sessionId: '', username: 'diane.kay' })],
+            new Map(),
+        );
+
+        expect(stream.events[0]?.actor).toBe('diane.kay');
     });
 });

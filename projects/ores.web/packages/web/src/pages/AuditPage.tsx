@@ -34,6 +34,8 @@ import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
 import { actorPathFor } from '../access/PeoplePage.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
+import { Timeline, kindTone } from '../timeline/Timeline.js';
+import type { Timeline as TimelineStream } from '@ores/wire-protocol/browser';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { AccountLockBadge } from '../ui/AccountLockBadge.js';
 import { Button, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
@@ -199,18 +201,16 @@ export interface AuditPerson {
  */
 function AccountCell({
     accountId,
-    username,
     nameOf,
 }: {
     readonly accountId: string;
-    readonly username?: string;
     readonly nameOf: ReadonlyMap<string, AuditPerson>;
 }): ReactNode {
     if (accountId === '') {
-        return <span>{username === undefined || username === '' ? '—' : username}</span>;
+        return <span>—</span>;
     }
     const person = nameOf.get(accountId);
-    const name = username !== undefined && username !== '' ? username : (person?.username ?? '');
+    const name = person?.username ?? '';
     const personPath = actorPathFor(true)(name);
     return (
         <div className="flex items-center gap-2">
@@ -243,18 +243,50 @@ function AccountCell({
     );
 }
 
-/** The tone one event type is painted with, for the types the log stores. */
-export function eventTone(eventType: string): 'neutral' | 'warn' | 'muted' | 'up' {
-    if (eventType === 'login_success') {
-        return 'up';
-    }
-    if (eventType === 'login_failure' || eventType === 'signup_failure') {
-        return 'warn';
-    }
-    if (eventType === 'logout') {
-        return 'muted';
-    }
-    return 'neutral';
+/** The kind of timeline entry each event type the log stores is drawn as. */
+const EVENT_KIND: Readonly<Record<string, string>> = {
+    login_success: 'signed_in',
+    login_failure: 'sign_in_failed',
+    signup_failure: 'sign_in_failed',
+    logout: 'signed_out',
+    token_refresh: 'refreshed',
+};
+
+/** The kind of timeline entry an event type is drawn as; an unknown type is just recorded. */
+export function eventKind(eventType: string): string {
+    return EVENT_KIND[eventType] ?? 'noticed';
+}
+
+/**
+ * The authentication events as a timeline stream, in the order the read gives
+ * them: newest first.
+ *
+ * The person is the username the event carries, because a refused sign-in has
+ * no session and may have no account, and the account list names the rest.
+ */
+export function authEventsAsStream(
+    events: readonly AuthEvent[],
+    people: ReadonlyMap<string, AuditPerson>,
+): TimelineStream {
+    return {
+        subject: 'authentication',
+        id: '',
+        gaps: [],
+        events: events.map((event) => ({
+            entityType: 'iam.auth_event',
+            entityId: event.id,
+            kind: eventKind(event.eventType),
+            at: event.eventTime,
+            actor:
+                event.username !== ''
+                    ? event.username
+                    : (people.get(event.accountId)?.username ?? ''),
+            version: 0,
+            reasonCode: '',
+            commentary: event.errorDetail,
+            fields: [],
+        })),
+    };
 }
 
 /**
@@ -735,7 +767,56 @@ export function FailuresPanel({
     );
 }
 
-/** The authentication event log, newest first. */
+/** The photo address of a person named by username, or null for their initials. */
+function pictureOf(username: string, people: ReadonlyMap<string, AuditPerson>): string | null {
+    for (const person of people.values()) {
+        if (person.username === username) {
+            return person.imageId === null ? null : imageUrl(person.imageId);
+        }
+    }
+    return null;
+}
+
+/** What an entry of the event log says beside the person: the kind, the type and the session. */
+function EventHead({
+    event,
+    kind,
+    actor,
+}: {
+    readonly event: AuthEvent;
+    readonly kind: string;
+    readonly actor: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const path = actor === '' ? undefined : actorPathFor(true)(actor);
+    return (
+        <div className="flex flex-wrap items-baseline gap-2">
+            <Tag tone={kindTone(kind)}>{t(`timeline.kind.${kind}`)}</Tag>
+            {actor !== '' &&
+                (path === undefined ? (
+                    <span className="text-sm font-semibold text-ink">{actor}</span>
+                ) : (
+                    <Link
+                        to={path}
+                        className="text-sm font-semibold text-ink underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+                    >
+                        {actor}
+                    </Link>
+                ))}
+            <span className="font-mono text-[0.72rem] text-ink-faint">{event.eventType}</span>
+            {event.accountId !== '' && (
+                <span className="font-mono text-[0.72rem] text-ink-faint">{event.accountId}</span>
+            )}
+            {event.sessionId !== '' && (
+                <span className="font-mono text-[0.72rem] text-ink-faint">
+                    {t('auditSignIns.events.session')} {event.sessionId}
+                </span>
+            )}
+        </div>
+    );
+}
+
+/** The authentication event log, newest first, as a timeline with its chart. */
 function EventsPanel({
     query,
     accountNames,
@@ -744,6 +825,9 @@ function EventsPanel({
     readonly accountNames: ReadonlyMap<string, AuditPerson>;
 }): ReactNode {
     const { t } = useTranslation();
+    const events = query.data ?? [];
+    const stream = authEventsAsStream(events, accountNames);
+    const byId = new Map(events.map((event) => [event.id, event] as const));
     return (
         <section className="card space-y-4 p-6">
             <header className="space-y-1">
@@ -759,42 +843,17 @@ function EventsPanel({
             ) : query.data.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('auditSignIns.events.empty')}</p>
             ) : (
-                <table className="w-full text-left text-sm">
-                    <thead className="text-left text-xs text-ink-faint">
-                        <tr>
-                            <th className="py-1 font-normal">{t('auditSignIns.events.time')}</th>
-                            <th className="py-1 font-normal">{t('auditSignIns.events.event')}</th>
-                            <th className="py-1 font-normal">{t('auditSignIns.column.account')}</th>
-                            <th className="py-1 font-normal">{t('auditSignIns.events.session')}</th>
-                            <th className="py-1 font-normal">{t('auditSignIns.events.detail')}</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-line-subtle">
-                        {query.data.map((row) => (
-                            <tr key={row.id}>
-                                <td className="whitespace-nowrap py-2 font-mono text-xs">
-                                    {row.eventTime}
-                                </td>
-                                <td className="py-2">
-                                    <Tag tone={eventTone(row.eventType)}>{row.eventType}</Tag>
-                                </td>
-                                <td className="py-2">
-                                    <AccountCell
-                                        accountId={row.accountId}
-                                        username={row.username}
-                                        nameOf={accountNames}
-                                    />
-                                </td>
-                                <td className="py-2 font-mono text-xs">
-                                    {row.sessionId === '' ? '—' : row.sessionId}
-                                </td>
-                                <td className="py-2 text-ink-muted">
-                                    {row.errorDetail === '' ? '—' : row.errorDetail}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <Timeline
+                    timeline={stream}
+                    actorPath={actorPathFor(true)}
+                    actorPicture={(username) => pictureOf(username, accountNames)}
+                    renderHead={(entry) => {
+                        const event = byId.get(entry.entityId);
+                        return event === undefined ? null : (
+                            <EventHead event={event} kind={entry.kind} actor={entry.actor} />
+                        );
+                    }}
+                />
             )}
         </section>
     );

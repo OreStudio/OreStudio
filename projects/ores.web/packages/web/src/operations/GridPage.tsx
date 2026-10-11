@@ -35,7 +35,7 @@
  * leaving the table.
  */
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fromWireTimestamp, isWireTimestamp } from '@ores/wire-protocol/browser';
 import type { GridNodeRow, GridView } from '@ores/wire-protocol/browser';
@@ -55,6 +55,7 @@ import {
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
+import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 
 /** The journeys that carry on from this one, in the order its page names them. */
 const JOURNEYS: readonly JourneyId[] = [
@@ -238,10 +239,15 @@ function RunnerInstance({ node }: { readonly node: GridNodeRow }): ReactNode {
 
 function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
     const { t } = useTranslation();
+    const [offset, setOffset] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const running = nodes.filter((node) => node.state === 'running');
     const lost = nodes.filter((node) => node.state === 'lost');
     const missing = nodes.filter((node) => node.state === 'missing');
     const newestVersion = newestVersionOf(running);
+    const start = Math.min(offset, Math.max(0, Math.floor((nodes.length - 1) / pageSize) * pageSize));
+    const page = nodes.slice(start, start + pageSize);
+    const { first, last } = pageBounds(start, page.length);
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
@@ -309,7 +315,7 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-line-subtle">
-                    {nodes.map((node) => {
+                    {page.map((node) => {
                         const quiet = node.seconds_since_hb > SERVICE_RUNNING_WINDOW_MINUTES * 60;
                         return (
                             <tr key={node.host_id}>
@@ -363,6 +369,22 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
                     })}
                 </tbody>
             </table>
+            <Pager
+                offset={start}
+                shown={page.length}
+                total={nodes.length}
+                pageSize={pageSize}
+                showing={t('operations.grid.nodes.showing', {
+                    first,
+                    last,
+                    total: nodes.length,
+                })}
+                onMove={setOffset}
+                onPageSize={(size) => {
+                    setPageSize(size);
+                    setOffset(0);
+                }}
+            />
             <p className="text-xs text-ink-faint">{t('operations.grid.nodes.hint')}</p>
             <div className="flex flex-wrap items-center gap-3">
                 <Button variant="secondary" disabled title={t('operations.grid.nodes.openHint')}>

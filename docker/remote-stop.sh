@@ -22,8 +22,10 @@ if [[ "$ROLE" == "compute" ]]; then
     fi
     label="${ORES_COMPUTE_LABEL:-ores}"
     container="ores-compute-node-${label}"
-    echo "=== Stopping compute node '$container' ==="
-    podman rm -f "$container" >/dev/null 2>&1 || true
+    echo "=== Stopping compute nodes '$container*' ==="
+    for old in $(podman ps -aq --filter "name=^${container}" 2>/dev/null); do
+        podman rm -f "$old" >/dev/null 2>&1 || true
+    done
 else
     env_file="$REMOTE_ROOT/docker/.env"
     if [[ -f "$env_file" ]]; then

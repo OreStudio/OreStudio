@@ -1461,6 +1461,7 @@ export const en: SourceCatalogue = {
             nodes: {
                 title: 'Nodes',
                 rows: '{count} rows',
+                showing: '{first}–{last} of {total} nodes',
                 reported: '{running} of {total} runners reported in the last {minutes} minutes',
                 lost: '{count} lost',
                 missing: '{count} missing',

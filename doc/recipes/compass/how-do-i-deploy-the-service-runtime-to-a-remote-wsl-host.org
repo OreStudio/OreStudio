@@ -48,7 +48,7 @@ compass env deploy newton --setup-host
 compass env deploy list
 
 # The compute node on every host profile that has compute settings
-# (ORES_COMPUTE_HOST_ID). Each host is probed first: one that does not
+# (ORES_COMPUTE_NATS_URL). Each host is probed first: one that does not
 # answer over ssh is reported as down and skipped, the others still
 # deploy, and a summary closes the run. The exit status is non-zero when
 # any host was down or failed.
@@ -85,7 +85,7 @@ The compute role additionally needs the serving environment's details
 in the profile (the wrapper is NATS/TLS-only — no DB credentials):
 
 #+begin_src sh :results verbatim
-ORES_COMPUTE_HOST_ID=<uuid>            # row in the serving env's compute.hosts
+ORES_COMPUTE_REPLICAS=<n>               # optional; default is one wrapper per core but one
 ORES_COMPUTE_TENANT_ID=<tenant>        # required by the wrapper parser
 ORES_COMPUTE_NATS_URL=nats://<serving-host>:4222
 ORES_COMPUTE_NATS_SUBJECT_PREFIX=ores.<serving-env-label>

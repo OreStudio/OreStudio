@@ -1477,6 +1477,7 @@ const fr: SourceCatalogue = {
             nodes: {
                 title: 'Nœuds',
                 rows: '{count} lignes',
+                showing: '{first}–{last} sur {total} nœuds',
                 reported:
                     '{running} exécutants sur {total} se sont signalés au cours des {minutes} dernières minutes',
                 lost: '{count} perdus',

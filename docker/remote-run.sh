@@ -62,7 +62,9 @@ if [[ "$ROLE" == "compute" ]]; then
     keys_dir="$REMOTE_ROOT/compute/keys"
     work_dir="$REMOTE_ROOT/compute/work"
     image="localhost/ores-compute-wrapper:${IMAGE_TAG}"
-    host_id="${ORES_COMPUTE_WRAPPER_HOST_ID:?compute env missing ORES_COMPUTE_WRAPPER_HOST_ID}"
+    # One wrapper per core but one, so the host stays responsive.
+    cores="$(nproc)"
+    replicas="${ORES_COMPUTE_REPLICAS:-$(( cores > 1 ? cores - 1 : 1 ))}"
     tenant_id="${ORES_COMPUTE_WRAPPER_TENANT_ID:?compute env missing ORES_COMPUTE_WRAPPER_TENANT_ID}"
     http_base_url="${ORES_COMPUTE_WRAPPER_HTTP_BASE_URL:-}"
 
@@ -79,28 +81,39 @@ if [[ "$ROLE" == "compute" ]]; then
     log_dir="$REMOTE_ROOT/compute/log"
     mkdir -p "$log_dir"
 
-    echo "=== Recreating compute node container '$container' ==="
-    podman rm -f "$container" >/dev/null 2>&1 || true
+    echo "=== Recreating $replicas compute node container(s) '$container-N' ==="
+    # Remove every wrapper of this label, including a single-container
+    # deploy from before replicas existed.
+    for old in $(podman ps -aq --filter "name=^${container}" 2>/dev/null); do
+        podman rm -f "$old" >/dev/null 2>&1 || true
+    done
     extra_args=()
     if [[ -n "$http_base_url" ]]; then
         extra_args=(--http-base-url "$http_base_url")
     fi
-    podman run -d --rm --network=host --userns=keep-id \
-        --name "$container" \
-        --user "${ORES_REMOTE_USER:-$(id -u)}:${ORES_REMOTE_GROUP:-$(id -g)}" \
-        --env-file "$compute_env" \
-        -v "$certs_volume:$keys_dir:ro" \
-        -v "$work_dir:$work_dir:rw" \
-        -v "$log_dir:/app/log:rw" \
-        "$image" \
-        --log-enabled --log-level info --log-to-console \
-        --log-directory ../log --log-filename ores.compute.wrapper --log-replica-index 0 \
-        --host-id "$host_id" --tenant-id "$tenant_id" \
-        --work-dir "$work_dir" "${extra_args[@]}" >/dev/null
+    node_name="$(hostname)"
+    for replica in $(seq 1 "$replicas"); do
+        # Same derivation as the local services: UUID v5 of "<hostname>:<replica>".
+        host_id="$(python3 -c 'import sys,uuid; print(uuid.uuid5(uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8"), sys.argv[1]))' "$node_name:$replica")"
+        mkdir -p "$work_dir/$replica"
+        podman run -d --rm --network=host --userns=keep-id \
+            --name "$container-$replica" \
+            --user "${ORES_REMOTE_USER:-$(id -u)}:${ORES_REMOTE_GROUP:-$(id -g)}" \
+            --env-file "$compute_env" \
+            -v "$certs_volume:$keys_dir:ro" \
+            -v "$work_dir:$work_dir:rw" \
+            -v "$log_dir:/app/log:rw" \
+            "$image" \
+            --log-enabled --log-level info --log-to-console \
+            --log-directory ../log --log-filename ores.compute.wrapper \
+            --log-replica-index "$((replica - 1))" \
+            --host-id "$host_id" --tenant-id "$tenant_id" \
+            --work-dir "$work_dir/$replica" "${extra_args[@]}" >/dev/null
+    done
 
     echo
-    echo "Compute node '$container' started (NATS: $ORES_COMPUTE_WRAPPER_NATS_URL)."
-    echo "  Logs : $log_dir/*.log (podman logs -f $container for stdout)"
+    echo "$replicas compute node(s) started as '$container-N' (NATS: $ORES_COMPUTE_WRAPPER_NATS_URL)."
+    echo "  Logs : $log_dir/*.log (podman logs -f $container-1 for stdout)"
     echo "  Stop : compass env deploy <host> --role compute --stop"
     exit 0
 fi

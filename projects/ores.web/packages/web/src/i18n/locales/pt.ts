@@ -1468,6 +1468,7 @@ const pt: SourceCatalogue = {
             nodes: {
                 title: 'Nós',
                 rows: '{count} linhas',
+                showing: '{first}–{last} de {total} nós',
                 reported:
                     '{running} de {total} executores anunciaram-se nos últimos {minutes} minutos',
                 lost: '{count} perdidos',

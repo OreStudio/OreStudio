@@ -846,6 +846,21 @@ describe('the compute grid screen', () => {
         expect(html).toContain('3 h 12 m');
     });
 
+    it('pages the nodes and says how many there are in all', () => {
+        const nodes = Array.from({ length: 20 }, (_, index) =>
+            gridNode({
+                host_id: `9e0f33aa-0000-4000-8000-${String(index).padStart(12, '0')}`,
+                host: `node-${String(index + 1).padStart(2, '0')}`,
+            }),
+        );
+        const html = withProviders(<GridPage />, '/', [], gridView({ nodes }));
+
+        expect(html).toContain('node-15');
+        expect(html).not.toContain('node-16');
+        expect(html).toContain('1–15 of 20 nodes');
+        expect(html).toContain('20 rows');
+    });
+
     it('says no host names a node rather than printing the id as a name', () => {
         const html = withProviders(<GridPage />, '/', [], gridView({ nodes: [NAMELESS_NODE] }));
 

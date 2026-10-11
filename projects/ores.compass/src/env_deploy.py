@@ -63,7 +63,6 @@ IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
 IMAGE_BASE = "localhost/ores-service-base"
 
 _COMPUTE_REQUIRED = (
-    "ORES_COMPUTE_HOST_ID",
     "ORES_COMPUTE_TENANT_ID",
     "ORES_COMPUTE_NATS_URL",
     "ORES_COMPUTE_NATS_SUBJECT_PREFIX",
@@ -296,10 +295,12 @@ def _write_compute_env(project_root, profile_env, label, remote_root):
         f"ORES_COMPUTE_WRAPPER_NATS_TLS_CA={remote_root}/compute/keys/{tls_bases['CA']}",
         f"ORES_COMPUTE_WRAPPER_NATS_TLS_CERT={remote_root}/compute/keys/{tls_bases['CERT']}",
         f"ORES_COMPUTE_WRAPPER_NATS_TLS_KEY={remote_root}/compute/keys/{tls_bases['KEY']}",
-        f"ORES_COMPUTE_WRAPPER_HOST_ID={profile_env['ORES_COMPUTE_HOST_ID']}",
         f"ORES_COMPUTE_WRAPPER_TENANT_ID={profile_env['ORES_COMPUTE_TENANT_ID']}",
         f"ORES_COMPUTE_LABEL={label}",
     ]
+    # Unset, the host runs one wrapper per core but one.
+    if profile_env.get("ORES_COMPUTE_REPLICAS"):
+        lines.append(f"ORES_COMPUTE_REPLICAS={profile_env['ORES_COMPUTE_REPLICAS']}")
     if profile_env.get("ORES_COMPUTE_HTTP_BASE_URL"):
         lines.append(
             f"ORES_COMPUTE_WRAPPER_HTTP_BASE_URL={profile_env['ORES_COMPUTE_HTTP_BASE_URL']}")
@@ -728,7 +729,7 @@ def _compute_aliases(project_root):
     for p in sorted(project_root.glob(".env.*")):
         if p.name.endswith(".old"):
             continue
-        if _read_env(p).get("ORES_COMPUTE_HOST_ID"):
+        if _read_env(p).get("ORES_COMPUTE_NATS_URL"):
             aliases.append(p.name[len(".env."):])
     return aliases
 
@@ -749,7 +750,7 @@ def _cmd_deploy_all(argv, project_root):
 
     aliases = _compute_aliases(project_root)
     if not aliases:
-        print("No host profile has compute settings (ORES_COMPUTE_HOST_ID).")
+        print("No host profile has compute settings (ORES_COMPUTE_NATS_URL).")
         return 1
     outcomes = {}
     for alias in aliases:

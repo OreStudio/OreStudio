@@ -1271,6 +1271,10 @@ const fr: SourceCatalogue = {
             noDone: "Aucune tâche n'a encore de date de fin.",
         },
         board: {
+            current: 'En cours ici',
+            trees: 'Arbres de travail',
+            idle: 'Inactif',
+            thisTree: 'Cet arbre',
             search: 'Chercher des récits, tâches, environnements',
             searchLabel: 'Chercher dans le tableau',
             clear: 'Effacer',

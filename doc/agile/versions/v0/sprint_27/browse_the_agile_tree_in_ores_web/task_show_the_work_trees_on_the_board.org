@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:62313BC5-7E9D-4AAF-B74C-53AE63B3D943][Browse the agile tree in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -83,3 +83,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Board tab shows a strip of every work tree of the repository, each as a chip with its label, the state and title of its task, or Idle, and a marker on the tree the BFF reads. The story that this tree is on has an accent outline and a Current tag, and the board scrolls to it. The BFF serves the trees at =GET /api/agile/trees=. It asks git for =worktree list --porcelain= with fixed arguments from the doc root, and it reads the tail of each tree's =.journal.org=, so no other tree's agile docs are read and no caller names a path. A journal that is a link reads as none. The current story is the journal's story when the board has it, otherwise the story with a task on the tree's branch and the latest update. The list is sorted by label and capped at 40, and it is empty when git cannot run.
+
+I ran the source on this repository: 11 work trees, mine marked as the session with its task. The French and Portuguese text is my translation and needs a speaker. I did not view the strip in a browser.

@@ -28,12 +28,14 @@ import {
     agileDocResponseSchema,
     backlogSchema,
     boardResponseSchema,
+    workTreesResponseSchema,
     chartsResponseSchema,
     sprintListSchema,
 } from '@ores/contracts';
 import type { OresClient } from '@ores/wire-protocol';
 import type { Config } from './config.js';
 import { buildServer, sessionCookieName } from './server.js';
+import type { WorkTreeSource } from './agile/work-trees.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
 
@@ -60,7 +62,7 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
     });
 }
 
-function buildTestServer(options: { docRoot?: string }) {
+function buildTestServer(options: { docRoot?: string; workTrees?: WorkTreeSource }) {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const client = {
         async callAuthenticated(): Promise<unknown> {
@@ -90,6 +92,7 @@ function buildTestServer(options: { docRoot?: string }) {
         site: siteConfiguration(),
         sessions,
         createClient: () => ({ client, connect: async () => undefined }),
+        ...(options.workTrees === undefined ? {} : { workTrees: options.workTrees }),
     });
     return { server, sessionId: session.id };
 }
@@ -175,6 +178,7 @@ describe('the agile routes', () => {
             '/api/agile/sprints',
             '/api/agile/board',
             '/api/agile/charts',
+            '/api/agile/trees',
             '/api/agile/backlog',
             `/api/agile/docs/${STORY}`,
         ]) {
@@ -243,6 +247,24 @@ describe('the agile routes', () => {
             '/api/agile/charts?sprint=sprint_1&sprint=sprint_2',
         );
         expect(twice.statusCode).toBe(400);
+    });
+
+    it('serve the work trees from the source, and none without one', async () => {
+        const row = {
+            label: 'eager_maxwell',
+            branch: 'feature/x',
+            isSession: true,
+            current: null,
+        };
+        const { server, sessionId } = buildTestServer({
+            docRoot: tree(),
+            workTrees: { trees: async () => [row] },
+        });
+        const response = await send(server, sessionId, '/api/agile/trees');
+        expect(response.statusCode).toBe(200);
+        expect(workTreesResponseSchema.parse(response.json()).trees).toEqual([row]);
+        const bare = buildTestServer({});
+        expect((await send(bare.server, bare.sessionId, '/api/agile/trees')).statusCode).toBe(404);
     });
 
     it('serve the backlog buckets', async () => {

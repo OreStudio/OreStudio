@@ -1261,6 +1261,10 @@ const pt: SourceCatalogue = {
             noDone: 'Nenhuma tarefa tem data de fim ainda.',
         },
         board: {
+            current: 'Atual',
+            trees: 'Árvores de trabalho',
+            idle: 'Parada',
+            thisTree: 'Esta árvore',
             search: 'Pesquisar histórias, tarefas, ambientes',
             searchLabel: 'Pesquisar no quadro',
             clear: 'Limpar',

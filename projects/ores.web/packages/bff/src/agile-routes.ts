@@ -23,11 +23,12 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { AGILE_DOC_TYPES } from '@ores/contracts';
 import { HttpFailure, invalidRequest, notFound } from './errors.js';
 import { InvalidSprintNameError, type AgileStore } from './agile/agile-store.js';
+import type { WorkTreeSource } from './agile/work-trees.js';
 import { InvalidDocIdError, type DocText } from './scenarios/scenario-store.js';
 import type { LiveSession } from './sessions.js';
 
 /**
- * The agile browser routes: the sprints, one sprint's board and charts, the backlog
+ * The agile browser routes: the sprints, one sprint's board and charts, the work trees, the backlog
  * buckets, and any agile doc by id.
  *
  * A route never touches a file. It asks the agile store, so a database store
@@ -84,6 +85,7 @@ export function registerAgileRoutes(
     // The doc route reads through the scenario store's id index, so it reads the
     // same doc root as the file agile store only while both come from the config.
     readDoc: ((id: string) => Promise<DocText | null>) | undefined,
+    workTrees?: WorkTreeSource,
 ): void {
     const open = (request: FastifyRequest): AgileStore => {
         requireSession(request);
@@ -117,6 +119,11 @@ export function registerAgileRoutes(
         const charts = await guarded(() => agile.charts(sprint === '' ? undefined : sprint));
         if (charts === null) throw notFound('No sprint has this name.');
         return { charts };
+    });
+
+    server.get('/api/agile/trees', async (request) => {
+        open(request);
+        return { trees: workTrees === undefined ? [] : await workTrees.trees() };
     });
 
     server.get('/api/agile/backlog', async (request) => {

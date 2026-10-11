@@ -140,6 +140,29 @@ export const chartsSchema = z.object({
 export type Charts = z.infer<typeof chartsSchema>;
 export const chartsResponseSchema = z.object({ charts: chartsSchema });
 
+export const journalEntrySchema = z.object({
+    storyId: z.string(),
+    storyTitle: z.string(),
+    taskId: z.string(),
+    taskTitle: z.string(),
+    state: agileStateSchema,
+    branch: z.string(),
+    /** The pull request number, or zero when the entry has none. */
+    pr: z.number(),
+});
+
+export const workTreeSchema = z.object({
+    /** The directory name without the ores_dev_ prefix, as an environment is written. */
+    label: z.string(),
+    branch: z.string(),
+    /** The work tree the BFF reads the agile tree of. */
+    isSession: z.boolean(),
+    /** The work item of the tree, from its journal, or null when it has none. */
+    current: journalEntrySchema.nullable(),
+});
+export type WorkTree = z.infer<typeof workTreeSchema>;
+export const workTreesResponseSchema = z.object({ trees: z.array(workTreeSchema) });
+
 export const BACKLOG_BUCKET_IDS = ['inbox', 'next', 'deferred', 'discarded'] as const;
 
 export const backlogItemSchema = z.object({

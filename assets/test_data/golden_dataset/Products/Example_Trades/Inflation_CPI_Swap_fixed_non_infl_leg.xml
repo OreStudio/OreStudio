@@ -31,7 +31,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0199999996</Rate>
+            <Rate>0.02</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -61,7 +61,7 @@
         <CPILegData>
           <Index>UKRPI</Index>
           <Rates>
-            <Rate>0.0199999996</Rate>
+            <Rate>0.02</Rate>
           </Rates>
           <BaseCPI>210</BaseCPI>
           <StartDate>2023-07-10</StartDate>
@@ -103,7 +103,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0199999996</Rate>
+            <Rate>0.02</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -133,7 +133,7 @@
         <CPILegData>
           <Index>UKRPI</Index>
           <Rates>
-            <Rate>0.0199999996</Rate>
+            <Rate>0.02</Rate>
           </Rates>
           <BaseCPI>210</BaseCPI>
           <StartDate>2023-07-10</StartDate>

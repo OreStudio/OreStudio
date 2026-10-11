@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3c359729-0dd2-43d3-9b8c-a1ecd270ec36
+:ores.cpp.eventing-integration-test.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.rate_instruments
@@ -136,6 +137,7 @@ ISO 8601 date string (YYYY-MM-DD).
 :nullable: true
 :common_date: maturity_date
 :economic: true
+:generator_expr: std::chrono::year_month_day{std::chrono::sys_days{*r.start_date} + std::chrono::days{365}}
 :END:
 
 The instrument's maturity date. A forward rate agreement's end date is this

@@ -33,12 +33,12 @@
         <FloatingLegData>
           <Index>EUR-EURIBOR-6M</Index>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.00</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
       <Caps>
-        <Cap>0.0250000004</Cap>
+        <Cap>0.025</Cap>
       </Caps>
     </CapFloorData>
   </Trade>

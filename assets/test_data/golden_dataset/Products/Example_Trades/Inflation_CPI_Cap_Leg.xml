@@ -36,7 +36,7 @@
         <CPILegData>
           <Index>EUHICPXT</Index>
           <Rates>
-            <Rate>0.0199999996</Rate>
+            <Rate>0.02</Rate>
           </Rates>
           <BaseCPI>100</BaseCPI>
           <StartDate>2023-02-03</StartDate>
@@ -46,7 +46,7 @@
         </CPILegData>
       </LegData>
       <Caps>
-        <Cap>0.0299999993</Cap>
+        <Cap>0.03</Cap>
       </Caps>
     </CapFloorData>
   </Trade>

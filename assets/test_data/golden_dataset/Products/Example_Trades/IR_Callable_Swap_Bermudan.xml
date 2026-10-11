@@ -18,9 +18,9 @@
         <NoticeConvention>F</NoticeConvention>
         <Settlement>Physical</Settlement>
         <ExerciseFees>
-          <ExerciseFee type="Percentage">0.00100000005</ExerciseFee>
+          <ExerciseFee type="Percentage">0.0010</ExerciseFee>
           <ExerciseFee type="Absolute" startDate="2037-09-29">15000</ExerciseFee>
-          <ExerciseFee type="Percentage" startDate="2039-09-30">0.000500000024</ExerciseFee>
+          <ExerciseFee type="Percentage" startDate="2039-09-30">0.0005</ExerciseFee>
         </ExerciseFees>
         <ExerciseFeeSettlementPeriod>5D</ExerciseFeeSettlementPeriod>
         <ExerciseFeeSettlementCalendar>TARGET</ExerciseFeeSettlementCalendar>
@@ -65,7 +65,7 @@
         <FloatingLegData>
           <Index>EUR-EURIBOR-3M</Index>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -99,7 +99,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0500000007</Rate>
+            <Rate>0.05</Rate>
           </Rates>
         </FixedLegData>
       </LegData>

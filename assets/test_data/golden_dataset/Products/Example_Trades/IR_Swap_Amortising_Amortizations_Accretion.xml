@@ -112,7 +112,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0399999991</Rate>
+            <Rate>0.04</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -221,21 +221,21 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>0</FixingDays>
           <Spreads>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00499999989</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
-            <Spread>0.00600000005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.005</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
+            <Spread>0.006</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

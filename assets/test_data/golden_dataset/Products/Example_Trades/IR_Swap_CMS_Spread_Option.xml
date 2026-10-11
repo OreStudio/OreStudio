@@ -17,7 +17,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -35,16 +35,16 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0.00100000005</Spread>
+            <Spread>0.0010</Spread>
           </Spreads>
           <Caps>
-            <Cap>0.0599999987</Cap>
+            <Cap>0.06</Cap>
           </Caps>
           <Floors>
-            <Floor>0</Floor>
+            <Floor>0.00</Floor>
           </Floors>
           <Gearings>
-            <Gearing>3</Gearing>
+            <Gearing>3.0</Gearing>
           </Gearings>
           <NakedOption>false</NakedOption>
         </CMSSpreadLegData>
@@ -56,7 +56,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -73,7 +73,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0.00800000038</Spread>
+            <Spread>0.0080</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

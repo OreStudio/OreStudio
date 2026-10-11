@@ -85,7 +85,7 @@
             <Spread>0</Spread>
           </Spreads>
           <Caps>
-            <Cap>0.0149999997</Cap>
+            <Cap>0.015</Cap>
           </Caps>
           <Gearings>
             <Gearing>1</Gearing>
@@ -135,7 +135,7 @@
             <Spread>0</Spread>
           </Spreads>
           <Caps>
-            <Cap>0.0149999997</Cap>
+            <Cap>0.015</Cap>
           </Caps>
           <Gearings>
             <Gearing>1</Gearing>
@@ -231,7 +231,7 @@
             <Spread>0</Spread>
           </Spreads>
           <Caps>
-            <Cap>0.0149999997</Cap>
+            <Cap>0.015</Cap>
           </Caps>
           <Gearings>
             <Gearing>1</Gearing>
@@ -281,7 +281,7 @@
             <Spread>0</Spread>
           </Spreads>
           <Caps>
-            <Cap>0.0149999997</Cap>
+            <Cap>0.015</Cap>
           </Caps>
           <Gearings>
             <Gearing>1</Gearing>
@@ -379,7 +379,7 @@
             <Spread>0</Spread>
           </Spreads>
           <Caps>
-            <Cap>0.0149999997</Cap>
+            <Cap>0.015</Cap>
           </Caps>
           <Gearings>
             <Gearing>1</Gearing>
@@ -430,7 +430,7 @@
             <Spread>0</Spread>
           </Spreads>
           <Caps>
-            <Cap>0.0149999997</Cap>
+            <Cap>0.015</Cap>
           </Caps>
           <Gearings>
             <Gearing>1</Gearing>
@@ -487,7 +487,7 @@
         </DurationAdjustedCMSLegData>
       </LegData>
       <Caps>
-        <Cap>0.0149999997</Cap>
+        <Cap>0.015</Cap>
       </Caps>
       <Floors/>
       <Premiums>

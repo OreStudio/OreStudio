@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: FFE4182F-0FA0-4F7C-B7F9-8DFD59141493
+:ores.cpp.eventing-integration-test.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.flexi_swap_instrument
@@ -132,6 +133,7 @@ is immutable.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_flexi_swap_instruments_tbl
+:party_scoped_writes: true
 :rls_tenant_isolation: true
 :END:
 
@@ -170,7 +172,6 @@ annotations; domain and repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <optional>
 #include <boost/uuid/uuid.hpp>
 #+end_src
 

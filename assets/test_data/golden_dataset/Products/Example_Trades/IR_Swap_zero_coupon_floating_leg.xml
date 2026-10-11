@@ -17,7 +17,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>184500</Notional>
+          <Notional>184500.0000</Notional>
         </Notionals>
         <ScheduleData>
           <Dates>
@@ -37,7 +37,7 @@
           <HasSubPeriods>true</HasSubPeriods>
           <IncludeSpread>true</IncludeSpread>
           <Spreads>
-            <Spread>0.00650000013</Spread>
+            <Spread>0.006500</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -61,7 +61,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>184500</Notional>
+          <Notional>184500.0000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -81,7 +81,7 @@
           <HasSubPeriods>true</HasSubPeriods>
           <IncludeSpread>true</IncludeSpread>
           <Spreads>
-            <Spread>0.00650000013</Spread>
+            <Spread>0.006500</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -105,7 +105,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>184500</Notional>
+          <Notional>184500.0000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -125,7 +125,7 @@
           <HasSubPeriods>true</HasSubPeriods>
           <IncludeSpread>true</IncludeSpread>
           <Spreads>
-            <Spread>0.00650000013</Spread>
+            <Spread>0.006500</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

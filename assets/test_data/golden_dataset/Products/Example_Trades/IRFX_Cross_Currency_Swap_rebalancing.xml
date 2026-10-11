@@ -36,7 +36,7 @@
         <FloatingLegData>
           <Index>USD-LIBOR-6M</Index>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.000000</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -47,7 +47,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>88312928</Notional>
+          <Notional>88312931.57</Notional>
           <FXReset>
             <ForeignCurrency>USD</ForeignCurrency>
             <ForeignAmount>100000000</ForeignAmount>
@@ -73,7 +73,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0.0149999997</Spread>
+            <Spread>0.015</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -118,7 +118,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.000000</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -129,7 +129,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>88312928</Notional>
+          <Notional>88312931.57</Notional>
           <FXReset>
             <ForeignCurrency>USD</ForeignCurrency>
             <ForeignAmount>100000000</ForeignAmount>
@@ -155,7 +155,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0.0149999997</Spread>
+            <Spread>0.015</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

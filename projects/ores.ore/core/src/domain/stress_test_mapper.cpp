@@ -174,7 +174,7 @@ domain::shiftTypeEntry decode_shift_type_entry(const std::string& text) {
 
 std::string encode_shift_size_entry(const domain::shiftSizeEntry& v) {
     std::string out = "value=";
-    out += float_text(static_cast<float>(v));
+    out += v.lexical().empty() ? float_text(static_cast<float>(v)) : v.lexical();
     if (v.key) {
         out += "|key=";
         out += *v.key;
@@ -190,9 +190,10 @@ domain::shiftSizeEntry decode_shift_size_entry(const std::string& text) {
             continue;
         const auto name = field.substr(0, at);
         const auto value = field.substr(at + 1);
-        if (name == "value")
+        if (name == "value") {
             static_cast<float&>(out) = std::stof(value);
-        else if (name == "key")
+            out.lexical(value);
+        } else if (name == "key")
             out.key = value;
     }
     return out;

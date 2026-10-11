@@ -44,7 +44,7 @@
         </CPILegData>
       </LegData>
       <Caps>
-        <Cap>0.00999999978</Cap>
+        <Cap>0.01</Cap>
       </Caps>
     </CapFloorData>
   </Trade>

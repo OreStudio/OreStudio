@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7297F657-B695-46B5-BBCA-89A9DA3D1191
+:ores.cpp.eventing-integration-test.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.inflation_swap_instrument
@@ -154,6 +155,7 @@ is immutable.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_inflation_swap_instruments_tbl
+:party_scoped_writes: true
 :rls_tenant_isolation: true
 :END:
 

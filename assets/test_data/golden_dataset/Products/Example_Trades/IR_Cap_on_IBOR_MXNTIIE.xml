@@ -18,7 +18,7 @@
         <DayCounter>A360</DayCounter>
         <PaymentConvention>Following</PaymentConvention>
         <Notionals>
-          <Notional>2e+09</Notional>
+          <Notional>2000000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -40,7 +40,7 @@
         </FloatingLegData>
       </LegData>
       <Caps>
-        <Cap>0.0799999982</Cap>
+        <Cap>0.08</Cap>
       </Caps>
       <Floors/>
     </CapFloorData>

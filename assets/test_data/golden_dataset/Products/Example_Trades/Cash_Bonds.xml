@@ -21,7 +21,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>ACT/ACT</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -39,7 +39,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0500000007</Rate>
+            <Rate>0.05</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -69,7 +69,7 @@
           <PaymentConvention>F</PaymentConvention>
           <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
-            <Notional>10000000</Notional>
+            <Notional>10000000.000000</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -87,7 +87,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0500000007</Rate>
+              <Rate>0.05</Rate>
             </Rates>
           </FixedLegData>
         </LegData>
@@ -126,7 +126,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>ACT/ACT</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -147,7 +147,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0.00999999978</Spread>
+            <Spread>0.01</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -177,7 +177,7 @@
           <PaymentConvention>F</PaymentConvention>
           <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
-            <Notional>10000000</Notional>
+            <Notional>10000000.000000</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -198,7 +198,7 @@
             <IsInArrears>false</IsInArrears>
             <FixingDays>2</FixingDays>
             <Spreads>
-              <Spread>0.00999999978</Spread>
+              <Spread>0.01</Spread>
             </Spreads>
           </FloatingLegData>
         </LegData>
@@ -237,7 +237,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>ACT/ACT</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -255,7 +255,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0500000007</Rate>
+            <Rate>0.05</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -266,7 +266,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>ACT/ACT</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -287,7 +287,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0.00999999978</Spread>
+            <Spread>0.01</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -317,7 +317,7 @@
           <PaymentConvention>F</PaymentConvention>
           <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
-            <Notional>10000000</Notional>
+            <Notional>10000000.000000</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -335,7 +335,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0500000007</Rate>
+              <Rate>0.05</Rate>
             </Rates>
           </FixedLegData>
         </LegData>
@@ -346,7 +346,7 @@
           <PaymentConvention>F</PaymentConvention>
           <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
-            <Notional>10000000</Notional>
+            <Notional>10000000.000000</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -367,7 +367,7 @@
             <IsInArrears>false</IsInArrears>
             <FixingDays>2</FixingDays>
             <Spreads>
-              <Spread>0.00999999978</Spread>
+              <Spread>0.01</Spread>
             </Spreads>
           </FloatingLegData>
         </LegData>
@@ -415,7 +415,7 @@
           </AmortizationData>
         </Amortizations>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -433,7 +433,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0500000007</Rate>
+            <Rate>0.05</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -472,7 +472,7 @@
             </AmortizationData>
           </Amortizations>
           <Notionals>
-            <Notional>10000000</Notional>
+            <Notional>10000000.000000</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -490,7 +490,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0500000007</Rate>
+              <Rate>0.05</Rate>
             </Rates>
           </FixedLegData>
         </LegData>
@@ -538,7 +538,7 @@
           </AmortizationData>
         </Amortizations>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -556,7 +556,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0500000007</Rate>
+            <Rate>0.05</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -595,7 +595,7 @@
             </AmortizationData>
           </Amortizations>
           <Notionals>
-            <Notional>10000000</Notional>
+            <Notional>10000000.000000</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -613,7 +613,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0500000007</Rate>
+              <Rate>0.05</Rate>
             </Rates>
           </FixedLegData>
         </LegData>
@@ -657,7 +657,7 @@
           </AmortizationData>
         </Amortizations>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -675,7 +675,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0500000007</Rate>
+            <Rate>0.05</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -714,7 +714,7 @@
             </AmortizationData>
           </Amortizations>
           <Notionals>
-            <Notional>10000000</Notional>
+            <Notional>10000000.000000</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -732,7 +732,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0500000007</Rate>
+              <Rate>0.05</Rate>
             </Rates>
           </FixedLegData>
         </LegData>
@@ -775,7 +775,7 @@
           </AmortizationData>
         </Amortizations>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -793,7 +793,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0500000007</Rate>
+            <Rate>0.05</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -831,7 +831,7 @@
             </AmortizationData>
           </Amortizations>
           <Notionals>
-            <Notional>10000000</Notional>
+            <Notional>10000000.000000</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -849,7 +849,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0500000007</Rate>
+              <Rate>0.05</Rate>
             </Rates>
           </FixedLegData>
         </LegData>
@@ -892,7 +892,7 @@
           </AmortizationData>
         </Amortizations>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -913,7 +913,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0.00999999978</Spread>
+            <Spread>0.01</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -951,7 +951,7 @@
             </AmortizationData>
           </Amortizations>
           <Notionals>
-            <Notional>10000000</Notional>
+            <Notional>10000000.000000</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -972,7 +972,7 @@
             <IsInArrears>false</IsInArrears>
             <FixingDays>2</FixingDays>
             <Spreads>
-              <Spread>0.00999999978</Spread>
+              <Spread>0.01</Spread>
             </Spreads>
           </FloatingLegData>
         </LegData>
@@ -1023,7 +1023,7 @@
           </AmortizationData>
         </Amortizations>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -1041,7 +1041,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0500000007</Rate>
+            <Rate>0.05</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -1087,7 +1087,7 @@
             </AmortizationData>
           </Amortizations>
           <Notionals>
-            <Notional>10000000</Notional>
+            <Notional>10000000.000000</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -1105,7 +1105,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0500000007</Rate>
+              <Rate>0.05</Rate>
             </Rates>
           </FixedLegData>
         </LegData>
@@ -1139,7 +1139,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>ACT/ACT</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -1157,7 +1157,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0500000007</Rate>
+            <Rate>0.05</Rate>
           </Rates>
         </FixedLegData>
       </LegData>

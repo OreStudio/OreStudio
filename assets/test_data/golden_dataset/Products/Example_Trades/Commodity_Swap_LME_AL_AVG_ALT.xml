@@ -29,7 +29,7 @@
         </ScheduleData>
         <CommodityFixedLegData>
           <Prices>
-            <Price>2075</Price>
+            <Price>2075.00</Price>
           </Prices>
         </CommodityFixedLegData>
       </LegData>

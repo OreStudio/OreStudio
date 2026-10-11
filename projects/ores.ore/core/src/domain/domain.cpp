@@ -943,6 +943,14 @@ inline std::string get_string(double v) {
     return ss.str();
 }
 
+inline std::string get_string(float v, const std::string& lexical) {
+    return lexical.empty() ? get_string(v) : lexical;
+}
+
+inline std::string get_string(double v, const std::string& lexical) {
+    return lexical.empty() ? get_string(v) : lexical;
+}
+
 inline void write_file(const std::string& filePath, const std::string& content) {
     std::ofstream file;
     file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
@@ -68268,7 +68276,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_legData_Notionals_t_Notional_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -68430,7 +68438,7 @@ XSDCPP_MAYBE_UNUSED void _serialize__CashflowData_t_Cashflow_t_Amount_t(
     w.startElement(name);
     if ((&v)->date)
         w.writeAttribute("date", *(&v)->date);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -68455,7 +68463,7 @@ XSDCPP_MAYBE_UNUSED void _serialize__FixedLegData_t_Rates_t_Rate_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -68504,7 +68512,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_floatWithAttribute(xsdcpp::XmlWriter& w,
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -68545,7 +68553,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_tradeLevelFixings_Fixing_t(
     w.startElement(name);
     if ((&v)->fixingDate)
         w.writeAttribute("fixingDate", *(&v)->fixingDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -68642,7 +68650,7 @@ XSDCPP_MAYBE_UNUSED void _serialize__RangeAccrualLegData_t_Coupons_t_Coupon_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -68661,7 +68669,7 @@ XSDCPP_MAYBE_UNUSED void _serialize__RangeAccrualLegData_t_UpperBounds_t_UpperBo
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -68680,7 +68688,7 @@ XSDCPP_MAYBE_UNUSED void _serialize__RangeAccrualLegData_t_LowerBounds_t_LowerBo
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -68717,7 +68725,7 @@ XSDCPP_MAYBE_UNUSED void _serialize__CPILegData_t_Rates_t_Rate_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -69315,7 +69323,7 @@ XSDCPP_MAYBE_UNUSED void _serialize__ZeroCouponFixedLegData_t_Rates_t_Rate_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -69364,7 +69372,7 @@ XSDCPP_MAYBE_UNUSED void _serialize__EquityMarginLegData_t_Rates_t_Rate_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -69463,7 +69471,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_quantitiesType_Quantity_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -69481,7 +69489,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_pricesType_Price_t(xsdcpp::XmlWriter& w,
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -69658,7 +69666,7 @@ _serialize_loadFactorType(xsdcpp::XmlWriter& w, const char* name, const domain::
         w.writeAttribute("unit", *(&v)->unit);
     if ((&v)->dst)
         w.writeAttribute("dst", to_string(*(&v)->dst));
-    w.writeText(xsdcpp::get_string(static_cast<double>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<double>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -70119,7 +70127,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_optionData_ExerciseFees_t_ExerciseFee_t(
         w.writeAttribute("startDate", *(&v)->startDate);
     if ((&v)->currency)
         w.writeAttribute("currency", *(&v)->currency);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -70376,7 +70384,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_stFreeStyleNumber(xsdcpp::XmlWriter& w,
     w.startElement(name);
     if ((&v)->type)
         w.writeAttribute("type", to_string(*(&v)->type));
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -70891,7 +70899,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_legData_capfloor_Notionals_t_Notional_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -70947,7 +70955,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_capFloorData_Caps_t_Cap_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -70965,7 +70973,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_capFloorData_Floors_t_Floor_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -72690,7 +72698,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_cbCallData_Prices_t_Price_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -72764,7 +72772,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_cbCallData_TriggerRatios_t_TriggerRatio_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -72892,7 +72900,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_cbConversionData_ConversionRatios_t_Conversi
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -72921,7 +72929,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_cbConversionData_FixedAmountConversion_t_Amo
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -72973,7 +72981,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_cbContingentConversionData_Barriers_t_Barrie
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -73049,7 +73057,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_cbConversionResetData_Thresholds_t_Threshold
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -73068,7 +73076,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_cbConversionResetData_Gearings_t_Gearing_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -73087,7 +73095,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_cbConversionResetData_Floors_t_Floor_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -73106,7 +73114,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_cbConversionResetData_GlobalFloors_t_Gloobal
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -73244,7 +73252,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_cbDividendProtectionData_Thresholds_t_Thresh
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -73322,7 +73330,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_callableBondCallData_Prices_t_Price_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -73891,7 +73899,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_flexiSwapData_LowerNotionalBounds_t_Notional
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -73944,7 +73952,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_tranche_Notionals_t_Notional_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -74480,7 +74488,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_tarfData2_Strikes_t_Strike_t(
     w.startElement(name);
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -87846,7 +87854,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexType_RebasingEvents_t_Even
     const domain::zeroInflationIndexType_RebasingEvents_t_Event_t& v) {
     w.startElement(name);
     w.writeAttribute("date", (&v)->date);
-    w.writeText(xsdcpp::get_string(static_cast<double>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<double>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -89142,7 +89150,7 @@ _serialize_shiftSizeEntry(xsdcpp::XmlWriter& w, const char* name, const domain::
     w.startElement(name);
     if ((&v)->key)
         w.writeAttribute("key", *(&v)->key);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -89441,7 +89449,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_swaptionvolatility_Shifts_t_Shift_t(
         w.writeAttribute("expiry", *(&v)->expiry);
     if ((&v)->term)
         w.writeAttribute("term", *(&v)->term);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 
@@ -89513,7 +89521,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_yieldvolatility_Shifts_t_Shift_t(
         w.writeAttribute("expiry", *(&v)->expiry);
     if ((&v)->term)
         w.writeAttribute("term", *(&v)->term);
-    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.writeText(xsdcpp::get_string(static_cast<float>(v), v.lexical()));
     w.endElement(name);
 }
 

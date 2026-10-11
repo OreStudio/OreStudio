@@ -50,7 +50,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>-0.00549999997</Rate>
+              <Rate>-0.0055</Rate>
             </Rates>
           </FixedLegData>
         </LegData>

@@ -17,7 +17,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -31,7 +31,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0209999997</Rate>
+            <Rate>0.021</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -42,7 +42,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -59,7 +59,7 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.000000</Spread>
           </Spreads>
         </CMSLegData>
       </LegData>

@@ -43,7 +43,7 @@
         </ScheduleData>
         <CommodityFixedLegData>
           <Prices>
-            <Price>3.00999999</Price>
+            <Price>3.01</Price>
           </Prices>
           <CommodityPayRelativeTo>CalculationPeriodStartDate</CommodityPayRelativeTo>
         </CommodityFixedLegData>

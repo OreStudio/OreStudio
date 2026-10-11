@@ -49,7 +49,7 @@
             <Notional startDate="2031-12-28">300000</Notional>
             <Notional startDate="2032-12-27">200000</Notional>
             <Notional startDate="2033-12-27">100000</Notional>
-            <Notional startDate="2034-12-27">0</Notional>
+            <Notional startDate="2034-12-27">000000</Notional>
           </Notionals>
         </Tranche>
         <ScheduleData>
@@ -95,7 +95,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.00400000019</Rate>
+            <Rate>0.0040</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -134,10 +134,10 @@
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0.00499999989</Spread>
+            <Spread>0.0050</Spread>
           </Spreads>
           <Floors>
-            <Floor>0</Floor>
+            <Floor>0.0</Floor>
           </Floors>
         </FloatingLegData>
       </LegData>

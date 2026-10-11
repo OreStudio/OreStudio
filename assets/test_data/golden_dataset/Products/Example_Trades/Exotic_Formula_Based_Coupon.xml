@@ -17,7 +17,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -31,7 +31,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0112439999</Rate>
+            <Rate>0.011244</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -42,7 +42,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -79,7 +79,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -93,7 +93,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0112439999</Rate>
+            <Rate>0.011244</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -104,7 +104,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -148,7 +148,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>ACT/ACT</DayCounter>
         <Notionals>
-          <Notional>10000000</Notional>
+          <Notional>10000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>

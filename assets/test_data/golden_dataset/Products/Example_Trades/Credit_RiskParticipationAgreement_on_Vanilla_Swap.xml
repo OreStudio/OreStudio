@@ -24,7 +24,7 @@
           <Currency>USD</Currency>
           <CashflowData>
             <Cashflow>
-              <Amount date="2025-04-19">121171.719</Amount>
+              <Amount date="2025-04-19">121171.72</Amount>
             </Cashflow>
           </CashflowData>
         </LegData>
@@ -61,7 +61,7 @@
           <FloatingLegData>
             <Index>USD-LIBOR-3M</Index>
             <Spreads>
-              <Spread>0.00499999989</Spread>
+              <Spread>0.0050</Spread>
             </Spreads>
           </FloatingLegData>
         </LegData>
@@ -95,7 +95,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0399999991</Rate>
+              <Rate>0.04</Rate>
             </Rates>
           </FixedLegData>
         </LegData>

@@ -31,7 +31,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0337999985</Rate>
+            <Rate>0.0338</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -62,7 +62,7 @@
           <HasSubPeriods>true</HasSubPeriods>
           <IncludeSpread>true</IncludeSpread>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.000000</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

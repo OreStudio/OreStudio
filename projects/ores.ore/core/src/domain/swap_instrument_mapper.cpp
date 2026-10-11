@@ -401,6 +401,16 @@ currencyCode parse_currency_code(const std::string& s) {
 }
 
 /**
+ * Sets a money leaf to a stored decimal. The leaf keeps the decimal's own
+ * digits, so the exporter writes them and not the nearest float's.
+ */
+template <typename Leaf>
+void set_exact(Leaf& leaf, const ores::utility::decimal::decimal& value) {
+    static_cast<float&>(leaf) = static_cast<float>(value.to_double());
+    leaf.lexical(value.to_string());
+}
+
+/**
  * One notional child of a leg, with the provenance every imported row carries.
  */
 trading::domain::swap_leg_amount make_leg_amount(int leg_number,
@@ -507,6 +517,7 @@ Enum parse_code(const std::string& text, int count, Enum fallback) {
 
 constexpr int bool__count = 13;
 constexpr int business_day_convention_count = 27;
+constexpr int day_counter_count = 71;
 constexpr int date_rule_count = 16;
 constexpr int option_pay_relative_to_count = 2;
 constexpr int settlement_method_count = 4;
@@ -664,16 +675,16 @@ void append_schedule(trading::domain::swap_instrument_data& result,
 // alone, while the schema states a cap/floor's strikes as two lists. The
 // first cap, or the first floor when no cap is stated, is the row.
 void append_capfloor_strike(trading::domain::swap_instrument_data& result, const capFloorData& cf) {
-    std::optional<double> value;
+    std::optional<ores::utility::decimal::decimal> value;
     if (cf.Caps && !cf.Caps->Cap.empty())
-        value = static_cast<double>(cf.Caps->Cap.front());
+        value = exact_decimal(cf.Caps->Cap.front());
     else if (cf.Floors && !cf.Floors->Floor.empty())
-        value = static_cast<double>(cf.Floors->Floor.front());
+        value = exact_decimal(cf.Floors->Floor.front());
     if (!value)
         return;
 
     trading::domain::instrument_strike row;
-    row.bare_value = ores::utility::decimal::decimal::from_double(*value).value();
+    row.bare_value = *value;
     stamp_child_audit(row);
     result.strikes.push_back(std::move(row));
 }
@@ -1466,11 +1477,17 @@ legData swap_instrument_mapper::reverse_leg(
     ld.Payer = tm.payer.value_or(false);
     ld.Currency = tm.currency;
 
+    if (!tm.day_count_fraction_code.empty())
+        ld.DayCounter = parse_code(tm.day_count_fraction_code, day_counter_count, dayCounter::A360);
+    if (!tm.business_day_convention_code.empty())
+        ld.PaymentConvention = parse_code(
+            tm.business_day_convention_code, business_day_convention_count, businessDayConvention::MF);
+
     if (!amounts.empty()) {
         legData_Notionals_t n;
         for (const auto& a : amounts) {
             legData_Notionals_t_Notional_t v;
-            static_cast<float&>(v) = static_cast<float>(a.amount.to_double());
+            set_exact(v, a.amount);
             if (a.start_date)
                 v.startDate = to_ore_date(*a.start_date);
             n.Notional.push_back(v);
@@ -1494,7 +1511,7 @@ legData swap_instrument_mapper::reverse_leg(
             if (r.rate_role != "fixed")
                 continue;
             _FixedLegData_t_Rates_t_Rate_t rate;
-            static_cast<float&>(rate) = static_cast<float>(r.value.to_double());
+            set_exact(rate, r.value);
             fld.Rates.Rate.push_back(rate);
         }
         ldt.FixedLegData = std::move(fld);
@@ -1506,7 +1523,7 @@ legData swap_instrument_mapper::reverse_leg(
             if (r.rate_role != "spread")
                 continue;
             floatWithAttribute sv;
-            static_cast<float&>(sv) = static_cast<float>(r.value.to_double());
+            set_exact(sv, r.value);
             sp.Spread.push_back(sv);
         }
         if (!sp.Spread.empty())
@@ -1686,7 +1703,13 @@ trade swap_instrument_mapper::reverse_capfloor(
 
         cf.LegData.Currency = parse_currency_code(tm.currency);
 
-        cf.LegData.DayCounter = dayCounter::ACT_365;
+        cf.LegData.DayCounter = tm.day_count_fraction_code.empty() ?
+            dayCounter::ACT_365 :
+            parse_code(tm.day_count_fraction_code, day_counter_count, dayCounter::ACT_365);
+        if (!tm.business_day_convention_code.empty())
+            cf.LegData.PaymentConvention = parse_code(tm.business_day_convention_code,
+                                                      business_day_convention_count,
+                                                      businessDayConvention::MF);
         // The stored schedule is the document's own; a row written before
         // the schedule children existed falls back to the header's dates.
         if (const auto stored = schedule_for(schedules, schedule_dates, "swap", 1, "schedule"))
@@ -1699,7 +1722,7 @@ trade swap_instrument_mapper::reverse_capfloor(
         if (!amounts.empty()) {
             for (const auto& amount : amounts) {
                 legData_capfloor_Notionals_t_Notional_t nv;
-                static_cast<float&>(nv) = static_cast<float>(amount.amount.to_double());
+                set_exact(nv, amount.amount);
                 cf.LegData.Notionals.Notional.push_back(nv);
             }
         }
@@ -1712,7 +1735,7 @@ trade swap_instrument_mapper::reverse_capfloor(
                 if (rate.rate_role != "spread")
                     continue;
                 floatWithAttribute sv;
-                static_cast<float&>(sv) = static_cast<float>(rate.value.to_double());
+                set_exact(sv, rate.value);
                 sp.Spread.push_back(sv);
             }
             if (!sp.Spread.empty())
@@ -1726,7 +1749,7 @@ trade swap_instrument_mapper::reverse_capfloor(
     if (!strikes.empty() && strikes.front().bare_value) {
         capFloorData_Caps_t caps;
         capFloorData_Caps_t_Cap_t cap;
-        static_cast<float&>(cap) = static_cast<float>(strikes.front().bare_value->to_double());
+        set_exact(cap, *strikes.front().bare_value);
         caps.Cap.push_back(cap);
         cf.Caps = std::move(caps);
     }

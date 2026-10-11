@@ -28,7 +28,6 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <optional>
 #include <string_view>
 
 namespace ores::trading::domain {

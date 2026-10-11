@@ -123,7 +123,7 @@
             <IsInArrears>false</IsInArrears>
             <FixingDays>2</FixingDays>
             <Spreads>
-              <Spread>0.00499999989</Spread>
+              <Spread>0.005</Spread>
             </Spreads>
           </FloatingLegData>
         </LegData>

@@ -37,7 +37,7 @@
           <PaymentConvention>F</PaymentConvention>
           <DayCounter>A360</DayCounter>
           <Notionals>
-            <Notional>10000000</Notional>
+            <Notional>10000000.000000</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -51,7 +51,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.00499999989</Rate>
+              <Rate>0.005</Rate>
             </Rates>
           </FixedLegData>
         </LegData>

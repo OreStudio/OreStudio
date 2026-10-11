@@ -152,6 +152,49 @@ def _stash(text: str, call: str) -> tuple[str, int]:
     return pattern.subn(repl, text)
 
 
+# The writer prints a float with nine significant digits, which turns 0.0065
+# into 0.00650000013. A leaf that carries its own digits writes those instead,
+# so the digits that enter at the boundary are the digits that leave.
+GET_STRING_DOUBLE = """inline std::string get_string(double v) {
+    std::ostringstream ss;
+    ss << std::setprecision(17) << v;
+    return ss.str();
+}
+"""
+GET_STRING_LEXICAL = """
+inline std::string get_string(float v, const std::string& lexical) {
+    return lexical.empty() ? get_string(v) : lexical;
+}
+
+inline std::string get_string(double v, const std::string& lexical) {
+    return lexical.empty() ? get_string(v) : lexical;
+}
+"""
+WRITE_FLOAT_OLD = "xsdcpp::get_string(static_cast<float>(v))"
+WRITE_FLOAT_NEW = "xsdcpp::get_string(static_cast<float>(v), v.lexical())"
+WRITE_DOUBLE_OLD = "xsdcpp::get_string(static_cast<double>(v))"
+WRITE_DOUBLE_NEW = "xsdcpp::get_string(static_cast<double>(v), v.lexical())"
+
+
+def _patch_writer(text: str) -> tuple[str, int]:
+    if GET_STRING_DOUBLE not in text:
+        raise AnchorError("domain.cpp: the original get_string(double) definition is missing")
+    if GET_STRING_LEXICAL not in text:
+        text = text.replace(GET_STRING_DOUBLE, GET_STRING_DOUBLE + GET_STRING_LEXICAL, 1)
+    text = text.replace(WRITE_FLOAT_OLD, WRITE_FLOAT_NEW)
+    text = text.replace(WRITE_DOUBLE_OLD, WRITE_DOUBLE_NEW)
+    n_write = text.count(WRITE_FLOAT_NEW) + text.count(WRITE_DOUBLE_NEW)
+    if n_write == 0:
+        raise AnchorError("domain.cpp: a floating-point writer anchor is missing")
+    return text, n_write
+
+
+def _unpatch_writer(text: str) -> str:
+    text = text.replace(GET_STRING_LEXICAL, "")
+    text = text.replace(WRITE_FLOAT_NEW, WRITE_FLOAT_OLD)
+    return text.replace(WRITE_DOUBLE_NEW, WRITE_DOUBLE_OLD)
+
+
 def patch_cpp(text: str) -> tuple[str, dict[str, int]]:
     if CPP_DECL_ORIGINAL not in text:
         raise AnchorError("domain.cpp: the original set_float/set_double declarations are missing")
@@ -174,13 +217,20 @@ def patch_cpp(text: str) -> tuple[str, dict[str, int]]:
             f"domain.cpp: {n_stash} lexical stashes for {n_float + n_double} setters; "
             "the patch is half-applied"
         )
-    return text, {"float_setters": n_float, "double_setters": n_double}
+    text, n_write = _patch_writer(text)
+    if n_write != n_float + n_double:
+        raise AnchorError(
+            f"domain.cpp: {n_write} lexical writers for {n_float + n_double} setters; "
+            "a floating-point serializer has a shape the patch does not know"
+        )
+    return text, {"float_setters": n_float, "double_setters": n_double, "writers": n_write}
 
 
 def unpatch_cpp(text: str) -> str:
     if STASH not in text:
         raise AnchorError("domain.cpp: no lexical stashes found to un-patch")
-    return re.sub(r"[ \t]*" + re.escape(STASH) + r"\n", "", text)
+    text = re.sub(r"[ \t]*" + re.escape(STASH) + r"\n", "", text)
+    return _unpatch_writer(text)
 
 
 # ---------------------------------------------------------------------------
@@ -203,7 +253,8 @@ def apply_patch(xsd_path: Path, cpp_path: Path, verbose: bool = True) -> dict[st
         print(f"{xsd_path}: {xsd_state}", file=sys.stderr)
         print(
             f"{cpp_path}: {cpp_state} "
-            f"({counts['float_setters']} float and {counts['double_setters']} double setters)",
+            f"({counts['float_setters']} float and {counts['double_setters']} double setters, "
+            f"{counts['writers']} writers)",
             file=sys.stderr,
         )
     return counts

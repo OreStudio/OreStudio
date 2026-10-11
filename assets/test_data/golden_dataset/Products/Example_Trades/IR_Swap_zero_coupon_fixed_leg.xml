@@ -17,7 +17,7 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>184500</Notional>
+          <Notional>184500.0000</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
@@ -31,7 +31,7 @@
         </ScheduleData>
         <ZeroCouponFixedLegData>
           <Rates>
-            <Rate>0.0164999999</Rate>
+            <Rate>0.016500</Rate>
           </Rates>
           <Compounding>Compounded</Compounding>
         </ZeroCouponFixedLegData>

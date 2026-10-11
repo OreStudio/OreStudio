@@ -35,7 +35,7 @@
           <InitialMarginFactor>0.120999999</InitialMarginFactor>
           <Multiplier>10</Multiplier>
           <Rates>
-            <Rate>0.00300000003</Rate>
+            <Rate>0.003</Rate>
           </Rates>
           <EquityLegData>
             <ReturnType>Total</ReturnType>

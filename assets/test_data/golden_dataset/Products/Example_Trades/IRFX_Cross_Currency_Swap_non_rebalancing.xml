@@ -36,7 +36,7 @@
         <FloatingLegData>
           <Index>EUR-EURIBOR-6M</Index>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -66,7 +66,7 @@
         <FloatingLegData>
           <Index>USD-LIBOR-3M</Index>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -109,7 +109,7 @@
         <FloatingLegData>
           <Index>EUR-EURIBOR-6M</Index>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -139,7 +139,7 @@
         <FloatingLegData>
           <Index>USD-LIBOR-3M</Index>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

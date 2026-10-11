@@ -2,13 +2,13 @@
 :ID: 1EFA46D4-8562-4C63-A1D3-4CF33551BEB2
 :END:
 #+title: Task: Prove the rates round trip over the corpus
-#+description: Run the ORE round trip over the family's corpus at the new shape, write the migration script that moves the rows of the legacy tables into the header and the facts, and add the repository, service and eventing coverage the family has none of. (Staging unit 8; findings R9, R14.)
+#+description: Run the ORE round trip over the family's corpus at the new shape, and add the repository, service and eventing coverage the family has none of. (Staging unit 8; findings R9, R14.)
 #+type: task
 #+level: s1
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/prove-the-rates-round-trip-over-the-corpus
-#+pr:
+#+pr: 3117
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -20,39 +20,38 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The family is proved at its new shape: the corpus round-trips, a database holding rates rows migrates to the header and the facts, and the coverage the family lacked exists.
+The family is proved at its new shape: the corpus round-trips with equal family rows, and the coverage the family lacked exists. No migration is written: the project recreates the database (see Decisions on the story).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
 
 * Acceptance
 
 - The ORE round trip runs over the family's corpus at the new shape and every document comes back equivalent.
-- A migration script moves the rows of the legacy rates tables into the header and the fact tables, and a database holding rates rows survives the move.
+- No migration script exists, by the project rule that a schema change recreates the database.
 - The eventing integration test for the rates instruments is generated, and the family's repository and service coverage exists where it had none.
-- The migration's row counts and the round trip's documents are recorded as measurements with their commands.
+- The round trip's documents and trades are recorded as measurements with their commands.
 
 * Plan
 
-1. *The migration script.* One hand-written artefact: read each legacy table
-   and write the header row and the fact row, keyed by the trade, with the
-   header written first because the facts and children join it by that key.
-   The legacy tables are the nine the design's mapping table lists.
-2. *The corpus round trip.* Run the family's corpus at the new shape and
-   record the document count with the command that produced it.
-3. *The eventing test.* Generate the rates instruments' eventing integration
+1. *The corpus round trip.* Import every rates trade of the corpus, export it
+   on its own, import it again and compare the family rows the two imports
+   produce. Record the document and trade counts with the command.
+2. *The eventing test.* Generate the rates instruments' eventing integration
    test as the other entities' are generated.
-4. *The coverage gap.* Add the repository and service cases the family has
-   none of, guided by what the round trip and the migration exercise.
-5. *Measurements.* The migration's row counts and the corpus size go in this
+3. *The coverage gap.* Check the repository and service cases the family has.
+   The generated eventing test of each table also writes a row, reads it
+   through the service and updates it, so the ten tables have that coverage
+   once the eventing tests exist. No further case was needed.
+4. *Measurements.* The corpus counts go in this
    page's Measurements table with their commands, as the header task's did.
 
 * Measurements
@@ -67,14 +66,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Rates documents in the corpus | 47 | =ores.ore.core.tests "every rates trade in the corpus comes back as the same family rows"= | b50b0acba4 |
+| Rates trades in those documents | 70 | same | b50b0acba4 |
+| Documents whose family rows change on the round trip | 0 | same; the known-differences set is empty | b50b0acba4 |
+| ORE core suite | 646 cases, 482,954 assertions, all pass | =ores.ore.core.tests= | the PR head |
+| Trading core suite | 152 cases, 1,080 assertions, all pass | =ores.trading.core.tests= | c82f06be8a |
+| Rates eventing tests | 10 added; 54 eventing cases pass in all | =ores.trading.core.tests "[eventing]"= | c82f06be8a |
+| Golden files regenerated for the digits change | 73 of 132 | =ORES_BOOTSTRAP_GOLDENS=1 ores.ore.core.tests every_example_trade_round_trips_through_a_golden= | the PR head |
 
 * Notes
 
-- This unit closes story acceptance clause 4 and carries the artefact a
-  database holding rates rows needs; unit 3 shipped the new shape without it,
-  because a fresh database is created at the new shape and the environments
-  are recreated rather than migrated.
+- The migration the plan first named is dropped. The project memory
+  "no migrations, trash and recreate" says a schema change edits the create
+  scripts and the database is recreated; the operator confirmed that for this
+  unit.
 - It is last because it proves a shape the other units settle; running it
   earlier would prove a tree that is about to change.
 
@@ -93,12 +98,51 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3117][#3117]] | [ore,trading] Prove the rates round trip over the corpus |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The round trip dropped the leg day count and payment convention | swap_instrument_mapper.cpp | accept | Fixed in the reverse leg and the cap/floor reverse; found by the corpus test. |
+| 2 | The nine fact-table eventing tests wrote with no session party | the nine fact models | accept | Each model declares =party_scoped_writes=; the tests are regenerated. |
+| 3 | The rate instrument generator drew start and maturity independently | ores.trading.rate_instruments.org | accept | =generator_expr= makes the maturity the start plus 365 days. |
+| 4 | The flexi header declared an unused =<optional>= | ores.trading.flexi_swap_instrument.org | accept | Removed from the model; the header is regenerated. |
+| 5 | A rates document that stops importing drops out of the walk unnoticed | xml_rates_corpus_roundtrip_tests.cpp | accept | The test pins 47 documents and 70 trades. |
+| 6 | =day_counter_count= is a magic number | swap_instrument_mapper.cpp | decline | It follows the neighbouring =*_count= constants, and the enum has no size sentinel. |
+| 7 | =parse_code= falls back silently on an unknown code | swap_instrument_mapper.cpp | decline | The pattern existed before this task; the corpus test catches a document that hits it. |
+| 8 | =REQUIRE= in the loop leaves the scratch directory on failure | xml_rates_corpus_roundtrip_tests.cpp | decline | The next run clears the directory first. |
+| 9 | Confirm CI initialises =external/ore= | xml_rates_corpus_roundtrip_tests.cpp | decline | The path is vendored in the repository, and CI does not run the tests. |
+| 10 | After the rebase the swap leg rates differed on the round trip (0.0065 came back as 0.00650000013) | domain.cpp, swap_instrument_mapper.cpp | accept | Main made the rate an exact decimal. The writer printed a float with nine digits. The writer now prints a leaf's own digits, the reverse mapper and the stress mapper hand them over, and the goldens are regenerated. |
 
 * Result
+
+The rates family round-trips over the whole ORE corpus. All 47 rates
+documents (70 trades) come back as the same family rows after an import, an
+export of the trade on its own and a second import. The comparison is of the
+rows the family stores, so a field the mapper drops shows as a difference. It
+found two losses, the leg day count and payment convention, and the mapper now
+carries both. The set of known differences is empty.
+
+The ten rates tables have a generated eventing integration test. Each also
+writes, reads and updates a row through its service, which closes the
+repository and service gap. The generated tests exposed two defects, now
+fixed in the models: the fact tables lacked the session party, and the header
+generator could draw a maturity before the start.
+
+No migration is written, by the project rule that a schema change recreates
+the database.
+
+Acceptance met: the corpus round trip is equivalent, there is no migration,
+the eventing tests are generated, and the measurements carry their commands.
+
+After the rebase onto main, which holds money as an exact decimal, the proof
+failed on 20 documents: the exporter wrote a rate as a nine-digit float, so
+0.0065 came back as 0.00650000013. The exporter now writes the digits a leaf
+carries. The reapply script patches the generated writer, the rates and
+stress test reverse mappers set the digits on the leaves, and 73 golden files
+now hold the document's own digits. The FRA's notional and strike are bare
+floats in the ORE binding, so they carry no digits and are not covered. That
+is a separate defect, noted for a follow-up task. The new digits tests also
+found that a cap or floor strike was stored through a double, as
+0.02500000037252903 for 0.025. It is now read from the document's digits.

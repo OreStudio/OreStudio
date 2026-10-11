@@ -24,7 +24,7 @@
           <Currency>USD</Currency>
           <CashflowData>
             <Cashflow>
-              <Amount date="2023-04-25">121171.719</Amount>
+              <Amount date="2023-04-25">121171.72</Amount>
             </Cashflow>
           </CashflowData>
         </LegData>
@@ -68,7 +68,7 @@
           <FloatingLegData>
             <Index>EUR-EURIBOR-3M</Index>
             <Spreads>
-              <Spread>0</Spread>
+              <Spread>0.0</Spread>
             </Spreads>
           </FloatingLegData>
         </LegData>
@@ -93,7 +93,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0500000007</Rate>
+              <Rate>0.05</Rate>
             </Rates>
           </FixedLegData>
         </LegData>

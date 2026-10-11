@@ -68,7 +68,7 @@
                 <Currency>USD</Currency>
                 <CashflowData>
                   <Cashflow>
-                    <Amount date="2034-11-17">28641476</Amount>
+                    <Amount date="2034-11-17">28641475.824680243</Amount>
                   </Cashflow>
                 </CashflowData>
               </LegData>

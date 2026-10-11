@@ -17,7 +17,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>1/1</DayCounter>
         <Notionals>
-          <Notional>800000000</Notional>
+          <Notional>800000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Dates>
@@ -35,7 +35,7 @@
             <IsInArrears>true</IsInArrears>
             <FixingDays>2</FixingDays>
             <Spreads>
-              <Spread>0</Spread>
+              <Spread>0.0</Spread>
             </Spreads>
           </CMSSpreadLegData>
           <CallPosition>Long</CallPosition>
@@ -55,7 +55,7 @@
         <PaymentConvention>F</PaymentConvention>
         <DayCounter>1/1</DayCounter>
         <Notionals>
-          <Notional>800000000</Notional>
+          <Notional>800000000.000000</Notional>
         </Notionals>
         <ScheduleData>
           <Dates>
@@ -72,7 +72,7 @@
           <IsInArrears>true</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread>0</Spread>
+            <Spread>0.0</Spread>
           </Spreads>
         </CMSSpreadLegData>
       </LegData>

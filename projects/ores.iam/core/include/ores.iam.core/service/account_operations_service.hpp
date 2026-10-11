@@ -550,9 +550,7 @@ private:
      * A failure to record is logged and swallowed: the lock or the unlock has
      * been written, and the event is the trail of it, not part of it.
      */
-    void record_lock_event(bool locked,
-                           const domain::account& account,
-                           const std::string& detail);
+    void record_lock_event(bool locked, const domain::account& account, const std::string& detail);
 
     /**
      * @brief Reads the open credential row of an account, if it has one.

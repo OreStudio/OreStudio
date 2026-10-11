@@ -319,7 +319,7 @@ public:
      * requirement and no permission is checked.
      */
     messaging::permission_page_response read_own_permissions(const boost::uuids::uuid& account_id,
-                                                              const permission_query& query);
+                                                             const permission_query& query);
 
     /**
      * @brief Reads one page of what another account's roles let it do.

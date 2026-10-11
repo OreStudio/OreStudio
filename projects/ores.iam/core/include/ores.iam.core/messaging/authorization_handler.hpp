@@ -315,12 +315,14 @@ public:
             if (!caller_id) {
                 reply(nats_,
                       msg,
-                      permission_page_response{
-                          .result = failed_result(std::string{no_account_answer})});
+                      permission_page_response{.result =
+                                                   failed_result(std::string{no_account_answer})});
                 return;
             }
-            const service::permission_query query{
-                .area = req->area, .search = req->search, .offset = req->offset, .limit = req->limit};
+            const service::permission_query query{.area = req->area,
+                                                  .search = req->search,
+                                                  .offset = req->offset,
+                                                  .limit = req->limit};
             reply(nats_, msg, svc.read_account_permissions(*caller_id, sg(req->account_id), query));
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
@@ -355,12 +357,14 @@ public:
             if (!caller_id) {
                 reply(nats_,
                       msg,
-                      permission_page_response{
-                          .result = failed_result(std::string{no_account_answer})});
+                      permission_page_response{.result =
+                                                   failed_result(std::string{no_account_answer})});
                 return;
             }
-            const service::permission_query query{
-                .area = req->area, .search = req->search, .offset = req->offset, .limit = req->limit};
+            const service::permission_query query{.area = req->area,
+                                                  .search = req->search,
+                                                  .offset = req->offset,
+                                                  .limit = req->limit};
             reply(nats_, msg, svc.read_own_permissions(*caller_id, query));
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
@@ -396,8 +400,8 @@ public:
             if (!caller_id) {
                 reply(nats_,
                       msg,
-                      permission_page_response{
-                          .result = failed_result(std::string{no_account_answer})});
+                      permission_page_response{.result =
+                                                   failed_result(std::string{no_account_answer})});
                 return;
             }
             const service::permission_query query{.area = req->area,
@@ -481,10 +485,10 @@ public:
             service::authorization_service svc(ctx);
             const auto caller_id = svc.caller_account();
             if (!caller_id) {
-                reply(nats_,
-                      msg,
-                      role_holders_response{
-                          .result = failed_result(std::string{no_account_answer})});
+                reply(
+                    nats_,
+                    msg,
+                    role_holders_response{.result = failed_result(std::string{no_account_answer})});
                 return;
             }
             reply(nats_,

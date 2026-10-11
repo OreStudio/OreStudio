@@ -167,8 +167,8 @@ private:
             return;
         }
         try {
-            if (const auto cached =
-                    ores::service::messaging::check_step_idempotency(nats_, wf->step_id, wf->tenant_id)) {
+            if (const auto cached = ores::service::messaging::check_step_idempotency(
+                    nats_, wf->step_id, wf->tenant_id)) {
                 ores::service::messaging::publish_step_completion(nats_,
                                                                   wf->step_id,
                                                                   wf->instance_id,

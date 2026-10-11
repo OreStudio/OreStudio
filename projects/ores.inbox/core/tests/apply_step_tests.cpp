@@ -26,8 +26,8 @@
 #include "ores.inbox.core/service/notification_center.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
@@ -72,8 +72,8 @@ TEST_CASE("the_person_who_asked_is_told_how_the_apply_ended", tags) {
     });
     REQUIRE(it != page.notifications.end());
     CHECK(it->kind_code == "inbox.approval_decided");
-    const auto state = std::ranges::find_if(
-        it->arguments, [](const auto& a) { return a.name == "state"; });
+    const auto state =
+        std::ranges::find_if(it->arguments, [](const auto& a) { return a.name == "state"; });
     REQUIRE(state != it->arguments.end());
     CHECK(state->value == "apply_failed");
 }

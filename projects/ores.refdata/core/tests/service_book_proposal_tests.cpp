@@ -17,9 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "book_proposal_fixtures.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.inbox.core/repository/approval_policy_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.refdata.api/generators/book_change_generator.hpp"
@@ -32,10 +33,9 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.refdata.core/service/book_service.hpp"
 #include "ores.refdata.service/service/book_proposal.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "book_proposal_fixtures.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -452,7 +452,8 @@ TEST_CASE("only_the_database_refusing_a_write_is_a_refusal_and_not_the_infrastru
     // The server ends the connection.
     CHECK(is_infrastructure_failure("FATAL:  terminating connection due to administrator command"));
     // The server answers, so it is a refusal, whatever the text goes on to say.
-    CHECK_FALSE(is_infrastructure_failure("Executing INSERT failed: ERROR:  Invalid currency: QQQ"));
+    CHECK_FALSE(
+        is_infrastructure_failure("Executing INSERT failed: ERROR:  Invalid currency: QQQ"));
     CHECK_FALSE(is_infrastructure_failure(
         "Executing INSERT failed: ERROR:  Invalid name: lost connection timed out"));
 }

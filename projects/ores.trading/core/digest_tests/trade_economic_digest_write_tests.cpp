@@ -309,7 +309,8 @@ family make_family(ores::trading::domain::instrument_table table,
                    std::string trade_type,
                    Generate generate,
                    Adjust adjust = {}) {
-    return {table, trade_type,
+    return {table,
+            trade_type,
             [trade_type, generate, adjust](fixture& f,
                                            const boost::uuids::uuid& trade_id,
                                            const boost::uuids::uuid& activity_id) {
@@ -326,53 +327,92 @@ std::vector<family> families() {
     namespace gen = ores::trading::generators;
     namespace repo = ores::trading::repository;
     return {
-        make_family<repo::bond_instrument_repository>(
-            instrument_table::bond_instrument, "Bond", &gen::generate_synthetic_bond_instrument,
-            with_a_bond_issue{}),
+        make_family<repo::bond_instrument_repository>(instrument_table::bond_instrument,
+                                                      "Bond",
+                                                      &gen::generate_synthetic_bond_instrument,
+                                                      with_a_bond_issue{}),
         make_family<repo::commodity_instrument_repository>(
-            instrument_table::commodity_instrument, "CommodityForwardVolatilityAgreement", &gen::generate_synthetic_commodity_instrument),
+            instrument_table::commodity_instrument,
+            "CommodityForwardVolatilityAgreement",
+            &gen::generate_synthetic_commodity_instrument),
         make_family<repo::composite_instrument_repository>(
-            instrument_table::composite_instrument, "CompositeTrade", &gen::generate_synthetic_composite_instrument),
-        make_family<repo::credit_instrument_repository>(
-            instrument_table::credit_instrument, "RiskParticipationAgreement", &gen::generate_synthetic_credit_instrument),
+            instrument_table::composite_instrument,
+            "CompositeTrade",
+            &gen::generate_synthetic_composite_instrument),
+        make_family<repo::credit_instrument_repository>(instrument_table::credit_instrument,
+                                                        "RiskParticipationAgreement",
+                                                        &gen::generate_synthetic_credit_instrument),
         make_family<repo::equity_accumulator_instrument_repository>(
-            instrument_table::equity_accumulator_instrument, "EquityAccumulator", &gen::generate_synthetic_equity_accumulator_instrument),
+            instrument_table::equity_accumulator_instrument,
+            "EquityAccumulator",
+            &gen::generate_synthetic_equity_accumulator_instrument),
         make_family<repo::equity_asian_option_instrument_repository>(
-            instrument_table::equity_asian_option_instrument, "EquityAsianOption", &gen::generate_synthetic_equity_asian_option_instrument),
+            instrument_table::equity_asian_option_instrument,
+            "EquityAsianOption",
+            &gen::generate_synthetic_equity_asian_option_instrument),
         make_family<repo::equity_barrier_option_instrument_repository>(
-            instrument_table::equity_barrier_option_instrument, "EquityBarrierOption", &gen::generate_synthetic_equity_barrier_option_instrument),
+            instrument_table::equity_barrier_option_instrument,
+            "EquityBarrierOption",
+            &gen::generate_synthetic_equity_barrier_option_instrument),
         make_family<repo::equity_digital_option_instrument_repository>(
-            instrument_table::equity_digital_option_instrument, "EquityDigitalOption",
-            &gen::generate_synthetic_equity_digital_option_instrument, as_a_digital_option{}),
+            instrument_table::equity_digital_option_instrument,
+            "EquityDigitalOption",
+            &gen::generate_synthetic_equity_digital_option_instrument,
+            as_a_digital_option{}),
         make_family<repo::equity_forward_instrument_repository>(
-            instrument_table::equity_forward_instrument, "EquityForward", &gen::generate_synthetic_equity_forward_instrument),
+            instrument_table::equity_forward_instrument,
+            "EquityForward",
+            &gen::generate_synthetic_equity_forward_instrument),
         make_family<repo::equity_option_instrument_repository>(
-            instrument_table::equity_option_instrument, "EquityOption", &gen::generate_synthetic_equity_option_instrument),
+            instrument_table::equity_option_instrument,
+            "EquityOption",
+            &gen::generate_synthetic_equity_option_instrument),
         make_family<repo::equity_position_instrument_repository>(
-            instrument_table::equity_position_instrument, "EquityPosition", &gen::generate_synthetic_equity_position_instrument),
+            instrument_table::equity_position_instrument,
+            "EquityPosition",
+            &gen::generate_synthetic_equity_position_instrument),
         make_family<repo::equity_swap_instrument_repository>(
-            instrument_table::equity_swap_instrument, "EquitySwap", &gen::generate_synthetic_equity_swap_instrument),
+            instrument_table::equity_swap_instrument,
+            "EquitySwap",
+            &gen::generate_synthetic_equity_swap_instrument),
         make_family<repo::equity_variance_swap_instrument_repository>(
-            instrument_table::equity_variance_swap_instrument, "EquityVarianceSwap", &gen::generate_synthetic_equity_variance_swap_instrument),
+            instrument_table::equity_variance_swap_instrument,
+            "EquityVarianceSwap",
+            &gen::generate_synthetic_equity_variance_swap_instrument),
         make_family<repo::fx_accumulator_instrument_repository>(
-            instrument_table::fx_accumulator_instrument, "FxAccumulator", &gen::generate_synthetic_fx_accumulator_instrument),
+            instrument_table::fx_accumulator_instrument,
+            "FxAccumulator",
+            &gen::generate_synthetic_fx_accumulator_instrument),
         make_family<repo::fx_asian_forward_instrument_repository>(
-            instrument_table::fx_asian_forward_instrument, "FxAverageForward", &gen::generate_synthetic_fx_asian_forward_instrument),
+            instrument_table::fx_asian_forward_instrument,
+            "FxAverageForward",
+            &gen::generate_synthetic_fx_asian_forward_instrument),
         make_family<repo::fx_barrier_option_instrument_repository>(
-            instrument_table::fx_barrier_option_instrument, "FxBarrierOption", &gen::generate_synthetic_fx_barrier_option_instrument),
+            instrument_table::fx_barrier_option_instrument,
+            "FxBarrierOption",
+            &gen::generate_synthetic_fx_barrier_option_instrument),
         make_family<repo::fx_digital_option_instrument_repository>(
-            instrument_table::fx_digital_option_instrument, "FxDigitalOption", &gen::generate_synthetic_fx_digital_option_instrument),
+            instrument_table::fx_digital_option_instrument,
+            "FxDigitalOption",
+            &gen::generate_synthetic_fx_digital_option_instrument),
         make_family<repo::fx_forward_instrument_repository>(
-            instrument_table::fx_forward_instrument, "FxForward", &gen::generate_synthetic_fx_forward_instrument),
+            instrument_table::fx_forward_instrument,
+            "FxForward",
+            &gen::generate_synthetic_fx_forward_instrument),
         make_family<repo::fx_vanilla_option_instrument_repository>(
-            instrument_table::fx_vanilla_option_instrument, "FxOption", &gen::generate_synthetic_fx_vanilla_option_instrument),
+            instrument_table::fx_vanilla_option_instrument,
+            "FxOption",
+            &gen::generate_synthetic_fx_vanilla_option_instrument),
         make_family<repo::fx_variance_swap_instrument_repository>(
-            instrument_table::fx_variance_swap_instrument, "FxVarianceSwap", &gen::generate_synthetic_fx_variance_swap_instrument),
+            instrument_table::fx_variance_swap_instrument,
+            "FxVarianceSwap",
+            &gen::generate_synthetic_fx_variance_swap_instrument),
         make_family<repo::rate_instrument_repository>(
             instrument_table::rate_instrument, "Swap", &gen::generate_synthetic_rate_instrument),
         make_family<repo::scripted_instrument_repository>(
-            instrument_table::scripted_instrument, "ScriptedTrade", &gen::generate_synthetic_scripted_instrument)
-    };
+            instrument_table::scripted_instrument,
+            "ScriptedTrade",
+            &gen::generate_synthetic_scripted_instrument)};
 }
 
 }

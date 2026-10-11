@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/trade_write_observation.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/economic_digest.hpp"
 #include "ores.trading.api/domain/trade_economic_digest.hpp"
 #include "ores.trading.core/repository/trade_component_queries.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
+#include "ores.trading.core/repository/trade_write_observation.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <string>
 #include <vector>

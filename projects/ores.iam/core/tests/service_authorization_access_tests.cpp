@@ -41,9 +41,9 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
-#include <algorithm>
 #include <vector>
 
 namespace {
@@ -613,10 +613,9 @@ TEST_CASE("read_role_permissions_includes_unheld_rows_for_the_editor", tags) {
     CHECK(held_only.result.outcome == outcome::ok);
     CHECK(held_only.total_count == 1);
     CHECK(everything.total_count == 2);
-    const auto held_rows = std::count_if(
-        everything.rows.begin(), everything.rows.end(), [](const auto& row) {
-            return !row.held.empty();
-        });
+    const auto held_rows = std::count_if(everything.rows.begin(),
+                                         everything.rows.end(),
+                                         [](const auto& row) { return !row.held.empty(); });
     CHECK(held_rows == 1);
 }
 
@@ -648,8 +647,7 @@ TEST_CASE("read_roles_page_pages_filters_by_area_and_leaves_service_roles_out", 
     authorization_service svc(h.context());
     const auto in_area = svc.read_roles_page(caller.id, {.area = zzlist_name});
     const auto none = svc.read_roles_page(caller.id, {.area = zznowhere_name});
-    const auto one = svc.read_roles_page(
-        caller.id, {.role_id = boost::uuids::to_string(mine.id)});
+    const auto one = svc.read_roles_page(caller.id, {.role_id = boost::uuids::to_string(mine.id)});
 
     CHECK(in_area.result.outcome == outcome::ok);
     // A role that grants everything grants something in every area, so the
@@ -663,9 +661,8 @@ TEST_CASE("read_roles_page_pages_filters_by_area_and_leaves_service_roles_out", 
         return row.name == mine.name || row.everything;
     }));
     // An area nobody was given lists only the roles that grant everything.
-    CHECK(std::all_of(none.roles.begin(), none.roles.end(), [](const auto& row) {
-        return row.everything;
-    }));
+    CHECK(std::all_of(
+        none.roles.begin(), none.roles.end(), [](const auto& row) { return row.everything; }));
     // The areas on offer are those some listed role grants, whatever the filter.
     CHECK(std::any_of(none.areas.begin(), none.areas.end(), [&](const auto& area) {
         return area.component == zzlist_name;

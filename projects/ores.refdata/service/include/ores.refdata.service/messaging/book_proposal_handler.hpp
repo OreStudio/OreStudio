@@ -84,21 +84,21 @@ public:
             return;
         try {
             const auto previewed = service::book_proposal_service(*ctx).preview(req->lines);
-            ores::service::messaging::reply(nats_,
-                                            msg,
-                                            preview_book_changes_response{
-                                                .result = result_of(outcome::ok, "", ""),
-                                                .lines = to_outcomes(previewed),
-                                                .part_codes = previewed.part_codes});
+            ores::service::messaging::reply(
+                nats_,
+                msg,
+                preview_book_changes_response{.result = result_of(outcome::ok, "", ""),
+                                              .lines = to_outcomes(previewed),
+                                              .part_codes = previewed.part_codes});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error) << "Error previewing book changes: " << e.what();
+            BOOST_LOG_SEV(lg(), ores::logging::error)
+                << "Error previewing book changes: " << e.what();
             ores::service::messaging::reply(
                 nats_,
                 msg,
                 preview_book_changes_response{
-                    .result = result_of(outcome::failed,
-                                        "preview_failed",
-                                        "The changes could not be previewed."),
+                    .result = result_of(
+                        outcome::failed, "preview_failed", "The changes could not be previewed."),
                     .lines = {},
                     .part_codes = {}});
         }
@@ -121,7 +121,8 @@ public:
         if (!admitted(*ctx, msg, req->lines))
             return;
         try {
-            const auto proposal = service::book_proposal_service(*ctx).raise(req->lines, req->reason);
+            const auto proposal =
+                service::book_proposal_service(*ctx).raise(req->lines, req->reason);
             raise_book_changes_response response{.result = {},
                                                  .request_id = std::nullopt,
                                                  .lines = to_outcomes(proposal.preview),
@@ -130,7 +131,8 @@ public:
                 response.request_id = proposal.request->id;
                 response.result = result_of(outcome::ok, "", "");
             } else {
-                response.result = result_of(outcome::invalid, refusal_code(proposal), proposal.message);
+                response.result =
+                    result_of(outcome::invalid, refusal_code(proposal), proposal.message);
             }
             ores::service::messaging::reply(nats_, msg, response);
         } catch (const std::exception& e) {
@@ -138,13 +140,12 @@ public:
             ores::service::messaging::reply(
                 nats_,
                 msg,
-                raise_book_changes_response{
-                    .result = result_of(outcome::failed,
-                                        "raise_failed",
-                                        "The changes could not be raised."),
-                    .request_id = std::nullopt,
-                    .lines = {},
-                    .part_codes = {}});
+                raise_book_changes_response{.result = result_of(outcome::failed,
+                                                                "raise_failed",
+                                                                "The changes could not be raised."),
+                                            .request_id = std::nullopt,
+                                            .lines = {},
+                                            .part_codes = {}});
         }
     }
 

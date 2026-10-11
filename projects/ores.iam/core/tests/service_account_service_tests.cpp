@@ -632,9 +632,14 @@ namespace {
 std::vector<repository::auth_event_entity> lock_events(const ores::database::context& ctx,
                                                        const boost::uuids::uuid& account_id,
                                                        const std::string& event_type) {
-    return repository::auth_event_repository(ctx).read_events(
-        ctx, ctx.tenant_id().to_string(), boost::uuids::to_string(account_id), event_type, "", "",
-        100, 0);
+    return repository::auth_event_repository(ctx).read_events(ctx,
+                                                              ctx.tenant_id().to_string(),
+                                                              boost::uuids::to_string(account_id),
+                                                              event_type,
+                                                              "",
+                                                              "",
+                                                              100,
+                                                              0);
 }
 
 }

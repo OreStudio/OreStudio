@@ -34,30 +34,32 @@ constexpr std::string_view queue_group = "ores.refdata.service";
 
 }
 
-std::vector<ores::nats::service::subscription>
-book_proposal_registrar::register_handlers(ores::nats::service::client& nats,
-                                           ores::database::context ctx,
-                                           std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+std::vector<ores::nats::service::subscription> book_proposal_registrar::register_handlers(
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     // The apply workflow's commands come from the engine, which has proved
     // them, so the step handler takes no verifier.
     auto steps = std::make_shared<book_apply_step_handler>(nats, ctx);
-    subs.push_back(nats.queue_subscribe(
-        std::string(workflow::recheck_book_changes_subject),
-        queue_group,
-        [steps](ores::nats::message msg) { steps->recheck(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        std::string(workflow::apply_book_changes_subject),
-        queue_group,
-        [steps](ores::nats::message msg) { steps->apply(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(workflow::recheck_book_changes_subject),
+                             queue_group,
+                             [steps](ores::nats::message msg) { steps->recheck(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(workflow::apply_book_changes_subject),
+                             queue_group,
+                             [steps](ores::nats::message msg) { steps->apply(std::move(msg)); }));
 
     auto h = std::make_shared<book_proposal_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(preview_book_changes_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->preview(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(raise_book_changes_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->raise(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        preview_book_changes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->preview(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        raise_book_changes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->raise(std::move(msg));
+        }));
     return subs;
 }
 

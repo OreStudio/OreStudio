@@ -243,8 +243,8 @@ TEST_CASE("an_answer_names_a_part_the_request_needs", tags) {
     const auto decider = seed_account(h);
     approval_lifecycle lifecycle(acting(h));
 
-    const auto raised = lifecycle.raise(
-        *lifecycle.kind("iam.role_grant"), "Change a book", asker.id, {"finance"});
+    const auto raised =
+        lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Change a book", asker.id, {"finance"});
     const auto id = boost::uuids::to_string(raised.id);
 
     CHECK(lifecycle.decide(id, raised.version, "approve", decider.id, "").outcome == "invalid");

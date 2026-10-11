@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_CORE_TESTS_BOOK_PROPOSAL_FIXTURES_HPP
 #define ORES_REFDATA_CORE_TESTS_BOOK_PROPOSAL_FIXTURES_HPP
 
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.inbox.core/repository/approval_policy_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.refdata.api/generators/book_change_generator.hpp"
@@ -35,15 +35,14 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.refdata.core/service/book_service.hpp"
 #include "ores.refdata.service/service/book_proposal.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
-#include <catch2/catch_test_macros.hpp>
 
 namespace ores::refdata::tests {
 
@@ -189,8 +188,8 @@ inline std::size_t pending_count(const world& w) {
  * deciders would.
  */
 inline void approve_every_part(const world& w,
-                        ores::testing::scoped_database_helper& h,
-                        const ores::inbox::domain::approval_request& raised) {
+                               ores::testing::scoped_database_helper& h,
+                               const ores::inbox::domain::approval_request& raised) {
     ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
     const auto id = boost::uuids::to_string(raised.id);
     auto gctx = ores::testing::make_generation_context(h);

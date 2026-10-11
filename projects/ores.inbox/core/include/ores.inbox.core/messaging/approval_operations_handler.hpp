@@ -316,8 +316,8 @@ public:
                 return;
             }
             const auto parts = lifecycle.parts_of(req->request_id);
-            const bool answers_for_part =
-                !parts.empty() && (req->decision_code == "approve" || req->decision_code == "refuse");
+            const bool answers_for_part = !parts.empty() && (req->decision_code == "approve" ||
+                                                             req->decision_code == "refuse");
             if (answers_for_part) {
                 const auto named = std::ranges::find_if(
                     parts, [&](const auto& p) { return p.code == req->part_code; });
@@ -325,9 +325,10 @@ public:
                     reply(nats_,
                           msg,
                           decide_approval_request_response{
-                              .result = approval_result(outcome::invalid,
-                                                        "part_required",
-                                                        "Name one of the parts this request needs.")});
+                              .result =
+                                  approval_result(outcome::invalid,
+                                                  "part_required",
+                                                  "Name one of the parts this request needs.")});
                     return;
                 }
                 if (!has_permission(*ctx, named->decide_permission_code)) {
@@ -341,17 +342,18 @@ public:
                 }
             } else {
                 const bool may_decide =
-                    parts.empty() ? has_permission(*ctx, kind->decide_permission_code)
-                                  : std::ranges::any_of(parts, [&](const auto& p) {
+                    parts.empty() ? has_permission(*ctx, kind->decide_permission_code) :
+                                    std::ranges::any_of(parts, [&](const auto& p) {
                                         return has_permission(*ctx, p.decide_permission_code);
                                     });
                 if (!may_decide) {
-                    reply(nats_,
-                          msg,
-                          decide_approval_request_response{
-                              .result = approval_result(outcome::denied,
-                                                        "not_a_decider",
-                                                        "You may not decide this kind of request.")});
+                    reply(
+                        nats_,
+                        msg,
+                        decide_approval_request_response{
+                            .result = approval_result(outcome::denied,
+                                                      "not_a_decider",
+                                                      "You may not decide this kind of request.")});
                     return;
                 }
             }

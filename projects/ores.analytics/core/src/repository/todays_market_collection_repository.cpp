@@ -242,12 +242,19 @@ todays_market_collection_repository::read_latest_by_collection(context ctx,
         sqlgen::read<std::vector<todays_market_collection_entity>> |
         where("tenant_id"_c == tid && "collection"_c == collection && "valid_to"_c == max.value());
 
-    return execute_read_query<todays_market_collection_entity, domain::todays_market_collection>(
-        ctx,
-        query,
-        [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
-        lg(),
-        "Reading latest today's market collection by collection.");
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one. A
+    // finder with a parent column is pinned to its parent's party already.
+    auto found =
+        execute_read_query<todays_market_collection_entity, domain::todays_market_collection>(
+            ctx,
+            query,
+            [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
+            lg(),
+            "Reading latest today's market collection by collection.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::todays_market_collection>

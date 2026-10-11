@@ -394,10 +394,39 @@ std::vector<domain::{{entity_singular}}>
         where({{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}}{{domain_entity.temporal_filter}});
 {{/read_tenant_filtered}}
 
+{{#domain_entity.has_party_column}}
+{{#parent_column}}
     return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_singular_words}} by {{column}}.");
+{{/parent_column}}
+{{^parent_column}}
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one. A
+    // finder with a parent column is pinned to its parent's party already.
+    auto found = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by {{column}}.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) {
+{{#domain_entity.party_column_optional}}
+            return row.party_id.has_value() && *row.party_id != *party;
+{{/domain_entity.party_column_optional}}
+{{^domain_entity.party_column_optional}}
+            return row.party_id != *party;
+{{/domain_entity.party_column_optional}}
+        });
+    return found;
+{{/parent_column}}
+{{/domain_entity.has_party_column}}
+{{^domain_entity.has_party_column}}
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by {{column}}.");
+{{/domain_entity.has_party_column}}
 }
 {{/key_finders}}
 {{^current_state}}

@@ -234,12 +234,18 @@ pricing_model_product_repository::read_latest_by_pricing_engine_type_code(
         where("tenant_id"_c == tid && "pricing_engine_type_code"_c == pricing_engine_type_code &&
               "valid_to"_c == max.value());
 
-    return execute_read_query<pricing_model_product_entity, domain::pricing_model_product>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one. A
+    // finder with a parent column is pinned to its parent's party already.
+    auto found = execute_read_query<pricing_model_product_entity, domain::pricing_model_product>(
         ctx,
         query,
         [](const auto& entities) { return pricing_model_product_mapper::map(entities); },
         lg(),
         "Reading latest pricing model product by pricing_engine_type_code.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::pricing_model_product>

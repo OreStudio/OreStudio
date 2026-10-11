@@ -80,6 +80,7 @@ set(files
     "xml_ir_batch2_golden_roundtrip_tests.cpp"
     "xml_ir_golden_roundtrip_tests.cpp"
     "xml_ir_mapper_roundtrip_tests.cpp"
+    "xml_lexical_form_export_tests.cpp"
     "xml_nettingsetdefinitions_mapper_roundtrip_tests.cpp"
     "xml_nettingsetdefinitions_roundtrip_tests.cpp"
     "xml_ore_roundtrip_tests.cpp"

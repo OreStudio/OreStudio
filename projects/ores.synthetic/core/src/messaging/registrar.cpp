@@ -40,6 +40,8 @@
 #include "ores.synthetic.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_parameter_definition_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_parameter_definition_registrar.hpp"
+#include "ores.synthetic.core/messaging/market_data_provider_history_provider_registrar.hpp"
+#include "ores.synthetic.core/messaging/market_data_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_type_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_type_registrar.hpp"
 #include <memory>
@@ -91,6 +93,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // generation config + template entries (generated sub-registrars,
     // unlike the hand-wired entities above).
     // ----------------------------------------------------------------
+    {
+        auto s = register_market_data_provider_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
     {
         auto s = register_yield_curve_process_type_handlers(nats, ctx, verifier);
         subs.insert(
@@ -152,6 +159,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_ir_curve_generation_config_process_parameter_value_history_provider(hist_registry);
         register_ir_curve_template_entry_history_provider(hist_registry);
         register_market_data_generation_config_history_provider(hist_registry);
+        register_market_data_provider_history_provider(hist_registry);
         register_yield_curve_process_parameter_definition_history_provider(hist_registry);
         register_yield_curve_process_type_history_provider(hist_registry);
         subs.push_back(ores::history::messaging::register_history_handlers(

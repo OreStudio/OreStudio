@@ -32,7 +32,7 @@
  */
 export interface MarketDataGenerationConfig {
     version: number;
-    tenant_id: string | null;
+    tenant_id: string;
     id: string;
     party_id: string | null;
     scope: string;
@@ -41,6 +41,7 @@ export interface MarketDataGenerationConfig {
     description: string;
     enabled: boolean;
     dataset_id: string | null;
+    provider_code: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

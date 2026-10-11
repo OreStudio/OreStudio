@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 68CE1E1D-7568-4911-BB71-CCF5A9E07BB7
+:END:
+#+title: The market data provider catalogue
+#+description: The simulated providers a synthetic collection can stand for, why a provider is optional, how the synthetic mark keeps a simulated feed apart from a real one, and how a system collection's feeds reach every tenant.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:config:catalogue:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+* Summary
+
+=market_data_provider= is a reference-data table of the providers whose
+market data the synthetic feeds simulate: data vendors such as Bloomberg and
+Refinitiv, exchanges such as CME and LSE, a broker, and a /generic/ provider.
+It is declared in =ores.synthetic.api/domain/market_data_provider.hpp=, seeded
+by =projects/ores.sql/populate/synthetic/synthetic_market_data_providers_populate.sql=,
+and a collection's optional =provider_code= is validated against its =code=.
+
+* Detail
+
+** Why it exists
+
+A desk reads Bloomberg's FX spot, an exchange's settlement prices, a broker's
+composites: the market has providers, and a synthetic installation that
+simulates the market needs to say which provider a feed stands for. A
+system-scope collection names its provider, so the installation runs a
+simulated provider once and every tenant reads it as that provider's data.
+
+** The row
+
+| Column | Meaning |
+|--------+---------|
+| =code= | The provider's code, lower case, the provider segment of a source name |
+| =name= | The provider as a person knows it, without the synthetic mark |
+| =kind= | =data_vendor=, =exchange=, =broker= or =generic= |
+| =description= | What the provider publishes, in a sentence |
+| =display_order= | The order screens list providers in |
+
+The system tenant manages the rows, as it manages the yield curve process
+types; the catalogue is in =ores.synthetic= because only synthetic generation
+uses it.
+
+** A provider is optional
+
+A party's test collection usually stands for no provider and names none. A
+system collection that simulates the market as a whole names =generic=. Only a
+collection that stands for a real provider's data names that provider.
+
+** The synthetic mark
+
+Every provider here is simulated, and nothing may read a simulated feed as the
+real one. Every source name starts =synthetic.=, which the feed tables check,
+and a provider's feed's source name starts =synthetic.<provider code>.=.
+Screens name a provider with the mark, as "Bloomberg (synthetic)". A real
+provider integration belongs in market data, under its own namespace, and
+cannot collide.
+
+** The fact the code shape does not show
+
+A collection's scope decides who reads its feeds. A system collection belongs
+to the system tenant and its system party, as its feeds do, and row-level
+security lets every tenant read a system collection and every feed and part
+under it. Writing stays with the system tenant.
+
+Only one enabled, bound system collection may run at a time: the conflict
+guard of the collection rejects a second. So one provider is chosen as the
+bound, authoritative source for a pair such as EUR/USD, and the other
+providers' collections run sandboxed. A rate blending service is the planned
+owner of blended rates: it will read the providers' spots and publish the
+blended EUR/USD itself. A tenant consumes a
+system feed's ticks through a feed binding, which stores each tick once for
+every party that binds the source.
+
+* See also
+
+- [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]] — the collection that names its provider
+- [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]] — the system catalogue this follows
+- [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] — the story that brings providers

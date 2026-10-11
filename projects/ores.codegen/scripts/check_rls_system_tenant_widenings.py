@@ -47,7 +47,6 @@ EXCEPTIONS = {
     "job_instances_write_policy": AUDIT,
     "job_instances_party_isolation_policy": AUDIT,
     "job_instances_read_policy": AUDIT,
-    "market_data_generation_configs_tenant_isolation_policy": AUDIT,
     "workflow_steps_tenant_isolation_policy": AUDIT,
     "workflow_plan_steps_tenant_isolation_policy": AUDIT,
     "workflow_plan_dependencies_tenant_isolation_policy": AUDIT,

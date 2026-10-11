@@ -79,6 +79,7 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check (("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor') and "tenor" = '') or ("index_family" = 'sofr' and "tenor" in ('', 'FOMC'))),
     check ("role" in ('discount', 'projection', 'self_discounting')),
     check ("source_name" <> ''),
+    check ("source_name" like 'synthetic.%'),
     check ("ticks_per_hour" > 0),
     check ("price_source" in ('fixed', 'vintage')),
     check (("price_source" = 'fixed' and "vintage_source" = '' and "vintage_date" = '' and "vintage_series_uri" = '') or ("price_source" = 'vintage' and "vintage_source" <> '' and "vintage_date" <> '' and "vintage_series_uri" <> ''))

@@ -23,10 +23,15 @@ A structure is an entity: an immutable identity and legs that are trades. A pack
 
 ** States
 
+The page opens on the list of everything the tenant holds together. Open one of each kind to compare.
+
 #+ATTR_HTML: :class hug-leading
 | Query | What it shows |
 |-------+---------------|
-| =?deal=STR-0007= | A strategy, a risk reversal, with its template roles checked |
+| (none) | The list: every structure and package, filtered by kind, paged on the server |
+| =?deal=STR-0007= | A strategy: a risk reversal, with its template roles checked |
+| =?deal=STR-0009= | A typed structure: a callable swap, a swap and a call right. Legs of different families, roles fixed by the type |
+| =?deal=STR-0010= | A dynamic structure: a bond repo and a bond, with roles read from data |
 | =?deal=PKG-0004= | A package of a swap and a cap |
 | =?mode=group&trades=ACME-100202,ACME-100209= | The grouping workflow, with the kind to choose |
 | =?mode=group&trades=ACME-100201,ACME-100202= | The refusal: the trades have different counterparties |

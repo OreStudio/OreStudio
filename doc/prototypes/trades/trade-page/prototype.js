@@ -6,7 +6,7 @@ const STATE_P = P.get('state') || '';
 const SERVER = P.get('server') === 'today' ? 'today' : 'target';
 const TAB = P.get('tab') || 'details';
 const CODE = P.get('trade');
-const STRUCT_KIND = { 'PKG-0004': { kind: 'Package', whole: false, legs: 2 }, 'STR-0007': { kind: 'Strategy', template: 'RiskReversal', whole: true, legs: 2 } };
+const STRUCT_KIND = { 'PKG-0004': { kind: 'Package', whole: false, legs: 2 }, 'STR-0007': { kind: 'Strategy', template: 'RiskReversal', whole: true, legs: 2 }, 'STR-0009': { kind: 'Typed', template: 'CallableSwap', whole: true, legs: 2 }, 'STR-0010': { kind: 'Dynamic', template: '', whole: true, legs: 2 } };
 const dealHref = id => '../structure-page/?deal=' + id;
 const TABS = [['details', 'Details'], ['instrument', 'Instrument'], ['identifiers', 'Identifiers and roles'], ['links', 'Links'], ['history', 'History']];
 

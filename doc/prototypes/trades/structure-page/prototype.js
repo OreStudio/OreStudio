@@ -27,19 +27,23 @@ const pricingText = k => KIND[k].whole ? 'Priced as a whole' : 'Priced leg by le
 
 const DEALS = Object.assign({
     'PKG-0004': { kind: 'Package', template: '', cp: 'NWCAP', members: [['ACME-100201', 'leg'], ['ACME-100210', 'leg']], created: '2026-10-05T11:20:00+01:00', by: 'ada.lovelace' },
-    'STR-0007': { kind: 'Strategy', template: 'RiskReversal', cp: 'MRDN', members: [['ACME-100202', 'call'], ['ACME-100209', 'put']], created: '2026-10-08T09:05:00+01:00', by: 'ada.lovelace' }
+    'STR-0007': { kind: 'Strategy', template: 'RiskReversal', cp: 'MRDN', members: [['ACME-100202', 'call'], ['ACME-100209', 'put']], created: '2026-10-08T09:05:00+01:00', by: 'ada.lovelace' },
+    'STR-0009': { kind: 'Typed', template: 'CallableSwap', cp: 'CSTL', members: [['ACME-100211', 'swap'], ['ACME-100212', 'call_right']], created: '2026-09-02T10:30:00+01:00', by: 'ada.lovelace' },
+    'STR-0010': { kind: 'Dynamic', template: '', cp: 'MRDN', members: [['ACME-100204', 'funding'], ['ACME-100213', 'collateral']], created: '2026-08-20T14:00:00+01:00', by: 'ada.lovelace' }
 }, store('structures') || {});
-const SID = P.get('deal') || (MODE ? '' : 'STR-0007');
+const SID = P.get('deal') || '';
+const LIST = !SID && !MODE;
 const CUR = DEALS[SID];
 let stale = false;
 
 const main = shell({
-    title: MODE ? 'Group trades' : (CUR ? Noun(CUR.kind) : 'Structure') + ' ' + SID, name: 'structure-page',
+    title: MODE ? 'Group trades' : LIST ? 'Structures and packages' : (CUR ? Noun(CUR.kind) : 'Structure') + ' ' + SID, name: 'structure-page',
     question: 'How are several trades held together, as one deal or as a package?',
-    crumbs: MODE ? [['Home', '#'], ['Trades', '../trade-page/'], ['Trades', '../trade-page/'], ['Group trades']] : [['Home', '#'], ['Trades', '../trade-page/'], [CUR && CUR.kind === 'Package' ? 'Packages' : 'Structures', '#'], [SID]],
-    states: [['strategy', { mode: null, trades: null, deal: 'STR-0007' }, !MODE && SID === 'STR-0007'], ['package', { mode: null, trades: null, deal: 'PKG-0004' }, !MODE && SID === 'PKG-0004'],
+    crumbs: MODE ? [['Home', '#'], ['Trades', '../trade-page/'], ['Trades', '../trade-page/'], ['Group trades']] : LIST ? [['Home', '#'], ['Trades', '../trade-page/'], ['Structures and packages']] : [['Home', '#'], ['Trades', '../trade-page/'], ['Structures and packages', qs({ deal: null, tab: null })], [SID]],
+    states: [['list', { mode: null, trades: null, deal: null, tab: null }, LIST], ['strategy', { mode: null, trades: null, deal: 'STR-0007' }, SID === 'STR-0007'], ['typed structure', { mode: null, trades: null, deal: 'STR-0009' }, SID === 'STR-0009'],
+        ['dynamic structure', { mode: null, trades: null, deal: 'STR-0010' }, SID === 'STR-0010'], ['package', { mode: null, trades: null, deal: 'PKG-0004' }, SID === 'PKG-0004'],
         ['group', { mode: 'group', deal: null, trades: 'ACME-100202,ACME-100209' }, MODE === 'group'], ['mismatch', { mode: 'group', deal: null, trades: 'ACME-100201,ACME-100202' }, false], ['mixed families', { mode: 'group', deal: null, trades: 'ACME-100203,ACME-100206' }, false]],
-    says: MODE
+    says: LIST ? 'The list of everything the tenant holds together: strategies, typed structures, dynamic structures and packages. The first three are one deal each. A package is trades the customer holds one by one. Open one of each and compare.' : MODE
         ? 'One workflow, and the kind decides what the customer receives. A strategy is one deal. A package is trades the customer holds one by one. The screen states each kind\'s consequences and the rules the server will enforce, before it writes.'
         : 'A package is a kind of structure, so there is one screen and its words follow the kind. Compare the strategy and the package: how it confirms, how it prices, where the external version lives, what unlinking a leg means.'
 });
@@ -55,7 +59,7 @@ function renderDeal() {
     if (!s) return put(wrap(h('div', { class: 'notice bad' }, 'No structure or package ' + SID + '. It may have been removed, or you may not see its party.')));
     const N = noun(s.kind), pk = s.kind === 'Package';
     const ms = tmem(s);
-    const title = pk ? 'Package' : (s.template ? s.template.replace(/([A-Z])/g, ' $1').trim() : s.kind);
+    const title = pk ? 'Package' : (s.template ? s.template.replace(/([A-Z])/g, ' $1').trim() : s.kind + ' structure');
     const roleCheck = kindRule(s) ? kindRule(s).map(([role, lo, hi]) => ({ role, lo, hi, n: s.members.filter(m => m[1] === role).length })) : [];
     const ok = roleCheck.every(r => r.n >= r.lo && (!r.hi || r.n <= r.hi));
     const head = pageHead({
@@ -182,4 +186,18 @@ function renderGroup() {
     put(wrap(pageHead({ title: 'Group trades', lead: 'Hold several trades together, as one deal or as a package. The kind decides what the customer receives.' }),
         CAN.structure ? null : h('div', { class: 'notice warn' }, h('b', null, 'You cannot use this screen. '), 'It needs the right to group trades. Ask a tenant administrator for the Trader role.'), rail, pane, h('div', { class: 'filters' }, nav)));
 }
-if (MODE) renderGroup(); else renderDeal();
+/* ---------- the list ---------- */
+let LQ = { kind: '', offset: 0, limit: 15 };
+function renderList() {
+    const rows = Object.entries(DEALS).filter(([, v]) => !LQ.kind || v.kind === LQ.kind);
+    const page = rows.slice(LQ.offset, LQ.offset + LQ.limit);
+    const head = pageHead({ title: 'Structures and packages', lead: 'What the tenant holds together: one deal in several trades, or trades held one by one.',
+        actions: [refreshButton({ stale: false, onClick: () => { LOADED = NOW; renderList(); } }), workflowMenu([{ title: 'Group trades', line: 'Choose trades in the trade list, then hold them together.', href: '../trade-page/', allowed: !!CAN.structure }])] });
+    const filters = h('div', { class: 'filters' }, select([['', 'All kinds']].concat(Object.keys(KIND).map(k => [k, k])), LQ.kind, v => { LQ.kind = v; LQ.offset = 0; renderList(); }));
+    const table = h('div', { class: 'tablewrap' }, h('table', { class: 'grid' }, h('thead', null, h('tr', null, ['', 'Kind', 'Template', 'Counterparty', 'Legs', 'Confirms', 'Priced'].map(c => h('th', null, c)))),
+        h('tbody', null, page.map(([id, v]) => h('tr', null, h('td', { class: 'nw' }, h('a', { href: qs({ deal: id }) }, id)), h('td', null, chip(v.kind, 'acc')), h('td', null, v.template || h('span', { class: 'dash' }, '—')), h('td', null, cpty(v.cp).name),
+            h('td', { class: 'num' }, v.members.length), h('td', null, confirmText(v.kind)), h('td', null, pricingText(v.kind)))))));
+    put(wrap(head, filters, table, pager({ offset: LQ.offset, limit: LQ.limit, total: rows.length, onChange: v => { Object.assign(LQ, v); renderList(); } }),
+        h('div', { class: 'reqline' }, 'trading.v1.structures.list  offset=' + LQ.offset + ' limit=' + LQ.limit + ' filter=' + JSON.stringify(LQ.kind ? { kind: LQ.kind } : {}) + '  →  total=' + rows.length)));
+}
+if (MODE) renderGroup(); else if (LIST) renderList(); else renderDeal();

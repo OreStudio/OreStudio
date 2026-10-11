@@ -1151,8 +1151,15 @@ export const en: SourceCatalogue = {
             noStory: 'This scenario names no story.',
             noTask: 'This scenario names no task.',
         },
+        leave: {
+            title: 'Leave without saving?',
+            body: 'You have marks or notes that are not saved. Leaving drops them.',
+            stay: 'Stay',
+            leave: 'Leave',
+        },
         docs: {
             title: 'Doc',
+            back: 'Back',
             unresolved:
                 'No story, task or scenario has the id {id}. The link may point at a doc the runner does not show.',
         },

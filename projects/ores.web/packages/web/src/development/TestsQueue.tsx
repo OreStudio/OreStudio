@@ -23,12 +23,12 @@ import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import type { ScenarioSummary } from '@ores/contracts';
-import { qa } from '../api/qa.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Notice, Tag } from '../ui/Primitives.js';
+import { QA_SCENARIOS_KEY, qaQueries } from './queries.js';
 import { openFromRow, percentDone, queueOf, stateOf, stepsDone, type QueueState } from './queue.js';
 
-export const QA_SCENARIOS_KEY = ['qa-scenarios'] as const;
+export { QA_SCENARIOS_KEY };
 
 const TONES = {
     pending: 'neutral',
@@ -45,7 +45,7 @@ const TONES = {
  */
 export function TestsQueue(): ReactNode {
     const { t } = useTranslation();
-    const scenarios = useQuery({ queryKey: QA_SCENARIOS_KEY, queryFn: () => qa.scenarios() });
+    const scenarios = useQuery(qaQueries.scenarios());
 
     if (scenarios.isError) {
         return <Notice tone="error">{scenarios.error.message}</Notice>;

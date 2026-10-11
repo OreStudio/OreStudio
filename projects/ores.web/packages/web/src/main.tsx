@@ -21,7 +21,7 @@
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router';
+import { RouterProvider, createBrowserRouter } from 'react-router';
 import { AppProviders, SessionProvider, createQueryClient } from './session/SessionProvider.js';
 import { BootstrapProvider } from './session/BootstrapProvider.js';
 import { SiteProvider } from './session/SiteProvider.js';
@@ -37,8 +37,14 @@ import './styles.css';
  * one query client, the translations, the session, the bootstrap gate, the
  * environment the deployment serves, and the router. What renders is
  * `ConnectedApp`, which is the route table and the gate the story decided on.
+ *
+ * The router is a data router with one route that takes every address and
+ * renders `ConnectedApp`, which keeps its own route table. A data router is what
+ * lets a page ask before it is left, as the scenario runner does when a tester
+ * has marks that are not saved.
  */
 const queryClient = createQueryClient();
+const router = createBrowserRouter([{ path: '*', element: <ConnectedApp /> }]);
 
 const container = document.getElementById('root');
 if (container === null) {
@@ -55,9 +61,7 @@ createRoot(container).render(
                         client, because asking is a query. */}
                     <BootstrapProvider>
                         <SiteProvider>
-                            <BrowserRouter>
-                                <ConnectedApp />
-                            </BrowserRouter>
+                            <RouterProvider router={router} />
                         </SiteProvider>
                     </BootstrapProvider>
                 </SessionProvider>

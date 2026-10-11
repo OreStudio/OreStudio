@@ -48,6 +48,7 @@ A tester works through a test scenario in ores.web: open a scenario, read its st
 | [[id:4E45A124-F1E7-4371-BFAC-4E63A84F8F8B][Build the scenario runner]] | DONE | 2026-10-10 | 2026-10-10 | Build the accepted layout B: one step at a time with a progress bar. A Pass moves on and a Fail stays so the tester can write the note. Save closes a decided scenario, a done scenario reopens read-only, and Retest asks first. |
 | [[id:45004307-1EBD-4503-A2F4-E1CDEFA3CA38][Show the story and the task beside the steps]] | DONE | 2026-10-10 | 2026-10-10 | Add the Story and Task tabs to the runner. They show the docs that drive the scenario, rendered from org, and their links open the doc they point to. |
 | [[id:D4D50543-F5EC-454B-A119-E50276507A65][Take pasted images for a step]] | DONE | 2026-10-10 | 2026-10-11 | A browser cannot capture the screen, so a step takes a pasted or dropped image. Add a BFF route that saves it beside the scenario doc and names it in the step's note. |
+| [[id:C8A0C6B3-2C6A-4946-A306-5C16A5769057][Ask before the scenario runner drops unsaved marks]] | STARTED | 2026-10-11 | | Ask first when a tester leaves the runner with marks or notes that are not saved, and keep a link in a doc inside the tab. |
 
 * The arc
 

@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: C8A0C6B3-2C6A-4946-A306-5C16A5769057
+:END:
+#+title: Task: Ask before the scenario runner drops unsaved marks
+#+description: Leaving the scenario runner by the Back link, a breadcrumb, a menu entry, a link in the Story or Task tab, a reload or a typed address drops every unsaved mark and note without a word. Ask first, and keep a link in a doc inside the tab.
+#+type: task
+#+level: s1
+#+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
+#+owner: marco
+#+branch: feature/leaving-the-scenario-runner-with-unsaved-marks-loses-them
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tester never loses a mark or a note by leaving the runner page without meaning to. The runner asks before it is left with something unsaved, and a link in the story or the task opens inside the tab, so the page is not left at all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- A move inside the app that leaves the runner page, by the Back link, a breadcrumb or a menu entry, asks *Leave without saving?* when a mark or a note is not saved, and offers Stay and Leave.
+- A reload, a close or a typed address makes the browser ask when something is not saved.
+- Nothing is asked when nothing is unsaved, after a save, or for a change of tab, which stays on the page.
+- A link inside the Story or Task tab opens the linked doc in the tab, with a Back button, so the runner page and its marks stay as they are.
+- A scenario for the QA runner covers the question and the links.
+
+* Plan
+
+- =isDirty= in =runner.ts= says whether the working copy differs from the scenario as the server last answered it, in the status or the note of any step. A save makes the answer the new baseline, so a saved page is clean.
+- =UnsavedGuard= asks in two ways. A blocker, with the =LeaveDialog= to ask, covers a move inside the app, and it blocks only a change of path, because a tab of the page changes the query and stays on the page. A =beforeunload= handler covers a reload, a close and a typed address.
+- A blocker works only under a data router, and the app used a plain =BrowserRouter=. =main.tsx= now builds one data router with a single route that takes every address and renders =ConnectedApp=, which keeps its own route table. Under a plain router, as in a test that renders markup, the guard asks nothing in the app and the unload guard still works.
+- =Context= in the scenario page keeps a stack of the docs followed in a tab, in =docStack.ts=. A link opens a doc on top, and Back takes it off, so a link never leaves the page. The page that shows a doc by its address stays for a link that is opened in a new tab or typed.
+- The QA reads moved to =queries.ts=, and each says =meta: { quiet: true }=. The screen of each states the failure itself, so the app's banner for a request that did not finish only repeated a dead link, which is an expected answer.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- A browser run found two faults that no test of markup could. The blocker blocked a switch to the Story tab, because a tab changes the query of the address, so it now blocks only a change of path. The real story has links to docs the runner does not show, and each showed the app's red banner on top of the message in the tab, so the QA reads are quiet now.
+- The guard drops nothing silently. A tester who chooses Leave drops what is not saved, as before, and a tester who reloads, or closes the tab, is asked by the browser.
+- A harness that is not committed mounted the page under a data router and drove it in headless Chrome. A second run signed in to the real app as the tenant admin, opened the real scenario from the real doc tree, and drove the question, the tab and the links. It never pressed Save, so it changed no file.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:BE03EF33-C2A7-4B0B-A444-BDA37F4663AE][Test the QA validation runner in the browser]] | PENDING | Steps 10 and 11 cover the links in a tab and the question before leaving. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

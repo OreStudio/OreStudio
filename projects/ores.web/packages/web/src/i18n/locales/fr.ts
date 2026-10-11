@@ -1162,8 +1162,15 @@ const fr: SourceCatalogue = {
             noStory: 'Ce scénario ne nomme aucun récit.',
             noTask: 'Ce scénario ne nomme aucune tâche.',
         },
+        leave: {
+            title: 'Quitter sans enregistrer ?',
+            body: 'Des marques ou des notes ne sont pas enregistrées. En partant, vous les perdez.',
+            stay: 'Rester',
+            leave: 'Quitter',
+        },
         docs: {
             title: 'Document',
+            back: 'Retour',
             unresolved:
                 "Aucun récit, aucune tâche ni aucun scénario n'a l'identifiant {id}. Le lien peut pointer vers un document que l'exécuteur n'affiche pas.",
         },

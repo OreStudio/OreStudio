@@ -1154,8 +1154,15 @@ const pt: SourceCatalogue = {
             noStory: 'Este cenário não cita nenhuma história.',
             noTask: 'Este cenário não cita nenhuma tarefa.',
         },
+        leave: {
+            title: 'Sair sem gravar?',
+            body: 'Há marcas ou notas que não foram gravadas. Sair as descarta.',
+            stay: 'Ficar',
+            leave: 'Sair',
+        },
         docs: {
             title: 'Documento',
+            back: 'Voltar',
             unresolved:
                 'Nenhuma história, tarefa ou cenário tem o id {id}. O link pode apontar para um documento que o executor não mostra.',
         },

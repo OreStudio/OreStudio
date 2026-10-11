@@ -362,8 +362,8 @@ account_party_repository::read_all_by_account(const boost::uuids::uuid& account_
                 const bool replaced = !rows.empty() &&
                                       rows.back().link.party_id == row.link.party_id &&
                                       rows.back().link.version == row.link.version + 1;
-                if (entity.valid_to.str() != MAX_TIMESTAMP_NAIVE && !replaced)
-                    row.closed_at = timestamp_to_timepoint(entity.valid_to);
+                if (!replaced)
+                    row.closed_at = validity_end(entity.valid_to);
                 rows.push_back(std::move(row));
             }
             return rows;

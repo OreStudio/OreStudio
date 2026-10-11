@@ -1582,8 +1582,8 @@ std::vector<{{name_singular}}_history_row>
                     !rows.empty() &&
                     rows.back().link.{{history_child.column}} == row.link.{{history_child.column}} &&
                     rows.back().link.version == row.link.version + 1;
-                if (entity.valid_to.str() != MAX_TIMESTAMP_NAIVE && !replaced)
-                    row.closed_at = timestamp_to_timepoint(entity.valid_to);
+                if (!replaced)
+                    row.closed_at = validity_end(entity.valid_to);
                 rows.push_back(std::move(row));
             }
             return rows;

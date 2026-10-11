@@ -58,8 +58,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Official portfolios of Plc before and after an import into its sandbox | 22 and 22 | =compass sql -f v12.sql= (count with =sandbox_id is null=) | 6576b339f9 |
-| Official books of Plc before and after | 23 and 23 | same | 6576b339f9 |
+| Official portfolios of Plc before and after an import into its sandbox | 20 and 20 | =compass sql -f v12.sql= (count with =sandbox_id is null=) | fe53d292ec |
+| Official books of Plc before and after | 22 and 22 | same | 6576b339f9 |
 | Sandbox portfolios the import added | 2 (one root, one child) | same | 6576b339f9 |
 | Virtual books the import added | 1, purpose =Test=, ledger feed =None= | same | 6576b339f9 |
 | Trades saved | 2, booking nature =test=, netting set =ORE-SAMPLE-NS-JPMC-MAIN-01= of Plc | same | 6576b339f9 |
@@ -109,14 +109,20 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Shell party check compares text | ore_commands.cpp | Accepted | Compared as UUIDs now. |
+| 2 | Filter in C++, not SQL; no filter without a session party | repository template | Declined | The party is optional at run time, and a SQL clause needs two query shapes. A service context with no party still reads every party; callers that take front() there were not audited. |
+| 3 | Conflicting filter on party_contact_information | repository template | Accepted | A finder with a parent column is pinned to its parent's party and keeps no party filter. |
+| 4 | Sandbox rules in the comment not enforced | import_choices.hpp | Accepted | Reworded: the database enforces the shared sandbox; the choice does not apply to an existing target book. |
+| 5 | No default outside the choices file | task | Accepted | New backlog task: Default the import wizard and web to the sample sandbox. |
+| 6 | Test coverage | tests | Declined | No unit test for the key finder or the test booking; the sandbox import is their test. Whether CI has the ORE examples was not checked. |
+| 7 | Repeated comment in generated files | template | Declined | Generated code. |
 
 * Result
 
 An ORE sample import with a =sandbox_id= lands in the party's sample sandbox.
-Verified on a provisioned database: Plc's import created its portfolios and one
+Verified on a clean provision of the final code: Plc's import created its portfolios and one
 virtual book in the sandbox and saved two test trades against Plc's own sample
-netting set. Plc's official tree did not change (22 portfolios, 23 books).
+netting set. Plc's official tree did not change (20 portfolios, 22 books).
 
 *Not met.*
 

@@ -37,7 +37,7 @@
 
 begin;
 
-select plan(9);
+select plan(10);
 
 create temporary table t_other on commit drop as
 select id from ores_iam_tenants_tbl
@@ -74,8 +74,31 @@ select set_config('app.current_tenant_id', coalesce((select id::text from t_othe
     ores_utility_system_tenant_id_fn()::text), true);
 select set_config('app.current_actor', '', true);
 
+-- The system tenant id in a write means the session tenant, so a tenant that
+-- states the system tenant still writes into its own.
+insert into ores_iam_accounts_tbl (
+    id, tenant_id, version, account_type, username, email, shared,
+    modified_by, performed_by, change_reason_code, change_commentary
+) select
+    'a0000000-0000-0000-0000-0000000000a2'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    'service', 'shared_probe_forged', 'forged@system.ores', true,
+    current_user, current_user, 'system.test', 'Shared visibility probe'
+where exists (select 1 from t_other);
+
+-- A data-modifying WITH must be top level, so the counts are taken first.
+create temporary table t_changed on commit drop as
+with changed as (
+    update ores_iam_accounts_tbl set job_title = 'Changed by a tenant'
+    where id = (select id from t_service)
+    returning 1)
+select count(*)::int as n from changed;
+
+-- A delete is a rule that closes the row, so there is nothing to count: the
+-- test reads the row back afterwards.
+delete from ores_iam_accounts_tbl where id = (select id from t_service);
+
 select case when not exists(select 1 from t_other)
-    then skip('no other active tenant is provisioned', 9)
+    then skip('no other active tenant is provisioned', 10)
     else collect_tap(
         ok(exists(select 1 from ores_iam_accounts_tbl
                   where tenant_id = ores_utility_system_tenant_id_fn()
@@ -96,32 +119,20 @@ select case when not exists(select 1 from t_other)
            'the existence check does not find a system tenant account that is not shared'),
         ok(not ores_iam_account_exists_fn('a0000000-0000-0000-0000-0000000000ff'::uuid),
            'the existence check does not find an account that does not exist'),
-        is((with changed as (
-                update ores_iam_accounts_tbl set job_title = 'Changed by a tenant'
-                where id = (select id from t_service)
-                returning 1)
-            select count(*)::int from changed),
-           0,
-           'a tenant changes no shared account'),
-        is((with removed as (
-                delete from ores_iam_accounts_tbl
-                where id = (select id from t_service)
-                returning 1)
-            select count(*)::int from removed),
-           0,
+        is((select n from t_changed), 0, 'a tenant changes no shared account'),
+        ok(exists(select 1 from ores_iam_accounts_tbl
+                  where id = (select id from t_service)
+                    and valid_to = ores_utility_infinity_timestamp_fn()),
            'a tenant removes no shared account'),
-        throws_ok(
-            format($$insert into ores_iam_accounts_tbl (
-                id, tenant_id, version, account_type, username, email, shared,
-                modified_by, performed_by, change_reason_code, change_commentary
-            ) values (
-                'a0000000-0000-0000-0000-0000000000a2'::uuid, %L::uuid, 0,
-                'service', 'shared_probe_forged', 'forged@system.ores', true,
-                current_user, current_user, 'system.test', 'Shared visibility probe'
-            )$$, ores_utility_system_tenant_id_fn()),
-            '42501',
-            null,
-            'a tenant writes no account for the system tenant'))
+        is((select tenant_id from ores_iam_accounts_tbl
+            where id = 'a0000000-0000-0000-0000-0000000000a2'::uuid),
+           ores_iam_current_tenant_id_fn(),
+           'an account that a tenant writes for the system tenant lands in the tenant'),
+        is((select count(*)::int from ores_iam_accounts_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and username = 'shared_probe_forged'),
+           0,
+           'a tenant writes no account for the system tenant'))
     end;
 
 select * from finish();

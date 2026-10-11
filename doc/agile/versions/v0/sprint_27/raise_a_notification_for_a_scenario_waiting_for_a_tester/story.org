@@ -23,9 +23,9 @@ Story 3 of the QA runner arc. A scenario that waits for a tester raises an inbox
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Scaffolded. The questions under Open questions need an answer before tasks are made. |
+| Now           | Scaffolded. One task holds the open questions. |
 | Waiting on    | Nothing.                               |
-| Next          | Answer the open questions, then break the story into tasks. |
+| Next          | Start the task that settles the open questions. |
 | Last touched  | 2026-10-11                               |
 
 * Acceptance
@@ -41,6 +41,7 @@ Story 3 of the QA runner arc. A scenario that waits for a tester raises an inbox
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:3F112CEB-56D8-40F9-AA01-1C02DB0C370F][Scaffold story: Raise a notification for a scenario waiting for a tester]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B2206389-EB1E-414C-BD5A-B36E191C3C50][Settle the open questions of the story]] | BACKLOG | | | Answer the four open questions of the story, record the answers in its Decisions, and break the story into tasks. The questions are who raises the notification and when, whether the module runs in production, what once for each scenario means, and whether assignment is in the story. |
 
 * Decisions
 

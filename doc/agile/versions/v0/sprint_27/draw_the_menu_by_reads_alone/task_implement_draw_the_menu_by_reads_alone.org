@@ -8,7 +8,7 @@
 #+filetags: :draw_the_menu_by_reads_alone:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-draw-the-menu-by-reads-alone
-#+pr:
+#+pr: 3145
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3145][#3145]] | [web,iam] Draw the installation screens by a read of their own |
 
 * Review
 

@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 4920F67A-14E2-4AFD-95BE-C74FDC3ECF5D
+:END:
+#+title: Task: List the series identities a party can see
+#+description: Add a marketdata operation that returns the typed identity of each series the caller's party can see.
+#+type: task
+#+level: s1
+#+filetags: :curve_screen_series_picker:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09ACD454-F923-46B8-9A23-96C226295CEA][Pick a curve from the series a party can see]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A caller reads which curves and surfaces its party can see, as typed identities it can pass to the other curve reads.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:09ACD454-F923-46B8-9A23-96C226295CEA][Pick a curve from the series a party can see]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- The operation returns asset class, scope, instrument type, quote type, the other identity fields and the owning party for each visible series.
+- A caller of another party does not receive the series, and the operation checks a read permission.
+- A test with two parties shows each party its own series only.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

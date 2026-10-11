@@ -64,7 +64,8 @@ struct market_data_provider final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique provider code, lower case, used as the provider segment of a source name.
+     * @brief Unique provider code: lower case letters, digits, underscores and hyphens, starting
+     * with a letter. It is the provider segment of a source name.
      *
      * Examples: 'generic', 'bloomberg', 'refinitiv', 'cme'.
      */

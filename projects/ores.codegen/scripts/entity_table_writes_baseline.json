@@ -692,6 +692,12 @@
     },
     {
       "kind": "sql_function",
+      "name": "ores_synthetic_publish_market_data_providers_from_dq_fn",
+      "file": "projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql",
+      "reason": "publishes the provider catalogue the dq dataset stages into the system tenant in one idempotent pass, the synthetic publish-from-dq pattern beside it"
+    },
+    {
+      "kind": "sql_function",
       "name": "ores_variability_system_settings_set_fn",
       "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
       "reason": "predates the check"

@@ -233,7 +233,8 @@ TEST_CASE("a market feed step reads its dataset", tags) {
 }
 
 TEST_CASE("a market feed step that names no dataset is refused", tags) {
-    CHECK_THROWS_WITH(parse_market_feed_arguments(R"({})"), "The step names no 'dataset' argument.");
+    CHECK_THROWS_WITH(parse_market_feed_arguments(R"({})"),
+                      "The step names no 'dataset' argument.");
     CHECK_THROWS_WITH(parse_market_feed_arguments(R"({"dataset": 7})"),
                       "The step's argument 'dataset' is not a string.");
 }

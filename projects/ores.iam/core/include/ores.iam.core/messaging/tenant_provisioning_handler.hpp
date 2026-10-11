@@ -1132,8 +1132,7 @@ private:
                 const auto party_id = boost::uuids::to_string(party.id);
                 auto party_client =
                     make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
-                if (!create_feed_bindings(
-                        system_client, party_client, arguments.dataset, party_id))
+                if (!create_feed_bindings(system_client, party_client, arguments.dataset, party_id))
                     throw std::runtime_error("The feeds of '" + arguments.dataset +
                                              "' was not bound for the party '" + party_id + "'.");
                 bound.push_back(party_id);
@@ -1557,8 +1556,7 @@ private:
             auto resp = resolve_client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_feed_bindings: list " << what
-                    << " failed: " << resp.result.message;
+                    << "create_feed_bindings: list " << what << " failed: " << resp.result.message;
                 return false;
             }
             for (const auto& c : configs_of(resp))
@@ -1584,8 +1582,7 @@ private:
             auto resp = save_client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_feed_bindings: list feed_bindings failed: "
-                    << resp.result.message;
+                    << "create_feed_bindings: list feed_bindings failed: " << resp.result.message;
                 return false;
             }
             for (const auto& b : resp.feed_bindings)
@@ -1642,8 +1639,7 @@ private:
         }
         if (sources.empty())
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "create_feed_bindings: no enabled feed sources for dataset "
-                << dataset_code;
+                << "create_feed_bindings: no enabled feed sources for dataset " << dataset_code;
         return all_saved;
     }
 

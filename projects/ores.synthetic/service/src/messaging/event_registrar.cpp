@@ -27,8 +27,8 @@
 #include "ores.synthetic.service/messaging/ir_curve_generation_config_process_parameter_value_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/ir_curve_template_entry_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/market_data_generation_config_event_registrar.hpp"
-#include "ores.synthetic.service/messaging/yield_curve_process_parameter_definition_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/market_data_provider_event_registrar.hpp"
+#include "ores.synthetic.service/messaging/yield_curve_process_parameter_definition_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/yield_curve_process_type_event_registrar.hpp"
 
 namespace ores::synthetic::service::messaging {

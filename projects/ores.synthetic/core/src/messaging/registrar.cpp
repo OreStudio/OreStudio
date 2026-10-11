@@ -37,11 +37,11 @@
 #include "ores.synthetic.core/messaging/ir_curve_template_entry_registrar.hpp"
 #include "ores.synthetic.core/messaging/market_data_generation_config_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/market_data_generation_config_registrar.hpp"
+#include "ores.synthetic.core/messaging/market_data_provider_history_provider_registrar.hpp"
+#include "ores.synthetic.core/messaging/market_data_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_parameter_definition_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_parameter_definition_registrar.hpp"
-#include "ores.synthetic.core/messaging/market_data_provider_history_provider_registrar.hpp"
-#include "ores.synthetic.core/messaging/market_data_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_type_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_type_registrar.hpp"
 #include <memory>

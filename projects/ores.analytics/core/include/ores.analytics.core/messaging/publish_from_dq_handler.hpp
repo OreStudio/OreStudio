@@ -20,10 +20,10 @@
 #ifndef ORES_ANALYTICS_CORE_MESSAGING_PUBLISH_FROM_DQ_HANDLER_HPP
 #define ORES_ANALYTICS_CORE_MESSAGING_PUBLISH_FROM_DQ_HANDLER_HPP
 
+#include "ores.analytics.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::messaging {
 

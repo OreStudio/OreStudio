@@ -212,6 +212,12 @@
     },
     {
       "kind": "sql_function",
+      "name": "ores_dq_publish_configuration_document_fn",
+      "file": "projects/ores.sql/create/dq/dq_publish_configuration_document_create.sql",
+      "reason": "writes the live tables of a configuration document from its staging tables, as every publish from DQ does"
+    },
+    {
+      "kind": "sql_function",
       "name": "ores_dq_subject_areas_upsert_fn",
       "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
       "reason": "predates the check"

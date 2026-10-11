@@ -8,7 +8,7 @@
 #+filetags: :bring_the_qa_validation_runner_to_ores_web:sprint_27:v0:
 #+owner: marco
 #+branch: feature/close-out-the-qa-validation-runner-story
-#+pr:
+#+pr: 3112
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3112][#3112]] | [agile] Close out the QA validation runner story |
 
 * Review
 

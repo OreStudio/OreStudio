@@ -26,10 +26,12 @@
 #define ORES_IAM_CORE_MESSAGING_ACCOUNT_PARTY_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::messaging {
 
-void register_account_party_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_IAM_CORE_EXPORT void
+register_account_party_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

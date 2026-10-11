@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: A467F25F-F721-4067-B503-5DBAF1F8F822
+:END:
+#+title: Task: Prototype the trade list and the trade page
+#+description: Initial task for: Prototype the trade journeys
+#+type: task
+#+level: s1
+#+filetags: :prototype_the_trade_journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/implement-prototype-the-trade-journeys
+#+pr: 3123
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:64C7B09B-4B84-48F3-9D3B-010E458B4E21][Prototype the trade journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Four prototypes under doc/prototypes/trades/ serve all seven trade journeys as entity screens under the UX standards. The trade page carries review, amendment and lifecycle events. Booking, ORE import and export are workflows reached from the trade list. A structure has its own page. The prototypes link to the trade-entry prototype for pricing and composing a structure.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:64C7B09B-4B84-48F3-9D3B-010E458B4E21][Prototype the trade journeys]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- A Trades prototype group exists on the prototypes index with a group page.
+- Each prototype has a design note that maps its screens to the journeys it serves.
+- Every journey is served by a named prototype state, and the notes say which.
+- The prototypes follow the entity screen specification: server paged list, tabs in the address, a card with Edit and a reason dialog, a timeline, a Workflows menu, references as links.
+- The prototypes link to the trade-entry prototype and reuse its structure version rule.
+
+* Plan
+
+Read the entity screen specification, the menu structure, the prototype rules and the trade-entry prototype. Build four standalone prototypes under =doc/prototypes/trades/= on one shared stylesheet and data file: the trade list and page, booking, ORE import and export, and a structure. Link them to each other and to trade-entry. Test every state in headless Chrome. Write a design note for each and a group page.
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3123][#3123]] | [agile] Prototype the trade journeys |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The search box loses focus while typing, because the list re-draws | trade-page/prototype.js | accept | The search box now restores its focus and caret after the re-draw. Tested: a search typed with the caret at 2 keeps the caret at 2. |
+| 2 | The breadcrumb shows Trades twice | trade-page/prototype.js | decline | The entity specification sets the trail as Home, the area, the list, then the subject. The area and the list are both named Trades. The names are deliberate, and a rename of the list is a decision for the menu page. |
+| 3 | The empty-row colspan is 9 with no selection column | trade-page/prototype.js | accept | It is 9 with the selection column and 8 without. |
+| 4 | The id of a rebooked trade can differ between the message and the new trade | trade-page/prototype.js | accept | The id is chosen once, when the event is recorded, from the trades and the pending writes. Tested: two novations before Refresh give two different ids. |
+| 5 | Four identical copies of the shared files; nothing keeps them identical | trades/index.org, check_prototype_inventory.py | accept | The copies are deliberate, so each prototype stands alone. The group page now says so, and the inventory check fails when the copies differ. Tested by changing one copy. |
+| 6 | Two statements on one line, and end-of-line comments | trade-page/prototype.js | accept | Split the statements and moved the comments above the code. |
+
+* Result
+
+Four prototypes and a group page are under =doc/prototypes/trades/=: =trade-page=, =book-a-trade=, =ore-portfolio= and =structure-page=. Each has a design note. The group page maps the UX rules to where each can be seen, and lists the decisions the owner must make.
+
+Reading the domain notes while building showed that the journeys written in the previous story were wrong in four places. They are corrected in this branch: the kind of change comes first and bounds the fields; confirmation is the counterparty's, not an internal approval; a novation and a book move are a cancel and rebook with a link; and operational authorisation has no journey. The last is filed as a capture.
+
+The prototypes found three more server gaps: 28 of 121 trade types have no instrument table, so they cannot be booked; booking writes the instrument in a second call, so a half-booked trade is possible; and the ORE upload path of a browser is undefined.

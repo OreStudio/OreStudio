@@ -78,11 +78,16 @@ export const qaQueries = {
         }),
 };
 
+export function chartsKey(sprint: string | undefined): readonly [string, string] {
+    return ['agile-charts', sprint ?? ''];
+}
+
 export function boardKey(sprint: string | undefined): readonly [string, string] {
     return ['agile-board', sprint ?? ''];
 }
 
 export const AGILE_SPRINTS_KEY = ['agile-sprints'] as const;
+export const AGILE_TREES_KEY = ['agile-trees'] as const;
 export const AGILE_BACKLOG_KEY = ['agile-backlog'] as const;
 
 /** The reads of the agile browser. Quiet for the same reason as the QA reads. */
@@ -94,10 +99,24 @@ export const agileQueries = {
             meta: QUIET,
         }),
 
+    trees: () =>
+        queryOptions({
+            queryKey: AGILE_TREES_KEY,
+            queryFn: () => agile.trees(),
+            meta: QUIET,
+        }),
+
     backlog: () =>
         queryOptions({
             queryKey: AGILE_BACKLOG_KEY,
             queryFn: () => agile.backlog(),
+            meta: QUIET,
+        }),
+
+    charts: (sprint: string | undefined) =>
+        queryOptions({
+            queryKey: chartsKey(sprint),
+            queryFn: () => agile.charts(sprint),
             meta: QUIET,
         }),
 

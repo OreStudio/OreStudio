@@ -53,7 +53,7 @@ with a tab for each aspect, and the History timeline, all as the [[id:BD492939-1
 [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] describe. The Qt client had a detail dialog and a history dialog. They become
 a page and a tab, and the person reads one subject on one page.
 
-No wireframe is drawn here. The prototype story draws the screens, from the
+The [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] draw it in =trade-page=: the list, the page and the History tab. No wireframe is drawn here. The prototype story draws the screens, from the
 [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX standards]] and from this use case.
 
 * Entities composed
@@ -76,7 +76,9 @@ No wireframe is drawn here. The prototype story draws the screens, from the
 | History | List the activities of a trade | =trading.v1.trade_activities.list= filters only by activity id | missing |
 | As of | Read the trade and its parts as of a date | the =as_of= field of the list requests (checked on trades, trade states and the bond instrument) | exists |
 
-Status is one of =exists=, =partial=, or =missing=. A subject that contains
+Status is one of =exists=, =partial=, or =missing=.
+A screen reads and writes through the standard entity operations of the [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]]. Where a row below says =missing=, the fix is a change to the entity's model (a filterable or searchable column, or a scoped read) and not a new operation.
+ A subject that contains
 =<instrument>= stands for the one instrument table the trade type routes to. The plural
 is written with a plain =s=. A table whose plural is irregular, such as
 =trade_activities=, has its own subject: check the protocol header, not the pattern.

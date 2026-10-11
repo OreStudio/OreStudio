@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 64C7B09B-4B84-48F3-9D3B-010E458B4E21
+:END:
+#+title: Story: Prototype the trade journeys
+#+description: Clickable prototypes that serve the seven trade journeys: the trade list and trade page, booking, the ORE import and export workflows, and the structure page. They follow the entity screen specification and link to the existing trade-entry prototype for pricing and structure composition.
+#+type: story
+#+level: s2
+#+filetags: :trading:ux:prototype:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Four prototypes under doc/prototypes/trades/ serve all seven trade journeys as entity screens under the UX standards. The trade page carries review, amendment and lifecycle events. Booking, ORE import and export are workflows reached from the trade list. A structure has its own page. The prototypes link to the trade-entry prototype for pricing and composing a structure.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- A Trades prototype group exists on the prototypes index with a group page.
+- Each prototype has a design note that maps its screens to the journeys it serves.
+- Every journey is served by a named prototype state, and the notes say which.
+- The prototypes follow the entity screen specification: server paged list, tabs in the address, a card with Edit and a reason dialog, a timeline, a Workflows menu, references as links.
+- The prototypes link to the trade-entry prototype and reuse its structure version rule.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8C6035C1-6609-470A-BE32-A207F9E464A3][Scaffold story: Prototype the trade journeys]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A467F25F-F721-4067-B503-5DBAF1F8F822][Prototype the trade list and the trade page]] | DONE | 2026-10-11 | 2026-10-11 | Initial task for: Prototype the trade journeys |
+
+* Decisions
+
+- Four prototypes, not seven: the journeys are use cases, and several are served by one entity page. Review, amendment and lifecycle events are one trade page. Booking, import, export and grouping are workflows.
+- The kind of change comes first and bounds the editable fields, as the trade versioning note says.
+- Booking is drawn as a page and as a sequence, so a trader can compare. No decision is made.
+- The prototypes need a Trades area in the menu, an exception for the trade header, and a journey for operational authorisation. They are listed on the group page for the owner.
+
+* Out of scope
+
+- Pricing and the composition of a structure: the trade-entry prototype owns them.
+- The server-side gaps. They are listed on the journey pages and the hub.

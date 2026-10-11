@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 774A5408-AED2-4A69-8F52-4860D1B80B4C
+:END:
+#+title: Rework an instrument family to the instrument table rule
+#+description: Checklist for reworking one asset class to the instrument table rule: analyse, model, generate, map, prove. Built from the bond pilot and the rates rework.
+#+type: runbook
+#+level: cross
+#+filetags: :llm:trading:instrument:data_model:data_oriented_design:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
+
+* Goal
+
+Take one instrument family from a wide table to a header, product fact tables and shared children, with exact decimals and an ORE round trip that comes back as the same rows.
+
+* Preconditions
+
+- The family has a story in the product backlog or the sprint, or you are about to promote one.
+- You have read section 14 of [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design]] and [[id:B9DAC38A-BEB1-4658-87BC-DFF901033E84][exact numbers and economic change]].
+- The bond and rates families are done. Use them as the model: the bond pilot settled the shape, and the rates rework added the common-date view, the generated eventing tests and the exact digits.
+- You work one unit at a time. Each unit is a task, a branch and a PR. See [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]].
+
+* The three principles
+
+Apply these in every unit. They are the reason for most of the steps below.
+
+1. *Data-oriented approach.* Organise the tables by how the code reads and writes the data, not by product taxonomy. Key every row by its trade. A list is rows of a child table. State the variation as a header with one fact table per product.
+2. *Split data by usage, hot and cold.* Keep the fields read together on the main path in the header and the product fact table. Put rarely read data in its own table. A column that no mapper writes leaves the model. A column belongs on the header only if it holds for every code of the family.
+3. *Exact decimals for money.* Every rate, spread, notional, amount, price, strike, fee and recovery rate is a decimal in the domain type and =numeric(38, 12)= in the column. A double never enters the persisted domain. At the ORE boundary, keep the digits the document wrote.
+
+* Steps
+
+** Phase 0: set up the story
+
+- [ ] Promote the family's story from the backlog's =next= bucket into the sprint with =git mv=, so its identifier and history stay. Retag it, list it in the sprint's Stories table, and remove it from the backlog index.
+- [ ] Scaffold the first task, the analysis, with =compass add task= and start it.
+- [ ] Reset the task branch onto =origin/main= if =compass task start= switched to an old branch. Do this at the start of every unit.
+
+** Phase 1: analyse (no code)
+
+The analysis is one task. It writes =design.org= and an ER diagram beside the story. The bond analysis found twelve findings and the rates analysis twenty; each is a finding with evidence.
+
+- [ ] *Define the family.* List the catalogue codes that route to the family. For each code, record whether an importer writes it and which corpus documents hold it. Count the documents in =Example_Trades= and in all example directories.
+- [ ] *Inventory every surface.* Models, SQL, domain C++, mappers, repositories, services, messaging, shell commands, history mapper, TypeScript protocol, the ORE mapper and the ORE binding structs, and the tests.
+- [ ] *Make the use table.* For each column of the current table, record which code writes it and which code reads it. This is the hot and cold split. Note the columns no mapper writes and the columns written and never read.
+- [ ] *Compare with the ORE schema.* For each product, list the elements the schema has and no column holds. Check that the export writes every required element. An export that omits a required element is not valid ORE.
+- [ ] *Find the money.* List every money column and its type. List the ORE binding members that carry a money value and are bare floats. Each one is a digits task.
+- [ ] *Write the findings.* One row each, with the evidence that proves it. Check each number against the tree and put the command in the task's Measurements.
+- [ ] *Propose the model.* A header with the columns every code shares, one fact table per product keyed by the trade, shared children reused (legs, options, strikes, schedules), and a new child only where no shared shape fits. Record the rejected alternatives.
+- [ ] *Draw the diagram.* Write =design_er.puml= and render =design_er.png=. Read the picture.
+- [ ] *Map the current model onto the target.* Every current column gets a destination or a reason to drop it.
+- [ ] *State what each surface must change* and the common-date mapping.
+- [ ] *Stage the rework* into units that each end in a check. Scaffold each unit as a BACKLOG task.
+- [ ] *Review the design* with the [[id:AE72D444-02B1-4428-B56C-062B849ED568][data-model review skill]], then decline or accept each finding in the task's Review table.
+
+** Phase 2: the units
+
+The order below is the order that worked for rates, with the digits moved first because they change the goldens. Adjust it to the family, and keep each unit small enough to check.
+
+- [ ] *Repair the routing.* The catalogue's =instrument= column names the table each code routes to. A code with no importer has no table, so leave its =instrument= empty. Generate the routing from the catalogue; do not hand-write it.
+- [ ] *Carry the digits.* Make the family's money members lexical leaves in the ORE binding through =scripts/reapply_ore_lexical_form.py=, never by hand. Read each one with =exact_decimal= and write it back with =set_exact=. Make every money column =numeric(38, 12)=. Add a mapper test that holds the digits of each member, and regenerate the goldens that change.
+- [ ] *Write the legs and children.* Reuse the shared leg, option, strike and schedule tables. Add a nullable column to a shared table before you add a table that repeats it.
+- [ ] *Author the header and the fact tables.* One model each, with the family's codes in the header's check, the trade as the key, and the header's delete cascade naming every fact table and child. Pin each row to the anchor's trade type and party. Delete the old shape and every hand-written file it needed.
+- [ ] *Close the round trip.* Write the reverse mapping of every product from the stored rows. Write every required ORE element. Test each product's fields through the round trip.
+- [ ] *Map the dates into the common-date view.* Declare =:common_date:= on the header and on the fact tables keyed by the trade alone.
+- [ ] *Generate the eventing tests.* Set the eventing flag in the model's drawer. Set =party_scoped_writes= on the fact tables. Give a generated date pair a =generator_expr= that keeps them in order.
+- [ ] *Prove the round trip over the corpus.* Import each trade, export it alone, import it again, and compare the stored family rows. Pin the document and trade counts. Keep a closed set of known differences and fail it in both directions. Record the counts with their commands.
+
+** Phase 3: gates for every unit
+
+Run these before the PR. Record the results in the PR's testing evidence.
+
+- [ ] Build the touched targets, then run their suites with =.env= loaded.
+- [ ] After a schema change, run =compass db recreate -y -k=. Do not write a migration.
+- [ ] Run the codegen drift check on the committed tree: =check_component_drift.py --component trade=.
+- [ ] Run the codegen tests, the cmake sources check, =check_handler_permissions.py= and =check_sql_hygiene.py=.
+- [ ] Run =projects/ores.codegen/validate_docs.sh= and the misspell check.
+- [ ] Rebase onto =origin/main= before the PR. After a rebase, regenerate and run the drift check again, because the templates may have changed. Recreate the database if the schema moved.
+- [ ] Close the task bookkeeping before the PR: Result, Measurements, Review, story and sprint rows.
+- [ ] After the last unit, set the story DONE in both the story and the sprint.
+
+* Pitfalls
+
+Each of these cost a round in the rates or credit work.
+
+- *A stale task branch.* =compass task start= may switch to a branch made from an old main. Reset it to =origin/main= first.
+- *A float round trip that looks equal.* Comparing the first import with the second hides a stored float artifact, because both carry it. Compare against the document's own digits.
+- *A global writer change moves goldens.* Regenerate the goldens by moving the old file aside and running the bootstrap, then read every changed line. Each must be numeric text.
+- *A patch anchor that matches twice.* The reapply script must refuse an anchor that is missing or not unique.
+- *A generated test with no party scope.* A fact table written under a trade needs =party_scoped_writes=, or its test aborts on an empty party.
+- *Two random dates.* A generator that draws a start and an end independently breaks a =maturity > start= check on some runs.
+- *A pinned bug.* A test that expects the float artifact keeps the bug alive. Correct it when you fix the member.
+- *A claim without a command.* A number in a design or a Result has its command and commit in Measurements, or it is not a measurement.
+
+* Postconditions
+
+- The family has a header, product fact tables and shared children, generated from models.
+- Every money value is stored and exported as the digits the document wrote.
+- The corpus proof passes with pinned counts and a closed set of known differences.
+- The old shape and its hand-written stack are gone, and no migration was written.
+- The story and the sprint row are DONE.
+
+* See also
+
+- [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], section 14, which states the instrument table rule.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]].
+- [[id:B9DAC38A-BEB1-4658-87BC-DFF901033E84][Exact numbers and economic change]].
+- [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][The component architecture audit]], which a closed task walks over each component it touched.
+- [[id:5AE311D8-36A8-4892-AAB4-DB3A13B00B6F][Add a task to an existing story]].

@@ -358,7 +358,7 @@ function confirmTicket() {
 
 /* Book carries the economics across, and stamps the initial NPV with the
  * provenance the booking screen cannot derive. */
-function book() {
+function bookDeal() {
     const npv = structureNpv();
     structure.initialNpv = {
         amount: String(Math.round(npv * 100) / 100),
@@ -432,7 +432,7 @@ function wire() {
         btn.addEventListener('click', () => btn.closest('dialog').close());
     });
 
-    document.getElementById('book').addEventListener('click', book);
+    document.getElementById('book').addEventListener("click", bookDeal);
 }
 
 function fillProductTypes() {

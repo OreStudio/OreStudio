@@ -40,6 +40,8 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/writable_pipe.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/interprocess/sync/file_lock.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/process/v2/environment.hpp>
 #include <boost/process/v2/process.hpp>
 #include <boost/process/v2/start_dir.hpp>
@@ -458,6 +460,61 @@ std::string read_file_text(const fs::path& path) {
 }
 
 /**
+ * @brief Make sure the engine package for an app version is unpacked in the cache.
+ *
+ * The wrappers on one host share the cache directory. A lock file per package
+ * lets one wrapper download while the others wait, so a host fetches each
+ * package once and not once per wrapper. A failed transfer is tried again,
+ * because a burst of downloads from many hosts can cut one short.
+ */
+void ensure_package(const fs::path& pkg_cache_dir,
+                    const compute::messaging::work_assignment_event& evt,
+                    const std::string& http_base_url,
+                    auto& lg) {
+    if (fs::exists(pkg_cache_dir / "manifest.json"))
+        return;
+
+    fs::create_directories(pkg_cache_dir.parent_path());
+    const fs::path lock_path = pkg_cache_dir.parent_path() / (evt.app_version_id + ".lock");
+    { std::ofstream create_lock(lock_path, std::ios::app); }
+    boost::interprocess::file_lock file_lock(lock_path.string().c_str());
+    boost::interprocess::scoped_lock<boost::interprocess::file_lock> guard(file_lock);
+
+    // Another wrapper may have finished the download while this one waited.
+    if (fs::exists(pkg_cache_dir / "manifest.json"))
+        return;
+
+    constexpr int max_attempts = 4;
+    const fs::path pkg_archive = pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
+    for (int attempt = 1;; ++attempt) {
+        BOOST_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id << " (attempt "
+                                 << attempt << " of " << max_attempts << ")";
+        try {
+            ores::storage::net::http_client::get(
+                make_url(http_base_url, evt.package_uri), pkg_archive, evt.storage_token);
+            break;
+        } catch (const std::exception& e) {
+            std::error_code ignored;
+            fs::remove(pkg_archive, ignored);
+            if (attempt == max_attempts)
+                throw;
+            BOOST_LOG_SEV(lg, warn) << "Package download failed, retrying: " << e.what();
+            std::this_thread::sleep_for(std::chrono::seconds(5 * attempt));
+        }
+    }
+
+    const auto actual_sha256 = ores::utility::crypto::sha256::hex_digest_of_file(pkg_archive);
+    if (actual_sha256 != evt.package_sha256) {
+        throw std::runtime_error("Package SHA256 mismatch for " + evt.app_version_id +
+                                 ": expected " + evt.package_sha256 + ", got " + actual_sha256 +
+                                 " -- refusing to run a corrupted or tampered package");
+    }
+
+    fs::create_directories(pkg_cache_dir);
+    ores::storage::filesystem::archiver::extract(pkg_archive, pkg_cache_dir);
+}
+
+/**
  * @brief Process one work assignment.
  *
  * 1. Download and cache the engine package (if not already cached).
@@ -490,26 +547,10 @@ void process_assignment(ores::nats::service::client& nats,
     std::int64_t duration_ms = 0;
 
     try {
-        const fs::path pkg_cache_dir = fs::path(cfg.work_dir) / "packages" / evt.app_version_id;
-        if (!fs::exists(pkg_cache_dir / "manifest.json")) {
-            BOOST_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id;
-            const fs::path pkg_archive =
-                pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
-            ores::storage::net::http_client::get(
-                make_url(cfg.http_base_url, evt.package_uri), pkg_archive, evt.storage_token);
-
-            const auto actual_sha256 =
-                ores::utility::crypto::sha256::hex_digest_of_file(pkg_archive);
-            if (actual_sha256 != evt.package_sha256) {
-                throw std::runtime_error("Package SHA256 mismatch for " + evt.app_version_id +
-                                         ": expected " + evt.package_sha256 + ", got " +
-                                         actual_sha256 +
-                                         " -- refusing to run a corrupted or tampered package");
-            }
-
-            fs::create_directories(pkg_cache_dir);
-            ores::storage::filesystem::archiver::extract(pkg_archive, pkg_cache_dir);
-        }
+        const fs::path package_root =
+            cfg.package_dir.empty() ? fs::path(cfg.work_dir) / "packages" : fs::path(cfg.package_dir);
+        const fs::path pkg_cache_dir = package_root / evt.app_version_id;
+        ensure_package(pkg_cache_dir, evt, cfg.http_base_url, lg);
 
         const auto mf = read_manifest(pkg_cache_dir);
 

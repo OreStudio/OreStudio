@@ -95,15 +95,8 @@ if [[ "$ROLE" == "compute" ]]; then
     for replica in $(seq 1 "$replicas"); do
         # Same derivation as the local services: UUID v5 of "<hostname>:<replica>".
         host_id="$(python3 -c 'import sys,uuid; print(uuid.uuid5(uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8"), sys.argv[1]))' "$node_name:$replica")"
-        # Each wrapper has its own work directory, so a new one has no engine
-        # package. Seed it from the host's shared cache with hard links, or
-        # every wrapper downloads the package at once and the transfers time out.
         replica_dir="$work_dir/$replica"
         mkdir -p "$replica_dir"
-        if [[ -d "$work_dir/packages" ]]; then
-            rm -rf "$replica_dir/packages"
-            cp -al "$work_dir/packages" "$replica_dir/packages"
-        fi
         podman run -d --rm --network=host --userns=keep-id \
             --name "$container-$replica" \
             --user "${ORES_REMOTE_USER:-$(id -u)}:${ORES_REMOTE_GROUP:-$(id -g)}" \
@@ -116,7 +109,7 @@ if [[ "$ROLE" == "compute" ]]; then
             --log-directory ../log --log-filename ores.compute.wrapper \
             --log-replica-index "$((replica - 1))" \
             --host-id "$host_id" --tenant-id "$tenant_id" \
-            --work-dir "$replica_dir" "${extra_args[@]}" >/dev/null
+            --work-dir "$replica_dir" --package-dir "$work_dir/packages" "${extra_args[@]}" >/dev/null
     done
 
     echo

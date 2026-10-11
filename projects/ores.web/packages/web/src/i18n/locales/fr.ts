@@ -3197,6 +3197,7 @@ const fr: SourceCatalogue = {
         rolesRead: 'lire les rôles et leurs droits',
         rolesAssign: 'attribuer des rôles aux personnes',
         sessionsRead: 'lire les connexions des personnes',
+        curveSnapshotsRead: 'voir les courbes de données de marché',
     },
 
     unavailable: {

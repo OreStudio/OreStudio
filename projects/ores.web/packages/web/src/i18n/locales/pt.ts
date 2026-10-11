@@ -3174,6 +3174,7 @@ const pt: SourceCatalogue = {
         rolesRead: 'ler os papéis e as suas permissões',
         rolesAssign: 'atribuir papéis às pessoas',
         sessionsRead: 'ler as sessões das pessoas',
+        curveSnapshotsRead: 'ver as curvas de dados de mercado',
     },
 
     unavailable: {

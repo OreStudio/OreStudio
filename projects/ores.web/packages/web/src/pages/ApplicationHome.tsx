@@ -515,7 +515,7 @@ function ActiveModules({ holds }: { readonly holds: (code: Permission) => boolea
     return <Tiles tiles={active} />;
 }
 
-function UpcomingModules({ holds }: { readonly holds: (code: string) => boolean }): ReactNode {
+function UpcomingModules({ holds }: { readonly holds: (code: Permission) => boolean }): ReactNode {
     const { t } = useTranslation();
     const icons = { marketdata: 'chart', trading: 'trend', reporting: 'document' } as const;
     // Market data is active for a person who may read it, so it is not also upcoming.

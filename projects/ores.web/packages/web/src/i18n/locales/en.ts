@@ -3152,6 +3152,7 @@ export const en: SourceCatalogue = {
         rolesRead: 'read roles and their grants',
         rolesAssign: 'give roles to people',
         sessionsRead: "read people's sign-ins",
+        curveSnapshotsRead: 'see the market data curves',
     },
 
     unavailable: {

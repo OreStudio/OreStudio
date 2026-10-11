@@ -169,7 +169,7 @@ The test for a screen is one question: which topic would a person look in?
 |------+---------+------------------------------------------|
 | Home | The dashboard, Active modules, Upcoming modules | Always |
 | Reference data | The cards below | Always |
-| Organisation | People (Staff for a member), Hierarchy, Roles and Rescue access | Any one of those screens |
+| Organisation | Staff, Hierarchy, Roles and Rescue access | Any one of those screens |
 | Market data | The prices and curves the platform receives or generates: the FX price feeds and the curve evolution | Any one of those screens |
 | Trades | Trades, and Structures and packages, with the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
@@ -232,6 +232,10 @@ rail. It is one page in tabs, and the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41]
 The account menu stands in the header with the notification bell. It holds My
 profile, My access, Where I work, Security and signing out. These are not
 areas. A person reaches each in one place, as the entity specification says.
+Each has a breadcrumb of Home, then the page, because it belongs to no area.
+
+Every screen has a breadcrumb. Home is the one page without one, because it is
+the first step of every trail.
 
 ** Where a screen belongs
 
@@ -240,7 +244,7 @@ areas. A person reaches each in one place, as the entity specification says.
 | Parties, and its workflows Onboard a party and Onboard a counterparty | Reference data | A party is reference data. The journeys group it with the countries, currencies and business centres it connects to |
 | Shape the book structure, Define instrument conventions | Reference data | They are workflows on shared lists |
 | Currencies, Currency pairs, Desk groups, Holiday calendars, Classifications | Reference data | They are the shared lists |
-| People (Staff for a member), Hierarchy | Organisation | They are about the people of the tenant |
+| Staff, Hierarchy | Organisation | They are about the people of the tenant |
 | Roles | Organisation | A role is held by a person |
 | Rescue access | Organisation | It acts on one person's account |
 | Sign-ins | Operations | It reads sessions and failed sign-ins. It is the Audit of how the installation is used |
@@ -266,7 +270,7 @@ the same thing. A screen has one address.
 | Shape the book structure | =/refdata/books/structure= |
 | Define instrument conventions | =/refdata/conventions= |
 | Classifications | =/refdata/classifications= |
-| People | =/organisation/people= |
+| Staff | =/organisation/people= |
 | Hierarchy | =/organisation/hierarchy= |
 | Roles | =/organisation/roles= |
 | Rescue access | =/organisation/rescue= |

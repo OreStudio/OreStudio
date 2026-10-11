@@ -69,7 +69,7 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
     const { t } = useTranslation();
     const holds = useHolds();
     const system = mode === 'system-administration';
-    const title = system ? t('accounts.title') : t('access.people.title');
+    const title = t('access.people.title');
     const trail = useAreaParts('organisation', title);
     /*
      * The roles column reads one person's grants a row at a time, and that read

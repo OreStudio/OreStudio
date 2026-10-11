@@ -79,6 +79,15 @@ export function useAreaRoot(area: AreaName): readonly TrailStep[] {
     ];
 }
 
+/**
+ * The trail of a person's own page, which belongs to no area: Home, then the
+ * page. The account menu reaches these pages, so there is no area between.
+ */
+export function PageTrail({ screen }: { readonly screen: string }): ReactNode {
+    const { t } = useTranslation();
+    return <Crumbs parts={[{ label: t('shell.menu.home'), to: '/' }, { label: screen }]} />;
+}
+
 /** The trail of a screen that belongs to an area, drawn above its header. */
 export function AreaTrail({
     area,

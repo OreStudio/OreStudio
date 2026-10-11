@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: E88492E7-B8A2-4AD9-B145-2C30F7B7FC69
+:END:
+#+title: Task: Key every history by the row it belongs to
+#+description: Find a row by its whole key in a history provider. A provider reads the newest row that carries the first column of the model's key, and a contact's key is the party and the contact type. Every Acme party has the four contact types, so the history of one party's Legal contact is another party's. The same holds for an identifier read by its value and a business unit read by its code.
+#+type: task
+#+level: s1
+#+filetags: :show_the_whole_history_of_a_party:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A history provider finds a row by its whole key, so one party's contact never shows another party's history.
+
+Find a row by its whole key in a history provider. A provider reads the newest row that carries the first column of the model's key, and a contact's key is the party and the contact type. Every Acme party has the four contact types, so the history of one party's Legal contact is another party's. The same holds for an identifier read by its value and a business unit read by its code.
+
+Evidence: in the Acme tenant each of the four contact types is held by four parties, and the party timeline drops the versions of every contact that is not the newest row, and says part of the history could not be read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C8B594EA-DA2B-44C8-BAE9-526D38F540EE][Show the whole history of a party]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- A history provider finds a row by its whole key, so the history of one party's contact is never another party's.
+- A link table has a history read, a history provider and a field mapper from its model, and a closed link is still in its history.
+- The party timeline shows the opening and closing of a country, a currency and a counterparty link, and states no gap for them.
+- The same holds for any entity with a composite key or a link, not only parties.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

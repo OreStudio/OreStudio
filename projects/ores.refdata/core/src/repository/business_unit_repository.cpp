@@ -233,12 +233,17 @@ std::vector<domain::business_unit> business_unit_repository::read_latest_by_code
                        where("tenant_id"_c == tid && "party_id"_c == party_id &&
                              "unit_name"_c == unit_name && "valid_to"_c == max.value());
 
-    return execute_read_query<business_unit_entity, domain::business_unit>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one.
+    auto found = execute_read_query<business_unit_entity, domain::business_unit>(
         ctx,
         query,
         [](const auto& entities) { return business_unit_mapper::map(entities); },
         lg(),
         "Reading latest business unit by unit_name.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 std::vector<domain::business_unit>
 business_unit_repository::read_latest_by_unit_code(context ctx, const std::string& unit_code) {
@@ -249,12 +254,17 @@ business_unit_repository::read_latest_by_unit_code(context ctx, const std::strin
         sqlgen::read<std::vector<business_unit_entity>> |
         where("tenant_id"_c == tid && "unit_code"_c == unit_code && "valid_to"_c == max.value());
 
-    return execute_read_query<business_unit_entity, domain::business_unit>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one.
+    auto found = execute_read_query<business_unit_entity, domain::business_unit>(
         ctx,
         query,
         [](const auto& entities) { return business_unit_mapper::map(entities); },
         lg(),
         "Reading latest business unit by unit_code.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::business_unit>

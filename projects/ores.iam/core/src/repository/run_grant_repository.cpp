@@ -226,12 +226,17 @@ run_grant_repository::read_latest_by_resource(context ctx, const std::string& re
         sqlgen::read<std::vector<run_grant_entity>> |
         where("tenant_id"_c == tid && "resource"_c == resource && "valid_to"_c == max.value());
 
-    return execute_read_query<run_grant_entity, domain::run_grant>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one.
+    auto found = execute_read_query<run_grant_entity, domain::run_grant>(
         ctx,
         query,
         [](const auto& entities) { return run_grant_mapper::map(entities); },
         lg(),
         "Reading latest run grant by resource.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::run_grant>

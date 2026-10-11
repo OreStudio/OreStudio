@@ -235,12 +235,17 @@ std::vector<domain::party_identifier> party_identifier_repository::read_latest_b
                        where("tenant_id"_c == tid && "party_id"_c == party_id &&
                              "id_scheme"_c == id_scheme && "valid_to"_c == max.value());
 
-    return execute_read_query<party_identifier_entity, domain::party_identifier>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one.
+    auto found = execute_read_query<party_identifier_entity, domain::party_identifier>(
         ctx,
         query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
         lg(),
         "Reading latest party identifier by id_scheme.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 std::vector<domain::party_identifier>
 party_identifier_repository::read_latest_by_id_value(context ctx, const std::string& id_value) {
@@ -251,12 +256,17 @@ party_identifier_repository::read_latest_by_id_value(context ctx, const std::str
         sqlgen::read<std::vector<party_identifier_entity>> |
         where("tenant_id"_c == tid && "id_value"_c == id_value && "valid_to"_c == max.value());
 
-    return execute_read_query<party_identifier_entity, domain::party_identifier>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one.
+    auto found = execute_read_query<party_identifier_entity, domain::party_identifier>(
         ctx,
         query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
         lg(),
         "Reading latest party identifier by id_value.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::party_identifier>

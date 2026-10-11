@@ -249,8 +249,10 @@ credit_simulation_netting_set_config_repository::read_latest_by_netting_set_id(
                        where("tenant_id"_c == tid && "netting_set_id"_c == netting_set_id &&
                              "valid_to"_c == max.value());
 
-    return execute_read_query<credit_simulation_netting_set_config_entity,
-                              domain::credit_simulation_netting_set_config>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one.
+    auto found = execute_read_query<credit_simulation_netting_set_config_entity,
+                                    domain::credit_simulation_netting_set_config>(
         ctx,
         query,
         [](const auto& entities) {
@@ -258,6 +260,9 @@ credit_simulation_netting_set_config_repository::read_latest_by_netting_set_id(
         },
         lg(),
         "Reading latest netting set by netting_set_id.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::credit_simulation_netting_set_config>

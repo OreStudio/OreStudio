@@ -224,12 +224,17 @@ curve_definition_repository::read_latest_by_curve_id(context ctx, const std::str
         sqlgen::read<std::vector<curve_definition_entity>> |
         where("tenant_id"_c == tid && "curve_id"_c == curve_id && "valid_to"_c == max.value());
 
-    return execute_read_query<curve_definition_entity, domain::curve_definition>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one.
+    auto found = execute_read_query<curve_definition_entity, domain::curve_definition>(
         ctx,
         query,
         [](const auto& entities) { return curve_definition_mapper::map(entities); },
         lg(),
         "Reading latest curve definition by curve_id.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::curve_definition>

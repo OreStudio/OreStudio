@@ -230,12 +230,17 @@ netting_set_repository::read_latest_by_code(context ctx, const std::string& code
         sqlgen::read<std::vector<netting_set_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
-    return execute_read_query<netting_set_entity, domain::netting_set>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one.
+    auto found = execute_read_query<netting_set_entity, domain::netting_set>(
         ctx,
         query,
         [](const auto& entities) { return netting_set_mapper::map(entities); },
         lg(),
         "Reading latest netting set by code.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::netting_set> netting_set_repository::read_any_by_code(context ctx,

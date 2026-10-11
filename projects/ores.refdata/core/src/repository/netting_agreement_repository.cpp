@@ -234,12 +234,17 @@ netting_agreement_repository::read_latest_by_agreement_number(context ctx,
                        where("tenant_id"_c == tid && "agreement_number"_c == agreement_number &&
                              "valid_to"_c == max.value());
 
-    return execute_read_query<netting_agreement_entity, domain::netting_agreement>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one.
+    auto found = execute_read_query<netting_agreement_entity, domain::netting_agreement>(
         ctx,
         query,
         [](const auto& entities) { return netting_agreement_mapper::map(entities); },
         lg(),
         "Reading latest netting agreement by agreement_number.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::netting_agreement>

@@ -248,12 +248,18 @@ configuration_parameter_repository::read_latest_by_value(context ctx, const std:
         sqlgen::read<std::vector<configuration_parameter_entity>> |
         where("tenant_id"_c == tid && "value"_c == value && "valid_to"_c == max.value());
 
-    return execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
-        ctx,
-        query,
-        [](const auto& entities) { return configuration_parameter_mapper::map(entities); },
-        lg(),
-        "Reading latest configuration parameter by value.");
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one.
+    auto found =
+        execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
+            ctx,
+            query,
+            [](const auto& entities) { return configuration_parameter_mapper::map(entities); },
+            lg(),
+            "Reading latest configuration parameter by value.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::configuration_parameter>

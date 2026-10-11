@@ -223,12 +223,17 @@ report_instance_repository::read_latest_by_name(context ctx, const std::string& 
         sqlgen::read<std::vector<report_instance_entity>> |
         where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value());
 
-    return execute_read_query<report_instance_entity, domain::report_instance>(
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one.
+    auto found = execute_read_query<report_instance_entity, domain::report_instance>(
         ctx,
         query,
         [](const auto& entities) { return report_instance_mapper::map(entities); },
         lg(),
         "Reading latest report instance by name.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
 }
 
 std::vector<domain::report_instance>

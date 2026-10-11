@@ -216,6 +216,12 @@ TEST_CASE("mapper_fra_holds_the_digits_of_its_strike_and_notional", tags) {
     CHECK(fra.Strike.lexical() == "0.005");
     CHECK(ores::utility::decimal::decimal::from_string(fra.Notional.lexical()) ==
           ores::utility::decimal::decimal::from_string("100000000"));
+
+    portfolio exported;
+    exported.Trade.push_back(reconstructed);
+    const auto text = ores::ore::domain::save_data(exported);
+    CHECK(text.find("<Strike>0.005</Strike>") != std::string::npos);
+    CHECK(text.find("<Notional>100000000</Notional>") != std::string::npos);
 }
 
 // =============================================================================

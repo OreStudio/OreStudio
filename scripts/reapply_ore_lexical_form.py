@@ -327,7 +327,7 @@ FRA_SER_NEW = """    _serialize_forwardRateAgreementData_Index_t(w, "Index", v.I
     _serialize_moneyFloat(w, "Notional", v.Notional);
 """
 
-# (old, new, where) edits; each `old` must occur exactly once.
+# (old, new) edits; each `old` must occur exactly once.
 _MONEY_HPP_EDITS = [(FRA_STRUCT_OLD, FRA_STRUCT_NEW)]
 _MONEY_CPP_EDITS = [
     (MONEY_EXTERN_ANCHOR, MONEY_EXTERN_ANCHOR + MONEY_EXTERN),
@@ -342,8 +342,13 @@ _MONEY_CPP_EDITS = [
 
 
 def _apply_edits(text: str, edits: list[tuple[str, str]], name: str) -> str:
-    if "moneyFloat" in text:
+    done = [new in text for _, new in edits]
+    if all(done):
         return text
+    if any(done):
+        raise AnchorError(
+            f"{name}: the money-member patch is half-applied; restore the file and run again"
+        )
     for old, new in edits:
         if text.count(old) != 1:
             raise AnchorError(

@@ -69,7 +69,7 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | FRA strike of IR_FRA.xml, stored | 0.005 (was 0.005 widened from a float) | =ores.ore.core.tests mapper_roundtrip_fra_forward= | the PR head |
-| ORE core suite | 649 cases, 482,964 assertions, all pass | =ores.ore.core.tests= | the PR head |
+| ORE core suite | 649 cases, 482,966 assertions, all pass | =ores.ore.core.tests= | the PR head |
 | Golden files changed | 1 (IR_FRA.xml, one numeric line) | =git diff -U0 -- assets= | the PR head |
 | Reapply script self-tests | both pass on three files | =scripts/reapply_ore_lexical_form.py --self-test= and =--self-test-missing-anchor= | the PR head |
 
@@ -104,6 +104,11 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | The FRA forward test pinned the float artifact as the expected strike | xml_ir_mapper_roundtrip_tests.cpp | accept | It now expects the document's 0.005. |
 | 2 | The serializer anchor for the FRA body occurs in two structs | reapply_ore_lexical_form.py | accept | The anchor starts at the FRA's =Index= line, and the script refuses a non-unique anchor. |
+| 3 | The idempotence guard returns early when =moneyFloat= appears anywhere | reapply_ore_lexical_form.py | accept | Every edit must be present or none; a partial state is refused. |
+| 4 | A comment names a =where= element the edit tuples do not have | reapply_ore_lexical_form.py | accept | Comment corrected. |
+| 5 | Pin the serializer's fallback for a FRA built in code | reapply_ore_lexical_form.py | decline | The fallback is the shared =get_string(float, lexical)=, which the =a leaf set in code= test already holds. |
+| 6 | Check the serialized XML after the reverse mapping | xml_ir_mapper_roundtrip_tests.cpp | accept | The FRA digits test now writes the trade and checks =<Strike>0.005</Strike>=. |
+| 7 | List the other bare float members in a follow-up | none | decline | Left to the operator; the Result states the scope. |
 
 * Result
 

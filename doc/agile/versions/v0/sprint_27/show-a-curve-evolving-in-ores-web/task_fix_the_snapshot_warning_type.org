@@ -81,6 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3107][#3107]] | [agile] Close the curve evolving story |
 | [[https://github.com/OreStudio/OreStudio/pull/3104][#3104]] | [web] Fix the snapshot warning type |
 
 * Review

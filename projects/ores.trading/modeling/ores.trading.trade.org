@@ -43,6 +43,7 @@ no audit tail: the audit record of the act that booked it carries that.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:economic:    false
 :END:
 
 The trade id: the firm's own identifier of the trade.
@@ -56,6 +57,7 @@ ctx.generate_uuid()
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The firm's legal entity that is party to the trade.
@@ -69,6 +71,7 @@ ctx.generate_uuid()
 :type:     uuid
 :cpp_type: std::optional<boost::uuids::uuid>
 :nullable: true
+:economic: false
 :END:
 
 The party the firm faces. Absent only on an intra-entity trade, which
@@ -83,6 +86,7 @@ std::nullopt
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ORE trade type code (e.g. Swap, FxForward, CapFloor).
@@ -98,6 +102,7 @@ std::string("Swap")
 :is_enum:       true
 :nullable:      false
 :default_value: ores::trading::domain::counterparty_scope::external
+:economic:      true
 :END:
 
 Who the firm faces: =external=, =inter_entity= or =intra_entity=.
@@ -113,6 +118,7 @@ ores::trading::domain::counterparty_scope::intra_entity
 :is_enum:       true
 :nullable:      false
 :default_value: ores::trading::domain::booking_nature::actual
+:economic:      true
 :END:
 
 Whether anything happened to cause the booking: =actual=, =test= or
@@ -129,6 +135,7 @@ ores::trading::domain::booking_nature::test
 :is_enum:       true
 :nullable:      false
 :default_value: ores::trading::domain::entry_channel::manual
+:economic:      true
 :END:
 
 How the trade reached the firm's books: =manual=, =stp=, =ecn= or
@@ -144,6 +151,7 @@ ores::trading::domain::entry_channel::manual
 :cpp_type:      int
 :nullable:      false
 :default_value: 0
+:economic:      false
 :END:
 
 The version the customer's records match. It moves when the economics the
@@ -164,6 +172,7 @@ moves on every recorded change; this one is the commercial record. See
 :type:          text
 :cpp_type:      std::string
 :nullable:      true
+:economic:      false
 :END:
 
 The SHA-256 of the economics the trade holds, folded from its own economic

@@ -101,6 +101,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Commodity identifier code (e.g. NGAS, WTI, GOLD).
@@ -114,6 +115,7 @@ std::string("NGAS")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ISO 4217 currency code.
@@ -130,6 +132,7 @@ std::string("USD")
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
+:economic:      true
 :END:
 
 Contract quantity. Must be positive.
@@ -143,6 +146,7 @@ Contract quantity. Must be positive.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Unit of measure for the commodity (e.g. BBL, MMBTU, MT).
@@ -156,6 +160,7 @@ std::string("MMBTU")
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Start date for swaps, forwards, and strips.
@@ -169,6 +174,7 @@ std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Maturity or expiry date.
@@ -182,6 +188,7 @@ std::chrono::year_month_day{std::chrono::year{2029}/1/15}
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Fixed price for forwards and fixed-leg swaps.
@@ -191,6 +198,7 @@ Fixed price for forwards and fixed-leg swaps.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Call or Put; null for non-option products.
@@ -202,6 +210,7 @@ Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionTy
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Option strike price.
@@ -211,6 +220,7 @@ Option strike price.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 European or American exercise.
@@ -222,6 +232,7 @@ Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerci
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Arithmetic or Geometric averaging for Asian options.
@@ -235,6 +246,7 @@ decision. PR 4 tightens the soft reference into a real foreign key.
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Start of the averaging window for Asian options.
@@ -248,6 +260,7 @@ std::chrono::year_month_day{std::chrono::year{2024}/6/15}
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 End of the averaging window for Asian options.
@@ -261,6 +274,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/6/15}
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Second commodity code for spread options.
@@ -270,6 +284,7 @@ Second commodity code for spread options.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Spread amount for spread options.
@@ -279,6 +294,7 @@ Spread amount for spread options.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Strip frequency code for option strips (e.g. Monthly, Quarterly).
@@ -290,6 +306,7 @@ Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to o
 :type:          double precision
 :cpp_type: std::optional<double>
 :nullable: true
+:economic:      true
 :END:
 
 Strike variance for variance swap products.
@@ -299,6 +316,7 @@ Strike variance for variance swap products.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Per-fixing accumulation amount for accumulator products.
@@ -308,6 +326,7 @@ Per-fixing accumulation amount for accumulator products.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Knock-out barrier level for accumulator products.
@@ -317,6 +336,7 @@ Knock-out barrier level for accumulator products.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 UpAndIn, UpAndOut, DownAndIn, DownAndOut.
@@ -328,6 +348,7 @@ Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrier
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Lower barrier level.
@@ -337,6 +358,7 @@ Lower barrier level.
 :type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
+:economic: true
 :END:
 
 Upper barrier level.
@@ -346,6 +368,7 @@ Upper barrier level.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Day count fraction code for swap products.
@@ -357,6 +380,7 @@ Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belo
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Payment frequency code for swap products.
@@ -368,6 +392,7 @@ Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to o
 :type:     date
 :cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
+:economic: true
 :END:
 
 Swaption expiry date for CommoditySwaption.
@@ -381,6 +406,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

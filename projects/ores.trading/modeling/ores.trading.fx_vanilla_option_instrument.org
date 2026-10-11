@@ -90,6 +90,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ISO 4217 currency code of the bought leg.
@@ -103,6 +104,7 @@ std::string("EUR")
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Amount bought in bought_currency. Must be positive.
@@ -116,6 +118,7 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 ISO 4217 currency code of the sold leg.
@@ -129,6 +132,7 @@ std::string("USD")
 :type:          numeric(38, 12)
 :cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
+:economic:      true
 :END:
 
 Amount sold in sold_currency. Must be positive.
@@ -142,6 +146,7 @@ ores::utility::decimal::decimal::from_string("1100000").value()
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Option type: Call or Put.
@@ -157,6 +162,7 @@ std::string("Call")
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 Option expiry date (ISO 8601 date string).
@@ -170,6 +176,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Exercise style: European or American.
@@ -185,6 +192,7 @@ std::string("European")
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: true
 :END:
 
 Optional settlement method (e.g. Cash, Physical).
@@ -194,6 +202,7 @@ Optional settlement method (e.g. Cash, Physical).
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

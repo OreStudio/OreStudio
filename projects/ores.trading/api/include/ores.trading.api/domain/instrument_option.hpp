@@ -31,8 +31,10 @@
 #include <chrono>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -314,6 +316,56 @@ struct instrument_option final {
      */
     friend bool operator==(const instrument_option&, const instrument_option&) = default;
 };
+
+/**
+ * @brief The members of instrument_option the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view instrument_option_economic_fields[] = {
+    "long_short",
+    "option_type",
+    "payoff_type",
+    "payoff_type_2",
+    "style",
+    "notice_period",
+    "notice_calendar",
+    "notice_convention",
+    "mid_coupon_exercise",
+    "settlement",
+    "settlement_method",
+    "pay_off_at_expiry",
+    "premium_amount",
+    "premium_currency",
+    "premium_pay_date",
+    "exercise_fee_settlement_period",
+    "exercise_fee_settlement_calendar",
+    "exercise_fee_settlement_convention",
+    "automatic_exercise",
+    "has_exercise_data",
+    "exercise_date",
+    "exercise_price",
+    "has_payment_data",
+    "payment_lag",
+    "payment_calendar",
+    "payment_convention",
+    "payment_relative_to",
+    "has_settlement_data",
+    "settlement_pay_currency",
+    "settlement_fx_index",
+    "settlement_fixing_date",
+};
+
+/**
+ * @brief Names the members of instrument_option that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<instrument_option>) {
+    return instrument_option_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for instrument_option, e.g. for the

@@ -95,6 +95,11 @@ The full template source. Edit here and re-tangle with
 {{#field_group.cpp.includes}}
 #include {{{.}}}
 {{/field_group.cpp.includes}}
+{{#field_group.has_economic_declaration}}
+#include <span>
+#include <string_view>
+#include <type_traits>
+{{/field_group.has_economic_declaration}}
 
 namespace {{field_group.cpp.namespace}} {
 
@@ -128,6 +133,35 @@ struct {{field_group.entity_singular}} {
                            const {{field_group.entity_singular}}&) = default;
 };
 
+{{#field_group.has_economic_declaration}}
+{{#field_group.has_economic_fields}}
+/**
+ * @brief The members of {{field_group.entity_singular}} the customer agreed to.
+ */
+inline constexpr std::string_view {{field_group.entity_singular}}_economic_fields[] = {
+{{#field_group.economic_fields}}
+    "{{.}}",
+{{/field_group.economic_fields}}
+};
+
+{{/field_group.has_economic_fields}}
+/**
+ * @brief Names the members of {{field_group.entity_singular}} that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<{{field_group.entity_singular}}>) {
+{{#field_group.has_economic_fields}}
+    return {{field_group.entity_singular}}_economic_fields;
+{{/field_group.has_economic_fields}}
+{{^field_group.has_economic_fields}}
+    return {};
+{{/field_group.has_economic_fields}}
+}
+
+{{/field_group.has_economic_declaration}}
 }
 
 #endif

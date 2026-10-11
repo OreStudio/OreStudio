@@ -22,11 +22,14 @@
 
 #include "ores.utility/crypto/sha256.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include <algorithm>
 #include <chrono>
+#include <concepts>
 #include <format>
 #include <iterator>
 #include <optional>
 #include <rfl.hpp>
+#include <span>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -34,64 +37,6 @@
 namespace ores::trading::domain {
 
 namespace detail {
-
-/*
- * The digest covers the economics the customer agreed to, and nothing else.
- * This module decides inclusion by name, which is a first cut: a name can
- * state what a field is called, not what it means. A later task declares the
- * economic fields in the model and replaces this rule.
- *
- * The names below are identity or audit. A name ending in _id also
- * identifies this row or another one, so the suffix rule excludes every _id
- * field except the external identifiers listed below it.
- */
-inline constexpr std::string_view excluded_field_names[] = {
-    "id",
-    "version",
-    "external_version",
-    "economic_digest",
-    "trade_type_code",
-    "description",
-    "modified_by",
-    "performed_by",
-    "change_reason_code",
-    "change_commentary",
-    "recorded_at",
-    "valid_from",
-    "valid_to",
-};
-
-/*
- * An external identifier is not a foreign key. security_id is the ISIN, and
- * a trade re-pointed to a different security is a change the customer agreed
- * to, so these names survive the _id rule below. A *_id name that is not
- * here stays excluded: an unknown one is far more likely to be a foreign key,
- * and wrongly including it would move the digest for a change nobody agreed
- * to.
- */
-inline constexpr std::string_view economic_identifier_names[] = {
-    "security_id",
-    "credit_curve_id",
-    "reference_curve_id",
-    "income_curve_id",
-    "volatility_curve_id",
-};
-
-constexpr bool is_economic_identifier(std::string_view name) {
-    for (const auto economic : economic_identifier_names)
-        if (name == economic)
-            return true;
-    return false;
-}
-
-constexpr bool is_identity_or_audit(std::string_view name) {
-    for (const auto excluded : excluded_field_names)
-        if (name == excluded)
-            return true;
-    if (is_economic_identifier(name))
-        return false;
-    return name.size() > 3u && name.ends_with("_id");
-}
 
 template <typename>
 inline constexpr bool always_false = false;
@@ -120,16 +65,57 @@ std::string canonical_enum(const E& v) {
 }
 
 /*
+ * A struct says which of its members are economic through its own
+ * economic_fields_of overload, which codegen writes from the model's
+ * :economic: property on each column. The overload takes the type and not a
+ * value, so the choice is made at compile time and a member that is not
+ * economic is never rendered. A struct without the overload cannot be
+ * digested, so a type added later is economic or not because its model says
+ * so, and never because of what it happens to be called.
+ */
+template <typename T>
+concept declares_economic_fields = requires {
+    {
+        economic_fields_of(std::type_identity<T>{})
+    } -> std::convertible_to<std::span<const std::string_view>>;
+};
+
+template <typename T>
+constexpr bool is_declared(std::string_view name) {
+    const auto declared = economic_fields_of(std::type_identity<T>{});
+    return std::ranges::find(declared, name) != declared.end();
+}
+
+/*
+ * A member holding a declared struct of its own, such as an identity or audit
+ * group, takes part when that struct declares any economic field. Such a
+ * member is a part of the owner and is not a column, so the owner does not
+ * name it.
+ */
+template <typename F>
+constexpr bool is_group_with_economic_fields() {
+    if constexpr (declares_economic_fields<F>)
+        return !economic_fields_of(std::type_identity<F>{}).empty();
+    else
+        return false;
+}
+
+/*
  * Walks the value's fields with rfl. An included field carries its own name,
  * as a plain identifier, then its canonical value, already framed, so the
  * name and the value never merge.
  */
 template <typename T>
 std::string canonical_struct(const T& v) {
+    static_assert(declares_economic_fields<T>,
+                  "economic_digest needs this type to declare its economic fields. Add "
+                  "':economic: true' or ':economic: false' to every column of its model.");
     std::string out = "{";
     rfl::to_view(v).apply([&](const auto& field) {
         using field_type = std::remove_cvref_t<decltype(field)>;
-        if constexpr (!is_identity_or_audit(field_type::name())) {
+        using member_type = std::remove_cvref_t<decltype(*field.value())>;
+        if constexpr (is_declared<T>(field_type::name()) ||
+                      is_group_with_economic_fields<member_type>()) {
             out.append(field_type::name());
             out.push_back('=');
             out.append(canonical_value(*field.value()));
@@ -211,12 +197,13 @@ std::string canonical_value(const T& v) {
 /**
  * @brief The SHA-256 digest of a value's economic fields, lowercase hex.
  *
- * Walks the fields of @p v generically, skips the ones named identity or
- * audit, renders each remaining field canonically and hashes the result. Two
- * values with the same economics give the same digest; a change to a field
- * the customer did not agree to leaves the digest alone.
+ * Walks the fields of @p v generically, keeps the ones its model declares
+ * economic, renders each canonically and hashes the result. Two values with
+ * the same economics give the same digest; a change to a field the customer
+ * did not agree to leaves the digest alone.
  *
- * The exclusion rule is a first cut and lives in @c excluded_field_names.
+ * A type declares its economic fields through @c economic_fields_of, which
+ * codegen writes from the model, so the choice is a property of the model.
  *
  * @param v The instrument, trade or component value to digest.
  * @return The lowercase hex SHA-256 digest.

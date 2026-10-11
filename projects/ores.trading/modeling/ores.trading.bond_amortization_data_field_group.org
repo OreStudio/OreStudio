@@ -28,6 +28,7 @@
 ** type
 :PROPERTIES:
 :cpp_type: std::string
+:economic: true
 :END:
 
 The kind of amortization step the row states, such as Constant or Floating.
@@ -35,6 +36,7 @@ The kind of amortization step the row states, such as Constant or Floating.
 ** value
 :PROPERTIES:
 :cpp_type: std::optional<double>
+:economic: true
 :END:
 
 The amount the step moves the notional by, when the document states one.
@@ -42,6 +44,7 @@ The amount the step moves the notional by, when the document states one.
 ** start_date
 :PROPERTIES:
 :cpp_type: std::optional<std::string>
+:economic: true
 :END:
 
 The date the step starts on, when the document states one.
@@ -49,6 +52,7 @@ The date the step starts on, when the document states one.
 ** end_date
 :PROPERTIES:
 :cpp_type: std::optional<std::string>
+:economic: true
 :END:
 
 The date the step ends on, when the document states one.
@@ -56,6 +60,7 @@ The date the step ends on, when the document states one.
 ** frequency
 :PROPERTIES:
 :cpp_type: std::optional<std::string>
+:economic: true
 :END:
 
 How often the step repeats over its window, in ORE's tenor spelling.
@@ -63,6 +68,7 @@ How often the step repeats over its window, in ORE's tenor spelling.
 ** underflow
 :PROPERTIES:
 :cpp_type: std::optional<bool>
+:economic: true
 :END:
 
 True when the document allows the notional to fall below zero.

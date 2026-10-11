@@ -48,6 +48,7 @@ cannot hold stays distinguishable from one the document omits.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :supplied_by:  user
+:economic:    false
 :END:
 
 The trade this leg belongs to.
@@ -59,6 +60,7 @@ The trade row carries the party. The leg rows are family-owned and ride the trad
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -68,6 +70,7 @@ The activity that wrote this version.
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:economic:    true
 :END:
 
 Which leg list of the trade this row belongs to: =trs_funding=,
@@ -87,6 +90,7 @@ so they live in =bond_issue_leg= and never carry a role here.
 :type:        integer
 :cpp_type:    int
 :primary_key: true
+:economic:    true
 :END:
 
 Ordinal of the leg within its list, counting from one.
@@ -98,6 +102,7 @@ Each of the three roles carries one leg, which is always number one.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the leg's payer is the trade's counterparty rather than the
@@ -108,6 +113,7 @@ party.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 The leg's type as the document spells it, such as =Fixed= or
@@ -124,6 +130,7 @@ Soft FK to ores_refdata_leg_types_tbl: leg types belong to ores.refdata (Fixed, 
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 ISO 4217 currency code of the leg.
@@ -135,6 +142,7 @@ Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.r
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Business day convention the leg's payments are adjusted by.
@@ -144,6 +152,7 @@ Business day convention the leg's payments are adjusted by.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Number of business days between a payment's accrual end and its pay
@@ -157,6 +166,7 @@ the document's text and export re-emits it unchanged.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Calendar the leg's payment dates are adjusted against.
@@ -166,6 +176,7 @@ Calendar the leg's payment dates are adjusted against.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Day count convention of the leg.
@@ -175,6 +186,7 @@ Day count convention of the leg.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Day count convention the leg applies to its final coupon period.
@@ -184,6 +196,7 @@ Day count convention the leg applies to its final coupon period.
 :type:     bigint
 :cpp_type: std::optional<std::int64_t>
 :nullable: true
+:economic: true
 :END:
 
 Number of business days between a notional exchange and its pay date.
@@ -193,6 +206,7 @@ Number of business days between a notional exchange and its pay date.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the leg's notional exchanges fall on the schedule's dates
@@ -203,6 +217,7 @@ without adjustment.
 :type:     boolean
 :cpp_type: std::optional<bool>
 :nullable: true
+:economic: true
 :END:
 
 True when the leg takes its indexings from the asset leg rather than
@@ -213,6 +228,7 @@ stating them.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 FX index the leg's settlement block fixes against.
@@ -226,6 +242,7 @@ the same statement, and one column carries both.
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
+:economic: true
 :END:
 
 Date the settlement block's FX index fixes on (ISO 8601 date string).

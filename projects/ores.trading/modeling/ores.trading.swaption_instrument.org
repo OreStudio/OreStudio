@@ -40,6 +40,7 @@ only the product's own fields, and joins the header by =trade_id=.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :nullable:    false
+:economic:    false
 :END:
 
 The trade this instrument belongs to, and the instrument's own key.
@@ -53,6 +54,7 @@ trade it names gives the instrument its scope.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:economic: false
 :END:
 
 The activity that wrote this version.
@@ -63,6 +65,7 @@ The activity that wrote this version.
 :cpp_type: std::chrono::year_month_day
 :nullable: false
 :common_date: expiry_date
+:economic: true
 :END:
 
 Option expiry date.
@@ -78,6 +81,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/6/15}
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Exercise type: European, Bermudan, or American.
@@ -95,6 +99,7 @@ std::string("European")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Settlement type: Cash or Physical.
@@ -112,6 +117,7 @@ std::string("Physical")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:economic: true
 :END:
 
 Position direction: Long or Short.

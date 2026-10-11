@@ -31,8 +31,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 namespace {
@@ -57,6 +59,30 @@ struct ambiguous_pair {
     std::string first;
     std::string second;
 };
+
+inline constexpr std::string_view ambiguous_pair_economic_fields[] = {"first", "second"};
+
+constexpr std::span<const std::string_view> economic_fields_of(std::type_identity<ambiguous_pair>) {
+    return ambiguous_pair_economic_fields;
+}
+
+/*
+ * The names say the opposite of the declaration: a field called amount is not
+ * economic here, and one called counterparty_id is. The digest must follow the
+ * declaration.
+ */
+struct declared_against_its_names {
+    std::string amount;
+    std::string counterparty_id;
+};
+
+inline constexpr std::string_view declared_against_its_names_economic_fields[] = {
+    "counterparty_id"};
+
+constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<declared_against_its_names>) {
+    return declared_against_its_names_economic_fields;
+}
 
 ores::utility::decimal::decimal decimal_of(std::string_view text) {
     return ores::utility::decimal::decimal::from_string(text).value();
@@ -259,9 +285,8 @@ TEST_CASE("economic_digest_moves_with_an_external_identifier", tags) {
     baseline.security_id = "GB0002634946";
     baseline.issuer = "HM Treasury";
     baseline.face_value = decimal_of("1000");
-    baseline.issue_date = std::chrono::year_month_day{std::chrono::year{2026},
-                                                      std::chrono::month{1},
-                                                      std::chrono::day{15}};
+    baseline.issue_date = std::chrono::year_month_day{
+        std::chrono::year{2026}, std::chrono::month{1}, std::chrono::day{15}};
 
     auto re_pointed = baseline;
     re_pointed.security_id = "GB0002634947";
@@ -275,4 +300,19 @@ TEST_CASE("economic_digest_moves_with_an_external_identifier", tags) {
 
     CHECK(economic_digest(re_pointed) != economic_digest(baseline));
     CHECK(economic_digest(re_keyed) == economic_digest(baseline));
+}
+
+TEST_CASE("economic_digest_follows_the_declaration_and_not_the_names", tags) {
+    auto lg(make_logger(test_suite));
+
+    const declared_against_its_names baseline{"100", "party-1"};
+    const declared_against_its_names other_amount{"999", "party-1"};
+    const declared_against_its_names other_party{"100", "party-2"};
+
+    BOOST_LOG_SEV(lg, info) << "Baseline:     " << economic_digest(baseline);
+    BOOST_LOG_SEV(lg, info) << "Other amount: " << economic_digest(other_amount);
+    BOOST_LOG_SEV(lg, info) << "Other party:  " << economic_digest(other_party);
+
+    CHECK(economic_digest(other_amount) == economic_digest(baseline));
+    CHECK(economic_digest(other_party) != economic_digest(baseline));
 }

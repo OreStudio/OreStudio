@@ -33,6 +33,7 @@ doc/knowledge/architecture/data_oriented_design.org.
 :PROPERTIES:
 :cpp_type: int
 :default_value: 0
+:economic: false
 :END:
 
 Version number for optimistic locking and change tracking.
@@ -41,6 +42,7 @@ Version number for optimistic locking and change tracking.
 :PROPERTIES:
 :cpp_type: utility::uuid::tenant_id
 :default_value: utility::uuid::tenant_id::system()
+:economic: false
 :END:
 
 Tenant identifier for multi-tenancy isolation.
@@ -48,6 +50,7 @@ Tenant identifier for multi-tenancy isolation.
 ** trade_type_code
 :PROPERTIES:
 :cpp_type: std::string
+:economic: false
 :END:
 
 ORE product type code (soft FK to ores_trading_trade_types_tbl).
@@ -55,6 +58,7 @@ ORE product type code (soft FK to ores_trading_trade_types_tbl).
 ** party_id
 :PROPERTIES:
 :cpp_type: boost::uuids::uuid
+:economic: false
 :END:
 
 Party that owns this instrument record.
@@ -62,6 +66,7 @@ Party that owns this instrument record.
 ** trade_id
 :PROPERTIES:
 :cpp_type: boost::uuids::uuid
+:economic: false
 :END:
 
 The trade this instrument belongs to, and the instrument's own key.
@@ -72,6 +77,7 @@ identity rather than two and the two cannot disagree.
 ** trade_activity_id
 :PROPERTIES:
 :cpp_type: boost::uuids::uuid
+:economic: false
 :END:
 
 The activity that wrote this version.

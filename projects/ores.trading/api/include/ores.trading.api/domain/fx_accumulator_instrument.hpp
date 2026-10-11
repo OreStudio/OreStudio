@@ -30,8 +30,10 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -107,6 +109,32 @@ struct fx_accumulator_instrument final {
     friend bool operator==(const fx_accumulator_instrument&,
                            const fx_accumulator_instrument&) = default;
 };
+
+/**
+ * @brief The members of fx_accumulator_instrument the customer agreed to.
+ *
+ * Declared by the model's :economic: property on each column.
+ */
+inline constexpr std::string_view fx_accumulator_instrument_economic_fields[] = {
+    "currency",
+    "fixing_amount",
+    "strike",
+    "underlying_code",
+    "long_short",
+    "start_date",
+    "knock_out_barrier",
+};
+
+/**
+ * @brief Names the members of fx_accumulator_instrument that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<fx_accumulator_instrument>) {
+    return fx_accumulator_instrument_economic_fields;
+}
 
 /**
  * @brief Dispatch-key identifier for fx_accumulator_instrument, e.g. for the

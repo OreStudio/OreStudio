@@ -97,6 +97,7 @@ The activity that wrote this version.
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:economic: false
 :END:
 
 Optional free-text description.

@@ -8,7 +8,7 @@
 #+filetags: :draw_the_menu_by_reads_alone:sprint_27:v0:
 #+owner: marco
 #+branch: feature/settle-the-open-points-on-the-menu-structure-page
-#+pr:
+#+pr: 3147
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3147][#3147]] | [agile] Settle the open points on the menu structure page |
 
 * Review
 

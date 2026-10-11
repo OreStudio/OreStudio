@@ -144,9 +144,18 @@ struct import_choices {
      * sandbox too, which the database enforces (a portfolio and its parent
      * share a sandbox). The choice does not apply when existing_target_book_id
      * is set: the import then creates no portfolio or book. Left empty, the
-     * import lands in the official tree.
+     * import service picks the party's open sample sandbox, unless official
+     * is set or the import names an existing parent portfolio or book.
      */
     std::optional<boost::uuids::uuid> sandbox_id;
+
+    /**
+     * @brief Land the import in the official portfolio tree on purpose.
+     *
+     * Without it, an import that names no sandbox goes to the party's sample
+     * sandbox and never creates an official portfolio or book.
+     */
+    std::optional<bool> official;
 
     /**
      * @brief Party that owns the imported entities.

@@ -32,6 +32,7 @@
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/netting_set_identifier_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
+#include "ores.refdata.api/messaging/sandbox_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/bond_document_ops.hpp"
@@ -247,6 +248,84 @@ struct resolved_envelope {
     std::optional<boost::uuids::uuid> netting_set_identifier_id;
     std::vector<boost::uuids::uuid> portfolio_ids;
 };
+
+/**
+ * @brief Finds the party's open sample sandbox.
+ *
+ * A sandbox has no party of its own. It belongs to the party of its anchor
+ * portfolio, so the lookup reads the anchors of the open samples and keeps
+ * those of the importing party. Several open samples resolve to the first by
+ * name, so the choice is stable.
+ *
+ * @return The sandbox id, or nullopt when none is open; on a failed read,
+ * nullopt with out_error set.
+ */
+template <typename Nats>
+std::optional<boost::uuids::uuid>
+find_sample_sandbox(Nats& nats, const boost::uuids::uuid& party_id, std::string& out_error) {
+    using ores::utility::domain::outcome;
+
+    ores::refdata::messaging::list_sandboxes_request req;
+    constexpr std::uint32_t max_sandbox_fetch = 1'000;
+    req.limit = max_sandbox_fetch;
+    auto resp = nats_call(nats, req, out_error);
+    if (!resp)
+        return std::nullopt;
+    if (resp->result.outcome != outcome::ok) {
+        out_error = std::format(
+            "Reading the sandboxes failed: {} {}", resp->result.code, resp->result.message);
+        return std::nullopt;
+    }
+
+    std::vector<const ores::refdata::domain::sandbox*> open_samples;
+    std::vector<boost::uuids::uuid> anchors;
+    for (const auto& sandbox : resp->sandboxes) {
+        if (sandbox.purpose != "sample" || sandbox.status != "open")
+            continue;
+        open_samples.push_back(&sandbox);
+        anchors.push_back(sandbox.anchor_portfolio_id);
+    }
+    if (open_samples.empty()) {
+        out_error = std::format(
+            "The session sees {} sandboxes and none is an open sample. Name a sandbox, or set "
+            "official to import into the official portfolio tree.",
+            resp->sandboxes.size());
+        return std::nullopt;
+    }
+
+    ores::refdata::messaging::list_portfolios_request anchor_req;
+    anchor_req.limit = max_sandbox_fetch;
+    anchor_req.filter = ores::refdata::messaging::portfolios_filter{.id_one_of = anchors};
+    auto anchor_resp = nats_call(nats, anchor_req, out_error);
+    if (!anchor_resp)
+        return std::nullopt;
+    if (anchor_resp->result.outcome != outcome::ok) {
+        out_error = std::format("Reading the sandbox anchors failed: {} {}",
+                                anchor_resp->result.code,
+                                anchor_resp->result.message);
+        return std::nullopt;
+    }
+    std::set<boost::uuids::uuid> party_anchors;
+    for (const auto& portfolio : anchor_resp->portfolios)
+        if (portfolio.party_id == party_id)
+            party_anchors.insert(portfolio.id);
+
+    const ores::refdata::domain::sandbox* first = nullptr;
+    for (const auto* sandbox : open_samples) {
+        if (!party_anchors.contains(sandbox->anchor_portfolio_id))
+            continue;
+        if (!first || sandbox->name < first->name)
+            first = sandbox;
+    }
+    if (!first) {
+        out_error = std::format(
+            "None of the {} open sample sandboxes belongs to the importing party. Name a "
+            "sandbox, or set official to import into the official portfolio tree.",
+            open_samples.size());
+        return std::nullopt;
+    }
+    return first->id;
+}
 
 /**
  * @brief The counterparty an ORE envelope's CounterParty names.
@@ -1900,6 +1979,31 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             return;
         }
         choices = std::move(*parsed_choices);
+    }
+
+    const bool names_official_target = choices.official.value_or(false) ||
+                                       choices.existing_parent_portfolio_id ||
+                                       choices.existing_target_book_id;
+    if (!choices.sandbox_id && !names_official_target) {
+        std::string err;
+        choices.sandbox_id = find_sample_sandbox(delegated_nats, choices.party_id, err);
+        if (!choices.sandbox_id) {
+            const auto failure = err.empty() ?
+                                     std::string("The party has no open sample sandbox. Name a "
+                                                 "sandbox, or set official to import into the "
+                                                 "official portfolio tree.") :
+                                     err;
+            BOOST_LOG_SEV(lg(), error)
+                << "ore.import.execute step 3 failed | corr=" << req.correlation_id
+                << " error=" << failure;
+            publish_step_completion(nats_,
+                                    step_id,
+                                    inst_id,
+                                    ores::workflow::messaging::step_outcome::failed,
+                                    "",
+                                    failure);
+            return;
+        }
     }
 
     const bool into_sandbox = choices.sandbox_id.has_value();

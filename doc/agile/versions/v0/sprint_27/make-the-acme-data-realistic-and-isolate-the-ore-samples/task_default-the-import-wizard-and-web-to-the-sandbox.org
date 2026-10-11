@@ -96,7 +96,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The lists stop at 1000 rows, so a large tenant could miss its sandbox | ore_import_execute_handler.cpp | Declined | A tenant has a handful of sandboxes. Revisit when one has hundreds. |
+| 2 | Tie-break by id when two sandboxes share a name | ore_import_execute_handler.cpp | Declined | Sandbox names are unique per party, and the lookup keeps one party's sandboxes. |
+| 3 | Confirm the sandbox list is not limited to the caller's party | ore_import_execute_handler.cpp | Answered | It is not. A tenant administrator sees all parties, which is why the lookup filters by anchor party. |
+| 4 | The message is imprecise when the session cannot see an anchor | ore_import_execute_handler.cpp | Declined | The outcome is the same: no sandbox is usable. |
+| 5 | Add a unit test with a fake for the lookup | ore_import_execute_handler.cpp | Deferred | Follow-up task. The lookup is a template, so a fake fits. |
+| 6 | Say in the =ore import= help that the default is the sample sandbox | ore_commands.cpp | Deferred | Needs a rebuild and a new test cycle. Bundle with the follow-up. |
 
 * Result
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/grant-the-services-that-raise-and-apply-the-inbox-access
+#+pr: 3100
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The refdata service raises and applies a request under its own database user, no
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -44,6 +44,11 @@ The refdata service raises and applies a request under its own database user, no
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Write the test first. It signs in as the refdata service's own database user, with the credentials the service reads from its environment, and raises, previews, approves and applies a book request, and tells the person who asked.
+- Run it and read each refusal: the error names the table. Grant that one table, run again, and repeat. The grants that stand are the ones the work needed.
+- Put the grants in the service registry, which generates the grants file, then recreate the database and run the test on the generated grants and not on the experiments.
+- Move the shared fixtures of the proposal tests into one header, so the new test file and the old one use the same seed.
 
 * Measurements
 
@@ -61,6 +66,12 @@ task and name that file in the Command column.
 
 * Notes
 
+- The error from the database names the table and not the right. Every denial found here was a plain select or an insert, and each grant was checked by running the test again.
+- The announcer swallows a failure to tell, by design, so a missing right on the notice tables would have shown only in a log. The test reads the notice itself.
+- The announcer looked for the sender account in the tenant only. The service account that acts for a workflow is an account of the system tenant, so in production the notice would have been skipped with only a log line. It now falls back to the system tenant, as the expiry sweep does. This fixes the inbox tell step too.
+- The notice tables are not readable by the refdata service: a person's notices are the person's own. It may write the four tables a notice is written into, and read the kinds, channels and outcome types a notice is checked against.
+- Not proven: the real role grants of the workflow engine's own database user, and the inbox service's. This task covers the refdata service, which does the writing.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -76,12 +87,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3100][#3100]] | [refdata,inbox] Grant the refdata service the inbox access it needs |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The sender fallback also looks for a missing person in the system tenant | approval_announcer.cpp | Accept | The fallback applies only when the context acts as the service account. A person missing from their own tenant is not looked for elsewhere. |
+| 2 | The ores_inbox_approval_ select prefix is wide | service_registry.org | Decline | The triggers of the rows the service writes need the decision, state and policy tables. A table with sensitive content would be named in the registry when it is added. |
+| 3 | The engine and the inbox service users are not run as themselves | tests | Accept | A follow-up task, "Run the engine and the inbox service as their own database users", is filed. |
 
 * Result
+
+The refdata service raises, previews and applies a book request, and tells the person who asked, under its own database user.
+
+- Five new tests sign in as the refdata service's database user: a raise, a preview, an approved apply, a refused apply that ends the request in apply_failed with the person told, and the read of who holds a permission. They failed with "permission denied" before the grants and pass after them.
+- The registry grants the refdata service the rights those tests showed it needs: write the request, its parts and the four notice tables; read the approval tables, the notice kinds, channels and outcome types, and the accounts.
+- The announcer looks up the sender account in the system tenant when the tenant does not hold it, so the notices of a workflow are sent.
+- The proposal tests share one fixtures header.
+
+Evidence: on a recreated database with the grants the registry generates, the five service-user tests pass (23 assertions). The whole =ores.refdata.core.tests= binary passes in default order (359 cases, 4799 assertions) and the whole =ores.inbox.core.tests= binary passes (39 cases, 201 assertions). The cmake source, handler permission, test case reachability, populate reference and derived-model checks pass, the strict ER parse is clean, and the catalogue drift sweep is clean.
+
+Not done here: the workflow engine's own database user, the inbox service's rights, and the full ctest suite.

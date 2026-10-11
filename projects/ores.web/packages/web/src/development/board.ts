@@ -97,7 +97,7 @@ export function currentStoryId(board: Board, trees: readonly WorkTree[]): string
     return onBranch[0]?.id ?? null;
 }
 
-/** The title of a tree's task, cut for the strip, or the empty string. */
+/** A title cut to the limit, with an ellipsis in the last place when it is cut. */
 export function shortTitle(title: string, limit = 28): string {
     return title.length <= limit ? title : `${title.slice(0, limit - 1)}…`;
 }

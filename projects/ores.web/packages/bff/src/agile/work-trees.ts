@@ -21,7 +21,7 @@
 
 import { execFile } from 'node:child_process';
 import { constants } from 'node:fs';
-import { open } from 'node:fs/promises';
+import { open, realpath } from 'node:fs/promises';
 import { join } from 'node:path';
 import { normalizeState, type AgileState } from './agile-model.js';
 
@@ -172,6 +172,15 @@ async function readJournalTail(root: string): Promise<string | null> {
     }
 }
 
+/** The real path of a directory, or the path as given when it cannot be resolved. */
+async function resolved(path: string): Promise<string> {
+    try {
+        return await realpath(path);
+    } catch {
+        return path;
+    }
+}
+
 export class GitWorkTreeSource implements WorkTreeSource {
     private readonly docRoot: string;
     private readonly git: GitRunner;
@@ -187,18 +196,23 @@ export class GitWorkTreeSource implements WorkTreeSource {
             this.git(['worktree', 'list', '--porcelain'], this.docRoot),
         ]);
         if (list === null) return [];
-        const own = top?.trim() ?? '';
+        // Git can print the same directory in two forms when the checkout is
+        // reached through a link, so the two are compared by their real paths.
+        const own = await resolved(top?.trim() ?? '');
         const listed = parseWorktreeList(list)
             .map((tree) => ({ ...tree, label: labelOf(tree.root) }))
             .sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0))
             .slice(0, MAX_TREES);
         return Promise.all(
             listed.map(async (tree) => {
-                const journal = await readJournalTail(tree.root);
+                const [journal, root] = await Promise.all([
+                    readJournalTail(tree.root),
+                    resolved(tree.root),
+                ]);
                 return {
                     label: tree.label,
                     branch: tree.branch,
-                    isSession: tree.root === own,
+                    isSession: root === own,
                     current: journal === null ? null : parseJournalEntry(journal),
                 };
             }),

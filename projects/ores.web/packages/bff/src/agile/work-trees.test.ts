@@ -128,6 +128,17 @@ describe('GitWorkTreeSource', () => {
         expect(trees[1]?.current?.taskTitle).toBe('Show the work trees on the board');
     });
 
+    it('marks its own tree when git names it through a link', async () => {
+        const real = await tree('ores_dev_e', ENTRY);
+        const link = join(base, 'link_to_e');
+        await symlink(real, link);
+        const trees = await new GitWorkTreeSource(
+            '/doc',
+            runner(link, [{ root: real, branch: 'feature/e' }]),
+        ).trees();
+        expect(trees[0]?.isSession).toBe(true);
+    });
+
     it('reads no journal that is a link', async () => {
         const real = await tree('real', ENTRY);
         const root = await tree('ores_dev_c');

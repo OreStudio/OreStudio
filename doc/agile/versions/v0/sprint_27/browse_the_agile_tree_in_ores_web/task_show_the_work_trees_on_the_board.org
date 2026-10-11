@@ -80,7 +80,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | isSession can miss through a symlinked checkout | work-trees.ts | Fix | The two paths are compared by their real paths. A test covers a tree named through a link. |
+| 2 | A detached tree has an empty branch in the chip title | BoardTab.tsx | Note | Harmless. A detached label needs a new text, which waits. |
+| 3 | Scroll runs only when the current story changes | BoardTab.tsx | Note | Intended. |
+| 4 | A failed trees query hides the strip | BoardTab.tsx | Note | The same as the other agile reads, which are quiet. |
+| 5 | Is the case of ids the same on both sides | agile-model.ts | Note | Yes. The board upper-cases a story id as the journal parser does, and a test covers it. |
+| 6 | The French and Portuguese text needs a speaker | locales | Note | Open until someone reads it. |
+| 7 | The shortTitle comment says more than the code does | board.ts | Fix | The comment now says what the function does. |
 
 * Result
 

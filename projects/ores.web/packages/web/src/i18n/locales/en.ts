@@ -3291,7 +3291,7 @@ export const en: SourceCatalogue = {
         fxFeeds: {
             title: 'FX price feeds',
             lead: 'The synthetic FX feeds of your party. A feed produces nothing until it is enabled and started.',
-            add: 'Add feed',
+            add: 'Add',
             addTitle: 'Add an FX price feed',
             pair: 'Pair',
             samePair: 'The base and quote currencies must differ.',
@@ -3316,8 +3316,6 @@ export const en: SourceCatalogue = {
             stop: 'Stop',
             choose: 'Choose',
             chooseFeed: 'Choose {feed}',
-            startChosen: 'Start chosen ({count})',
-            stopChosen: 'Stop chosen ({count})',
             startedCount: 'Started {count} feeds.',
             stoppedCount: 'Stopped {count} feeds.',
             refused: '{feed}: {message}',

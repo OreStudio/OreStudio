@@ -146,14 +146,14 @@ describe('the fields a feed derives', () => {
             completeFeed({
                 base_currency_code: 'EUR',
                 quote_currency_code: 'USD',
-                source_name: 'synthetic.themes.eurusd',
+                source_name: 'synthetic.feeds.eurusd',
                 price_source: 'vintage',
                 gmm_initial_price: null,
                 vintage_source: 'ore.reference',
                 vintage_date: '2016-02-05',
             }),
         ).toMatchObject({
-            source_name: 'synthetic.themes.eurusd',
+            source_name: 'synthetic.feeds.eurusd',
             gmm_initial_price: 0,
             vintage_source: 'ore.reference',
             vintage_date: '2016-02-05',
@@ -210,7 +210,7 @@ describe('the FX feed screens', () => {
         expect(html).toContain('EUR/USD');
         expect(html).toContain('synthetic.eurusd');
         expect(html).toContain('Geometric');
-        expect(html).toContain('Add feed');
+        expect(html).toContain('>Add<');
         expect(html).toContain('Search…');
     });
 
@@ -291,8 +291,8 @@ describe('the FX feed screens', () => {
         expect(html).toContain('>Running<');
         expect(html).toContain('>Stopped<');
         expect(html).toContain('Choose synthetic.gbpusd');
-        expect(html).toContain('Start chosen (0)');
-        expect(html).toContain('Stop chosen (0)');
+        expect(html).toContain('>Start<');
+        expect(html).toContain('>Stop<');
     });
 
     it('offers a reader the status but no start or stop', () => {
@@ -308,7 +308,7 @@ describe('the FX feed screens', () => {
             );
         });
         expect(html).toContain('>Stopped<');
-        expect(html).not.toContain('Start chosen');
+        expect(html).not.toContain('>Start<');
         expect(html).not.toContain('aria-label="Choose ');
     });
 

@@ -294,18 +294,14 @@ function FxFeedsList(): ReactNode {
                                       pending={runs.pending}
                                       onClick={() => run('start')}
                                   >
-                                      {t('marketdata.runs.startChosen', {
-                                          count: String(chosen.size),
-                                      })}
+                                      {t('marketdata.runs.start')}
                                   </Button>
                                   <Button
                                       disabled={chosen.size === 0}
                                       pending={runs.pending}
                                       onClick={() => run('stop')}
                                   >
-                                      {t('marketdata.runs.stopChosen', {
-                                          count: String(chosen.size),
-                                      })}
+                                      {t('marketdata.runs.stop')}
                                   </Button>
                               </>
                           ),

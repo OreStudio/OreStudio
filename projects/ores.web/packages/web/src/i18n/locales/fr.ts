@@ -3341,7 +3341,7 @@ const fr: SourceCatalogue = {
         fxFeeds: {
             title: 'Flux de prix FX',
             lead: "Les flux FX synthétiques de votre partie. Un flux ne produit rien tant qu'il n'est pas activé et démarré.",
-            add: 'Ajouter un flux',
+            add: 'Ajouter',
             addTitle: 'Ajouter un flux de prix FX',
             pair: 'Paire',
             samePair: 'Les devises de base et de cotation doivent être différentes.',
@@ -3367,8 +3367,6 @@ const fr: SourceCatalogue = {
             stop: 'Arrêter',
             choose: 'Choisir',
             chooseFeed: 'Choisir {feed}',
-            startChosen: 'Démarrer la sélection ({count})',
-            stopChosen: 'Arrêter la sélection ({count})',
             startedCount: '{count} flux démarrés.',
             stoppedCount: '{count} flux arrêtés.',
             refused: '{feed} : {message}',

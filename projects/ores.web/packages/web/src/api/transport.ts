@@ -71,7 +71,7 @@ function recordFailure(failure: ApiFailure): void {
         status: failure.status,
         code: failure.code,
         request_id: failure.requestId,
-        route: window.location.pathname,
+        route: typeof window === 'undefined' ? '' : window.location.pathname,
         reason: failure.message,
     };
     // A 401 is how a signed-out browser learns it is signed out, and is not news.

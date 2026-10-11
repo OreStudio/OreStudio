@@ -86,7 +86,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The search box loses focus while typing, because the list re-draws | trade-page/prototype.js | accept | The search box now restores its focus and caret after the re-draw. Tested: a search typed with the caret at 2 keeps the caret at 2. |
+| 2 | The breadcrumb shows Trades twice | trade-page/prototype.js | decline | The entity specification sets the trail as Home, the area, the list, then the subject. The area and the list are both named Trades. The names are deliberate, and a rename of the list is a decision for the menu page. |
+| 3 | The empty-row colspan is 9 with no selection column | trade-page/prototype.js | accept | It is 9 with the selection column and 8 without. |
+| 4 | The id of a rebooked trade can differ between the message and the new trade | trade-page/prototype.js | accept | The id is chosen once, when the event is recorded, from the trades and the pending writes. Tested: two novations before Refresh give two different ids. |
+| 5 | Four identical copies of the shared files; nothing keeps them identical | trades/index.org, check_prototype_inventory.py | accept | The copies are deliberate, so each prototype stands alone. The group page now says so, and the inventory check fails when the copies differ. Tested by changing one copy. |
+| 6 | Two statements on one line, and end-of-line comments | trade-page/prototype.js | accept | Split the statements and moved the comments above the code. |
 
 * Result
 

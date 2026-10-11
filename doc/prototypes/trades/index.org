@@ -13,7 +13,7 @@
 
 What a person does with a trade: book it, amend it, read it, bring it in from ORE and send it out, record what happens to it, and group trades into one deal. The [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]] are use cases. These prototypes are the screens that serve them.
 
-5 prototypes answer to this group. Each one is a static page under =doc/prototypes/=, opens with no build and no session, and reads mock data only. They share one stylesheet and one data file, copied into each folder, so the four open on the same trades. They link to each other, and to the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]], which belongs to this group, for pricing and for composing a structure.
+5 prototypes answer to this group. Each one is a static page under =doc/prototypes/=, opens with no build and no session, and reads mock data only. They share one stylesheet and one script of mock data and components, by copy: each folder holds its own copy, so each prototype stands alone and opens without the others. =build/scripts/check_prototype_inventory.py= fails when the copies differ. The trade-entry prototype carries the shared stylesheet followed by its own rules. They link to each other, and to the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]], which belongs to this group, for pricing and for composing a structure.
 
 [[file:../index.org][Prototypes]] is the top page and the only inventory.
 

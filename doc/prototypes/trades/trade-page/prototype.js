@@ -12,9 +12,12 @@ const TABS = [['details', 'Details'], ['instrument', 'Instrument'], ['identifier
 
 /* What the server holds, and what the screen has been told about. A save does
  * not reload the page: it makes Refresh gold, and the person presses it. */
-const OV = {};            // per trade: card id -> field key -> value
-const EXTRA = {};         // per trade: history entries written this session
-const PENDING = [];       // writes the screen has not read back yet
+// Per trade: card id, then field key, then the value written.
+const OV = {};
+// Per trade: the history entries written this session.
+const EXTRA = {};
+// The writes the screen has not read back yet.
+const PENDING = [];
 let stale = STATE_P === 'stale';
 let flashId = null;
 let listQuery = { offset: 0, limit: 15, search: '', state: '', book: '', cp: '' };
@@ -50,7 +53,9 @@ function listTrades(q) {
 function requestLine(q, total) {
     const f = {};
     if (q.search) f[SERVER === 'today' ? 'id_one_of' : 'search'] = q.search;
-    if (q.state) f.state = q.state; if (q.book) f.book = q.book; if (q.cp) f.counterparty = q.cp;
+    if (q.state) f.state = q.state;
+    if (q.book) f.book = q.book;
+    if (q.cp) f.counterparty = q.cp;
     return 'trading.v1.trades.list  offset=' + q.offset + ' limit=' + q.limit + ' filter=' + JSON.stringify(f) + '  →  total=' + total;
 }
 const stateChip = s => chip(s, { live: 'ok', draft: 'warn', expired: '', cancelled: 'bad' }[s]);
@@ -70,10 +75,10 @@ function renderList() {
         ])]
     });
     const filters = SERVER === 'today'
-        ? h('div', { class: 'filters' }, h('input', { placeholder: 'Trade id', value: q.search, oninput: debounce(e => { q.search = e.target.value; q.offset = 0; renderList(); }) }),
+        ? h('div', { class: 'filters' }, searchInput('Trade id', 'Trade id'),
             h('span', { class: 'faint small' }, 'Today the server filters by trade id only.'))
         : h('div', { class: 'filters' },
-            h('input', { placeholder: 'Search by trade id, type or counterparty', value: q.search, 'aria-label': 'Search', oninput: debounce(e => { q.search = e.target.value; q.offset = 0; renderList(); }) }),
+            searchInput('Search by trade id, type or counterparty', 'Search'),
             select([['', 'All states'], ['live', 'Live'], ['draft', 'Draft'], ['expired', 'Expired'], ['cancelled', 'Cancelled']], q.state, v => { q.state = v; q.offset = 0; renderList(); }),
             select([['', 'All books']].concat(BOOKS.map(b => [b.code, b.name])), q.book, v => { q.book = v; q.offset = 0; renderList(); }),
             select([['', 'All counterparties']].concat(COUNTERPARTIES.map(c => [c.code, c.name])), q.cp, v => { q.cp = v; q.offset = 0; renderList(); }));
@@ -89,13 +94,29 @@ function renderList() {
             h('td', null, h('a', { href: '#', 'data-ref': 'counterparty:' + t.cp }, cpty(t.cp).name)), h('td', null, h('a', { href: '#', 'data-ref': 'book:' + t.book }, book(t.book).name)),
             h('td', { class: 'nw' }, stateChip(t.state), ' ', authChip(t)), h('td', { class: 'nw' }, t.date), h('td', { class: 'num nw' }, money(t.notional, t.ccy)),
             h('td', { class: 'num mono nw' }, 'v' + t.ver + ' · ext ' + t.ext))) :
-            h('tr', null, h('td', { colspan: 9 }, STATE_P === 'empty' || q.search || q.state || q.book || q.cp ? ['No trade matches. ', h('button', { class: 'btn small', onclick: () => { listQuery = { offset: 0, limit: q.limit, search: '', state: '', book: '', cp: '' }; location.href = qs({ state: null }); } }, 'Clear filters')] : 'There are no trades yet.')))));
+            h('tr', null, h('td', { colspan: sel ? 9 : 8 }, STATE_P === 'empty' || q.search || q.state || q.book || q.cp ? ['No trade matches. ', h('button', { class: 'btn small', onclick: () => { listQuery = { offset: 0, limit: q.limit, search: '', state: '', book: '', cp: '' }; location.href = qs({ state: null }); } }, 'Clear filters')] : 'There are no trades yet.')))));
     put(wrap(head, selected.size ? h('div', { class: 'notice acc' }, selected.size + ' chosen. ', h('button', { class: 'btn small', onclick: () => { selected.clear(); renderList(); } }, 'Clear')) : null,
         stale ? h('div', { class: 'strip' }, 'Something changed that this page cannot show. Press Refresh to read it again.') : null,
         filters, table, pager({ offset: q.offset, limit: q.limit, total, onChange: v => { Object.assign(q, v); renderList(); } }),
         h('div', { class: 'reqline' }, requestLine(q, total))));
 }
 function debounce(fn) { let t; return e => { clearTimeout(t); t = setTimeout(() => fn(e), 300); }; }
+
+/* A search re-draws the list, and the box is part of it. Put the caret back where it was. */
+function searchInput(placeholder, label) {
+    const el = h('input', {
+        placeholder, value: listQuery.search, 'aria-label': label, id: 'trade-search',
+        oninput: debounce(e => {
+            const at = e.target.selectionStart;
+            listQuery.search = e.target.value;
+            listQuery.offset = 0;
+            renderList();
+            const again = document.getElementById('trade-search');
+            if (again) { again.focus(); again.setSelectionRange(at, at); }
+        })
+    });
+    return el;
+}
 
 /* ---------- applying writes after Refresh ---------- */
 function refresh() {
@@ -299,22 +320,24 @@ function lifecycle(t) {
     next.addEventListener('click', () => {
         if (done) return d.close();
         if (step < 3) { step++; return draw(); }
-        const links = [];
+        const slot = TRADES.length + PENDING.length;
+        const newCode = 'ACME-100' + (300 + slot);
         PENDING.push(() => {
             const a = activityType(ev[3]);
             t.state = { execute: 'live', discard: 'cancelled', reinstate: 'live', cancel: 'cancelled', expire: 'expired', novate: 'cancelled', bookmove: 'cancelled' }[ev[0]] || t.state;
-            if (a.real) t.ver += 1; if (a.economic) t.ext += 1;
+            if (a.real) t.ver += 1;
+            if (a.economic) t.ext += 1;
             if (t.state !== 'live') t.auth = null; else if (t.auth === null) t.auth = false;
             const e = { id: 'x' + Date.now(), at: iso(NOW), kind: t.state === 'cancelled' ? 'cancelled' : 'event', activity: ev[3], version: t.ver, ext: t.ext, actor: ME, reason, note: note || ev[2], economic: a.economic, diffs: [['state', 'live', t.state]] };
             (EXTRA[t.code] = EXTRA[t.code] || []).push(e); flashId = e.id;
             if (['novate', 'bookmove'].includes(ev[0])) {
-                const n = Object.assign({}, t, { id: tradeId(300 + TRADES.length), code: 'ACME-100' + (300 + TRADES.length), cp: ev[0] === 'novate' ? newCp : t.cp, book: ev[0] === 'bookmove' ? newBook : t.book,
+                const n = Object.assign({}, t, { id: tradeId(300 + slot), code: newCode, cp: ev[0] === 'novate' ? newCp : t.cp, book: ev[0] === 'bookmove' ? newBook : t.book,
                     state: 'live', auth: false, ext: 1, ver: 1, structure: null, rebookedTo: null, rebookedFrom: t.code, updated: iso(NOW) });
                 t.rebookedTo = n.code; t.rebookKind = ev[0] === 'novate' ? 'Novation' : 'Book move'; n.rebookKind = t.rebookKind;
                 TRADES.push(n); store('booked', (store('booked') || []).concat([n]));
             }
         });
-        stale = true; done = ['novate', 'bookmove'].includes(ev[0]) ? ['The new trade is ACME-100' + (300 + TRADES.length) + '.'] : [];
+        stale = true; done = ['novate', 'bookmove'].includes(ev[0]) ? ['The new trade is ' + newCode + '.'] : [];
         draw(); renderPage();
     });
     draw();

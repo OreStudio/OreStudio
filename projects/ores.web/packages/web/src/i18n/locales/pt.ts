@@ -72,14 +72,16 @@ const pt: SourceCatalogue = {
             'tenant-administration': 'Administração do inquilino',
             application: 'Aplicação',
         },
+        account: 'A sua conta',
         menu: {
+            marketdata: 'Dados de mercado',
             home: 'Início',
             accounts: 'Contas',
             tenants: 'Inquilinos',
             operations: 'Operações',
             development: 'Desenvolvimento',
             parties: 'Partes',
-            rescue: 'Recuperar acesso',
+            rescue: 'Recuperação de acesso',
             audit: 'Entradas',
             requests: 'Pedidos',
             organisation: 'Organização',
@@ -384,10 +386,9 @@ const pt: SourceCatalogue = {
     },
 
     auditSignIns: {
-        title: 'Auditoria: inícios de sessão',
+        title: 'Inícios de sessão',
         description: 'Quem tem sessão iniciada, o que cada um faz, e quem falha ao entrar.',
         readAt: 'Lido às {at}',
-        refresh: 'Atualizar',
         tabs: 'Leituras da auditoria',
         filterNote:
             'O período restringe os eventos e as estatísticas no servidor, e as sessões abertas neste navegador. Não aparece aqui qualquer controlo de versão, diff ou reversão: este ecrã é um registo de eventos, não uma entidade versionada.',
@@ -692,6 +693,102 @@ const pt: SourceCatalogue = {
      * O ecrã do perfil: uma página com um painel por registo, para que cada
      * painel guarde sozinho e responda sozinho.
      */
+    signInFacts: {
+        lastSignIn: 'Último início de sessão',
+        never: 'Nunca iniciou sessão',
+        from: 'De',
+        unknown: 'Desconhecido',
+        failed: 'Tentativas falhadas',
+        none: 'Esta conta ainda não tem registo de início de sessão.',
+        locked: 'Bloqueada',
+        notLocked: 'Não bloqueada',
+    },
+    security: {
+        title: 'Segurança',
+        lead: 'A sua palavra-passe e os locais onde a sua conta tem sessão iniciada.',
+        reading: 'A ler a sua conta…',
+        readFailed: 'A leitura falhou.',
+        sessions: {
+            title: 'Onde tem sessão iniciada',
+            caveat: 'Nenhum fim de sessão escreve uma hora de fim, por isso esta lista contém todas as sessões da conta. Uma sessão antiga parece igual a uma sessão ativa.',
+            empty: 'Não há sessões registadas para a sua conta.',
+            started: 'Início',
+            client: 'Cliente',
+            address: 'Endereço',
+            country: 'País',
+            traffic: 'Enviado / recebido',
+            unknownClient: 'Cliente desconhecido',
+            noAddress: 'Sem endereço',
+            unknownCountry: 'Desconhecido',
+        },
+        password: {
+            title: 'Palavra-passe',
+            lead: 'Altere a palavra-passe com que inicia sessão. O servidor verifica primeiro a palavra-passe atual.',
+            current: 'Palavra-passe atual',
+            currentHint: 'Prova que o pedido é seu.',
+            new: 'Nova palavra-passe',
+            submit: 'Alterar palavra-passe',
+            changed: 'A palavra-passe foi alterada. Use-a no próximo início de sessão.',
+            refused: 'A alteração foi recusada.',
+        },
+        state: {
+            title: 'Estado dos inícios de sessão',
+            lead: 'Só de leitura. O servidor escreve-o quando inicia sessão.',
+            resetRequired: 'É necessário alterar a palavra-passe',
+            account: 'Conta',
+        },
+    },
+    rescue: {
+        title: 'Recuperação de acesso',
+        lead: 'Faça um colega voltar ao sistema, ou bloqueie a conta.',
+        find: 'Escolha o colega que pediu ajuda.',
+        another: 'Escolher outro colega',
+        reading: 'A ler a conta…',
+        readFailed: 'A leitura falhou.',
+        missing:
+            'Nenhuma conta deste inquilino se chama {username}. Pode ter sido renomeada ou removida.',
+        diagnosis: {
+            title: 'O que o estado sugere',
+            never: '{username} nunca iniciou sessão, por isso não há contagem de tentativas nem estado de bloqueio.',
+            locked: {
+                one: 'Tentativas falhadas bloquearam esta conta. Desbloqueie-a se o colega apenas esqueceu a palavra-passe.',
+                other: 'Tentativas falhadas bloquearam esta conta. Desbloqueie-a se o colega apenas esqueceu a palavra-passe.',
+            },
+            open: 'A conta não está bloqueada. Tentativas falhadas só a bloqueiam quando atingem o limite do servidor.',
+            failed: {
+                one: '{count} tentativa falhada',
+                other: '{count} tentativas falhadas',
+            },
+            online: 'Sessão aberta',
+            offline: 'Sem sessão',
+        },
+        lock: {
+            title: 'Bloquear a conta',
+            lead: 'Uma conta bloqueada não pode iniciar sessão. Desbloquear repõe a contagem de tentativas falhadas.',
+            sideLocked: 'Bloqueada',
+            sideUnlocked: 'Desbloqueada',
+            locked: 'A conta está bloqueada. As suas sessões abertas continuam abertas.',
+            unlocked: 'A conta está desbloqueada e a contagem de tentativas falhadas foi reposta.',
+            refused: 'A alteração foi recusada.',
+            lockTitle: 'Bloquear esta conta',
+            unlockTitle: 'Desbloquear esta conta',
+            lockAction: 'Bloquear a conta',
+            unlockAction: 'Desbloquear a conta',
+            lockBody:
+                '{username} deixa de poder iniciar sessão. As sessões que já estão abertas continuam abertas até expirarem.',
+            unlockBody:
+                '{username} pode iniciar sessão outra vez, e a contagem de tentativas falhadas foi reposta.',
+        },
+    },
+    accessRead: {
+        slow: 'O servidor demora a responder. O menu e o início podem ter partes em falta até responder.',
+        failed: 'Não foi possível ler o seu acesso, por isso faltam partes do menu e do início.',
+    },
+    cardKind: {
+        workflow: 'Fluxo de trabalho',
+        workflows: 'Fluxos de trabalho',
+    },
+
     profile: {
         reason: {
             system_update: 'Alteração normal',
@@ -805,6 +902,14 @@ const pt: SourceCatalogue = {
             done: 'Guardado.',
             version: 'Guardado. O registo está agora na versão {version}.',
             failed: 'A escrita falhou.',
+        },
+        newer: {
+            title: 'A versão {version} deste registo foi guardada enquanto editava.',
+            titleBy: '{by} guardou a versão {version} deste registo enquanto editava.',
+            change: '{field}: {before} → {after}',
+            empty: 'nada',
+            keep: 'Manter a minha edição',
+            take: 'Usar os novos valores',
         },
         refused: {
             notYours:
@@ -1083,11 +1188,8 @@ const pt: SourceCatalogue = {
             lead: 'Entrou como {name}',
             parties: 'Partes',
             partiesBody: 'As empresas e sucursais do seu grupo, e como se relacionam.',
-            newParty: 'Adicionar parte',
+            newParty: 'Integrar uma parte',
             newPartyBody: 'Adicionar uma empresa ou uma sucursal ao seu grupo.',
-            partyDetails: 'Corrigir uma parte',
-            partyDetailsBody:
-                'Corrigir o registo, os identificadores e a estrutura de uma entidade jurídica.',
             counterpartyOnboard: 'Integrar uma contraparte',
             counterpartyOnboardBody: 'Integrar uma entidade jurídica com que negoceia.',
             bookStructure: 'Moldar a estrutura dos livros',
@@ -1095,14 +1197,14 @@ const pt: SourceCatalogue = {
                 'Colocar livros em carteiras, classificá-los e ler quem os pode ver.',
             conventions: 'Definir convenções de instrumentos',
             conventionsBody: 'Redigir os termos que o ORE usa para um instrumento.',
-            rescue: 'Bloquear ou desbloquear uma conta',
+            rescue: 'Recuperação de acesso',
             rescueBody: 'Ajudar quem não consegue entrar, ou impedir que uma conta seja usada.',
-            audit: 'Entradas',
+            audit: 'Inícios de sessão',
             auditBody: 'Quem está ligado agora, e as entradas que falharam.',
             versions: 'Versões e base de dados',
             versionsBody:
                 'O que este navegador executa, o que a instalação executa e o que a base de dados guarda.',
-            security: 'A sua palavra-passe e entradas',
+            security: 'Segurança',
             securityBody: 'Mude a sua palavra-passe e veja onde tem sessão iniciada.',
         },
         party: {
@@ -1116,12 +1218,13 @@ const pt: SourceCatalogue = {
             tradingBody: 'Registar, alterar e rever operações.',
             reporting: 'Relatórios',
             reportingBody: 'Relatórios de risco e de P&L para as suas carteiras.',
-            security: 'A sua palavra-passe e entradas',
+            security: 'Segurança',
             securityBody: 'Mude a sua palavra-passe e veja onde tem sessão iniciada.',
         },
     },
 
     development: {
+        lead: 'O trabalho de uma equipa no produto, a começar pelos testes que um testador pode executar.',
         tabs: {
             label: 'Áreas de desenvolvimento',
             tests: 'Testes',
@@ -1250,11 +1353,10 @@ const pt: SourceCatalogue = {
             logsBody: 'As linhas escritas pelos serviços, as mais recentes primeiro.',
         },
         services: {
-            title: 'Operações: serviços',
+            title: 'Serviços em execução',
             description:
                 'Cada serviço que o registo espera, confrontado com as instâncias que se anunciam. Os executores de cálculo pertencem ao ecrã da grelha.',
             updated: 'Atualizado às {at}',
-            refresh: 'Atualizar',
             skew: 'Desvio de versão: {services} executam {versions} enquanto o resto executa {newest}. A comparação é entre versões, porque um batimento indica a versão e não a compilação.',
             instances: {
                 title: 'Instâncias',
@@ -1295,11 +1397,10 @@ const pt: SourceCatalogue = {
             },
         },
         grid: {
-            title: 'Operações: grelha de cálculo',
+            title: 'Grelha de cálculo',
             description:
                 'O resumo dos anfitriões e do trabalho da instalação, uma linha por máquina, com o executor que se anuncia por ela.',
             updated: 'Atualizado às {at}',
-            refresh: 'Atualizar',
             units: {
                 gib: '{value} GiB',
                 mib: '{value} MiB',
@@ -1371,7 +1472,7 @@ const pt: SourceCatalogue = {
             },
         },
         bus: {
-            title: 'Operações: barramento de mensagens',
+            title: 'Barramento de mensagens',
             description: 'Os sinais vitais do servidor NATS e uma linha por fluxo.',
             range: {
                 label: 'Intervalo',
@@ -1439,7 +1540,7 @@ const pt: SourceCatalogue = {
             },
         },
         logs: {
-            title: 'Operações: registos de telemetria',
+            title: 'Registos de telemetria',
             description:
                 'As linhas por trás de um sintoma, encontradas por hora, nível, origem, componente, etiqueta ou mensagem.',
             readAt: 'Lido às {at}',
@@ -1519,7 +1620,7 @@ const pt: SourceCatalogue = {
             },
         },
         versions: {
-            title: 'Operações: versões e base de dados',
+            title: 'Versões e base de dados',
             description:
                 'O que este navegador executa, o que a instalação executa e o que a instalação guarda.',
             unknown: 'desconhecido',
@@ -1817,6 +1918,22 @@ const pt: SourceCatalogue = {
             signed_out: 'Sessão terminada',
             refreshed: 'Sessão renovada',
             noticed: 'Registado',
+        },
+        gaps: 'O que este histórico não pode mostrar',
+        gapFor: {
+            party_country:
+                'Os países em que opera não têm versões, por isso não se mostra quando um é adicionado ou removido.',
+            party_currency:
+                'As moedas em que opera não têm versões, por isso não se mostra quando uma é adicionada ou removida.',
+            party_counterparty:
+                'As contrapartes com que pode negociar não têm versões, por isso não se mostra quando uma é adicionada ou removida.',
+            account_party:
+                'As partes em que uma pessoa trabalha não têm versões, por isso não se mostra quando entra ou sai de uma.',
+            account_role:
+                'Um papel que foi retirado não se mostra, apenas os papéis detidos agora.',
+            auth_event:
+                'Só se guardam os inícios de sessão mais recentes, por isso os mais antigos não se mostram.',
+            unread: 'Parte deste histórico não pôde ser lida, por isso não se mostra.',
         },
     },
 
@@ -2306,153 +2423,6 @@ const pt: SourceCatalogue = {
             },
         },
 
-        partyDetails: {
-            noShortCode: 'Sem código curto',
-            none: 'Abra primeiro uma parte a partir da lista.',
-            pickFailed: 'As listas de que o formulário se serve não puderam ser lidas. {message}',
-            step: {
-                list: 'Partes',
-                overview: 'Visão geral',
-                identifiers: 'Identificadores',
-                contacts: 'Contactos',
-                memberships: 'Pertenças',
-                structure: 'Estrutura',
-                review: 'Revisão',
-                outcome: 'Resultado',
-                history: 'Histórico',
-            },
-            list: {
-                title: 'Partes',
-                lead: 'As entidades jurídicas deste inquilino. Escolha uma para a corrigir.',
-                search: 'Pesquisar por nome, código curto ou nome de código',
-                empty: 'Nenhuma parte corresponde.',
-                total: '{shown} de {total} mostradas',
-                readFailed: 'As partes não puderam ser lidas. {message}',
-                columns: {
-                    code: 'Código curto',
-                    name: 'Nome',
-                    type: 'Tipo',
-                    status: 'Estado',
-                    centre: 'Centro de negócios',
-                    version: 'Versão',
-                    modifiedBy: 'Modificado por',
-                },
-            },
-            overview: {
-                title: 'Visão geral',
-                lead: 'Corrija o registo da parte. Ela mantém o seu identificador e o seu nome de código.',
-                correction:
-                    'Isto corrige a parte. Não a substitui, e cada alteração acrescenta uma versão.',
-                shortCode: 'Código curto',
-                fullName: 'Nome completo',
-                transliteratedName: 'Nome transliterado',
-                partyType: 'Tipo de parte',
-                status: 'Estado',
-                businessCenter: 'Centro de negócios',
-                parent: 'Identificador da parte-mãe',
-                noParent: 'Sem parte-mãe',
-                registrationDefault: 'Predefinição no registo',
-                codename: 'Nome de código',
-                category: 'Categoria',
-                readOnly: 'O nome de código e a categoria não podem ser alterados.',
-            },
-            identifiers: {
-                title: 'Identificadores',
-                lead: 'Uma linha por valor de esquema. Um valor alterado retira a linha antiga e escreve uma nova.',
-                nameChange: 'Uma alteração da denominação legal edita um só campo da parte.',
-                idChange: 'Uma alteração de identificador retira o valor antigo e escreve o novo.',
-                none: 'Esta parte não tem identificadores.',
-                value: 'Valor',
-                description: 'Descrição',
-                retire: 'Retirar',
-                undo: 'Manter',
-                scheme: 'Esquema',
-                choose: 'Escolher um esquema',
-                cardinality: '{scheme} admite {max} valor no máximo.',
-                add: 'Adicionar identificador',
-            },
-            contacts: {
-                title: 'Contactos',
-                lead: 'Uma linha por tipo de contacto. Marque uma linha como principal.',
-                none: 'Esta parte não tem contactos.',
-                primary: 'Principal',
-                markPrimary: 'Tornar principal',
-                add: 'Adicionar {type}',
-                street1: 'Rua',
-                street2: 'Rua 2',
-                city: 'Cidade',
-                state: 'Estado',
-                country: 'País',
-                postal: 'Código postal',
-                phone: 'Telefone',
-                email: 'Correio eletrónico',
-                web: 'Página web',
-            },
-            memberships: {
-                title: 'Pertenças',
-                lead: 'Os países e as moedas em que esta parte trabalha.',
-                closeNote:
-                    'Fechar uma pertença oculta-a só para esta parte. O país ou a moeda continua definido para o inquilino, e pode ligá-lo de novo.',
-                countries: 'Países',
-                currencies: 'Moedas',
-                none: 'Nenhuma ligação.',
-                open: 'Aberta',
-                closing: 'A fechar',
-                close: 'Fechar',
-                reopen: 'Manter aberta',
-                choose: 'Escolher para ligar',
-                link: 'Ligar',
-                noHistory:
-                    'Uma pertença ainda não tem histórico próprio. O histórico da parte é o único rasto.',
-            },
-            structure: {
-                title: 'Estrutura',
-                lead: 'As contrapartes que esta parte vê e o tipo de cada unidade de negócio.',
-                counterparties: 'Contrapartes',
-                units: 'Unidades de negócio',
-                noUnits: 'Esta parte não tem unidades de negócio.',
-                noType: 'Sem tipo',
-                levelBreach:
-                    'A unidade {unit} tem o nível {level}. A sua unidade-mãe {parent} tem o nível {parentLevel}. Uma unidade tem de ser mais profunda do que a sua mãe.',
-            },
-            review: {
-                title: 'Revisão',
-                lead: 'Nada é escrito antes de confirmar.',
-                nothing: 'Ainda nada mudou.',
-                columns: {
-                    what: 'O que muda',
-                    before: 'Antes',
-                    after: 'Depois',
-                    operation: 'Operação',
-                },
-                reason: 'Motivo',
-                commentary: 'Comentário',
-                commentaryRequired: 'Este motivo exige um comentário.',
-                confirm: 'Confirmar alterações',
-            },
-            refusal: {
-                heading: 'O servidor recusou a alteração.',
-                kept: 'As suas alterações são mantidas.',
-                nothingWritten: 'Nada foi escrito.',
-                partial: 'Já escrito: {calls}.',
-                walkBack: 'Ir para o passo',
-            },
-            outcome: {
-                title: 'Resultado',
-                lead: 'A parte está agora corrigida.',
-                written: '{name} está agora na versão {version}.',
-                history: 'Ver o histórico',
-                done: 'Sair da parte',
-            },
-            history: {
-                title: 'Histórico',
-                lead: 'Cada versão da parte e o que mudou em cada uma.',
-                none: 'Abra uma parte para ver o seu histórico.',
-                revertNote:
-                    'Repor carrega uma versão mais antiga na revisão. Nada é escrito antes de confirmar.',
-            },
-        },
-
         counterparty: {
             noShortCode: 'Ainda sem código curto',
             pickFailed: 'Não foi possível ler as listas de que o formulário se serve. {message}',
@@ -2850,6 +2820,9 @@ const pt: SourceCatalogue = {
             link: 'Adicionar',
             revertTitle: 'Reverter para a versão {version}?',
             revertBody: 'Repõe a v{to} como nova versão.',
+            revertChanges: 'Campos que vão mudar ({count})',
+            revertNoChanges: 'Nenhum campo difere da versão atual.',
+            revertEmpty: 'vazio',
             refresh: 'Atualizar',
             search: 'Pesquisar…',
             columns: 'Colunas',
@@ -2881,6 +2854,11 @@ const pt: SourceCatalogue = {
                 exceptions: 'Exceções',
                 events: 'Eventos',
                 days: 'Dias úteis',
+                identifiers: 'Identificadores',
+                contacts: 'Contactos',
+                memberships: 'Pertenças',
+                centres: 'Centros de negócios',
+                counterparties: 'Contrapartes',
             },
         },
         fields: {
@@ -2934,6 +2912,32 @@ const pt: SourceCatalogue = {
             is_business_day: 'Dia útil',
             event_date: 'Data',
             diary_entry_type: 'Tipo de entrada',
+            short_code: 'Código curto',
+            full_name: 'Nome completo',
+            transliterated_name: 'Nome transliterado',
+            codename: 'Nome de código',
+            party_category: 'Categoria',
+            party_type: 'Tipo',
+            parent_party_id: 'Parte-mãe',
+            business_center_code: 'Centro de negócios',
+            status: 'Estado',
+            is_registration_default: 'Predefinida para registo',
+            id_scheme: 'Esquema',
+            id_value: 'Valor',
+            contact_type: 'Tipo de contacto',
+            street_line_1: 'Rua',
+            street_line_2: 'Rua, segunda linha',
+            city: 'Cidade',
+            state: 'Estado ou região',
+            postal_code: 'Código postal',
+            phone: 'Telefone',
+            email: 'Correio eletrónico',
+            web_page: 'Página web',
+            is_primary: 'Contacto principal',
+            unit_name: 'Nome',
+            unit_code: 'Código',
+            unit_type_id: 'Tipo de unidade',
+            business_centre_code: 'Centro de negócios',
         },
         choices: {
             kind: {
@@ -3088,6 +3092,39 @@ const pt: SourceCatalogue = {
             removeWarning:
                 'Remover o par remove também a sua convenção. Nada verifica se há operações que ainda usem o par.',
         },
+        parties: {
+            card: 'Parte',
+            editTitle: 'Editar {name}',
+            identifiersLead:
+                'Os esquemas sob os quais esta parte é conhecida. Alterar um valor retira o antigo e regista o novo.',
+            unitsLead: 'As unidades de negócio desta parte, e o centro de negócios de cada uma.',
+            countries: 'Países em que opera',
+            currencies: 'Moedas em que opera',
+            counterparties: 'Contrapartes com que pode negociar',
+            addPart: {
+                'party-identifiers': 'Adicionar identificador',
+                'party-contacts': 'Adicionar contacto',
+                'business-units': 'Adicionar unidade de negócio',
+            },
+            editPart: {
+                'party-identifiers': 'Identificador',
+                'party-contacts': 'Contacto',
+                'business-units': 'Unidade de negócio',
+            },
+            removePart: {
+                'party-identifiers': 'Eliminar identificador',
+                'party-contacts': 'Eliminar contacto',
+                'business-units': 'Eliminar unidade de negócio',
+            },
+            logo: 'Logótipo',
+            address: 'Morada',
+            record: {
+                party: 'Parte',
+                identifier: 'Identificador',
+                contact: 'Contacto',
+                unit: 'Unidade de negócio',
+            },
+        },
     },
 
     membership: {
@@ -3151,11 +3188,48 @@ const pt: SourceCatalogue = {
         },
     },
 
+    permissionWords: {
+        loginInfoRead: 'ver o último início de sessão das pessoas',
+        partiesRead: 'ver as partes do inquilino',
+        partiesWrite: 'alterar as partes do inquilino',
+        counterpartiesWrite: 'alterar as contrapartes',
+        accountsLock: 'bloquear e desbloquear contas',
+        accountsRead: 'ver as contas do seu inquilino',
+        accountsUpdate: 'alterar contas',
+        accountsReset: 'repor palavras-passe',
+        contactsRead: 'ler os contactos das pessoas',
+        contactsWrite: 'alterar os contactos das pessoas',
+        organisationRead: 'ver as pessoas das suas partes',
+        rolesRead: 'ler os papéis e as suas permissões',
+        rolesAssign: 'atribuir papéis às pessoas',
+        sessionsRead: 'ler as sessões das pessoas',
+        curveSnapshotsRead: 'ver as curvas de dados de mercado',
+    },
+
+    unavailable: {
+        title: 'Ainda não pode abrir {screen}',
+        need: 'Para a abrir, precisa de poder {need}.',
+        needMany: 'Para a abrir, precisa de poder fazer uma destas coisas: {need}.',
+        roleHas: 'O papel {role} permite-o.',
+        ask: 'Pedir {role}',
+        none: 'Nenhum papel que possa pedir o permite. Fale com o administrador do seu inquilino.',
+        checking: 'A procurar uma forma de obter acesso...',
+        failedTitle: 'Isto não funcionou, e devia ter funcionado',
+        failed: 'Tinha permissão para abrir isto, e o servidor recusou uma parte. Verificámos novamente o seu acesso. Nada do que fez causou isto.',
+        reference: 'Referência {id}',
+        retry: 'Tentar novamente',
+        home: 'Ir para o início',
+        askReason: 'Preciso de abrir {screen}.',
+    },
+
     common: {
         loading: 'A carregar...',
+        notAvailable: 'Esta página não está disponível para si.',
         clear: 'Limpar',
         refresh: 'Atualizar',
         refreshStale: 'Os dados mudaram no servidor. Atualize para os ver.',
+        refreshStaleAt: 'Os dados mudaram no servidor às {time}. Atualize para os ver.',
+        loadedAt: 'Carregado: {time}',
         all: 'Todos',
         close: 'Fechar',
         open: 'Abrir',
@@ -3163,6 +3237,8 @@ const pt: SourceCatalogue = {
         apply: 'Aplicar',
         back: 'Voltar',
         continue: 'Continuar',
+        retry: 'Tentar novamente',
+        cancel: 'Cancelar',
     },
 };
 

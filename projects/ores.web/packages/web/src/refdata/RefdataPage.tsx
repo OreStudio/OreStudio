@@ -20,47 +20,27 @@
  */
 
 import type { ReactNode } from 'react';
+import type { SessionMode } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { AreaCards } from '../shell/AreaCards.js';
 import { PageHeader } from '../ui/Primitives.js';
-import { Tiles } from '../ui/Tiles.js';
-import { Crumbs, classificationsPath } from './shared.js';
-
-/** The screens built, with their addresses. */
-const BUILT = [
-    { screen: 'calendars', to: '/refdata/calendars', icon: 'calendar' },
-    { screen: 'currencies', to: '/refdata/currencies', icon: 'currency' },
-    { screen: 'currencyPairs', to: '/refdata/currency-pairs', icon: 'pairs' },
-    { screen: 'deskGroups', to: '/refdata/desk-groups', icon: 'desk' },
-] as const;
+import { AreaTrail } from '../shell/AreaTrail.js';
 
 /**
  * Reference data, the area: the data every trade, curve and report is built
- * on. Each screen is a tile.
+ * on, in groups. The parties and everything about a party are here, with the
+ * shared lists they connect to. The cards come from the one registry the other
+ * areas and Home draw from.
  */
-export function RefdataPage(): ReactNode {
+export function RefdataPage({ mode }: { readonly mode: SessionMode }): ReactNode {
     const { t } = useTranslation();
     return (
         <div className="space-y-6">
             <div>
-                <Crumbs parts={[{ label: t('refdata.area.title') }]} />
+                <AreaTrail area="refdata" />
                 <PageHeader title={t('refdata.area.title')} description={t('refdata.area.lead')} />
             </div>
-            <Tiles
-                tiles={[
-                    ...BUILT.map(({ screen, to, icon }) => ({
-                        title: t(`refdata.area.screens.${screen}`),
-                        body: t(`refdata.area.screens.${screen}Body`),
-                        to,
-                        icon,
-                    })),
-                    {
-                        title: t('refdata.classifications.title'),
-                        body: t('refdata.area.classificationsBody'),
-                        to: classificationsPath(),
-                        icon: 'classification',
-                    },
-                ]}
-            />
+            <AreaCards area="refdata" mode={mode} />
         </div>
     );
 }

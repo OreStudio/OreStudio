@@ -155,7 +155,16 @@ def test_the_registrar_takes_the_subject_from_the_action(tmp_path):
     # The subject is built from the action, not stated: clang-format may wrap
     # the call, so the two halves are asserted apart.
     assert "event_subject<" in registrar
-    assert "e.action)" in registrar
+    assert "published.event.action)" in registrar
+
+
+def test_the_registrar_publishes_the_tenancy_in_the_headers_not_the_payload(tmp_path):
+    registrar = _render(tmp_path, "cpp_nats_event_registrar.cpp.mustache",
+                        "evented_entity_event_registrar.cpp")
+    # The registrar subscribes to the event with the tenancy the store reported,
+    # and hands both to the publisher, which turns them into headers.
+    assert "published_entity_event<" in registrar
+    assert "published);" in registrar
 
 
 def test_the_notify_trigger_states_the_action_and_the_key(tmp_path):

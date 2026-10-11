@@ -373,18 +373,19 @@ describe('the application shell', () => {
         expect(renderAppShell('Acme Operations', 'application')).not.toContain('href="/tenants"');
     });
 
-    it('draws Parties and Organisation by the read, in every mode', () => {
+    it('draws Reference data for everyone, Organisation by the read, and Parties as no entry of its own', () => {
         for (const mode of ['system-administration', 'application'] as const) {
             const without = renderAppShell('Acme', mode);
-            expect(without).not.toContain('href="/parties"');
+            expect(without).toContain('href="/refdata"');
             expect(without).not.toContain('href="/organisation"');
 
             const withReads = renderAppShell('Acme', mode, undefined, [
                 'refdata::parties:read',
                 'iam::roles:read',
             ]);
-            expect(withReads).toContain('href="/parties"');
             expect(withReads).toContain('href="/organisation"');
+            expect(withReads).not.toContain('href="/refdata/parties"');
+            expect(withReads).not.toContain('href="/parties"');
         }
     });
 

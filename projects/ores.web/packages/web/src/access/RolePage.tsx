@@ -24,6 +24,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import type { PermissionPage, RoleHolder, RolePageRow } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { PATHS, personPath } from '../shell/paths.js';
 import { api } from '../api/client.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { DEFAULT_PAGE_SIZE, Pager } from '../ui/Pager.js';
@@ -109,7 +110,7 @@ function Role({ role }: { readonly role: RolePageRow }): ReactNode {
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['roles-page'] });
             await queries.invalidateQueries({ queryKey: ['roles'] });
-            void navigate('/roles');
+            void navigate(PATHS.roles);
         },
     });
 
@@ -123,8 +124,8 @@ function Role({ role }: { readonly role: RolePageRow }): ReactNode {
             <Crumbs
                 parts={[
                     { label: t('shell.menu.home'), to: '/' },
-                    { label: t('shell.menu.organisation'), to: '/organisation' },
-                    { label: t('access.roles.title'), to: '/roles' },
+                    { label: t('shell.menu.organisation'), to: PATHS.organisation },
+                    { label: t('access.roles.title'), to: PATHS.roles },
                     { label: roleLabel(t, role.name) },
                 ]}
             />
@@ -168,7 +169,7 @@ function Role({ role }: { readonly role: RolePageRow }): ReactNode {
                                 return (
                                     <Link
                                         key={holder.accountId}
-                                        to={`/people/${encodeURIComponent(holder.username)}`}
+                                        to={personPath(holder.username)}
                                         className="flex items-center gap-2 rounded-full border border-line py-0.5 pl-0.5 pr-3 text-sm hover:border-line-strong"
                                     >
                                         <Avatar

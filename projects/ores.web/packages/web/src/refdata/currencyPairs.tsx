@@ -26,6 +26,7 @@ import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { useAreaRoot } from '../shell/AreaTrail.js';
 import { Button, Dialog, Notice } from '../ui/Primitives.js';
 import { FlaggedCode } from '../images/flags.js';
 import { currencyPath } from './currencies.js';
@@ -118,10 +119,7 @@ export function CurrencyPairsPage(): ReactNode {
                 source={source}
                 title={t('refdata.pairs.title')}
                 lead={t('refdata.pairs.lead')}
-                crumbs={[
-                    { label: t('refdata.area.title'), to: '/refdata' },
-                    { label: t('refdata.pairs.title') },
-                ]}
+                crumbs={[...useAreaRoot('refdata'), { label: t('refdata.pairs.title') }]}
                 pathOf={(row) => pairPath(show(row['pair_code']))}
                 addLabel={t('refdata.pairs.add')}
                 onAdd={() => setAdding(true)}
@@ -239,6 +237,7 @@ function PairDialog({
         onSettled: async () => {
             await queries.invalidateQueries({ queryKey: ['records'] });
             await queries.invalidateQueries({ queryKey: ['history'] });
+            await queries.invalidateQueries({ queryKey: ['timeline'] });
         },
         onSuccess: () => {
             onSaved?.(code);
@@ -383,7 +382,7 @@ function PairBody({
         <div className="space-y-4">
             <RecordHeader
                 crumbs={[
-                    { label: t('refdata.area.title'), to: '/refdata' },
+                    ...useAreaRoot('refdata'),
                     { label: t('refdata.pairs.title'), to: pairPath() },
                     { label: code },
                 ]}

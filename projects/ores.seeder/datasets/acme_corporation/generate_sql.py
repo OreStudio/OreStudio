@@ -297,6 +297,33 @@ def generate_dataset_populate(companies):
             "periods.",
             "csas", NETTING_METHODOLOGY))
 
+    for company in NETTING_COMPANIES:
+        label = COMPANY_LABEL[company]
+        body.append(dataset_upsert(
+            f"acme.{company}.party_contact_informations", "Parties",
+            f"ACME Corporation {label} Party Contact Informations",
+            f"The offices of ACME Corporation {label} by contact type, with their "
+            "address, phone, email and web page, published to the party a publish names.",
+            "party_contact_informations"))
+        body.append(dataset_upsert(
+            f"acme.{company}.party_countries", "Parties",
+            f"ACME Corporation {label} Party Countries",
+            f"The countries ACME Corporation {label} works in, published to the "
+            "party a publish names.",
+            "party_countries"))
+        body.append(dataset_upsert(
+            f"acme.{company}.party_currencies", "Parties",
+            f"ACME Corporation {label} Party Currencies",
+            f"The currencies ACME Corporation {label} works in, published to the "
+            "party a publish names.",
+            "party_currencies"))
+        body.append(dataset_upsert(
+            f"acme.{company}.party_counterparties", "Parties",
+            f"ACME Corporation {label} Party Counterparties",
+            f"The counterparties ACME Corporation {label} may trade with, keyed by "
+            "counterparty LEI and published to the party a publish names.",
+            "party_counterparties"))
+
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
  * ACME Corporation Dataset Population Script
@@ -884,6 +911,34 @@ def generate_csas_populate(company, csas):
          "non_exempt_im_regulations", "eligible_currencies"], rows))
 
 
+def generate_party_contacts_populate(company, contacts):
+    rows = [
+        "        (v_dataset_id, ores_utility_system_tenant_id_fn(), "
+        f"{sql_str(c['contact_type'])}, 0, {sql_str(c['street_line_1'])}, "
+        f"{sql_str(c['street_line_2'])}, {sql_str(c['city'])}, "
+        f"{sql_str(c['state'] or None)}, {sql_str(c['country_code'])}, "
+        f"{sql_str(c['postal_code'] or None)}, {sql_str(c['phone'])}, "
+        f"{sql_str(c['email'])}, {sql_str(c['web_page'])}, {sql_bool(c['is_primary'])})"
+        for c in contacts]
+    write(f"{company}_party_contact_informations_artefact_populate.sql", netting_artefact_script(
+        company, "party_contact_informations", "Party Contact Informations",
+        "One office for each contact type. The party is the one the publish "
+        "names, so a staged contact carries none.",
+        "ores_dq_party_contact_informations_artefact_tbl",
+        ["contact_type", "version", "street_line_1", "street_line_2", "city", "state",
+         "country_code", "postal_code", "phone", "email", "web_page", "is_primary"], rows))
+
+
+def generate_party_links_populate(company, family, title, note, column, records, key):
+    rows = [
+        "        (v_dataset_id, ores_utility_system_tenant_id_fn(), "
+        f"{sql_str(r[key])}, 0)"
+        for r in records]
+    write(f"{company}_{family}_artefact_populate.sql", netting_artefact_script(
+        company, family, title, note,
+        f"ores_dq_{family}_artefact_tbl", [column, "version"], rows))
+
+
 def by_company(records):
     grouped = {c: [] for c in COMPANIES}
     for r in records:
@@ -901,6 +956,10 @@ def main():
     netting_agreements = by_company(load("netting_agreements"))
     netting_sets = by_company(load("netting_sets"))
     csas = by_company(load("csas"))
+    party_contacts = by_company(load("party_contacts"))
+    party_countries = by_company(load("party_countries"))
+    party_currencies = by_company(load("party_currencies"))
+    party_counterparties = by_company(load("party_counterparties"))
 
     generate_catalog_populate()
     generate_dataset_populate(COMPANIES)
@@ -926,6 +985,22 @@ def main():
     generate_portfolios_populate(
         "acme_group", portfolios["acme_group"], business_units["acme_group"])
     generate_books_populate("acme_group", books["acme_group"], portfolios["acme_group"])
+
+    for company in NETTING_COMPANIES:
+        generate_party_contacts_populate(company, party_contacts[company])
+        generate_party_links_populate(
+            company, "party_countries", "Party Countries",
+            "The countries the party works in, by ISO alpha-2 code.",
+            "country_alpha2_code", party_countries[company], "country_alpha2_code")
+        generate_party_links_populate(
+            company, "party_currencies", "Party Currencies",
+            "The currencies the party works in, by ISO 4217 code.",
+            "currency_iso_code", party_currencies[company], "currency_iso_code")
+        generate_party_links_populate(
+            company, "party_counterparties", "Party Counterparties",
+            "The counterparties the party may trade with, by LEI, because a "
+            "counterparty's id differs from tenant to tenant.",
+            "counterparty_lei", party_counterparties[company], "counterparty_lei")
 
     for company in NETTING_COMPANIES:
         generate_netting_agreements_populate(company, netting_agreements[company])

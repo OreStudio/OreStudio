@@ -60,7 +60,7 @@ create table if not exists "ores_refdata_parties_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check (length("codename") <= 32),
-    check ("codename" = '' or "codename" ~ '^[a-z][a-z_]+$')
+    check ("codename" = '' or "codename" ~ '^[a-z][a-z_]+_[0-9]{4}$')
 );
 
 -- Unique short_code for active records
@@ -284,18 +284,18 @@ begin
           and valid_from < clock_timestamp();
     else
         NEW.version = 1;
-        -- Auto-generate codename using whimsical name + sequence suffix.
-        -- The sequence suffix is outside MVCC (nextval always advances),
-        -- so every row in a multi-row INSERT gets a distinct suffix, making
-        -- the codename globally unique without relying on a NOT EXISTS
-        -- check that cannot see sibling rows in the same statement.
+        -- Auto-generate the codename from a sequence value: a whimsical name
+        -- and a four-digit number. The sequence is outside MVCC (nextval
+        -- always advances), so every row in a multi-row INSERT gets a
+        -- distinct value, and distinct values give distinct codenames
+        -- without a NOT EXISTS check that cannot see sibling rows.
         if NEW.codename = '' or NEW.codename is null then
-            NEW.codename := ores_utility_generate_whimsical_name_fn() || '_' ||
-                ores_utility_to_base26_fn(nextval('ores_refdata_party_codename_seq'));
+            NEW.codename := ores_utility_whimsical_codename_fn(
+                nextval('ores_refdata_party_codename_seq'));
         end if;
         -- Validate the final codename.
-        if NEW.codename !~ '^[a-z][a-z_]+$' then
-            raise exception 'codename must match ^[a-z][a-z_]+$ got: %', NEW.codename
+        if NEW.codename !~ '^[a-z][a-z_]+_[0-9]{4}$' then
+            raise exception 'codename must match ^[a-z][a-z_]+_[0-9]{4}$ got: %', NEW.codename
                 using errcode = '23514';
         end if;
         -- Provision the per-party report event queue.
@@ -393,9 +393,9 @@ begin
     select d.id, d.parent_id, d.name from descendants d;
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
--- Sequence used to generate a unique base-26 suffix for auto-generated
--- codenames.  nextval() is outside MVCC: it advances even within a
--- multi-row INSERT statement, so every row in a batch gets a different
--- suffix, avoiding duplicate-key collisions that a NOT EXISTS loop cannot
--- prevent due to the statement-level snapshot in READ COMMITTED.
+-- Sequence used to generate a unique auto-generated codename.  nextval() is
+-- outside MVCC: it advances even within a multi-row INSERT statement, so every
+-- row in a batch gets a different value, avoiding duplicate-key collisions that
+-- a NOT EXISTS loop cannot prevent due to the statement-level snapshot in READ
+-- COMMITTED.
 create sequence if not exists ores_refdata_party_codename_seq;

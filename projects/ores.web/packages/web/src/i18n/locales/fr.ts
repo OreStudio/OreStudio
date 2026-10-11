@@ -67,14 +67,16 @@ const fr: SourceCatalogue = {
             'tenant-administration': 'Administration du locataire',
             application: 'Application',
         },
+        account: 'Votre compte',
         menu: {
+            marketdata: 'Données de marché',
             home: 'Accueil',
             accounts: 'Comptes',
             tenants: 'Locataires',
             operations: 'Opérations',
             development: 'Développement',
             parties: 'Parties',
-            rescue: 'Rétablir un accès',
+            rescue: "Récupération d'accès",
             audit: 'Connexions',
             requests: 'Demandes',
             organisation: 'Organisation',
@@ -385,10 +387,9 @@ const fr: SourceCatalogue = {
     },
 
     auditSignIns: {
-        title: 'Audit : connexions',
+        title: 'Connexions',
         description: 'Qui est connecté, ce que chacun fait, et qui échoue à se connecter.',
         readAt: 'Lu à {at}',
-        refresh: 'Actualiser',
         tabs: 'Lectures de l’audit',
         filterNote:
             'La période restreint les événements et les statistiques sur le serveur, et les sessions ouvertes dans ce navigateur. Aucun contrôle de version, de diff ou de retour n’apparaît ici : cet écran est un journal d’événements, pas une entité versionnée.',
@@ -695,6 +696,103 @@ const fr: SourceCatalogue = {
      * L'écran du profil : une page avec un panneau par enregistrement, donc
      * chaque panneau enregistre seul et rend compte seul.
      */
+    signInFacts: {
+        lastSignIn: 'Dernière connexion',
+        never: 'Jamais connecté',
+        from: 'Depuis',
+        unknown: 'Inconnue',
+        failed: 'Tentatives échouées',
+        none: "Ce compte n'a pas encore d'enregistrement de connexion.",
+        locked: 'Verrouillé',
+        notLocked: 'Non verrouillé',
+    },
+    security: {
+        title: 'Sécurité',
+        lead: 'Votre mot de passe et les lieux où votre compte est connecté.',
+        reading: 'Lecture de votre compte…',
+        readFailed: 'La lecture a échoué.',
+        sessions: {
+            title: 'Où vous êtes connecté',
+            caveat: "Aucune déconnexion n'écrit d'heure de fin, donc cette liste contient toutes les sessions du compte. Une ancienne session ressemble à une session active.",
+            empty: "Aucune session n'est enregistrée pour votre compte.",
+            started: 'Début',
+            client: 'Client',
+            address: 'Adresse',
+            country: 'Pays',
+            traffic: 'Envoyé / reçu',
+            unknownClient: 'Client inconnu',
+            noAddress: 'Aucune adresse',
+            unknownCountry: 'Inconnu',
+        },
+        password: {
+            title: 'Mot de passe',
+            lead: "Changez le mot de passe avec lequel vous vous connectez. Le serveur vérifie d'abord le mot de passe actuel.",
+            current: 'Mot de passe actuel',
+            currentHint: 'Prouve que la demande vient de vous.',
+            new: 'Nouveau mot de passe',
+            submit: 'Changer le mot de passe',
+            changed: 'Le mot de passe est changé. Utilisez-le à votre prochaine connexion.',
+            refused: 'Le changement a été refusé.',
+        },
+        state: {
+            title: 'État des connexions',
+            lead: "Lecture seule. Le serveur l'écrit quand vous vous connectez.",
+            resetRequired: 'Changement de mot de passe requis',
+            account: 'Compte',
+        },
+    },
+    rescue: {
+        title: "Récupération d'accès",
+        lead: 'Faites revenir un collègue dans le système, ou verrouillez le compte.',
+        find: "Choisissez le collègue qui a demandé de l'aide.",
+        another: 'Choisir un autre collègue',
+        reading: 'Lecture du compte…',
+        readFailed: 'La lecture a échoué.',
+        missing:
+            "Aucun compte de ce locataire ne s'appelle {username}. Il a peut-être été renommé ou supprimé.",
+        diagnosis: {
+            title: "Ce que suggère l'état",
+            never: "{username} ne s'est jamais connecté, donc il n'y a ni nombre de tentatives ni état de verrouillage.",
+            locked: {
+                one: 'Des tentatives échouées ont verrouillé ce compte. Déverrouillez-le si le collègue a seulement oublié son mot de passe.',
+                other: 'Des tentatives échouées ont verrouillé ce compte. Déverrouillez-le si le collègue a seulement oublié son mot de passe.',
+            },
+            open: "Le compte n'est pas verrouillé. Des tentatives échouées ne le verrouillent que lorsqu'elles atteignent la limite du serveur.",
+            failed: {
+                one: '{count} tentative échouée',
+                other: '{count} tentatives échouées',
+            },
+            online: 'Session ouverte',
+            offline: 'Aucune session',
+        },
+        lock: {
+            title: 'Verrouiller le compte',
+            lead: 'Un compte verrouillé ne peut pas se connecter. Le déverrouiller remet à zéro le nombre de tentatives échouées.',
+            sideLocked: 'Verrouillé',
+            sideUnlocked: 'Déverrouillé',
+            locked: 'Le compte est verrouillé. Ses sessions ouvertes restent ouvertes.',
+            unlocked:
+                'Le compte est déverrouillé, et son nombre de tentatives échouées est remis à zéro.',
+            refused: 'Le changement a été refusé.',
+            lockTitle: 'Verrouiller ce compte',
+            unlockTitle: 'Déverrouiller ce compte',
+            lockAction: 'Verrouiller le compte',
+            unlockAction: 'Déverrouiller le compte',
+            lockBody:
+                "{username} ne pourra plus se connecter. Les sessions déjà ouvertes restent ouvertes jusqu'à leur expiration.",
+            unlockBody:
+                '{username} pourra se connecter de nouveau, et son nombre de tentatives échouées est remis à zéro.',
+        },
+    },
+    accessRead: {
+        slow: "Le serveur est lent à répondre. Le menu et l'accueil peuvent manquer de parties tant qu'il ne répond pas.",
+        failed: "Vos accès n'ont pas pu être lus, donc des parties du menu et de l'accueil manquent.",
+    },
+    cardKind: {
+        workflow: 'Flux de travail',
+        workflows: 'Flux de travail',
+    },
+
     profile: {
         reason: {
             system_update: 'Modification courante',
@@ -812,6 +910,15 @@ const fr: SourceCatalogue = {
             done: 'Enregistré.',
             version: "Enregistré. L'enregistrement est maintenant en version {version}.",
             failed: "L'écriture a échoué.",
+        },
+        newer: {
+            title: 'La version {version} de cet enregistrement a été sauvegardée pendant votre modification.',
+            titleBy:
+                '{by} a sauvegardé la version {version} de cet enregistrement pendant votre modification.',
+            change: '{field} : {before} → {after}',
+            empty: 'rien',
+            keep: 'Garder ma modification',
+            take: 'Prendre les nouvelles valeurs',
         },
         refused: {
             notYours:
@@ -1090,11 +1197,8 @@ const fr: SourceCatalogue = {
             lead: 'Connecté en tant que {name}',
             parties: 'Parties',
             partiesBody: 'Les sociétés et succursales de votre groupe, et leurs liens.',
-            newParty: 'Ajouter une partie',
+            newParty: 'Intégrer une partie',
             newPartyBody: 'Ajouter une société ou une succursale à votre groupe.',
-            partyDetails: 'Corriger une partie',
-            partyDetailsBody:
-                "Corriger la fiche, les identifiants et la structure d'une entité juridique.",
             counterpartyOnboard: 'Intégrer une contrepartie',
             counterpartyOnboardBody: 'Intégrer une entité juridique avec laquelle vous traitez.',
             bookStructure: 'Façonner la structure des livres',
@@ -1102,14 +1206,14 @@ const fr: SourceCatalogue = {
                 'Placer les livres dans des portefeuilles, les classer et lire qui peut les voir.',
             conventions: "Définir les conventions d'instruments",
             conventionsBody: "Rédiger les termes qu'ORE utilise pour un instrument.",
-            rescue: 'Verrouiller ou déverrouiller un compte',
+            rescue: "Récupération d'accès",
             rescueBody: 'Aider quelqu’un qui ne peut pas se connecter, ou bloquer un compte.',
             audit: 'Connexions',
             auditBody: 'Qui est connecté maintenant, et les connexions qui ont échoué.',
             versions: 'Versions et base de données',
             versionsBody:
                 'Ce que ce navigateur exécute, ce que le déploiement exécute et ce que la base de données stocke.',
-            security: 'Votre mot de passe et vos connexions',
+            security: 'Sécurité',
             securityBody: 'Changez votre mot de passe et voyez où vous êtes connecté.',
         },
         party: {
@@ -1124,12 +1228,13 @@ const fr: SourceCatalogue = {
             tradingBody: 'Saisir, modifier et consulter les opérations.',
             reporting: 'Rapports',
             reportingBody: 'Rapports de risque et de P&L pour vos portefeuilles.',
-            security: 'Votre mot de passe et vos connexions',
+            security: 'Sécurité',
             securityBody: 'Changez votre mot de passe et voyez où vous êtes connecté.',
         },
     },
 
     development: {
+        lead: "Le travail d'une équipe sur le produit, à commencer par les tests qu'un testeur peut lancer.",
         tabs: {
             label: 'Zones de développement',
             tests: 'Tests',
@@ -1257,11 +1362,10 @@ const fr: SourceCatalogue = {
             logsBody: 'Les lignes écrites par les services, les plus récentes en premier.',
         },
         services: {
-            title: 'Opérations : services',
+            title: 'Services en cours',
             description:
                 'Chaque service attendu par le registre, confronté aux instances qui se signalent. Les exécutants de calcul appartiennent à l’écran de la grille.',
             updated: 'Mis à jour à {at}',
-            refresh: 'Actualiser',
             skew: 'Décalage de version : {services} exécutent {versions} alors que le reste exécute {newest}. La comparaison porte sur les versions, car un battement énonce la version et non la construction.',
             instances: {
                 title: 'Instances',
@@ -1302,11 +1406,10 @@ const fr: SourceCatalogue = {
             },
         },
         grid: {
-            title: 'Opérations : grille de calcul',
+            title: 'Grille de calcul',
             description:
                 'Le résumé des hôtes et du travail de l’installation, une ligne par machine, portant l’exécutant qui se signale pour elle.',
             updated: 'Mis à jour à {at}',
-            refresh: 'Actualiser',
             units: {
                 gib: '{value} Gio',
                 mib: '{value} Mio',
@@ -1378,7 +1481,7 @@ const fr: SourceCatalogue = {
             },
         },
         bus: {
-            title: 'Opérations : bus de messages',
+            title: 'Bus de messages',
             description: 'Les signes vitaux du serveur NATS et une ligne par flux.',
             range: {
                 label: 'Plage',
@@ -1445,7 +1548,7 @@ const fr: SourceCatalogue = {
             },
         },
         logs: {
-            title: 'Opérations : journaux de télémétrie',
+            title: 'Journaux de télémétrie',
             description:
                 'Les lignes derrière un symptôme, trouvées par heure, niveau, source, composant, étiquette ou message.',
             readAt: 'Lu à {at}',
@@ -1525,7 +1628,7 @@ const fr: SourceCatalogue = {
             },
         },
         versions: {
-            title: 'Opérations : versions et base de données',
+            title: 'Versions et base de données',
             description:
                 'Ce que ce navigateur exécute, ce que le déploiement exécute et ce que le déploiement stocke.',
             unknown: 'inconnu',
@@ -1824,6 +1927,22 @@ const fr: SourceCatalogue = {
             signed_out: 'Déconnexion',
             refreshed: 'Session renouvelée',
             noticed: 'Enregistré',
+        },
+        gaps: 'Ce que cet historique ne peut pas montrer',
+        gapFor: {
+            party_country:
+                'Les pays où elle opère n’ont pas de versions, donc l’ajout ou le retrait d’un pays n’apparaît pas.',
+            party_currency:
+                'Les devises dans lesquelles elle opère n’ont pas de versions, donc l’ajout ou le retrait d’une devise n’apparaît pas.',
+            party_counterparty:
+                'Les contreparties avec lesquelles elle peut traiter n’ont pas de versions, donc l’ajout ou le retrait d’une contrepartie n’apparaît pas.',
+            account_party:
+                'Les parties où une personne travaille n’ont pas de versions, donc l’arrivée ou le départ n’apparaît pas.',
+            account_role:
+                'Un rôle retiré n’apparaît pas, seuls les rôles détenus aujourd’hui apparaissent.',
+            auth_event:
+                'Seules les connexions les plus récentes sont conservées, donc les plus anciennes n’apparaissent pas.',
+            unread: 'Une partie de cet historique n’a pas pu être lue, donc elle n’apparaît pas.',
         },
     },
 
@@ -2313,154 +2432,6 @@ const fr: SourceCatalogue = {
             },
         },
 
-        partyDetails: {
-            noShortCode: 'Pas de code court',
-            none: "Ouvrez d'abord une partie depuis la liste.",
-            pickFailed: "Les listes dont le formulaire s'inspire n'ont pas pu être lues. {message}",
-            step: {
-                list: 'Parties',
-                overview: 'Vue générale',
-                identifiers: 'Identifiants',
-                contacts: 'Contacts',
-                memberships: 'Appartenances',
-                structure: 'Structure',
-                review: 'Revue',
-                outcome: 'Résultat',
-                history: 'Historique',
-            },
-            list: {
-                title: 'Parties',
-                lead: 'Les entités juridiques de ce locataire. Choisissez-en une pour la corriger.',
-                search: 'Rechercher par nom, code court ou nom de code',
-                empty: 'Aucune partie ne correspond.',
-                total: '{shown} sur {total} affichées',
-                readFailed: "Les parties n'ont pas pu être lues. {message}",
-                columns: {
-                    code: 'Code court',
-                    name: 'Nom',
-                    type: 'Type',
-                    status: 'Statut',
-                    centre: "Centre d'affaires",
-                    version: 'Version',
-                    modifiedBy: 'Modifié par',
-                },
-            },
-            overview: {
-                title: 'Vue générale',
-                lead: 'Corrigez la fiche de la partie. Elle garde son identifiant et son nom de code.',
-                correction:
-                    'Ceci corrige la partie. Cela ne la remplace pas, et chaque changement ajoute une version.',
-                shortCode: 'Code court',
-                fullName: 'Nom complet',
-                transliteratedName: 'Nom translittéré',
-                partyType: 'Type de partie',
-                status: 'Statut',
-                businessCenter: "Centre d'affaires",
-                parent: 'Identifiant de la partie parente',
-                noParent: 'Aucune partie parente',
-                registrationDefault: "Par défaut à l'inscription",
-                codename: 'Nom de code',
-                category: 'Catégorie',
-                readOnly: 'Le nom de code et la catégorie ne peuvent pas être modifiés.',
-            },
-            identifiers: {
-                title: 'Identifiants',
-                lead: "Une ligne par valeur de schéma. Une valeur modifiée retire l'ancienne ligne et en écrit une nouvelle.",
-                nameChange: 'Un changement de nom légal modifie un seul champ de la partie.',
-                idChange:
-                    "Un changement d'identifiant retire l'ancienne valeur et écrit la nouvelle.",
-                none: "Cette partie n'a aucun identifiant.",
-                value: 'Valeur',
-                description: 'Description',
-                retire: 'Retirer',
-                undo: 'Conserver',
-                scheme: 'Schéma',
-                choose: 'Choisir un schéma',
-                cardinality: '{scheme} admet {max} valeur au plus.',
-                add: 'Ajouter un identifiant',
-            },
-            contacts: {
-                title: 'Contacts',
-                lead: 'Une ligne par type de contact. Marquez une ligne comme principale.',
-                none: "Cette partie n'a aucun contact.",
-                primary: 'Principal',
-                markPrimary: 'Rendre principal',
-                add: 'Ajouter {type}',
-                street1: 'Rue',
-                street2: 'Rue 2',
-                city: 'Ville',
-                state: 'État',
-                country: 'Pays',
-                postal: 'Code postal',
-                phone: 'Téléphone',
-                email: 'Courriel',
-                web: 'Page web',
-            },
-            memberships: {
-                title: 'Appartenances',
-                lead: 'Les pays et les devises dans lesquels cette partie travaille.',
-                closeNote:
-                    'Fermer une appartenance la masque pour cette partie seulement. Le pays ou la devise reste défini pour le locataire, et vous pouvez le lier de nouveau.',
-                countries: 'Pays',
-                currencies: 'Devises',
-                none: 'Aucun lien.',
-                open: 'Ouverte',
-                closing: 'À fermer',
-                close: 'Fermer',
-                reopen: 'Garder ouverte',
-                choose: 'Choisir à lier',
-                link: 'Lier',
-                noHistory:
-                    "Une appartenance n'a pas encore d'historique propre. L'historique de la partie est la seule trace.",
-            },
-            structure: {
-                title: 'Structure',
-                lead: "Les contreparties que cette partie voit et le type de chaque unité d'affaires.",
-                counterparties: 'Contreparties',
-                units: "Unités d'affaires",
-                noUnits: "Cette partie n'a aucune unité d'affaires.",
-                noType: 'Aucun type',
-                levelBreach:
-                    "L'unité {unit} a le niveau {level}. Son parent {parent} a le niveau {parentLevel}. Une unité doit être plus profonde que son parent.",
-            },
-            review: {
-                title: 'Revue',
-                lead: "Rien n'est écrit avant votre confirmation.",
-                nothing: "Rien n'a encore changé.",
-                columns: {
-                    what: 'Ce qui change',
-                    before: 'Avant',
-                    after: 'Après',
-                    operation: 'Opération',
-                },
-                reason: 'Motif',
-                commentary: 'Commentaire',
-                commentaryRequired: 'Ce motif exige un commentaire.',
-                confirm: 'Confirmer les changements',
-            },
-            refusal: {
-                heading: 'Le serveur a refusé le changement.',
-                kept: 'Vos changements sont conservés.',
-                nothingWritten: "Rien n'a été écrit.",
-                partial: 'Déjà écrit : {calls}.',
-                walkBack: "Aller à l'étape",
-            },
-            outcome: {
-                title: 'Résultat',
-                lead: 'La partie est maintenant corrigée.',
-                written: '{name} est maintenant à la version {version}.',
-                history: "Voir l'historique",
-                done: 'Quitter la partie',
-            },
-            history: {
-                title: 'Historique',
-                lead: 'Chaque version de la partie et ce qui a changé dans chacune.',
-                none: 'Ouvrez une partie pour voir son historique.',
-                revertNote:
-                    "Rétablir charge une version plus ancienne dans la revue. Rien n'est écrit avant votre confirmation.",
-            },
-        },
-
         counterparty: {
             noShortCode: 'Pas encore de code court',
             pickFailed: "Les listes dont le formulaire s'inspire n'ont pas pu être lues. {message}",
@@ -2869,6 +2840,9 @@ const fr: SourceCatalogue = {
             link: 'Ajouter',
             revertTitle: 'Rétablir la version {version} ?',
             revertBody: 'Rétablit la v{to} comme nouvelle version.',
+            revertChanges: 'Champs qui vont changer ({count})',
+            revertNoChanges: 'Aucun champ ne diffère de la version actuelle.',
+            revertEmpty: 'vide',
             refresh: 'Actualiser',
             search: 'Rechercher…',
             columns: 'Colonnes',
@@ -2900,6 +2874,11 @@ const fr: SourceCatalogue = {
                 exceptions: 'Exceptions',
                 events: 'Événements',
                 days: 'Jours ouvrés',
+                identifiers: 'Identifiants',
+                contacts: 'Contacts',
+                memberships: 'Appartenances',
+                centres: 'Centres d’affaires',
+                counterparties: 'Contreparties',
             },
         },
         fields: {
@@ -2953,6 +2932,32 @@ const fr: SourceCatalogue = {
             is_business_day: 'Jour ouvré',
             event_date: 'Date',
             diary_entry_type: "Type d'entrée",
+            short_code: 'Code court',
+            full_name: 'Nom complet',
+            transliterated_name: 'Nom translittéré',
+            codename: 'Nom de code',
+            party_category: 'Catégorie',
+            party_type: 'Type',
+            parent_party_id: 'Partie mère',
+            business_center_code: 'Centre d’affaires',
+            status: 'Statut',
+            is_registration_default: 'Par défaut pour l’enregistrement',
+            id_scheme: 'Schéma',
+            id_value: 'Valeur',
+            contact_type: 'Type de contact',
+            street_line_1: 'Rue',
+            street_line_2: 'Rue, seconde ligne',
+            city: 'Ville',
+            state: 'État ou région',
+            postal_code: 'Code postal',
+            phone: 'Téléphone',
+            email: 'Courriel',
+            web_page: 'Page web',
+            is_primary: 'Contact principal',
+            unit_name: 'Nom',
+            unit_code: 'Code',
+            unit_type_id: 'Type d’unité',
+            business_centre_code: 'Centre d’affaires',
         },
         choices: {
             kind: {
@@ -3109,6 +3114,40 @@ const fr: SourceCatalogue = {
             removeWarning:
                 'Supprimer la paire supprime aussi sa convention. Rien ne vérifie si des opérations utilisent encore la paire.',
         },
+        parties: {
+            card: 'Partie',
+            editTitle: 'Modifier {name}',
+            identifiersLead:
+                'Les schémas sous lesquels cette partie est connue. Changer une valeur retire l’ancienne et enregistre la nouvelle.',
+            unitsLead:
+                'Les unités d’affaires de cette partie, et le centre d’affaires dont dépend chacune.',
+            countries: 'Pays où elle opère',
+            currencies: 'Devises dans lesquelles elle opère',
+            counterparties: 'Contreparties avec lesquelles elle peut traiter',
+            addPart: {
+                'party-identifiers': 'Ajouter un identifiant',
+                'party-contacts': 'Ajouter un contact',
+                'business-units': 'Ajouter une unité d’affaires',
+            },
+            editPart: {
+                'party-identifiers': 'Identifiant',
+                'party-contacts': 'Contact',
+                'business-units': 'Unité d’affaires',
+            },
+            removePart: {
+                'party-identifiers': 'Supprimer l’identifiant',
+                'party-contacts': 'Supprimer le contact',
+                'business-units': 'Supprimer l’unité d’affaires',
+            },
+            logo: 'Logo',
+            address: 'Adresse',
+            record: {
+                party: 'Partie',
+                identifier: 'Identifiant',
+                contact: 'Contact',
+                unit: 'Unité d’affaires',
+            },
+        },
     },
 
     membership: {
@@ -3173,11 +3212,48 @@ const fr: SourceCatalogue = {
         },
     },
 
+    permissionWords: {
+        loginInfoRead: 'voir la dernière connexion des personnes',
+        partiesRead: 'voir les parties du locataire',
+        partiesWrite: 'modifier les parties du locataire',
+        counterpartiesWrite: 'modifier les contreparties',
+        accountsLock: 'verrouiller et déverrouiller les comptes',
+        accountsRead: 'voir les comptes de votre locataire',
+        accountsUpdate: 'modifier les comptes',
+        accountsReset: 'réinitialiser les mots de passe',
+        contactsRead: 'lire les coordonnées des personnes',
+        contactsWrite: 'modifier les coordonnées des personnes',
+        organisationRead: 'voir les personnes de vos parties',
+        rolesRead: 'lire les rôles et leurs droits',
+        rolesAssign: 'attribuer des rôles aux personnes',
+        sessionsRead: 'lire les connexions des personnes',
+        curveSnapshotsRead: 'voir les courbes de données de marché',
+    },
+
+    unavailable: {
+        title: 'Vous ne pouvez pas encore ouvrir {screen}',
+        need: 'Pour l’ouvrir, vous devez pouvoir {need}.',
+        needMany: 'Pour l’ouvrir, vous devez pouvoir faire l’une de ces choses : {need}.',
+        roleHas: 'Le rôle {role} le permet.',
+        ask: 'Demander {role}',
+        none: 'Aucun rôle que vous pouvez demander ne le permet. Contactez l’administrateur de votre locataire.',
+        checking: 'Recherche d’un moyen d’obtenir l’accès...',
+        failedTitle: 'Cela n’a pas fonctionné, et cela aurait dû',
+        failed: 'Vous aviez le droit d’ouvrir ceci, et le serveur a refusé une partie. Nous avons vérifié à nouveau votre accès. Rien de ce que vous avez fait n’en est la cause.',
+        reference: 'Référence {id}',
+        retry: 'Réessayer',
+        home: 'Aller à l’accueil',
+        askReason: 'J’ai besoin d’ouvrir {screen}.',
+    },
+
     common: {
         loading: 'Chargement...',
+        notAvailable: 'Cette page n’est pas disponible pour vous.',
         clear: 'Effacer',
         refresh: 'Actualiser',
         refreshStale: 'Les données ont changé sur le serveur. Actualisez pour les voir.',
+        refreshStaleAt: 'Les données ont changé sur le serveur à {time}. Actualisez pour les voir.',
+        loadedAt: 'Chargé : {time}',
         all: 'Tous',
         close: 'Fermer',
         open: 'Ouvrir',
@@ -3185,6 +3261,8 @@ const fr: SourceCatalogue = {
         apply: 'Appliquer',
         back: 'Retour',
         continue: 'Continuer',
+        retry: 'Réessayer',
+        cancel: 'Annuler',
     },
 };
 

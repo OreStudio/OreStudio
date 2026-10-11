@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: C8B594EA-DA2B-44C8-BAE9-526D38F540EE
+:END:
+#+title: Story: Show the whole history of a party
+#+description: A party's history cannot show the countries, currencies and counterparties it is linked to, because link tables have no history read, and shows its contacts wrongly, because a contact's history is read by its type alone, which every party shares. Give links a history, key every history by the row, and let the party timeline draw both.
+#+type: story
+#+level: s2
+#+filetags: :codegen:refdata:web:sprint_27:v0:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A party's history shows every change to the party and to everything attached to it: its identifiers, contacts, business units, countries, currencies and counterparties, each with who made it and why, and says nothing is missing because nothing is.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-11                               |
+
+* Acceptance
+
+- A history provider finds a row by its whole key, so the history of one party's contact is never another party's.
+- A link table has a history read, a history provider and a field mapper from its model, and a closed link is still in its history.
+- The party timeline shows the opening and closing of a country, a currency and a counterparty link, and states no gap for them.
+- The same holds for any entity with a composite key or a link, not only parties.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9FC521D8-FCAD-4853-9A8B-EAEB4117E4AA][Scaffold story: Show the whole history of a party]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E88492E7-B8A2-4AD9-B145-2C30F7B7FC69][Key every history by the row it belongs to]] | BACKLOG | | | Find a row by its whole key in a history provider. A provider reads the newest row that carries the first column of the model's key, and a contact's key is the party and the contact type. Every Acme party has the four contact types, so the history of one party's Legal contact is another party's. The same holds for an identifier read by its value and a business unit read by its code. |
+| [[id:BF980373-5DD4-4E51-BED3-C1152A47F515][Give link tables a history]] | BACKLOG | | | A link table is stored with a start and an end, a version, an author and a reason, so every opening and closing is recorded. The model generates no history read, provider or field mapper for it, and a closed link is read by nothing. Generate them from the link model. |
+| [[id:42FB9103-5EC7-48E3-A197-12EF97D9F962][Draw the links in the party timeline]] | BACKLOG | | | Once a link has a history and every history is keyed by its row, the party timeline reads the countries, currencies and counterparties it is linked to, shows when each was opened or closed, and drops the note that says they are missing. The person timeline gets the same for the parties a person works in and the roles taken away. |
+
+* Decisions
+
+* Out of scope
+
+-

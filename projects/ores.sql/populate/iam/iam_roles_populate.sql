@@ -154,14 +154,17 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'variability::flags:read');
     -- The role and permission catalogues are open reads: the models name
     -- their list and get subjects in :open_reads:, so a member reads either
-    -- without a code. Granting iam::roles:read here was the only thing that
-    -- put it in reach of every person, and that same code gates reading
-    -- another account's roles, so a member could read any account's access.
-    -- Account data is not screen furniture, so Member holds neither code.
-    -- What a person may see of the people they work with is the organisation of
-    -- the party they are acting for: names, job titles, pictures and who reports
-    -- to whom, never an email or a contact detail. That read has a code of its
-    -- own so Member can hold it without holding any account data.
+    -- without a code. Member does not hold iam::roles:read, because that same
+    -- code gates reading another account's roles.
+    --
+    -- A member reads the accounts of the people they work with. Row-level
+    -- security limits iam::accounts:read to accounts that work in a party the
+    -- member's own account works in, so the code is not a read of the tenant
+    -- (see ores_iam_actor_party_ids_fn in iam_rls_policies_create.sql).
+    -- Credentials, contact information, sign-ins and sessions are other tables
+    -- with codes of their own, which Member does not hold.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'iam::accounts:read');
+    -- The reporting tree: names, job titles, pictures and who reports to whom.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'iam::organisation:read');
 
     -- Assign permissions to Trading role

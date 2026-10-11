@@ -62,13 +62,22 @@ export function Timeline({
     timeline,
     renderActions,
     renderHead,
+    recordName,
     actorPath,
     actorPicture,
+    marked,
     hideUnchanged = false,
 }: {
     readonly timeline: Stream;
     readonly renderActions?: (event: TimelineEvent) => ReactNode;
     readonly renderHead?: (event: TimelineEvent) => ReactNode;
+    /**
+     * The name of the record an entry came from, such as "Identifier LEI", in
+     * place of the kind of record and the start of its identifier. A subject
+     * made of several kinds of record names them, because an identifier tells a
+     * reader nothing.
+     */
+    readonly recordName?: (event: TimelineEvent) => string | undefined;
     /**
      * Where the person who wrote an entry is opened, or undefined when they
      * cannot be. An entry written by a service has no page, and a reader who
@@ -88,10 +97,17 @@ export function Timeline({
      * the versions where that field moved.
      */
     readonly hideUnchanged?: boolean;
+    /** The entries that are new since the history was last read, by `timelineEntryKey`, which pulse for a moment. */
+    readonly marked?: ReadonlySet<string>;
 }): ReactNode {
     const { t } = useTranslation();
     if (timeline.events.length === 0) {
-        return <p className="text-sm text-ink-muted">{t('timeline.empty')}</p>;
+        return (
+            <div className="grid gap-3">
+                <p className="text-sm text-ink-muted">{t('timeline.empty')}</p>
+                <Gaps gaps={timeline.gaps} />
+            </div>
+        );
     }
     const previous = previousVersions(timeline.events);
     const newest = newestVersions(timeline.events);
@@ -117,16 +133,64 @@ export function Timeline({
                             before={previous.get(earlier(event))}
                             actions={renderActions?.(event)}
                             head={renderHead?.(event)}
+                            recordName={recordName?.(event)}
                             actorPath={actorPath}
                             actorPicture={actorPicture}
                             current={newest.has(`${entryKeyOf(event)}#${String(event.version)}`)}
+                            isNew={marked?.has(timelineEntryKey(event)) === true}
                         />
                     </Fragment>
                 ))}
             </ol>
+            <Gaps gaps={timeline.gaps} />
         </div>
     );
 }
+
+/**
+ * What the stream cannot show, in words.
+ *
+ * A source with no versions, or one the reader may not read, is a gap on the
+ * answer. It is stated, never rounded away and never drawn as an empty list,
+ * because a story that quietly omits a chapter reads as though the chapter
+ * never happened.
+ */
+function Gaps({ gaps }: { readonly gaps: readonly { readonly entity: string }[] }): ReactNode {
+    const { t } = useTranslation();
+    if (gaps.length === 0) {
+        return null;
+    }
+    /*
+     * The stream's own reason names tables, reads and refusals, which are not
+     * the reader's business. A gap the screen knows is said in the reader's
+     * words, once; any other is one plain line that part could not be read.
+     */
+    const known = [...new Set(gaps.map((gap) => gap.entity.split('.').at(-1) ?? ''))].filter(
+        (name) => KNOWN_GAPS.has(name),
+    );
+    const unknown = gaps.some((gap) => !KNOWN_GAPS.has(gap.entity.split('.').at(-1) ?? ''));
+    return (
+        <section className="rounded-md border border-line-subtle bg-surface-raised px-4 py-3">
+            <h3 className="text-xs font-medium text-ink-muted">{t('timeline.gaps')}</h3>
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-ink-faint">
+                {known.map((name) => (
+                    <li key={name}>{t(`timeline.gapFor.${name}`)}</li>
+                ))}
+                {unknown && <li>{t('timeline.gapFor.unread')}</li>}
+            </ul>
+        </section>
+    );
+}
+
+/** The gaps a screen says in words, by the record they leave out. */
+const KNOWN_GAPS: ReadonlySet<string> = new Set([
+    'party_country',
+    'party_currency',
+    'party_counterparty',
+    'account_party',
+    'account_role',
+    'auth_event',
+]);
 
 /** The colour of an event kind on the chart, which the legend repeats. */
 const KIND_COLOUR: Readonly<Record<string, string>> = {
@@ -261,6 +325,11 @@ function EventChart({ events }: { readonly events: readonly TimelineEvent[] }): 
 /** What names one entry in the stream: no two entries come from one version twice. */
 function entryKey(event: TimelineEvent, index: number): string {
     return `${event.entityType}#${event.entityId}#${String(event.version)}#${String(index)}`;
+}
+
+/** What names one entry across reads: the record, its version, what it was and when. */
+export function timelineEntryKey(event: TimelineEvent): string {
+    return `${event.entityType}#${event.entityId}#${String(event.version)}#${event.kind}#${event.at}`;
 }
 
 /** What names the record an entry is a version of. */
@@ -409,24 +478,32 @@ function Entry({
     before,
     actions,
     head,
+    recordName,
     actorPath,
     actorPicture,
     current,
+    isNew,
 }: {
     readonly event: TimelineEvent;
     readonly before: TimelineEvent | undefined;
     readonly actions: ReactNode;
     readonly head: ReactNode;
+    readonly recordName: string | undefined;
     readonly actorPath: ((actor: string) => string | undefined) | undefined;
     readonly actorPicture: ((actor: string) => string | null) | undefined;
     /** Whether this entry is the newest version of its record. */
     readonly current: boolean;
+    /** Whether the entry arrived with the last read, and is marked for a moment. */
+    readonly isNew: boolean;
 }): ReactNode {
     const { t, language } = useTranslation();
     const changed = changedFields(event, before);
     const quiet = isAnAct(event.kind);
     return (
-        <li className={`${ROW} scroll-mt-4`} data-ms={parseTimestamp(event.at).getTime()}>
+        <li
+            className={`${ROW} scroll-mt-4${isNew ? ' row-changed' : ''}`}
+            data-ms={parseTimestamp(event.at).getTime()}
+        >
             <div className="flex items-start justify-end gap-1.5 pr-2.5 pt-[6px]">
                 <span className="pt-[3px] font-mono text-[0.72rem] text-ink-faint">
                     {timeOf(event.at, language)}
@@ -455,7 +532,12 @@ function Entry({
                 )}
                 <div className={`grid min-w-0 flex-1 gap-1.5 ${quiet ? 'opacity-90' : ''}`}>
                     {head === undefined ? (
-                        <DefaultHead event={event} changed={changed} actorPath={actorPath} />
+                        <DefaultHead
+                            event={event}
+                            changed={changed}
+                            recordName={recordName}
+                            actorPath={actorPath}
+                        />
                     ) : (
                         <>
                             {head}
@@ -501,16 +583,20 @@ function Entry({
 function DefaultHead({
     event,
     changed,
+    recordName,
     actorPath,
 }: {
     readonly event: TimelineEvent;
     readonly changed: readonly TimelineField[];
+    readonly recordName: string | undefined;
     readonly actorPath: ((actor: string) => string | undefined) | undefined;
 }): ReactNode {
     const { t, language } = useTranslation();
-    const badge = [entityOf(event), event.entityId === '' ? '' : shortId(event.entityId)]
-        .filter((part) => part !== '')
-        .join(' ');
+    const badge =
+        recordName ??
+        [entityOf(event), event.entityId === '' ? '' : shortId(event.entityId)]
+            .filter((part) => part !== '')
+            .join(' ');
     return (
         <>
             <div className="flex flex-wrap items-baseline gap-2">

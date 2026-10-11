@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 77870EE2-3123-4881-AF13-F35D432FC237
+:ores.sql.schema.junction_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.party_counterparty
 #+description: Codegen junction model for party_counterparties.
@@ -67,6 +68,20 @@ the whole junction.
 #+begin_src cpp :name generator
 ctx.generate_uuid()
 #+end_src
+
+* Artefact columns
+
+The dataset is scoped to the party a publish names, so it stages the counterparty only, by LEI, because a counterparty id differs from tenant to tenant. A counterparty no LEI of the tenant names is skipped.
+
+** counterparty_lei
+:PROPERTIES:
+:type: text
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
 
 * Columns
 

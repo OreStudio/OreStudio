@@ -75,18 +75,25 @@ HTML, CSS and JavaScript, no framework and no build step. A journey document
 links its own prototype under =* Prototype= and names the commit that accepted
 it.
 
-* One screen, not one per entity
+* A journey is not a screen
 
-A journey is one screen organised around a goal. The list, detail and history
-primitives do not exist: commit =e47043269f= deleted them with the generated
-entity screens, and no generic component has replaced them. The journey is the
-replacement. Each step draws the one view it needs — a step that lists records
-draws its own table, and a step that shows one record draws its own form — so
-contact details and sign-in state are panels on the account journey, not screens
-of their own. The entity models supply the fields; the journey decides which
-fields belong together and in what order.
-[[id:6A63AAC7-4869-493A-97E7-55B919874784][The journey runtime]] defines the
-step and the rail that orders the steps.
+A journey says what a person is trying to do, in terms of the reads and writes
+it needs. It is a design document. It is not the design of a screen, and a screen
+is not a journey drawn step by step.
+
+The screens that serve a journey follow the UX standards in
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]]: the list and the page of a subject, the cards with an Edit button
+each, the dialogs, and the history. One journey is usually served by several
+standard screens, and one screen serves several journeys. A record, or an entity
+made of several kinds of record, is edited on the page of the subject and not in
+a wizard.
+
+A guided sequence of steps is kept for the tasks it makes easier or quicker, for
+example the first run of an installation and the setup of a tenant. That
+sequence is a workflow, and [[id:6A63AAC7-4869-493A-97E7-55B919874784][the journey runtime]] defines the step and the rail that
+orders its steps. A journey document that describes a screen as a run of steps
+for an ordinary edit is describing the task, not the interface, and the screen
+does not copy it.
 
 * Adding a journey
 

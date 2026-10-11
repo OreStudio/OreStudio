@@ -239,6 +239,8 @@ const recordResourceViewSchema = z.object({
     writable: z.boolean(),
     search: z.boolean(),
     sortable: z.array(z.string()),
+    /** Where the services announce changes to this resource: the component and the events collection. */
+    events: z.object({ component: z.string(), entity: z.string() }),
     writePermission: z.string(),
     deletePermission: z.string(),
 });
@@ -603,6 +605,17 @@ export const api = {
                 { method: 'GET' },
             ),
         );
+    },
+
+    /** Tells the server which entities this session listens to. */
+    async watchEntities(
+        watches: readonly { readonly component: string; readonly entity: string }[],
+    ): Promise<void> {
+        await request('/api/events/watch', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ watches }),
+        });
     },
 
     /** One page of the people who hold a role, by name. */
@@ -1146,7 +1159,7 @@ export const api = {
      * request it opened. Which rows make up the story is the server's to
      * decide, so the browser never names an entity type here.
      */
-    async timeline(subject: 'person' | 'request', id: string): Promise<Timeline> {
+    async timeline(subject: 'person' | 'party' | 'request', id: string): Promise<Timeline> {
         const query = new URLSearchParams({ subject, id });
         const answer = await request(`/api/timeline?${query.toString()}`, { method: 'GET' });
         return timelineSchema.parse(answer);
@@ -1157,6 +1170,25 @@ export const api = {
         return z
             .object({ roles: z.array(roleSummarySchema) })
             .parse(await request('/api/roles', { method: 'GET' })).roles;
+    },
+
+    /** The roles that could be asked for to hold a permission, less the ones already held. */
+    async waysToHold(
+        permission: string,
+    ): Promise<
+        readonly { readonly id: string; readonly name: string; readonly description: string }[]
+    > {
+        return z
+            .object({
+                roles: z.array(
+                    z.object({ id: z.string(), name: z.string(), description: z.string() }),
+                ),
+            })
+            .parse(
+                await request(`/api/me/ways-to-hold?permission=${encodeURIComponent(permission)}`, {
+                    method: 'GET',
+                }),
+            ).roles;
     },
 
     /** Every permission the platform defines. */

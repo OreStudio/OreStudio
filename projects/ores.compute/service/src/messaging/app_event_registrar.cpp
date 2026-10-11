@@ -47,12 +47,16 @@ register_app_event_mapping(ev::service::postgres_event_source& event_source,
     // what it says into this entity's event.
     event_source.register_entity_event_mapping<compute::messaging::app_event>("ores_compute_apps");
 
-    return event_bus.subscribe<compute::messaging::app_event>(
-        [&nats](const compute::messaging::app_event& e) {
+    return event_bus.subscribe<ev::domain::published_entity_event<compute::messaging::app_event>>(
+        [&nats](
+            const ev::domain::published_entity_event<compute::messaging::app_event>& published) {
             // One payload is addressed by three subjects, so the subject is
-            // the collection's prefix and the action the event reports.
+            // the collection's prefix and the action the event reports. The
+            // tenant and the party travel in the headers, not in the payload.
             ev::service::publish_entity_event(
-                nats, ev::domain::event_subject<compute::messaging::app_event>(e.action), e);
+                nats,
+                ev::domain::event_subject<compute::messaging::app_event>(published.event.action),
+                published);
         });
 }
 

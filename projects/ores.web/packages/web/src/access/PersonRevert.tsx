@@ -21,9 +21,14 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { fieldValue, type HistoryVersion, type TimelineEvent } from '@ores/wire-protocol/browser';
+import {
+    TIMELINE_PROVENANCE_FIELDS,
+    fieldValue,
+    type HistoryVersion,
+    type TimelineEvent,
+} from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
-import { RevertVersionDialog, type WriteIntent } from '../refdata/records.js';
+import { RevertVersionDialog, type RevertChange, type WriteIntent } from '../refdata/records.js';
 
 /** The entities of a person's story whose versions a screen can write back. */
 export const ACCOUNT_ENTITY = 'ores.iam.account';
@@ -44,6 +49,18 @@ export function latestVersion(events: readonly TimelineEvent[], entityType: stri
     return events
         .filter((event) => event.entityType === entityType)
         .reduce((newest, event) => Math.max(newest, event.version), 0);
+}
+
+/** The fields that differ between the record as it stands and an older entry of it. */
+function changesFrom(now: TimelineEvent | undefined, then: TimelineEvent): readonly RevertChange[] {
+    return then.fields
+        .filter((field) => !TIMELINE_PROVENANCE_FIELDS.has(field.name))
+        .map((field) => ({
+            label: field.name,
+            from: now === undefined ? '' : fieldValue(now.fields, field.name),
+            to: field.value,
+        }))
+        .filter((change) => change.from !== change.to);
 }
 
 /** A timeline entry as the history version the revert dialog names. */
@@ -68,6 +85,7 @@ function versionOf(event: TimelineEvent): HistoryVersion {
  */
 export function PersonRevertDialog({
     event,
+    now,
     current,
     username,
     accountId,
@@ -75,6 +93,8 @@ export function PersonRevertDialog({
     onClose,
 }: {
     readonly event: TimelineEvent;
+    /** The entry that is the record as it stands. */
+    readonly now?: TimelineEvent | undefined;
     readonly current: number;
     readonly username: string;
     readonly accountId: string;
@@ -128,6 +148,7 @@ export function PersonRevertDialog({
         <RevertVersionDialog
             current={current}
             version={versionOf(event)}
+            changes={changesFrom(now, event)}
             write={write}
             onClose={onClose}
         />

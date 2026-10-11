@@ -25,6 +25,7 @@ import { Navigate, useNavigate, useParams } from 'react-router';
 import type { ClassificationList, ClassificationRow } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { useAreaRoot } from '../shell/AreaTrail.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader } from '../ui/Primitives.js';
 import { RecordList, type ListSource, type PageRequest } from './RecordList.js';
 import { LeavingFooter, useCloseGuard } from './records.js';
@@ -108,6 +109,7 @@ export function ClassificationListPage(): ReactNode {
 
 function ListBody({ list }: { readonly list: ClassificationList }): ReactNode {
     const { t } = useTranslation();
+    const root = useAreaRoot('refdata');
     const queries = useQueryClient();
     const may = usePermissions(list);
     const { byCode, domains } = useLabelCatalogue();
@@ -155,7 +157,7 @@ function ListBody({ list }: { readonly list: ClassificationList }): ReactNode {
                 title={title}
                 lead={t(`refdata.classifications.briefs.${list.key}`)}
                 crumbs={[
-                    { label: t('refdata.area.title'), to: '/refdata' },
+                    ...root,
                     { label: t('refdata.classifications.title'), to: classificationsPath() },
                     { label: title },
                 ]}
@@ -305,7 +307,7 @@ function ReorderPanel({
             <div>
                 <Crumbs
                     parts={[
-                        { label: t('refdata.area.title'), to: '/refdata' },
+                        ...useAreaRoot('refdata'),
                         { label: t('refdata.classifications.title'), to: classificationsPath() },
                         { label: title },
                     ]}

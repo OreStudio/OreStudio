@@ -19,7 +19,7 @@
  *
  */
 
-import type { OresClient } from '@ores/wire-protocol';
+import { SYSTEM_TENANT_ID, type OresClient } from '@ores/wire-protocol';
 
 /**
  * Who is watching what, and the one subscription that serves them.
@@ -27,18 +27,26 @@ import type { OresClient } from '@ores/wire-protocol';
  * A subscription per screen would be wrong twice over: a deployment with fifty
  * people on the accounts list would open fifty NATS subscriptions to the same
  * subject, and every one of them would carry the same message. So a subscription
- * is shared, keyed by the tenant and the entity, and this keeps the map from that
- * key to the sessions watching it.
+ * is shared, keyed by the entity, and this keeps the map from that key to the
+ * sessions watching it.
  *
- * Keyed by tenant as well as entity, and that is not decoration. Tenancy is the
- * boundary the system is built on: a change in one tenant's accounts is not news
- * in another's, and forwarding it would leak the fact that it happened.
+ * The subject is the same for every tenant, so the broker delivers every
+ * tenant's events here. Each event names its tenant, and its party when the row
+ * has one, in the envelope, and a session is told only of the events it may
+ * hear: those of its own tenant and of the system tenant, and, for a member, of
+ * a party it works in. An event that names no tenant is passed to nobody,
+ * because it cannot be shown to be anyone's.
  *
  * Reference counted. The subscription is opened for the first watcher and closed
  * with the last, so nothing is held open for an entity nobody is looking at.
  */
 
-/** What one session is watching. */
+/**
+ * What one session is watching.
+ *
+ * The entity is the events collection as it stands in the subject, such as
+ * `accounts` or `tenant_types`, so no plural is guessed here.
+ */
 export interface Watch {
     readonly component: string;
     readonly entity: string;
@@ -52,40 +60,88 @@ export interface ChangeEvent {
     readonly entity: string;
     /** When the change happened, server-side. */
     readonly at: string;
-    /** The records that changed, as the service named them. */
-    readonly ids: readonly string[];
+}
+
+/** Whose events a session may hear. */
+export interface Audience {
+    readonly tenantId: string;
+    /**
+     * Whether the session sees every party of its tenant. An administrator does;
+     * a member sees the parties they work in.
+     */
+    readonly everyParty: boolean;
+    /** The parties the session works in, read when an event arrives so a switch counts. */
+    readonly parties: () => ReadonlySet<string>;
+}
+
+/** What an event's envelope says about whose it is. */
+export interface Envelope {
+    readonly tenantId: string | undefined;
+    readonly partyId: string | undefined;
 }
 
 /**
- * The event names the services publish.
+ * Whether an event may be told to a session.
  *
- * The traits name is reused as the NATS subject suffix, so `country` becomes
- * `ores.refdata.country_changed`. The component is in the name rather than the
- * prefix, which is why the key is built here rather than passed in.
+ * The tenant must be the session's own or the system tenant's, whose rows are
+ * shared. A party-owned event also needs a party the session can see; an event
+ * with no party concerns the whole tenant.
  */
-export function eventSubject(component: string, entity: string): string {
-    return `ores.${component}.${snake(entity)}_changed`;
+export function mayHear(audience: Audience, envelope: Envelope): boolean {
+    if (envelope.tenantId === undefined) return false;
+    if (envelope.tenantId !== audience.tenantId && envelope.tenantId !== SYSTEM_TENANT_ID) {
+        return false;
+    }
+    if (envelope.partyId === undefined || audience.everyParty) return true;
+    return audience.parties().has(envelope.partyId);
 }
 
-/** `businessUnit` to `business_unit`, which is how the event names are written. */
-function snake(value: string): string {
-    return value.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
+/** A name that can stand in a subject: it cannot be a wildcard or add a segment. */
+const SUBJECT_NAME = /^[a-z][a-z0-9_]*$/;
+
+/** Whether a watch names a component and an events collection, and nothing else. */
+export function isWatchable(watch: Watch): boolean {
+    return SUBJECT_NAME.test(watch.component) && SUBJECT_NAME.test(watch.entity);
 }
+
+/**
+ * The subject the services publish an entity's changes on.
+ *
+ * The canonical form is `component.v1.collection_events.action`, so a watch
+ * listens on the collection's wildcard and hears created, updated and deleted
+ * alike.
+ */
+export function eventSubject(component: string, entity: string): string {
+    return `${component}.v1.${entity}_events.>`;
+}
+
+/** The part of a logger the registry writes through: a record of facts and a message. */
+export interface EventLog {
+    debug(fields: Record<string, unknown>, message: string): void;
+    warn(fields: Record<string, unknown>, message: string): void;
+}
+
+const SILENT: EventLog = { debug: () => undefined, warn: () => undefined };
 
 export class ChangeEventRegistry {
     readonly #client: OresClient;
-    /** Subscription key to the sessions listening and the way to stop it. */
+    readonly #log: EventLog;
+    /** Entity to the sessions listening and the way to stop the subscription. */
     readonly #shared = new Map<
         string,
-        { listeners: Map<string, ChangeListener>; stop: () => void }
+        {
+            listeners: Map<string, { listener: ChangeListener; audience: Audience }>;
+            stop: () => void;
+        }
     >();
     /** Session id to what it watches, so a session can be forgotten wholesale. */
-    readonly #watching = new Map<string, { tenantId: string; watches: readonly Watch[] }>();
+    readonly #watching = new Map<string, { audience: Audience; watches: readonly Watch[] }>();
     /** How to reach a session, registered once when its stream opens. */
     readonly #listeners = new Map<string, ChangeListener>();
 
-    constructor(client: OresClient) {
+    constructor(client: OresClient, log: EventLog = SILENT) {
         this.#client = client;
+        this.#log = log;
     }
 
     /**
@@ -107,20 +163,35 @@ export class ChangeEventRegistry {
      * alone rather than torn down and rebuilt, because rebuilding is how a screen
      * misses the change that arrives during the gap.
      */
-    watch(sessionId: string, tenantId: string, watches: readonly Watch[]): void {
-        if (!this.#listeners.has(sessionId)) return;
+    watch(sessionId: string, audience: Audience, watches: readonly Watch[]): void {
+        if (!this.#listeners.has(sessionId)) {
+            this.#log.debug({ session_id: sessionId }, 'session watch ignored, no stream attached');
+            return;
+        }
+        // A name with a wildcard in it would listen to more than was asked for, and
+        // the names arrive from the browser, so only plain names are watched.
+        watches = watches.filter(isWatchable);
         const previous = this.#watching.get(sessionId);
         if (previous !== undefined) {
             for (const watch of previous.watches) {
                 if (!watches.some((w) => sameWatch(w, watch))) {
-                    this.#release(previous.tenantId, watch, sessionId);
+                    this.#release(watch, sessionId);
                 }
             }
         }
         for (const watch of watches) {
-            this.#acquire(tenantId, watch, sessionId);
+            this.#acquire(watch, sessionId, audience);
         }
-        this.#watching.set(sessionId, { tenantId, watches });
+        this.#watching.set(sessionId, { audience, watches });
+        this.#log.debug(
+            {
+                session_id: sessionId,
+                tenant_id: audience.tenantId,
+                every_party: audience.everyParty,
+                watches: watches.map((w) => `${w.component}.${w.entity}`).join(','),
+            },
+            'session watch declared',
+        );
     }
 
     /** Forgets a session, dropping whatever only it was watching. */
@@ -128,43 +199,80 @@ export class ChangeEventRegistry {
         const entry = this.#watching.get(sessionId);
         if (entry !== undefined) {
             for (const watch of entry.watches) {
-                this.#release(entry.tenantId, watch, sessionId);
+                this.#release(watch, sessionId);
             }
             this.#watching.delete(sessionId);
         }
         this.#listeners.delete(sessionId);
     }
 
-    #acquire(tenantId: string, watch: Watch, sessionId: string): void {
-        const key = keyFor(tenantId, watch);
+    #acquire(watch: Watch, sessionId: string, audience: Audience): void {
+        const key = keyFor(watch);
         let entry = this.#shared.get(key);
 
         if (entry === undefined) {
             // The subscription is opened once for everyone watching, and the listener
             // map starts empty: it is the sessions that listen, and they arrive next.
-            const listeners = new Map<string, ChangeListener>();
+            const listeners = new Map<string, { listener: ChangeListener; audience: Audience }>();
             const stop = this.#client.subscribeToEvents(
                 eventSubject(watch.component, watch.entity),
                 (change) => {
+                    // An event that names no tenant is told to nobody. That is safe
+                    // and also silent, so a publisher that stops stating the tenant
+                    // would make every screen go quiet with nothing to say why.
+                    if (change.tenantId === undefined) {
+                        this.#log.warn(
+                            {
+                                component: watch.component,
+                                entity: watch.entity,
+                                occurred_at: change.at,
+                            },
+                            'change event without a tenant, told to nobody',
+                        );
+                    }
                     const event: ChangeEvent = {
                         component: watch.component,
                         entity: watch.entity,
                         at: change.at,
-                        ids: change.ids,
                     };
-                    for (const listener of listeners.values()) listener(event);
+                    let passed = 0;
+                    let refused = 0;
+                    for (const heard of listeners.values()) {
+                        if (mayHear(heard.audience, change)) {
+                            heard.listener(event);
+                            passed += 1;
+                        } else {
+                            refused += 1;
+                        }
+                    }
+                    this.#log.debug(
+                        {
+                            component: watch.component,
+                            entity: watch.entity,
+                            tenant_id: change.tenantId,
+                            party_id: change.partyId,
+                            occurred_at: change.at,
+                            passed,
+                            refused,
+                        },
+                        'change event received',
+                    );
                 },
+            );
+            this.#log.debug(
+                { component: watch.component, entity: watch.entity },
+                'change subscription opened',
             );
             entry = { listeners, stop };
             this.#shared.set(key, entry);
         }
 
         const listener = this.#listeners.get(sessionId);
-        if (listener !== undefined) entry.listeners.set(sessionId, listener);
+        if (listener !== undefined) entry.listeners.set(sessionId, { listener, audience });
     }
 
-    #release(tenantId: string, watch: Watch, sessionId: string): void {
-        const key = keyFor(tenantId, watch);
+    #release(watch: Watch, sessionId: string): void {
+        const key = keyFor(watch);
         const entry = this.#shared.get(key);
         if (entry === undefined) return;
 
@@ -174,6 +282,10 @@ export class ChangeEventRegistry {
         if (entry.listeners.size === 0) {
             entry.stop();
             this.#shared.delete(key);
+            this.#log.debug(
+                { component: watch.component, entity: watch.entity },
+                'change subscription closed',
+            );
         }
     }
 
@@ -183,8 +295,8 @@ export class ChangeEventRegistry {
     }
 }
 
-function keyFor(tenantId: string, watch: Watch): string {
-    return `${tenantId}\u0000${watch.component}\u0000${watch.entity}`;
+function keyFor(watch: Watch): string {
+    return `${watch.component}\u0000${watch.entity}`;
 }
 
 function sameWatch(a: Watch, b: Watch): boolean {

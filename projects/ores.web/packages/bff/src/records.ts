@@ -47,6 +47,13 @@ import type { CurrencyGroupWrite } from '@ores/wire-protocol/generated/refdata/p
 import type { CurrencyPairWrite } from '@ores/wire-protocol/generated/refdata/protocol/currency_pair_protocol';
 import type { CurrencyPairConventionWrite } from '@ores/wire-protocol/generated/refdata/protocol/currency_pair_convention_protocol';
 import type { CurrencyPairConventionCalendarWrite } from '@ores/wire-protocol/generated/refdata/protocol/currency_pair_convention_calendar_protocol';
+import type { PartyWrite } from '@ores/wire-protocol/generated/refdata/protocol/party_protocol';
+import type { PartyIdentifierWrite } from '@ores/wire-protocol/generated/refdata/protocol/party_identifier_protocol';
+import type { PartyContactInformationWrite } from '@ores/wire-protocol/generated/refdata/protocol/party_contact_information_protocol';
+import type { PartyCountryWrite } from '@ores/wire-protocol/generated/refdata/protocol/party_country_protocol';
+import type { PartyCurrencyWrite } from '@ores/wire-protocol/generated/refdata/protocol/party_currency_protocol';
+import type { PartyCounterpartyWrite } from '@ores/wire-protocol/generated/refdata/protocol/party_counterparty_protocol';
+import type { BusinessUnitWrite } from '@ores/wire-protocol/generated/refdata/protocol/business_unit_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import type { LiveSession } from './sessions.js';
 
@@ -234,6 +241,64 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         description: text.nullable(),
         source: text.nullable(),
     }) satisfies z.ZodType<CalendarEventWrite>,
+    parties: z.object({
+        id: z.uuid(),
+        short_code: code,
+        full_name: text.min(1),
+        codename: code,
+        transliterated_name: text.nullable(),
+        party_category: code,
+        party_type: code,
+        parent_party_id: z.uuid().nullable(),
+        business_center_code: code,
+        status: code,
+        image_id: z.uuid().nullable(),
+        is_registration_default: z.boolean(),
+    }) satisfies z.ZodType<PartyWrite>,
+    'party-identifiers': z.object({
+        id: z.uuid(),
+        party_id: z.uuid(),
+        id_scheme: code,
+        id_value: text.min(1),
+        description: text,
+    }) satisfies z.ZodType<PartyIdentifierWrite>,
+    'party-contacts': z.object({
+        id: z.uuid(),
+        party_id: z.uuid(),
+        contact_type: code,
+        street_line_1: text,
+        street_line_2: text,
+        city: text,
+        state: text,
+        country_code: z.string().max(3),
+        postal_code: z.string().max(20),
+        phone: z.string().max(50),
+        email: z.string().max(254),
+        web_page: z.string().max(500),
+        is_primary: z.boolean(),
+    }) satisfies z.ZodType<PartyContactInformationWrite>,
+    'party-countries': z.object({
+        party_id: z.uuid(),
+        country_alpha2_code: code,
+    }) satisfies z.ZodType<PartyCountryWrite>,
+    'party-currencies': z.object({
+        party_id: z.uuid(),
+        currency_iso_code: isoCode,
+    }) satisfies z.ZodType<PartyCurrencyWrite>,
+    'party-counterparties': z.object({
+        party_id: z.uuid(),
+        counterparty_id: z.uuid(),
+    }) satisfies z.ZodType<PartyCounterpartyWrite>,
+    'business-units': z.object({
+        id: z.uuid(),
+        party_id: z.uuid(),
+        unit_name: text.min(1),
+        parent_business_unit_id: z.uuid().nullable(),
+        unit_code: code,
+        business_centre_code: z.string().max(100),
+        unit_type_id: z.uuid().nullable(),
+        status: code,
+    }) satisfies z.ZodType<BusinessUnitWrite>,
 };
 
 const intentSchema = z.object({

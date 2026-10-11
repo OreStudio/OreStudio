@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Today a clean ACME provision leaves report definitions that cannot run. The four
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -48,7 +48,7 @@ Today a clean ACME provision leaves report definitions that cannot run. The four
 | [[id:D3AE54A1-A629-4AA2-BA80-3A4D670685C5][Publish the report definitions with their bindings]] | BACKLOG | | | Publish each definition with its bindings to the four configuration documents, with a dataset dependency on the configuration datasets. |
 | [[id:103FD77E-958E-4FF1-A613-3AE66BC9857B][Publish the risk report configurations for the ACME parties]] | BACKLOG | | | Publish a risk report configuration for every ACME definition, with its party's base currency and a scope that resolves to books, without any ORE import. |
 | [[id:DFB92E3F-3722-4534-AD48-B830DA1D22C2][Prove the ACME reports are ready to run]] | BACKLOG | | | Add a readiness check that states, for each definition, what it lacks to run, and show it passes for every ACME definition after a clean provision. |
-| [[id:3A0C7559-31F3-4651-8596-262F5A0CACC5][Store the report configuration documents in DQ and populate ACME's]] | BACKLOG | | | Add the DQ staging and publish for every configuration document an ACME report reads, then populate ACME's own datasets so each report definition publishes with all the configuration it needs, with no ORE import. |
+| [[id:3A0C7559-31F3-4651-8596-262F5A0CACC5][Store the report configuration documents in DQ and populate ACME's]] | STARTED | 2026-10-11 | | Add the DQ staging and publish for every configuration document an ACME report reads, then populate ACME's own datasets so each report definition publishes with all the configuration it needs, with no ORE import. |
 
 * Decisions
 

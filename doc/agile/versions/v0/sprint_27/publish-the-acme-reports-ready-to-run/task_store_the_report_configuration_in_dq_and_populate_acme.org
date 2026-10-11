@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish-the-acme-reports-ready-to-run:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/store-the-report-configuration-in-dq
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A report definition is ready to run only when every configuration document its r
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6E082556-D67B-4207-BE15-DA95B2ED8C2D][Publish the ACME reports ready to run]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -107,6 +107,41 @@ task and name that file in the Command column.
 through an ORE import and that the configuration dataset depends on that import.
 The product owner ruled on 2026-10-11 that the documents are Acme's own crafted
 data and that no import step exists.
+
+*Inventory read from the stories, 2026-10-11. Step 1 verifies it against the schema.*
+
+#+ATTR_HTML: :class hug-leading
+| Kind | Read by | Entities modelled | Document store | DQ staging and publish |
+|------+---------+-------------------+----------------+------------------------|
+| pricing_engines | every risk run | yes | yes | none |
+| todays_market | every risk run | yes | yes | none |
+| curve_configuration | every risk run | yes | yes | none |
+| conventions | every risk run | yes | yes | published as a party dataset, but not as the configuration a definition binds |
+| stress_test | Stressed VaR | yes | none yet | none |
+| simulation | exposure, XVA, capital and consolidation reports, Model Calibration | no | none | none |
+| sensitivity | the sensitivity reports, FRTB SA, P&L Attribution, the monitors | no | none | none |
+| counterparty_information, netting_set_definitions | the exposure and XVA reports | refdata and trading hold the counterparties, netting sets and CSAs as entities | none | the netting data is already a party dataset |
+| historical_return, basel_traffic_light | the four blocked reports | no | none | none |
+
+What this means for the order of work.
+
+- The four kinds every risk run requires are modelled and stored. They need only
+  the DQ side, so they are the first deliverable (phase A). With them every
+  definition can bind its required documents and the risk configuration can
+  publish.
+- Simulation and sensitivity have no entity model. The inbox story "Complete the
+  ORE report configuration" holds them as its tasks "Round trip the simulation
+  configuration" and "Round trip the sensitivity configuration", still BACKLOG. The
+  simulation document has 18 entities and the sensitivity document has 58. They
+  are the second deliverable (phase B), and they are prerequisites for the
+  analytics reports. That story's tasks must move into this work or run first.
+- The stress test needs a store, in the task "Store the stress test and credit
+  simulation documents", also in that backlog story.
+- The counterparty and netting documents are exported from entities that ACME
+  already publishes. Step 1 decides whether they need a configuration kind of
+  their own or an export from the existing data.
+- The historical return and Basel traffic light kinds stay out until the
+  blocked reports are reconciled with the report design.
 
 *Open points the first step settles.*
 

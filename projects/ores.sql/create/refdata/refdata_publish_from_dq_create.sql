@@ -5553,3 +5553,52 @@ begin
     where v_staged - v_inserted > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Curve configuration: refdata.v1.ops.publish_curve_configuration_from_dq
+-- =============================================================================
+
+-- A curve configuration document is a header and the rows of the further tables
+-- that reference it, directly or through a curve definition. The shared document
+-- publish copies each staged table into its live table in the order the document
+-- store writes them, re-keying every uuid for the party, so a definition still
+-- points at its configuration and a curve at its definition.
+create or replace function ores_refdata_publish_curve_configuration_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_party_id uuid;
+begin
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    return query
+    select * from ores_dq_publish_configuration_document_fn(
+        p_dataset_id, p_target_tenant_id, v_party_id,
+        'curve_configuration', 'ores.refdata', 'ores_refdata_',
+        array['curve_configurations', 'curve_configuration_sections', 'curve_global_reports',
+              'curve_definitions', 'yield_curve_configs', 'equity_curve_configs',
+              'default_curve_configs', 'default_curve_configurations', 'inflation_curve_configs',
+              'inflation_seasonality_factors', 'curve_security_configs',
+              'intraday_power_curve_configs', 'fx_volatility_configs', 'base_correlation_configs',
+              'curve_correlation_configs', 'curve_report_configurations', 'cds_volatility_configs',
+              'cds_volatility_terms', 'curve_volatility_configs',
+              'inflation_cap_floor_volatility_configs', 'swaption_volatility_configs',
+              'cap_floor_volatility_configs', 'curve_parametric_smiles',
+              'curve_parametric_smile_parameters', 'equity_volatility_configs',
+              'commodity_volatility_configs', 'bond_future_volatility_configs',
+              'curve_bootstrap_configs', 'curve_segments', 'curve_segment_curves',
+              'curve_quotes']);
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+comment on function ores_refdata_publish_curve_configuration_from_dq_fn(uuid, uuid, text, jsonb) is
+'Publishes the curve configuration document a dataset stages for the target party,
+ with its reporting configuration. Idempotent per row.';

@@ -134,6 +134,10 @@ select ores_utility_allow_version_replace_fn();
 \ir acme/acme_uk_report_definitions_artefact_populate.sql
 \ir acme/acme_us_report_definitions_artefact_populate.sql
 \ir acme/acme_hk_report_definitions_artefact_populate.sql
+\ir acme/acme_group_pricing_engines_artefact_populate.sql
+\ir acme/acme_uk_pricing_engines_artefact_populate.sql
+\ir acme/acme_us_pricing_engines_artefact_populate.sql
+\ir acme/acme_hk_pricing_engines_artefact_populate.sql
 \ir acme/acme_group_business_units_artefact_populate.sql
 \ir acme/acme_group_portfolios_artefact_populate.sql
 \ir acme/acme_group_books_artefact_populate.sql

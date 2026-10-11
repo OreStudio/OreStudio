@@ -60,3 +60,36 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 comment on function ores_analytics_publish_pricing_engines_from_dq_fn(uuid, uuid, text, jsonb) is
 'Publishes the pricing engines document a dataset stages for the target party, with
  its reporting configuration. Idempotent per row.';
+
+-- =============================================================================
+-- Today's market: analytics.v1.ops.publish_todays_market_from_dq
+-- =============================================================================
+
+create or replace function ores_analytics_publish_todays_market_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_party_id uuid;
+begin
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    return query
+    select * from ores_dq_publish_configuration_document_fn(
+        p_dataset_id, p_target_tenant_id, v_party_id,
+        'todays_market', 'ores.analytics', 'ores_analytics_',
+        array['todays_market_configs', 'todays_market_collections', 'todays_market_entries',
+              'todays_market_configurations', 'todays_market_configuration_bindings']);
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+comment on function ores_analytics_publish_todays_market_from_dq_fn(uuid, uuid, text, jsonb) is
+'Publishes the today''s market document a dataset stages for the target party, with
+ its reporting configuration. Idempotent per row.';

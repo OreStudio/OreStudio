@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: E0B843CD-61D2-465E-AE9A-8D30313BB810
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.curve_parametric_smile_parameter
 #+description: Codegen entity model for the refdata =curve_parametric_smile_parameter= table. One parameter of an ORE parametric smile configuration.

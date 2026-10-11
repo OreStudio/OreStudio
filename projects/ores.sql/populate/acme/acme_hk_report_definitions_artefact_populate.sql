@@ -74,4 +74,34 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 1, 'P&L Attribution', 'Daily decomposition of P&L into risk-factor components: delta, gamma, vega, theta, carry, and unexplained residual. Required for FRTB IMA back-testing and P&L attribution test (PLAT) compliance. Compares hypothetical P&L against actual P&L to validate model quality.', 'risk', '0 16 * * 1-5', 'skip', 145, 'trading', null),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 1, 'Intraday Risk Monitor', 'Real-time risk snapshot updated every 30 minutes during trading hours. Displays key risk metrics: PV, delta ladder, top 10 P&L movers, VaR estimate, and limit-utilisation gauges. Uses queue concurrency to serialise updates. Provides traders and desk heads with continuous risk visibility between end-of-day analytic runs.', 'risk', '*/30 8-17 * * 1-5', 'queue', 150, 'trading', null),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 1, 'Headline Position', 'Displays the most important Greeks across the entire deal set for a book or portfolio. The primary real-time risk overview report for traders and risk managers. Configurable measures (PV, Daily P&L, MTD P&L, YTD P&L, Delta P&L) and aggregation dimensions (Book, Portfolio, Currency Pair, Greek, Unit Hedge).', 'risk', '*/10 * * * *', 'skip', 155, 'trading', null);
+
+    delete from ores_dq_report_configurations_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_report_configurations_artefact_tbl (
+        dataset_id, tenant_id, version, report_name, configuration_type_code, configuration_name
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Data Quality Completeness', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Audit Trail Summary', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'SA-CCR Exposure', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Leverage Ratio', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'FRTB SA Capital', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Liquidity Coverage', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Large Exposures', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'HKMA Trade Repository', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Model Calibration', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Yield Curves', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'FX Spot Rates', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Credit Curves', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'NPV', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Cashflows', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Delta and Gamma', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Bucketed DV01', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Exposure', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'CVA/DVA/FVA', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Stressed VaR', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'P&L Attribution', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Intraday Risk Monitor', 'pricing_engines', 'HK pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Headline Position', 'pricing_engines', 'HK pricing engines');
 end $$;

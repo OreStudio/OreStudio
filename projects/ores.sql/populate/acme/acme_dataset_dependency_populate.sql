@@ -141,4 +141,14 @@ BEGIN
         ('acme.lei_parties'),
         ('acme.lei_relationships')
     ) AS v(code);
+
+    -- The definitions bind the configuration documents, so each document is published first.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.report_definitions', 'acme.acme_group.pricing_engines', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.report_definitions', 'acme.acme_uk.pricing_engines', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.report_definitions', 'acme.acme_us.pricing_engines', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.report_definitions', 'acme.acme_hk.pricing_engines', 'configuration_source');
 END $$;

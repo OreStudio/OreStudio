@@ -62,4 +62,22 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 1, 'Board Risk Dashboard', 'One-page executive summary for the board risk committee: group VaR (99% 1-day), total exposure by asset class, consolidated P&L, capital ratios (CET1, leverage, LCR), top 10 counterparty exposures, and month-on-month trend arrows. Holding company only.', 'risk', '0 8 * * 1-5', 'skip', 65, 'strategic', null),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 1, 'Cross-Entity Counterparty Concentration', 'Aggregates single-name counterparty exposure across all legal entities in the group. Flags names exceeding 25% of consolidated Tier 1 capital. Identifies hidden concentration where individual subsidiary exposures appear within limits but group aggregate breaches the threshold. Holding company only.', 'risk', '0 8 * * 1-5', 'skip', 70, 'strategic', null),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 1, 'Intercompany Exposure Matrix', 'Matrix of exposures between all group entities for consolidation elimination. Identifies circular funding, transfer pricing mismatches, and netting inefficiencies across the group. Monthly cadence (not daily — intercompany positions churn slowly). Holding company only.', 'risk', '0 6 1 * *', 'skip', 75, 'strategic', null);
+
+    delete from ores_dq_report_configurations_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_report_configurations_artefact_tbl (
+        dataset_id, tenant_id, version, report_name, configuration_type_code, configuration_name
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Data Quality Completeness', 'pricing_engines', 'Group pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'System Health', 'pricing_engines', 'Group pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Audit Trail Summary', 'pricing_engines', 'Group pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Leverage Ratio', 'pricing_engines', 'Group pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Liquidity Coverage', 'pricing_engines', 'Group pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Large Exposures', 'pricing_engines', 'Group pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Group Consolidated Exposure', 'pricing_engines', 'Group pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Board Risk Dashboard', 'pricing_engines', 'Group pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Cross-Entity Counterparty Concentration', 'pricing_engines', 'Group pricing engines'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, 'Intercompany Exposure Matrix', 'pricing_engines', 'Group pricing engines');
 end $$;

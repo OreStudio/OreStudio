@@ -43,11 +43,11 @@ This page is the top of the tree and the only inventory.
 | [[file:../knowledge/journeys/calendars/calendars.org][Calendars]] | Holiday calendars: their rules, exceptions and events, and the business days they produce | none yet |
 | [[file:classifications/][Classifications]] | The short code lists that classify reference data | 1 |
 | [[file:parties/][Parties]] | The tenant's own legal entities and the counterparties it trades with | 2 |
-| [[file:books/][Books and portfolios]] | The book structure: portfolios that hold books, the classification a book carries, and the rights that decide who may see it | 2 |
+| [[file:books/][Books and portfolios]] | The book structure: portfolios that hold books, the classification a book carries, and the rights that decide who may see it | 1 |
 | [[file:conventions/][Conventions]] | The market terms an instrument is built on, and the reference data lists each convention picks from | 1 |
 | [[file:tenors/][Tenors]] | Tenor codes and the resolution the system computes from them | 1 |
 | [[file:market_data/][Market data]] | Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time | 21 |
-| [[file:trades/][Trades]] | What a person does with a trade: booking, amending, reading, ORE import and export, lifecycle events, and structures | 4 |
+| [[file:trades/][Trades]] | What a person does with a trade: structure-based booking and pricing, amending, reading, ORE import and export, lifecycle events, and structures and packages | 5 |
 | [[file:testing/][Testing]] | Working through a test scenario in the browser, what waits for a tester, and the agile tree | 2 |
 
 Two groups have no prototype yet: Currencies and FX, and

@@ -144,15 +144,15 @@ const FEATURED = [
     { n: 1, type: 'Swap', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', auth: true, date: '2026-09-14', notional: 50000000, ccy: 'EUR', ext: 3, ver: 5, structure: 'PKG-0004' },
     { n: 2, type: 'FxOption', cp: 'MRDN', book: 'EMEA-FX', state: 'live', auth: false, date: '2026-10-08', notional: 10000000, ccy: 'EUR', ext: 1, ver: 2, structure: 'STR-0007' },
     { n: 3, type: 'Bond', cp: 'CSTL', book: 'EMEA-CREDIT', state: 'live', auth: true, date: '2026-08-02', notional: 25000000, ccy: 'EUR', ext: 1, ver: 1 },
-    { n: 4, type: 'BondRepo', cp: 'MRDN', book: 'EMEA-CREDIT', state: 'live', auth: true, date: '2026-09-30', notional: 20000000, ccy: 'EUR', ext: 2, ver: 3, structure: 'STR-0010' },
+    { n: 4, type: 'BondRepo', cp: 'MRDN', book: 'EMEA-CREDIT', state: 'live', auth: true, date: '2026-09-30', notional: 20000000, ccy: 'EUR', ext: 2, ver: 3, structure: 'PKG-0021' },
     { n: 5, type: 'CompositeTrade', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', auth: false, date: '2026-10-05', notional: 30000000, ccy: 'EUR', ext: 1, ver: 1 },
     { n: 6, type: 'Swap', cp: 'CSTL', book: 'VIRT-DRAFT', state: 'draft', auth: null, date: '2026-10-10', notional: 5000000, ccy: 'EUR', ext: 1, ver: 2, nature: 'Pre-agreement draft' },
     { n: 7, type: 'FxForward', cp: 'NWCAP', book: 'EMEA-FX', state: 'cancelled', auth: null, date: '2026-07-21', notional: 8000000, ccy: 'GBP', ext: 2, ver: 4, rebookedTo: 'ACME-100208' },
-    { n: 8, type: 'FxForward', cp: 'MRDN', book: 'EMEA-FX', state: 'live', auth: false, date: '2026-10-09', notional: 8000000, ccy: 'GBP', ext: 1, ver: 1, rebookedFrom: 'ACME-100207' },
+    { n: 8, type: 'FxForward', cp: 'MRDN', book: 'EMEA-FX', state: 'live', auth: false, date: '2026-10-09', notional: 8000000, ccy: 'GBP', ext: 1, ver: 1, rebookedFrom: 'ACME-100207', structure: 'STR-0010' },
     { n: 9, type: 'FxOption', cp: 'MRDN', book: 'EMEA-FX', state: 'live', auth: true, date: '2026-10-08', notional: 10000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0007' },
     { n: 11, type: 'Swap', cp: 'CSTL', book: 'EMEA-RATES', state: 'live', auth: true, date: '2026-09-02', notional: 40000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0009' },
     { n: 12, type: 'Swaption', cp: 'CSTL', book: 'EMEA-RATES', state: 'live', auth: true, date: '2026-09-02', notional: 40000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0009' },
-    { n: 13, type: 'Bond', cp: 'MRDN', book: 'EMEA-CREDIT', state: 'live', auth: true, date: '2026-08-20', notional: 15000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0010' },
+    { n: 13, type: 'Bond', cp: 'MRDN', book: 'EMEA-CREDIT', state: 'live', auth: true, date: '2026-08-20', notional: 15000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'PKG-0021' },
     { n: 10, type: 'CapFloor', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', auth: true, date: '2026-10-05', notional: 30000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'PKG-0004' }
 ];
 const USED_TYPES = ['Swap', 'CrossCurrencySwap', 'Swaption', 'CapFloor', 'FxForward', 'FxOption', 'FxBarrierOption', 'Bond', 'BondRepo', 'BondOption',
@@ -357,12 +357,12 @@ function shell(opts) {
     const pills = h('div', { class: 'pills' }, h('span', { class: 'pill' }, 'Tenant ' + TENANT), h('span', { class: 'pill' }, 'Party ' + PARTY),
         h('span', { class: 'pill' }, 'Prototype build'));
     const bar = h('div', { class: 'proto-bar' }, h('span', { class: 'label' }, opts.name),
-        (opts.states || []).map(([label, change, on]) => h('a', { href: qs(change), class: on ? 'on' : '' }, label)),
-        h('span', { class: 'sep' }, '|'), h('span', { class: 'label' }, 'as'),
-        ['trader', 'operations', 'reader'].map(r => h('a', { href: qs({ as: r }), class: r === ROLE ? 'on' : '' }, r)),
+        (opts.states || []).map(([label, change, on]) => h('a', { href: typeof change === 'string' ? change : qs(change), class: on ? 'on' : '' }, label)),
+        opts.noRoles ? null : [h('span', { class: 'sep' }, '|'), h('span', { class: 'label' }, 'as'),
+        ['trader', 'operations', 'reader'].map(r => h('a', { href: qs({ as: r }), class: r === ROLE ? 'on' : '' }, r))],
         h('span', { class: 'sep' }, '|'), h('span', { class: 'label' }, 'prototypes'),
         SIBLINGS.map(([dir, label]) => h('a', { href: '../' + dir + '/', title: label }, dir)),
-        h('a', { href: '../../books/trade-entry/', title: 'The structure-based booking and pricing prototype' }, 'trade-entry'));
+        h('a', { href: '../trade-entry/', title: 'The structure-based booking and pricing prototype' }, 'trade-entry'));
     document.body.prepend(note, top, main);
     document.body.append(pills, bar);
     if (opts.says) document.body.append(h('div', { class: 'proto-says' }, h('b', null, 'What this state argues. '), opts.says));

@@ -13,7 +13,7 @@
 |---------------+-----------------------------------------------------|
 | Prototype     | [[file:trade-entry/][the prototype]]                |
 | Gemini review | none                                                |
-| Group         | [[file:index.org][Books and portfolios prototypes]] |
+| Group         | [[file:index.org][Trades prototypes]] |
 
 * Summary
 
@@ -117,9 +117,19 @@ Do not read a number on either screen as a price.
 - There is no backend. State lives in the browser, so the Book handoff
   works and a reload keeps your place.
 
+** On the Trades shell
+
+The prototype moved from the Books and portfolios group to the Trades group, because it is about a trade and its structures and not a book. It was then put on the group's shell, so it reads as part of the same application as the other four prototypes:
+
+- The area menu, with Trades active, and the breadcrumb: Home, Trades, Structures and packages, then Structure editor or Price a structure.
+- The shared tokens, buttons, chips, dialogs and form controls. The old palette is gone. Its names map to the shared tokens, so the booking and pricing scripts kept their markup.
+- The tenant and party pills, and the prototype bar, which now links to the other prototypes of the group.
+
+Two things did not change on purpose. The booking and pricing screens keep their own layout, because the question they argue is the layout. And their two composition modes, Strategy and Package, name two rungs of the ladder. The structure page of the group draws all four kinds and the tree that holds them, so the two agree on the words and the structure page is the one to read for the kinds.
+
 ** Where the code lives
 
-=doc/prototypes/books/trade-entry/=. Six files, no framework and no build step.
+=doc/prototypes/trades/trade-entry/=. Eight files, no framework and no build step. =common.js= and =entry-shell.js= are the Trades group's shell, and the stylesheet is the group's shared one with this prototype's own rules after it.
 The site build copies the directory through =ores-deploy-web-app=, which
 already deploys the other static apps.
 
@@ -137,7 +147,7 @@ for the assumptions it was built on, and for the decisions still open.
 
 * See also
 
-- [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] — the trade list and page, booking, ORE import and export, and a structure page, which link to this prototype for pricing and for composing a structure.
+- [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]] — the group this prototype belongs to: the trade list and page, booking, ORE import and export, and the structure page, which link here for pricing and for composing a structure. It moved from the Books and portfolios group because it is about the trade and its structures, not the book.
 - [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition ladder, the deal topology and the versioning rule this prototype follows.
 - [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] — the story the prototype belongs to.

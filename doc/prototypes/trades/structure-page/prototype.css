@@ -187,3 +187,9 @@ details.det summary{cursor:pointer;color:var(--ink-faint);font-size:.78rem;margi
 
 .nw{white-space:nowrap}
 input[disabled],select[disabled],textarea[disabled]{opacity:.5;cursor:not-allowed}
+
+ul.tree{list-style:none;margin:0;padding-left:1.2rem;border-left:1px solid var(--line-soft)}
+ul.tree.root{border-left:none;padding-left:0}
+ul.tree li{margin:.25rem 0}
+ul.tree summary{cursor:pointer;list-style:revert}
+.tn.leaf{display:inline-block;padding-left:.2rem}

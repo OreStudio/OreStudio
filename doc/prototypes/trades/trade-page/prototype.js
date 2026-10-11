@@ -6,7 +6,7 @@ const STATE_P = P.get('state') || '';
 const SERVER = P.get('server') === 'today' ? 'today' : 'target';
 const TAB = P.get('tab') || 'details';
 const CODE = P.get('trade');
-const STRUCT_KIND = { 'PKG-0004': { kind: 'Package', whole: false, legs: 2 }, 'STR-0007': { kind: 'Strategy', template: 'RiskReversal', whole: true, legs: 2 }, 'STR-0009': { kind: 'Typed', template: 'CallableSwap', whole: true, legs: 2 }, 'STR-0010': { kind: 'Dynamic', template: '', whole: true, legs: 2 } };
+const STRUCT_KIND = { 'PKG-0004': { kind: 'Package', whole: false, legs: 2 }, 'STR-0007': { kind: 'Strategy', template: 'RiskReversal', whole: true, legs: 2, parent: 'STR-0010' }, 'STR-0009': { kind: 'Typed', template: 'CallableSwap', whole: true, legs: 2 }, 'STR-0010': { kind: 'Dynamic', template: '', whole: true, legs: 1 }, 'PKG-0021': { kind: 'Package', whole: false, legs: 2, parent: 'STR-0010' } };
 const dealHref = id => '../structure-page/?deal=' + id;
 const TABS = [['details', 'Details'], ['instrument', 'Instrument'], ['identifiers', 'Identifiers and roles'], ['links', 'Links'], ['history', 'History']];
 
@@ -159,7 +159,7 @@ function identifiersTab(t) {
 function linksTab(t) {
     const cards = [];
     cards.push(t.structure
-        ? h('section', { class: 'card' }, h('header', null, h('h2', null, STRUCT_KIND[t.structure].kind === 'Package' ? 'Package' : 'Structure'), h('span', { class: 'sp' })), h('div', { class: 'body' }, h('a', { href: dealHref(t.structure) }, t.structure), ' — ' + STRUCT_KIND[t.structure].kind + (STRUCT_KIND[t.structure].template ? ' (' + STRUCT_KIND[t.structure].template + ')' : '') + ', ' + STRUCT_KIND[t.structure].legs + ' legs. ' + (STRUCT_KIND[t.structure].whole ? 'Confirmed and priced as one deal.' : 'Each leg confirms on its own. A package has no price of its own.')))
+        ? h('section', { class: 'card' }, h('header', null, h('h2', null, STRUCT_KIND[t.structure].kind === 'Package' ? 'Package' : 'Structure'), h('span', { class: 'sp' })), h('div', { class: 'body' }, h('a', { href: dealHref(t.structure) }, t.structure), ' — ' + STRUCT_KIND[t.structure].kind + (STRUCT_KIND[t.structure].template ? ' (' + STRUCT_KIND[t.structure].template + ')' : '') + (STRUCT_KIND[t.structure].parent ? ', inside ' + STRUCT_KIND[t.structure].parent : '') + ', ' + STRUCT_KIND[t.structure].legs + ' legs. ' + (STRUCT_KIND[t.structure].whole ? 'Confirmed and priced as one deal.' : 'Each leg confirms on its own. A package has no price of its own.')))
         : h('section', { class: 'card' }, h('header', null, h('h2', null, 'Structure or package')), h('div', { class: 'body' }, 'Not part of a structure or a package. ', CAN.structure ? h('a', { href: '../structure-page/?mode=group&trades=' + t.code }, 'Group with other trades') : null)));
     const links = [];
     if (t.rebookedTo) links.push([t.rebookKind || 'Novation', 'transferred → new trade', t.rebookedTo]);
@@ -245,6 +245,7 @@ function effect(t, a, diff, econChange, folded, c) {
                 : 'External version stays ' + t.ext + ': no economic term changed.');
         if (a.confirmable) lines.push('A new confirmation is issued to ' + cpty(t.cp).name + '.');
         if (t.structure && econChange && STRUCT_KIND[t.structure]) lines.push(STRUCT_KIND[t.structure].whole ? 'This trade is a leg of ' + t.structure + ', which confirms as one document. The deal\'s external version moves, and the customer receives one confirmation for the deal.' : 'This trade is a leg of the package ' + t.structure + '. The package confirms trade by trade, so only this trade\'s confirmation changes.');
+        if (t.structure && econChange && STRUCT_KIND[t.structure] && STRUCT_KIND[t.structure].parent && !STRUCT_KIND[STRUCT_KIND[t.structure].parent].parent) lines.push('The ' + STRUCT_KIND[t.structure].kind.toLowerCase() + ' is inside ' + STRUCT_KIND[t.structure].parent + ', which confirms as one document. Whether this trade still confirms on its own is not decided: see the capture.');
         if (t.auth) lines.push('Operational authorisation is withdrawn. Operations must release the trade again. This moves neither version.');
     }
     return h('div', { class: 'notice ' + (econChange && c.digestGap ? 'warn' : 'acc'), 'data-effect': true }, h('b', null, 'What this will do'), lines.map(l => h('div', { class: 'econ-line' + (folded ? ' moves' : '') }, l)));

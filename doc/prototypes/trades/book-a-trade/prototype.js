@@ -55,7 +55,7 @@ function typeSection() {
             h('div', { class: 'picker' }, all.slice(0, 24).map(t => h('button', { class: 'opt' + (t.code === F.type ? ' on' : ''), disabled: !t.instrument, title: t.instrument ? '' : 'No instrument table yet', onclick: () => { F.type = t.code; F.terms = {}; redraw(); } },
                 t.description, h('small', null, t.instrument ? t.product + ' · ' + t.instrument : t.product + ' · no instrument table')))),
             all.length > 24 ? h('div', { class: 'faint small' }, 'Showing 24 of ' + all.length + '. Search to narrow.') : null,
-            F.type === 'CompositeTrade' ? h('div', { class: 'notice acc' }, 'A composite is built from its legs. ', h('a', { href: '../../books/trade-entry/' }, 'Compose it in the structure editor'), ' (the trade-entry prototype), then book it here.') : null));
+            F.type === 'CompositeTrade' ? h('div', { class: 'notice acc' }, 'A composite is built from its legs. ', h('a', { href: '../trade-entry/' }, 'Compose it in the structure editor'), ' (the trade-entry prototype), then book it here.') : null));
 }
 function partiesSection() {
     const b = book(F.book);
@@ -120,7 +120,7 @@ function resultView() {
             h('button', { class: 'btn small', onclick: () => { result = { ok: t }; redraw(); } }, 'Retry the instrument write')) : null,
         result.ok ? h('div', { class: 'notice ok' }, h('b', null, t.code + ' is booked. '), 'State ' + t.state + ', internal version 1, external version 1. Activity ' + (t.state === 'live' ? 'new_booking' : 'draft_capture') + '.') : null,
         h('div', { class: 'filters' }, h('a', { class: 'btn primary', href: '../trade-page/?trade=' + t.code }, 'Open the trade'), h('a', { class: 'btn', href: qs({ like: t.code }) }, 'Book a similar trade'),
-            h('a', { class: 'btn', href: '../structure-page/?mode=group&trades=' + t.code }, 'Group with other trades'), h('a', { class: 'btn', href: '../../books/trade-entry/pricing.html' }, 'Price it (trade-entry prototype)')));
+            h('a', { class: 'btn', href: '../structure-page/?mode=group&trades=' + t.code }, 'Group with other trades'), h('a', { class: 'btn', href: '../trade-entry/pricing.html' }, 'Price it (trade-entry prototype)')));
 }
 
 /* ---------- layout ---------- */

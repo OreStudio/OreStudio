@@ -21,21 +21,31 @@ A structure is an entity: an immutable identity and legs that are trades. A pack
 
 * Detail
 
+** A structure is a tree
+
+The root is the deal the customer sees. Inside it are strategies, packages and plain trades, and the leaves are trades. This is the deal topology of [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]. The page draws it as a tree: the root, its inner structures with their kind and how each confirms, and the trades with their role. A structure page shows the tree of its root with the current node marked, and a node opens that page.
+
+The model nests one level at most. =parent_structure_id= points to a root, and an inner structure holds only trades. The note draws a deeper tree, and the insert trigger refuses it. The page says so under the tree.
+
 ** States
 
-The page opens on the list of everything the tenant holds together. Open one of each kind to compare.
+The page opens on the list of trees. The list shows each root with its inner structures indented under it.
 
 #+ATTR_HTML: :class hug-leading
 | Query | What it shows |
 |-------+---------------|
-| (none) | The list: every structure and package, filtered by kind, paged on the server |
-| =?deal=STR-0007= | A strategy: a risk reversal, with its template roles checked |
-| =?deal=STR-0009= | A typed structure: a callable swap, a swap and a call right. Legs of different families, roles fixed by the type |
-| =?deal=STR-0010= | A dynamic structure: a bond repo and a bond, with roles read from data |
-| =?deal=PKG-0004= | A package of a swap and a cap |
+| (none) | The list: roots, with inner structures indented, filtered by kind, paged on the server |
+| =?deal=STR-0010= | A dynamic structure that is the root of a tree: a strategy, a package and a hedge trade inside it |
+| =?deal=STR-0007= | The strategy inside it, a risk reversal, with its template roles checked |
+| =?deal=PKG-0021= | The package inside it: a bond repo and a bond, each confirming on its own |
+| =?deal=STR-0009= | A typed structure on its own: a callable swap, with legs of different families |
+| =?deal=PKG-0004= | A package on its own: a swap and a cap |
 | =?mode=group&trades=ACME-100202,ACME-100209= | The grouping workflow, with the kind to choose |
 | =?mode=group&trades=ACME-100201,ACME-100202= | The refusal: the trades have different counterparties |
-| =?mode=group&trades=ACME-100203,ACME-100206= | A strategy refused for mixed product families |
+
+** Open question
+
+A package inside a structure that confirms as one document: does each of its trades still confirm on its own, or inside the one document? The notes do not say. The tree shows each node's own kind, the page warns that this is undecided, and the amend dialog says so for a trade inside such a package. It is filed as a capture.
 
 ** Structure and package
 

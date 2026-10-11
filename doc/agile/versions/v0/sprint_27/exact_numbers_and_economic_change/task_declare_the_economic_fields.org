@@ -26,9 +26,9 @@ Which fields a customer agreed to, and which rows make up an instrument, are mod
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] |
-| Now          | Implemented and verified; PR to raise. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Review comments, then merge.           |
 | Last touched | 2026-10-11                               |
@@ -139,6 +139,25 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Important: the catalogue refuses a digest component whose model declares nothing on its own columns, so a grouped entity, which declares through its field groups, would be refused wrongly. | =org_loader.py= | Accepted | Fixed with a test. No component is grouped today. |
+| 2 | Minor: the digest never reads an option's exercise prices, so a change to one leaves the digest alone. | =ores.trading.trade_type_catalogue.org= | Declined | Listing them changes what the digest covers. Filed as capture =the-option-exercise-prices-are-not-in-the-digest=. |
+| 3 | Minor: the lever and the parity script carry the old rule, which is now documentation only. | =scripts/declare_economic_fields.py= | Declined | The lever still proposes a declaration for a model that gains columns, and the parity script is the evidence for the measurement. |
+| 4 | Misspell check over the files this change writes. | n/a | None found | =misspell-fixer= exit 0. |
+
+Verdict: ready to merge. Five ctest suites and one codegen test are red on this
+branch for reasons outside it; see Measurements.
 
 * Result
+
+A column's economic status is now a model declaration, and the digest follows
+it. The name rule, the =_id= suffix rule and the five-name allow-list are gone
+from the C++. A field added later is economic or not because its model says so,
+and a model that declares only some of its columns is refused at generation.
+
+The rows that make up an instrument's shape are declared in the trade-type
+catalogue and read by generated code, so the 22-case switch and the shared
+reader list are gone. The generated switch has no default, so a routed table the
+catalogue omits fails the build.
+
+Left for later, and filed: the option's exercise prices are an economic table
+the digest has never read.

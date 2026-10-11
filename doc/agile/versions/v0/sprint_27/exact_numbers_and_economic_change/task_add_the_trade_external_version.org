@@ -28,7 +28,7 @@ A trade's external version moves when the agreed terms change, and never for an 
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:38E0EBFB-D1B0-4032-B126-129CEA74ED68][Hold money exactly and move the external version on economic change]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-09                               |

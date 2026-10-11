@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: BDFB3544-363B-4EC3-82AF-3369AA7483AC
+:END:
+#+title: The economic digest folds an instrument's option, premium, e…
+#+description: The economic digest folds an instrument's option, premium, exercise fee and payment date rows, and never reads the option's exercise prices, although read_option_exercise_prices_by_trade_ids exists and the table is economic. A change to an exercise price therefore leaves the trade's economic digest and external version alone. Declaring the digest shape in the trade-type catalogue (the Shared components table) made the omission visible. Add instrument_option_exercise_price to the table with its reader, and add a digest test that changes an exercise price. Listing it changes what the digest covers, so every stored digest changes once.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-11
+#+updated: 2026-10-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

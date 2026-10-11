@@ -249,6 +249,49 @@ TEST_CASE("mapper_roundtrip_capfloor_reverse", tags) {
     BOOST_LOG_SEV(lg, info) << "CapFloor reverse-mapper test passed";
 }
 
+TEST_CASE("mapper_reverse_swap_carries_the_digits_of_a_stored_rate", tags) {
+    const auto t = load_first_trade("IR_Swap_Vanilla.xml");
+    const auto result = swap_instrument_mapper::forward_swap(t);
+
+    const auto reconstructed =
+        swap_instrument_mapper::reverse_swap(result.header,
+                                             std::get<ores::trading::domain::vanilla_swap_instrument>(result.facts),
+                                             result.legs,
+                                             result.leg_amounts,
+                                             result.leg_rates);
+
+    REQUIRE(reconstructed.SwapData);
+    const auto& leg = reconstructed.SwapData->LegData.at(0);
+    REQUIRE(leg.legDataType);
+    REQUIRE(leg.legDataType->FixedLegData);
+    CHECK(leg.legDataType->FixedLegData->Rates.Rate.at(0).lexical() == "0.021");
+    REQUIRE(leg.Notionals);
+    CHECK(ores::utility::decimal::decimal::from_string(leg.Notionals->Notional.at(0).lexical()) ==
+          ores::utility::decimal::decimal::from_string("10000000"));
+}
+
+TEST_CASE("mapper_reverse_capfloor_carries_the_digits_of_a_stored_strike", tags) {
+    const auto t = load_first_trade("IR_Cap_on_IBOR.xml");
+    const auto result = swap_instrument_mapper::forward_capfloor(t);
+
+    const auto reconstructed = swap_instrument_mapper::reverse_capfloor(
+        result.header,
+        std::get<ores::trading::domain::cap_floor_instrument>(result.facts),
+        result.legs,
+        result.leg_amounts,
+        result.leg_rates,
+        result.strikes,
+        result.schedules,
+        result.schedule_dates);
+
+    REQUIRE(reconstructed.CapFloorData);
+    const auto& cf = *reconstructed.CapFloorData;
+    CHECK(ores::utility::decimal::decimal::from_string(cf.LegData.Notionals.Notional.at(0).lexical()) ==
+          ores::utility::decimal::decimal::from_string("3000000"));
+    REQUIRE(cf.Caps);
+    CHECK(cf.Caps->Cap.at(0).lexical() == "0.025");
+}
+
 TEST_CASE("mapper_roundtrip_capfloor_shared_children", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("IR_Cap_on_IBOR.xml");

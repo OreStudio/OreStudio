@@ -69,7 +69,7 @@ task and name that file in the Command column.
 | Rates documents in the corpus | 47 | =ores.ore.core.tests "every rates trade in the corpus comes back as the same family rows"= | b50b0acba4 |
 | Rates trades in those documents | 70 | same | b50b0acba4 |
 | Documents whose family rows change on the round trip | 0 | same; the known-differences set is empty | b50b0acba4 |
-| ORE core suite | 644 cases, 482,942 assertions, all pass | =ores.ore.core.tests= | the PR head |
+| ORE core suite | 646 cases, 482,954 assertions, all pass | =ores.ore.core.tests= | the PR head |
 | Trading core suite | 152 cases, 1,080 assertions, all pass | =ores.trading.core.tests= | c82f06be8a |
 | Rates eventing tests | 10 added; 54 eventing cases pass in all | =ores.trading.core.tests "[eventing]"= | c82f06be8a |
 | Golden files regenerated for the digits change | 73 of 132 | =ORES_BOOTSTRAP_GOLDENS=1 ores.ore.core.tests every_example_trade_round_trips_through_a_golden= | the PR head |
@@ -143,4 +143,6 @@ carries. The reapply script patches the generated writer, the rates and
 stress test reverse mappers set the digits on the leaves, and 73 golden files
 now hold the document's own digits. The FRA's notional and strike are bare
 floats in the ORE binding, so they carry no digits and are not covered. That
-is a separate defect, noted for a follow-up task.
+is a separate defect, noted for a follow-up task. The new digits tests also
+found that a cap or floor strike was stored through a double, as
+0.02500000037252903 for 0.025. It is now read from the document's digits.

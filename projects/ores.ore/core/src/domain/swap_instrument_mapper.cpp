@@ -675,16 +675,16 @@ void append_schedule(trading::domain::swap_instrument_data& result,
 // alone, while the schema states a cap/floor's strikes as two lists. The
 // first cap, or the first floor when no cap is stated, is the row.
 void append_capfloor_strike(trading::domain::swap_instrument_data& result, const capFloorData& cf) {
-    std::optional<double> value;
+    std::optional<ores::utility::decimal::decimal> value;
     if (cf.Caps && !cf.Caps->Cap.empty())
-        value = static_cast<double>(cf.Caps->Cap.front());
+        value = exact_decimal(cf.Caps->Cap.front());
     else if (cf.Floors && !cf.Floors->Floor.empty())
-        value = static_cast<double>(cf.Floors->Floor.front());
+        value = exact_decimal(cf.Floors->Floor.front());
     if (!value)
         return;
 
     trading::domain::instrument_strike row;
-    row.bare_value = ores::utility::decimal::decimal::from_double(*value).value();
+    row.bare_value = *value;
     stamp_child_audit(row);
     result.strikes.push_back(std::move(row));
 }

@@ -3297,8 +3297,6 @@ export const en: SourceCatalogue = {
         mixture: {
             lead: 'The Gaussians the feed draws each return from. Change the values and read what they imply before you save them.',
             none: 'No component yet. Add one to give the feed a process.',
-            up: 'Up',
-            discardRow: 'Discard',
             add: 'Add component',
             sum: 'Weight sum {sum}. The weights stay as typed, and the draw normalises them.',
             sumPending: 'Weight sum: waiting for every weight to be a number.',
@@ -3308,11 +3306,17 @@ export const en: SourceCatalogue = {
                 negative: 'A deviation or a weight cannot be negative.',
                 weights: 'The weights must add up to more than zero.',
             },
-            unsaved: '{count} components to write. Nothing reaches the feed until you save.',
             save: 'Save mixture',
             discard: 'Discard changes',
-            removeAfter: 'To delete a saved component, save or discard your changes first.',
-            removeTitle: 'Delete this component?',
+            addTitle: 'Add a component',
+            editTitle: 'Component {index}',
+            done: 'Done',
+            descriptionHint:
+                'A name, then a colon and a note, as in "Primary: calibrated to ~8% annualised vol." The name shows highlighted and the note subdued.',
+            upRow: 'Move component {index} up',
+            downRow: 'Move component {index} down',
+            unsaved:
+                '{count} components to write and {removed} to delete. Nothing reaches the feed until you save.',
         },
         preview: {
             distribution: 'Return distribution',

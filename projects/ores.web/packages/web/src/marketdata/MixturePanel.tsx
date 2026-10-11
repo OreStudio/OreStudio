@@ -23,26 +23,15 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { useEffect, useState, type ReactNode } from 'react';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Field, Input, Notice, Select } from '../ui/Primitives.js';
-import {
-    NEW_RECORD_REASON,
-    RemoveRecordDialog,
-    show,
-    useRecordPermissions,
-    useRecords,
-} from '../refdata/records.js';
+import { Button, Field, Input, Notice, cx } from '../ui/Primitives.js';
+import { NEW_RECORD_REASON, show, useRecordPermissions, useRecords } from '../refdata/records.js';
 import { ReasonFields, useReason } from '../refdata/shared.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
-import {
-    PROFILES,
-    bandWidth,
-    halfLifeMinutes,
-    processTypeOf,
-    profileOf,
-    type Profile,
-} from './processHelp.js';
+import { ComponentDialog } from './ComponentDialog.js';
+import { bandWidth, halfLifeMinutes, processTypeOf, profileOf } from './processHelp.js';
 import {
     densityOf,
+    describedAs,
     draftOf,
     gaussiansOf,
     newComponent,
@@ -117,10 +106,14 @@ function MixtureEditor({
     const saved = draftOf(rows);
     const [draft, setDraft] = useState<readonly DraftComponent[]>(saved);
     const [commentary, setCommentary] = useState('');
-    const [removing, setRemoving] = useState<RecordRow | null>(null);
+    const [open, setOpen] = useState<{
+        readonly component: DraftComponent;
+        readonly index: number;
+    } | null>(null);
     const plan = savePlan(feedId, saved, draft);
-    const dirty = plan.changes.length > 0 || draft.length !== saved.length;
-    const onlyNew = plan.changes.every((change) => change.version === null);
+    const dirty = plan.changes.length > 0 || plan.removals.length > 0;
+    const onlyNew =
+        plan.removals.length === 0 && plan.changes.every((change) => change.version === null);
     const reason = useReason('amend', true);
     const missing = !onlyNew && reason.needsCommentary && commentary.trim() === '';
     const problems = problemsOf(draft);
@@ -131,10 +124,6 @@ function MixtureEditor({
     const columnHelp = (field: 'mean' | 'stdev' | 'weight'): string =>
         t(`marketdata.process.columns.${processType}.${field}`);
 
-    const edit = (index: number, change: Partial<DraftComponent>): void =>
-        setDraft(
-            draft.map((component, i) => (i === index ? { ...component, ...change } : component)),
-        );
     const move = (index: number, by: number): void => {
         const next = [...draft];
         const [moved] = next.splice(index, 1);
@@ -143,17 +132,34 @@ function MixtureEditor({
             setDraft(next);
         }
     };
-    const rowOf = (id: string): RecordRow | undefined => rows.find((row) => show(row['id']) === id);
+    const done = (component: DraftComponent): void => {
+        setDraft(
+            open !== null && open.index < draft.length
+                ? draft.map((one, i) => (i === open.index ? component : one))
+                : [...draft, component],
+        );
+        setOpen(null);
+    };
 
     const save = useMutation({
-        mutationFn: () =>
-            api.saveSynthetic(
-                COMPONENTS,
-                plan.changes,
-                onlyNew
-                    ? { reasonCode: NEW_RECORD_REASON, commentary: '' }
-                    : { reasonCode: reason.code, commentary: commentary.trim() },
-            ),
+        mutationFn: async () => {
+            const intent = onlyNew
+                ? { reasonCode: NEW_RECORD_REASON, commentary: '' }
+                : { reasonCode: reason.code, commentary: commentary.trim() };
+            if (plan.removals.length > 0) {
+                await api.removeSynthetic(
+                    COMPONENTS,
+                    plan.removals.map((removal) => ({
+                        key: removal.key,
+                        version: plan.removals.length === 1 ? removal.version : null,
+                    })),
+                    intent,
+                );
+            }
+            if (plan.changes.length > 0) {
+                await api.saveSynthetic(COMPONENTS, plan.changes, intent);
+            }
+        },
         onSuccess: async () => {
             setCommentary('');
             await queries.invalidateQueries({ queryKey: ['records', COMPONENTS] });
@@ -172,139 +178,133 @@ function MixtureEditor({
                     <table className="w-full text-left text-sm">
                         <thead>
                             <tr className="border-b border-line text-xs text-ink-muted">
-                                <th className="px-3 py-2 font-medium">#</th>
-                                <th className="px-3 py-2 font-medium">
+                                <th className="px-4 py-2 font-medium">#</th>
+                                <th className="px-4 py-2 font-medium">
                                     {t('refdata.fields.description')}
                                 </th>
                                 <th
-                                    className="px-3 py-2 font-medium"
+                                    className="px-4 py-2 font-medium"
                                     title={t('marketdata.process.profileHelp')}
                                 >
                                     {t('marketdata.process.profile')}
                                 </th>
-                                <th className="px-3 py-2 font-medium" title={columnHelp('mean')}>
+                                <th
+                                    className="px-4 py-2 text-right font-medium"
+                                    title={columnHelp('mean')}
+                                >
                                     {t('refdata.fields.mean')}
                                 </th>
-                                <th className="px-3 py-2 font-medium" title={columnHelp('stdev')}>
+                                <th
+                                    className="px-4 py-2 text-right font-medium"
+                                    title={columnHelp('stdev')}
+                                >
                                     {t('refdata.fields.stdev')}
                                 </th>
-                                <th className="px-3 py-2 font-medium" title={columnHelp('weight')}>
+                                <th
+                                    className="px-4 py-2 text-right font-medium"
+                                    title={columnHelp('weight')}
+                                >
                                     {ou
                                         ? t('marketdata.process.kappa')
                                         : t('refdata.fields.weight')}
                                 </th>
-                                <th className="px-3 py-2" />
+                                {may.write && <th className="px-4 py-2" />}
                             </tr>
                         </thead>
                         <tbody>
                             {draft.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="px-3 py-3 text-ink-muted">
+                                    <td colSpan={7} className="px-4 py-3 text-ink-muted">
                                         {t('marketdata.mixture.none')}
                                     </td>
                                 </tr>
                             )}
                             {draft.map((component, index) => {
-                                const row = rowOf(component.id);
+                                const { name, note } = describedAs(component.description);
                                 return (
                                     <tr
                                         key={component.id}
-                                        className="border-b border-line-subtle last:border-b-0"
+                                        className={cx(
+                                            'border-b border-line-subtle last:border-b-0',
+                                            may.write && 'cursor-pointer hover:bg-surface-hover',
+                                        )}
                                         title={t(`marketdata.process.row.${processType}`)}
+                                        {...(may.write
+                                            ? { onClick: () => setOpen({ component, index }) }
+                                            : {})}
                                     >
-                                        <td className="px-3 py-1.5 font-mono text-xs text-ink-muted">
+                                        <td className="px-4 py-2 font-mono text-xs text-ink-muted">
                                             {index}
                                         </td>
-                                        <td className="px-3 py-1.5">
-                                            <Input
-                                                aria-label={t('refdata.fields.description')}
-                                                className="w-128 truncate"
-                                                title={component.description}
-                                                value={component.description}
-                                                readOnly={!may.write}
-                                                maxLength={2000}
-                                                onChange={(event) =>
-                                                    edit(index, { description: event.target.value })
-                                                }
-                                            />
+                                        <td className="max-w-md px-4 py-2">
+                                            <div className="truncate" title={component.description}>
+                                                <span className="font-medium text-ink">
+                                                    {name === ''
+                                                        ? t('marketdata.ticks.unnamed')
+                                                        : name}
+                                                </span>
+                                                {note !== '' && (
+                                                    <span className="text-ink-faint">
+                                                        {' '}
+                                                        · {note}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
-                                        <td className="px-3 py-1.5">
-                                            <Select
-                                                aria-label={t('marketdata.process.profile')}
-                                                className="w-32"
-                                                value={profileOf(component.stdev)}
-                                                disabled={!may.write}
-                                                onChange={(event) => {
-                                                    const chosen = event.target.value;
-                                                    if (chosen in PROFILES) {
-                                                        edit(index, {
-                                                            stdev: String(
-                                                                PROFILES[chosen as Profile],
-                                                            ),
-                                                        });
-                                                    }
-                                                }}
-                                            >
-                                                {(
-                                                    ['custom', ...Object.keys(PROFILES)] as const
-                                                ).map((profile) => (
-                                                    <option key={profile} value={profile}>
-                                                        {t(
-                                                            `marketdata.process.profiles.${profile}`,
-                                                        )}
-                                                    </option>
-                                                ))}
-                                            </Select>
+                                        <td className="px-4 py-2 text-ink-muted">
+                                            {t(
+                                                `marketdata.process.profiles.${profileOf(component.stdev)}`,
+                                            )}
                                         </td>
                                         {(['mean', 'stdev', 'weight'] as const).map((field) => (
-                                            <td key={field} className="px-3 py-1.5">
-                                                <Input
-                                                    aria-label={t(`refdata.fields.${field}`)}
-                                                    className="w-24 text-right font-mono"
-                                                    inputMode="decimal"
-                                                    value={component[field]}
-                                                    readOnly={!may.write}
-                                                    onChange={(event) =>
-                                                        edit(index, { [field]: event.target.value })
-                                                    }
-                                                />
+                                            <td
+                                                key={field}
+                                                className="px-4 py-2 text-right font-mono text-xs"
+                                            >
+                                                {component[field]}
                                             </td>
                                         ))}
-                                        <td className="px-3 py-1.5 text-right whitespace-nowrap">
-                                            {may.write && index > 0 && (
+                                        {may.write && (
+                                            <td
+                                                className="px-4 py-2 text-right whitespace-nowrap"
+                                                onClick={(event) => event.stopPropagation()}
+                                            >
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
+                                                    disabled={index === 0}
+                                                    aria-label={t('marketdata.mixture.upRow', {
+                                                        index: String(index),
+                                                    })}
                                                     onClick={() => move(index, -1)}
                                                 >
-                                                    {t('marketdata.mixture.up')}
+                                                    ↑
                                                 </Button>
-                                            )}
-                                            {row === undefined && may.write && (
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
-                                                    icon="cancel"
+                                                    disabled={index === draft.length - 1}
+                                                    aria-label={t('marketdata.mixture.downRow', {
+                                                        index: String(index),
+                                                    })}
+                                                    onClick={() => move(index, 1)}
+                                                >
+                                                    ↓
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    icon="delete"
                                                     onClick={() =>
                                                         setDraft(
                                                             draft.filter((_, i) => i !== index),
                                                         )
                                                     }
                                                 >
-                                                    {t('marketdata.mixture.discardRow')}
-                                                </Button>
-                                            )}
-                                            {row !== undefined && may.remove && !dirty && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    icon="delete"
-                                                    onClick={() => setRemoving(row)}
-                                                >
                                                     {t('refdata.records.delete')}
                                                 </Button>
-                                            )}
-                                        </td>
+                                            </td>
+                                        )}
                                     </tr>
                                 );
                             })}
@@ -314,7 +314,12 @@ function MixtureEditor({
                 {may.write && (
                     <Button
                         icon="add"
-                        onClick={() => setDraft([...draft, newComponent(crypto.randomUUID())])}
+                        onClick={() =>
+                            setOpen({
+                                component: newComponent(crypto.randomUUID()),
+                                index: draft.length,
+                            })
+                        }
                     >
                         {t('marketdata.mixture.add')}
                     </Button>
@@ -338,6 +343,7 @@ function MixtureEditor({
                         <p className="text-sm text-ink-muted">
                             {t('marketdata.mixture.unsaved', {
                                 count: String(plan.changes.length),
+                                removed: String(plan.removals.length),
                             })}
                         </p>
                         {onlyNew ? (
@@ -380,20 +386,16 @@ function MixtureEditor({
                         </div>
                     </div>
                 )}
-                {dirty && saved.length > 0 && (
-                    <p className="text-xs text-ink-faint">{t('marketdata.mixture.removeAfter')}</p>
-                )}
             </section>
             <Preview feed={feed} draft={draft} />
-            {removing !== null && (
-                <RemoveRecordDialog
-                    resource={COMPONENTS}
-                    title={t('marketdata.mixture.removeTitle')}
-                    warning={t('refdata.records.deletePartWarning')}
-                    recordKey={{ id: show(removing['id']) }}
-                    version={removing.version}
-                    onClose={() => setRemoving(null)}
-                    onRemoved={() => setRemoving(null)}
+            {open !== null && (
+                <ComponentDialog
+                    component={open.component}
+                    index={open.index}
+                    adding={open.index >= draft.length}
+                    processType={processType}
+                    onDone={done}
+                    onClose={() => setOpen(null)}
                 />
             )}
         </div>

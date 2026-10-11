@@ -3322,8 +3322,6 @@ const pt: SourceCatalogue = {
         mixture: {
             lead: 'As gaussianas de que o fluxo tira cada retorno. Altere os valores e leia o que implicam antes de os guardar.',
             none: 'Ainda sem componentes. Adicione uma para dar um processo ao fluxo.',
-            up: 'Subir',
-            discardRow: 'Descartar',
             add: 'Adicionar componente',
             sum: 'Soma dos pesos {sum}. Os pesos ficam como escritos, e o sorteio normaliza-os.',
             sumPending: 'Soma dos pesos: à espera que cada peso seja um número.',
@@ -3333,12 +3331,17 @@ const pt: SourceCatalogue = {
                 negative: 'Um desvio padrão ou um peso não pode ser negativo.',
                 weights: 'A soma dos pesos tem de ser maior que zero.',
             },
-            unsaved: '{count} componentes por escrever. Nada chega ao fluxo até guardar.',
             save: 'Guardar mistura',
             discard: 'Descartar alterações',
-            removeAfter:
-                'Para apagar uma componente guardada, guarde ou descarte primeiro as suas alterações.',
-            removeTitle: 'Apagar esta componente?',
+            addTitle: 'Adicionar uma componente',
+            editTitle: 'Componente {index}',
+            done: 'Concluído',
+            descriptionHint:
+                'Um nome, depois dois pontos e uma nota, como "Principal: calibrada para ~8% de volatilidade anualizada". O nome aparece destacado e a nota atenuada.',
+            upRow: 'Subir a componente {index}',
+            downRow: 'Descer a componente {index}',
+            unsaved:
+                '{count} componentes por escrever e {removed} por apagar. Nada chega ao fluxo até guardar.',
         },
         preview: {
             distribution: 'Distribuição dos retornos',

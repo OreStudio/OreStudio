@@ -227,8 +227,11 @@ describe('the FX feed screens', () => {
             );
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
-        expect(html).toContain('value="calm"');
-        expect(html.indexOf('value="calm"')).toBeLessThan(html.indexOf('value="stressed"'));
+        expect(html).toContain('>calm</span>');
+        expect(html.indexOf('>calm</span>')).toBeLessThan(html.indexOf('>stressed</span>'));
+        expect(html).toMatch(/<button[^>]*disabled=""[^>]*aria-label="Move component 1 down"/);
+        expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*aria-label="Move component 0 down"/);
+        expect(html).toContain('>Delete<');
         expect(html).toContain('Weight sum 0.9000');
         expect(html).toContain('Return distribution');
         expect(html).toContain('<svg');
@@ -365,7 +368,7 @@ describe('the FX feed screens', () => {
         });
         expect(html).toContain('so the price stays positive');
         expect(html).toContain('title="Drift (μ): the mean log-return per update.');
-        expect(html).toContain('<option value="normal" selected="">Normal</option>');
+        expect(html).toContain('text-ink-muted">Normal</td>');
     });
 
     it('warns that the arithmetic engine can take the price below zero', () => {

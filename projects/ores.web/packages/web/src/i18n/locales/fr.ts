@@ -3347,8 +3347,6 @@ const fr: SourceCatalogue = {
         mixture: {
             lead: 'Les gaussiennes dont le flux tire chaque rendement. Changez les valeurs et lisez ce qu’elles impliquent avant de les enregistrer.',
             none: 'Aucune composante. Ajoutez-en une pour donner un processus au flux.',
-            up: 'Monter',
-            discardRow: 'Écarter',
             add: 'Ajouter une composante',
             sum: 'Somme des poids {sum}. Les poids restent tels que saisis, et le tirage les normalise.',
             sumPending: 'Somme des poids : en attente que chaque poids soit un nombre.',
@@ -3358,12 +3356,17 @@ const fr: SourceCatalogue = {
                 negative: 'Un écart type ou un poids ne peut pas être négatif.',
                 weights: 'La somme des poids doit être supérieure à zéro.',
             },
-            unsaved: "{count} composantes à écrire. Rien n'atteint le flux avant l'enregistrement.",
             save: 'Enregistrer le mélange',
             discard: 'Annuler les modifications',
-            removeAfter:
-                "Pour supprimer une composante enregistrée, enregistrez ou annulez d'abord vos modifications.",
-            removeTitle: 'Supprimer cette composante ?',
+            addTitle: 'Ajouter une composante',
+            editTitle: 'Composante {index}',
+            done: 'Terminé',
+            descriptionHint:
+                'Un nom, puis deux-points et une note, comme « Principale : calibrée à ~8 % de volatilité annualisée ». Le nom est mis en avant et la note atténuée.',
+            upRow: 'Monter la composante {index}',
+            downRow: 'Descendre la composante {index}',
+            unsaved:
+                '{count} composantes à écrire et {removed} à supprimer. Rien n’atteint le flux avant l’enregistrement.',
         },
         preview: {
             distribution: 'Distribution des rendements',

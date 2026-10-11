@@ -1018,6 +1018,14 @@ def _sql_literal_text(value: Any) -> Any:
     return value.replace("'", "''") if isinstance(value, str) else value
 
 
+# A table whose rows the party rule hides from a service is checked for
+# existence through a security definer function that answers yes or no, and
+# not through a select on the table. The map is the one place that says so.
+EXISTENCE_FUNCTIONS = {
+    "ores_iam_accounts_tbl": "ores_iam_account_exists_fn",
+}
+
+
 def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     """Convert a soft FK validation heading into a template-ready dict.
 
@@ -1045,6 +1053,9 @@ def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     # target with a differently-named PK (e.g. ores_assets_images_tbl's
     # image_id).
     out.setdefault("target_column", "id")
+    existence = EXISTENCE_FUNCTIONS.get(out.get("table"))
+    if existence is not None and out.get("target_column") == "id":
+        out.setdefault("exists_function", existence)
     # A named ``parent_seed`` source block under the FK heading is the
     # seeding snippet for the FK's parent. The eventing integration test
     # emits it in place of the derived parent seeding: for a parent with no

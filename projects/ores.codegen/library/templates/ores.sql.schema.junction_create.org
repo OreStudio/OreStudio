@@ -179,7 +179,13 @@ begin
 {{#junction.foreign_keys}}
 {{#nullable}}
     -- Validate {{column}} (optional soft FK to {{table}})
-    if new.{{column}} is not null then
+{{#exists_function}}
+        if not {{exists_function}}(new.{{column}}) then
+            raise exception '{{error_message}}', new.{{column}}
+                using errcode = '23503';
+        end if;
+{{/exists_function}}
+{{^exists_function}}
         if not exists (
             select 1 from {{table}}
             where {{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
@@ -190,11 +196,19 @@ begin
             raise exception '{{error_message}}', new.{{column}}
                 using errcode = '23503';
         end if;
+{{/exists_function}}
     end if;
 
 {{/nullable}}
 {{^nullable}}
     -- Validate {{column}} (soft FK to {{table}})
+{{#exists_function}}
+    if not {{exists_function}}(new.{{column}}) then
+        raise exception '{{error_message}}', new.{{column}}
+            using errcode = '23503';
+    end if;
+{{/exists_function}}
+{{^exists_function}}
     if not exists (
         select 1 from {{table}}
         where {{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
@@ -205,6 +219,7 @@ begin
         raise exception '{{error_message}}', new.{{column}}
             using errcode = '23503';
     end if;
+{{/exists_function}}
 
 {{/nullable}}
 {{/junction.foreign_keys}}

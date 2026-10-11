@@ -168,12 +168,6 @@ export function tooManyRequests(what: string): HttpFailure {
     });
 }
 
-/**
- * Translates any thrown value into an {@link HttpFailure}.
- *
- * Returns the original failure when it already is one, so a route can throw a
- * specific status and have it preserved.
- */
 /** What the caller is told when the framework refuses a request, by status. */
 const REFUSAL_BY_STATUS: Readonly<Record<number, string>> = {
     400: 'The request could not be read.',
@@ -181,6 +175,12 @@ const REFUSAL_BY_STATUS: Readonly<Record<number, string>> = {
     415: 'That content type is not accepted.',
 };
 
+/**
+ * Translates any thrown value into an {@link HttpFailure}.
+ *
+ * Returns the original failure when it already is one, so a route can throw a
+ * specific status and have it preserved.
+ */
 export function toHttpFailure(error: unknown): HttpFailure {
     if (error instanceof HttpFailure) {
         return error;

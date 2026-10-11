@@ -8,7 +8,7 @@
 #+filetags: :curve_screen_series_picker:sprint_27:v0:
 #+owner: marco
 #+branch: feature/route-the-series-list-through-the-bff
-#+pr:
+#+pr: 3131
 #+blocked_on: List the series identities a party can see
 #+blocked_since:
 #+created: 2026-10-11
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3131][#3131]] | [web] Route the series list through the BFF |
 
 * Review
 

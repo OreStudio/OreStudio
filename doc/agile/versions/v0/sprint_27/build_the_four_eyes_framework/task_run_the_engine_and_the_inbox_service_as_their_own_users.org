@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_the_four_eyes_framework:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/run-the-engine-and-the-inbox-service-as-their-own-users
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
 #+updated: 2026-10-11
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A missing right for the workflow engine or the inbox service shows in a test and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DFA36716-D1F7-47F5-833C-A5EBC48198B3][Build the four-eyes framework]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-11                               |
 
 * Acceptance
@@ -44,6 +44,10 @@ A missing right for the workflow engine or the inbox service shows in a test and
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- Sign in to the database as the inbox service's own user, with the credentials the service reads from its environment, and do the work the service does: read a request and its kind, write the notice that tells the person who asked, run the three sweeps, and read who holds a permission.
+- Sign in as the workflow service's own user, in the system tenant, and run the engine over it: start a run shaped like the book apply workflow, advance it step by step to the end, and stop one on a failure and resume it.
+- Grant through the registry any right a test shows missing.
 
 * Measurements
 
@@ -60,6 +64,11 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The inbox tell test first failed because main's account visibility policy hid every account that shares no party with a service actor, so the notice's recipient check failed. Main fixed the policy (f23c626a2b and the commits around it) and the test then passed with no change here. That failure is why the test checks the notice itself: the announcer logs a failure to tell and never throws, so only the notice shows the user may write it.
+- The workflow service user needed no new right. The two engine cases pass as it stands.
+- The engine cases use test step subjects with the book apply workflow's three-step shape, because the real subjects belong to running services that would answer them on a shared bus. They prove the engine's own database rights, which do not depend on the subjects. The real definition is covered by the refdata workflow tests.
+- Not covered: the services' other handlers, and a start through the live bus.
 
 * Test Scenarios
 
@@ -85,3 +94,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The inbox service's and the workflow service's own database users are tested for the work they do.
+
+- =approval_as_service_tests.cpp= signs in as the inbox service user. It reads a request and its kind, writes the notice for the asker and reads it back, runs the expiry, reminder and stalled-apply sweeps, and reads who holds a permission.
+- Two cases in =workflow_engine_tests.cpp= run the engine over the workflow service user in the system tenant: a three-step run is started and advanced to completion, and a run is stopped on a failure and resumed.
+- No right was found missing, so the registry is unchanged.
+
+Evidence: the three inbox cases and the two engine cases pass on a database recreated from main with the account policy fix.

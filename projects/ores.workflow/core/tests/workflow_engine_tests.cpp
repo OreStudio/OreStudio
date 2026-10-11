@@ -18,11 +18,13 @@
  *
  */
 #include "ores.database/domain/context.hpp"
+#include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.testing/nats_options_helper.hpp"
@@ -89,7 +91,7 @@ const std::string reply_subject("test.workflow.step-result.reply");
  * whoever asked for it; a case that is not about the boundary keeps the engine
  * in the run's own tenant so the two cannot be confused.
  */
-enum class engine_tenant { run, service };
+enum class engine_tenant { run, service, workflow_service };
 
 using ores::nats::service::client;
 using ores::workflow::messaging::start_workflow_message;
@@ -127,11 +129,25 @@ struct fixture {
         nats.connect();
         // The machine's states are dq's seed data, in the system tenant. The
         // run's rows are this case's own, in the test tenant.
-        instance_states = load_fsm_states(service_context(), "workflow_instance");
-        step_states = load_fsm_states(service_context(), "workflow_step");
+        const auto engine_context = [&] {
+            switch (where) {
+            case engine_tenant::service:
+                return service_context();
+            case engine_tenant::workflow_service:
+                return as_workflow_service();
+            default:
+                return h.context();
+            }
+        }();
+        instance_states = load_fsm_states(
+            where == engine_tenant::workflow_service ? engine_context : service_context(),
+            "workflow_instance");
+        step_states = load_fsm_states(
+            where == engine_tenant::workflow_service ? engine_context : service_context(),
+            "workflow_step");
         engine = std::make_shared<workflow_engine>(
             nats,
-            where == engine_tenant::service ? service_context() : h.context(),
+            engine_context,
             registry,
             instance_states,
             step_states,
@@ -156,6 +172,33 @@ struct fixture {
      */
     ores::database::context service_context() {
         return ores::database::service::tenant_context::with_system_tenant(h.context());
+    }
+
+    /**
+     * @brief The context the deployed workflow service runs in: its own
+     * database user, in the system tenant, with the credentials the service
+     * reads from its environment.
+     *
+     * The other contexts here sign in under the read-write role, which may do
+     * anything, so they cannot say whether the engine's own user holds every
+     * right the engine uses.
+     */
+    ores::database::context as_workflow_service() {
+        using ores::platform::environment::environment;
+        const ores::database::database_options options{
+            .user = environment::get_value_or_throw("ORES_WORKFLOW_SERVICE_DB_USER"),
+            .password = environment::get_value_or_throw("ORES_WORKFLOW_SERVICE_DB_PASSWORD"),
+            .host = environment::get_value_or_default("ORES_WORKFLOW_SERVICE_DB_HOST", "localhost"),
+            .database = environment::get_value_or_throw("ORES_WORKFLOW_SERVICE_DB_DATABASE"),
+            .port = environment::get_int_value_or_default("ORES_WORKFLOW_SERVICE_DB_PORT", 5432),
+            .tenant = ores::database::service::tenant_context::system_tenant_id};
+        const ores::database::context_factory::configuration config{
+            .database_options = options,
+            .pool_size = 2,
+            .num_attempts = 3,
+            .wait_time_in_seconds = 1,
+            .service_account = options.user};
+        return ores::database::context_factory::make_context(config);
     }
 
     /** @brief The tenant the service itself runs in: the system tenant. */
@@ -874,6 +917,77 @@ TEST_CASE("a retry is confined to the caller's own tenant", tags) {
     CHECK(accepted.resumed);
     CHECK(accepted.step_index == 0);
     BOOST_LOG_SEV(lg, debug) << "Retry confined to the caller's tenant.";
+}
+
+TEST_CASE("the workflow service user starts and advances a three step apply run", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The book apply workflow's shape: recheck, apply, tell, one after another,
+    // stopping on a failure. The steps use test subjects so a service running
+    // on the same bus cannot answer them.
+    fixture f(engine_tenant::workflow_service);
+    f.register_steps(
+        "test_apply_shaped_workflow", {"recheck", "apply", "tell"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto run_tenant = f.tenant();
+    REQUIRE(run_tenant != f.service_tenant_id());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 1000);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_apply_shaped_workflow", run_tenant, instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    workflow_instance_repository instances;
+    const auto service_ctx = f.service_context();
+
+    for (std::size_t done = 1; done <= 3; ++done) {
+        const auto rows = steps.read_latest_by_workflow_id(service_ctx, instance_id, 0, 100);
+        REQUIRE(rows.size() == done);
+        f.engine->on_step_completed(as_message(completion_for(
+            instance_id, boost::uuids::to_string(rows.back().id), step_outcome::completed)));
+        if (done < 3)
+            REQUIRE(wait_for_instance(commands, instance_id, done + 1, std::chrono::seconds(5))
+                        .size() == done + 1);
+    }
+
+    const auto instance = instances.read_latest(service_ctx, instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("completed"));
+    BOOST_LOG_SEV(lg, debug) << "The workflow service user ran a run to the end.";
+}
+
+TEST_CASE("the workflow service user stops a run on a failure and resumes it", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f(engine_tenant::workflow_service);
+    f.register_steps(
+        "test_apply_shaped_retry_workflow", {"recheck", "apply", "tell"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 1000);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_apply_shaped_retry_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    workflow_instance_repository instances;
+    const auto service_ctx = f.service_context();
+    const auto rows = steps.read_latest_by_workflow_id(service_ctx, instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    f.engine->on_step_completed(as_message(completion_for(
+        instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "down")));
+
+    const auto stopped = instances.read_latest(service_ctx, instance_id);
+    REQUIRE(stopped.size() == 1);
+    CHECK(stopped.front().state_id == f.instance_states.require("failed"));
+
+    // The inbox's scheduled retry asks from the system tenant.
+    const auto resumed = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "", f.service_context().tenant_id());
+    CHECK(resumed.resumed);
+    CHECK(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+    BOOST_LOG_SEV(lg, debug) << "The workflow service user stopped and resumed a run.";
 }
 
 TEST_CASE("a start that names a run the engine holds changes nothing", tags) {

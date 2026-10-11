@@ -196,7 +196,6 @@ ores::refdata::messaging::currency_write to_write(const ores::refdata::domain::c
 
 ores::refdata::messaging::portfolio_write to_write(const ores::refdata::domain::portfolio& p) {
     return {.id = p.id,
-            .party_id = p.party_id,
             .name = p.name,
             .description = p.description,
             .parent_portfolio_id = p.parent_portfolio_id,
@@ -210,7 +209,6 @@ ores::refdata::messaging::portfolio_write to_write(const ores::refdata::domain::
 
 ores::refdata::messaging::book_write to_write(const ores::refdata::domain::book& b) {
     return {.id = b.id,
-            .party_id = b.party_id,
             .name = b.name,
             .description = b.description,
             .parent_portfolio_id = b.parent_portfolio_id,
